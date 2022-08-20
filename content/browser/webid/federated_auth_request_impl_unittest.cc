@@ -700,10 +700,12 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
                      const std::string& nonce,
                      bool prefer_auto_sign_in,
                      bool wait_for_callback) {
-    blink::mojom::IdentityProviderPtr identity_provider =
+    std::vector<blink::mojom::IdentityProviderPtr> identity_provider_ptrs;
+    blink::mojom::IdentityProviderPtr identity_provider_ptr =
         blink::mojom::IdentityProvider::New(provider, client_id, nonce);
+    identity_provider_ptrs.push_back(std::move(identity_provider_ptr));
 
-    request_remote_->RequestToken(std::move(identity_provider),
+    request_remote_->RequestToken(std::move(identity_provider_ptrs),
                                   prefer_auto_sign_in, auth_helper_.callback());
 
     if (wait_for_callback)
@@ -1207,7 +1209,7 @@ TEST_F(FederatedAuthRequestImplTest, LoginStateShouldBeSignInForReturningUser) {
   // Pretend the sharing permission has been granted for this account.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
@@ -1217,11 +1219,12 @@ TEST_F(FederatedAuthRequestImplTest, LoginStateShouldBeSignInForReturningUser) {
 
 TEST_F(FederatedAuthRequestImplTest,
        LoginStateSuccessfulSignUpGrantsSharingPermission) {
-  EXPECT_CALL(*mock_sharing_permission_delegate_, HasSharingPermission(_, _, _))
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(_, _, _, _))
       .WillOnce(Return(false));
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      GrantSharingPermission(OriginFromString(kRpUrl),
+      GrantSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                              OriginFromString(kProviderUrlFull), kAccountId))
       .Times(1);
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
@@ -1230,10 +1233,11 @@ TEST_F(FederatedAuthRequestImplTest,
 
 TEST_F(FederatedAuthRequestImplTest,
        LoginStateFailedSignUpNotGrantSharingPermission) {
-  EXPECT_CALL(*mock_sharing_permission_delegate_, HasSharingPermission(_, _, _))
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(_, _, _, _))
       .WillOnce(Return(false));
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              GrantSharingPermission(_, _, _))
+              GrantSharingPermission(_, _, _, _))
       .Times(0);
 
   MockConfiguration configuration = kConfigurationValid;
@@ -1256,7 +1260,7 @@ TEST_F(FederatedAuthRequestImplTest, AutoSignInForReturningUser) {
   // Pretend the sharing permission has been granted for this account.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
 
@@ -1330,7 +1334,7 @@ TEST_F(FederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
   // Pretend the sharing permission has been granted for this account.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
 
@@ -1362,9 +1366,9 @@ TEST_F(FederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
 
 TEST_F(FederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
   // Pretends that the sharing permission has been granted for this account.
-  EXPECT_CALL(
-      *mock_sharing_permission_delegate_,
-      HasSharingPermission(_, OriginFromString(kProviderUrlFull), kAccountId))
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(_, _, OriginFromString(kProviderUrlFull),
+                                   kAccountId))
       .WillOnce(Return(true));
 
   base::RunLoop ukm_loop;
@@ -1516,9 +1520,9 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForWebContentsVisible) {
             content::PageVisibilityState::kVisible);
 
   // Pretends that the sharing permission has been granted for this account.
-  EXPECT_CALL(
-      *mock_sharing_permission_delegate_,
-      HasSharingPermission(_, OriginFromString(kProviderUrlFull), kAccountId))
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(_, _, OriginFromString(kProviderUrlFull),
+                                   kAccountId))
       .WillOnce(Return(true));
 
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
@@ -1637,7 +1641,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForSignedInOnBothIdpAndBrowser) {
   // Set browser observes user is signed in.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
 
@@ -1667,7 +1671,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForNotSignedInOnBothIdpAndBrowser) {
   // Set browser observes user is not signed in.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(false));
 
@@ -1693,7 +1697,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForOnlyIdpClaimedSignIn) {
   // Set browser observes user is not signed in.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(false));
 
@@ -1724,7 +1728,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForOnlyBrowserObservedSignIn) {
   // Set browser observes user is signed in.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
 
@@ -1924,7 +1928,7 @@ TEST_F(FederatedAuthRequestImplTest, DisclosureTextNotShownForReturningUser) {
   // Pretend the sharing permission has been granted for this account.
   EXPECT_CALL(
       *mock_sharing_permission_delegate_,
-      HasSharingPermission(OriginFromString(kRpUrl),
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
                            OriginFromString(kProviderUrlFull), kAccountId))
       .WillOnce(Return(true));
 

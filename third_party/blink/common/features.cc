@@ -390,14 +390,6 @@ const base::Feature kPurgeRendererMemoryWhenBackgrounded {
 const base::Feature kWindowOpenNewPopupBehavior{
     "WindowOpenNewPopupBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Changes the default RTCPeerConnection constructor behavior to use Unified
-// Plan as the SDP semantics. When the feature is enabled, Unified Plan is used
-// unless the default is overridden (by passing {sdpSemantics:'plan-b'} as the
-// argument). This was shipped in M72.
-// The feature is still used by virtual test suites exercising Plan B.
-const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Determines if the SDP attrbute extmap-allow-mixed should be offered by
 // default or not. The default value can be overridden by passing
 // {offerExtmapAllowMixed:false} as an argument to the RTCPeerConnection
@@ -510,6 +502,11 @@ const base::Feature kStopInBackground {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Enable an experimental extension to the StorageAccessAPI.
+// https://crbug.com/1351540
+const base::Feature kStorageAccessAPIForSiteExtension{
+    "StorageAccessAPIForSiteExtension", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable text snippets in URL fragments. https://crbug.com/919204.
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
@@ -1606,6 +1603,12 @@ const base::Feature kScrollUpdateOptimizations{
 
 const base::Feature kClipboardUnsanitizedContent{
     "ClipboardUnsanitizedContent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kThreadedHtmlTokenizer{"ThreadedHtmlTokenizer",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kThreadedHtmlTokenizerTokenMaxCount{
+    &kThreadedHtmlTokenizer, "max-count", 2048};
 
 const base::Feature kWebRtcThreadsUseResourceEfficientType{
     "WebRtcThreadsUseResourceEfficientType", base::FEATURE_DISABLED_BY_DEFAULT};

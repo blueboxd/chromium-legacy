@@ -298,7 +298,7 @@ const base::Feature kCalendarModelDebugMode{"CalendarModelDebugMode",
 
 // Enables to allow using document scanning feature via DLC in the camera app.
 const base::Feature kCameraAppDocScanDlc{"CameraAppDocScanDlc",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
@@ -428,6 +428,10 @@ const base::Feature kGuestOSGenericInstaller{"GuestOSGenericInstaller",
 // Enables or disables support for third party VMs.
 const base::Feature kBruschetta{"Bruschetta",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables migration for third party VMs installed during alpha.
+const base::Feature kBruschettaAlphaMigrate{"BruschettaAlphaMigrate",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
@@ -693,6 +697,11 @@ const base::Feature kExoOrdinalMotion{"ExoOrdinalMotion",
 const base::Feature kExperimentalRgbKeyboardPatterns{
     "ExperimentalRgbKeyboardPatterns", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the System Web App (SWA) of Face ML.
+// This app needs both CrOS and hardware support (Face Auth Camera and System
+// Face Auth Service), therefore we only enable it on these eligible devices.
+const base::Feature kFaceMlApp{"FaceMlApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables policy that controls feature to allow Family Link accounts on school
 // owned devices.
 const base::Feature kFamilyLinkOnSchoolDevice{"FamilyLinkOnSchoolDevice",
@@ -887,6 +896,11 @@ const base::Feature kHideShelfControlsInTabletMode{
 const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
     "HoldingSpaceInProgressNotificationSuppression",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables holding space icon to be permanently displayed with extended file
+// expiration to increase predictability of the feature.
+const base::Feature kHoldingSpacePredictability{
+    "HoldingSpacePredictability", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables rebranding of holding space to convey the relationship with
 // Files to simplify feature comprehension.
@@ -1322,6 +1336,12 @@ const base::Feature kProjectorUseOAuthForGetVideoInfo(
 // screencast is being transcoded.
 const base::Feature kProjectorLocalPlayback("ProjectorLocalPlayback",
                                             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to enable features that are not ready to enable by
+// default but ready for internal testing.
+const base::Feature kProjectorBleedingEdgeExperience(
+    "ProjectorBleedingEdgeExperience",
+    base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable or disable quick settings revamped view.
 const base::Feature kQsRevamp{"QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -2045,6 +2065,10 @@ bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
       kHoldingSpaceInProgressDownloadsNotificationSuppression);
 }
 
+bool IsHoldingSpacePredictabilityEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpacePredictability);
+}
+
 bool IsHoldingSpaceRebrandEnabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceRebrand);
 }
@@ -2368,7 +2392,8 @@ bool IsProjectorUseOAuthForGetVideoInfoEnabled() {
 }
 
 bool IsProjectorLocalPlaybackEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorLocalPlayback);
+  return base::FeatureList::IsEnabled(kProjectorLocalPlayback) ||
+         base::FeatureList::IsEnabled(kProjectorBleedingEdgeExperience);
 }
 
 bool IsQsRevampEnabled() {

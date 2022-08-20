@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -43,6 +41,8 @@
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -198,6 +198,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(non_watchable_dir_.CreateUniqueTempDir());
 
     event_router_ = file_manager::EventRouterFactory::GetForProfile(profile());
   }
@@ -342,7 +343,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   }
 
   base::ScopedTempDir temp_dir_;
-  ash::disks::MockDiskMountManager* disk_mount_manager_mock_;
+  base::ScopedTempDir non_watchable_dir_;
+  ash::disks::MockDiskMountManager* disk_mount_manager_mock_ = nullptr;
   DiskMountManager::Disks volumes_;
   DiskMountManager::MountPoints mount_points_;
   file_manager::EventRouter* event_router_ = nullptr;
@@ -471,6 +473,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
   ASSERT_EQ(1u, extension->install_warnings().size());
   const extensions::InstallWarning& warning = extension->install_warnings()[0];
   EXPECT_EQ("fileManagerPrivate", warning.key);
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, AddFileWatch) {
+  // Add a filesystem and Volume that is not watchable.
+  AddLocalFileSystem(browser()->profile(), non_watchable_dir_.GetPath());
+
+  // Add a filesystem and Volume that is watchable.
+  const base::FilePath downloads_dir = temp_dir_.GetPath();
+  ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
+                  ->RegisterDownloadsDirectoryForTesting(downloads_dir));
+
+  ASSERT_TRUE(RunExtensionTest("file_browser/add_file_watch", {},
+                               {.load_as_component = true}));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {

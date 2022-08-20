@@ -251,15 +251,15 @@
 #if BUILDFLAG(IS_MAC)
 #include <Security/Security.h>
 
+#if defined(ARCH_CPU_X86_64)
+#include "base/mac/mac_util.h"
+#include "base/threading/platform_thread.h"
+#endif  // defined(ARCH_CPU_X86_64)
+
 #include "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/ui/ui_features.h"
 #endif  // BUILDFLAG(IS_MAC)
-
-// TODO(port): several win-only methods have been pulled out of this, but
-// BrowserMain() as a whole needs to be broken apart so that it's usable by
-// other platforms. For now, it's just a stub. This is a serious work in
-// progress and should not be taken as an indication of a real refactoring.
 
 #if BUILDFLAG(IS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
@@ -1048,6 +1048,20 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         // BUILDFLAG(IS_OPENBSD)
 
 #if BUILDFLAG(IS_MAC)
+#if defined(ARCH_CPU_X86_64)
+  // The use of Rosetta to run the x64 version of Chromium on Arm is neither
+  // tested nor maintained, and there are reports of it crashing in weird ways
+  // (e.g. https://crbug.com/1305353). Warn the user if this is the case, as
+  // it's almost certainly accidental on their part.
+  if (base::mac::GetCPUType() == base::mac::CPUType::kTranslatedIntel) {
+    LOG(ERROR) << "The use of Rosetta to run the x64 version of Chromium on "
+                  "Arm is neither tested nor maintained, and unexpected "
+                  "behavior will likely result. Please check that all tools "
+                  "that spawn Chromium are Arm-native.";
+    base::PlatformThread::Sleep(base::Seconds(3));
+  }
+#endif  // defined(ARCH_CPU_X86_64)
+
   // Get the Keychain API to register for distributed notifications on the main
   // thread, which has a proper CFRunloop, instead of later on the I/O thread,
   // which doesn't. This ensures those notifications will get delivered

@@ -1611,11 +1611,6 @@ const char kTabAudioMutingDescription[] =
     "When enabled, the audio indicators in the tab strip double as tab audio "
     "mute controls.";
 
-const char kTabSearchMediaTabsId[] = "tab-search-media-tabs";
-const char kTabSearchMediaTabsName[] = "Tab Search Media Tabs";
-const char kTabSearchMediaTabsDescription[] =
-    "Enable indicators on media tabs in Tab Search.";
-
 const char kTabSwitcherOnReturnName[] = "Tab switcher on return";
 const char kTabSwitcherOnReturnDescription[] =
     "Enable tab switcher on return after specified time has elapsed";
@@ -2868,11 +2863,6 @@ const char kUnifiedPasswordManagerAndroidDescription[] =
     "Warning: Highly experimental. May lead to loss of passwords and "
     "impact performance.";
 
-const char kUnifiedPasswordManagerDesktopName[] =
-    "Unified Password Manager for Desktop";
-const char kUnifiedPasswordManagerDesktopDescription[] =
-    "Branding, string, and visual updates to the Password Manager on Desktop.";
-
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sandboxing "
@@ -3335,6 +3325,12 @@ const char kCCTResizableForThirdPartiesName[] =
     "Bottom sheet Custom Tabs (third party)";
 const char kCCTResizableForThirdPartiesDescription[] =
     "Enable bottom sheet Custom Tabs for third party apps.";
+const char kCCTResizableWindowAboveNavbarName[] =
+    "Bottom sheet Custom Tabs placed above the NavBar";
+const char kCCTResizableWindowAboveNavbarDescription[] =
+    "Avoid various UI glitches/misbehavior by always keeping bottom sheet "
+    "custom tab above the navigation bar. The navigation bar color is not "
+    "customizable - it is up to the host app to ensure the bar looks okay.";
 
 const char kCCTRealTimeEngagementSignalsName[] =
     "Enable CCT real-time engagement signals.";
@@ -4860,6 +4856,11 @@ const char kGuestOSGenericInstallerDescription[] =
 const char kBruschettaName[] = "Enable the third party VMs feature";
 const char kBruschettaDescription[] =
     "Enables UI support for third party/generic VMs";
+
+const char kBruschettaAlphaMigrateName[] = "Migration for Bruschetta Alpha";
+const char kBruschettaAlphaMigrateDescription[] =
+    "Enable this flag to migrate a Bruschetta installed during the alpha. "
+    "Requires the bruschetta flag to be enabled.";
 
 const char kCameraAppDocScanDlcName[] = "Camera App Doc Scan DLC";
 const char kCameraAppDocScanDlcDescription[] =

@@ -111,7 +111,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   void DidSelectSuggestion(const std::u16string& value,
                            int frontend_id,
-                           const std::string& backend_id) override {}
+                           const Suggestion::BackendId& backend_id) override {}
   bool RemoveSuggestion(const std::u16string& value, int frontend_id) override {
     return true;
   }
@@ -188,7 +188,7 @@ class MockAxTreeManager : public ui::AXTreeManager {
   ~MockAxTreeManager() = default;
 
   MOCK_CONST_METHOD2(GetNodeFromTree,
-                     ui::AXNode*(const ui::AXTreeID tree_id,
+                     ui::AXNode*(const ui::AXTreeID& tree_id,
                                  const int32_t node_id));
   MOCK_CONST_METHOD2(GetDelegate,
                      ui::AXPlatformNodeDelegate*(const ui::AXTreeID tree_id,

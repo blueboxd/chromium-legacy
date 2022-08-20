@@ -39,9 +39,10 @@
     // "implied_by" or "depends_on" specifies relationship to other features:
     // * implied_by: ["feature1","feature2",...]
     //   The feature is automatically enabled if any implied_by features is
-    //   enabled;
+    //   enabled. To effectively disable the feature, you must disable the
+    //   feature and all the implied_by features.
     // * depends_on: ["feature1","feature2",...]
-    //   The feature is enabled only if all depends_on features are enabled.
+    //   The feature can be enabled only if all depends_on features are enabled.
     // Only one of "implied_by" and "depends_on" can be specified.
     implied_by: {
       default: [],
@@ -475,7 +476,7 @@
       // Allows positioning a positioned element relative to another one.
       // https://tabatkins.github.io/specs/css-anchor-position/
       name: "CSSAnchorPositioning",
-      status: "test",
+      status: "experimental",
     },
     {
       // Whether <image> values are allowed as counter style <symbol>
@@ -1957,17 +1958,6 @@
       name: "RTCSvcScalabilityMode",
       status: "experimental",
     },
-    // Enables the use of |RTCConfiguration::sdpSemantics| to override the
-    // default SDP semantics at RTCPeerConnection construction.
-    {
-      name: "RTCUnifiedPlan",
-      status: "stable",
-    },
-    // Overrides the default SDP semantics to be Unified Plan at
-    // RTCPeerConnection construction (unless otherwise specified).
-    {
-      name: "RTCUnifiedPlanByDefault",
-    },
     {
       name: "SanitizerAPI",
       status: "experimental",
@@ -2046,6 +2036,15 @@
       origin_trial_allows_third_party: true
     },
     {
+      // When a Web application calls getDisplayMedia() and asks for video,
+      // allow a hint to be provided as to whether the current tab should be
+      // excluded from the list of tabs offered to the user.
+      //
+      // https://github.com/w3c/mediacapture-screen-share/pull/216/files
+      name: "SelfBrowserSurfaceConstraint",
+      status: "stable",
+    },
+    {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
     },
@@ -2103,11 +2102,6 @@
       status: "experimental",
     },
     {
-      name: "SignedExchangeSubresourcePrefetch",
-      origin_trial_feature_name: "SignedExchangeSubresourcePrefetch",
-      status: "experimental",
-    },
-    {
       name: "SiteInitiatedMirroring",
       status: "experimental",
     },
@@ -2161,6 +2155,11 @@
     {
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
+      status: "test",
+    },
+    {
+      // Enabled when blink::features::kStorageAccessAPIForSiteExtension is enabled.
+      name: "StorageAccessAPIForSiteExtension",
       status: "test",
     },
     {

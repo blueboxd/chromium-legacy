@@ -306,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Add" units="Shortcuts"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -326,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Navigate" units="Navigations"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -336,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Remove" units="Shortcuts"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -496,6 +496,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Duplicates" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

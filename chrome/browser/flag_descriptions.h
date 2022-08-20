@@ -894,10 +894,6 @@ extern const char kHeavyAdInterventionDescription[];
 extern const char kTabAudioMutingName[];
 extern const char kTabAudioMutingDescription[];
 
-extern const char kTabSearchMediaTabsId[];
-extern const char kTabSearchMediaTabsName[];
-extern const char kTabSearchMediaTabsDescription[];
-
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
 
@@ -1617,9 +1613,6 @@ extern const char kUnifiedSidePanelDescription[];
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
-extern const char kUnifiedPasswordManagerDesktopName[];
-extern const char kUnifiedPasswordManagerDesktopDescription[];
-
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
@@ -1878,6 +1871,8 @@ extern const char kCCTResizableForFirstPartiesName[];
 extern const char kCCTResizableForFirstPartiesDescription[];
 extern const char kCCTResizableForThirdPartiesName[];
 extern const char kCCTResizableForThirdPartiesDescription[];
+extern const char kCCTResizableWindowAboveNavbarName[];
+extern const char kCCTResizableWindowAboveNavbarDescription[];
 
 extern const char kCCTRealTimeEngagementSignalsName[];
 extern const char kCCTRealTimeEngagementSignalsDescription[];
@@ -2785,6 +2780,9 @@ extern const char kGuestOSGenericInstallerDescription[];
 
 extern const char kBruschettaName[];
 extern const char kBruschettaDescription[];
+
+extern const char kBruschettaAlphaMigrateName[];
+extern const char kBruschettaAlphaMigrateDescription[];
 
 extern const char kCameraAppDocScanDlcName[];
 extern const char kCameraAppDocScanDlcDescription[];

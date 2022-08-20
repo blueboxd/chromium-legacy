@@ -1117,6 +1117,13 @@ void ShimlessRmaService::CalibrationOverallProgress(
 
 void ShimlessRmaService::ProvisioningProgress(
     const rmad::ProvisionStatus& status) {
+  if (status.status() ==
+          rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_BLOCKING ||
+      status.status() ==
+          rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_NON_BLOCKING) {
+    LOG(ERROR) << "Provisioning failed with error " << status.error();
+  }
+
   last_provisioning_progress_ = status;
   if (provisioning_observer_.is_bound()) {
     provisioning_observer_->OnProvisioningUpdated(
@@ -1149,6 +1156,13 @@ void ShimlessRmaService::HardwareVerificationResult(
 
 void ShimlessRmaService::FinalizationProgress(
     const rmad::FinalizeStatus& status) {
+  if (status.status() ==
+          rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING ||
+      status.status() ==
+          rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_NON_BLOCKING) {
+    LOG(ERROR) << "Finalization failed with error " << status.error();
+  }
+
   last_finalization_progress_ = status;
   if (finalization_observer_.is_bound()) {
     finalization_observer_->OnFinalizationUpdated(

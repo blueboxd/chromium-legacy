@@ -151,7 +151,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldCompareEffectiveURLsForSiteInstanceSelection(
       content::BrowserContext* browser_context,
       content::SiteInstance* candidate_site_instance,
-      bool is_main_frame,
+      bool is_outermost_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url) override;
   bool ShouldUseMobileFlingCurve() override;
@@ -313,6 +313,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
                               const url::Origin& top_frame_origin,
                               const url::Origin& accessing_origin) override;
+  bool IsPrivateAggregationAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin) override;
 #if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif

@@ -120,7 +120,7 @@ GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
 bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
     BrowserContext* browser_context,
     content::SiteInstance* candidate_site_instance,
-    bool is_main_frame,
+    bool is_outermost_main_frame,
     const GURL& candidate_url,
     const GURL& destination_url) {
   DCHECK(browser_context);
@@ -509,6 +509,13 @@ bool ContentBrowserClient::IsSharedStorageAllowed(
     const url::Origin& accessing_origin) {
   // TODO(crbug.com/1325103): Change this to false and override in
   // relevant content_browsertests and web_tests.
+  return true;
+}
+
+bool ContentBrowserClient::IsPrivateAggregationAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) {
   return true;
 }
 

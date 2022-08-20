@@ -1709,7 +1709,7 @@ bool ChromeContentBrowserClient::
     ShouldCompareEffectiveURLsForSiteInstanceSelection(
         content::BrowserContext* browser_context,
         content::SiteInstance* candidate_site_instance,
-        bool is_main_frame,
+        bool is_outermost_main_frame,
         const GURL& candidate_url,
         const GURL& destination_url) {
   DCHECK(browser_context);
@@ -1717,7 +1717,7 @@ bool ChromeContentBrowserClient::
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::
       ShouldCompareEffectiveURLsForSiteInstanceSelection(
-          browser_context, candidate_site_instance, is_main_frame,
+          browser_context, candidate_site_instance, is_outermost_main_frame,
           candidate_url, destination_url);
 #else
   return true;
@@ -3034,6 +3034,19 @@ bool ChromeContentBrowserClient::IsSharedStorageAllowed(
                                                           accessing_origin);
 }
 
+bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+
+  return privacy_sandbox_settings->IsPrivateAggregationAllowed(
+      top_frame_origin, reporting_origin);
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
     content::BrowserContext* browser_context) {
@@ -3463,7 +3476,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       frame_name, disposition, features, user_gesture, opener_suppressed);
   NavigateParams nav_params =
       blocked_params.CreateNavigateParams(opener->GetProcess(), web_contents);
-  return blocked_content::MaybeBlockPopup(
+  return !blocked_content::ConsiderForPopupBlocking(disposition) ||
+         blocked_content::MaybeBlockPopup(
              web_contents, &opener_top_level_frame_url,
              std::make_unique<ChromePopupNavigationDelegate>(
                  std::move(nav_params)),

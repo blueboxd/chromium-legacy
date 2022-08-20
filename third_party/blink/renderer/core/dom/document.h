@@ -1197,6 +1197,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // may otherwise be blocked.
   ScriptPromise hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
+  ScriptPromise requestStorageAccessForSite(ScriptState* script_state,
+                                            const AtomicString& site);
 
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
@@ -1532,6 +1534,14 @@ class CORE_EXPORT Document : public ContainerNode,
     return pop_up_mousedown_target_;
   }
   void SetPopUpMousedownTarget(const Element*);
+
+  // Add an element to the set of elements that, because of CSS toggle
+  // creation, need style recalc done later.
+  void AddToRecalcStyleForToggle(Element* element);
+
+  // Call SetNeedsStyleRecalc for elements from AddToRecalcStyleForToggle;
+  // return whether any calls were made.
+  bool SetNeedsStyleRecalcForToggles();
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -2346,6 +2356,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // A set of all open pop-ups, of all types.
   HeapHashSet<Member<Element>> all_open_pop_ups_;
 
+  // Elements that need to be restyled because a toggle was created on them,
+  // or a prior sibling, during the previous restyle.
+  HeapHashSet<Member<Element>> elements_needing_style_recalc_for_toggle_;
+
   int load_event_delay_count_;
 
   // Objects and embeds depend on "being rendered" for delaying the load event.
@@ -2517,8 +2531,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<RenderBlockingResourceManager> render_blocking_resource_manager_;
 
   bool rendering_has_begun_ = false;
-
-  int async_script_count_ = 0;
 
   DeclarativeShadowRootAllowState declarative_shadow_root_allow_state_ =
       DeclarativeShadowRootAllowState::kNotSet;

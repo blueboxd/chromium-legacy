@@ -292,9 +292,14 @@ FederatedAuthRequestImpl& FederatedAuthRequestImpl::CreateForTesting(
 }
 
 void FederatedAuthRequestImpl::RequestToken(
-    IdentityProviderPtr identity_provider_ptr,
+    std::vector<blink::mojom::IdentityProviderPtr> identity_provider_ptrs,
     bool prefer_auto_sign_in,
     RequestTokenCallback callback) {
+  // TODO(crbug.com/1348262): Temporarily support only the first IDP, extend to
+  // support multiple IDPs.
+  blink::mojom::IdentityProviderPtr identity_provider_ptr =
+      std::move(identity_provider_ptrs[0]);
+
   if (HasPendingRequest()) {
     fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kTooManyRequests);
     std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests, "");
@@ -327,7 +332,7 @@ void FederatedAuthRequestImpl::RequestToken(
   network_manager_ = CreateNetworkManager(identity_provider_ptr->config_url);
 
   FederatedApiPermissionStatus permission_status =
-      api_permission_delegate_->GetApiPermissionStatus(origin());
+      api_permission_delegate_->GetApiPermissionStatus(GetEmbeddingOrigin());
 
   absl::optional<TokenStatus> error_token_status;
   FederatedAuthRequestResult request_result =
@@ -427,7 +432,7 @@ void FederatedAuthRequestImpl::LogoutRps(
     return;
   }
 
-  if (api_permission_delegate_->GetApiPermissionStatus(origin()) !=
+  if (api_permission_delegate_->GetApiPermissionStatus(GetEmbeddingOrigin()) !=
       FederatedApiPermissionStatus::GRANTED) {
     CompleteLogoutRequest(LogoutRpsStatus::kError);
     return;
@@ -706,6 +711,7 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
 
       WebContents* rp_web_contents =
           WebContents::FromRenderFrameHost(&render_frame_host());
+      DCHECK(render_frame_host().GetMainFrame()->IsInPrimaryMainFrame());
 
       ComputeLoginStateAndReorderAccounts(identity_provider, accounts);
 
@@ -748,8 +754,8 @@ void FederatedAuthRequestImpl::ComputeLoginStateAndReorderAccounts(
     bool idp_claimed_sign_in = account.login_state == LoginState::kSignIn;
     bool browser_observed_sign_in =
         sharing_permission_delegate_->HasSharingPermission(
-            origin(), url::Origin::Create(identity_provider.config_url),
-            account.id);
+            origin(), GetEmbeddingOrigin(),
+            url::Origin::Create(identity_provider.config_url), account.id);
 
     if (idp_claimed_sign_in == browser_observed_sign_in) {
       fedcm_metrics_->RecordSignInStateMatchStatus(
@@ -796,7 +802,7 @@ void FederatedAuthRequestImpl::OnAccountSelected(
   // settings are changed while an existing FedCM UI is displayed. Ideally, we
   // should enforce this check before all requests but users typically won't
   // have time to disable the FedCM API in other types of requests.
-  if (api_permission_delegate_->GetApiPermissionStatus(origin()) !=
+  if (api_permission_delegate_->GetApiPermissionStatus(GetEmbeddingOrigin()) !=
       FederatedApiPermissionStatus::GRANTED) {
     fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kDisabledInSettings);
 
@@ -807,7 +813,7 @@ void FederatedAuthRequestImpl::OnAccountSelected(
 
   RecordIsSignInUser(is_sign_in);
 
-  api_permission_delegate_->RemoveEmbargoAndResetCounts(origin());
+  api_permission_delegate_->RemoveEmbargoAndResetCounts(GetEmbeddingOrigin());
 
   account_id_ = account_id;
   select_account_time_ = base::TimeTicks::Now();
@@ -847,7 +853,7 @@ void FederatedAuthRequestImpl::OnDialogDismissed(
   fedcm_metrics_->RecordCancelReason(dismiss_reason);
 
   if (should_embargo) {
-    api_permission_delegate_->RecordDismissAndEmbargo(origin());
+    api_permission_delegate_->RecordDismissAndEmbargo(GetEmbeddingOrigin());
   }
 
   // Reject the promise immediately if the UI is dismissed without selecting
@@ -928,8 +934,8 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
       // https://crbug.com/1199088
       CHECK(!account_id_.empty());
       sharing_permission_delegate_->GrantSharingPermission(
-          origin(), url::Origin::Create(identity_provider.config_url),
-          account_id_);
+          origin(), GetEmbeddingOrigin(),
+          url::Origin::Create(identity_provider.config_url), account_id_);
 
       active_session_permission_delegate_->GrantActiveSession(
           origin(), url::Origin::Create(identity_provider.config_url),
@@ -1058,6 +1064,12 @@ void FederatedAuthRequestImpl::AddConsoleErrorMessage(
 
 bool FederatedAuthRequestImpl::ShouldCompleteRequestImmediately() {
   return api_permission_delegate_->ShouldCompleteRequestImmediately();
+}
+
+url::Origin FederatedAuthRequestImpl::GetEmbeddingOrigin() const {
+  RenderFrameHost* main_frame = render_frame_host().GetMainFrame();
+  DCHECK(main_frame->IsInPrimaryMainFrame());
+  return main_frame->GetLastCommittedOrigin();
 }
 
 void FederatedAuthRequestImpl::CompleteLogoutRequest(

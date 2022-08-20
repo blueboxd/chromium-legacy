@@ -196,11 +196,10 @@ ResultCode ConfigBase::AddRuleInternal(SubSystem subsystem,
       // Win32k intercept rules only supported on Windows 8 and above. This must
       // match the version checks in process_mitigations.cc for consistency.
       if (base::win::GetVersion() >= base::win::Version::WIN8) {
-        // TODO(549319) Re-enable dcheck once mitigations move to TargetConfig.
-        // DCHECK_EQ(MITIGATION_WIN32K_DISABLE,
-        //          mitigations_ & MITIGATION_WIN32K_DISABLE)
-        //    << "Enable MITIGATION_WIN32K_DISABLE before adding win32k policy "
-        //       "rules.";
+        DCHECK_EQ(MITIGATION_WIN32K_DISABLE,
+                  mitigations_ & MITIGATION_WIN32K_DISABLE)
+            << "Enable MITIGATION_WIN32K_DISABLE before adding win32k policy "
+               "rules.";
         if (!ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
                 pattern, semantics, policy_maker_.get())) {
           NOTREACHED();
@@ -214,11 +213,10 @@ ResultCode ConfigBase::AddRuleInternal(SubSystem subsystem,
       // must match the version checks in process_mitigations.cc for
       // consistency.
       if (base::win::GetVersion() >= base::win::Version::WIN10_TH2) {
-        // TODO(549319) Re-enable dcheck once mitigations move to TargetConfig.
-        // DCHECK_EQ(MITIGATION_FORCE_MS_SIGNED_BINS,
-        //          mitigations_ & MITIGATION_FORCE_MS_SIGNED_BINS)
-        //    << "Enable MITIGATION_FORCE_MS_SIGNED_BINS before adding signed "
-        //       "policy rules.";
+        DCHECK_EQ(MITIGATION_FORCE_MS_SIGNED_BINS,
+                  mitigations_ & MITIGATION_FORCE_MS_SIGNED_BINS)
+            << "Enable MITIGATION_FORCE_MS_SIGNED_BINS before adding signed "
+               "policy rules.";
         if (!SignedPolicy::GenerateRules(pattern, semantics,
                                          policy_maker_.get())) {
           NOTREACHED();
@@ -369,7 +367,6 @@ PolicyBase::PolicyBase(base::StringPiece tag)
       memory_limit_(0),
       use_alternate_desktop_(false),
       use_alternate_winstation_(false),
-      relaxed_interceptions_(true),
       stdout_handle_(INVALID_HANDLE_VALUE),
       stderr_handle_(INVALID_HANDLE_VALUE),
       is_csrss_connected_(true),
@@ -548,10 +545,6 @@ void PolicyBase::DestroyAlternateDesktop() {
       alternate_desktop_local_winstation_handle_ = nullptr;
     }
   }
-}
-
-void PolicyBase::SetStrictInterceptions() {
-  relaxed_interceptions_ = false;
 }
 
 ResultCode PolicyBase::SetStdoutHandle(HANDLE handle) {
@@ -819,7 +812,7 @@ void PolicyBase::SetEffectiveToken(HANDLE token) {
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess& target) {
-  InterceptionManager manager(target, relaxed_interceptions_);
+  InterceptionManager manager(target);
   PolicyGlobal* policy = config()->policy();
   if (policy) {
     for (size_t i = 0; i < kMaxIpcTag; i++) {

@@ -764,6 +764,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "bruschetta-alpha-migrate",
+    "owners": [ "davidmunro@google.com", "nverne", "sidereal" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "bubble-rich-iph",
     "owners": ["christianxu", "lpromero", "bling-flags@google.com"],
     "expiry_milestone": 106
@@ -849,6 +854,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "cct-resizable-window-above-navbar",
+    "owners": ["jinsukkim", "twellington"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "cellular-bypass-esim-installation-connectivity-check",
     "owners": [ "azeemarshad", "khorimoto", "jiajunz", "cros-connectivity@google.com" ],
     // This flag does not expire because it allows some test cases that host a local SM-DP+ server
@@ -895,7 +905,7 @@
   {
     "name": "chrome-sharing-hub-launch-adjacent",
     "owners": [ "skare", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 109
   },
   {
     "name": "chrome-tips-in-main-menu",
@@ -2432,6 +2442,21 @@
     "name": "enable-lens-fullscreen-search",
     "owners": ["stanfield@google.com", "lens-chrome@google.com"],
     "expiry_milestone": 107
+  },
+  {
+    "name": "enable-lens-in-home-screen-widget",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "enable-lens-in-keyboard",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "enable-lens-in-ntp",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-lens-standalone",
@@ -5696,7 +5721,7 @@
   {
     "name": "send-tab-to-self-v2",
     "owners": ["ellyjones", "chrome-with-friends-robots@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 109
   },
   {
     "name": "set-market-url-for-testing",
@@ -6143,11 +6168,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "tab-search-media-tabs",
-    "owners": ["elainechien", "romanarora"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "tangible-sync",
     "owners": [ "aliceywang", "chrome-signin-team" ],
     "expiry_milestone":120
@@ -6314,11 +6334,6 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
-  },
-  {
-    "name": "unified-password-manager-desktop",
-    "owners": [ "johntlee", "mamir" ],
-    "expiry_milestone": 107
   },
   {
     "name" : "unified-side-panel",

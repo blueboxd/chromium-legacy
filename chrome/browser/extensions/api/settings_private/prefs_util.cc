@@ -312,6 +312,16 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kHttpsOnlyModeEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Cookies page
+  (*s_allowlist)[::content_settings::kCookiePrimarySetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::content_settings::kCookieSessionOnly] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kCookieControlsMode] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::prefs::kPrivacySandboxFirstPartySetsDataAccessAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   // Sync and personalization page.
   (*s_allowlist)[::prefs::kSearchSuggestEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -337,6 +347,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[translate::prefs::kOfferTranslateEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[translate::prefs::kBlockedLanguages] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_allowlist)[translate::prefs::kPrefNeverPromptSitesWithTime] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[language::prefs::kSelectedLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
@@ -391,12 +403,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Site Settings prefs.
-  (*s_allowlist)[::content_settings::kCookiePrimarySetting] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[::content_settings::kCookieSessionOnly] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kCookieControlsMode] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::content_settings::kGeneratedNotificationPref] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kPluginsAlwaysOpenPdfExternally] =

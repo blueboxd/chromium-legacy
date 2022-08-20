@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -230,7 +230,7 @@ void NetworkPortalDetectorImpl::OnShuttingDown() {
 void NetworkPortalDetectorImpl::StartDetection() {
   NET_LOG(EVENT) << "StartDetection";
 
-  ResetCounters();
+  ResetCountersAndSendMetrics();
   default_portal_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
   ScheduleAttempt();
 }
@@ -244,7 +244,7 @@ void NetworkPortalDetectorImpl::StopDetection() {
   captive_portal_detector_->Cancel();
   default_portal_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
   state_ = STATE_IDLE;
-  ResetCounters();
+  ResetCountersAndSendMetrics();
 }
 
 void NetworkPortalDetectorImpl::ScheduleAttempt(const base::TimeDelta& delay) {
@@ -261,7 +261,7 @@ void NetworkPortalDetectorImpl::ScheduleAttempt(const base::TimeDelta& delay) {
     next_attempt_delay_ = *attempt_delay_for_testing_;
   } else if (!delay.is_zero()) {
     next_attempt_delay_ = delay;
-  } else if (no_response_result_count_ == 0) {
+  } else if (captive_portal_detector_run_count_ == 0) {
     // No delay for first attempt.
     next_attempt_delay_ = base::TimeDelta();
   } else {
@@ -366,14 +366,13 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
                  << ", status=" << status
                  << ", response_code=" << response_code;
 
-  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkPortalDetectorResult",
-                            status);
+  base::UmaHistogramEnumeration("Network.NetworkPortalDetectorResult", status);
   NetworkState::NetworkTechnologyType type =
       NetworkState::NetworkTechnologyType::kUnknown;
   if (status == CAPTIVE_PORTAL_STATUS_PORTAL) {
     if (network)
       type = network->GetNetworkTechnologyType();
-    UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkPortalDetectorType", type);
+    base::UmaHistogramEnumeration("Network.NetworkPortalDetectorType", type);
   }
 
   if (last_detection_status_ != status) {
@@ -383,10 +382,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
     ++same_detection_result_count_;
   }
 
-  if (result == captive_portal::RESULT_NO_RESPONSE)
-    ++no_response_result_count_;
-  else
-    no_response_result_count_ = 0;
+  captive_portal_detector_run_count_++;
 
   bool detection_completed = false;
   if (status == CAPTIVE_PORTAL_STATUS_ONLINE ||
@@ -456,12 +452,20 @@ void NetworkPortalDetectorImpl::DetectionCompleted(
   }
   for (auto& observer : observers_)
     observer.OnPortalDetectionCompleted(network, status);
+
+  ResetCountersAndSendMetrics();
 }
 
-void NetworkPortalDetectorImpl::ResetCounters() {
+void NetworkPortalDetectorImpl::ResetCountersAndSendMetrics() {
+  if (captive_portal_detector_run_count_ > 0) {
+    base::UmaHistogramCustomCounts("Network.NetworkPortalDetectorRunCount",
+                                   captive_portal_detector_run_count_,
+                                   /*min=*/1, /*exclusive_max=*/10,
+                                   /*buckets=*/10);
+    captive_portal_detector_run_count_ = 0;
+  }
   last_detection_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
   same_detection_result_count_ = 0;
-  no_response_result_count_ = 0;
 }
 
 bool NetworkPortalDetectorImpl::AttemptTimeoutIsCancelledForTesting() const {

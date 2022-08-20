@@ -165,7 +165,8 @@
               "compositing/filters"
               ],
     "args": ["--stable-release-mode",
-             "--disable-auto-wpt-origin-isolation"]
+             "--disable-auto-wpt-origin-isolation",
+             "--disable-field-trial-config"]
   },
   {
     "prefix": "feature-policy-permissions",
@@ -440,12 +441,6 @@
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
     "args": ["--isolated-app-origins=https://web-platform.test"]
-  },
-  {
-    "prefix": "webrtc-wpt-plan-b",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/webrtc"],
-    "args": ["--disable-features=RTCUnifiedPlanByDefault"]
   },
   {
     "prefix": "display-compositor-pixel-dump",
@@ -738,6 +733,12 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/storage-access-api" ],
     "args": [ "--enable-features=StorageAccessAPI" ]
+  },
+  {
+    "prefix": "storage-access-api-for-site-extension",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "wpt_internal/storage-access-api" ],
+    "args": [ "--enable-features=StorageAccessAPI,StorageAccessAPIForSiteExtension" ]
   },
   {
     "prefix": "web-bluetooth-new-permissions-backend",
@@ -1035,8 +1036,7 @@
     "prefix": "popup-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--stable-release-mode",
-             "--disable-features=HTMLPopupAttribute"]
+    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopupAttribute"]
   },
   {
     "prefix": "object-param-url",

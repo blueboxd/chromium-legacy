@@ -181,6 +181,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kGuestOSGenericInstaller;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBruschetta;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kBruschettaAlphaMigrate;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2AlwaysUseActiveEligibleHosts;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceActivityStatus;
@@ -296,6 +298,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kExoLockNotification;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kExoOrdinalMotion;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kExperimentalRgbKeyboardPatterns;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFaceMlApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFamilyLinkOnSchoolDevice;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFastPair;
@@ -368,6 +371,8 @@ extern const base::Feature kHideShelfControlsInTabletMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature
     kHoldingSpaceInProgressDownloadsNotificationSuppression;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kHoldingSpacePredictability;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHoldingSpaceRebrand;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -533,6 +538,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kProjectorUseOAuthForGetVideoInfo;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kProjectorLocalPlayback;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kProjectorBleedingEdgeExperience;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQsRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -766,6 +773,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHideArcMediaNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHideShelfControlsInTabletModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHoldingSpacePredictabilityEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHoldingSpaceRebrandEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHoldingSpaceSuggestionsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHostnameSettingEnabled();

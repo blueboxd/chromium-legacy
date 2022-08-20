@@ -1974,7 +1974,7 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
                             scroll_behavior);
 }
 
-gfx::Rect Element::BoundsInViewport() const {
+gfx::Rect Element::BoundsInWidget() const {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kUnknown);
 
@@ -2015,7 +2015,7 @@ gfx::Rect Element::BoundsInViewport() const {
   return view->FrameToViewport(gfx::ToEnclosingRect(result));
 }
 
-Vector<gfx::Rect> Element::OutlineRectsInVisualViewport(
+Vector<gfx::Rect> Element::OutlineRectsInWidget(
     DocumentUpdateReason reason) const {
   Vector<gfx::Rect> rects;
 
@@ -5406,8 +5406,8 @@ void Element::FinishParsingChildren() {
                               nullptr);
   GetDocument()
       .GetStyleEngine()
-      .ScheduleInvalidationsForHasPseudoAffectedByInsertion(parentElement(),
-                                                            lastChild(), *this);
+      .ScheduleInvalidationsForHasPseudoAffectedByInsertion(
+          parentElement(), previousSibling(), *this);
 }
 
 AttrNodeList* Element::GetAttrNodeList() {
@@ -9090,6 +9090,7 @@ void Element::CreateToggles(const ToggleRootList* toggle_roots) {
     if (insert_result.is_new_entry) {
       CSSToggle* toggle = MakeGarbageCollected<CSSToggle>(root);
       insert_result.stored_value->value = toggle;
+      toggle->SetNeedsStyleRecalc(this, CSSToggle::PostRecalcAt::LATER);
     }
   }
 }
@@ -9255,7 +9256,7 @@ static void MakeRestOfToggleGroupZero(Element* toggle_element,
       if (iter != toggles.end()) {
         CSSToggle* toggle = iter->value;
         if (toggle->IsGroup()) {
-          toggle->SetValue(State(0u));
+          toggle->SetValue(State(0u), e);
         }
       }
     }
@@ -9279,7 +9280,7 @@ void Element::ChangeToggle(Element* toggle_element,
   const auto overflow = override_spec->Overflow();
 
   if (action.Mode() == ToggleTriggerMode::kSet) {
-    t->SetValue(action.Value());
+    t->SetValue(action.Value(), toggle_element);
   } else {
     using IntegerType = ToggleRoot::State::IntegerType;
     DCHECK_EQ(std::numeric_limits<IntegerType>::lowest(), 0u);
@@ -9362,12 +9363,12 @@ void Element::ChangeToggle(Element* toggle_element,
     if (t->StateSet().IsNames()) {
       const auto& names = t->StateSet().AsNames();
       if (index < names.size()) {
-        t->SetValue(State(names[index]));
+        t->SetValue(State(names[index]), toggle_element);
       } else {
-        t->SetValue(State(index));
+        t->SetValue(State(index), toggle_element);
       }
     } else {
-      t->SetValue(State(index));
+      t->SetValue(State(index), toggle_element);
     }
   }
 

@@ -7,12 +7,10 @@
  * personalization settings.
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import './change_picture.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -23,17 +21,15 @@ import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_hub_browser_proxy.js';
-import {WallpaperBrowserProxy, WallpaperBrowserProxyImpl} from './wallpaper_browser_proxy.js';
 
 /**
  * @constructor
  * @extends {PolymerElement}
  * @implements {DeepLinkingBehaviorInterface}
- * @implements {I18nBehaviorInterface}
  * @implements {RouteObserverBehaviorInterface}
  */
 const SettingsPersonalizationPageElementBase = mixinBehaviors(
-    [DeepLinkingBehavior, I18nBehavior, RouteObserverBehavior], PolymerElement);
+    [DeepLinkingBehavior, RouteObserverBehavior], PolymerElement);
 
 /** @polymer */
 class SettingsPersonalizationPageElement extends
@@ -54,12 +50,6 @@ class SettingsPersonalizationPageElement extends
       prefs: Object,
 
       /** @private */
-      showWallpaperRow_: {type: Boolean, value: true},
-
-      /** @private */
-      isWallpaperPolicyControlled_: {type: Boolean, value: true},
-
-      /** @private */
       isPersonalizationHubEnabled_: {
         type: Boolean,
         value() {
@@ -73,10 +63,6 @@ class SettingsPersonalizationPageElement extends
         type: Object,
         value() {
           const map = new Map();
-          if (routes.CHANGE_PICTURE) {
-            map.set(routes.CHANGE_PICTURE.path, '#changePictureRow');
-          }
-
           return map;
         },
       },
@@ -96,26 +82,9 @@ class SettingsPersonalizationPageElement extends
   constructor() {
     super();
 
-    /** @private {!WallpaperBrowserProxy} */
-    this.wallpaperBrowserProxy_ = WallpaperBrowserProxyImpl.getInstance();
-
     /** @private {!PersonalizationHubBrowserProxy} */
     this.personalizationHubBrowserProxy_ =
         PersonalizationHubBrowserProxyImpl.getInstance();
-  }
-
-  /** @override */
-  ready() {
-    super.ready();
-
-    this.wallpaperBrowserProxy_.isWallpaperSettingVisible().then(
-        isWallpaperSettingVisible => {
-          this.showWallpaperRow_ = isWallpaperSettingVisible;
-        });
-    this.wallpaperBrowserProxy_.isWallpaperPolicyControlled().then(
-        isPolicyControlled => {
-          this.isWallpaperPolicyControlled_ = isPolicyControlled;
-        });
   }
 
   /**
@@ -131,21 +100,9 @@ class SettingsPersonalizationPageElement extends
     this.attemptDeepLink();
   }
 
-  /**
-   * @private
-   */
-  openWallpaperManager_() {
-    this.wallpaperBrowserProxy_.openWallpaperManager();
-  }
-
   /** @private */
   openPersonalizationHub_() {
     this.personalizationHubBrowserProxy_.openPersonalizationHub();
-  }
-
-  /** @private */
-  navigateToChangePicture_() {
-    Router.getInstance().navigateTo(routes.CHANGE_PICTURE);
   }
 }
 

@@ -713,13 +713,7 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// Disabled on Windows due to high flake rate; see https://crbug.com/1341471.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_SelfUpdateFromOldReal DISABLED_SelfUpdateFromOldReal
-#else
-#define MAYBE_SelfUpdateFromOldReal SelfUpdateFromOldReal
-#endif
-TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
+TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
   SetupRealUpdaterLowerVersion();
@@ -745,14 +739,7 @@ TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
 #endif
 #endif
 
-// TODO(crbug.com/1336591) - enable test after investigating crbug.com/1336591
-// or open a new crbug for debugging this test if it is the culprit.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_UpdateServiceStress DISABLED_UpdateServiceStress
-#else
-#define MAYBE_UpdateServiceStress UpdateServiceStress
-#endif
-TEST_F(IntegrationTest, MAYBE_UpdateServiceStress) {
+TEST_F(IntegrationTest, UpdateServiceStress) {
   Install();
   ExpectInstalled();
   StressUpdateService();

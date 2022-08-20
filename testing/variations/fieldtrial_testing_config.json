@@ -932,6 +932,42 @@
             ]
         }
     ],
+    "AutofillAssistantNiuCowinVaccinationInChromeTriggering": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "json_parameters": "\n        {\n          \"intent\":\"NIU_COWIN_CERTIFICATE_DOWNLOAD\",\n          \"heuristics\":[\n           {\n             \"conditionSet\":{\"\n               urlMatches\":\"https://www.cowin.gov.in\"\n              }\n            }\n           ],\n          \"enabledInCustomTabs\":true,\n          \"enabledForSignedOutUsers\":true\n        }\n        "
+                    },
+                    "enable_features": [
+                        "AutofillAssistantUrlHeuristic1"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillAssistantNiuWtvInChromeTriggering": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "json_parameters": "\n        {\n          \"intent\":\"NIU_BRAZIL_WHERE_TO_VOTE\",\n          \"heuristics\":[\n           {\n            \"conditionSet\":{\n              \"urlMatches\":\"https://www.tse.jus.br\"\n             }\n           }\n          ],\n          \"enabledInCustomTabs\":true,\n          \"enabledForSignedOutUsers\":true\n        }\n        "
+                    },
+                    "enable_features": [
+                        "AutofillAssistantUrlHeuristic2"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillConsiderVariationCountryCodeForPhoneNumbers": [
         {
             "platforms": [
@@ -1803,6 +1839,25 @@
             ]
         }
     ],
+    "AvoidEarlyExtensionScriptContextCreation": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220819",
+                    "enable_features": [
+                        "AvoidEarlyExtensionScriptContextCreation"
+                    ]
+                }
+            ]
+        }
+    ],
     "AvoidUnnecessaryBeforeUnloadCheckSync": [
         {
             "platforms": [
@@ -2162,6 +2217,21 @@
                     "name": "Enabled_20210616",
                     "enable_features": [
                         "BiometricTouchToFill"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BiometricAuthenticationInSettingsStudy": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BiometricAuthenticationInSettings"
                     ]
                 }
             ]
@@ -3134,6 +3204,21 @@
                     },
                     "enable_features": [
                         "ContextMenuGoogleLensChip"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContextualSearchSuppressShortView": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ContextualSearchSuppressShortView"
                     ]
                 }
             ]
@@ -6632,8 +6717,7 @@
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxMaxURLMatches",
                         "OmniboxRetainSuggestionsWithHeaders",
-                        "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "ZeroSuggestPrefetching"
+                        "OmniboxUIExperimentMaxAutocompleteMatches"
                     ],
                     "disable_features": [
                         "UseSharedInstanceForZeroSuggestPrefetching"
@@ -6704,7 +6788,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledPrerenderDUIAndDSE_20220419",
+                    "name": "EnabledPrerenderDUIAndDSE_20220802",
+                    "params": {
+                        "implementation_type": "use_prefetch"
+                    },
                     "enable_features": [
                         "OmniboxTriggerForPrerender2",
                         "SupportSearchSuggestionForPrerender2"
@@ -6714,7 +6801,7 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrerenderDUI_20220419",
+                    "name": "EnabledPrerenderDUI_20220802",
                     "enable_features": [
                         "OmniboxTriggerForPrerender2"
                     ],
@@ -6724,7 +6811,7 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrefetchDUIControl_20220419",
+                    "name": "EnabledPrefetchDUIControl_20220802",
                     "enable_features": [
                         "OmniboxTriggerForNoStatePrefetch"
                     ],
@@ -6734,7 +6821,7 @@
                     ]
                 },
                 {
-                    "name": "DisabledDUI_20220419",
+                    "name": "DisabledDUI_20220802",
                     "disable_features": [
                         "OmniboxTriggerForNoStatePrefetch",
                         "OmniboxTriggerForPrerender2",
@@ -6742,7 +6829,10 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrerenderDSE_20220419",
+                    "name": "EnabledPrerenderDSE_20220802",
+                    "params": {
+                        "implementation_type": "use_prefetch"
+                    },
                     "enable_features": [
                         "SupportSearchSuggestionForPrerender2"
                     ],
@@ -7761,7 +7851,8 @@
                         "InterestGroupStorage",
                         "NoncedPartitionedCookies",
                         "PrivacySandboxAdsAPIs",
-                        "PrivacySandboxSettings3"
+                        "PrivacySandboxSettings3",
+                        "SharedStorageAPI"
                     ]
                 }
             ]
@@ -8399,6 +8490,27 @@
                     },
                     "enable_features": [
                         "SegmentationStructuredMetrics"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SendTabToSelfSigninPromo": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_3",
+                    "enable_features": [
+                        "SendTabToSelfSigninPromo"
                     ]
                 }
             ]
@@ -9129,6 +9241,22 @@
                     },
                     "enable_features": [
                         "StartSurface"
+                    ]
+                }
+            ]
+        }
+    ],
+    "StylusWritingToInput": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "StylusWritingToInput"
                     ]
                 }
             ]

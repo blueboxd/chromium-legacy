@@ -1770,56 +1770,6 @@ chromium-metrics-reviews@google.com.
   <summary>Records the result of a captive portal probe.</summary>
 </histogram>
 
-<histogram name="CaptivePortal.NetworkPortalDetectorResult"
-    enum="NetworkPortalStatus" expires_after="2021-09-27">
-  <owner>stevenjb@chromium.org</owner>
-  <owner>cros-network-health@google.com</owner>
-  <summary>Chrome captive portal detection results on Chrome OS.</summary>
-</histogram>
-
-<histogram name="CaptivePortal.NetworkPortalDetectorType"
-    enum="NetworkTechnology" expires_after="2021-09-27">
-  <owner>stevenjb@chromium.org</owner>
-  <owner>cros-network-health@google.com</owner>
-  <summary>
-    Captive portal detection network type recorded when Chrome on Chrome OS
-    detects a captive portal.
-  </summary>
-</histogram>
-
-<histogram name="CaptivePortal.NetworkStateResult"
-    enum="CaptivePortalNetworkState" expires_after="2021-04-01">
-  <owner>stevenjb@chromium.org</owner>
-  <owner>cros-network-health@google.com</owner>
-  <summary>
-    Captive portal detection state from Shill received by NetworkState.
-  </summary>
-</histogram>
-
-<histogram name="CaptivePortal.NetworkStateStatusCode" enum="HttpResponseCode"
-    expires_after="2021-04-01">
-  <owner>stevenjb@chromium.org</owner>
-  <owner>cros-network-health@google.com</owner>
-  <summary>
-    Captive portal status code reported by Shill and received by NetworkState.
-  </summary>
-</histogram>
-
-<histogram name="CaptivePortal.ProbeReason" enum="CaptivePortalProbeReason"
-    expires_after="2021-08-09">
-  <obsolete>
-    Removed from code 2021-08.
-  </obsolete>
-  <owner>ericorth@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <owner>cros-networking@google.com</owner>
-  <summary>
-    Reason for attempting a captive portal probe. This is logged only when a
-    probe HTTP request is made. If there are multiple reasons that triggered
-    this probe, only the first is logged.
-  </summary>
-</histogram>
-
 <histogram name="Cast.Channel.Certificate" enum="CastCertificateStatus"
     expires_after="never">
 <!-- expires-never: Used for Cast device health monitoring. -->
@@ -7262,6 +7212,16 @@ chromium-metrics-reviews@google.com.
   <summary>The scheme of the URL showing a JavaScript dialog.</summary>
 </histogram>
 
+<histogram name="Kiosk.DiskUsagePercentage" units="%"
+    expires_after="2023-07-01">
+  <owner>vkovalova@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@google.com</owner>
+  <summary>
+    ChromeOS only. Records the percentage of disk space in use. Starts being
+    recorded when a kiosk session is started. Emitted once per hour.
+  </summary>
+</histogram>
+
 <histogram name="Kiosk.Extensions.InstallDuration" units="ms"
     expires_after="2023-08-10">
   <owner>yixie@chromium.org</owner>
@@ -7344,6 +7304,15 @@ chromium-metrics-reviews@google.com.
     ChromeOS only. Records a new browser window type once a new browser window
     is attempted to be shown in a kiosk session. Currently distinguishes only
     settings page from others, which get closed immediately.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.RamUsagePercentage" units="%" expires_after="2023-07-01">
+  <owner>vkovalova@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@google.com</owner>
+  <summary>
+    ChromeOS only. Records the percentage of RAM in use. Starts being recorded
+    when a kiosk session is started. Emitted once per hour.
   </summary>
 </histogram>
 
@@ -7460,6 +7429,16 @@ chromium-metrics-reviews@google.com.
     ChromeOS only. Records kiosk session states, whether it is started, closed,
     crashed, etc. Emitted when the kiosk session state changes. Crashed kiosk
     sessions can be detected on the following kiosk start.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.SwapUsagePercentage" units="%"
+    expires_after="2023-07-01">
+  <owner>vkovalova@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@google.com</owner>
+  <summary>
+    ChromeOS only. Records the percentage of swap memory in use. Starts being
+    recorded when a kiosk session is started. Emitted once per hour.
   </summary>
 </histogram>
 

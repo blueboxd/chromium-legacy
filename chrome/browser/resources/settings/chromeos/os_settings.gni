@@ -14,12 +14,12 @@ web_component_files = [
   "chromeos/os_about_page/edit_hostname_dialog.ts",
   "chromeos/os_about_page/os_about_page.ts",
   "chromeos/os_about_page/update_warning_dialog.ts",
-  "chromeos/os_settings_main/os_settings_main.js",
-  "chromeos/os_settings_menu/os_settings_menu.js",
+  "chromeos/os_settings_main/os_settings_main.ts",
+  "chromeos/os_settings_menu/os_settings_menu.ts",
   "chromeos/os_settings_page/os_settings_page.js",
   "chromeos/os_settings_page/settings_idle_load.js",
-  "chromeos/os_settings_ui/os_settings_ui.js",
-  "chromeos/os_toolbar/os_toolbar.js",
+  "chromeos/os_settings_ui/os_settings_ui.ts",
+  "chromeos/os_toolbar/os_toolbar.ts",
 ]
 
 # Files that are passed as input to html_to_wrapper().
@@ -117,9 +117,7 @@ non_web_component_files = [
   "chromeos/os_settings_page/main_page_behavior.js",
   "chromeos/os_settings_routes.js",
   "chromeos/parental_controls_page/parental_controls_browser_proxy.js",
-  "chromeos/personalization_page/change_picture_browser_proxy.js",
   "chromeos/personalization_page/personalization_hub_browser_proxy.js",
-  "chromeos/personalization_page/wallpaper_browser_proxy.js",
   "chromeos/personalization_search_handler.js",
   "chromeos/pref_to_setting_metric_converter.js",
   "chromeos/prefs_behavior.js",
@@ -130,6 +128,8 @@ non_web_component_files = [
   # Files below are from Browser Settings and shared with ChromeOS Settings
   "i18n_setup.ts",
   "lifetime_browser_proxy.ts",
+  "prefs/prefs.ts",
+  "prefs/prefs_types.ts",
   "router.js",
 ]
 
@@ -326,7 +326,6 @@ gen_web_component_files = [
   "chromeos/os_settings_search_box/os_search_result_row.js",
   "chromeos/os_settings_search_box/os_settings_search_box.js",
   "chromeos/parental_controls_page/parental_controls_page.js",
-  "chromeos/personalization_page/change_picture.js",
   "chromeos/personalization_page/personalization_page.js",
   "chromeos/settings_scheduler_slider/settings_scheduler_slider.js",
 ]

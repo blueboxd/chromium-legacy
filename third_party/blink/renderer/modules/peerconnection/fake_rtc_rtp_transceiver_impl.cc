@@ -96,8 +96,7 @@ FakeRTCRtpSenderImpl::GetDtmfSender() const {
 
 std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpSenderImpl::GetParameters()
     const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<webrtc::RtpParameters>();
 }
 
 void FakeRTCRtpSenderImpl::SetParameters(
@@ -203,11 +202,6 @@ FakeRTCRtpTransceiverImpl::FakeRTCRtpTransceiverImpl(
       current_direction_(std::move(current_direction)) {}
 
 FakeRTCRtpTransceiverImpl::~FakeRTCRtpTransceiverImpl() {}
-
-RTCRtpTransceiverPlatformImplementationType
-FakeRTCRtpTransceiverImpl::ImplementationType() const {
-  return RTCRtpTransceiverPlatformImplementationType::kFullTransceiver;
-}
 
 uintptr_t FakeRTCRtpTransceiverImpl::Id() const {
   NOTIMPLEMENTED();

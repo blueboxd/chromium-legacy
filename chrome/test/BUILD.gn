@@ -3847,6 +3847,9 @@ if (!is_android) {
         "../browser/ash/policy/login/signin_profile_extensions_policy_browsertest.cc",
         "../browser/ash/policy/networking/network_policy_application_browsertest.cc",
         "../browser/ash/policy/networking/policy_certs_browsertest.cc",
+        "../browser/ash/policy/reporting/metrics_reporting/metric_browsertest_utils.cc",
+        "../browser/ash/policy/reporting/metrics_reporting/metric_browsertest_utils.h",
+        "../browser/ash/policy/reporting/metrics_reporting/network/network_info_sampler_browsertest.cc",
         "../browser/ash/policy/reporting/metrics_reporting/usb/usb_events_browsertest.cc",
         "../browser/ash/policy/reporting/user_added_removed/user_added_removed_reporter_browsertest.cc",
         "../browser/ash/policy/status_collector/child_status_collector_browsertest.cc",
@@ -4121,8 +4124,6 @@ if (!is_android) {
         "//ash/components/arc:prefs",
         "//ash/components/arc/enterprise",
         "//ash/components/arc/session:arc_base_enums",
-        "//ash/components/disks",
-        "//ash/components/disks:test_support",
         "//ash/components/drivefs",
         "//ash/components/drivefs:test_support",
         "//ash/components/drivefs/mojom",
@@ -4209,12 +4210,15 @@ if (!is_android) {
         "//chromeos/ash/components/dbus/services:test_support",
         "//chromeos/ash/components/dbus/session_manager",
         "//chromeos/ash/components/dbus/shill",
+        "//chromeos/ash/components/dbus/spaced",
         "//chromeos/ash/components/dbus/system_clock",
         "//chromeos/ash/components/dbus/system_proxy",
         "//chromeos/ash/components/dbus/system_proxy:system_proxy_proto",
         "//chromeos/ash/components/dbus/update_engine",
         "//chromeos/ash/components/dbus/upstart",
         "//chromeos/ash/components/dbus/vm_plugin_dispatcher",
+        "//chromeos/ash/components/disks",
+        "//chromeos/ash/components/disks:test_support",
         "//chromeos/ash/components/network/portal_detector",
         "//chromeos/ash/services/assistant:lib",
         "//chromeos/ash/services/assistant/public/cpp",
@@ -4491,14 +4495,14 @@ if (!is_android) {
     if (is_fuchsia) {
       use_test_server = true
 
-      use_cfv2 = false
+      use_cfv1 = false
+      test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
       additional_manifest_fragments = [
-        "//build/config/fuchsia/test/audio_capabilities.test-cmx",
-        "//build/config/fuchsia/test/font_capabilities.test-cmx",
-        "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-        "//build/config/fuchsia/test/network_capabilities.test-cmx",
-        "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
-        "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+        "//build/config/fuchsia/test/audio_output.shard.test-cml",
+        "//build/config/fuchsia/test/fonts.shard.test-cml",
+        "//build/config/fuchsia/test/network.shard.test-cml",
+        "//build/config/fuchsia/test/present_view.shard.test-cml",
+        "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
       ]
 
       # TODO(crbug.com/931218): Ninja cannot handle certain characters appearing
@@ -7058,6 +7062,7 @@ test("unit_tests") {
       "../browser/extensions/api/document_scan/document_scan_api_unittest.cc",
       "../browser/media/platform_verification_chromeos_unittest.cc",
       "../browser/policy/system_features_disable_list_policy_handler_unittest.cc",
+      "../browser/speech/tts_crosapi_util_unittest.cc",
       "../browser/ui/webui/certificate_provisioning_ui_handler_unittest.cc",
       "chromeos/printing/fake_local_printer_chromeos.cc",
       "chromeos/printing/fake_local_printer_chromeos.h",
@@ -7322,8 +7327,6 @@ test("unit_tests") {
       "//ash/assistant/util",
       "//ash/components/arc",
       "//ash/components/arc:arc_test_support",
-      "//ash/components/disks",
-      "//ash/components/disks:test_support",
       "//ash/components/login/auth:test_support",
       "//ash/components/login/session",
       "//ash/components/multidevice:test_support",
@@ -7408,6 +7411,8 @@ test("unit_tests") {
       "//chromeos/ash/components/dbus/shill",
       "//chromeos/ash/components/dbus/update_engine",
       "//chromeos/ash/components/dbus/update_engine:proto",
+      "//chromeos/ash/components/disks",
+      "//chromeos/ash/components/disks:test_support",
       "//chromeos/ash/components/feature_usage",
       "//chromeos/ash/components/string_matching",
       "//chromeos/ash/components/sync_wifi",
@@ -8358,6 +8363,7 @@ test("unit_tests") {
       "../browser/ui/webui/app_home/mock_app_home_page.cc",
       "../browser/ui/webui/app_home/mock_app_home_page.h",
       "../browser/ui/webui/ntp/app_launcher_handler_unittest.cc",
+      "../browser/ui/webui/whats_new/whats_new_util_unittest.cc",
     ]
 
     deps += [
@@ -8816,6 +8822,7 @@ test("unit_tests") {
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",
     ]
   }
@@ -9519,6 +9526,7 @@ if (!is_android) {
         "../browser/ui/views/test/view_event_test_base.cc",
         "../browser/ui/views/test/view_event_test_base.h",
         "../browser/ui/views/toolbar/reload_button_browsertest.cc",
+        "../browser/ui/views/toolbar/toolbar_action_hover_card_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_interactive_uitest.cc",

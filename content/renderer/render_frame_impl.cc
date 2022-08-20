@@ -1164,8 +1164,9 @@ WindowOpenDisposition NavigationPolicyToDisposition(
     case blink::kWebNavigationPolicyNewWindow:
       return WindowOpenDisposition::NEW_WINDOW;
     case blink::kWebNavigationPolicyNewPopup:
-    case blink::kWebNavigationPolicyPictureInPicture:
       return WindowOpenDisposition::NEW_POPUP;
+    case blink::kWebNavigationPolicyPictureInPicture:
+      return WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
   }
   NOTREACHED() << "Unexpected WebNavigationPolicy";
   return WindowOpenDisposition::IGNORE_ACTION;
@@ -6108,7 +6109,7 @@ base::WeakPtr<media::DecoderFactory> RenderFrameImpl::GetMediaDecoderFactory() {
 gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
     const blink::WebElement& element) {
   return gfx::RectF(GetLocalRootWebFrameWidget()->BlinkSpaceToEnclosedDIPs(
-      element.BoundsInViewport()));
+      element.BoundsInWidget()));
 }
 
 void RenderFrameImpl::ConvertViewportToWindow(gfx::Rect* rect) {

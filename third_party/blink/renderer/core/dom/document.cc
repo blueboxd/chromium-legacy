@@ -2439,6 +2439,35 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node,
   UpdateStyleAndLayout(reason);
 }
 
+void Document::AddToRecalcStyleForToggle(Element* element) {
+  elements_needing_style_recalc_for_toggle_.insert(element);
+}
+
+bool Document::SetNeedsStyleRecalcForToggles() {
+  // TODO(crbug.com/1250716): We currently call this from
+  // LocalFrameView::RunCSSToggleSteps().  This is not ideal, but it produces
+  // behavior that's basically what we want, except for making
+  // getComputedStyle() produce correct results, which is hopefully fixable
+  // with future changes to PostStyleUpdateScope).  The behavior is also not
+  // yet well-defined; see https://github.com/tabatkins/css-toggle/issues/27
+  // for making this better.
+
+  if (elements_needing_style_recalc_for_toggle_.size() == 0)
+    return false;
+
+  HeapHashSet<Member<Element>> elements;
+  std::swap(elements_needing_style_recalc_for_toggle_, elements);
+
+  const auto& reason = StyleChangeReasonForTracing::CreateWithExtraData(
+      style_change_reason::kPseudoClass, style_change_extra_data::g_toggle);
+
+  for (auto element : elements) {
+    element->SetNeedsStyleRecalc(StyleChangeType::kSubtreeStyleChange, reason);
+  }
+
+  return true;
+}
+
 void Document::ApplyScrollRestorationLogic() {
   DCHECK(View());
   // This function in not re-entrant. However, the places that invoke this are
@@ -5102,10 +5131,10 @@ void Document::SendFocusNotification(Element* new_focused_element,
 
     if (new_focused_element->IsSVGElement()) {
       // Convert to window coordinate system (this will be in DIPs).
-      bounds_in_viewport = new_focused_element->BoundsInViewport();
+      bounds_in_viewport = new_focused_element->BoundsInWidget();
     } else {
       Vector<gfx::Rect> outline_rects =
-          new_focused_element->OutlineRectsInVisualViewport(
+          new_focused_element->OutlineRectsInWidget(
               DocumentUpdateReason::kFocus);
       for (auto& outline_rect : outline_rects)
         bounds_in_viewport.Union(outline_rect);
@@ -6042,6 +6071,94 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
 
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(has_access);
+  return promise;
+}
+
+ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
+                                                    const AtomicString& site) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // Access the promise first to ensure it is created so that the proper state
+  // can be changed when it is resolved or rejected.
+  ScriptPromise promise = resolver->Promise();
+
+  if (!GetFrame()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Must not be called from a detached "
+        "frame."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  const bool has_user_gesture =
+      LocalFrame::HasTransientUserActivation(GetFrame());
+  if (!has_user_gesture) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Must be handling a user gesture to "
+        "use."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  if (!IsInOutermostMainFrame()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Only supported in primary top-level "
+        "browsing contexts."));
+    resolver->Reject();
+    return promise;
+  }
+
+  if (dom_window_->GetSecurityOrigin()->IsOpaque()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Cannot be used by opaque origins."));
+
+    resolver->Reject();
+    return promise;
+  }
+
+  KURL site_as_kurl{site};
+  if (!site_as_kurl.IsValid()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Invalid site parameter."));
+    resolver->Reject();
+    return promise;
+  }
+
+  scoped_refptr<SecurityOrigin> supplied_origin =
+      SecurityOrigin::Create(site_as_kurl);
+  if (supplied_origin->IsOpaque()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccessForSite: Invalid site parameter."));
+    resolver->Reject();
+    return promise;
+  }
+
+  if (dom_window_->GetSecurityOrigin()->IsSameSiteWith(supplied_origin.get())) {
+    // Access is not actually disabled, so accept the request.
+    resolver->Resolve();
+    return promise;
+  }
+
+  resolver->Reject();
+  AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kSecurity,
+      mojom::blink::ConsoleMessageLevel::kError,
+      "requestStorageAccessForSite: Rejecting experimental API request."));
   return promise;
 }
 
@@ -8082,6 +8199,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(pop_up_mousedown_target_);
   visitor->Trace(popups_waiting_to_hide_);
   visitor->Trace(all_open_pop_ups_);
+  visitor->Trace(elements_needing_style_recalc_for_toggle_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);

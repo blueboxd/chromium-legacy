@@ -612,11 +612,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  HidePopupFocusBehavior,
                                  HidePopupForcingLevel,
                                  HidePopupIndependence);
-  Element* PopupHoverTargetElement() const;
-  bool IsNodePopUpDescendant(const Node& node) const;
-  void MaybeQueuePopupHideEvent();
-  static void HoveredElementChanged(Element* old_element, Element* new_element);
-  void HandlePopupHovered(bool hovered);
 
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.
@@ -1412,7 +1407,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   };
 
   // Special focus handling for popups.
-  Element* GetPopupFocusableArea(bool autofocus_only) const;
+  Element* GetPopupFocusableArea() const;
 
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase,
                                       const StyleRecalcContext&);

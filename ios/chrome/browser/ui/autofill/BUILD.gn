@@ -85,6 +85,7 @@ source_set("bridges") {
     "//base",
     "//components/autofill/core/browser",
     "//components/strings",
+    "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/list_model",
@@ -95,6 +96,7 @@ source_set("bridges") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ui/base",
+    "//url",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/collection_view",
@@ -108,26 +110,6 @@ source_set("autofill_ui") {
   sources = [
     "expiration_date_picker.h",
     "expiration_date_picker.mm",
-  ]
-  deps = [
-    ":autofill_message",
-    "//base",
-    "//base:i18n",
-    "//components/autofill/core/browser",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/infobars:public",
-    "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/image_util",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common",
-    "//ios/chrome/common/ui/colors",
-    "//ios/chrome/common/ui/util",
-    "//ios/third_party/material_components_ios",
-    "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
 }

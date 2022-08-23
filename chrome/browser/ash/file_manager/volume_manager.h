@@ -586,7 +586,22 @@ class VolumeManager : public KeyedService,
   void DoAttachMtpStorage(const storage_monitor::StorageInfo& info,
                           device::mojom::MtpStorageInfoPtr mtp_storage_info);
   void DoMountEvent(ash::MountError error_code, std::unique_ptr<Volume> volume);
-  void DoUnmountEvent(ash::MountError error_code, const Volume& volume);
+
+  void DoUnmountEvent(Volumes::const_iterator it,
+                      ash::MountError error_code = ash::MountError::kNone);
+
+  void DoUnmountEvent(base::StringPiece volume_id,
+                      ash::MountError error_code = ash::MountError::kNone) {
+    const Volumes::const_iterator it = mounted_volumes_.find(volume_id);
+    if (it != mounted_volumes_.end())
+      DoUnmountEvent(it, error_code);
+  }
+
+  void DoUnmountEvent(const Volume& volume,
+                      ash::MountError error_code = ash::MountError::kNone) {
+    DoUnmountEvent(volume.volume_id(), error_code);
+  }
+
   void OnExternalStorageDisabledChangedUnmountCallback(
       std::vector<std::string> remaining_mount_paths,
       ash::MountError error_code);
@@ -604,21 +619,21 @@ class VolumeManager : public KeyedService,
                                     RemoveSftpGuestOsVolumeCallback callback,
                                     ash::MountError error_code);
 
-  Profile* profile_;
-  drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
-  ash::disks::DiskMountManager* disk_mount_manager_;           // Not owned.
+  Profile* const profile_;
+  drive::DriveIntegrationService* const drive_integration_service_;
+  ash::disks::DiskMountManager* const disk_mount_manager_;
+  ash::file_system_provider::Service* const file_system_provider_service_;
+
   PrefChangeRegistrar pref_change_registrar_;
   base::ObserverList<VolumeManagerObserver>::Unchecked observers_;
-  ash::file_system_provider::Service*
-      file_system_provider_service_;  // Not owned by this class.
   GetMtpStorageInfoCallback get_mtp_storage_info_callback_;
   Volumes mounted_volumes_;
   std::unique_ptr<FuseBoxMounter> fusebox_mounter_;
   std::unique_ptr<SnapshotManager> snapshot_manager_;
   std::unique_ptr<DocumentsProviderRootManager>
       documents_provider_root_manager_;
-  bool arc_volumes_mounted_ = false;
   io_task::IOTaskController io_task_controller_;
+  bool arc_volumes_mounted_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

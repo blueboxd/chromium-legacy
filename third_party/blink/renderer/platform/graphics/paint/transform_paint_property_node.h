@@ -24,6 +24,7 @@
 namespace blink {
 
 using CompositorStickyConstraint = cc::StickyPositionConstraint;
+class AffineTransform;
 
 // A transform (e.g., created by css "transform" or "perspective", or for
 // internal positioning such as paint offset or scrolling) along with a
@@ -86,11 +87,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   // Stores a transform and origin with an optimization for the identity and
   // 2d translation cases that avoids allocating a full matrix and origin.
-  class TransformAndOrigin {
+  class PLATFORM_EXPORT TransformAndOrigin {
     DISALLOW_NEW();
 
    public:
     TransformAndOrigin() = default;
+    explicit TransformAndOrigin(const AffineTransform&);
     // These constructors are not explicit so that we can use gfx::Vector2dF or
     // TransformationMatrix directly in the initialization list of State.
     // NOLINTNEXTLINE(google-explicit-constructor)
@@ -202,7 +204,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     } flags = {false, true, false, false, false, false};
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
-    CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
+    CompositingReasons direct_compositing_reasons =
+        CompositingReason::kNoCompositingReason;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
     std::unique_ptr<AnchorScrollContainersData> anchor_scroll_containers_data;
@@ -351,7 +354,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   }
 
   bool HasDirectCompositingReasons() const {
-    return DirectCompositingReasons() != CompositingReason::kNone;
+    return DirectCompositingReasons() !=
+           CompositingReason::kNoCompositingReason;
   }
 
   bool HasDirectCompositingReasonsOtherThan3dTransform() const {

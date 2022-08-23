@@ -295,8 +295,8 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransformIsolationNode();
   ALWAYS_INLINE void UpdateEffectIsolationNode();
   ALWAYS_INLINE void UpdateClipIsolationNode();
-  ALWAYS_INLINE void SetTransformNodeStateForSVGChild(
-      TransformPaintPropertyNode::State&);
+  ALWAYS_INLINE TransformPaintPropertyNode::TransformAndOrigin
+  TransformAndOriginForSVGChild() const;
   ALWAYS_INLINE void UpdateLayoutShiftRootChanged(bool is_layout_shift_root);
 
   bool NeedsPaintPropertyUpdate() const {
@@ -521,7 +521,7 @@ static bool NeedsPaintOffsetTranslation(
   // very likely that the object will be composited, so a paint offset
   // translation will be beneficial.
   bool has_paint_offset_compositing_reason =
-      direct_compositing_reasons != CompositingReason::kNone ||
+      direct_compositing_reasons != CompositingReason::kNoCompositingReason ||
       box_model.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden;
   if (has_paint_offset_compositing_reason) {
     // Don't let paint offset cross composited layer boundaries when possible,
@@ -604,8 +604,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 
   ResetPaintOffset(subpixel_accumulation);
 
-  if (full_context_.direct_compositing_reasons == CompositingReason::kNone)
+  if (full_context_.direct_compositing_reasons ==
+      CompositingReason::kNoCompositingReason) {
     return;
+  }
 
   if (paint_offset_translation && properties_ &&
       properties_->PaintOffsetTranslation()) {
@@ -845,27 +847,12 @@ static bool NeedsTransformForSVGChild(
   return !object.LocalToSVGParentTransform().IsIdentity();
 }
 
-static void SetTransformNodeStateFromAffineTransform(
-    TransformPaintPropertyNode::State& state,
-    const AffineTransform& transform) {
-  if (transform.IsIdentityOrTranslation())
-    state.transform_and_origin = {gfx::Vector2dF(transform.E(), transform.F())};
-  else
-    state.transform_and_origin = {TransformationMatrix(transform)};
-}
-
-void FragmentPaintPropertyTreeBuilder::SetTransformNodeStateForSVGChild(
-    TransformPaintPropertyNode::State& state) {
+TransformPaintPropertyNode::TransformAndOrigin
+FragmentPaintPropertyTreeBuilder::TransformAndOriginForSVGChild() const {
   if (full_context_.direct_compositing_reasons &
       CompositingReason::kActiveTransformAnimation) {
     if (CompositorAnimations::CanStartTransformAnimationOnCompositorForSVG(
             *To<SVGElement>(object_.GetNode()))) {
-      // For composited transform animation to work, we need to store transform
-      // origin separately. It's baked in object_.LocalToSVGParentTransform().
-      state.transform_and_origin = {
-          TransformationMatrix(TransformHelper::ComputeTransform(
-              object_, ComputedStyle::kExcludeTransformOrigin)),
-          gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
       // Composited transform animation works only if
       // LocalToSVGParentTransform() reflects the CSS transform properties.
       // If this fails, we need to exclude the case in
@@ -873,18 +860,21 @@ void FragmentPaintPropertyTreeBuilder::SetTransformNodeStateForSVGChild(
       DCHECK_EQ(TransformHelper::ComputeTransform(
                     object_, ComputedStyle::kIncludeTransformOrigin),
                 object_.LocalToSVGParentTransform());
+      // For composited transform animation to work, we need to store transform
+      // origin separately. It's baked in object_.LocalToSVGParentTransform().
+      return {TransformationMatrix(TransformHelper::ComputeTransform(
+                  object_, ComputedStyle::kExcludeTransformOrigin)),
+              gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
     } else {
       // We composite the object but can't start composited animation. Still
       // keep the compositing reason because it still improves performance of
       // main thread animation, but avoid the 2d translation optimization to
       // meet the requirement of TransformPaintPropertyNode.
-      state.transform_and_origin = {
-          TransformationMatrix(object_.LocalToSVGParentTransform())};
+      return {TransformationMatrix(object_.LocalToSVGParentTransform())};
     }
-  } else {
-    SetTransformNodeStateFromAffineTransform(
-        state, object_.LocalToSVGParentTransform());
   }
+  return TransformPaintPropertyNode::TransformAndOrigin(
+      object_.LocalToSVGParentTransform());
 }
 
 // SVG does not use the general transform update of |UpdateTransform|, instead
@@ -903,7 +893,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
     if (NeedsTransformForSVGChild(object_, direct_compositing_reasons)) {
       // The origin is included in the local transform, so leave origin empty.
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateForSVGChild(state);
+      state.transform_and_origin = TransformAndOriginForSVGChild();
 
       // TODO(pdr): There is additional logic in
       // FragmentPaintPropertyTreeBuilder::UpdateTransform that likely needs to
@@ -1020,7 +1010,7 @@ static bool NeedsScale(const LayoutObject& object,
 static bool NeedsOffset(const LayoutObject& object,
                         CompositingReasons direct_compositing_reasons) {
   return NeedsIndividualTransform(
-      object, CompositingReason::kNone,
+      object, CompositingReason::kNoCompositingReason,
       [](const ComputedStyle& style) { return style.HasOffset(); });
 }
 
@@ -1173,7 +1163,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
           state.backface_visibility =
               TransformPaintPropertyNode::BackfaceVisibility::kHidden;
         } else if (state.direct_compositing_reasons !=
-                   CompositingReason::kNone) {
+                   CompositingReason::kNoCompositingReason) {
           // The above condition fixes a CompositeAfterPaint regression
           // (crbug.com/1260603) by letting non-directly-composited transforms
           // inherit parent's backface visibility.
@@ -1291,7 +1281,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
             ComputedStyle::kIncludeMotionPath,
             ComputedStyle::kExcludeIndependentTransformProperties);
       },
-      CompositingReason::kNone, CompositingReason::kNone,
+      CompositingReason::kNoCompositingReason,
+      CompositingReason::kNoCompositingReason,
       // TODO(dbaron): When we support animating offset on the
       // compositor, we need to use an element ID specific to offset.
       // This is currently unused.
@@ -1586,7 +1577,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           full_context_.direct_compositing_reasons &
                   CompositingReason::kDirectReasonsForBackdropFilter
               ? CompositingReason::kBackdropFilterMask
-              : CompositingReason::kNone;
+              : CompositingReason::kNoCompositingReason;
 
       if (mask_clip) {
         EffectPaintPropertyNode::State mask_state;
@@ -2286,7 +2277,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     }
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateFromAffineTransform(state, content_to_parent_space);
+      state.transform_and_origin =
+          TransformPaintPropertyNode::TransformAndOrigin(
+              content_to_parent_space);
       state.flags.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
@@ -4051,7 +4044,8 @@ void PaintPropertyTreeBuilder::UpdateForSelf() {
       ObjectTypeMightNeedMultipleFragmentData()) {
     UpdateFragments();
   } else {
-    DCHECK_EQ(context_.direct_compositing_reasons, CompositingReason::kNone);
+    DCHECK_EQ(context_.direct_compositing_reasons,
+              CompositingReason::kNoCompositingReason);
     if (!IsInNGFragmentTraversal())
       object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
   }

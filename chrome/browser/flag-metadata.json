@@ -253,7 +253,7 @@
     "name": "arc-usb-device-attach-to-vm-experiment",
     "owners": [ "lgcheng" ],
     // Used on ChromeOS to temperorily attach unclaimed USB device to ARCVM
-    "expiry_milestone": 106
+    "expiry_milestone": 107
   },
   {
     "name": "arc-use-high-memory-dalvik-profile",
@@ -550,7 +550,7 @@
   },
   {
     "name": "autofill-parse-iban-fields",
-    "owners": [ "nakulvaidya@google.com", "jsaul@google.com", "vishwasuppoor@google.com" ],
+    "owners": [ "jsaul@google.com", "vishwasuppoor@google.com" ],
     "expiry_milestone": 112
   },
   {
@@ -560,7 +560,7 @@
   },
   {
     "name": "autofill-parse-vcn-card-on-file-standalone-cvc-fields",
-    "owners": [ "nakulvaidya@google.com", "jsaul@google.com", "alexandertekle@google.com" ],
+    "owners": [ "jsaul@google.com", "alexandertekle@google.com" ],
     "expiry_milestone": 120
   },
   {
@@ -925,7 +925,7 @@
   {
     "name": "chrome-whats-new-ui",
     "owners": [ "rbpotter" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 110
   },
   {
     "name": "chrome-wide-echo-cancellation",
@@ -1656,7 +1656,7 @@
   {
     "name": "enable-async-dns",
     "owners": [ "horo", "net-dev" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 110
   },
   {
     "name": "enable-auto-disable-accessibility",
@@ -5066,7 +5066,7 @@
       "zsalata@google.com",
       "olesiamarukhno@google.com"
     ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "page-info-history",
@@ -5080,12 +5080,12 @@
       "dullweber",
       "olesiamarukhno@google.com"
     ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "page-info-more-about-this-page",
     "owners": [ "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "page-info-store-info",
@@ -5247,7 +5247,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 110
   },
   {
     "name": "post-quantum-cecpq2",
@@ -5432,7 +5432,7 @@
   {
     "name": "quick-dim",
     "owners": [ "charleszhao", "martis", "napper" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "quick-intensive-throttling-after-loading",
@@ -5934,7 +5934,7 @@
   {
     "name": "sim-lock-policy",
     "owners": [ "hsuregan@google.com", "cros-connectivity@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 110
   },
   {
     "name": "single-ntp",
@@ -5997,7 +5997,7 @@
   {
     "name": "snooping-protection",
     "owners": [ "martis", "charleszhao", "napper" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "spectre-v2-mitigation",
@@ -6198,7 +6198,7 @@
   {
     "name": "terminal-tmux-integration",
     "owners": [ "lxj", "easy", "//chrome/browser/ash/guest_os/OWNERS" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 112
   },
   {
     "name": "third-party-storage-partitioning",
@@ -6279,7 +6279,7 @@
   {
     "name": "translate-message-ui",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 112
   },
   {
     "name": "trending-queries-module",

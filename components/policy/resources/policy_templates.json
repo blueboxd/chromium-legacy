@@ -18080,7 +18080,7 @@
         {
           'name': 'SAML_INTERSTITIAL',
           'value': 1,
-          'caption': '''Redirect to SAML IdP after user confirmation''',
+          'caption': '''Redirect to SAML IdP by default (prior to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 99 user confirmation is needed)''',
         },
       ],
       'supported_on': ['chrome_os:51-'],
@@ -18097,7 +18097,9 @@
 
       If set to GAIA, login will be done via the normal GAIA authentication flow.
 
-      If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user to go forward with authentication via the SAML IdP of the device's enrollment domain, or go back to the normal GAIA login flow.'''
+      If set to SAML_INTERSTITIAL, login will automatically redirect to SAML IdP by default. The user is still allowed to go back to the normal GAIA login flow.
+
+      Note: the additional user confirmation screen, which was shown on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> until version 99, isn't displayed anymore. If SAML IdP isn't configured and this policy is set to SAML_INTERSTITIAL, redirect will fail with the 400 error.'''
     },
     {
       'name': 'UsbDetachableWhitelist',
@@ -24991,7 +24993,7 @@
 
       For ChromeOS, this policy is related to remote attestation where a certificate is automatically generated and uploaded to the Device Management Server.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceLoginScreenContextAwareAccessSignalsAllowlist',
@@ -25023,7 +25025,7 @@
 
       This policy will only impact the attestation flow on the login and lock screen. To change the in-session attestation flow, please use the <ph name="CONTEXT_AWARE_ACCESS_SIGNALS_ALLOWLIST_POLICY_NAME">ContextAwareAccessSignalsAllowlist</ph> policy.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceQuickFixBuildToken',
@@ -30581,10 +30583,10 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'tags': [],
       'desc': '''
 Default behavior (Policy unset)
-When an account is added in the content area a small dialog may appear asking the user to create a new profile.  This dialog is dismissable.
+When an account is added in the content area a small dialog may appear asking the user to create a new profile. This dialog is dismissable.
 
 <ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph>
-If a user signs into a Google service for the first time in a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser, a dialog will appear asking the user to create a new profile for their enterprise account. The user may click Cancel and get signed out, or Continue to create a new profile. Any existing browsing data will not be added to the new profile.   The newly created profile is allowed to have secondary accounts, for example the user can sign into another account in the content area.
+If a user signs into a Google service for the first time in a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser, a dialog will appear asking the user to create a new profile for their enterprise account. The user may click Cancel and get signed out, or Continue to create a new profile. Any existing browsing data will not be added to the new profile. The newly created profile is allowed to have secondary accounts, for example the user can sign into another account in the content area.
 
 <ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph>
 This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> except the newly created profile is not allowed to have secondary accounts.
@@ -30631,7 +30633,8 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'desc': '''
       Setting the policy to Enabled (True) lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> asks for managed users' consent prior to sharing device signals on unmanaged devices in order to gain access.
 
-      Setting the policy to Disabled (False) or leaving it unset disallows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from collecting device signals
+      Setting the policy to Disabled (False) or leaving it unset disallows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from collecting device signals.
+
       Examples of device signals include (but are not limited to) OS information, registry, file presesnce.''',
     },
     {
@@ -31973,28 +31976,72 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
             'items': {
               'type': 'object',
               'properties': {
-                'owner': { 'type': 'string' },
+                'owner': {
+                  'type': 'string'
+                },
                 'members': {
                   'type': 'array',
-                  'items': { 'type': 'string' }
+                  'items': {
+                    'type': 'string'
+                  }
                 },
+                'serviceSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'ccTLDs': {
+                  'type': 'object',
+                  'additionalProperties': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string'
+                    }
+                  }
+                }
               },
-              'required': ['owner', 'members']
-            },
+              'required': [
+                'owner',
+                'members'
+              ]
+            }
           },
           'additions': {
             'type': 'array',
             'items': {
               'type': 'object',
               'properties': {
-                'owner': { 'type': 'string' },
+                'owner': {
+                  'type': 'string'
+                },
                 'members': {
                   'type': 'array',
-                  'items': { 'type': 'string' }
+                  'items': {
+                    'type': 'string'
+                  }
                 },
+                'serviceSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'ccTLDs': {
+                  'type': 'object',
+                  'additionalProperties': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string'
+                    }
+                  }
+                }
               },
-              'required': ['owner', 'members']
-            },
+              'required': [
+                'owner',
+                'members'
+              ]
+            }
           }
         }
       },
@@ -32003,13 +32050,33 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
         'replacements': [
           {
             "owner": "https://owner1.test",
-            "members": ["https://member1.test", "https://member2.test"]
+            "members": [
+              "https://member1.test"
+            ],
+            "serviceSites": [
+              "https://owner1-content.test"
+            ],
+            "ccTLDs": {
+              "https://owner1.test": [
+                "https://owner1.co.uk"
+              ]
+            }
           }
         ],
         'additions': [
           {
             "owner": "https://owner2.test",
-            "members": ["https://member3.test"]
+            "members": [
+              "https://member2.test"
+            ],
+            "serviceSites": [
+              "https://owner2-content.test"
+            ],
+            "ccTLDs": {
+              "https://member2.test": [
+                "https://member2.com"
+              ]
+            }
           }
         ]
       },
@@ -32024,11 +32091,12 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'desc': '''This policy provides a way to override the list of sets the browser uses for First-Party Sets features.
 
       Each set in the browser's list of First-Party Sets must meet the requirements of a First-Party Set.
-      A First-Party Set consists of an owner and one or more member sites. All sites in a First-Party Set must
-      be a registrable domain served over HTTPS, regardless of whether it is an owner or member site.
-      Each site in a First-Party Set must also be unique, meaning a site cannot be both owner and member, nor
-      listed more than once as a member of a First-Party Set.
-      See https://github.com/privacycg/first-party-sets for more information on First-Party Sets.
+      A First-Party Set must contain an owner site and one or more member sites.
+      A set can also contain a list of service sites that it owns, as well as a map from a site to all of its ccTLD variants.
+      See https: //github.com/WICG/first-party-sets for more information on First-Party Sets are used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      All sites in a First-Party Set must be a registrable domain served over HTTPS. Each site in a First-Party Set must also be unique,
+      meaning a site cannot be listed more than once in a First-Party Set.
 
       When this policy is given an empty dictionary, the browser uses the public list of First-Party Sets.
 
@@ -32709,8 +32777,10 @@ This policy has no effect if the option to keep existing browsing data is not av
       'id': 1002,
       'caption': '''Force persistent quota to be enabled''',
       'tags': [],
-      'desc': '''Starting M106 persistent quota will no longer be supported. This policy will re-enable persistent quota functionality until M107.
+      'desc': '''Starting in M106 persistent quota will no longer be supported. This policy will re-enable persistent quota functionality until M107.
+
       If this policy is set to enabled, webkitRequestFileSystem with persistent type will operate with persistent quota.
+
       If this policy is unset or disabled, webkitRequestFileSystem with persistent type will operate with temporary quota.
       ''',
     },

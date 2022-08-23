@@ -73,6 +73,7 @@
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/dbus/cryptohome/key.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
@@ -81,7 +82,6 @@
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -310,7 +310,7 @@ class SamlTestBase : public OobeBaseTest {
         "      $('gaia-signin').authenticator_.removeEventListener("
         "          'authFlowChange', f);"
         "      window.domAutomationController.send("
-        "          $('gaia-signin').isSamlForTesting() ?"
+        "          $('gaia-signin').isSamlAuthFlowForTesting() ?"
         "              'SamlLoaded' : 'GaiaLoaded');"
         "    });");
   }
@@ -1385,7 +1385,8 @@ void SAMLPolicyTest::ShowSAMLLoginForm() {
 void SAMLPolicyTest::MaybeWaitForSAMLToLoad() {
   // If SAML already loaded return and otherwise wait for the SamlLoaded
   // message.
-  if (test::OobeJS().GetAttributeBool("isSamlForTesting()", {"gaia-signin"}))
+  if (test::OobeJS().GetAttributeBool("isSamlAuthFlowForTesting()",
+                                      {"gaia-signin"}))
     return;
   content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   SetupAuthFlowChangeListener();
@@ -1393,7 +1394,8 @@ void SAMLPolicyTest::MaybeWaitForSAMLToLoad() {
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"SamlLoaded\"");
-  test::OobeJS().ExpectAttributeEQ("isSamlForTesting()", {"gaia-signin"}, true);
+  test::OobeJS().ExpectAttributeEQ("isSamlAuthFlowForTesting()",
+                                   {"gaia-signin"}, true);
 }
 
 void SAMLPolicyTest::ClickBackOnSAMLPage() {
@@ -1624,8 +1626,8 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   test::OobeJS().CreateVisibilityWaiter(true, kSigninFrameDialog)->Wait();
   test::OobeJS().CreateVisibilityWaiter(false, kGaiaLoading)->Wait();
   test::OobeJS().ExpectHasNoAttribute("transparent", kSigninFrameDialog);
-  test::OobeJS().ExpectAttributeEQ("isSamlForTesting()", {"gaia-signin"},
-                                   false);
+  test::OobeJS().ExpectAttributeEQ("isSamlAuthFlowForTesting()",
+                                   {"gaia-signin"}, false);
 
   if (!GetParam())
     test::OobeJS().ExpectHiddenPath(kSamlInterstitial);

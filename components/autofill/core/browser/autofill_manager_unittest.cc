@@ -140,7 +140,7 @@ class MockAutofillManager : public AutofillManager {
                const gfx::RectF& bounding_box,
                int query_id,
                bool autoselect_first_suggestion,
-               TouchToFillEligible touch_to_fill_eligible),
+               FormElementWasClicked form_element_was_clicked),
               (override));
   MOCK_METHOD(void,
               OnFocusOnFormFieldImpl,
@@ -269,6 +269,7 @@ class AutofillManagerTest : public testing::Test {
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
+  test::AutofillEnvironment autofill_environment_;
   NiceMock<MockAutofillClient> client_;
   std::unique_ptr<MockAutofillDriver> driver_;
   std::unique_ptr<MockAutofillManager> manager_;

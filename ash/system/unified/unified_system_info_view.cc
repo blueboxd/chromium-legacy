@@ -402,6 +402,7 @@ class ManagedStateView : public views::Button {
   ~ManagedStateView() override = default;
 
   // views::Button:
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   const char* GetClassName() const override { return "ManagedStateView"; }
   void OnThemeChanged() override;
 
@@ -415,6 +416,12 @@ class ManagedStateView : public views::Button {
   views::ImageView* image_ = nullptr;
   const gfx::VectorIcon& icon_;
 };
+
+views::View* ManagedStateView::GetTooltipHandlerForPoint(
+    const gfx::Point& point) {
+  // Tooltip events should be handled by this top-level view.
+  return HitTestPoint(point) ? this : nullptr;
+}
 
 void ManagedStateView::OnThemeChanged() {
   views::Button::OnThemeChanged();
@@ -430,7 +437,7 @@ ManagedStateView::ManagedStateView(PressedCallback callback,
                                    int label_id,
                                    const gfx::VectorIcon& icon)
     : Button(std::move(callback)), icon_(icon) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kUnifiedSystemInfoSpacing));
 
@@ -442,6 +449,9 @@ ManagedStateView::ManagedStateView(PressedCallback callback,
   image_ = AddChildView(std::make_unique<views::ImageView>());
   image_->SetPreferredSize(
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
+
+  // Shrink the label if needed so the icon fits.
+  layout_manager->SetFlexForView(label_, 1);
 
   SetInstallFocusRingOnFocus(true);
   views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);

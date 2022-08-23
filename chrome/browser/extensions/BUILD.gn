@@ -1014,8 +1014,6 @@ static_library("extensions") {
       "system_display/display_info_provider_chromeos.h",
       "system_display/display_info_provider_utils.cc",
       "system_display/display_info_provider_utils.h",
-      "system_display/system_display_serialization.cc",
-      "system_display/system_display_serialization.h",
     ]
     if (use_cups) {
       sources += [
@@ -1167,6 +1165,7 @@ static_library("extensions") {
       "//chromeos/ash/components/dbus",
       "//chromeos/ash/components/dbus/cicerone:cicerone",
       "//chromeos/ash/components/dbus/cicerone:cicerone_proto",
+      "//chromeos/ash/components/dbus/constants",
       "//chromeos/ash/components/dbus/cros_disks",
       "//chromeos/ash/components/dbus/cryptohome",
       "//chromeos/ash/components/dbus/image_burner",

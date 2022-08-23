@@ -1466,7 +1466,7 @@ crbug.com/1076027 external/wpt/css/css-grid/masonry/* [ Skip ]
 
 # external/wpt/css/css-fonts/... tests triaged away from the default WPT bug ID
 crbug.com/1211460 external/wpt/css/css-fonts/alternates-order.html [ Failure ]
-crbug.com/1240186 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ Failure ]
+crbug.com/641861 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ Failure ]
 crbug.com/443467 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/819816 external/wpt/css/css-fonts/font-kerning-03.html [ Failure ]
 crbug.com/1219875 external/wpt/css/css-fonts/font-size-adjust-009.html [ Failure ]
@@ -1639,11 +1639,8 @@ crbug.com/1295905 [ Mac11-arm64 ] external/wpt/css/css-break/table/sections-and-
 crbug.com/1078927 external/wpt/css/css-multicol/table/balance-table-with-border-spacing.html [ Failure ]
 crbug.com/1078927 fast/multicol/table-row-height-increase.html [ Failure ]
 crbug.com/1078927 fragmentation/border-spacing-break-before-unbreakable-row.html [ Failure ]
-crbug.com/1078927 fragmentation/fragmented-rowspan-alignment.html [ Failure ]
-crbug.com/1078927 fragmentation/fragmented-rowspan.html [ Failure ]
 crbug.com/1078927 fragmentation/no-repeating-table-header-after-sections.html [ Failure ]
 crbug.com/1352931 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
-crbug.com/1078927 fragmentation/table-overlapping-rowspan.html [ Failure ]
 
 ### With LayoutNGPrinting enabled:
 
@@ -3272,9 +3269,7 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/html/browsers/windows/clear-window-name.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/service-workers/cache-storage/cross-partition.https.tentative.html [ Skip Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-reactions-xml-parser.xhtml [ Crash ]
@@ -3288,7 +3283,6 @@ crbug.com/626703 [ Win10.20h2 ] external/wpt/custom-elements/throw-on-dynamic-ma
 crbug.com/626703 [ Linux ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/background-sync.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/background-sync.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/background-sync.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/key-scrolling.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/document-transition/wpt_internal/document-transition/commit-timeout-crash.html [ Timeout ]
 crbug.com/626703 [ Win10.20h2 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]
@@ -3724,7 +3718,7 @@ crbug.com/958104 external/wpt/presentation-api/controlling-ua/getAvailability.ht
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
 
 # Synthetic modules report the wrong location in errors
-crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Skip ]
+crbug.com/994315 virtual/import-assertions/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Skip ]
 
 # These tests pass on the blink_rel bots but fail on the other builders
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
@@ -5033,6 +5027,7 @@ crbug.com/1299834 external/wpt/html/browsers/the-window-object/open-close/open-f
 crbug.com/1299834 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-left.html [ Skip Timeout ]
 crbug.com/1299834 external/wpt/html/browsers/the-window-object/open-close/open-features-negative-innerwidth-innerheight.html [ Skip Timeout ]
 crbug.com/1299834 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Skip Timeout ]
+crbug.com/706350 external/wpt/html/browsers/windows/clear-window-name.https.html [ Skip Timeout ]
 
 # The wpt/html tests that are failing in some way
 crbug.com/1317074 [ Linux ] external/wpt/html/syntax/charset/without-inheritance.html [ Failure ]
@@ -5138,6 +5133,8 @@ crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [
 
 # Sheriff 2020-06-03
 crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Failure Pass ]
+crbug.com/1349215 [ Mac11 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
+crbug.com/1349215 [ Mac10.15 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
 
 # Sheriff 2020-06-06
 crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure Pass ]

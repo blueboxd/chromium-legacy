@@ -3384,21 +3384,6 @@
             ]
         }
     ],
-    "CrosDeviceActiveCountingMonthlyCheckMembership": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DeviceActiveClientMonthlyCheckMembership"
-                    ]
-                }
-            ]
-        }
-    ],
     "CrosLazyLoginWebUI": [
         {
             "platforms": [
@@ -9645,6 +9630,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ColorProviderRedirectionForThemeProvider"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ThreadedHtmlTokenizer": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ThreadedHtmlTokenizer",
+                    "enable_features": [
+                        "ThreadedHtmlTokenizer"
                     ]
                 }
             ]

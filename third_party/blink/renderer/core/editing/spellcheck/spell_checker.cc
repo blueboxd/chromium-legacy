@@ -496,19 +496,21 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 }
 
 void SpellChecker::RespondToChangedSelection() {
-  idle_spell_check_controller_->SetNeedsInvocation();
+  idle_spell_check_controller_->RespondToChangedSelection();
 }
 
 void SpellChecker::RespondToChangedContents() {
-  idle_spell_check_controller_->SetNeedsInvocation();
+  idle_spell_check_controller_->RespondToChangedContents();
 }
 
 void SpellChecker::RespondToChangedEnablement(const HTMLElement& element,
                                               bool enabled) {
-  if (enabled)
-    idle_spell_check_controller_->SetNeedsInvocation();
-  else
+  if (enabled) {
+    idle_spell_check_controller_->RespondToChangedEnablement();
+  } else {
     RemoveSpellingAndGrammarMarkers(element);
+    idle_spell_check_controller_->SetSpellCheckingDisabled(element);
+  }
 }
 
 void SpellChecker::RemoveSpellingMarkers() {

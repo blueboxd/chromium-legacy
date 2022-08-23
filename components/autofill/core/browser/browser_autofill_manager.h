@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
@@ -328,6 +329,11 @@ class BrowserAutofillManager : public AutofillManager,
     touch_to_fill_delegate_ = std::move(touch_to_fill_delegate);
   }
 
+  void SetFastCheckoutDelegateForTest(
+      std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate) {
+    fast_checkout_delegate_ = std::move(fast_checkout_delegate);
+  }
+
   // A public wrapper that calls |DeterminePossibleFieldTypesForUpload| for
   // testing purposes only.
   static void DeterminePossibleFieldTypesForUploadForTest(
@@ -395,7 +401,7 @@ class BrowserAutofillManager : public AutofillManager,
       const gfx::RectF& transformed_box,
       int query_id,
       bool autoselect_first_suggestion,
-      TouchToFillEligible touch_to_fill_eligible) override;
+      FormElementWasClicked form_element_was_clicked) override;
   void OnSelectControlDidChangeImpl(const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
@@ -675,6 +681,7 @@ class BrowserAutofillManager : public AutofillManager,
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
+  std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate_;
   std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
 
   std::string app_locale_;

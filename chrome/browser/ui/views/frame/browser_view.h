@@ -44,7 +44,10 @@
 #include "components/infobars/core/infobar_container.h"
 #include "components/user_education/common/feature_promo_handle.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "content/public/browser/permission_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -386,6 +389,11 @@ class BrowserView : public BrowserWindow,
   base::CallbackListSubscription AddOnLinkOpeningFromGestureCallback(
       OnLinkOpeningFromGestureCallback callback);
 
+  // Updates the variable keeping track of the borderless mode visibility, which
+  // together with the `window_placement_permission_granted_` controls whether
+  // the title bar is shown or not.
+  void UpdateBorderlessModeEnabled();
+
   // Returns true when an app's effective display mode is
   // window-controls-overlay.
   bool AppUsesWindowControlsOverlay() const;
@@ -397,13 +405,17 @@ class BrowserView : public BrowserWindow,
   // of a full titlebar. This is only supported for desktop web apps.
   bool IsWindowControlsOverlayEnabled() const;
 
-  // Returns true when the borderless mode should be displayed instead
-  // of a full titlebar. This is only supported for desktop web apps.
-  bool IsBorderlessModeEnabled() const;
-
   // Enable or disable the window controls overlay and notify the browser frame
   // view of the update.
   void ToggleWindowControlsOverlayEnabled();
+
+  bool borderless_mode_enabled_for_testing() const {
+    return borderless_mode_enabled_;
+  }
+
+  bool window_placement_permission_granted_for_testing() const {
+    return window_placement_permission_granted_;
+  }
 
   // Update the side panel's horizontal alignment when
   // prefs::kSidePanelHorizontalAlignment is changed from the appearance
@@ -503,6 +515,7 @@ class BrowserView : public BrowserWindow,
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   bool IsLocationBarVisible() const override;
+  bool IsBorderlessModeEnabled() const override;
 
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
                                    SharingDialogData data) override;
@@ -762,6 +775,10 @@ class BrowserView : public BrowserWindow,
   // aligned side panels.
   void RightAlignedSidePanelWasClosed();
 
+  bool ShouldShowWindowControlsOverlayToggle() const {
+    return should_show_window_controls_overlay_toggle_;
+  }
+
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
   // interface to keep these two classes decoupled and testable.
@@ -925,9 +942,15 @@ class BrowserView : public BrowserWindow,
   // Updates the visibility of the Window Controls Overlay toggle button.
   void UpdateWindowControlsOverlayToggleVisible();
 
-  // Updates the variable keeping track of the borderless mode visibility, which
-  // controls whether the title bar is shown or not.
-  void UpdateBorderlessModeEnabled();
+  // Updates the variable keeping track of the window-placement permission,
+  // which together with borderless_mode_enabled_ controls whether the title bar
+  // is shown or not.
+  void UpdateWindowPlacementPermission(blink::mojom::PermissionStatus status);
+
+  // Sets the callback which is called when the status of the window-placement
+  // permission changes.
+  void SetWindowPlacementPermissionSubscriptionForBorderlessMode(
+      content::WebContents* web_contents);
 
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame> frame_ = nullptr;
@@ -1176,6 +1199,9 @@ class BrowserView : public BrowserWindow,
   bool window_controls_overlay_enabled_ = false;
   bool should_show_window_controls_overlay_toggle_ = false;
   bool borderless_mode_enabled_ = false;
+  bool window_placement_permission_granted_ = false;
+  absl::optional<content::PermissionController::SubscriptionId>
+      window_placement_subscription_id_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

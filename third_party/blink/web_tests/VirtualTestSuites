@@ -5,7 +5,8 @@
     "bases": ["wpt_internal/origin_trials/anonymous-iframe"],
     "args": [
       "--disable-blink-features=AnonymousIframe",
-      "--disable-features=PartitionedCookies"
+      "--disable-features=PartitionedCookies,ThirdPartyStoragePartitioning",
+      "--enable-features=AnonymousIframeOriginTrial"
     ]
   },
   {
@@ -34,12 +35,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["regress/regress-1104580.html"],
     "args": ["--enable-unsafe-webgpu"]
-  },
-  {
-    "prefix": "isolated_world_csp",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/security/isolatedWorld"],
-    "args": ["--enable-blink-features=IsolatedWorldCSP"]
   },
   {
     "prefix": "threaded",
@@ -133,15 +128,6 @@
     "args": ["--enable-gpu-rasterization",
              "--disable-blink-features=DecodeLossyWebPImagesToYUV",
              "--disable-blink-features=DecodeJpeg420ImagesToYUV"]
-  },
-  {
-    "prefix": "v8-off-thread-finalization",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/html/semantics/scripting-1",
-      "fast/dom"
-    ],
-    "args": ["--enable-features=V8OffThreadFinalization,SmallScriptStreaming,SharedArrayBuffer"]
   },
   {
     "prefix": "exotic-color-space",
@@ -549,12 +535,6 @@
     "args": ["--enable-features=IncognitoFileSystemContextForTesting"]
   },
   {
-    "prefix": "file-handling",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
-    "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
-  },
-  {
     "prefix": "controls-refresh-hc",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["fast/forms/color-scheme"],
@@ -609,12 +589,6 @@
     "args": ["--disable-blink-features=PaymentRequestTotalOptional"]
   },
   {
-    "prefix": "json-modules",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/json-module"],
-    "args": ["--enable-features=JSONModules", "--js-flags=--harmony-import-assertions"]
-  },
-  {
     "prefix": "css-trigonometric-functions-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -629,7 +603,8 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/semantics/scripting-1/the-script-element/import-assertions", 
-      "external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
+      "external/wpt/html/semantics/scripting-1/the-script-element/css-module",
+      "external/wpt/html/semantics/scripting-1/the-script-element/json-module"],
     "args": ["--js-flags=--harmony-import-assertions"]
   },
   {
@@ -1254,14 +1229,6 @@
     "args": [
       "--enable-blink-features=MediaStreamTrackTransfer",
       "--enable-features=MediaStreamTrackTransfer"
-    ]
-  },
-  {
-    "prefix": "insecure-battery-status-api",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "http/tests/security/powerfulFeatureRestrictions/" ],
-    "args": [
-      "--disable-blink-features=RestrictBatteryStatusToSecureContexts"
     ]
   },
   {

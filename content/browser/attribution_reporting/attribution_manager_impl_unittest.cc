@@ -833,7 +833,7 @@ TEST_F(AttributionManagerImplTest, ClearData) {
     attribution_manager_->ClearData(
         start, start + base::Minutes(1),
         base::BindLambdaForTesting(
-            [match_url](const blink::StorageKey& _) { return match_url; }),
+            [match_url](const blink::StorageKey&) { return match_url; }),
         /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
     run_loop.Run();
 
@@ -937,7 +937,7 @@ TEST_F(AttributionManagerImplTest, SessionOnlyOrigins_DataDeletedAtShutdown) {
   GURL session_only_origin("https://sessiononly.example");
   auto impression =
       SourceBuilder()
-          .SetImpressionOrigin(url::Origin::Create(session_only_origin))
+          .SetSourceOrigin(url::Origin::Create(session_only_origin))
           .Build();
 
   mock_storage_policy_->AddSessionOnly(session_only_origin);
@@ -962,7 +962,7 @@ TEST_F(AttributionManagerImplTest,
   // Create impressions which each have the session only origin as one of
   // impression/conversion/reporting origin.
   auto impression1 =
-      SourceBuilder().SetImpressionOrigin(session_only_origin).Build();
+      SourceBuilder().SetSourceOrigin(session_only_origin).Build();
   auto impression2 =
       SourceBuilder().SetReportingOrigin(session_only_origin).Build();
   auto impression3 =
@@ -1197,7 +1197,7 @@ TEST_F(AttributionManagerImplTest, ClearData_NotifiesObservers) {
   base::RunLoop run_loop;
   attribution_manager_->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating([](const blink::StorageKey& _) { return false; }),
+      base::BindRepeating([](const blink::StorageKey&) { return false; }),
       /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -1360,7 +1360,7 @@ TEST_F(AttributionManagerImplTest,
 
   attribution_manager_->HandleSource(
       SourceBuilder()
-          .SetImpressionOrigin(source_origin)
+          .SetSourceOrigin(source_origin)
           .SetConversionOrigin(destination_origin)
           .SetReportingOrigin(reporting_origin)
           .SetDebugKey(123)

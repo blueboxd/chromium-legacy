@@ -236,6 +236,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
@@ -5350,6 +5351,12 @@ void RenderFrameHostImpl::TakeFocus(bool reverse) {
 void RenderFrameHostImpl::UpdateTargetURL(
     const GURL& url,
     blink::mojom::LocalMainFrameHost::UpdateTargetURLCallback callback) {
+  // Prerendering pages should not reach this code since the renderer only calls
+  // this when the mouse over the URL or keyboard focuses the URL.
+  if (lifecycle_state_ == LifecycleStateImpl::kPrerendering) {
+    mojo::ReportBadMessage("Unexpected UpdateTargetURL from renderer");
+    return;
+  }
   delegate_->UpdateTargetURL(this, url);
   std::move(callback).Run();
 }
@@ -11782,18 +11789,23 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       document_associated_data_.emplace(*this);
     }
 
-    // This may only be done after creating the DocumentAssociatedData for the
-    // new document, if appropriate, since `fenced_frame_urls_map` hangs off of
-    // that.
-    if (navigation_request->pending_ad_components_map()) {
-      navigation_request->pending_ad_components_map()->ExportToMapping(
-          GetPage().fenced_frame_urls_map());
-    }
+    const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
+        fenced_frame_properties = navigation_request->fenced_frame_properties();
+    if (fenced_frame_properties) {
+      // This may only be done after creating the DocumentAssociatedData for the
+      // new document, if appropriate, since `fenced_frame_urls_map` hangs off
+      // of that.
+      if (fenced_frame_properties->pending_ad_components_map.has_value()) {
+        fenced_frame_properties->pending_ad_components_map->ExportToMapping(
+            GetPage().fenced_frame_urls_map());
+      }
 
-    if (navigation_request->ad_auction_data()) {
-      AdAuctionDocumentData::CreateForCurrentDocument(
-          this, navigation_request->ad_auction_data()->interest_group_owner,
-          navigation_request->ad_auction_data()->interest_group_name);
+      if (fenced_frame_properties->ad_auction_data.has_value()) {
+        AdAuctionDocumentData::CreateForCurrentDocument(
+            this,
+            fenced_frame_properties->ad_auction_data->interest_group_owner,
+            fenced_frame_properties->ad_auction_data->interest_group_name);
+      }
     }
 
     // Continue observing the events for the committed navigation.
@@ -12236,6 +12248,27 @@ void RenderFrameHostImpl::SendCommitNavigation(
       }
     }
   }
+
+  blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons;
+  // Only populate the web-exposed NotRestoredReasons when needed by the
+  // NotRestoredReasons API, i.e. for cross-document main frame history
+  // navigations that are not served by back/forward cache.
+  if (IsBackForwardCacheEnabled() &&
+      base::FeatureList::IsEnabled(
+          blink::features::kBackForwardCacheSendNotRestoredReasons) &&
+      navigation_request->IsInMainFrame() &&
+      !navigation_request->IsServedFromBackForwardCache()) {
+    if (NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
+            navigation_request->GetNavigationEntry())) {
+      if (auto* metrics = entry->back_forward_cache_metrics()) {
+        not_restored_reasons = metrics->GetWebExposedNotRestoredReasons();
+      }
+    }
+  }
+  // Save the last sent NotRestoredReasons value for testing, so that we can
+  // verify them in tests.
+  not_restored_reasons_for_testing_ = not_restored_reasons.Clone();
+
   commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
@@ -12246,7 +12279,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(prefetch_loader_factory), devtools_navigation_token,
       permissions_policy, std::move(policy_container),
       std::move(code_cache_host), std::move(cookie_manager_info),
-      std::move(storage_info),
+      std::move(storage_info), std::move(not_restored_reasons),
       BuildCommitNavigationCallback(navigation_request));
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.SendCommitNavigationTime.",

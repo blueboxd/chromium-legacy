@@ -224,6 +224,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
@@ -388,7 +389,7 @@ api::autotest_private::AppType GetAppType(apps::AppType type) {
       // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
       // Lacros-hosted chrome-apps.
       return api::autotest_private::AppType::APP_TYPE_NONE;
-    }
+  }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;
 }
@@ -1184,8 +1185,7 @@ class EventGenerator {
                                              pressed);
         }
         if (task->flags & ui::EF_BACK_MOUSE_BUTTON) {
-          input_injector_->InjectMouseButton(ui::EF_BACK_MOUSE_BUTTON,
-                                             pressed);
+          input_injector_->InjectMouseButton(ui::EF_BACK_MOUSE_BUTTON, pressed);
         }
         if (task->flags & ui::EF_FORWARD_MOUSE_BUTTON) {
           input_injector_->InjectMouseButton(ui::EF_FORWARD_MOUSE_BUTTON,
@@ -4403,7 +4403,11 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     window_info.display_id = base::NumberToString(
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id());
     window_info.title = base::UTF16ToUTF8(window->GetTitle());
-    window_info.is_animating = window->layer()->GetAnimator()->is_animating();
+    // Check for window hiding animations separately because they pertain to
+    // layers detached from the window.
+    window_info.is_animating =
+        window->layer()->GetAnimator()->is_animating() ||
+        window->GetProperty(wm::kWindowHidingAnimationCountKey) > 0;
     window_info.is_visible = window->IsVisible();
     window_info.target_visibility = window->TargetVisibility();
     window_info.can_focus = window->CanFocus();
@@ -4427,13 +4431,17 @@ AutotestPrivateGetAppWindowListFunction::Run() {
                    << " (ID: " << window->GetId()
                    << ") isn't available even though it is an ARC window.";
       }
-
-      std::string* app_id = window->GetProperty(app_restore::kAppIdKey);
-      if (app_id) {
-        window_info.full_restore_window_app_id =
-            std::make_unique<std::string>(*app_id);
-      }
     }
+    std::string* full_restore_window_app_id =
+        window->GetProperty(app_restore::kAppIdKey);
+    if (full_restore_window_app_id) {
+      window_info.full_restore_window_app_id =
+          std::make_unique<std::string>(*full_restore_window_app_id);
+    }
+    std::string* app_id = window->GetProperty(ash::kAppIDKey);
+    if (app_id)
+      window_info.app_id = std::make_unique<std::string>(*app_id);
+
     auto* widget = views::Widget::GetWidgetForNativeWindow(window);
     // Frame information
     auto* immersive_controller =

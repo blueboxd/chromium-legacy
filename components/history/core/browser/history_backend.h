@@ -255,6 +255,20 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void SetBrowsingTopicsAllowed(ContextID context_id,
                                 int nav_entry_id,
                                 const GURL& url);
+  void SetPageLanguageForVisit(ContextID context_id,
+                               int nav_entry_id,
+                               const GURL& url,
+                               const std::string& page_language);
+  void SetPageLanguageForVisitByVisitID(VisitID visit_id,
+                                        const std::string& page_language);
+  void SetPasswordStateForVisit(
+      ContextID context_id,
+      int nav_entry_id,
+      const GURL& url,
+      VisitContentAnnotations::PasswordState password_state);
+  void SetPasswordStateForVisitByVisitID(
+      VisitID visit_id,
+      VisitContentAnnotations::PasswordState password_state);
   void AddContentModelAnnotationsForVisit(
       VisitID visit_id,
       const VisitContentModelAnnotations& model_annotations);

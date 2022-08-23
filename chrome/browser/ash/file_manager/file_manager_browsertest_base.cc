@@ -17,9 +17,6 @@
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "ash/components/drivefs/drivefs_host.h"
-#include "ash/components/drivefs/fake_drivefs.h"
-#include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "ash/components/smbfs/smbfs_host.h"
 #include "ash/components/smbfs/smbfs_mounter.h"
 #include "ash/constants/ash_features.h"
@@ -78,6 +75,7 @@
 #include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
@@ -107,10 +105,14 @@
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/ash/components/disks/mount_point.h"
+#include "chromeos/ash/components/drivefs/drivefs_host.h"
+#include "chromeos/ash/components/drivefs/fake_drivefs.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -233,6 +235,7 @@ struct AddEntriesMessage {
     LOCAL_VOLUME,
     DRIVE_VOLUME,
     CROSTINI_VOLUME,
+    GUEST_OS_VOLUME_0,  // GuestOS volume with provider id 0 (i.e. the first).
     USB_VOLUME,
     ANDROID_FILES_VOLUME,
     GENERIC_DOCUMENTS_PROVIDER_VOLUME,
@@ -283,6 +286,8 @@ struct AddEntriesMessage {
       *volume = DRIVE_VOLUME;
     else if (value == "crostini")
       *volume = CROSTINI_VOLUME;
+    else if (value == "guest_os_0")
+      *volume = GUEST_OS_VOLUME_0;
     else if (value == "usb")
       *volume = USB_VOLUME;
     else if (value == "android_files")
@@ -2578,6 +2583,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           ASSERT_TRUE(crostini_volume_->Initialize(profile()));
           crostini_volume_->CreateEntry(*message.entries[i]);
           break;
+        case AddEntriesMessage::GUEST_OS_VOLUME_0:
+          CHECK(guest_os_volumes_.size() > 0)
+              << "Must call registerMountableGuest first";
+          guest_os_volumes_["sftp://0:1234"]->CreateEntry(*message.entries[i]);
+          break;
         case AddEntriesMessage::DRIVE_VOLUME:
           if (drive_volume_) {
             drive_volume_->CreateEntry(*message.entries[i]);
@@ -3098,6 +3108,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             &run_loop),
         profile());
     run_loop.Run();
+    return;
+  }
+
+  if (name == "setTimezone") {
+    const std::string* timezone = value.FindString("timezone");
+    ASSERT_TRUE(timezone);
+    auto* user = user_manager::UserManager::Get()->GetActiveUser();
+    chromeos::system::SetSystemTimezone(user, *timezone);
     return;
   }
 

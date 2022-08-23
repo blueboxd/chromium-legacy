@@ -184,6 +184,75 @@ Vector<LayoutUnit> NGFrameSetLayoutAlgorithm::LayoutAxis(
     }
   }
 
+  // If we still have some left over space we need to divide it over the already
+  // existing columns/rows
+  if (remaining_length) {
+    // Our first priority is to spread if over the percentage columns. The
+    // remaining space is spread evenly, for example: if we have a space of
+    // 100px, the columns definition of 25%,25% used to result in two columns of
+    // 25px. After this the columns will each be 50px in width.
+    if (!percent_indices.IsEmpty() && total_percent) {
+      LayoutUnit remaining_percent = remaining_length;
+      for (auto i : percent_indices) {
+        LayoutUnit change_percent = AdjustSizeToRemainingSize(
+            sizes[i], remaining_percent, total_percent);
+        sizes[i] += change_percent;
+        remaining_length -= change_percent;
+      }
+    } else if (total_fixed) {
+      // Our last priority is to spread the remaining space over the fixed
+      // columns. For example if we have 100px of space and two column of each
+      // 40px, both columns will become exactly 50px.
+      LayoutUnit remaining_fixed = remaining_length;
+      for (auto i : fixed_indices) {
+        LayoutUnit change_fixed =
+            AdjustSizeToRemainingSize(sizes[i], remaining_fixed, total_fixed);
+        sizes[i] += change_fixed;
+        remaining_length -= change_fixed;
+      }
+    }
+  }
+
+  // If we still have some left over space we probably ended up with a remainder
+  // of a division. We cannot spread it evenly anymore. If we have any
+  // percentage columns/rows simply spread the remainder equally over all
+  // available percentage columns, regardless of their size.
+  if (remaining_length && !percent_indices.IsEmpty()) {
+    LayoutUnit remaining_percent = remaining_length;
+    for (auto i : percent_indices) {
+      int change_percent = (remaining_percent / percent_indices.size()).ToInt();
+      sizes[i] += change_percent;
+      remaining_length -= change_percent;
+    }
+  } else if (remaining_length && !fixed_indices.IsEmpty()) {
+    // If we don't have any percentage columns/rows we only have fixed columns.
+    // Spread the remainder equally over all fixed columns/rows.
+    LayoutUnit remaining_fixed = remaining_length;
+    for (auto i : fixed_indices) {
+      int change_fixed = (remaining_fixed / fixed_indices.size()).ToInt();
+      sizes[i] += change_fixed;
+      remaining_length -= change_fixed;
+    }
+  }
+
+  // Still some left over. Add it to the last column, because it is impossible
+  // spread it evenly or equally.
+  if (remaining_length)
+    sizes[count - 1] += remaining_length;
+
+  // Now we have the final layout, distribute the delta over it.
+  bool worked = true;
+  for (wtf_size_t i = 0; i < count; ++i) {
+    if (sizes[i] && sizes[i] + deltas[i] <= 0)
+      worked = false;
+    sizes[i] += deltas[i];
+  }
+  // If the deltas broke something, undo them.
+  if (!worked) {
+    for (wtf_size_t i = 0; i < count; ++i)
+      sizes[i] -= deltas[i];
+  }
+
   return sizes;
 }
 

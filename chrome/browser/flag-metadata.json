@@ -634,6 +634,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "battery-saver-mode-available",
+    "owners": [ "chrome-performance-ui-team@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "binding-manager-use-not-perceptible-binding",
     "owners": ["ckitagawa", "yfriedman"],
     "expiry_milestone": 109
@@ -805,7 +810,7 @@
   },
   {
     "name": "canvas-2d-layers",
-    "owners": [ "alisalin", "fserb", "juanmihd", "yiyix" ],
+    "owners": [ "fserb", "jpgravel", "juanmihd", "yiyix" ],
     "expiry_milestone": 100
   },
   {
@@ -1489,11 +1494,6 @@
     "expiry_milestone": 106
   },
   {
-    "name": "download-calendar",
-    "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 107
-  },
-  {
     "name": "download-later",
     "owners": [ "xingliu", "dtrainor" ],
     "expiry_milestone": 102
@@ -1566,7 +1566,7 @@
   {
     "name": "eche-swa-debug-mode",
     "owners": [ "dhnishi" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 108
   },
   {
     "name": "edit-context",
@@ -1597,6 +1597,11 @@
     "name": "enable-accessibility-page-zoom",
     "owners": [ "mschillaci@google.com", "aldietz@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-accessibility-service",
+    "owners": [ "katie", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-android-gamepad-vibration",
@@ -2196,7 +2201,7 @@
   {
     "name": "enable-fake-keyboard-heuristic",
     "owners": ["wmahon", "chromeos-tango@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "enable-family-info-feedback",
@@ -3438,6 +3443,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "feed-video-inline-playback",
+    "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "file-handling-api",
     "owners": [ "dmurph", "mgiuca", "cmp" ],
     "expiry_milestone": 110
@@ -3752,6 +3762,11 @@
     "name": "hidpi-capture",
     "owners": [ "//content/browser/media/capture/OWNERS" ],
     "expiry_milestone": 112
+  },
+  {
+    "name": "high-efficiency-mode-available",
+    "owners": [ "chrome-performance-ui-team@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "history-journeys",
@@ -4481,7 +4496,7 @@
   {
     "name": "new-mobile-identity-consistency-fre",
     "owners": [ "jlebel", "chrome-signin-team" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 112
   },
   {
     "name": "new-overflow-menu",
@@ -5005,26 +5020,6 @@
     // This flag is used for QA & debugging on ChromeOS, which has no way to
     // customize switches.
     "expiry_milestone": -1
-  },
-  {
-    "name": "override-language-prefs-for-href-translate",
-    "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 106
-  },
-  {
-    "name": "override-similar-languages-for-href-translate",
-    "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 106
-  },
-  {
-    "name": "override-site-prefs-for-href-translate",
-    "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 106
-  },
-  {
-    "name": "override-unsupported-page-language-for-href-translate",
-    "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 106
   },
   {
     // This flag is used by ChromeOS for some accessibility users.
@@ -5877,7 +5872,7 @@
   {
     "name": "show-metered-toggle",
     "owners": [ "stevenjb", "azeemarshad", "cros-connectivity@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 122
   },
   {
     "name": "show-overdraw-feedback",

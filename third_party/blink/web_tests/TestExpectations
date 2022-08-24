@@ -201,6 +201,11 @@ crbug.com/v8/12227 external/wpt/wasm/jsapi/idlharness.any.worker.html [ Failure 
 
 # --- Skia roll test suppressions
 
+crbug.com/1354678 compositing/reflections/nested-reflection-transformed.html [ Failure Pass ]
+crbug.com/1354678 compositing/reflections/nested-reflection-transformed2.html [ Failure Pass ]
+crbug.com/1354678 fast/css/transformed-mask.html [ Failure Pass ]
+crbug.com/1354678 paint/invalidation/reflection/reflection-with-rotation.html [ Failure Pass ]
+
 # --- END Skia roll test suppresions
 
 
@@ -463,7 +468,6 @@ crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure 
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/962417 external/wpt/css/mediaqueries/mq-negative-range-001.html [ Failure ]
 crbug.com/1343368 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
-crbug.com/1343366 external/wpt/css/mediaqueries/mq-invalid-media-type-layer-001.html [ Failure ]
 crbug.com/1345247 external/wpt/css/mediaqueries/prefers-color-scheme-svg-image.html [ Failure ]
 
 crbug.com/815111 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
@@ -3269,6 +3273,8 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-preferred.html [ Failure ]
+crbug.com/626703 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-preferred.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/service-workers/cache-storage/cross-partition.https.tentative.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
@@ -5358,7 +5364,7 @@ crbug.com/1173439 http/tests/devtools/service-workers/service-worker-manager.js 
 # V8 roll
 crbug.com/961059 fast/workers/worker-shared-asm-buffer.html [ Skip ]
 
-crbug.com/1342628 http/tests/workers/worker-invalid-context.html [ Failure Pass ]
+crbug.com/1341227 [ Mac ] http/tests/workers/worker-invalid-context.html [ Skip ]
 
 # Temporarily disabled to unblock https://crrev.com/c/2979697
 crbug.com/1222114 http/tests/devtools/console/console-dir.js [ Failure Pass ]

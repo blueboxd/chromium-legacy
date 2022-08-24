@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/strings/grit/ax_strings.h"
@@ -1196,7 +1197,7 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
 
 std::string BrowserAccessibilityAndroid::GetCSSDisplay() const {
   std::string display =
-      node_->GetStringAttribute(ax::mojom::StringAttribute::kDisplay);
+      node()->GetStringAttribute(ax::mojom::StringAttribute::kDisplay);
 
   // Since this method is used to determine whether a text node is inline or
   // block, we can filter out other values like list-item or table-cell
@@ -1217,7 +1218,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
     if (max > min && value >= min && value <= max)
       index = static_cast<int>(((value - min)) * 100 / (max - min));
   } else {
-    absl::optional<int> pos_in_set = node()->GetPosInSet();
+    absl::optional<int> pos_in_set = GetPosInSet();
     if (pos_in_set && *pos_in_set > 0)
       index = *pos_in_set - 1;
   }
@@ -1233,8 +1234,8 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
     // as a percentage is not meaningful in those cases.
     count = 100;
   } else {
-    if (IsCollection() && node()->GetSetSize())
-      count = *node()->GetSetSize();
+    if (IsCollection() && GetSetSize())
+      count = *GetSetSize();
   }
   return count;
 }
@@ -1485,7 +1486,7 @@ int BrowserAccessibilityAndroid::GetSelectionStart() const {
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start)) {
     return sel_start;
   }
-  ui::AXTree::Selection unignored_selection =
+  ui::AXSelection unignored_selection =
       manager()->ax_tree()->GetUnignoredSelection();
   int32_t anchor_id = unignored_selection.anchor_object_id;
   BrowserAccessibility* anchor_object = manager()->GetFromID(anchor_id);
@@ -1508,7 +1509,7 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
     return sel_end;
   }
 
-  ui::AXTree::Selection unignored_selection =
+  ui::AXSelection unignored_selection =
       manager()->ax_tree()->GetUnignoredSelection();
   int32_t focus_id = unignored_selection.focus_object_id;
   BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
@@ -1584,8 +1585,8 @@ int BrowserAccessibilityAndroid::RowCount() const {
   if (!IsCollection())
     return 0;
 
-  if (node()->GetSetSize())
-    return *node()->GetSetSize();
+  if (GetSetSize())
+    return *GetSetSize();
 
   return node()->GetTableRowCount().value_or(0);
 }
@@ -1597,7 +1598,7 @@ int BrowserAccessibilityAndroid::ColumnCount() const {
 }
 
 int BrowserAccessibilityAndroid::RowIndex() const {
-  absl::optional<int> pos_in_set = node()->GetPosInSet();
+  absl::optional<int> pos_in_set = GetPosInSet();
   if (pos_in_set && pos_in_set > 0)
     return *pos_in_set - 1;
   return node()->GetTableCellRowIndex().value_or(0);

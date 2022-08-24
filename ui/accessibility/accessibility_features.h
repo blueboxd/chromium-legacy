@@ -132,6 +132,12 @@ AX_BASE_EXPORT extern const base::Feature kAccessibilityOSSettingsVisibility;
 // Returns true if improved Accessibility OS Settings visibility is enabled.
 AX_BASE_EXPORT bool IsAccessibilityOSSettingsVisibilityEnabled();
 
+// Enables the experimental Accessibility Service.
+AX_BASE_EXPORT extern const base::Feature kAccessibilityService;
+
+// Returns true if the Accessibility Service enabled.
+AX_BASE_EXPORT bool IsAccessibilityServiceEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
@@ -159,6 +165,12 @@ AX_BASE_EXPORT extern const base::Feature kEnableAriaElementReflection;
 
 // Returns true if ARIA element reflection is enabled.
 AX_BASE_EXPORT bool IsAriaElementReflectionEnabled();
+
+// Experiment to increase the cost of SendPendingAccessibilityEvents.
+AX_BASE_EXPORT extern const base::Feature kAblateSendPendingAccessibilityEvents;
+
+// Returns true if |kAblateSendPendingAccessibilityEvents| is enabled.
+AX_BASE_EXPORT bool IsAblateSendPendingAccessibilityEventsEnabled();
 
 #if BUILDFLAG(IS_ANDROID)
 // Compute the AXMode based on AccessibilityServiceInfo. If disabled,

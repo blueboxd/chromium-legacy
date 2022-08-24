@@ -1077,9 +1077,7 @@ static_library("browser") {
     "performance_manager/browser_child_process_watcher.cc",
     "performance_manager/browser_child_process_watcher.h",
     "performance_manager/chrome_browser_main_extra_parts_performance_manager.cc",
-    "performance_manager/chrome_browser_main_extra_parts_performance_manager.h",
     "performance_manager/chrome_content_browser_client_performance_manager_part.cc",
-    "performance_manager/chrome_content_browser_client_performance_manager_part.h",
     "performance_manager/decorators/frozen_frame_aggregator.cc",
     "performance_manager/decorators/frozen_frame_aggregator.h",
     "performance_manager/decorators/helpers/page_live_state_decorator_helper.cc",
@@ -1102,6 +1100,8 @@ static_library("browser") {
     "performance_manager/policies/policy_features.h",
     "performance_manager/policies/working_set_trimmer_policy.cc",
     "performance_manager/policies/working_set_trimmer_policy.h",
+    "performance_manager/public/chrome_browser_main_extra_parts_performance_manager.h",
+    "performance_manager/public/chrome_content_browser_client_performance_manager_part.h",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.cc",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.h",
     "performance_monitor/system_monitor.cc",
@@ -4054,10 +4054,10 @@ static_library("browser") {
       "performance_manager/policies/page_discarding_helper.h",
       "performance_manager/policies/urgent_page_discarding_policy.cc",
       "performance_manager/policies/urgent_page_discarding_policy.h",
+      "performance_manager/public/user_tuning/user_performance_tuning_manager.h",
       "performance_manager/user_tuning/profile_discard_opt_out_list_helper.cc",
       "performance_manager/user_tuning/profile_discard_opt_out_list_helper.h",
       "performance_manager/user_tuning/user_performance_tuning_manager.cc",
-      "performance_manager/user_tuning/user_performance_tuning_manager.h",
       "permissions/attestation_permission_request.cc",
       "permissions/attestation_permission_request.h",
       "policy/browsing_history_policy_handler.cc",
@@ -5118,6 +5118,7 @@ static_library("browser") {
       "//ash/webui/diagnostics_ui/mojom",
       "//ash/webui/eche_app_ui",
       "//ash/webui/eche_app_ui/mojom",
+      "//ash/webui/face_ml_app_ui",
       "//ash/webui/file_manager:file_manager_ui",
       "//ash/webui/file_manager/mojom",
       "//ash/webui/firmware_update_ui",
@@ -5301,7 +5302,6 @@ static_library("browser") {
       deps += [
         "//ash/webui/demo_mode_app_ui",
         "//ash/webui/demo_mode_app_ui/mojom",
-        "//ash/webui/facial_ml_app_ui",
         "//ash/webui/sample_system_web_app_ui",
         "//ash/webui/sample_system_web_app_ui/mojom:shared",
         "//ash/webui/sample_system_web_app_ui/mojom:trusted",
@@ -5717,6 +5717,8 @@ static_library("browser") {
       "chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h",
       "chromeos/reporting/metric_default_utils.cc",
       "chromeos/reporting/metric_default_utils.h",
+      "chromeos/reporting/metric_reporting_manager_delegate_base.cc",
+      "chromeos/reporting/metric_reporting_manager_delegate_base.h",
       "chromeos/reporting/network/network_bandwidth_sampler.cc",
       "chromeos/reporting/network/network_bandwidth_sampler.h",
       "chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
@@ -5804,7 +5806,12 @@ static_library("browser") {
       "//chrome/browser/ui/quick_answers",
     ]
   }
-
+  if (is_mac) {
+    sources += [
+      "webauthn/local_credential_management_mac.cc",
+      "webauthn/local_credential_management_mac.h",
+    ]
+  }
   if (is_win) {
     libs += [
       "secur32.lib",
@@ -5908,6 +5915,7 @@ static_library("browser") {
       "upgrade_detector/registry_monitor.cc",
       "upgrade_detector/registry_monitor.h",
       "webauthn/local_credential_management_win.cc",
+      "webauthn/local_credential_management_win.h",
       "webshare/win/share_operation.cc",
       "webshare/win/share_operation.h",
       "webshare/win/show_share_ui_for_window_operation.cc",
@@ -6291,6 +6299,8 @@ static_library("browser") {
 
   if (is_linux || is_win || is_mac) {
     sources += [
+      "enterprise/chrome_browser_main_extra_parts_enterprise.cc",
+      "enterprise/chrome_browser_main_extra_parts_enterprise.h",
       "enterprise/connectors/analysis/content_analysis_sdk_manager.cc",
       "enterprise/connectors/analysis/content_analysis_sdk_manager.h",
       "enterprise/connectors/analysis/local_binary_upload_service.cc",
@@ -7902,19 +7912,19 @@ grit("resources") {
     "//url/mojom:url_mojom_origin_js",
   ]
 
+  # TODO(crbug.com/1064647): Remove PluginFinder completely.
   if (enable_plugins) {
-    assert(!is_fuchsia)
-    if (is_chromeos_ash) {
-      inputs = [ "resources/plugin_metadata/plugins_chromeos.json" ]
-    }
-    if (is_linux || is_chromeos_lacros) {
-      inputs = [ "resources/plugin_metadata/plugins_linux.json" ]
+    if (is_win) {
+      inputs = [ "resources/plugin_metadata/plugins_win.json" ]
     }
     if (is_mac) {
       inputs = [ "resources/plugin_metadata/plugins_mac.json" ]
     }
-    if (is_win) {
-      inputs = [ "resources/plugin_metadata/plugins_win.json" ]
+    if (is_chromeos_ash) {
+      inputs = [ "resources/plugin_metadata/plugins_chromeos.json" ]
+    }
+    if (is_linux || is_chromeos_lacros || is_fuchsia) {
+      inputs = [ "resources/plugin_metadata/plugins_linux.json" ]
     }
   }
 

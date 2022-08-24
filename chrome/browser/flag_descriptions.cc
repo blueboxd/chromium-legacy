@@ -1040,6 +1040,11 @@ const char kAccessibilityOSSettingsVisibilityName[] =
 const char kAccessibilityOSSettingsVisibilityDescription[] =
     "This option enables improvements in Accessibility OS Settings visibility.";
 
+const char kAccessibilityServiceName[] = "Experimental Accessibility Service";
+const char kAccessibilityServiceDescription[] =
+    "This option enables the experimental Accessibility Service and runs some "
+    "accessibility features in the service.";
+
 const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
 const char kPostQuantumCECPQ2Description[] =
     "This option enables a post-quantum (i.e. resistent to quantum computers) "
@@ -2126,27 +2131,6 @@ const char kOverlayStrategiesUnoccluded[] =
 const char kOverlayStrategiesOccludedAndUnoccluded[] =
     "Occluded and unoccluded buffers "
     "(single-fullscreen,single-on-top,underlay)";
-
-const char kOverrideLanguagePrefsForHrefTranslateName[] =
-    "Override user-blocklisted languages for hrefTranslate";
-const char kOverrideLanguagePrefsForHrefTranslateDescription[] =
-    "When using hrefTranslate, ignore the user's blocklist of languages that "
-    "shouldn't be translated.";
-const char kOverrideSitePrefsForHrefTranslateName[] =
-    "Override user-blocklisted sites for hrefTranslate";
-const char kOverrideSitePrefsForHrefTranslateDescription[] =
-    "When using hrefTranslate, ignore the user's blocklist of websites that "
-    "shouldn't be translated.";
-const char kOverrideUnsupportedPageLanguageForHrefTranslateName[] =
-    "Force translation on pages with unsupported languages for hrefTranslate";
-const char kOverrideUnsupportedPageLanguageForHrefTranslateDescription[] =
-    "When using hrefTranslate, force translation on pages where the page's "
-    "language cannot be determined or is unsupported.";
-const char kOverrideSimilarLanguagesForHrefTranslateName[] =
-    "Force translation on pages with a similar page language for hrefTranslate";
-const char kOverrideSimilarLanguagesForHrefTranslateDescription[] =
-    "When using hrefTranslate, force translation on pages where the page's "
-    "language is similar to the target language specified via hrefTranslate.";
 
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
@@ -3491,6 +3475,10 @@ const char kFeedCloseRefreshName[] = "Feed-close refresh";
 const char kFeedCloseRefreshDescription[] =
     "Enables scheduling a background refresh of the feed following feed use.";
 
+const char kFeedVideoInlinePlaybackName[] = "Feed video inline playback";
+const char kFeedVideoInlinePlaybackDescription[] =
+    "Enable playing feed video in inline playback mode.";
+
 const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
 const char kGridTabSwitcherForTabletsDescription[] =
     "Enable grid tab switcher for tablets, replacing the tab strip.";
@@ -4052,6 +4040,11 @@ const char kAllowAllSitesToInitiateMirroringDescription[] =
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
 
+extern const char kBatterySaverModeAvailableName[] =
+    "Enable the battery saver mode feature in the settings";
+extern const char kBatterySaverModeAvailableDescription[] =
+    "When enabled, shows the battery section in the performance settings page";
+
 const char kBlockMigratedDefaultChromeAppSyncName[] =
     "Block migrated default Chrome app sync";
 const char kBlockMigratedDefaultChromeAppSyncDescription[] =
@@ -4091,6 +4084,12 @@ const char kGlobalMediaControlsCastStartStopName[] =
 const char kGlobalMediaControlsCastStartStopDescription[] =
     "Allows global media controls to control when a Cast session is started "
     "or stopped instead of relying on the Cast dialog.";
+
+extern const char kHighEfficiencyModeAvailableName[] =
+    "Enable the high efficiency mode feature in the settings";
+extern const char kHighEfficiencyModeAvailableDescription[] =
+    "When enabled, shows the performance section in the performance settings "
+    "page";
 
 const char kMuteNotificationSnoozeActionName[] =
     "Snooze action for mute notifications";

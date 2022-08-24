@@ -192,6 +192,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-lacros-tester-rel-reviver",
+)
+
+try_.builder(
     name = "linux-lacros-version-skew-fyi",
 )
 
@@ -247,7 +251,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
-        "retry_findit_exonerations": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )

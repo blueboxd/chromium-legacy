@@ -305,6 +305,11 @@ const base::Feature kCameraAppDocScanDlc{"CameraAppDocScanDlc",
 const base::Feature kCameraPrivacySwitchNotifications{
     "CameraPrivacySwitchNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the capture mode demo tools feature is enabled for Capture
+// Mode.
+const base::Feature kCaptureModeDemoTools{"CaptureModeDemoTools",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, allow eSIM installation bypass the non-cellular internet
 // connectivity check.
 const base::Feature kCellularBypassESimInstallationConnectivityCheck{
@@ -700,7 +705,7 @@ const base::Feature kExperimentalRgbKeyboardPatterns{
 // Enables the System Web App (SWA) of Face ML.
 // This app needs both CrOS and hardware support (Face Auth Camera and System
 // Face Auth Service), therefore we only enable it on these eligible devices.
-const base::Feature kFaceMlApp{"FaceMlApp", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFaceMLApp{"FaceMLApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables policy that controls feature to allow Family Link accounts on school
 // owned devices.
@@ -1494,7 +1499,7 @@ const base::Feature kShutdownConfirmationBubble{
 
 // Enables or disables enterprise policy control for SIM PIN Lock.
 const base::Feature kSimLockPolicy{"SimLockPolicy",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
@@ -1743,6 +1748,10 @@ const base::Feature kArcAndGuestOsFileTasksUseAppService{
     "ArcAndGuestOsFileTasksUseAppService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 ////////////////////////////////////////////////////////////////////////////////
+
+bool AreCaptureModeDemoToolsEnabled() {
+  return base::FeatureList::IsEnabled(kCaptureModeDemoTools);
+}
 
 bool AreContextualNudgesEnabled() {
   if (!IsHideShelfControlsInTabletModeEnabled())

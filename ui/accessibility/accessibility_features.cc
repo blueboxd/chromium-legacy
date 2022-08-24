@@ -159,6 +159,13 @@ bool IsAccessibilityOSSettingsVisibilityEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityOSSettingsVisibility);
 }
+
+const base::Feature kAccessibilityService{"AccessibilityService",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityServiceEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityService);
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kAugmentExistingImageLabels{
@@ -181,6 +188,14 @@ const base::Feature kEnableAriaElementReflection{
 
 bool IsAriaElementReflectionEnabled() {
   return base::FeatureList::IsEnabled(::features::kEnableAriaElementReflection);
+}
+
+const base::Feature kAblateSendPendingAccessibilityEvents{
+    "AblateSendPendingAccessibilityEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAblateSendPendingAccessibilityEventsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAblateSendPendingAccessibilityEvents);
 }
 
 #if BUILDFLAG(IS_ANDROID)

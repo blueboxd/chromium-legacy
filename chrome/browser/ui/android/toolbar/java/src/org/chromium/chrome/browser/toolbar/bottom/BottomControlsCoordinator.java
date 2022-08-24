@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
@@ -51,22 +52,26 @@ public class BottomControlsCoordinator implements BackPressHandler {
      * Build the coordinator that manages the bottom controls.
      * @param activity Activity instance to use.
      * @param windowAndroid A {@link WindowAndroid} for watching keyboard visibility events.
+     * @param layoutManager A {@link LayoutManager} to attach overlays to.
+     * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
      * @param controlsSizer A {@link BrowserControlsSizer} to update the bottom controls
      *                          height for the renderer.
      * @param fullscreenManager A {@link FullscreenManager} to listen for fullscreen changes.
-     * @param stub The bottom controls {@link ViewStub} to inflate.
+     * @param root The parent {@link ViewGroup} for the bottom controls.
      * @param contentDelegate Delegate for bottom controls UI operations.
+     * @param tabObscuringHandler Delegate object handling obscuring views.
      * @param overlayPanelVisibilitySupplier Notifies overlay panel visibility event.
-     * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
-     * @param layoutManager A {@link LayoutManagerImpl} to attach overlays to.
+     * @param constraintsSupplier Used to access current constraints of the browser controls.
      */
     @SuppressLint("CutPasteId") // Not actually cut and paste since it's View vs ViewGroup.
     public BottomControlsCoordinator(Activity activity, WindowAndroid windowAndroid,
             LayoutManager layoutManager, ResourceManager resourceManager,
             BrowserControlsSizer controlsSizer, FullscreenManager fullscreenManager,
             ScrollingBottomViewResourceFrameLayout root,
-            BottomControlsContentDelegate contentDelegate,
-            ObservableSupplier<Boolean> overlayPanelVisibilitySupplier) {
+            BottomControlsContentDelegate contentDelegate, TabObscuringHandler tabObscuringHandler,
+            ObservableSupplier<Boolean> overlayPanelVisibilitySupplier,
+            ObservableSupplier<Integer> constraintsSupplier) {
+        root.setConstraintsSupplier(constraintsSupplier);
         PropertyModel model = new PropertyModel(BottomControlsProperties.ALL_KEYS);
 
         ScrollingBottomViewSceneLayer sceneLayer =
@@ -80,10 +85,10 @@ public class BottomControlsCoordinator implements BackPressHandler {
         View container = root.findViewById(R.id.bottom_container_slot);
         ViewGroup.LayoutParams params = container.getLayoutParams();
         params.height = root.getResources().getDimensionPixelOffset(bottomControlsHeightId);
-        mMediator =
-                new BottomControlsMediator(windowAndroid, model, controlsSizer, fullscreenManager,
-                        root.getResources().getDimensionPixelOffset(bottomControlsHeightId),
-                        overlayPanelVisibilitySupplier);
+        mMediator = new BottomControlsMediator(windowAndroid, model, controlsSizer,
+                fullscreenManager, tabObscuringHandler,
+                root.getResources().getDimensionPixelOffset(bottomControlsHeightId),
+                overlayPanelVisibilitySupplier);
 
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
@@ -100,7 +105,8 @@ public class BottomControlsCoordinator implements BackPressHandler {
         layoutManager.addSceneOverlay(sceneLayer);
 
         if (mContentDelegate != null) {
-            mContentDelegate.initializeWithNative(activity, mMediator::setBottomControlsVisible);
+            mContentDelegate.initializeWithNative(
+                    activity, mMediator::setBottomControlsVisible, root::onModelTokenChange);
         }
     }
 

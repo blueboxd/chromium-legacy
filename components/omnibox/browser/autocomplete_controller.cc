@@ -151,7 +151,7 @@ void RecordMatchDeletion(const AutocompleteMatch& match) {
 // sync/async update. Sync updates may have a minimum input length as well.
 bool ShouldPreserveDefault(bool in_start, size_t input_length) {
   if (in_start) {
-    static const size_t min_input_length =
+    static const int min_input_length =
         OmniboxFieldTrial::
             kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength
                 .Get();
@@ -933,8 +933,8 @@ void AutocompleteController::UpdateResult(
     result_.AttachPedalsToMatches(input_, *provider_client_);
   }
 
-  // Need to validate before invoking CopyOldMatches as the old matches are not
-  // valid against the current input.
+  // Need to validate before invoking `TransferOldMatches()` as the old matches
+  // are not valid against the current input.
 #if DCHECK_IS_ON()
   result_.Validate();
 #endif  // DCHECK_IS_ON()

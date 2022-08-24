@@ -797,7 +797,7 @@ bool AppShimLaunchDisabled() {
 }
 
 base::FilePath GetChromeAppsFolder() {
-  auto* override = GetShortcutOverrideForTesting();
+  auto override = GetShortcutOverrideForTesting();
   if (override) {
     if (override->chrome_apps_folder.IsValid())
       return override->chrome_apps_folder.GetPath();
@@ -828,7 +828,7 @@ void WebAppAutoLoginUtil::SetInstanceForTesting(
 
 void WebAppAutoLoginUtil::AddToLoginItems(const base::FilePath& app_bundle_path,
                                           bool hide_on_startup) {
-  auto* override = GetShortcutOverrideForTesting();
+  auto override = GetShortcutOverrideForTesting();
   if (override) {
     override->startup_enabled[app_bundle_path] = true;
   } else {
@@ -838,7 +838,7 @@ void WebAppAutoLoginUtil::AddToLoginItems(const base::FilePath& app_bundle_path,
 
 void WebAppAutoLoginUtil::RemoveFromLoginItems(
     const base::FilePath& app_bundle_path) {
-  auto* override = GetShortcutOverrideForTesting();
+  auto override = GetShortcutOverrideForTesting();
   if (override) {
     override->startup_enabled[app_bundle_path] = false;
   } else {
@@ -1450,6 +1450,11 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   if (AppShimCreationDisabledForTest())
     return true;
 
@@ -1461,6 +1466,11 @@ ShortcutLocations GetAppExistingShortCutLocationImpl(
     const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   WebAppShortcutCreator shortcut_creator(
       internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
   ShortcutLocations locations;
@@ -1476,6 +1486,11 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              DeleteShortcutsCallback callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   const std::string bundle_id = GetBundleIdentifier(shortcut_info.extension_id,
                                                     shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);
@@ -1493,6 +1508,11 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   const std::string bundle_id = GetBundleIdentifier(app_id);
   auto bundle_infos = SearchForBundlesById(bundle_id);
   for (const auto& bundle_info : bundle_infos) {
@@ -1507,6 +1527,11 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   if (AppShimLaunchDisabled())
     return;
 
@@ -1523,6 +1548,11 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+  // If this is set, then keeping this as a local variable ensures it is not
+  // destroyed while we use state from it (retrieved in
+  // `GetChromeAppsFolder()`).
+  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
+      web_app::GetShortcutOverrideForTesting();
   std::list<BundleInfoPlist> bundles_info = BundleInfoPlist::GetAllInPath(
       GetChromeAppsFolder(), true /* recursive */);
   for (const auto& info : bundles_info) {

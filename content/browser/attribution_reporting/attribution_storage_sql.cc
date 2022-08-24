@@ -304,7 +304,7 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   uint64_t source_event_id = DeserializeUint64(statement.ColumnInt64(col++));
   url::Origin source_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
-  url::Origin conversion_origin =
+  url::Origin destination_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
   url::Origin reporting_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
@@ -321,7 +321,7 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   absl::optional<AttributionAggregationKeys> aggregation_keys =
       AttributionAggregationKeys::Deserialize(statement.ColumnString(col++));
 
-  if (source_origin.opaque() || conversion_origin.opaque() ||
+  if (source_origin.opaque() || destination_origin.opaque() ||
       reporting_origin.opaque() || !source_type.has_value() ||
       !attribution_logic.has_value() || num_conversions < 0 ||
       aggregatable_budget_consumed < 0 || !aggregation_keys.has_value()) {
@@ -345,7 +345,7 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
       .source = StoredSource(
           CommonSourceInfo(
               source_event_id, std::move(source_origin),
-              std::move(conversion_origin), std::move(reporting_origin),
+              std::move(destination_origin), std::move(reporting_origin),
               impression_time, expiry_time, *source_type, priority,
               std::move(*filter_data), debug_key, std::move(*aggregation_keys)),
           *attribution_logic, *active_state, source_id),
@@ -589,7 +589,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
     return StoreSourceResult(StorableSource::Result::kInternalError);
 
   const std::string serialized_conversion_destination =
-      common_info.ConversionDestination().Serialize();
+      common_info.DestinationSite().Serialize();
   const std::string serialized_reporting_origin =
       SerializePotentiallyTrustworthyOrigin(common_info.reporting_origin());
 
@@ -634,7 +634,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
                              common_info.source_event_id())));
   statement.BindString(1, serialized_source_origin);
   statement.BindString(2, SerializePotentiallyTrustworthyOrigin(
-                              common_info.conversion_origin()));
+                              common_info.destination_origin()));
   statement.BindString(3, serialized_conversion_destination);
   statement.BindString(4, serialized_reporting_origin);
   statement.BindTime(5, common_info.impression_time());
@@ -1022,10 +1022,7 @@ bool AttributionStorageSql::FindMatchingSourceForTrigger(
     absl::optional<StoredSource::Id>& source_id_to_attribute,
     std::vector<StoredSource::Id>& source_ids_to_delete) {
   const url::Origin& destination_origin = trigger.destination_origin();
-  DCHECK(!destination_origin.opaque());
-
   const url::Origin& reporting_origin = trigger.reporting_origin();
-  DCHECK(!reporting_origin.opaque());
 
   // Get all sources that match this <reporting_origin,
   // conversion_destination> pair. Only get sources that are active and not
@@ -2357,7 +2354,7 @@ AttributionStorageSql::HasCapacityForUniqueDestinationLimitForPendingSource(
   DCHECK_GT(max, 0);
 
   const std::string serialized_conversion_destination =
-      source.common_info().ConversionDestination().Serialize();
+      source.common_info().DestinationSite().Serialize();
 
   // Optimized by `kImpressionSiteReportingOriginIndexSql`.
   static constexpr char kSelectSourcesSql[] =

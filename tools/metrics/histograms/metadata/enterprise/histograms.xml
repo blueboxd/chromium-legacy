@@ -285,6 +285,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.BrowserSigninPolicy"
+    enum="EnterpriseBrowserSigninPolicy" expires_after="2023-08-15">
+  <owner>alexwchen@chromium.org</owner>
+  <owner>cbe-eng@google.com</owner>
+  <summary>
+    Histogram for counting the BrowserSignin policy. This metric is recorded
+    every 24 hours and at startup along with the full set of the enterprise
+    policy rules that are in use.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Enterprise.CachedDevicePolicyDeviceIdValidity"
     enum="EnterprisePolicyDeviceIdValidity" expires_after="M95">
   <owner>emaxx@chromium.org</owner>
@@ -321,7 +332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRealTimeReportEnqueue"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2022-10-01">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
   <summary>
@@ -331,7 +342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRealTimeReportQueueConfigurationCreation"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2022-10-01">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
   <summary>
@@ -341,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRealTimeReportQueueCreation"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2022-10-01">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
   <summary>
@@ -351,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRemoteCommand.Executed"
-    enum="RemoteCommandExecutionStatus" expires_after="2023-01-15">
+    enum="RemoteCommandExecutionStatus" expires_after="2023-10-01">
   <owner>anthonyvd@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -362,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRemoteCommand.Received"
-    enum="RemoteCommandReceivedStatus" expires_after="2023-01-15">
+    enum="RemoteCommandReceivedStatus" expires_after="2023-10-01">
   <owner>anthonyvd@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -374,7 +385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRemoteCommandInvalidations"
-    enum="EnterprisePolicyInvalidations" expires_after="2023-01-15">
+    enum="EnterprisePolicyInvalidations" expires_after="2023-10-01">
   <owner>anthonyvd@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -386,7 +397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudExtensionRequestDialogAction"
-    enum="BooleanSent" expires_after="2023-04-01">
+    enum="BooleanSent" expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>hur.ims@navercorp.com</owner>
   <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
@@ -397,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudExtensionRequestUpdated"
-    enum="EnterpriseCloudExtensionRequestListUpdate" expires_after="2022-10-01">
+    enum="EnterpriseCloudExtensionRequestListUpdate" expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
   <summary>
@@ -967,7 +978,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ReportedBlockLevelRestriction"
-    enum="EnterpriseDlpPolicyRestriction" expires_after="2022-12-01">
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-02-19">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -977,7 +988,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ReportedEventStatus" enum="GoogleRpcCode"
-    expires_after="2022-12-01">
+    expires_after="2023-02-19">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -986,7 +997,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ReportedReportLevelRestriction"
-    enum="EnterpriseDlpPolicyRestriction" expires_after="2022-12-01">
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-02-19">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1272,7 +1283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentAttestationBased"
-    enum="EnterpriseEnrollmentType" expires_after="2022-12-11">
+    enum="EnterpriseEnrollmentType" expires_after="2023-02-19">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1968,16 +1979,17 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PolicyUpdatePeriod.Device" units="days"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>rbock@google.com</owner>
   <owner>igorcov@chromium.org</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
     Time since last device policy fetch. Emitted when policies are loaded.
   </summary>
 </histogram>
 
 <histogram name="Enterprise.PolicyUpdatePeriod.MachineLevelUser" units="days"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1987,9 +1999,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PolicyUpdatePeriod.User" units="days"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>rbock@google.com</owner>
   <owner>igorcov@chromium.org</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
     Time since last user policy fetch. Emitted when policies are loaded.
   </summary>
@@ -2345,7 +2358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPolicies" enum="EnterprisePolicies"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     A set of policy rules that were ignored due to integrity violations while
@@ -2355,7 +2368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPoliciesDetected"
-    units="disabled policies" expires_after="2022-12-18">
+    units="disabled policies" expires_after="2023-02-19">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chomium.org</owner>
   <summary>

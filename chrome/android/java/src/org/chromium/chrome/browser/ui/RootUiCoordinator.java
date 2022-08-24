@@ -109,7 +109,10 @@ import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabObscuringHandler;
+import org.chromium.chrome.browser.tab.TabObscuringHandlerSupplier;
 import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -184,7 +187,7 @@ import java.util.function.Consumer;
 public class RootUiCoordinator
         implements DestroyObserver, InflationObserver, NativeInitObserver,
                    MenuOrKeyboardActionController.MenuOrKeyboardActionHandler, AppMenuBlocker {
-    private final UnownedUserDataSupplier<TabObscuringHandler> mTabObscuringHandlerSupplier =
+    protected final UnownedUserDataSupplier<TabObscuringHandler> mTabObscuringHandlerSupplier =
             new TabObscuringHandlerSupplier();
     private final JankTracker mJankTracker;
 
@@ -772,7 +775,7 @@ public class RootUiCoordinator
             mMessageQueueMediator = new ChromeMessageQueueMediator(mBrowserControlsManager,
                     mMessageContainerCoordinator, mActivityTabProvider,
                     mLayoutStateProviderOneShotSupplier, mModalDialogManagerSupplier,
-                    mActivityLifecycleDispatcher, mMessageDispatcher);
+                    mActivityLifecycleDispatcher, mStartSurfaceSupplier, mMessageDispatcher);
             mMessageDispatcher.setDelegate(mMessageQueueMediator);
             MessagesFactory.attachMessageDispatcher(mWindowAndroid, mMessageDispatcher);
         }
@@ -1227,10 +1230,17 @@ public class RootUiCoordinator
                     }
                 }
 
-                if (layoutType == LayoutType.TAB_SWITCHER) {
+                if (layoutType == LayoutType.TAB_SWITCHER
+                        || layoutType == LayoutType.START_SURFACE) {
                     // Hide find toolbar and app menu.
                     if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
                     hideAppMenu();
+
+                    // Hide current tab
+                    Tab currentTab = mTabModelSelectorSupplier.get().getCurrentTab();
+                    if (currentTab != null) {
+                        currentTab.hide(TabHidingType.OVERVIEW_SHOWN);
+                    }
                 }
             }
 

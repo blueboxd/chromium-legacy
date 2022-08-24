@@ -126,6 +126,7 @@
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/performance_manager/public/features.h"
 #include "components/permissions/features.h"
 #include "components/policy/core/common/features.h"
 #include "components/query_tiles/switches.h"
@@ -147,7 +148,6 @@
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/translate/core/common/translate_util.h"
@@ -1793,48 +1793,7 @@ const FeatureEntry::FeatureVariation
          std::size(kTranslateForceTriggerOnEnglishGeo), nullptr},
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
          std::size(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
-#endif  // BUILDFLAG(IS_ANDROID)
 
-const FeatureEntry::FeatureParam kOverridePrefsForHrefTranslateForceAuto[] = {
-    {translate::kForceAutoTranslateKey, "true"}};
-
-const FeatureEntry::FeatureVariation
-    kOverrideLanguagePrefsForHrefTranslateVariations[] = {
-        {"(Force automatic translation of blocked languages for hrefTranslate)",
-         kOverridePrefsForHrefTranslateForceAuto,
-         std::size(kOverridePrefsForHrefTranslateForceAuto), nullptr}};
-
-const FeatureEntry::FeatureVariation
-    kOverrideSitePrefsForHrefTranslateVariations[] = {
-        {"(Force automatic translation of blocked sites for hrefTranslate)",
-         kOverridePrefsForHrefTranslateForceAuto,
-         std::size(kOverridePrefsForHrefTranslateForceAuto), nullptr}};
-
-const FeatureEntry::FeatureParam
-    kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto[] = {
-        {"force-auto-translate-for-unsupported-page-language", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kOverrideUnsupportedPageLanguageForHrefTranslateVariations[] = {
-        {"(Force automatic translation of pages with unknown language for "
-         "hrefTranslate)",
-         kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto,
-         std::size(kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto),
-         nullptr}};
-
-const FeatureEntry::FeatureParam
-    kOverrideSimilarLanguagesForHrefTranslateForceAuto[] = {
-        {"force-auto-translate-for-similar-languages", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kOverrideSimilarLanguagesForHrefTranslateVariations[] = {
-        {"(Force automatic translation of pages with the same language as the "
-         "target language for hrefTranslate)",
-         kOverrideSimilarLanguagesForHrefTranslateForceAuto,
-         std::size(kOverrideSimilarLanguagesForHrefTranslateForceAuto),
-         nullptr}};
-
-#if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
     chrome::android::explore_sites::kExploreSitesVariationExperimental};
@@ -3291,6 +3250,28 @@ const FeatureEntry::FeatureVariation
          std::size(kServiceWorkerSkipIgnorableFetchHandler_SkipEmpty), nullptr},
 };
 
+#if !BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable5Seconds[] = {
+    {"time_before_discard", "5s"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable30Seconds[] = {
+    {"time_before_discard", "30s"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable2Minutes[] = {
+    {"time_before_discard", "2m"}};
+const FeatureEntry::FeatureParam kHighEfficiencyModeAvailable1Hour[] = {
+    {"time_before_discard", "1h"}};
+const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
+    {
+        {"With 5 Second Discard", kHighEfficiencyModeAvailable5Seconds,
+         std::size(kHighEfficiencyModeAvailable5Seconds), nullptr},
+        {"With 30 Second Discard", kHighEfficiencyModeAvailable30Seconds,
+         std::size(kHighEfficiencyModeAvailable30Seconds), nullptr},
+        {"With 2 Minute Discard", kHighEfficiencyModeAvailable2Minutes,
+         std::size(kHighEfficiencyModeAvailable2Minutes), nullptr},
+        {"With 1 Hour Discard", kHighEfficiencyModeAvailable1Hour,
+         std::size(kHighEfficiencyModeAvailable1Hour), nullptr},
+};
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4095,39 +4076,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(translate::kTranslateMessageUI)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
-    {"override-language-prefs-for-href-translate",
-     flag_descriptions::kOverrideLanguagePrefsForHrefTranslateName,
-     flag_descriptions::kOverrideLanguagePrefsForHrefTranslateDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         translate::kOverrideLanguagePrefsForHrefTranslate,
-         kOverrideLanguagePrefsForHrefTranslateVariations,
-         "OverrideLanguagePrefsForHrefTranslate")},
-    {"override-site-prefs-for-href-translate",
-     flag_descriptions::kOverrideSitePrefsForHrefTranslateName,
-     flag_descriptions::kOverrideSitePrefsForHrefTranslateDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         translate::kOverrideSitePrefsForHrefTranslate,
-         kOverrideSitePrefsForHrefTranslateVariations,
-         "OverrideSitePrefsForHrefTranslate")},
-    {"override-unsupported-page-language-for-href-translate",
-     flag_descriptions::kOverrideUnsupportedPageLanguageForHrefTranslateName,
-     flag_descriptions::
-         kOverrideUnsupportedPageLanguageForHrefTranslateDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         translate::kOverrideUnsupportedPageLanguageForHrefTranslate,
-         kOverrideUnsupportedPageLanguageForHrefTranslateVariations,
-         "OverrideUnsupportedPageLanguageForHrefTranslate")},
-    {"override-similar-languages-for-href-translate",
-     flag_descriptions::kOverrideSimilarLanguagesForHrefTranslateName,
-     flag_descriptions::kOverrideSimilarLanguagesForHrefTranslateDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         translate::kOverrideSimilarLanguagesForHrefTranslate,
-         kOverrideSimilarLanguagesForHrefTranslateVariations,
-         "OverrideSimilarLanguagesForHrefTranslate")},
-
 #if BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS) && !BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-system-notifications",
      flag_descriptions::kNotificationsSystemFlagName,
@@ -4757,6 +4705,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"feed-v2-autoplay", flag_descriptions::kInterestFeedV2AutoplayName,
      flag_descriptions::kInterestFeedV2AutoplayDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Autoplay)},
+    {"feed-video-inline-playback",
+     flag_descriptions::kFeedVideoInlinePlaybackName,
+     flag_descriptions::kFeedVideoInlinePlaybackDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedVideoInlinePlayback)},
     {"web-feed", flag_descriptions::kWebFeedName,
      flag_descriptions::kWebFeedDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
@@ -6668,6 +6620,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilityOSSettingsVisibilityName,
      flag_descriptions::kAccessibilityOSSettingsVisibilityDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAccessibilityOSSettingsVisibility)},
+
+    {"enable-accessibility-service",
+     flag_descriptions::kAccessibilityServiceName,
+     flag_descriptions::kAccessibilityServiceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAccessibilityService)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
@@ -9194,6 +9151,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsAppHomePageDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsAppHomePage)},
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
+    {"battery-saver-mode-available",
+     flag_descriptions::kBatterySaverModeAvailableName,
+     flag_descriptions::kBatterySaverModeAvailableDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::kBatterySaverModeAvailable)},
+    {"high-efficiency-mode-available",
+     flag_descriptions::kHighEfficiencyModeAvailableName,
+     flag_descriptions::kHighEfficiencyModeAvailableDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         performance_manager::features::kHighEfficiencyModeAvailable,
+         kHighEfficiencyModeAvailableVariations,
+         "HighEfficiencyModeAvailable")},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

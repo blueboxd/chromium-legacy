@@ -759,11 +759,14 @@ BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptExecution;
 enum class DelayAsyncScriptDelayType {
   kFinishedParsing,
   kFirstPaintOrFinishedParsing,
+  kEachLcpCandidate,
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kDelayAsyncScriptExecutionCrossSiteOnlyParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kDelayAsyncScriptExecutionLimitParam;
 
 // If enabled, async scripts will be run on a lower priority task queue.
 // See https://crbug.com/1348467.

@@ -144,6 +144,13 @@ export let LayoutInfoList;
  *   getAllAcceleratorConfig: !function(): !Promise<!AcceleratorConfig>,
  *   getLayoutInfo: !function(): !Promise<LayoutInfoList>,
  *   isMutable: !function(!AcceleratorSource): !Promise<boolean>,
+ *   removeAccelerator: !function(!AcceleratorSource, number, !AcceleratorKeys):
+ *     !Promise<!AcceleratorConfigResult>,
+ *   replaceAccelerator: !function(
+ *     !AcceleratorSource, number, !AcceleratorKeys, !AcceleratorKeys
+ *   ): !Promise<!AcceleratorConfigResult>,
+ *   addUserAccelerator: !function(!AcceleratorSource, number,
+ *     !AcceleratorKeys): !Promise<!AcceleratorConfigResult>,
  * }}
  */
 export let ShortcutProviderInterface;

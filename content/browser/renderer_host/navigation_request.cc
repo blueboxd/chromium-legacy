@@ -985,8 +985,8 @@ void RemoveOriginTrialHintsFromAcceptCH(
     }
   }
   if (need_update_storage) {
-    PersistAcceptCH(url::Origin::Create(url),
-                    frame_tree_node->GetParentOrOuterDocument(), delegate,
+    DCHECK(frame_tree_node);
+    PersistAcceptCH(url::Origin::Create(url), *frame_tree_node, delegate,
                     client_hints);
   }
 }
@@ -6511,10 +6511,6 @@ std::pair<url::Origin, std::string> NavigationRequest::
   std::pair<url::Origin, std::string> origin_with_debug_info =
       GetOriginForURLLoaderFactoryWithoutFinalFrameHostWithDebugInfo(
           SandboxFlagsToCommit());
-
-  // MHTML documents should commit as an opaque origin. They should not be able
-  // to make network request on behalf of the real origin.
-  DCHECK(!IsMhtmlOrSubframe() || origin_with_debug_info.first.opaque());
 
   // MHTML documents should commit as an opaque origin. They should not be able
   // to make network request on behalf of the real origin.

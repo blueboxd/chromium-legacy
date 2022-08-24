@@ -213,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist"
-    enum="BooleanBlocked" expires_after="2022-12-04">
+    enum="BooleanBlocked" expires_after="2023-02-19">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -1053,6 +1053,30 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PageLoad.Clients.ServiceWorker2.PaintTiming.{Timing}.{HandlerType}"
+    units="ms" expires_after="2023-06-30">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The {Timing} time of pages with the Service Worker fetch handlers. Metrics
+    won't be recorded if pages are not controlled by service workers. The
+    metrics are broken down by {HandlerType}. {HandlerType} only explains the
+    page's handler type, and it does not mean the fetch handler is actually
+    skipped or not.
+  </summary>
+  <token key="Timing">
+    <variant name="NavigationToFirstContentfulPaint"/>
+    <variant name="NavigationToLargestContentfulPaint2"/>
+  </token>
+  <token key="HandlerType">
+    <variant name="NonSkippableFetchHandler"
+        summary="The fetch handler is recognized as not skippable."/>
+    <variant name="SkippableFetchHandler"
+        summary="The fetch handler is recognized as skippable."/>
+  </token>
+</histogram>
+
+<histogram
     name="PageLoad.Clients.SideSearch.SidePanel.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"
     units="ms" expires_after="2022-09-11">
   <owner>tluk@chromium.org</owner>
@@ -1223,7 +1247,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Cpu.TotalUsage" units="ms" expires_after="2022-12-18">
+<histogram name="PageLoad.Cpu.TotalUsage" units="ms" expires_after="2023-02-19">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -1625,7 +1649,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFinalLoaderCallback"
-    units="ms" expires_after="2022-12-18">
+    units="ms" expires_after="2023-02-19">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1669,7 +1693,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFirstRequestStart"
-    units="ms" expires_after="2022-12-18">
+    units="ms" expires_after="2023-02-19">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -2964,7 +2988,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageSerialization.MhtmlLoading.LoadResult"
-    enum="MhtmlLoadResult" expires_after="2022-12-18">
+    enum="MhtmlLoadResult" expires_after="2023-02-19">
   <owner>sclittle@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>Reports the result of an attempt to load an MHTML archive.</summary>

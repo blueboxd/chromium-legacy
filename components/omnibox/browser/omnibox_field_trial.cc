@@ -359,10 +359,8 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   constexpr size_t kDefaultMaxURLMatches = 5;
-#elif BUILDFLAG(IS_IOS)
-  constexpr size_t kDefaultMaxURLMatches = 6;
 #else
   constexpr size_t kDefaultMaxURLMatches = 7;
 #endif
@@ -736,17 +734,17 @@ namespace OmniboxFieldTrial {
 
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultAfterTransfer(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultAfterTransfer",
         false);
 const base::FeatureParam<int>
     kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
         -1);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
         true);
 const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
@@ -759,11 +757,11 @@ const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     false);
 const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kUpdateResultDebounce,
         "AutocompleteStabilityUpdateResultDebounceFromLastRun",
         false);
 const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
-    &omnibox::kAutocompleteStability,
+    &omnibox::kUpdateResultDebounce,
     "AutocompleteStabilityUpdateResultDebounceDelay",
     0);
 

@@ -6718,16 +6718,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart"/>
 </histogram_suffixes>
 
-<!-- TODO(crbug.com/1353689): rewrite with the new way. -->
-<histogram_suffixes name="PageLoadMetricsSkippableFetchHandler" separator=".">
-  <suffix name="SkippableFetchHandler"
-    label="The fetch handler is recognized as skippable."/>
-  <suffix name="NonSkippableFetchHandler"
-    label="The fetch handler is recognized as not skippable."/>
-  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint"/>
-  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToLargestContentfulPaint2"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PageLoadMetricsClientsTabRestore" separator="."
     ordering="prefix">
   <suffix name="Clients.TabRestore"
@@ -10376,7 +10366,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="DemoMode" label="DemoMode"/>
   <suffix name="Diagnostics" label="Diagnostics"/>
   <suffix name="Eche" label="Eche"/>
-  <suffix name="FacialML" label="Facial ML"/>
+  <suffix name="FaceML" label="Face ML"/>
   <suffix name="FirmwareUpdate" label="FirmwareUpdate"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>

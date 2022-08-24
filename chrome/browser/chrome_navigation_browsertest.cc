@@ -1287,7 +1287,7 @@ using ChromeNavigationBrowserTestWithMobileEmulation = DevToolsProtocolTestBase;
 
 // Tests the behavior of navigating to a PDF when mobile emulation is enabled.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTestWithMobileEmulation,
-                       NavigateToPDFWithMobileEmulation) {
+                       DISABLED_NavigateToPDFWithMobileEmulation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL initial_url = embedded_test_server()->GetURL("/title1.html");
@@ -1314,8 +1314,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTestWithMobileEmulation,
 
 // Tests the behavior of cross origin redirection to a PDF with mobile emulation
 // is enabled.
+// TODO(crbug.com/1355793): Re-enable this test
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTestWithMobileEmulation,
-                       CrossSiteRedirectionToPDFWithMobileEmulation) {
+                       DISABLED_CrossSiteRedirectionToPDFWithMobileEmulation) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());

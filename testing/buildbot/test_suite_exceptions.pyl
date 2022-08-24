@@ -3637,7 +3637,7 @@
       },
     },
   },
-  'web_engine_integration_tests': {
+  'web_engine_integration_tests_cfv1': {
     'modifications': {
       'fuchsia-code-coverage': {
         'swarming': {

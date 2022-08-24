@@ -77,7 +77,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PPAPI)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
 #endif
 
@@ -97,27 +97,50 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PPAPI)
-#if BUILDFLAG(ENABLE_PDF)
-const char kPDFPluginExtension[] = "pdf";
-const char kPDFPluginDescription[] = "Portable Document Format";
-#endif  // BUILDFLAG(ENABLE_PDF)
-
 #if BUILDFLAG(ENABLE_NACL)
 content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
 #endif
 
-// Appends the known built-in plugins to the given vector. Some built-in
-// plugins are "internal" which means they are compiled into the Chrome binary,
-// and some are extra shared libraries distributed with the browser (these are
-// not marked internal, aside from being automatically registered, they're just
-// regular plugins).
-void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
+}  // namespace
+
+ChromeContentClient::ChromeContentClient() = default;
+
+ChromeContentClient::~ChromeContentClient() = default;
+
+#if BUILDFLAG(ENABLE_NACL)
+void ChromeContentClient::SetNaClEntryFunctions(
+    content::PepperPluginInfo::GetInterfaceFunc get_interface,
+    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
+    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
+  g_nacl_get_interface = get_interface;
+  g_nacl_initialize_module = initialize_module;
+  g_nacl_shutdown_module = shutdown_module;
+}
+#endif
+
+void ChromeContentClient::SetActiveURL(const GURL& url,
+                                       std::string top_origin) {
+  static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
+  active_url.Set(url.possibly_invalid_spec());
+
+  // Use a large enough size for Origin::GetDebugString.
+  static crash_reporter::CrashKeyString<128> top_origin_key("top-origin");
+  top_origin_key.Set(top_origin);
+}
+
+void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+  gpu::SetKeysForCrashLogging(gpu_info);
+}
+
+void ChromeContentClient::AddPepperPlugins(
+    std::vector<content::PepperPluginInfo>* plugins) {
 #if BUILDFLAG(ENABLE_PDF)
-  // TODO(thestig): Figure out how to make the PDF Viewer work without this
-  // PPAPI plugin registration.
+  // TODO(crbug.com/1344644): Expose the PDF viewer without using
+  // `PepperPluginInfo`.
+  static constexpr char kPDFPluginExtension[] = "pdf";
+  static constexpr char kPDFPluginDescription[] = "Portable Document Format";
   content::PepperPluginInfo pdf_info;
   pdf_info.is_internal = true;
   pdf_info.is_out_of_process = true;
@@ -154,47 +177,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
   plugins->push_back(nacl);
 #endif  // BUILDFLAG(ENABLE_NACL)
-}
-#endif  // BUILDFLAG(ENABLE_PPAPI)
-
-}  // namespace
-
-ChromeContentClient::ChromeContentClient() {
-}
-
-ChromeContentClient::~ChromeContentClient() {
-}
-
-#if BUILDFLAG(ENABLE_NACL)
-void ChromeContentClient::SetNaClEntryFunctions(
-    content::PepperPluginInfo::GetInterfaceFunc get_interface,
-    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
-  g_nacl_get_interface = get_interface;
-  g_nacl_initialize_module = initialize_module;
-  g_nacl_shutdown_module = shutdown_module;
-}
-#endif
-
-void ChromeContentClient::SetActiveURL(const GURL& url,
-                                       std::string top_origin) {
-  static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
-  active_url.Set(url.possibly_invalid_spec());
-
-  // Use a large enough size for Origin::GetDebugString.
-  static crash_reporter::CrashKeyString<128> top_origin_key("top-origin");
-  top_origin_key.Set(top_origin);
-}
-
-void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  gpu::SetKeysForCrashLogging(gpu_info);
-}
-
-void ChromeContentClient::AddPepperPlugins(
-    std::vector<content::PepperPluginInfo>* plugins) {
-#if BUILDFLAG(ENABLE_PPAPI)
-  ComputeBuiltInPlugins(plugins);
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 }
 
 void ChromeContentClient::AddContentDecryptionModules(

@@ -31,6 +31,7 @@
 #include "ash/wm/desks/templates/save_desk_template_button.h"
 #include "ash/wm/desks/templates/save_desk_template_button_container.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_feedback_button.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_icon_container.h"
 #include "ash/wm/desks/templates/saved_desk_icon_view.h"
@@ -58,6 +59,7 @@
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -574,6 +576,8 @@ TEST_F(SavedDeskTest, NoItemsLabelOnDeletingLastSavedDesk) {
   OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
   std::vector<const DeskTemplate*> entries = GetAllEntries();
   ASSERT_EQ(1ul, desk_model()->GetEntryCount());
+  // Exit overview mode.
+  ToggleOverview();
 
   // Close the window and enter overview mode. The no windows widget should be
   // shown.
@@ -2286,7 +2290,7 @@ TEST_F(SavedDeskTest, LaunchTemplateAfterClosingActiveDesk) {
 // Tests that multiple feedback buttons aren't created when we transition
 // between hiding and showing the templates grid without leaving overview.
 // Regression test for https://crbug.com/1299114.
-TEST_F(SavedDeskTest, HideAndShowTemplatesGridWithoutLeavingOverview) {
+TEST_F(SavedDeskTest, VerifyFeedbackButtonCount) {
   // One window is needed to save a template.
   auto window = CreateAppWindow();
 
@@ -2299,19 +2303,23 @@ TEST_F(SavedDeskTest, HideAndShowTemplatesGridWithoutLeavingOverview) {
       GetOverviewGridList().front()->GetSavedDeskLibraryView();
   ASSERT_TRUE(library_view);
 
-  // The library has two grids, two section labels, one feedback button and one
-  // "no items" label.
+  // The library should have only one feedback button.
   SavedDeskLibraryViewTestApi test_api(library_view);
-  ASSERT_EQ(6ul, test_api.scroll_view()->contents()->children().size());
+  auto count_feedback_button = [&test_api]() {
+    return base::ranges::count(test_api.scroll_view()->contents()->children(),
+                               FeedbackButton::kViewClassName,
+                               &views::View::GetClassName);
+  };
+  ASSERT_EQ(1, count_feedback_button());
 
   // Click on the grid item to launch the template.
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   EXPECT_TRUE(InOverviewSession());
 
-  // Go back to the library view and verify that we have the same amount of
-  // expected children.
+  // Go back to the library view and verify that we should still keep only one
+  // feedback button.
   ShowDesksTemplatesGrids();
-  ASSERT_EQ(6ul, test_api.scroll_view()->contents()->children().size());
+  ASSERT_EQ(1, count_feedback_button());
 }
 
 // Tests that the desks templates are organized in alphabetical order.
@@ -2927,18 +2935,12 @@ TEST_F(SavedDeskTest, ItemsDoNotOverlapShelf) {
   SavedDeskLibraryView* library_view =
       GetOverviewGridList().front()->GetSavedDeskLibraryView();
 
-  // The library has two grids, two section labels, one feedback button and one
-  // "no items" label.
-  SavedDeskLibraryViewTestApi test_api(library_view);
-  views::View::Views library_child_views =
-      test_api.scroll_view()->contents()->children();
-  ASSERT_EQ(6ul, library_child_views.size());
-
   const gfx::Rect shelf_bounds =
       GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
 
   // Test that none of the grid items overlap with the shelf.
-  for (views::View* view : library_child_views)
+  SavedDeskLibraryViewTestApi test_api(library_view);
+  for (views::View* view : test_api.scroll_view()->contents()->children())
     EXPECT_FALSE(view->GetBoundsInScreen().Intersects(shelf_bounds));
 }
 
@@ -3160,11 +3162,9 @@ TEST_F(SavedDeskTest, UserTemplateCountRecordsMetricCorrectly) {
     // There are no saved template entries and one test window initially.
     auto test_window = CreateAppWindow();
 
-    // Toggle overview if there isn't currently an overview. This is needed
-    // to save a template via the UI.
-    if (!GetOverviewSession()) {
-      ToggleOverview();
-    }
+    // Enter overview. This is needed to save a template via the UI.
+    ASSERT_FALSE(GetOverviewSession());
+    ToggleOverview();
 
     // The `save_desk_as_template_button` is visible when at least one window is
     // open.
@@ -3181,6 +3181,9 @@ TEST_F(SavedDeskTest, UserTemplateCountRecordsMetricCorrectly) {
 
     // Expect that the Desk Templates grid is visible.
     EXPECT_TRUE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+
+    // Exit overview.
+    ToggleOverview();
   }
 
   OpenOverviewAndShowTemplatesGrid();

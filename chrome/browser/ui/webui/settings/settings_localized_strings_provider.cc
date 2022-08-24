@@ -1143,7 +1143,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_TITLE},
     {"unenrollVirtualCardDialogConfirm",
      IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_CONFIRM_BUTTON_LABEL},
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     {"managePasskeysLabel", IDS_AUTOFILL_MANAGE_PASSKEYS_LABEL},
     {"managePasskeysTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_TITLE},
     {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE},
@@ -1608,9 +1608,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       g_browser_process->local_state()->FindPreference(
           prefs::kChromeRootStoreEnabled);
   if (chrome_root_store_enabled_pref &&
-      chrome_root_store_enabled_pref->IsManaged())
-    chrome_root_store_used &=
+      chrome_root_store_enabled_pref->IsManaged()) {
+    chrome_root_store_used =
         chrome_root_store_enabled_pref->GetValue()->GetBool();
+  }
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 
   html_source->AddBoolean("showChromeRootStoreCertificates",

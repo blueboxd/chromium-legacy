@@ -599,6 +599,9 @@ extern const char kEnhancedNetworkVoicesDescription[];
 extern const char kAccessibilityOSSettingsVisibilityName[];
 extern const char kAccessibilityOSSettingsVisibilityDescription[];
 
+extern const char kAccessibilityServiceName[];
+extern const char kAccessibilityServiceDescription[];
+
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
@@ -1190,15 +1193,6 @@ extern const char kOverlayStrategiesNone[];
 extern const char kOverlayStrategiesUnoccludedFullscreen[];
 extern const char kOverlayStrategiesUnoccluded[];
 extern const char kOverlayStrategiesOccludedAndUnoccluded[];
-
-extern const char kOverrideLanguagePrefsForHrefTranslateName[];
-extern const char kOverrideLanguagePrefsForHrefTranslateDescription[];
-extern const char kOverrideSitePrefsForHrefTranslateName[];
-extern const char kOverrideSitePrefsForHrefTranslateDescription[];
-extern const char kOverrideUnsupportedPageLanguageForHrefTranslateName[];
-extern const char kOverrideUnsupportedPageLanguageForHrefTranslateDescription[];
-extern const char kOverrideSimilarLanguagesForHrefTranslateName[];
-extern const char kOverrideSimilarLanguagesForHrefTranslateDescription[];
 
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
@@ -1968,6 +1962,9 @@ extern const char kFeedIsAblatedDescription[];
 extern const char kFeedCloseRefreshName[];
 extern const char kFeedCloseRefreshDescription[];
 
+extern const char kFeedVideoInlinePlaybackName[];
+extern const char kFeedVideoInlinePlaybackDescription[];
+
 extern const char kGridTabSwitcherForTabletsName[];
 extern const char kGridTabSwitcherForTabletsDescription[];
 
@@ -2306,6 +2303,9 @@ extern const char kAppManagementAppDetailsDescription[];
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
 
+extern const char kBatterySaverModeAvailableName[];
+extern const char kBatterySaverModeAvailableDescription[];
+
 extern const char kBlockMigratedDefaultChromeAppSyncName[];
 extern const char kBlockMigratedDefaultChromeAppSyncDescription[];
 
@@ -2326,6 +2326,9 @@ extern const char kEnableWebHidOnExtensionServiceWorkerDescription[];
 
 extern const char kGlobalMediaControlsCastStartStopName[];
 extern const char kGlobalMediaControlsCastStartStopDescription[];
+
+extern const char kHighEfficiencyModeAvailableName[];
+extern const char kHighEfficiencyModeAvailableDescription[];
 
 extern const char kMuteNotificationSnoozeActionName[];
 extern const char kMuteNotificationSnoozeActionDescription[];

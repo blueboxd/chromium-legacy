@@ -58,12 +58,17 @@ source_set("task_runner_context") {
 }
 
 source_set("test_callbacks_support") {
+  testonly = true
   sources = [
     "test_support_callbacks.cc",
     "test_support_callbacks.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
 }
 
 source_set("disconnectable_client") {

@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib
 
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
@@ -168,18 +169,13 @@ def CheckoutLLVM(commit, dir):
   sys.exit(1)
 
 
-def UrlOpen(url):
-  # TODO(crbug.com/1067752): Use urllib once certificates are fixed.
-  return subprocess.check_output(['curl', '--silent', url],
-                                 universal_newlines=True)
-
-
 def GetLatestLLVMCommit():
   """Get the latest commit hash in the LLVM monorepo."""
   main = json.loads(
-      UrlOpen('https://chromium.googlesource.com/external/' +
-              'github.com/llvm/llvm-project/' +
-              '+/refs/heads/main?format=JSON').replace(")]}'", ""))
+      urllib.request.urlopen('https://chromium.googlesource.com/external/' +
+                             'github.com/llvm/llvm-project/' +
+                             '+/refs/heads/main?format=JSON').read().decode(
+                                 "utf-8").replace(")]}'", ""))
   return main['commit']
 
 
@@ -216,8 +212,7 @@ def AddCMakeToPath(args):
 
 def AddGnuWinToPath():
   """Download some GNU win tools and add them to PATH."""
-  if sys.platform != 'win32':
-    return
+  assert sys.platform == 'win32'
 
   gnuwin_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gnuwin')
   GNUWIN_VERSION = '14'
@@ -532,6 +527,13 @@ def main():
   parser.add_argument('--use-system-cmake', action='store_true',
                       help='use the cmake from PATH instead of downloading '
                       'and using prebuilt cmake binaries')
+  parser.add_argument('--tf-path',
+                      help='path to python tensorflow pip package. '
+                      'Used for embedding an MLGO model')
+  parser.add_argument('--with-ml-inliner-model',
+                      help='path to MLGO inliner model to embed. Setting to '
+                      '\'default\', will download an official model which was '
+                      'trained for Chrome on Android')
   parser.add_argument('--with-android', type=gn_arg, nargs='?', const=True,
                       help='build the Android ASan runtime (linux only)',
                       default=sys.platform.startswith('linux'))
@@ -582,6 +584,9 @@ def main():
   if args.build_mac_arm and platform.machine() == 'arm64':
     print('--build-mac-arm only valid on intel to cross-build arm')
     return 1
+  if args.with_ml_inliner_model and not sys.platform.startswith('linux'):
+    print('--with-ml-inliner-model only supports linux hosts')
+    return 1
 
   # Don't buffer stdout, so that print statements are immediately flushed.
   # LLVM tests print output without newlines, so with buffering they won't be
@@ -594,12 +599,6 @@ def main():
                                   write_through=True)
   else:
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
-  # The gnuwin package also includes curl, which is needed to interact with the
-  # github API below.
-  # TODO(crbug.com/1067752): Use urllib once certificates are fixed, and
-  # move this down to where we fetch other build tools.
-  AddGnuWinToPath()
 
 
   if args.build_dir:
@@ -765,6 +764,8 @@ def main():
       base_cmake_args.append('-DCMAKE_SYSROOT=' + sysroot_amd64)
 
   if sys.platform == 'win32':
+    AddGnuWinToPath()
+
     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
 
     # Require zlib compression.
@@ -1136,6 +1137,31 @@ def main():
         fuchsia_args.append('SANITIZER_NO_UNDEFINED_SYMBOLS=OFF')
 
       runtimes_triples_args.append((target_triple, fuchsia_args))
+
+  # Embed MLGO inliner model. If tf_path is not specified, a vpython3 env
+  # will be created which contains the necessary source files for compilation.
+  # MLGO is only officially supported on linux. This condition is checked at
+  # the top of main()
+  if args.with_ml_inliner_model:
+    if args.with_ml_inliner_model == 'default':
+      model_path = ('https://commondatastorage.googleapis.com/'
+                    'chromium-browser-clang/tools/mlgo_model2.tgz')
+    else:
+      model_path = args.with_ml_inliner_model
+    if not args.tf_path:
+      tf_path = subprocess.check_output(
+          ['vpython3', os.path.join(THIS_DIR, 'get_tensorflow.py')],
+          universal_newlines=True).rstrip()
+    else:
+      tf_path = args.tf_path
+    print('Embedding MLGO inliner model at %s using Tensorflow at %s' %
+          (model_path, tf_path))
+    cmake_args += [
+        '-DLLVM_INLINER_MODEL_PATH=%s' % model_path,
+        '-DTENSORFLOW_AOT_PATH=%s' % tf_path,
+        # Disable Regalloc model generation since it is unused
+        '-DLLVM_RAEVICT_MODEL_PATH=none'
+    ]
 
   # Convert FOO=BAR CMake flags per triple into
   # -DBUILTINS_$triple_FOO=BAR/-DRUNTIMES_$triple_FOO=BAR and build up

@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.ReinitializingToken"
-    enum="ChapsReinitializingToken" expires_after="2022-12-18">
+    enum="ChapsReinitializingToken" expires_after="2023-02-19">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Each sample is the TPM Availability status.</summary>
@@ -295,6 +295,58 @@ chromium-metrics-reviews@google.com.
   <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>Result of a detachable base RW firmware update.</summary>
+</histogram>
+
+<histogram name="Platform.Discod.AutoWbBwUtilization" units="%"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when io-burst-triggered Write Boost expires. Specifies how well the
+    Write Boost is utilized, i.e. amount of cycles with bandwidth over trigger
+    threshold divided by total amount of cycles Write Boost was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.AutoWbOnCycles" units="cycles"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when io-burst-triggered Write Boost expires. Specifies length of
+    io-burst-triggered Write Booster period.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.BurstResult" enum="DiscodBurstResult"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when the io-burst ends or when the burst triggers WriteBoost.
+    Specifies if the burst resulted in enabling Write Booster.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.ExplicitWbBwUtilization" units="%"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when application-triggered Write Boost expires. Specifies how well the
+    Write Boost is utilized, i.e. amount of cycles with bandwidth over trigger
+    threshold divided by total amount of cycles Write Boost was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.ExplicitWbOnCycles" units="cycles"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when applications-triggered Write Boost expires. Specifies length of
+    application-triggered Write Booster period.
+  </summary>
 </histogram>
 
 <histogram name="Platform.DiskUsage.NumUserHomeDirectories"
@@ -1331,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
-    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2022-12-18">
+    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2023-02-19">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1445,7 +1497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingCommand"
-    enum="TPMCommandCode" expires_after="2022-12-18">
+    enum="TPMCommandCode" expires_after="2023-02-19">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Command code of the first timeout writing TPM command</summary>
@@ -1469,7 +1521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.U2F.Command" enum="Cr50U2FCommands"
-    expires_after="2022-12-11">
+    expires_after="2023-02-19">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of U2F commands sent to cr50.</summary>

@@ -9949,6 +9949,34 @@
       URLs will only match as U2F appIDs. Domains only match as webauthn RP IDs. So to cover both U2F and webauthn APIs, list the appID URL and domain for a given site.''',
     },
     {
+      'name': 'LoadCryptoTokenExtension',
+      'owners': ['martinkr@google.com', 'rdcronin@google.com'],
+      'tags': [],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Load the extension',
+        },
+        {
+          'value': False,
+          'caption': 'Apply default behavior',
+        },
+      ],
+      'supported_on': ['chrome.*:106-107', 'chrome_os:106-107'],
+      'future_on': ['fuchsia'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': False,
+      },
+      'example_value': True,
+      'default': False,
+      'id': 1005,
+      'caption': '''Load the CryptoToken component extension at startup''',
+      'desc': '''If set to Enabled, the built-in CryptoToken component extension is loaded at startup. If set to Disabled or not set, CryptoToken is not loaded at browser startup. This policy is meant as a temporary workaround for sites broken by `chrome.runtime` being undefined as a side effect of the removal of CryptoToken in M106. Websites must not depend on `chrome.runtime` being defined unconditionally.''',
+    },
+    {
       'name': 'U2fSecurityKeyApiEnabled',
       'owners': ['martinkr@google.com', 'agl@chromium.org'],
       'tags': [],
@@ -12079,6 +12107,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device power status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device power status reporting',
+        },
+      ],
       'example_value': False,
       'id': 512,
       'caption': '''Report power status''',
@@ -12130,6 +12168,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device storage status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device storage status reporting',
+        },
+      ],
       'example_value': False,
       'id': 513,
       'caption': '''Report storage status''',
@@ -12151,6 +12199,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device board status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device board status reporting',
+        },
+      ],
       'example_value': False,
       'id': 514,
       'caption': '''Report board status''',
@@ -12171,6 +12229,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device CPU info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device CPU info reporting',
+        },
+      ],
       'example_value': False,
       'id': 656,
       'caption': '''Report CPU info''',
@@ -12192,6 +12260,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device timezone info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device timezone info reporting',
+        },
+      ],
       'example_value': False,
       'id': 671,
       'caption': '''Report Timezone info''',
@@ -12213,6 +12291,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device memory info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device memory info reporting',
+        },
+      ],
       'example_value': False,
       'id': 682,
       'caption': '''Report memory info''',
@@ -12234,6 +12322,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device backlight info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device backlight info reporting',
+        },
+      ],
       'example_value': False,
       'id': 686,
       'caption': '''Report backlight info''',
@@ -12255,6 +12353,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device app info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device app info reporting',
+        },
+      ],
       'example_value': False,
       'id': 702,
       'caption': '''Report applications information''',
@@ -12276,6 +12384,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device Bluetooth info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device Bluetooth info reporting',
+        },
+      ],
       'example_value': False,
       'id': 708,
       'caption': '''Report Bluetooth info''',
@@ -12297,6 +12415,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device fan info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device fan info reporting',
+        },
+      ],
       'example_value': False,
       'id': 709,
       'caption': '''Report fan info''',
@@ -12318,6 +12446,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device VPD info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device VPD info reporting',
+        },
+      ],
       'example_value': False,
       'id': 710,
       'caption': '''Report VPD info''',
@@ -12340,6 +12478,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device system info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device system info reporting',
+        },
+      ],
       'example_value': False,
       'id': 741,
       'caption': '''Report system info''',
@@ -32815,6 +32963,39 @@ This policy has no effect if the option to keep existing browsing data is not av
       If this policy is set to Enabled, the window.webkitStorageInfo API will be available.
       If this policy is set to Disabled or not set, the window.webkitStorageInfo API will be unavailable.
       ''',
+    },
+    {
+      'name': 'HighEfficiencyModeEnabled',
+      'owners': ['anthonyvd@chromium.org', 'file://components/performance_manager/OWNERS'],
+      'caption': 'Enable High Efficiency Mode',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome.win', 'chrome.mac', 'chrome.linux' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'High Efficiency Mode will be enabled.',
+        },
+        {
+          'value': False,
+          'caption': 'High Efficiency Mode will be disabled.',
+        },
+        {
+          'value': None,
+          'caption': 'The end user can enable or disable High Efficiency Mode.',
+        }
+      ],
+      'default': None,
+      'example_value': False,
+      'id': 1006,
+      'tags': [],
+      'desc': '''This policy enables or disables the High Efficiency Mode setting. This setting makes it so that tabs are discarded after some period of time in the background to reclaim memory.
+      If this policy is unset, the end user can control this setting in chrome://settings/performance.
+      ''',
     }
   ],
   'messages': {
@@ -33822,6 +34003,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1004,
+  'highest_id_currently_used': 1006,
   'highest_atomic_group_id_currently_used': 43
 }

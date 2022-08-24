@@ -62,6 +62,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/mock_client_hints_controller_delegate.h"
 #include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/preloading_test_util.h"
@@ -71,6 +72,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/theme_change_waiter.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_commit_deferring_condition.h"
@@ -413,7 +415,7 @@ class PrerenderBrowserTest : public ContentBrowserTest {
 
   void ExpectFinalStatusForSpeculationRule(PrerenderHost::FinalStatus status) {
     // Check FinalStatus in UMA.
-    histogram_tester_.ExpectUniqueSample(
+    histogram_tester().ExpectUniqueSample(
         "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
         status, 1);
 
@@ -434,6 +436,8 @@ class PrerenderBrowserTest : public ContentBrowserTest {
 
     EXPECT_TRUE(final_status_entry_found);
   }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  protected:
   net::test_server::EmbeddedTestServer& ssl_server() { return ssl_server_; }
@@ -2492,7 +2496,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelMainFrame) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
   auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
-  base::HistogramTester histogram_tester;
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -2518,12 +2521,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ExpectFinalStatusForSpeculationRule(
       PrerenderHost::FinalStatus::kMojoBinderPolicy);
   // `TestInterfaceForCancel` doesn't have a enum value because it is not used
-  // in production, so histogram_tester should log
+  // in production, so histogram_tester_ should log
   // PrerenderCancelledInterface::kUnkown here.
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
       PrerenderCancelledInterface::kUnknown, 1);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
@@ -2536,7 +2539,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelIframe) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
   auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
-  base::HistogramTester histogram_tester;
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -2569,12 +2571,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ExpectFinalStatusForSpeculationRule(
       PrerenderHost::FinalStatus::kMojoBinderPolicy);
   // `TestInterfaceForCancel` doesn't have a enum value because it is not used
-  // in production, so histogram_tester should log
+  // in production, so histogram_tester_ should log
   // PrerenderCancelledInterface::kUnkown here.
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
       PrerenderCancelledInterface::kUnknown, 1);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
@@ -2917,7 +2919,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FeatureRestriction_WindowOpen) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html");
 
@@ -2954,7 +2955,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
 
   // "Navigation.TimeToActivatePrerender.SpeculationRule" histogram should be
   // recorded on every prerender activation.
-  histogram_tester.ExpectTotalCount(
+  histogram_tester().ExpectTotalCount(
       "Navigation.TimeToActivatePrerender.SpeculationRule", 1u);
 }
 
@@ -2962,7 +2963,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
 // (in-flight) main-frame navigation in the prerendering frame tree commits.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        SupportActivationWithOngoingMainFrameNavigation) {
-  base::HistogramTester histogram_tester;
 
   // Create a HTTP response to control prerendering main-frame navigation.
   net::test_server::ControllableHttpResponse main_document_response(
@@ -3039,7 +3039,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // "Navigation.Prerender.ActivationCommitDeferTime" histogram should be
   // recorded as PrerenderCommitDeferringCondition defers the navigation.
-  histogram_tester.ExpectTotalCount(
+  histogram_tester().ExpectTotalCount(
       "Navigation.Prerender.ActivationCommitDeferTime", 1u);
 }
 
@@ -3251,7 +3251,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DocumentUserData) {
 // This test cannot be a web test because web tests handles the GamepadMonitor
 // interface on the renderer side. See GamepadController::Install().
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, GamepadMonitorCancelPrerendering) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
 
@@ -3270,7 +3269,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, GamepadMonitorCancelPrerendering) {
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   ExpectFinalStatusForSpeculationRule(
       PrerenderHost::FinalStatus::kMojoBinderPolicy);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
       PrerenderCancelledInterface::kGamepadMonitor, 1);
 }
@@ -3349,7 +3348,6 @@ void LoadAndWaitForPrerenderDestroyed(WebContents* const web_contents,
 // viewer), as cancellation depends on the renderer attempting to bind
 // `content::mojom::PepperHost`.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
 
   // Navigate to an initial page.
@@ -3360,10 +3358,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
       prerender_helper());
   ExpectFinalStatusForSpeculationRule(
       PrerenderHost::FinalStatus::kMojoBinderPolicy);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
       PrerenderCancelledInterface::kUnknown, 1);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::PepperHost::Name_), 1);
@@ -3376,13 +3374,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
   LoadAndWaitForPrerenderDestroyed(
       web_contents(), GetUrl("/prerender/page-with-object-plugin.html"),
       prerender_helper());
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderHost::FinalStatus::kMojoBinderPolicy, 2);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
       PrerenderCancelledInterface::kUnknown, 2);
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::PepperHost::Name_), 2);
@@ -5176,7 +5174,6 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
 // Tests that PrerenderHostRegistry only starts prerendering for the first
 // prerender speculation rule it receives.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AddSpeculationRulesMultipleTimes) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kFirstPrerenderingUrl = GetUrl("/empty.html?prerender1");
   const GURL kSecondPrerenderingUrl = GetUrl("/empty.html?prerender2");
@@ -5185,7 +5182,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AddSpeculationRulesMultipleTimes) {
   // successfully.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   AddPrerender(kFirstPrerenderingUrl);
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
 
@@ -5240,7 +5237,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AddSpeculationRulesMultipleTimes) {
 // Tests that PrerenderHostRegistry can hold up to two prerendering for the
 // prerender embedders it receives.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kFirstPrerenderingUrl = GetUrl("/empty.html?prerender1");
   const GURL kSecondPrerenderingUrl = GetUrl("/empty.html?prerender2");
@@ -5258,7 +5254,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
           nullptr);
   EXPECT_TRUE(prerender_handle1);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
@@ -5274,7 +5270,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
           nullptr);
   EXPECT_TRUE(prerender_handle2);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
@@ -5290,7 +5286,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
           nullptr);
   EXPECT_FALSE(prerender_handle3);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 1);
@@ -5300,7 +5296,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
 // prerender speculation rule and prerender embedders in total.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        StartByEmbeddersAndSpeculationRulesMultipleTimes) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kSpeculationRulesPrerenderingUrl =
       GetUrl("/empty.html?prerender1");
@@ -5314,11 +5309,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Add the first prerender speculation rule; it should trigger prerendering
   // successfully.
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
@@ -5345,7 +5340,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           nullptr);
   EXPECT_TRUE(prerender_handle2);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 0);
@@ -5360,7 +5355,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           nullptr);
   EXPECT_FALSE(prerender_handle3);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester().ExpectBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded, 1);
@@ -5469,7 +5464,6 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersBrowserTest,
 // acceptable percent of the system memory is set to 0.
 IN_PROC_BROWSER_TEST_F(MultiplePrerendersWithLimitedMemoryBrowserTest,
                        AddSpeculationRulesMultipleTimes) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
 
@@ -5485,12 +5479,12 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersWithLimitedMemoryBrowserTest,
     host_observer.WaitForDestroyed();
   }
 
-  int count_of_memory_limit_exceeded = histogram_tester.GetBucketCount(
+  int count_of_memory_limit_exceeded = histogram_tester().GetBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderHost::FinalStatus::kMemoryLimitExceeded);
   // For an unknown reason, requesting the private memory footprint can fail.
   // This test allows the failure of getting the memory dump.
-  int count_of_no_memory_dump = histogram_tester.GetBucketCount(
+  int count_of_no_memory_dump = histogram_tester().GetBucketCount(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderHost::FinalStatus::kFailToGetMemoryUsage);
   EXPECT_EQ(MaxNumOfRunningPrerenders(),
@@ -5570,7 +5564,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossOriginPrerender) {
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        EmbedderTrigger_SameOriginRedirection) {
-  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   const GURL kRedirectedUrl = GetUrl("/empty.html?prerender");
@@ -5593,7 +5586,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       *shell()->web_contents(), kPrerenderingUrl);
   ASSERT_EQ(2u, redirect_chain_observer.redirect_chain().size());
 
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
       PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected, 1);
@@ -6916,6 +6909,206 @@ IN_PROC_BROWSER_TEST_F(PrerenderWithSiteIsolationDisabledBrowserTest,
   EXPECT_EQ(prerender_rfh->lifecycle_state(),
             LifecycleStateImpl::kPrerendering);
   EXPECT_EQ(prerender_rfh->GetProcess(), current_frame_host()->GetProcess());
+}
+
+class PrerenderClientHintsBrowserTest : public PrerenderBrowserTest {
+ public:
+  PrerenderClientHintsBrowserTest() = default;
+  ~PrerenderClientHintsBrowserTest() override = default;
+
+  void SetUp() override {
+    ssl_server().RegisterRequestHandler(base::BindRepeating(&HandleRequest));
+    PrerenderBrowserTest::SetUp();
+  }
+
+  static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url.find("acceptch") == std::string::npos)
+      return nullptr;
+
+    // Serve a response indicating clients to provide full version of UA.
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    if (request.relative_url.find("full-version") != std::string::npos) {
+      response->AddCustomHeader("Accept-CH", "sec-ch-ua-full-version");
+    } else if (request.relative_url.find("bitness") != std::string::npos) {
+      response->AddCustomHeader("Accept-CH", "sec-ch-ua-bitness");
+    } else if (request.relative_url.find("no-value") != std::string::npos) {
+      response->AddCustomHeader("Accept-CH", "");
+    }
+    response->set_code(net::HTTP_OK);
+    if (request.relative_url.find("iframe") != std::string::npos) {
+      response->set_content(R"(
+        <html><head><title>iframe test</title></head>
+        <body>
+        <iframe src="title1.html" id="test"></iframe>
+        </body></html>
+      )");
+      response->set_content_type("text/html");
+    } else if (request.relative_url.find("image") != std::string::npos) {
+      response->set_content(R"(
+        <html>
+        <head></head>
+        <body>
+          <img src="./blank.jpg"/>
+          <p>This page has an image. Yay for images!
+        </body>
+        </html>
+      )");
+      response->set_content_type("text/html");
+
+    } else {
+      response->set_content("");
+      response->set_content_type("text/plain");
+    }
+    return response;
+  }
+
+ protected:
+  bool HasRequestHeader(const GURL& url, const std::string& key) {
+    net::test_server::HttpRequest::HeaderMap headers = GetRequestHeaders(url);
+    return headers.find(key) != headers.end();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
+                       PrerenderResponseChangesClientHintsLocally) {
+  MockClientHintsControllerDelegate client_hints_controller_delegate(
+      content::GetShellUserAgentMetadata());
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
+
+  // Navigate to an initial page.
+  GURL url = GetUrl("/empty.html?acceptch-bitness");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  // Start prerendering.
+  GURL prerender_url = GetUrl("/iframe.html?acceptch-full-version");
+  int host_id = AddPrerender(prerender_url);
+  WaitForPrerenderLoadCompleted(host_id);
+
+  // The main frame request does not contain sec-ch-ua-full-version, because it
+  // is using the global setting at this moment. sec-ch-ua-bitness should be
+  // contained as well, because it is a global setting and applies to all
+  // navigations.
+  EXPECT_TRUE(HasRequestHeader(prerender_url, "sec-ch-ua-bitness"));
+  EXPECT_FALSE(HasRequestHeader(prerender_url, "sec-ch-ua-full-version"));
+
+  // The subframe prerender navigation requests should contain
+  // sec-ch-ua-full-version, as the main frame navigation request changed the
+  // client hints setting.
+  GURL prerender_iframe_url = GetUrl("/title1.html");
+  WaitForRequest(prerender_iframe_url, 1);
+  EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-full-version"));
+  EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-bitness"));
+
+  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                          host_id);
+  NavigatePrimaryPage(prerender_url);
+
+  // The prerendered page should be activated successfully. The settings on the
+  // prerendered page should not apply to the primary navigation before
+  // activation, so at this point the navigation request is using the global
+  // setting, which is the same as the prerender initial navigation.
+  prerender_observer.WaitForActivation();
+
+  GURL real_navigate_url = GetUrl("/empty.html?real");
+  NavigatePrimaryPage(real_navigate_url);
+
+  // The request headers should contain sec-ch-ua-full-version, because the
+  // prerender local setting was propagated to the global setting. The final
+  // setting is the union set of global setting and local setting.
+  EXPECT_TRUE(HasRequestHeader(real_navigate_url, "sec-ch-ua-full-version"));
+  EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-bitness"));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
+                       ChangesToClientHintsAreDiscardIfNoActivation) {
+  MockClientHintsControllerDelegate client_hints_controller_delegate(
+      content::GetShellUserAgentMetadata());
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
+
+  // Navigate to an initial page.
+  GURL url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  // Start prerendering.
+  GURL prerender_url = GetUrl("/empty.html?acceptch");
+  GURL real_navigate_url = GetUrl("/empty.html?real");
+
+  int host_id = AddPrerender(prerender_url);
+  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                          host_id);
+  WaitForPrerenderLoadCompleted(host_id);
+  NavigatePrimaryPage(real_navigate_url);
+
+  // The request headers should not contain sec-ch-ua-full-version, because no
+  // primary pages indicate to do so and the prerender local setting has been
+  // discarded.
+  EXPECT_FALSE(HasRequestHeader(real_navigate_url, "sec-ch-ua-full-version"));
+  GURL real_navigate_url_2 = GetUrl("/empty.html?real2");
+  NavigatePrimaryPage(real_navigate_url_2);
+
+  // The request headers should not contain sec-ch-ua-full-version, because no
+  // primary pages indicate to do so and the prerender local setting has been
+  // discarded.
+  EXPECT_FALSE(HasRequestHeader(real_navigate_url_2, "sec-ch-ua-full-version"));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
+                       PrimaryResponsesDoNotResetPrenderSettings) {
+  MockClientHintsControllerDelegate client_hints_controller_delegate(
+      content::GetShellUserAgentMetadata());
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
+
+  // Navigate to an initial page.
+  GURL url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  // Start prerendering.
+  GURL prerender_url = GetUrl("/iframe.html?acceptch-full-version");
+  int host_id = AddPrerender(prerender_url);
+  WaitForPrerenderLoadCompleted(host_id);
+
+  // The main frame request does not contain sec-ch-ua-full-version, because it
+  // is using the global setting at this moment.
+  EXPECT_FALSE(HasRequestHeader(prerender_url, "sec-ch-ua-full-version"));
+
+  // The subframe prerender navigation requests should contain
+  // sec-ch-ua-full-version, as the main frame navigation request changed the
+  // client hints setting.
+  GURL prerender_iframe_url = GetUrl("/title1.html");
+  WaitForRequest(prerender_iframe_url, 1);
+  EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-full-version"));
+
+  // Open a new tab, and the new page clears all settings.
+  GURL new_tab_url = GetUrl("/image.html?acceptch-no-value");
+  OpenURLParams params(
+      new_tab_url, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false);
+  auto* new_web_contents = web_contents_impl()->OpenURL(params);
+  ASSERT_NE(nullptr, new_web_contents);
+  GURL new_tab_image_url = GetUrl("/blank.jpg");
+  WaitForRequest(new_tab_image_url, 1);
+  EXPECT_FALSE(HasRequestHeader(new_tab_url, "sec-ch-ua-full-version"));
+
+  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                          host_id);
+  NavigatePrimaryPage(prerender_url);
+
+  // The prerendered page should be activated successfully.
+  prerender_observer.WaitForActivation();
+
+  GURL real_navigate_url = GetUrl("/empty.html?real");
+  NavigatePrimaryPage(real_navigate_url);
+
+  // The request headers should contain sec-ch-ua-full-version, because the
+  // prerender local setting was propagated to the global setting.
+  EXPECT_TRUE(HasRequestHeader(real_navigate_url, "sec-ch-ua-full-version"));
 }
 
 }  // namespace content

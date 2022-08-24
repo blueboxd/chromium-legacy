@@ -3457,7 +3457,10 @@ are declared in tools/grit/grit_rule.gni.
           Certificate Signature Value
         </message>
         <message name="IDS_CERT_DETAILS_EXPORT_CERTIFICATE" desc="The label of the button to export the selected certificate">
-          E&amp;xport selected certificate...
+          E&amp;xport...
+        </message>
+        <message name="IDS_CERT_DETAILS_EXPORT_CERTIFICATE_A11Y_LABEL" desc="The accessibility label of the button to export the selected certificate. This message is spoken by screen readers when the IDS_CERT_DETAILS_EXPORT_CERTIFICATE control gets focus, but is not visually rendered.">
+          Export selected certificate
         </message>
 
         <message translateable="false" name="IDS_CERT_OID_AVA_COMMON_NAME" desc="">
@@ -5784,6 +5787,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
         Password saved
+      </message>
+      <!-- TODO(crbug.com/1345766): Add final string and make it translateable. -->
+      <message name="IDS_PASSWORD_WEAKNESS_INDICATOR" translateable="false" desc="Autofill dropdown text describing password strength.">
+        Weak password entered
       </message>
 
       <if expr="not use_titlecase">

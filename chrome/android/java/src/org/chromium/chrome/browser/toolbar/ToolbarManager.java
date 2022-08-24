@@ -101,6 +101,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
@@ -136,7 +137,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarTablet;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarInteractabilityManager;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
-import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
@@ -1318,11 +1318,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 mTabContentManager, mCompositorViewHolder,
                 mCompositorViewHolder::getDynamicResourceLoader, mTabCreatorManager,
                 mShareDelegateSupplier, mLayoutStateProviderSupplier, mSnackbarManager);
-        mBottomControlsCoordinatorSupplier.set(
-                new BottomControlsCoordinator(mActivity, mWindowAndroid, mLayoutManager,
-                        mCompositorViewHolder.getResourceManager(), mBrowserControlsSizer,
-                        mFullscreenManager, (ScrollingBottomViewResourceFrameLayout) root,
-                        mTabGroupUi, mOverlayPanelVisibilitySupplier));
+        mBottomControlsCoordinatorSupplier.set(new BottomControlsCoordinator(mActivity,
+                mWindowAndroid, mLayoutManager, mCompositorViewHolder.getResourceManager(),
+                mBrowserControlsSizer, mFullscreenManager,
+                (ScrollingBottomViewResourceFrameLayout) root, mTabGroupUi, mTabObscuringHandler,
+                mOverlayPanelVisibilitySupplier, mConstraintsProxy));
     }
 
     /**

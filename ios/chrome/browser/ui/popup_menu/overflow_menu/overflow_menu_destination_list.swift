@@ -61,8 +61,6 @@ struct OverflowMenuDestinationList: View {
 
   weak var metricsHandler: PopupMenuMetricsHandler?
 
-  var uiConfiguration: OverflowMenuUIConfiguration
-
   /// Tracks the list's current offset, to see when it scrolls.
   @State var listOffset: CGFloat = 0
 
@@ -85,7 +83,7 @@ struct OverflowMenuDestinationList: View {
               LazyHStack(alignment: alignment, spacing: 0) {
                 // Make sure the space to the first icon is constant, so add extra
                 // spacing before the first item.
-                Spacer(minLength: Constants.iconInitialSpace - spacing.iconSpacing)
+                Spacer().frame(width: Constants.iconInitialSpace - spacing.iconSpacing)
                 ForEach(destinations) { destination in
                   OverflowMenuDestinationView(
                     destination: destination, layoutParameters: layoutParameters,
@@ -107,7 +105,6 @@ struct OverflowMenuDestinationList: View {
           if layoutDirection == .rightToLeft {
             proxy.scrollTo(destinations.last?.destinationName)
           }
-          uiConfiguration.destinationListScreenFrame = geometry.frame(in: .global)
         }
       }
       .onPreferenceChange(ScrollViewLeadingOffset.self) { value in

@@ -221,6 +221,9 @@ extern const char kAutofillEnableFIDOProgressDialogDescription[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
 
+extern const char kAutofillEnableMerchantOptOutErrorDialogName[];
+extern const char kAutofillEnableMerchantOptOutErrorDialogDescription[];
+
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
 
@@ -1206,6 +1209,12 @@ extern const char kPageEntitiesPageContentAnnotationsDescription[];
 extern const char kPageInfoAboutThisSiteName[];
 extern const char kPageInfoAboutThisSiteDescription[];
 
+extern const char kPageInfoboutThisPageDescriptionPlaceholderName[];
+extern const char kPageInfoboutThisPageDescriptionPlaceholderDescription[];
+
+extern const char kPageInfoboutThisPagePersistentEntryName[];
+extern const char kPageInfoboutThisPagePersistentEntryDescription[];
+
 extern const char kPageInfoMoreAboutThisPageName[];
 extern const char kPageInfoMoreAboutThisPageDescription[];
 
@@ -1936,6 +1945,9 @@ extern const char kEnableOskResizesVisualViewportDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
+
+extern const char kExternalNavigationDebugLogsName[];
+extern const char kExternalNavigationDebugLogsDescription[];
 
 extern const char kFeatureNotificationGuideName[];
 extern const char kFeatureNotificationGuideDescription[];
@@ -3014,9 +3026,6 @@ extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
-extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
-extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
-
 extern const char kDockedMagnifierResizingName[];
 extern const char kDockedMagnifierResizingDescription[];
 
@@ -3185,9 +3194,6 @@ extern const char kEnableHardwareMirrorModeDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
-extern const char kMediaAppHandlesPdfName[];
-extern const char kMediaAppHandlesPdfDescription[];
-
 extern const char kMediaAppPhotosIntegrationImageName[];
 extern const char kMediaAppPhotosIntegrationImageDescription[];
 
@@ -3351,6 +3357,9 @@ extern const char kSystemTransliterationPhysicalTypingDescription[];
 
 extern const char kQuickSettingsNetworkRevampName[];
 extern const char kQuickSettingsNetworkRevampDescription[];
+
+extern const char kCaptivePortalUI2022Name[];
+extern const char kCaptivePortalUI2022Description[];
 
 extern const char kTerminalAlternativeEmulatorName[];
 extern const char kTerminalAlternativeEmulatorDescription[];

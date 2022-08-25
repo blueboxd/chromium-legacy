@@ -547,10 +547,8 @@ void UpdateDefaultTask(Profile* profile,
     }
   }
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMediaAppHandlesPdf)) {
-    RecordChangesInDefaultPdfApp(task_descriptor.app_id, mime_types,
-                                 lowercase_suffixes);
-  }
+  RecordChangesInDefaultPdfApp(task_descriptor.app_id, mime_types,
+                               lowercase_suffixes);
 }
 
 bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
@@ -653,7 +651,7 @@ bool ExecuteFileTask(Profile* profile,
   if (IsFilesAppId(task.app_id) &&
       (parsed_action_id == "upload-office-to-drive")) {
     const bool opened =
-        chromeos::cloud_upload::CloudUploadDialog::Show(file_urls);
+        chromeos::cloud_upload::CloudUploadDialog::Show(profile, file_urls);
     if (done) {
       if (opened) {
         std::move(done).Run(

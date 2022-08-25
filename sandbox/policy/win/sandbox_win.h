@@ -73,10 +73,10 @@ class SANDBOX_POLICY_EXPORT SandboxWin {
   static ResultCode SetJobLevel(sandbox::mojom::Sandbox sandbox_type,
                                 JobLevel job_level,
                                 uint32_t ui_exceptions,
-                                TargetPolicy* policy);
+                                TargetConfig* config);
 
   // Closes handles that are opened at process creation and initialization.
-  static ResultCode AddBaseHandleClosePolicy(TargetPolicy* policy);
+  static ResultCode AddBaseHandleClosePolicy(TargetConfig* config);
 
   // Add AppContainer policy for |sid| on supported OS.
   static ResultCode AddAppContainerPolicy(TargetConfig* config,

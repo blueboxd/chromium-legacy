@@ -40,6 +40,7 @@ import re
 import sys
 import tempfile
 from collections import defaultdict
+from copy import deepcopy
 
 import six
 from six.moves import zip_longest
@@ -248,7 +249,7 @@ class Port(object):
 
         # FIXME: Ideally we'd have a package-wide way to get a well-formed
         # options object that had all of the necessary options defined on it.
-        self._options = options or optparse.Values()
+        self._options = deepcopy(options) or optparse.Values()
 
         self.host = host
         self._executive = host.executive
@@ -263,6 +264,8 @@ class Port(object):
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
 
+        # Configuration and target are always set by PortFactory so this is only
+        # relevant in cases where a Port is created without it (testing mostly).
         if not hasattr(options, 'configuration') or not options.configuration:
             self.set_option_default('configuration',
                                     self.default_configuration())
@@ -1593,6 +1596,14 @@ class Port(object):
     def num_workers(self, requested_num_workers):
         """Returns the number of available workers (possibly less than the number requested)."""
         return requested_num_workers
+
+    def child_kwargs(self):
+        """Returns additional kwargs to pass to the Port objects in the worker processes.
+        This can be used to transmit additional state such as initialized emulators.
+
+        Note: these must be able to be pickled.
+        """
+        return {}
 
     def clean_up_test_run(self):
         """Performs port-specific work at the end of a test run."""

@@ -55,6 +55,8 @@
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -294,6 +296,9 @@ class SamlTestBase : public OobeBaseTest {
     fake_gaia_.fake_gaia()->RegisterSamlUser(
         saml_test_users::kFifthUserExampleTestEmail,
         fake_saml_idp()->GetSamlPageUrl());
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kSixthUserCorpExampleTestEmail,
+        fake_saml_idp()->GetSamlWithDeviceTrustUrl());
 
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,
@@ -1963,10 +1968,15 @@ class SAMLDeviceAttestationTest
   void SetUpInProcessBrowserTestFixture() override;
 
  protected:
-  void SetAllowedUrlsPolicy(const std::vector<std::string>& allowed_urls);
+  virtual void SetAllowedUrlsPolicy(
+      const std::vector<std::string>& allowed_urls);
+  void SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      const std::vector<std::string>& allowed_urls);
 
   ScopedTestingCrosSettings settings_helper_;
   StubCrosSettingsProvider* settings_provider_ = nullptr;
+
+  policy::DevicePolicyCrosTestHelper policy_helper_;
 
   attestation::MockMachineCertificateUploader mock_cert_uploader_;
   NiceMock<attestation::MockAttestationFlow> mock_attestation_flow_;
@@ -2000,6 +2010,21 @@ void SAMLDeviceAttestationTest::SetAllowedUrlsPolicy(
   }
   settings_provider_->Set(kDeviceWebBasedAttestationAllowedUrls,
                           base::Value(std::move(allowed_urls_values)));
+}
+
+void SAMLDeviceAttestationTest::
+    SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+        const std::vector<std::string>& allowed_urls) {
+  em::StringListPolicyProto* allowed_urls_proto =
+      policy_helper_.device_policy()
+          ->payload()
+          .mutable_device_login_screen_context_aware_access_signals_allowlist();
+  allowed_urls_proto->mutable_policy_options()->set_mode(
+      em::PolicyOptions::MANDATORY);
+  for (const auto& url : allowed_urls) {
+    allowed_urls_proto->mutable_value()->add_entries(url.c_str());
+  }
+  policy_helper_.RefreshDevicePolicy();
 }
 
 class SAMLDeviceAttestationEnrolledTest : public SAMLDeviceAttestationTest {
@@ -2141,6 +2166,24 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest,
       fake_saml_idp()->AssertChallengeResponseMatchesTpmResponse());
 }
 
+// Verify that device attestation is not available for URLs that also match the
+// ones on the DeviceContextAwareAccessSignalsAllowlist
+IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, PolicyCASMatchError) {
+  SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+}
+
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
   SetAllowedUrlsPolicy({"example2.com", fake_saml_idp()->GetIdpHost()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
@@ -2166,6 +2209,42 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
 }
+
+class SAMLDeviceTrustTest : public SAMLDeviceAttestationTest {
+ public:
+  SAMLDeviceTrustTest() {
+    device_state_.SetState(
+        DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+    scoped_feature_list_.InitAndEnableFeature(
+        enterprise_connectors::kDeviceTrustConnectorEnabled);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture();
+    stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verify that Device Trust sends the header for a matching URL.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustTest, SendHeaderForMatchingURL) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_TRUE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+}
+
+INSTANTIATE_TEST_SUITE_P(All, SAMLDeviceTrustTest, testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SAMLDeviceAttestationEnrolledTest,

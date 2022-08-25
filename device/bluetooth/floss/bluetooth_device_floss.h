@@ -155,7 +155,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 
   // Class of device.
   // TODO(b/204708206): Update with property framework when available
-  uint32_t cod_;
+  uint32_t cod_ = 0;
 
   // Whether the device is bonded/paired.
   FlossAdapterClient::BondState bond_state_ =

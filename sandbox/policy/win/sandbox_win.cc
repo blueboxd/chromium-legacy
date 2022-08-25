@@ -397,35 +397,32 @@ ResultCode AddDefaultConfigForSandboxedProcess(TargetConfig* config) {
   if (result != SBOX_ALL_OK)
     return result;
 
+  // The initial token has to be restricted if the main token is restricted.
+  result = config->SetTokenLevel(USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  if (result != SBOX_ALL_OK)
+    return result;
+
   config->SetLockdownDefaultDacl();
+
+  // Win8+ adds a device DeviceApi that we don't need.
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
+    result = config->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
+  if (result != SBOX_ALL_OK)
+    return result;
+
   return SBOX_ALL_OK;
 }
 
 ResultCode AddDefaultPolicyForSandboxedProcess(TargetPolicy* policy) {
-  ResultCode result = sandbox::SBOX_ALL_OK;
-
-  // Win8+ adds a device DeviceApi that we don't need.
-  if (base::win::GetVersion() >= base::win::Version::WIN8)
-    result = policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
-  if (result != SBOX_ALL_OK)
-    return result;
-
-  // On 2003/Vista+ the initial token has to be restricted if the main
-  // token is restricted.
-  result = policy->SetTokenLevel(USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
-  if (result != SBOX_ALL_OK)
-    return result;
-
-  result = policy->SetAlternateDesktop(true);
+  ResultCode result = policy->SetAlternateDesktop(true);
   if (result != SBOX_ALL_OK) {
     // We ignore the result of setting the alternate desktop, however log
     // a launch warning.
     LogLaunchWarning(result, ::GetLastError());
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
-    result = SBOX_ALL_OK;
   }
 
-  return result;
+  return SBOX_ALL_OK;
 }
 
 // This code is test only, and attempts to catch unsafe uses of
@@ -539,8 +536,8 @@ bool IsAppContainerEnabled() {
   return base::FeatureList::IsEnabled(features::kRendererAppContainer);
 }
 
-ResultCode SetJobMemoryLimit(Sandbox sandbox_type, TargetPolicy* policy) {
-  DCHECK_NE(policy->GetJobLevel(), JobLevel::kNone);
+ResultCode SetJobMemoryLimit(Sandbox sandbox_type, TargetConfig* config) {
+  DCHECK_NE(config->GetJobLevel(), JobLevel::kNone);
 
 #ifdef _WIN64
   size_t memory_limit = static_cast<size_t>(kDataSizeLimit);
@@ -563,7 +560,7 @@ ResultCode SetJobMemoryLimit(Sandbox sandbox_type, TargetPolicy* policy) {
       memory_limit = 8 * GB;
     }
   }
-  return policy->SetJobMemoryLimit(memory_limit);
+  return config->SetJobMemoryLimit(memory_limit);
 #else
   return SBOX_ALL_OK;
 #endif
@@ -740,6 +737,128 @@ ResultCode SetupAppContainerProfile(AppContainer* container,
   return SBOX_ALL_OK;
 }
 
+ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
+                                             const std::string& process_type,
+                                             SandboxDelegate* delegate,
+                                             TargetConfig* config) {
+  DCHECK(!config->IsConfigured());
+  // Allow no sandbox job if the --allow-no-sandbox-job switch is present.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowNoSandboxJob)) {
+    config->SetAllowNoSandboxJob();
+  }
+
+  // Pre-startup mitigations.
+  MitigationFlags mitigations =
+      MITIGATION_HEAP_TERMINATE | MITIGATION_BOTTOM_UP_ASLR | MITIGATION_DEP |
+      MITIGATION_DEP_NO_ATL_THUNK | MITIGATION_EXTENSION_POINT_DISABLE |
+      MITIGATION_SEHOP | MITIGATION_NONSYSTEM_FONT_DISABLE |
+      MITIGATION_IMAGE_LOAD_NO_REMOTE | MITIGATION_IMAGE_LOAD_NO_LOW_LABEL |
+      MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION;
+
+  if (base::FeatureList::IsEnabled(features::kWinSboxDisableKtmComponent))
+    mitigations |= MITIGATION_KTM_COMPONENT;
+
+  // CET is enabled with the CETCOMPAT bit on chrome.exe so must be
+  // disabled for processes we know are not compatible.
+  if (!delegate->CetCompatible())
+    mitigations |= MITIGATION_CET_DISABLED;
+
+  ResultCode result = config->SetProcessMitigations(mitigations);
+  if (result != SBOX_ALL_OK)
+    return result;
+
+  Sandbox sandbox_type = delegate->GetSandboxType();
+  // Post-startup mitigations.
+  mitigations = MITIGATION_DLL_SEARCH_ORDER;
+  if (!cmd_line.HasSwitch(switches::kAllowThirdPartyModules) &&
+      sandbox_type != Sandbox::kSpeechRecognition &&
+      sandbox_type != Sandbox::kMediaFoundationCdm) {
+    mitigations |= MITIGATION_FORCE_MS_SIGNED_BINS;
+  }
+
+  if (sandbox_type == Sandbox::kNetwork || sandbox_type == Sandbox::kAudio ||
+      sandbox_type == Sandbox::kIconReader) {
+    mitigations |= MITIGATION_DYNAMIC_CODE_DISABLE;
+  }
+
+  result = config->SetDelayedProcessMitigations(mitigations);
+  if (result != SBOX_ALL_OK)
+    return result;
+
+  if (process_type == switches::kRendererProcess) {
+    result = SandboxWin::AddWin32kLockdownPolicy(config);
+    if (result != SBOX_ALL_OK)
+      return result;
+  }
+
+  if (!delegate->DisableDefaultPolicy()) {
+    result = AddDefaultConfigForSandboxedProcess(config);
+    if (result != SBOX_ALL_OK)
+      return result;
+  }
+
+  result =
+      SandboxWin::SetJobLevel(sandbox_type, JobLevel::kLockdown, 0, config);
+  if (result != SBOX_ALL_OK)
+    return result;
+
+  if (process_type == switches::kGpuProcess &&
+      base::FeatureList::IsEnabled(
+          {"GpuLockdownDefaultDacl", base::FEATURE_ENABLED_BY_DEFAULT})) {
+    config->SetLockdownDefaultDacl();
+    config->AddRestrictingRandomSid();
+  }
+
+#if !defined(NACL_WIN64)
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kPpapiPluginProcess ||
+      sandbox_type == Sandbox::kPrintCompositor) {
+    AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
+                 Semantics::kFilesAllowReadonly, config);
+  }
+#endif
+
+  result = AddGenericConfig(config);
+  if (result != SBOX_ALL_OK) {
+    NOTREACHED();
+    return result;
+  }
+
+  std::string appcontainer_id;
+  if (SandboxWin::IsAppContainerEnabledForSandbox(cmd_line, sandbox_type) &&
+      delegate->GetAppContainerId(&appcontainer_id)) {
+    result = SandboxWin::AddAppContainerProfileToConfig(
+        cmd_line, sandbox_type, appcontainer_id, config);
+    DCHECK_EQ(result, SBOX_ALL_OK);
+    if (result != SBOX_ALL_OK)
+      return result;
+  }
+
+  // Allow the renderer, gpu and utility processes to access the log file.
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kGpuProcess ||
+      process_type == switches::kUtilityProcess) {
+    if (logging::IsLoggingToFileEnabled()) {
+      DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
+      result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
+                               logging::GetLogFileFullPath().c_str());
+      if (result != SBOX_ALL_OK)
+        return result;
+    }
+  }
+
+  if (sandbox_type == Sandbox::kMediaFoundationCdm) {
+    // Set a policy that would normally allow for process creation. This allows
+    // the mf cdm process to launch the protected media pipeline process
+    // (mfpmp.exe) without process interception.
+    result = config->SetJobLevel(JobLevel::kInteractive, 0);
+    if (result != SBOX_ALL_OK)
+      return result;
+  }
+  return SBOX_ALL_OK;
+}
+
 // Launches outside of the sandbox - the process will not be associated with
 // a Policy or TargetProcess. This supports both kNoSandbox and the --no-sandbox
 // command line flag.
@@ -809,33 +928,35 @@ bool IsUnsandboxedProcess(
 ResultCode SandboxWin::SetJobLevel(Sandbox sandbox_type,
                                    JobLevel job_level,
                                    uint32_t ui_exceptions,
-                                   TargetPolicy* policy) {
-  if (!ShouldSetJobLevel(policy->GetAllowNoSandboxJob()))
-    return policy->SetJobLevel(JobLevel::kNone, 0);
+                                   TargetConfig* config) {
+  DCHECK(!config->IsConfigured());
+  if (!ShouldSetJobLevel(config->GetAllowNoSandboxJob()))
+    return config->SetJobLevel(JobLevel::kNone, 0);
 
-  ResultCode ret = policy->SetJobLevel(job_level, ui_exceptions);
+  ResultCode ret = config->SetJobLevel(job_level, ui_exceptions);
   if (ret != SBOX_ALL_OK)
     return ret;
 
-  return SetJobMemoryLimit(sandbox_type, policy);
+  return SetJobMemoryLimit(sandbox_type, config);
 }
 
 // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
 // Just have to figure out what needs to be warmed up first.
 // static
-ResultCode SandboxWin::AddBaseHandleClosePolicy(TargetPolicy* policy) {
+ResultCode SandboxWin::AddBaseHandleClosePolicy(TargetConfig* config) {
+  DCHECK(!config->IsConfigured());
+
   if (base::FeatureList::IsEnabled(kEnableCsrssLockdownFeature)) {
     // Close all ALPC ports.
-    ResultCode ret = policy->SetDisconnectCsrss();
-    if (ret != SBOX_ALL_OK) {
+    ResultCode ret = config->SetDisconnectCsrss();
+    if (ret != SBOX_ALL_OK)
       return ret;
-    }
   }
 
   // TODO(cpu): Add back the BaseNamedObjects policy.
   std::wstring object_path = PrependWindowsSessionPath(
       L"\\BaseNamedObjects\\windows_shell_global_counters");
-  return policy->AddKernelObjectToClose(L"Section", object_path.data());
+  return config->AddKernelObjectToClose(L"Section", object_path.data());
 }
 
 // static
@@ -995,139 +1116,19 @@ ResultCode SandboxWin::GeneratePolicyForSandboxedProcess(
     return ResultCode::SBOX_ERROR_UNSANDBOXED_PROCESS;
   }
 
-  // Allow no sandbox job if the --allow-no-sandbox-job switch is present.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowNoSandboxJob)) {
-    policy->SetAllowNoSandboxJob();
-  }
-
   // Add any handles to be inherited to the policy.
   for (HANDLE handle : handles_to_inherit)
     policy->AddHandleToShare(handle);
 
-  sandbox::TargetConfig* config = policy->GetConfig();
-
-  if (!config->IsConfigured()) {
-    // Pre-startup mitigations.
-    MitigationFlags mitigations =
-        MITIGATION_HEAP_TERMINATE | MITIGATION_BOTTOM_UP_ASLR | MITIGATION_DEP |
-        MITIGATION_DEP_NO_ATL_THUNK | MITIGATION_EXTENSION_POINT_DISABLE |
-        MITIGATION_SEHOP | MITIGATION_NONSYSTEM_FONT_DISABLE |
-        MITIGATION_IMAGE_LOAD_NO_REMOTE | MITIGATION_IMAGE_LOAD_NO_LOW_LABEL |
-        MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION;
-
-    if (base::FeatureList::IsEnabled(features::kWinSboxDisableKtmComponent))
-      mitigations |= MITIGATION_KTM_COMPONENT;
-
-    // CET is enabled with the CETCOMPAT bit on chrome.exe so must be
-    // disabled for processes we know are not compatible.
-    if (!delegate->CetCompatible())
-      mitigations |= MITIGATION_CET_DISABLED;
-
-    ResultCode result = config->SetProcessMitigations(mitigations);
+  if (!policy->GetConfig()->IsConfigured()) {
+    ResultCode result = GenerateConfigForSandboxedProcess(
+        cmd_line, process_type, delegate, policy->GetConfig());
     if (result != SBOX_ALL_OK)
       return result;
-
-    // Post-startup mitigations.
-    mitigations = MITIGATION_DLL_SEARCH_ORDER;
-    if (!cmd_line.HasSwitch(switches::kAllowThirdPartyModules) &&
-        sandbox_type != Sandbox::kSpeechRecognition &&
-        sandbox_type != Sandbox::kMediaFoundationCdm) {
-      mitigations |= MITIGATION_FORCE_MS_SIGNED_BINS;
-    }
-
-    if (sandbox_type == Sandbox::kNetwork || sandbox_type == Sandbox::kAudio ||
-        sandbox_type == Sandbox::kIconReader) {
-      mitigations |= MITIGATION_DYNAMIC_CODE_DISABLE;
-    }
-
-    result = config->SetDelayedProcessMitigations(mitigations);
-    if (result != SBOX_ALL_OK)
-      return result;
-
-    if (process_type == switches::kRendererProcess) {
-      result = AddWin32kLockdownPolicy(config);
-      if (result != SBOX_ALL_OK)
-        return result;
-    }
-
-    if (!delegate->DisableDefaultPolicy()) {
-      result = AddDefaultConfigForSandboxedProcess(config);
-      if (result != SBOX_ALL_OK)
-        return result;
-    }
   }
-
-  ResultCode result = SetJobLevel(sandbox_type, JobLevel::kLockdown, 0, policy);
-  if (result != SBOX_ALL_OK)
-    return result;
 
   if (!delegate->DisableDefaultPolicy()) {
-    result = AddDefaultPolicyForSandboxedProcess(policy);
-    if (result != SBOX_ALL_OK)
-      return result;
-  }
-
-  if (!config->IsConfigured()) {
-    if (process_type == switches::kGpuProcess &&
-        base::FeatureList::IsEnabled(
-            {"GpuLockdownDefaultDacl", base::FEATURE_ENABLED_BY_DEFAULT})) {
-      config->SetLockdownDefaultDacl();
-      config->AddRestrictingRandomSid();
-    }
-  }
-
-#if !defined(NACL_WIN64)
-  if (!config->IsConfigured()) {
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kPpapiPluginProcess ||
-        sandbox_type == Sandbox::kPrintCompositor) {
-      AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
-                   Semantics::kFilesAllowReadonly, config);
-    }
-  }
-#endif
-
-  if (!config->IsConfigured()) {
-    result = AddGenericConfig(config);
-    if (result != SBOX_ALL_OK) {
-      NOTREACHED();
-      return result;
-    }
-  }
-
-  if (!config->IsConfigured()) {
-    std::string appcontainer_id;
-    if (IsAppContainerEnabledForSandbox(cmd_line, sandbox_type) &&
-        delegate->GetAppContainerId(&appcontainer_id)) {
-      result = AddAppContainerProfileToConfig(cmd_line, sandbox_type,
-                                              appcontainer_id, config);
-      DCHECK_EQ(result, SBOX_ALL_OK);
-      if (result != SBOX_ALL_OK)
-        return result;
-    }
-  }
-
-  // Allow the renderer, gpu and utility processes to access the log file.
-  if (!config->IsConfigured()) {
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kGpuProcess ||
-        process_type == switches::kUtilityProcess) {
-      if (logging::IsLoggingToFileEnabled()) {
-        DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
-        result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
-                                 logging::GetLogFileFullPath().c_str());
-        if (result != SBOX_ALL_OK)
-          return result;
-      }
-    }
-  }
-
-  if (sandbox_type == Sandbox::kMediaFoundationCdm) {
-    // Set a policy that would normally allow for process creation. This allows
-    // the mf cdm process to launch the protected media pipeline process
-    // (mfpmp.exe) without process interception.
-    result = policy->SetJobLevel(JobLevel::kInteractive, 0);
+    ResultCode result = AddDefaultPolicyForSandboxedProcess(policy);
     if (result != SBOX_ALL_OK)
       return result;
   }
@@ -1142,7 +1143,7 @@ ResultCode SandboxWin::GeneratePolicyForSandboxedProcess(
   if (!delegate->PreSpawnTarget(policy))
     return SBOX_ERROR_DELEGATE_PRE_SPAWN;
 
-  return result;
+  return SBOX_ALL_OK;
 }
 
 // static

@@ -278,8 +278,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 BLINK_COMMON_EXPORT extern const base::Feature kDispatchBeforeUnloadOnFreeze;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyCanvas2dImageChromium;
-BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyCanvas2dSwapChain;
-BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
@@ -760,6 +758,7 @@ enum class DelayAsyncScriptDelayType {
   kFinishedParsing,
   kFirstPaintOrFinishedParsing,
   kEachLcpCandidate,
+  kEachPaint,
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;
@@ -882,6 +881,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // If enabled, fine-grained UMA metrics for IntersectionObserver will only be
 // collected on 10% of animation frames.
 BLINK_COMMON_EXPORT extern const base::Feature kThrottleIntersectionObserverUMA;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMetronome;
 
 }  // namespace features
 }  // namespace blink

@@ -48,11 +48,13 @@ void NetworkListWifiHeaderViewImpl::AddExtraButtons() {
   join_wifi_button_ = join_wifi_button.get();
   container()->AddViewAt(TriView::Container::END, join_wifi_button.release(),
                          /*index=*/0);
-};
+}
 
-void NetworkListWifiHeaderViewImpl::SetToggleState(bool enabled, bool is_on) {
+void NetworkListWifiHeaderViewImpl::SetToggleState(bool enabled,
+                                                   bool is_on,
+                                                   bool animate_toggle) {
   join_wifi_button_->SetEnabled(enabled && is_on);
-  NetworkListNetworkHeaderView::SetToggleState(enabled, is_on);
+  NetworkListNetworkHeaderView::SetToggleState(enabled, is_on, animate_toggle);
 }
 
 void NetworkListWifiHeaderViewImpl::OnToggleToggled(bool is_on) {

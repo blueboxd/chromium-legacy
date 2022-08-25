@@ -57,13 +57,13 @@ using testing::StrictMock;
 
 namespace {
 
-const char kEmail[] = "email@test";
-const char kGaiaId[] = "gaia@test";
+constexpr char kEmail[] = "email@test";
+constexpr char kGaiaId[] = "gaia";
 
 const char kLaunchSamlUserSessionArguments[] =
     R"([{
           "email": "email@test",
-          "gaiaId": "gaia@test",
+          "gaiaId": "gaia",
           "password": "password",
           "oauthCode": "oauth_code"
        }])";
@@ -385,7 +385,7 @@ TEST_F(LoginApiUnittest, LockManagedGuestSessionNoActiveUser) {
 }
 
 TEST_F(LoginApiUnittest, LockManagedGuestSessionNotManagedGuestSession) {
-  AccountId account_id = AccountId::FromGaiaId(kGaiaId);
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kGaiaId);
   fake_chrome_user_manager_->AddUser(account_id);
   fake_chrome_user_manager_->SwitchActiveUser(account_id);
 
@@ -480,7 +480,7 @@ TEST_F(LoginApiUnittest, UnlockManagedGuestSessionNoActiveUser) {
 }
 
 TEST_F(LoginApiUnittest, UnlockManagedGuestSessionNotManagedGuestSession) {
-  AccountId account_id = AccountId::FromGaiaId(kGaiaId);
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kGaiaId);
   fake_chrome_user_manager_->AddUser(account_id);
   fake_chrome_user_manager_->SwitchActiveUser(account_id);
 
@@ -1275,7 +1275,7 @@ class LoginApiExternalLogoutRequestUnittest : public ExtensionApiUnittest {
     explicit MockExternalLogoutRequestEventHandler(
         content::BrowserContext* context)
         : ExternalLogoutRequestEventHandler(context) {}
-    ~MockExternalLogoutRequestEventHandler() = default;
+    ~MockExternalLogoutRequestEventHandler() override = default;
     MOCK_METHOD0(OnRequestExternalLogout, void());
   };
 
@@ -1318,7 +1318,7 @@ class LoginApiExternalLogoutDoneUnittest : public ExtensionApiUnittest {
     explicit MockExternalLogoutDoneEventHandler(
         content::BrowserContext* context)
         : ExternalLogoutDoneEventHandler(context) {}
-    ~MockExternalLogoutDoneEventHandler() = default;
+    ~MockExternalLogoutDoneEventHandler() override = default;
     MOCK_METHOD0(OnExternalLogoutDone, void());
   };
 

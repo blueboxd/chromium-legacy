@@ -1003,6 +1003,7 @@
         'ReportDeviceNetworkTelemetryCollectionRateMs',
         'ReportDeviceNetworkTelemetryEventCheckingRateMs',
         'ReportDeviceAudioStatusCheckingRateMs',
+        'ReportDeviceSignalStrengthEventDrivenTelemetry',
       ],
     },
     {
@@ -1163,6 +1164,7 @@
         'DevicePrintersAccessMode',
         'DevicePrintersBlocklist',
         'DevicePrintersAllowlist',
+        'DevicePrintingClientNameTemplate',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
         'UserPrintersAllowed',
@@ -3169,6 +3171,34 @@
       'caption': '''Restrict background graphics printing mode''',
       'tags': [],
       'desc': '''Restricts background graphics printing mode. Unset policy is treated as no restriction.''',
+    },
+    {
+      'name': 'DevicePrintingClientNameTemplate',
+      'owners': ['srad@google.com', 'ust@google.com'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'chromebook-${DEVICE_ASSET_ID}',
+      'id': 1007,
+      'caption': '''Printing 'client-name' IPP attribute template''',
+      'tags': [],
+      'desc': '''This policy controls the value of the <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> IPP (Internet Printing Protocol) attribute in print jobs.
+
+      Setting the policy to a string has the effect of adding an additional <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> item to every print job. The <ph name="CLIENT_NAME_IPP_ATTRIBUTE">'client-name'</ph> member of the added <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> item will be set to the value of the policy after substitution of variables.
+
+      Supported variables are <ph name="DIRECTORY_ID_PLACEHOLDER">${DEVICE_DIRECTORY_ID}</ph>, <ph name="SERIAL_NUMBER_PLACEHOLDER">${DEVICE_SERIAL_NUMBER}</ph>, <ph name="ASSET_ID_PLACEHOLDER">${DEVICE_ASSET_ID}</ph>, <ph name="ANNOTATED_LOCATION_PLACEHOLDER">${DEVICE_ANNOTATED_LOCATION}</ph>, <ph name="USER_EMAIL_PLACEHOLDER">${USER_EMAIL}</ph>, <ph name="USER_EMAIL_NAME_PLACEHOLDER">${USER_EMAIL_NAME}</ph>, <ph name="USER_EMAIL_DOMAIN">${USER_EMAIL_DOMAIN}</ph>. Unsupported placeholder variables will not be expanded.
+
+      The resulting value after substitution of variables is considered valid if it consists only of <ph name="ASCII">ASCII</ph> printable characters and its length does not exceed 255.
+
+      Note that, for privacy reasons, this policy applies only when communicating with a printer using <ph name="IPPS_PROTOCOL">IPPS</ph>, <ph name="HTTPS_PROTOCOL">HTTPS</ph>, <ph name="USB_PROTOCOL">USB</ph> or <ph name="IPP_USB_PROTOCOL">IPP-over-USB</ph> protocols. Also, note that this policy only applies to printers that support <ph name="CLIENT_NAME_IPP_ATTRIBUTE">'client-name'</ph>.
+
+      If the policy is unset, set to an empty or invalid value, an additional <ph name="CLIENT_INFO_PLACEHOLDER">'client-info'</ph> will not be added to print job requests.
+      ''',
     },
     {
       'name': 'PrintingColorDefault',
@@ -12671,6 +12701,52 @@
       'desc': '''If <ph name="LINUX_OS_NAME">Linux</ph> app support is on, setting the policy to Enabled sends information about <ph name="LINUX_OS_NAME">Linux</ph> apps usage back to the server.
 
       Setting the policy to Disabled or leaving it unset means no usage information is reported.''',
+    },
+    {
+      'name': 'ReportDeviceSignalStrengthEventDrivenTelemetry',
+      'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'network_telemetry',
+            'https_latency',
+          ]
+        },
+      },
+      'items': [
+        {
+          'name': 'network_telemetry',
+          'value': 'network_telemetry',
+          'caption': '''Network Telemetry''',
+        },
+        {
+          'name': 'https_latency',
+          'value': 'https_latency',
+          'caption': '''Https Latency''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'cloud_only': True,
+        'dynamic_refresh': True,
+        'unlisted': True,
+      },
+      'example_value': ['https_latency'],
+      'id': 1008,
+      'caption': '''Telemetry data to report on signal strength event.''',
+      'tags': ['admin-sharing'],
+      'desc': '''List of telemetry data to be reported on signal strength change events.
+
+      Each telemetry data specified will only be reported if it was not disabled by its controlling policy.
+      Controlling policy for https_latency and network_telemetry is ReportDeviceNetworkStatus.
+
+      If not set, no additional telemetry data will be reported on signal strength change events.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'HeartbeatEnabled',
@@ -33395,6 +33471,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceNetworkTelemetryCollectionRateMs': 'device_reporting.report_network_telemetry_collection_rate_ms',
     'ReportDeviceNetworkTelemetryEventCheckingRateMs': 'device_reporting.report_network_telemetry_event_checking_rate_ms',
     'ReportDeviceAudioStatusCheckingRateMs': 'device_reporting.report_device_audio_status_checking_rate_ms',
+    'ReportDeviceSignalStrengthEventDrivenTelemetry': 'device_reporting.report_signal_strength_event_driven_telemetry.entries',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
     'DeviceChromeVariations': 'device_chrome_variations_type.value',
@@ -33471,7 +33548,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
     'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
     'DeviceAutofillSAMLUsername': 'saml_username.url_parameter_to_autofill_saml_username',
-    'DeviceLoginScreenContextAwareAccessSignalsAllowlist': 'device_login_screen_context_aware_access_signals_allowlist.value'
+    'DeviceLoginScreenContextAwareAccessSignalsAllowlist': 'device_login_screen_context_aware_access_signals_allowlist.value',
+    'DevicePrintingClientNameTemplate': 'device_printing_client_name_template.client_name_template',
   },
   'policy_atomic_group_definitions': [
     {
@@ -34003,6 +34081,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1006,
+  'highest_id_currently_used': 1008,
   'highest_atomic_group_id_currently_used': 43
 }

@@ -108,6 +108,9 @@ enum class WebappInstallSource {
   // Installed by Kiosk on Chrome OS.
   KIOSK = 21,
 
+  // Isolated app installation for development.
+  ISOLATED_APP_DEV_INSTALL = 22,
+
   // Add any new values above this one.
   COUNT,
 };
@@ -200,9 +203,6 @@ class InstallableMetrics {
   // Returns whether |source| is a value that may be passed to
   // TrackInstallEvent.
   static bool IsReportableInstallSource(WebappInstallSource source);
-
-  // Returns whether the install initiated by the user based on install source.
-  static bool IsUserInitiatedInstallSource(WebappInstallSource source);
 
   // Returns the appropriate WebappInstallSource for |web_contents| when the
   // install originates from |trigger|.

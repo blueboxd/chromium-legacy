@@ -11,23 +11,12 @@ import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {getTemplate} from './accelerator_view.html.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
-import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, Modifier, ShortcutProviderInterface} from './shortcut_types.js';
 
 export interface AcceleratorViewElement {
   $: {
     container: HTMLDivElement,
   };
-}
-
-/**
- * Modifier values are based off of ui::Accelerator. Must be kept in sync with
- * ui::Accelerator and ui::KeyEvent.
- */
-export enum Modifier {
-  SHIFT = 1 << 1,
-  CONTROL = 1 << 2,
-  ALT = 1 << 3,
-  COMMAND = 1 << 4,
 }
 
 enum KeyState {
@@ -64,8 +53,8 @@ function getModifierString(modifier: Modifier): string {
 function createEmptyAcceleratorInfo(): AcceleratorInfo {
   return {
     accelerator: {modifiers: 0, key: 0, key_display: ''},
-    type: AcceleratorType.kDefault,
-    state: AcceleratorState.kEnabled,
+    type: AcceleratorType.DEFAULT,
+    state: AcceleratorState.ENABLED,
     locked: false,
   };
 }
@@ -444,7 +433,7 @@ export class AcceleratorViewElement extends PolymerElement {
               newKeys)
           .then((result: AcceleratorConfigResult) => {
             // TODO(jimmyxgong): Handle other error cases.
-            if (result === AcceleratorConfigResult.kSuccess) {
+            if (result === AcceleratorConfigResult.SUCCESS) {
               this.lookupManager_.replaceAccelerator(
                   this.source, this.action, this.acceleratorInfo.accelerator,
                   newKeys);
@@ -458,7 +447,7 @@ export class AcceleratorViewElement extends PolymerElement {
           .addUserAccelerator(this.source, this.action, newKeys)
           .then((result: AcceleratorConfigResult) => {
             // TODO(jimmyxgong): Handle other error cases.
-            if (result === AcceleratorConfigResult.kSuccess) {
+            if (result === AcceleratorConfigResult.SUCCESS) {
               this.lookupManager_.addAccelerator(
                   this.source, this.action, newKeys);
               this.fireUpdateEvent_();

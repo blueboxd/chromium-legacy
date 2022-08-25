@@ -730,14 +730,6 @@ const base::Feature kLowLatencyCanvas2dImageChromium {
 #endif  // BUILDFLAG(IS_CHROMEOS)
 };
 
-// Enables the use of shared image swap chains for low latency 2d canvas.
-const base::Feature kLowLatencyCanvas2dSwapChain{
-    "LowLatencyCanvas2dSwapChain", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the use of shared image swap chains for low latency webgl canvas.
-const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Dawn-accelerated 2D canvas.
 const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1524,7 +1516,9 @@ const base::FeatureParam<DelayAsyncScriptDelayType>::Option
         {DelayAsyncScriptDelayType::kFinishedParsing, "finished_parsing"},
         {DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing,
          "first_paint_or_finished_parsing"},
-        {DelayAsyncScriptDelayType::kEachLcpCandidate, "each_lcp_candidate"}};
+        {DelayAsyncScriptDelayType::kEachLcpCandidate, "each_lcp_candidate"},
+        {DelayAsyncScriptDelayType::kEachPaint, "each_paint"},
+};
 
 const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam{
@@ -1633,6 +1627,9 @@ const base::Feature kWebRtcThreadsUseResourceEfficientType{
 
 const base::Feature kThrottleIntersectionObserverUMA{
     "ThrottleIntersectionObserverUMA", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebRtcMetronome{"WebRtcMetronome",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

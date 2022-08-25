@@ -3950,8 +3950,9 @@ const ComputedStyle* Element::ParentComputedStyle() const {
 // that children must also be recalculated, call ourself recursively
 // on any children (via RecalcDescendantStyles()), and/or update
 // pseudo-elements.
-void Element::RecalcStyle(const StyleRecalcChange change,
-                          const StyleRecalcContext& style_recalc_context) {
+StyleRecalcChange Element::RecalcStyle(
+    const StyleRecalcChange change,
+    const StyleRecalcContext& style_recalc_context) {
   DCHECK(InActiveDocument());
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
@@ -3965,8 +3966,10 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   StyleRecalcChange child_change = change.ForChildren(*this);
   if (change.ShouldRecalcStyleFor(*this)) {
     child_change = RecalcOwnStyle(change, style_recalc_context);
-    if (GetStyleChangeType() == kSubtreeStyleChange)
-      child_change = child_change.ForceRecalcDescendants();
+    if (GetStyleChangeType() == kSubtreeStyleChange) {
+      child_change =
+          child_change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
+    }
     ClearNeedsStyleRecalc();
   } else if (GetForceReattachLayoutTree() ||
              (change.MarkReattachLayoutTree() && GetComputedStyle())) {
@@ -3974,6 +3977,11 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     child_change = child_change.ForceReattachLayoutTree();
     ClearNeedsStyleRecalc();
   }
+
+  const StyleRecalcChange sibling_change =
+      child_change.RecalcSiblingDescendants()
+          ? StyleRecalcChange(StyleRecalcChange::kRecalcSiblingDescendants)
+          : StyleRecalcChange();
 
   // We may need to update the internal CSSContainerValues of the
   // ContainerQueryEvaluator if e.g. the value of the 'rem' unit or container-
@@ -3988,7 +3996,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     display_lock_style_scope.NotifyChildStyleRecalcWasBlocked(child_change);
     if (HasCustomStyleCallbacks())
       DidRecalcStyle(child_change);
-    return;
+    return sibling_change;
   }
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
@@ -4035,7 +4043,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
                       child_change);
             }
           } else if (SkipStyleRecalcForContainer(*style, child_change)) {
-            return;
+            return sibling_change;
           }
         }
       }
@@ -4082,6 +4090,8 @@ void Element::RecalcStyle(const StyleRecalcChange change,
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(child_change);
+
+  return sibling_change;
 }
 
 scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
@@ -4128,13 +4138,16 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     Element& element,
     const ComputedStyle* old_style,
     const ComputedStyle& new_style) {
-  if (!new_style.IsContainerForSizeContainerQueries())
-    return nullptr;
-  if (LayoutObject* layout_object = element.GetLayoutObject()) {
-    if (layout_object->ForceLegacyLayout()) {
-      element.GetDocument()
-          .GetStyleEngine()
-          .ReportUseOfLegacyLayoutWithContainerQueries();
+  ContainerQueryEvaluator* evaluator = element.GetContainerQueryEvaluator();
+  if (!evaluator || !evaluator->DependsOnStyle()) {
+    if (!new_style.IsContainerForSizeContainerQueries())
+      return nullptr;
+    if (LayoutObject* layout_object = element.GetLayoutObject()) {
+      if (layout_object->ForceLegacyLayout()) {
+        element.GetDocument()
+            .GetStyleEngine()
+            .ReportUseOfLegacyLayoutWithContainerQueries();
+      }
     }
   }
   if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
@@ -4150,19 +4163,21 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     return MakeGarbageCollected<ContainerQueryEvaluator>();
   }
   // Otherwise, the existing ContainerQueryEvaluator can be used, if any.
-  if (auto* evaluator = element.GetContainerQueryEvaluator())
-    return evaluator;
-  return MakeGarbageCollected<ContainerQueryEvaluator>();
+  if (!evaluator)
+    evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+  return evaluator;
 }
 
 static const StyleRecalcChange ApplyComputedStyleDiff(
     const StyleRecalcChange change,
     ComputedStyle::Difference diff) {
-  if (change.RecalcDescendants() ||
+  if (change.RecalcSiblingDescendants() ||
       diff < ComputedStyle::Difference::kPseudoElementStyle)
     return change;
+  if (diff == ComputedStyle::Difference::kSiblingDescendantAffecting)
+    return change.EnsureAtLeast(StyleRecalcChange::kRecalcSiblingDescendants);
   if (diff == ComputedStyle::Difference::kDescendantAffecting)
-    return change.ForceRecalcDescendants();
+    return change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
   if (diff == ComputedStyle::Difference::kInherited)
     return change.EnsureAtLeast(StyleRecalcChange::kRecalcChildren);
   if (diff == ComputedStyle::Difference::kIndependentInherited)
@@ -4401,7 +4416,8 @@ StyleRecalcChange Element::RecalcOwnStyle(
         // track of which elements depend on rem units like we do for viewport
         // styles, but we assume root font size changes are rare and just
         // recalculate everything.
-        child_change = child_change.ForceRecalcDescendants();
+        child_change =
+            child_change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
       }
     }
     child_change = ApplyComputedStyleDiff(child_change, diff);
@@ -4434,6 +4450,24 @@ StyleRecalcChange Element::RecalcOwnStyle(
       } else if (evaluator) {
         DCHECK(old_style);
         evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
+        if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
+          if (diff != ComputedStyle::Difference::kEqual &&
+              (!base::ValuesEquivalent(old_style->InheritedVariables(),
+                                       new_style->InheritedVariables()) ||
+               !base::ValuesEquivalent(old_style->NonInheritedVariables(),
+                                       new_style->NonInheritedVariables()))) {
+            switch (evaluator->StyleContainerChanged(*this)) {
+              case ContainerQueryEvaluator::Change::kNone:
+                break;
+              case ContainerQueryEvaluator::Change::kNearestContainer:
+                child_change = change.ForceRecalcStyleContainerChildren();
+                break;
+              case ContainerQueryEvaluator::Change::kDescendantContainers:
+                child_change = change.ForceRecalcStyleContainerDescendants();
+                break;
+            }
+          }
+        }
       }
     }
   }

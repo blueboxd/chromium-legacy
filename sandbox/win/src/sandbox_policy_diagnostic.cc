@@ -371,10 +371,10 @@ base::Value::Dict GetHandlesToClose(const HandleMap& handle_map) {
 PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
   ConfigBase* config = policy->config();
-  // TODO(crbug/997273) Add more fields once webui plumbing is complete.
+
   process_id_ = base::strict_cast<uint32_t>(policy->target_->ProcessId());
-  lockdown_level_ = policy->lockdown_level_;
-  job_level_ = policy->job_level_;
+  lockdown_level_ = config->lockdown_level_;
+  job_level_ = config->job_level_;
   tag_ = policy->tag_;
 
   // Select the final integrity level.
@@ -416,9 +416,12 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
       }
     }
   }
-  is_csrss_connected_ = policy->is_csrss_connected_;
-  handles_to_close_.insert(policy->handle_closer_.handles_to_close_.begin(),
-                           policy->handle_closer_.handles_to_close_.end());
+  is_csrss_connected_ = config->is_csrss_connected();
+  auto* handle_closer = config->handle_closer();
+  if (handle_closer) {
+    handles_to_close_.insert(handle_closer->handles_to_close_.begin(),
+                             handle_closer->handles_to_close_.end());
+  }
 }
 
 PolicyDiagnostic::~PolicyDiagnostic() = default;

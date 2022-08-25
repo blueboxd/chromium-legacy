@@ -37,7 +37,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -45,6 +44,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/image/image_util.h"
 #include "url/url_constants.h"
@@ -224,7 +224,7 @@ void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
 
   matches_.clear();
 
-  if (input.focus_type() != OmniboxFocusType::DEFAULT)
+  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT)
     return;
 
   // Generate 4 results synchronously, the rest later.
@@ -871,10 +871,10 @@ TEST_F(AutocompleteProviderTest, SuggestionGroups) {
 
   const auto kRecommendedGroupId =
       SuggestionGroupId::kNonPersonalizedZeroSuggest1;
-  const std::u16string kRecommended = u"Recommended for you";
+  const std::string kRecommended = "Recommended for you";
   const auto kRecentSearchesGroupId =
       SuggestionGroupId::kNonPersonalizedZeroSuggest2;
-  const std::u16string kRecentSearches = u"Recent Searches";
+  const std::string kRecentSearches = "Recent Searches";
 
   // This exists to verify that suggestion group IDs without associated
   // suggestion groups information are stripped away.
@@ -883,10 +883,12 @@ TEST_F(AutocompleteProviderTest, SuggestionGroups) {
   {
     // Headers are optional for suggestion groups.
     SuggestionGroupsMap suggestion_groups_map;
-    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
+    suggestion_groups_map[kRecommendedGroupId]
+        .group_config_info.set_header_text(kRecommended);
     suggestion_groups_map[kRecommendedGroupId].priority =
         SuggestionGroupPriority::kRemoteZeroSuggest4;
-    suggestion_groups_map[kRecentSearchesGroupId].header = u"";
+    suggestion_groups_map[kRecentSearchesGroupId]
+        .group_config_info.set_header_text("");
     suggestion_groups_map[kRecentSearchesGroupId].priority =
         SuggestionGroupPriority::kRemoteZeroSuggest3;
     UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
@@ -910,16 +912,18 @@ TEST_F(AutocompleteProviderTest, SuggestionGroups) {
 
     EXPECT_EQ(kRecommendedGroupId,
               result_.match_at(4)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommended,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecommended),
               result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
   }
   {
     // Suggestion groups are ordered based on their priories.
     SuggestionGroupsMap suggestion_groups_map;
-    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
+    suggestion_groups_map[kRecommendedGroupId]
+        .group_config_info.set_header_text(kRecommended);
     suggestion_groups_map[kRecommendedGroupId].priority =
         SuggestionGroupPriority::kRemoteZeroSuggest3;
-    suggestion_groups_map[kRecentSearchesGroupId].header = kRecentSearches;
+    suggestion_groups_map[kRecentSearchesGroupId]
+        .group_config_info.set_header_text(kRecentSearches);
     suggestion_groups_map[kRecentSearchesGroupId].priority =
         SuggestionGroupPriority::kRemoteZeroSuggest4;
     UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
@@ -937,25 +941,27 @@ TEST_F(AutocompleteProviderTest, SuggestionGroups) {
 
     EXPECT_EQ(kRecommendedGroupId,
               result_.match_at(2)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommended,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecommended),
               result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
 
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(3)->suggestion_group_id.value());
-    EXPECT_EQ(kRecentSearches,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecentSearches),
               result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
 
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(4)->suggestion_group_id.value());
-    EXPECT_EQ(kRecentSearches,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecentSearches),
               result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
   }
   {
     // suggestion group IDs without associated suggestion group information are
     // stripped away.
     SuggestionGroupsMap suggestion_groups_map;
-    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
-    suggestion_groups_map[kRecentSearchesGroupId].header = kRecentSearches;
+    suggestion_groups_map[kRecommendedGroupId]
+        .group_config_info.set_header_text(kRecommended);
+    suggestion_groups_map[kRecentSearchesGroupId]
+        .group_config_info.set_header_text(kRecentSearches);
     UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
                                                {
                                                    {kBadSuggestionGroupId},
@@ -973,12 +979,12 @@ TEST_F(AutocompleteProviderTest, SuggestionGroups) {
 
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(3)->suggestion_group_id.value());
-    EXPECT_EQ(kRecentSearches,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecentSearches),
               result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
 
     EXPECT_EQ(kRecommendedGroupId,
               result_.match_at(4)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommended,
+    EXPECT_EQ(base::UTF8ToUTF16(kRecommended),
               result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
   }
 }

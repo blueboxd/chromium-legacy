@@ -479,15 +479,23 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       bool* limited_by_max_count = nullptr);
 
   // Utility method to Construct `AnnotatedVisit`s.
-  std::vector<AnnotatedVisit> ToAnnotatedVisits(const VisitVector& visit_rows);
+  std::vector<AnnotatedVisit> ToAnnotatedVisits(
+      const VisitVector& visit_rows) override;
 
   // Like above, but will first construct `visit_rows` from each `VisitID`
   // before delegating to the overloaded `ToAnnotatedVisits()` above.
   std::vector<AnnotatedVisit> ToAnnotatedVisits(
       const std::vector<VisitID>& visit_ids);
 
-  // Utility method to Construct `ClusterVisit`s.
+  // Utility method to construct `ClusterVisit`s. Since `duplicate_visits` isn't
+  // always useful and requires extra SQL executions, it's only populated if
+  // `include_duplicates` is true.
   std::vector<ClusterVisit> ToClusterVisits(
+      const std::vector<VisitID>& visit_ids,
+      bool include_duplicates = true);
+
+  // Utility method to construct `DuplicateClusterVisit`s.
+  std::vector<DuplicateClusterVisit> ToDuplicateClusterVisits(
       const std::vector<VisitID>& visit_ids);
 
   // Returns the time of the most recent clustered visits; i.e. the boundary
@@ -499,14 +507,17 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ReplaceClusters(const std::vector<int64_t>& ids_to_delete,
                        const std::vector<Cluster>& clusters_to_add);
 
-  std::vector<Cluster> GetMostRecentClusters(base::Time inclusive_min_time,
-                                             base::Time exclusive_max_time,
-                                             int max_clusters,
-                                             bool include_keywords = true);
+  std::vector<Cluster> GetMostRecentClusters(
+      base::Time inclusive_min_time,
+      base::Time exclusive_max_time,
+      int max_clusters,
+      bool include_keywords_and_duplicates = true);
 
-  // Get a `Cluster`. `keyword_to_data_map` isn't always useful, and it requires
-  // an extra SQL execution. It's only populated If `include_keywords` is true.
-  Cluster GetCluster(int64_t cluster_id, bool include_keywords = true);
+  // Get a `Cluster`. Since `keyword_to_data_map` and `visits.duplicate_visits`
+  // aren't always useful and require extra SQL executions, they're only
+  // populated if `include_keywords_and_duplicates` is true.
+  Cluster GetCluster(int64_t cluster_id,
+                     bool include_keywords_and_duplicates = true);
 
   // Finds the 1st visit in the redirect chain containing `visit`.
   // Unlike `GetRedirectsToSpecificVisit()`, this only considers actual
@@ -561,10 +572,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Adds a visit coming from another device. The visit's ID must be 0 (unset),
   // and its originator_cache_guid must be populated.
-  VisitID AddSyncedVisit(const GURL& url,
-                         const std::u16string& title,
-                         bool hidden,
-                         const VisitRow& visit) override;
+  VisitID AddSyncedVisit(
+      const GURL& url,
+      const std::u16string& title,
+      bool hidden,
+      const VisitRow& visit,
+      const absl::optional<VisitContextAnnotations>& context_annotations,
+      const absl::optional<VisitContentAnnotations>& content_annotations)
+      override;
 
   // Updates a visit coming from another device (typically to update its
   // duration). The visit must be the end of a redirect chain (only chain ends
@@ -573,7 +588,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // visit will be identified via its timestamp and originator_cache_guid
   // instead. Returns the local VisitID of the updated visit, or 0 if no
   // matching visit was found.
-  VisitID UpdateSyncedVisit(const VisitRow& visit) override;
+  VisitID UpdateSyncedVisit(
+      const VisitRow& visit,
+      const absl::optional<VisitContextAnnotations>& context_annotations,
+      const absl::optional<VisitContentAnnotations>& content_annotations)
+      override;
 
   // Updates the `referring_visit` and `opener_visit` fields for the visit with
   // the given `visit_id`. Used by Sync to re-map originator IDs to local IDs.

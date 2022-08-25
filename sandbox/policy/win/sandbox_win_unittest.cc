@@ -48,6 +48,22 @@ class TestTargetConfig : public TargetConfig {
  public:
   ~TestTargetConfig() override {}
   bool IsConfigured() const override { return false; }
+  ResultCode SetTokenLevel(sandbox::TokenLevel initial,
+                           TokenLevel lockdown) override {
+    return SBOX_ALL_OK;
+  }
+  TokenLevel GetInitialTokenLevel() const override { return TokenLevel{}; }
+  TokenLevel GetLockdownTokenLevel() const override { return TokenLevel{}; }
+  ResultCode SetJobLevel(sandbox::JobLevel job_level,
+                         uint32_t ui_exceptions) override {
+    return SBOX_ALL_OK;
+  }
+  JobLevel GetJobLevel() const override { return sandbox::JobLevel{}; }
+  ResultCode SetJobMemoryLimit(size_t memory_limit) override {
+    return SBOX_ALL_OK;
+  }
+  void SetAllowNoSandboxJob() override { NOTREACHED(); }
+  bool GetAllowNoSandboxJob() override { return false; }
   ResultCode AddRule(SubSystem subsystem,
                      Semantics semantics,
                      const wchar_t* pattern) override {
@@ -80,6 +96,11 @@ class TestTargetConfig : public TargetConfig {
   }
   void AddRestrictingRandomSid() override {}
   void SetLockdownDefaultDacl() override {}
+  ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
+                                    const wchar_t* handle_name) override {
+    return SBOX_ALL_OK;
+  }
+  ResultCode SetDisconnectCsrss() override { return SBOX_ALL_OK; }
 
   ResultCode AddAppContainerProfile(const wchar_t* package_name,
                                     bool create_profile) override {
@@ -112,20 +133,6 @@ class TestTargetPolicy : public TargetPolicy {
   ~TestTargetPolicy() override {}
   // TargetPolicy:
   TargetConfig* GetConfig() override { return &config_; }
-  ResultCode SetTokenLevel(sandbox::TokenLevel initial,
-                           TokenLevel lockdown) override {
-    return SBOX_ALL_OK;
-  }
-  TokenLevel GetInitialTokenLevel() const override { return TokenLevel{}; }
-  TokenLevel GetLockdownTokenLevel() const override { return TokenLevel{}; }
-  ResultCode SetJobLevel(sandbox::JobLevel job_level,
-                         uint32_t ui_exceptions) override {
-    return SBOX_ALL_OK;
-  }
-  JobLevel GetJobLevel() const override { return sandbox::JobLevel{}; }
-  ResultCode SetJobMemoryLimit(size_t memory_limit) override {
-    return SBOX_ALL_OK;
-  }
   ResultCode SetAlternateDesktop(bool alternate_winstation) override {
     return SBOX_ALL_OK;
   }
@@ -134,19 +141,11 @@ class TestTargetPolicy : public TargetPolicy {
     return SBOX_ALL_OK;
   }
   void DestroyAlternateDesktop() override {}
-  ResultCode SetDisconnectCsrss() override { return SBOX_ALL_OK; }
   ResultCode SetStdoutHandle(HANDLE handle) override { return SBOX_ALL_OK; }
   ResultCode SetStderrHandle(HANDLE handle) override { return SBOX_ALL_OK; }
-  ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
-                                    const wchar_t* handle_name) override {
-    return SBOX_ALL_OK;
-  }
   void AddHandleToShare(HANDLE handle) override {}
 
   void SetEffectiveToken(HANDLE token) override {}
-
-  void SetAllowNoSandboxJob() override { NOTREACHED(); }
-  bool GetAllowNoSandboxJob() override { return false; }
 
  private:
   TestTargetConfig config_;
@@ -410,8 +409,9 @@ TEST_F(SandboxWinTest, GeneratedPolicyTest) {
   // of valid policy.
   EXPECT_EQ(IntegrityLevel::INTEGRITY_LEVEL_LOW,
             policy->GetConfig()->GetIntegrityLevel());
-  EXPECT_EQ(JobLevel::kLockdown, policy->GetJobLevel());
-  EXPECT_EQ(TokenLevel::USER_LOCKDOWN, policy->GetLockdownTokenLevel());
+  EXPECT_EQ(JobLevel::kLockdown, policy->GetConfig()->GetJobLevel());
+  EXPECT_EQ(TokenLevel::USER_LOCKDOWN,
+            policy->GetConfig()->GetLockdownTokenLevel());
 }
 
 TEST_F(SandboxWinTest, GeneratedPolicyTestNoSandbox) {

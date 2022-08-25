@@ -6,6 +6,11 @@
 
 namespace commerce {
 
+// static
+std::unique_ptr<KeyedService> MockShoppingService::Build() {
+  return std::make_unique<MockShoppingService>();
+}
+
 MockShoppingService::MockShoppingService()
     : commerce::ShoppingService(nullptr,
                                 nullptr,
@@ -20,6 +25,11 @@ void MockShoppingService::GetProductInfoForUrl(
     const GURL& url,
     commerce::ProductInfoCallback callback) {
   std::move(callback).Run(url, product_info_);
+}
+
+absl::optional<ProductInfo> MockShoppingService::GetAvailableProductInfoForUrl(
+    const GURL& url) {
+  return product_info_;
 }
 
 void MockShoppingService::SetResponseForGetProductInfoForUrl(

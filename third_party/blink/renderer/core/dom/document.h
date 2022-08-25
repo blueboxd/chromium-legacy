@@ -1335,6 +1335,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ParseDNSPrefetchControlHeader(const String&);
 
   void MarkFirstPaint();
+  void OnPaintFinished();
   void OnLargestContentfulPaintUpdated();
   void FinishedParsing();
 
@@ -1355,6 +1356,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const Vector<AnnotatedRegionValue>& AnnotatedRegions() const;
   void SetAnnotatedRegions(const Vector<AnnotatedRegionValue>&);
 
+  void RemovedEventListener(const AtomicString& event_type,
+                            const RegisteredEventListener&) final;
   void RemoveAllEventListeners() final;
 
   const SVGDocumentExtensions* SvgExtensions() const;
@@ -2039,7 +2042,8 @@ class CORE_EXPORT Document : public ContainerNode,
   enum class MilestoneForDelayedAsyncScript {
     kFirstPaint,
     kFinishedParsing,
-    kLcpCandidate
+    kLcpCandidate,
+    kPaint,
   };
   void MaybeExecuteDelayedAsyncScripts(MilestoneForDelayedAsyncScript);
 

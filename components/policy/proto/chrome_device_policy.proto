@@ -175,6 +175,8 @@ message DeviceReportingProto {
   // Audio telemetry policy
   optional int64 report_device_audio_status_checking_rate_ms = 35
       [default = 600000];
+
+  optional StringList report_signal_strength_event_driven_telemetry = 38;
 }
 
 message EphemeralUsersEnabledProto {
@@ -1873,4 +1875,5 @@ message ChromeDeviceSettingsProto {
   optional SAMLUsernameProto saml_username = 135;
   optional StringListPolicyProto
       device_login_screen_context_aware_access_signals_allowlist = 136;
+  optional StringPolicyProto device_printing_client_name_template = 137;
 }

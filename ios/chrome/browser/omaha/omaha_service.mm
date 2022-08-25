@@ -27,7 +27,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #import "ios/chrome/browser/install_time_util.h"
@@ -160,7 +160,7 @@ class XmlWrapper {
   std::unique_ptr<UpgradeRecommendedDetails> _updateInformation;
 }
 
-// Initialization method. |appId| is the application id one expects to find in
+// Initialization method. `appId` is the application id one expects to find in
 // the response message.
 - (instancetype)initWithAppId:(NSString*)appId;
 
@@ -452,14 +452,14 @@ void OmahaService::StartInternal() {
   bool persist_again = false;
 
   base::Time now = base::Time::Now();
-  // If |last_sent_time_| is in the future, the clock has been tampered with.
-  // Reset |last_sent_time_| to now.
+  // If `last_sent_time_` is in the future, the clock has been tampered with.
+  // Reset `last_sent_time_` to now.
   if (last_sent_time_ > now) {
     last_sent_time_ = now;
     persist_again = true;
   }
 
-  // If the |next_tries_time_| is more than kHoursBetweenRequests hours away,
+  // If the `next_tries_time_` is more than kHoursBetweenRequests hours away,
   // there is a possibility that the clock has been tampered with. Reschedule
   // the ping to be the usual interval after the last successful one.
   if (next_tries_time_ - now > base::Hours(kHoursBetweenRequests)) {
@@ -648,8 +648,8 @@ void OmahaService::SendPing() {
   }
 
   // There are 2 situations here:
-  // 1) production code, where |pending_url_loader_factory_| is used.
-  // 2) testing code, where the |url_loader_factory_| creation is triggered by
+  // 1) production code, where `pending_url_loader_factory_` is used.
+  // 2) testing code, where the `url_loader_factory_` creation is triggered by
   // the test.
   if (pending_url_loader_factory_) {
     DCHECK(!url_loader_factory_);

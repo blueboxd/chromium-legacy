@@ -1200,7 +1200,7 @@ TEST_F(AutocompleteResultTest, SortAndCullAllowsNonMatchingZeroSuggestions) {
   AutocompleteInput input(u"https://secure-prefix",
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
 
   AutocompleteResult result;
   result.AppendMatches(matches);
@@ -1874,8 +1874,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   // Suggestion groups have SuggestionGroupPriority::kDefault priority by
   // default.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
 
   {
     AutocompleteInput typed_input(u"a", metrics::OmniboxEventProto::OTHER,
@@ -1903,7 +1903,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
     result.AppendMatches(matches);
@@ -1957,7 +1958,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
     result.AppendMatches(matches);
@@ -2011,8 +2013,8 @@ TEST_F(AutocompleteResultTest,
   // Suggestion groups have SuggestionGroupPriority::kDefault priority by
   // default.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
 
   {
     AutocompleteInput typed_input(u"a", metrics::OmniboxEventProto::OTHER,
@@ -2033,7 +2035,8 @@ TEST_F(AutocompleteResultTest,
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
 
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
@@ -2087,10 +2090,10 @@ TEST_F(AutocompleteResultTest,
 
   // Set priorities that contradict the scores of the matches in groups.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
   suggestion_groups_map[group_1].priority =
       SuggestionGroupPriority::kRemoteZeroSuggest2;
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
   suggestion_groups_map[group_2].priority =
       SuggestionGroupPriority::kRemoteZeroSuggest1;
 
@@ -2114,7 +2117,8 @@ TEST_F(AutocompleteResultTest,
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
 
     result.MergeSuggestionGroupsMap(suggestion_groups_map);

@@ -133,6 +133,8 @@ extern const base::Feature kCameraAppDocScanDlc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCameraPrivacySwitchNotifications;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCaptivePortalUI2022;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCaptureModeDemoTools;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularBypassESimInstallationConnectivityCheck;
@@ -440,7 +442,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMacAddressRandomization;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kManagedDeviceUIRedesign;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMediaAppHandlesPdf;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppPhotosIntegrationImage;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -721,6 +722,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothQualityReportEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarViewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarModelDebugModeEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptivePortalUI2022Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLauncherItemColorSyncEnabled();

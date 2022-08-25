@@ -438,6 +438,11 @@ const base::Feature kBruschetta{"Bruschetta",
 const base::Feature kBruschettaAlphaMigrate{"BruschettaAlphaMigrate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Captive Portal UI 2022 changes, which includes updates to
+// notifications, network details page, quick settings, and portal signin UI.
+const base::Feature kCaptivePortalUI2022{"CaptivePortalUI2022",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
 const base::Feature kCryptAuthV2AlwaysUseActiveEligibleHosts{
@@ -777,7 +782,7 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 
 // Enables filters in Files app Recents view V2.
 const base::Feature kFiltersInRecentsV2{"FiltersInRecentsV2",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the firmware updater app.
 const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
@@ -1080,10 +1085,6 @@ const base::Feature kMacAddressRandomization{"MacAddressRandomization",
 // Enables the redesigned managed device info UI in the system tray.
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether PDF files are opened by default in the ChromeOS media app.
-const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Within the ChromeOS media app, reveals the button to edit the current image
 // in Photos.
@@ -1727,7 +1728,7 @@ const base::Feature kDeviceActiveClientMonthlyCheckIn{
 // on ChromeOS.
 const base::Feature kDeviceActiveClientMonthlyCheckMembership{
     "DeviceActiveClientMonthlyCheckMembership",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables forced reboots when DeviceScheduledReboot policy is set.
 const base::Feature kDeviceForceScheduledReboot{
@@ -1877,6 +1878,10 @@ bool IsCalendarViewEnabled() {
 
 bool IsCalendarModelDebugModeEnabled() {
   return base::FeatureList::IsEnabled(kCalendarModelDebugMode);
+}
+
+bool IsCaptivePortalUI2022Enabled() {
+  return base::FeatureList::IsEnabled(kCaptivePortalUI2022);
 }
 
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {

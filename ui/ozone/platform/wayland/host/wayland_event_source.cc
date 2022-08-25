@@ -602,7 +602,13 @@ void WaylandEventSource::OnPinchEvent(EventType event_type,
   GestureEvent event(location.x(), location.y(), 0 /* flags */, timestamp,
                      details);
   event.set_source_device_id(device_id);
-  DispatchEvent(&event);
+
+  auto* target = window_manager_->GetCurrentPointerFocusedWindow();
+  // A window may be deleted when the event arrived from the server.
+  if (!target)
+    return;
+
+  SetTargetAndDispatchEvent(&event, target);
 }
 
 void WaylandEventSource::SetRelativePointerMotionEnabled(bool enabled) {
@@ -699,10 +705,6 @@ gfx::Vector2dF WaylandEventSource::ComputeFlingVelocity() {
   float dt_inv = 1.0f / dt.InSecondsF();
   return dt.is_zero() ? gfx::Vector2dF()
                       : gfx::Vector2dF(dx * dt_inv, dy * dt_inv);
-}
-
-bool WaylandEventSource::SurfaceSubmissionInPixelCoordinates() const {
-  return connection_->surface_submission_in_pixel_coordinates();
 }
 
 PointerDetails WaylandEventSource::PointerDetailsForDispatching() const {

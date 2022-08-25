@@ -6,7 +6,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {AcceleratorLookupManager} from 'chrome://shortcut-customization/accelerator_lookup_manager.js';
 import {AcceleratorViewElement, ViewState} from 'chrome://shortcut-customization/accelerator_view.js';
 import {fakeAcceleratorConfig, fakeLayoutInfo} from 'chrome://shortcut-customization/fake_data.js';
-import {AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, Modifier} from 'chrome://shortcut-customization/shortcut_types.js';
+import {AcceleratorSource, AcceleratorState, AcceleratorType, Modifier} from 'chrome://shortcut-customization/shortcut_types.js';
 
 import {assertEquals, assertTrue} from '../../chai_assert.js';
 
@@ -66,7 +66,7 @@ export function acceleratorViewTest() {
         /*key_display=*/ ']');
 
     viewElement.acceleratorInfo = acceleratorInfo;
-    viewElement.source = AcceleratorSource.kAsh;
+    viewElement.source = AcceleratorSource.ASH;
     viewElement.action = 1;
     await flush();
     // Enable the edit view.

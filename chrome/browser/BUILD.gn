@@ -404,10 +404,6 @@ static_library("browser") {
     "data_use_measurement/chrome_data_use_measurement.h",
     "defaults.cc",
     "defaults.h",
-    "device_reauth/chrome_biometric_authenticator_common.cc",
-    "device_reauth/chrome_biometric_authenticator_common.h",
-    "device_reauth/chrome_biometric_authenticator_factory.cc",
-    "device_reauth/chrome_biometric_authenticator_factory.h",
     "dips/cookie_access_filter.cc",
     "dips/cookie_access_filter.h",
     "dips/dips_bounce_detector.cc",
@@ -974,8 +970,6 @@ static_library("browser") {
     "optimization_guide/prediction/prediction_model_download_client.h",
     "page_info/about_this_site_service_factory.cc",
     "page_info/about_this_site_service_factory.h",
-    "page_info/about_this_site_tab_helper.cc",
-    "page_info/about_this_site_tab_helper.h",
     "page_info/chrome_about_this_site_service_client.cc",
     "page_info/chrome_about_this_site_service_client.h",
     "page_load_metrics/observers/core/amp_page_load_metrics_observer.cc",
@@ -2065,6 +2059,7 @@ static_library("browser") {
     "//components/certificate_transparency:proto",
     "//components/client_hints/browser",
     "//components/cloud_devices/common",
+    "//components/commerce/content/browser:browser",
     "//components/commerce/core:commerce_heuristics_data",
     "//components/commerce/core:commerce_subscription_db_content_proto",
     "//components/commerce/core:feature_list",
@@ -2721,8 +2716,6 @@ static_library("browser") {
       "android/history_report/usage_reports_buffer_service.h",
       "android/httpclient/http_client_bridge.cc",
       "android/httpclient/http_client_bridge.h",
-      "android/hung_renderer_infobar_delegate.cc",
-      "android/hung_renderer_infobar_delegate.h",
       "android/instantapps/instant_apps_infobar_delegate.cc",
       "android/instantapps/instant_apps_infobar_delegate.h",
       "android/instantapps/instant_apps_message_delegate.cc",
@@ -4030,6 +4023,8 @@ static_library("browser") {
       "obsolete_system/obsolete_system.h",
       "page_info/about_this_site_side_panel_throttle.cc",
       "page_info/about_this_site_side_panel_throttle.h",
+      "page_info/about_this_site_tab_helper.cc",
+      "page_info/about_this_site_tab_helper.h",
       "page_load_metrics/observers/session_restore_page_load_metrics_observer.cc",
       "page_load_metrics/observers/session_restore_page_load_metrics_observer.h",
       "password_manager/generated_password_leak_detection_pref.cc",
@@ -5387,8 +5382,6 @@ static_library("browser") {
       "chromeos/extensions/login_screen/login/cleanup/cleanup_manager_lacros.h",
       "chromeos/extensions/login_screen/login/cleanup/cleanup_manager_lacros_factory.cc",
       "chromeos/extensions/login_screen/login/cleanup/cleanup_manager_lacros_factory.h",
-      "chromeos/extensions/public_session_permission_helper.cc",
-      "chromeos/extensions/public_session_permission_helper.h",
       "chromeos/extensions/wallpaper_api.cc",
       "chromeos/extensions/wallpaper_api.h",
       "chromeos/policy/dlp/clipboard_bubble.cc",
@@ -5835,6 +5828,8 @@ static_library("browser") {
       "component_updater/recovery_improved_component_installer_win.cc",
       "component_updater/sw_reporter_installer_win.cc",
       "component_updater/sw_reporter_installer_win.h",
+      "device_reauth/win/biometric_authenticator_win.cc",
+      "device_reauth/win/biometric_authenticator_win.h",
       "download/download_status_updater_win.cc",
       "download/trusted_sources_manager_win.cc",
       "enterprise/signals/device_info_fetcher_win.cc",
@@ -6242,6 +6237,15 @@ static_library("browser") {
 
   if (is_win || is_linux || is_android || is_chromeos) {
     deps += [ "//chrome/browser/privacy:traffic_annotation_proto" ]
+  }
+
+  if (is_android || is_mac || is_win) {
+    sources += [
+      "device_reauth/chrome_biometric_authenticator_common.cc",
+      "device_reauth/chrome_biometric_authenticator_common.h",
+      "device_reauth/chrome_biometric_authenticator_factory.cc",
+      "device_reauth/chrome_biometric_authenticator_factory.h",
+    ]
   }
 
   if (is_mac || is_win) {

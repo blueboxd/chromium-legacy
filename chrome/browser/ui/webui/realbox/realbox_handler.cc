@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -48,13 +49,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/search/ntp_features.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/cookies/cookie_util.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -129,7 +130,8 @@ CreateSuggestionGroupsMap(const AutocompleteResult& result,
   for (const auto& pair : suggestion_groups_map) {
     realbox::mojom::SuggestionGroupPtr suggestion_group =
         realbox::mojom::SuggestionGroup::New();
-    suggestion_group->header = pair.second.header;
+    suggestion_group->header =
+        base::UTF8ToUTF16(pair.second.group_config_info.header_text());
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -514,8 +516,9 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
   AutocompleteInput autocomplete_input(
       input, metrics::OmniboxEventProto::NTP_REALBOX,
       ChromeAutocompleteSchemeClassifier(profile_));
-  autocomplete_input.set_focus_type(is_on_focus ? OmniboxFocusType::ON_FOCUS
-                                                : OmniboxFocusType::DEFAULT);
+  autocomplete_input.set_focus_type(
+      is_on_focus ? metrics::OmniboxFocusType::INTERACTION_FOCUS
+                  : metrics::OmniboxFocusType::INTERACTION_DEFAULT);
   autocomplete_input.set_prevent_inline_autocomplete(
       prevent_inline_autocomplete);
 
@@ -625,7 +628,8 @@ void RealboxHandler::OpenAutocompleteMatch(
           : default_time_delta;
 
   OmniboxLog log(
-      /*text=*/input.focus_type() != OmniboxFocusType::DEFAULT
+      /*text=*/input.focus_type() !=
+              metrics::OmniboxFocusType::INTERACTION_DEFAULT
           ? std::u16string()
           : input.text(),
       /*just_deleted_text=*/input.prevent_inline_autocomplete(),

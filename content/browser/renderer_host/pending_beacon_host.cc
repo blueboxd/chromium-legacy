@@ -11,6 +11,7 @@
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace content {
 
@@ -93,11 +94,6 @@ void Beacon::SetRequestData(
     mojo::ReportBadMessage("Unexpected BeaconMethod from renderer");
     return;
   }
-  if (!content_type.empty() &&
-      !network::cors::IsCorsSafelistedContentType(content_type)) {
-    mojo::ReportBadMessage("Unexpected Content-Type from renderer");
-    return;
-  }
 
   content_type_ = content_type;
 
@@ -143,13 +139,19 @@ const std::unique_ptr<network::ResourceRequest>
 Beacon::GenerateResourceRequest() const {
   DCHECK(method_ == blink::mojom::BeaconMethod::kGet ||
          method_ == blink::mojom::BeaconMethod::kPost);
+
   auto request = std::make_unique<network::ResourceRequest>();
+
+  request->url = url_;
+  request->mode = network::mojom::RequestMode::kCors;
+  request->request_initiator =
+      beacon_host_->render_frame_host().GetLastCommittedOrigin();
+  request->credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
+
   if (method_ == blink::mojom::BeaconMethod::kGet) {
     request->method = net::HttpRequestHeaders::kGetMethod;
-    request->url = url_;
   } else {
     request->method = net::HttpRequestHeaders::kPostMethod;
-    request->url = url_;
     request->keepalive = true;
     if (!content_type_.empty()) {
       request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
@@ -164,7 +166,8 @@ Beacon::GenerateResourceRequest() const {
           request_element_->Clone());
     }
   }
+
   return request;
-};
+}
 
 }  // namespace content

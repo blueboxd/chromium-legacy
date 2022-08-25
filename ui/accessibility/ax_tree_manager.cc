@@ -55,6 +55,8 @@ AXTreeManager::AXTreeManager(std::unique_ptr<AXTree> tree)
       ax_tree_(std::move(tree)),
       event_generator_(ax_tree()) {
   GetMap().AddTreeManager(ax_tree_id_, this);
+  if (ax_tree())
+    tree_observation_.Observe(ax_tree());
 }
 
 AXTreeManager::AXTreeManager(const AXTreeID& tree_id,
@@ -65,6 +67,10 @@ AXTreeManager::AXTreeManager(const AXTreeID& tree_id,
   GetMap().AddTreeManager(ax_tree_id_, this);
   if (ax_tree())
     tree_observation_.Observe(ax_tree());
+}
+
+AXNode* AXTreeManager::GetNode(const AXNodeID node_id) const {
+  return ax_tree_ ? ax_tree_->GetFromId(node_id) : nullptr;
 }
 
 AXTreeID AXTreeManager::GetTreeID() const {

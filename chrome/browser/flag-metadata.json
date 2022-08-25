@@ -446,6 +446,11 @@
     "expiry_milestone": 112
   },
   {
+    "name": "autofill-enable-merchant-opt-out-error-dialog",
+    "owners": [ "vinnypersky@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
       "name": "autofill-enable-new-card-unmask-prompt-view",
       "owners": [ "eic", "bling-flags@google.com" ],
       "expiry_milestone": 109
@@ -811,11 +816,16 @@
   {
     "name": "canvas-2d-layers",
     "owners": [ "fserb", "jpgravel", "juanmihd", "yiyix" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 114
   },
   {
     "name": "canvas-oop-rasterization",
     "owners": [ "junov", "vasilyt" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "captive-portal-ui-2022",
+    "owners": [ "michaelrygiel", "stevenjb", "cros-network-health@google.com" ],
     "expiry_milestone": 110
   },
   {
@@ -951,7 +961,7 @@
   {
     "name": "clean-undecryptable-passwords",
     "owners": [ "derinel@google.com", "mamir" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 108
   },
   {
     "name": "clear-cross-site-cross-browsing-context-group-window-name",
@@ -2026,11 +2036,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "enable-desktop-pwas-prefix-app-name-in-window-title",
-    "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 101
-  },
-  {
     "name": "enable-desktop-pwas-remove-status-bar",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 110
@@ -2502,11 +2507,6 @@
     "name": "enable-machine-learning-model-loader-web-platform-api",
     "owners": [ "honglinyu" ],
     "expiry_milestone": 130
-  },
-  {
-    "name": "enable-magnifier-continuous-mouse-following-mode-setting",
-    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 98
   },
   {
     "name": "enable-managed-configuration-web-api",
@@ -3345,6 +3345,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "external-navigation-debug-logs",
+    "owners": [ "mthiesse@chromium.org", "yfriedman@chromium.org" ],
+    // Used by developers for debugging why Chrome fails to launch their app, by
+    // dumping extra information to logs in official builds.
+    "expiry_milestone": -1
+  },
+  {
     "name": "fast-checkout",
     "owners": [ "vizcay", "bwolfgang", "jkeitel" ],
     "expiry_milestone": 112
@@ -3510,7 +3517,7 @@
   {
     "name": "filling-across-affiliated-websites",
     "owners": [ "vsemeniuk@google.com", "vasilii" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 109
   },
   {
     "name": "focus-follows-cursor",
@@ -4229,11 +4236,6 @@
     "expiry_milestone": 111
   },
   {
-    "name": "media-app-handles-pdf",
-    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
-    "expiry_milestone": 106
-  },
-  {
     "name": "media-app-photos-integration-image",
     "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 107
@@ -4477,11 +4479,6 @@
     "name": "network-service-in-process",
     "owners": [ "yhirano", "network-service-dev" ],
     "expiry_milestone": 120
-  },
-  {
-    "name": "new-canvas-2d-api",
-    "owners": [ "aaronhk", "fserb", "juanmihd", "yiyix" ],
-    "expiry_milestone": 100
   },
   {
     "name": "new-content-suggestions-feed",
@@ -5044,6 +5041,16 @@
     "name": "page-entities-page-content-annotations",
     "owners": [ "sophiechang", "mcrouse", "chrome-intelligence-core@google.com"],
     "expiry_milestone": 110
+  },
+  {
+    "name": "page-info-about-this-page-description-placeholder",
+    "owners": [ "dullweber", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 109
+  },
+  {
+    "name": "page-info-about-this-page-persistent-side-panel-entry",
+    "owners": [ "dullweber", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 109
   },
   {
     "name": "page-info-about-this-site",
@@ -6239,7 +6246,7 @@
   {
     "name": "touch-to-fill-password-submission",
     "owners": [ "kolos", "fhorschig" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "traffic-counters",

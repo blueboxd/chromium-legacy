@@ -300,7 +300,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '680fe13614935414316e65cacc54e6c05ea2be2d',
+  'skia_revision': 'eefafd6c358386a97a74d80b0e7cc7c6a91065d1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1559,7 +1559,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'fac04ceb3e966f613ed17e98178e9d690280bba6',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '25e5b65e8885a8c95945f7c93ded525a95a9c8a1',
+    Var('chromium_git') + '/openscreen' + '@' + 'aff62f245e3ec2a2bc9de4e7c016e376d109e205',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'bf21ccb1007bb531b45d9978919a56ea5059c245',
@@ -1819,7 +1819,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@39eaabb99d4294e31947ebe6dfb5473ea827e25d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b51e5c0363e408a5be5bb6e322f01fc26f48822b',
     'condition': 'checkout_src_internal',
   },
 

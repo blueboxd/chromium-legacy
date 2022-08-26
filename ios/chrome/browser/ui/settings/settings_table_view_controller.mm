@@ -38,7 +38,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #include "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -1107,8 +1107,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
     _managedFeedSettingsItem = [[TableViewInfoButtonItem alloc]
         initWithType:SettingsItemTypeManagedArticlesForYou];
-    _managedFeedSettingsItem.image =
-        [UIImage imageNamed:kSettingsArticleSuggestionsImageName];
     _managedFeedSettingsItem.text = settingTitle;
     _managedFeedSettingsItem.statusText =
         l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1116,6 +1114,16 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
         kSettingsArticleSuggestionsCellId;
     _managedFeedSettingsItem.accessibilityHint = l10n_util::GetNSString(
         IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
+
+    if (UseSymbols()) {
+      _managedFeedSettingsItem.symbolView =
+          ElevatedTableViewSymbolWithBackground(
+              DefaultSettingsRootSymbol(kDiscoverSymbol),
+              [UIColor colorNamed:kOrange500Color]);
+    } else {
+      _managedFeedSettingsItem.image =
+          [UIImage imageNamed:kSettingsArticleSuggestionsImageName];
+    }
   }
 
   return _managedFeedSettingsItem;

@@ -46,7 +46,8 @@ bool decorations_allowed_for_test_ = true;
 bool ShouldSetBounds(PlatformWindowState state) {
   return state == PlatformWindowState::kNormal ||
          state == PlatformWindowState::kSnappedPrimary ||
-         state == PlatformWindowState::kSnappedSecondary;
+         state == PlatformWindowState::kSnappedSecondary ||
+         state == PlatformWindowState::kFloated;
 }
 }
 
@@ -130,7 +131,7 @@ void WaylandToplevelWindow::DispatchHostWindowDragMovement(
   else
     shell_toplevel_->SurfaceResize(connection(), hittest);
 
-  connection()->ScheduleFlush();
+  connection()->Flush();
 }
 
 void WaylandToplevelWindow::Show(bool inactive) {
@@ -165,7 +166,7 @@ void WaylandToplevelWindow::Hide() {
     aura_surface_.reset();
   }
   shell_toplevel_.reset();
-  connection()->ScheduleFlush();
+  connection()->Flush();
 }
 
 bool WaylandToplevelWindow::IsVisible() const {
@@ -182,7 +183,7 @@ void WaylandToplevelWindow::SetTitle(const std::u16string& title) {
 
   if (shell_toplevel_) {
     shell_toplevel_->SetTitle(title);
-    connection()->ScheduleFlush();
+    connection()->Flush();
   }
 }
 
@@ -257,7 +258,7 @@ void WaylandToplevelWindow::Activate() {
   // but nothing more happens (until the user moves the mouse over a Lacros
   // window in which case events will start and the activation will come
   // through).
-  connection()->ScheduleFlush();
+  connection()->Flush();
 }
 
 void WaylandToplevelWindow::SizeConstraintsChanged() {
@@ -383,6 +384,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
     state_ = PlatformWindowState::kSnappedPrimary;
   } else if (window_states.is_snapped_secondary) {
     state_ = PlatformWindowState::kSnappedSecondary;
+  } else if (window_states.is_floated) {
+    state_ = PlatformWindowState::kFloated;
   } else {
     state_ = PlatformWindowState::kNormal;
   }
@@ -844,7 +847,7 @@ void WaylandToplevelWindow::TriggerStateChanges() {
 
   delegate()->OnWindowStateChanged(previous_state_, state_);
 
-  connection()->ScheduleFlush();
+  connection()->Flush();
 }
 
 void WaylandToplevelWindow::SetWindowState(PlatformWindowState state) {
@@ -875,7 +878,7 @@ void WaylandToplevelWindow::SetSizeConstraints() {
   if (max_size_dip.has_value())
     shell_toplevel_->SetMaxSize(max_size_dip->width(), max_size_dip->height());
 
-  connection()->ScheduleFlush();
+  connection()->Flush();
 }
 
 void WaylandToplevelWindow::SetOrResetRestoredBounds() {

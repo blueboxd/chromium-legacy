@@ -534,7 +534,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override {
+      chromeos::WaitForServiceToBeAvailableCallback callback) override {
     cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
@@ -1077,6 +1077,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
           return false;
       } else if (key == cras::kAudioEffectProperty) {
         if (!value_reader.PopUint32(&node->audio_effect))
+          return false;
+      } else if (key == cras::kNumberOfVolumeStepsProperty) {
+        if (!value_reader.PopInt32(&node->number_of_volume_steps))
           return false;
       }
     }

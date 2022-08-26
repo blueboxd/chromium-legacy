@@ -254,6 +254,9 @@ const base::Feature kBluetoothRevamp{"BluetoothRevamp",
 const base::Feature kBluetoothWbsDogfood{"BluetoothWbsDogfood",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRobustAudioDeviceSelectLogic{
+    "RobustAudioDeviceSelectLogic", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Big GL when using Borealis.
 const base::Feature kBorealisBigGl{"BorealisBigGl",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
@@ -267,12 +270,17 @@ const base::Feature kBorealisDiskManagement{"BorealisDiskManagement",
 const base::Feature kBorealisPermitted{"BorealisPermitted",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Force the client to be on its beta version. If not set, the client will be on
-// its stable version.
+// Force the steam client to be on its beta version. If not set, the client will
+// be on its stable version.
 const base::Feature kBorealisForceBetaClient{"BorealisForceBetaClient",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Prevent Borealis' client from exercising ChromeOS integrations, in this mode
+// Force the steam client to render in 2x size (using GDK_SCALE as discussed in
+// b/171935238#comment4).
+const base::Feature kBorealisForceDoubleScale{
+    "BorealisForceDoubleScale", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Prevent the steam client from exercising ChromeOS integrations, in this mode
 // it functions more like the linux client.
 const base::Feature kBorealisLinuxMode{"BorealisLinuxMode",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1024,6 +1032,12 @@ const base::Feature kLacrosProfileMigrationForAnyUser{
 // `MoveMigrator` moves data from ash to lacros instead of copying them.
 const base::Feature kLacrosMoveProfileMigration{
     "LacrosMoveProfileMigration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, it is allowed to migrate data from lacros back to ash, provided
+// that other conditions are also met (e.g. the policy is enabled, or the
+// command line flag is passed).
+const base::Feature kLacrosProfileBackwardMigration{
+    "LacrosProfileBackwardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables sorting app icons shown on the launcher.
 const base::Feature kLauncherAppSort{"LauncherAppSort",

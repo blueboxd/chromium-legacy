@@ -113,11 +113,15 @@ extern const base::Feature kBluetoothQualityReport;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBluetoothRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBluetoothWbsDogfood;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kRobustAudioDeviceSelectLogic;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisBigGl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisDiskManagement;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisForceBetaClient;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kBorealisForceDoubleScale;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisLinuxMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -416,6 +420,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLacrosProfileMigrationForceOff;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLacrosMoveProfileMigration;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kLacrosProfileBackwardMigration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLauncherAppSort;
 COMPONENT_EXPORT(ASH_CONSTANTS)

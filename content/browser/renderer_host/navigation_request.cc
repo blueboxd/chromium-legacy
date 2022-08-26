@@ -1912,7 +1912,8 @@ void NavigationRequest::BeginNavigation() {
   MaybeAssignInvalidPrerenderFrameTreeNodeId();
 
   // Fenced frames are not allowed to load if nested in iframes with CSPEE.
-  if (frame_tree_node_->IsFencedFrameRoot()) {
+  bool is_fenced_frame = frame_tree_node_->IsFencedFrameRoot();
+  if (is_fenced_frame) {
     DCHECK(!frame_tree_node_->csp_attribute());
     if (GetParentFrameOrOuterDocument()->required_csp()) {
       GURL sanitized_blocked_url =
@@ -1935,9 +1936,30 @@ void NavigationRequest::BeginNavigation() {
     }
   }
 
-  // If this is a fenced frame with a urn:uuid, then convert it to a url before
-  // starting the navigation; otherwise, proceed directly with the navigation.
+  // If this is a fenced frame with a urn:uuid, or an iframe with a urn::uuid
+  // given blink::features::kAllowURNsInIframes is enabled, then convert it to a
+  // url before starting the navigation; otherwise, proceed directly with the
+  // navigation.
+  // In long term, navigation support for urn::uuid in iframes will be
+  // deprecated. Currently we issue a console warning when navigation starts.
+  // TODO(crbug.com/1355857)
   if (NeedFencedFrameURLMapping()) {
+    if (!is_fenced_frame) {
+      // Iframes with urn::uuid.
+      DCHECK(!frame_tree_node_->IsMainFrame());
+      DCHECK(blink::features::IsAllowURNsInIframeEnabled());
+      AddDeferredConsoleMessage(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "FLEDGE will deprecate supporting iframes to render the winning ad. "
+          "Please use fenced frames instead. See "
+          "https://developer.chrome.com/en/docs/privacy-sandbox/fenced-frame/"
+          "#examples");
+    }
+
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame",
+        !is_fenced_frame);
+
     FencedFrameURLMapping& fenced_frame_urls_map = GetFencedFrameURLMap();
 
     // If the mapping finishes synchronously, OnFencedFrameURLMappingComplete
@@ -5034,27 +5056,23 @@ void NavigationRequest::CommitPageActivation() {
     // since the page entered bfcache. We must update all frames, not just the
     // top frame, because it is possible (though unlikely) that an iframe's
     // entries have changed, too.
-    activated_entry->render_frame_host()->ForEachRenderFrameHost(
-        base::BindRepeating(
-            [](content::RenderFrameHost* navigating_rfh,
-               NavigationRequest* request, content::RenderFrameHost* rfh) {
-              RenderFrameHostImpl* rfhi =
-                  static_cast<RenderFrameHostImpl*>(rfh);
-              // |request| is given as a parameter to
-              // GetNavigationApiHistoryEntryVectors() only for the frame being
-              // committed (i.e., the top frame).
-              auto entry_arrays =
-                  rfhi->frame_tree()
-                      ->controller()
-                      .GetNavigationApiHistoryEntryVectors(
-                          rfhi->frame_tree_node(),
-                          navigating_rfh == rfh ? request : nullptr);
-              rfhi->GetAssociatedLocalFrame()
-                  ->SetNavigationApiHistoryEntriesForRestore(
-                      std::move(entry_arrays));
-              return content::RenderFrameHost::FrameIterationAction::kContinue;
-            },
-            activated_entry->render_frame_host(), this));
+    activated_entry->render_frame_host()->ForEachRenderFrameHostWithAction(
+        [this, &activated_entry](RenderFrameHostImpl* rfh) {
+          // |this| is given as a parameter to
+          // GetNavigationApiHistoryEntryVectors() only for the frame being
+          // committed (i.e., the top frame).
+          auto entry_arrays =
+              rfh->frame_tree()
+                  ->controller()
+                  .GetNavigationApiHistoryEntryVectors(
+                      rfh->frame_tree_node(),
+                      activated_entry->render_frame_host() == rfh ? this
+                                                                  : nullptr);
+          rfh->GetAssociatedLocalFrame()
+              ->SetNavigationApiHistoryEntriesForRestore(
+                  std::move(entry_arrays));
+          return RenderFrameHost::FrameIterationAction::kContinue;
+        });
 
     base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
     ReadyToCommitNavigation(false /* is_error */);

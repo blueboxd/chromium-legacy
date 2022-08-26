@@ -2150,7 +2150,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   test::AddDefaultComponentExtensionsOnMainThread(profile());
 
   // Enable System Web Apps if needed.
-  if (options.media_swa || options.files_swa) {
+  if (options.media_swa) {
     ash::SystemWebAppManager::GetForTest(profile())
         ->InstallSystemAppsForTesting();
   }
@@ -2178,6 +2178,10 @@ void FileManagerBrowserTestBase::TearDown() {
 }
 
 void FileManagerBrowserTestBase::StartTest() {
+  if (GetOptions().files_swa) {
+    ash::SystemWebAppManager::GetForTest(profile())
+        ->InstallSystemAppsForTesting();
+  }
   const std::string full_test_name = GetFullTestCaseName();
   LOG(INFO) << "FileManagerBrowserTest::StartTest " << full_test_name;
   static const base::FilePath test_extension_dir =
@@ -2475,23 +2479,19 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "executeScriptInChromeUntrusted") {
     for (auto* web_contents : GetAllWebContents()) {
       bool found = false;
-      web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-          base::BindRepeating(
-              [](const base::Value::Dict& value, bool& found,
-                 std::string* output, content::RenderFrameHost* frame) {
-                const url::Origin origin = frame->GetLastCommittedOrigin();
-                if (origin.GetURL() ==
-                    ash::file_manager::kChromeUIFileManagerUntrustedURL) {
-                  const std::string* script = value.FindString("data");
-                  EXPECT_TRUE(script);
-                  CHECK(ExecuteScriptAndExtractString(frame, *script, output));
-                  found = true;
-                  return content::RenderFrameHost::FrameIterationAction::kStop;
-                }
-                return content::RenderFrameHost::FrameIterationAction::
-                    kContinue;
-              },
-              std::ref(value), std::ref(found), output));
+      web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHostWithAction(
+          [&value, output, &found](content::RenderFrameHost* frame) {
+            const url::Origin origin = frame->GetLastCommittedOrigin();
+            if (origin.GetURL() ==
+                ash::file_manager::kChromeUIFileManagerUntrustedURL) {
+              const std::string* script = value.FindString("data");
+              EXPECT_TRUE(script);
+              CHECK(ExecuteScriptAndExtractString(frame, *script, output));
+              found = true;
+              return content::RenderFrameHost::FrameIterationAction::kStop;
+            }
+            return content::RenderFrameHost::FrameIterationAction::kContinue;
+          });
       if (found)
         return;
     }

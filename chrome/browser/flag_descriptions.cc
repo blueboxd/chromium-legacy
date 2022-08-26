@@ -649,6 +649,10 @@ const char kBorealisForceBetaClientName[] = "Borealis Force Beta Client";
 const char kBorealisForceBetaClientDescription[] =
     "Force the client to run its beta version.";
 
+const char kBorealisForceDoubleScaleName[] = "Borealis Force Double Scale";
+const char kBorealisForceDoubleScaleDescription[] =
+    "Force the client to run in 2x visual zoom.";
+
 const char kBorealisLinuxModeName[] = "Borealis Linux Mode";
 const char kBorealisLinuxModeDescription[] =
     "Do not run ChromeOS-specific code in the client.";
@@ -2474,6 +2478,11 @@ const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
     "Enables tab strip to scroll left and right when full.";
+
+const char kSplitTabStripName[] = "Split TabStrip";
+const char kSplitTabStripDescription[] =
+    "Splits pinned and unpinned tabs into separate TabStrips under the hood. "
+    "Pure refactoring, no user-visible behavioral changes are included.";
 
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
@@ -4694,6 +4703,12 @@ const char kBluetoothCoredumpDescription[] =
     "Enable Bluetooth coredump collection if supported. Please note that "
     "coredumps are only collected when hardware exceptions occur and are "
     "used for debugging such exceptions.";
+
+const char kRobustAudioDeviceSelectLogicName[] =
+    "Robust Audio Device Select Logic";
+const char kRobustAudioDeviceSelectLogicDescription[] =
+    "A more robust logic for automatic audio device selection which is more "
+    "capable of remembering the user's preferences of audio devices.";
 
 const char kBluetoothUseFlossName[] = "Use Floss instead of BlueZ";
 const char kBluetoothUseFlossDescription[] =

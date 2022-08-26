@@ -145,7 +145,7 @@ const base::Feature kDefaultEnableGpuRasterization{
 // Enables the use of out of process rasterization for canvas.
 const base::Feature kCanvasOopRasterization {
   "CanvasOopRasterization",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || \
     (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_FUCHSIA)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -474,6 +474,10 @@ bool IsUsingThreadSafeMediaForWebView() {
 #endif
 }
 
+// Note that DrDc is also disabled on some of the gpus (crbug.com/1354201).
+// Thread safe media will still be used on those gpus which should be fine for
+// now as the lock shouldn't have much overhead and is limited to only few gpus.
+// This should be fixed/updated later to account for disabled gpus.
 bool NeedThreadSafeAndroidMedia() {
   return IsDrDcEnabled() || IsUsingThreadSafeMediaForWebView();
 }

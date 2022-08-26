@@ -9,6 +9,24 @@
 # To disable a specific test in chrome_all_tast_tests, add it the following
 # list and cite a bug.
 tast_disabled_tests_from_chrome_all = [
+  # crbug.com/1356506
+  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
+  "inputs.VirtualKeyboardAccent",
+  "inputs.VirtualKeyboardAccessibility",
+  "inputs.VirtualKeyboardAutoShift",
+  "inputs.VirtualKeyboardChangeInput.tablet",
+  "inputs.VirtualKeyboardDeadKeys.french",
+  "inputs.VirtualKeyboardEnglishSettings",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_docked",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardHandwriting.docked",
+  "inputs.VirtualKeyboardHandwriting.floating",
+  "inputs.VirtualKeyboardLoginScreen.tablet",
+  "inputs.VirtualKeyboardMultipasteSuggestion.lacros",
+  "inputs.VirtualKeyboardTypingOmnibox",
+  "inputs.VirtualKeyboardTypingOmnibox.guest",
+  "inputs.VirtualKeyboardTypingUserMode.incognito",
+
   # crbug.com/1184931
   "health.ProbeBatteryMetrics",
 
@@ -190,30 +208,8 @@ tast_disabled_tests_from_chrome_all = [
   "health.DiagnosticsRun.dns_resolution",
   "health.DiagnosticsRun.dns_resolver_present",
 
-  # http://b234699971
-  "crostini.AppGeditUnshareFolder",
-
   # b/235279574
   "wmp.DragAndDropWindow",
-
-  # http://b/236312054
-  "crostini.AppGeditFilesharing",
-  "crostini.AppGeditFilesharing.stable",
-  "crostini.AppGeditFilesharing.clamshell_stable",
-
-  # http://b/236710501
-  "crostini.AppAndroidStudio.stable",
-  "crostini.AppGeditUnshareFolder.stable",
-  "crostini.AppGeditUnshareFolder.clamshell_stable",
-
-  # http://crbug.com/1339132
-  "crostini.AppEclipse",
-  "crostini.AppEmacs",
-  "crostini.AppVscode",
-  "crostini.BasicLxdNext.stable",
-  "crostini.RestartApp",
-  "crostini.RestartApp.stable",
-  "crostini.RestartApp.clamshell_stable",
 
   # http://b/238600197
   "crostini.FilesAppWatch.buster_stable",
@@ -279,9 +275,6 @@ tast_disabled_tests_from_chrome_all = [
   # http://b/242172965
   "crostini.SSHFSMount.bullseye_stable",
   "crostini.SSHFSMount.buster_stable",
-
-  # https://crbug.com/1353760
-  "crostini.RestartIcon.bullseye_stable",
 
   # https://crbug.com/1354215
   "lacros.Basic",

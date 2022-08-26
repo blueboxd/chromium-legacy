@@ -7,7 +7,7 @@ import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -110,6 +110,18 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
    */
   hasEmail_() {
     return (this.feedbackContext !== null && !!this.feedbackContext.email);
+  }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  shouldShowBluetoothCheckbox_() {
+    // TODO: add an additional logic to hide bluetooth checkbox if user input
+    // is not relevant to bluetooth.
+    return (
+        this.feedbackContext !== null &&
+        this.feedbackContext.isInternalAccount);
   }
 
   /**
@@ -248,7 +260,6 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           !!this.getElement_('#screenshotImage').src,
       contactUserConsentGranted:
           this.getElement_('#userConsentCheckbox').checked,
-      sendBluetoothLogs: this.getElement_('#bluetoothLogsCheckbox').checked,
     });
 
     report.attachedFile =
@@ -276,8 +287,12 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           this.feedbackContext.extraDiagnostics;
     }
 
-    if (this.getElement_('#bluetoothLogsCheckbox').checked) {
+    if (!this.getElement_('#bluetoothCheckboxContainer').hidden &&
+        this.getElement_('#bluetoothLogsCheckbox').checked) {
       report.feedbackContext.categoryTag = 'BluetoothReportWithLogs';
+      report.sendBluetoothLogs = true;
+    } else {
+      report.sendBluetoothLogs = false;
     }
 
     return report;

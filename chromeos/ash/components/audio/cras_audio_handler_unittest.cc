@@ -89,6 +89,7 @@ struct AudioNodeInfo {
   const char* const device_name;
   const char* const type;
   const char* const name;
+  const int32_t number_of_volume_steps;
 };
 
 const uint32_t kInputMaxSupportedChannels = 1;
@@ -97,68 +98,69 @@ const uint32_t kOutputMaxSupportedChannels = 2;
 const uint32_t kInputAudioEffect = 1;
 const uint32_t kOutputAudioEffect = 0;
 
-const AudioNodeInfo kInternalSpeaker[] = {
-    {false, kInternalSpeakerId, "Fake Speaker", "INTERNAL_SPEAKER", "Speaker"}};
+const AudioNodeInfo kInternalSpeaker[] = {{false, kInternalSpeakerId,
+                                           "Fake Speaker", "INTERNAL_SPEAKER",
+                                           "Speaker", 25}};
 
 const AudioNodeInfo kHeadphone[] = {
-    {false, kHeadphoneId, "Fake Headphone", "HEADPHONE", "Headphone"}};
+    {false, kHeadphoneId, "Fake Headphone", "HEADPHONE", "Headphone", 25}};
 
 const AudioNodeInfo kInternalMic[] = {
-    {true, kInternalMicId, "Fake Mic", "INTERNAL_MIC", "Internal Mic"}};
+    {true, kInternalMicId, "Fake Mic", "INTERNAL_MIC", "Internal Mic", 0}};
 
 const AudioNodeInfo kMicJack[] = {
-    {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack"}};
+    {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack", 0}};
 
 const AudioNodeInfo kUSBMic1[] = {
-    {true, kUSBMicId1, "Fake USB Mic 1", "USB", "USB Microphone 1"}};
+    {true, kUSBMicId1, "Fake USB Mic 1", "USB", "USB Microphone 1", 0}};
 
 const AudioNodeInfo kUSBMic2[] = {
-    {true, kUSBMicId2, "Fake USB Mic 2", "USB", "USB Microphone 2"}};
+    {true, kUSBMicId2, "Fake USB Mic 2", "USB", "USB Microphone 2", 0}};
 
 const AudioNodeInfo kKeyboardMic[] = {{true, kKeyboardMicId,
                                        "Fake Keyboard Mic", "KEYBOARD_MIC",
-                                       "Keyboard Mic"}};
+                                       "Keyboard Mic", 0}};
 
 const AudioNodeInfo kFrontMic[] = {
-    {true, kFrontMicId, "Fake Front Mic", "FRONT_MIC", "Front Mic"}};
+    {true, kFrontMicId, "Fake Front Mic", "FRONT_MIC", "Front Mic", 0}};
 
 const AudioNodeInfo kRearMic[] = {
-    {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic"}};
+    {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic", 0}};
 
 const AudioNodeInfo kOther[] = {
-    {false, kOtherId, "Non Simple Output Device", "OTHER", "Other"}};
+    {false, kOtherId, "Non Simple Output Device", "OTHER", "Other", 25}};
 
 const AudioNodeInfo kBluetoothHeadset[] = {{false, kBluetoothHeadsetId,
                                             "Bluetooth Headset", "BLUETOOTH",
-                                            "Bluetooth Headset 1"}};
+                                            "Bluetooth Headset 1", 25}};
 
 const AudioNodeInfo kHDMIOutput[] = {
-    {false, kHDMIOutputId, "HDMI output", "HDMI", "HDMI output"}};
+    {false, kHDMIOutputId, "HDMI output", "HDMI", "HDMI output", 25}};
 
 const AudioNodeInfo kUSBHeadphone1[] = {
-    {false, kUSBHeadphoneId1, "USB Headphone", "USB", "USB Headphone 1"}};
+    {false, kUSBHeadphoneId1, "USB Headphone", "USB", "USB Headphone 1", 25}};
 
 const AudioNodeInfo kUSBHeadphone2[] = {
-    {false, kUSBHeadphoneId2, "USB Headphone", "USB", "USB Headphone 1"}};
+    {false, kUSBHeadphoneId2, "USB Headphone", "USB", "USB Headphone 1", 16}};
 
 const AudioNodeInfo kUSBJabraSpeakerOutput1[] = {
     {false, kUSBJabraSpeakerOutputId1, "Jabra Speaker 1", "USB",
-     "Jabra Speaker 1"}};
+     "Jabra Speaker 1", 16}};
 
 const AudioNodeInfo kUSBJabraSpeakerOutput2[] = {
     {false, kUSBJabraSpeakerOutputId2, "Jabra Speaker 2", "USB",
-     "Jabra Speaker 2"}};
+     "Jabra Speaker 2", 25}};
 
 const AudioNodeInfo kUSBJabraSpeakerInput1[] = {{true, kUSBJabraSpeakerInputId1,
                                                  "Jabra Speaker 1", "USB",
-                                                 "Jabra Speaker"}};
+                                                 "Jabra Speaker", 0}};
 
 const AudioNodeInfo kUSBJabraSpeakerInput2[] = {{true, kUSBJabraSpeakerInputId2,
                                                  "Jabra Speaker 2", "USB",
-                                                 "Jabra Speaker 2"}};
+                                                 "Jabra Speaker 2", 0}};
 
 const AudioNodeInfo kUSBCameraInput[] = {
-    {true, kUSBCameraInputId, "USB Camera", "USB", "USB Camera"}};
+    {true, kUSBCameraInputId, "USB Camera", "USB", "USB Camera", 0}};
 
 class TestObserver : public CrasAudioHandler::AudioObserver {
  public:
@@ -338,7 +340,8 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
         0 /* pluged_time */,
         node_info->is_input ? kInputMaxSupportedChannels
                             : kOutputMaxSupportedChannels,
-        node_info->is_input ? kInputAudioEffect : kOutputAudioEffect);
+        node_info->is_input ? kInputAudioEffect : kOutputAudioEffect,
+        node_info->number_of_volume_steps);
   }
 
   AudioNodeList GenerateAudioNodeList(
@@ -2116,6 +2119,127 @@ TEST_P(CrasAudioHandlerTest, SetOutputVolumePercent) {
   EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
   EXPECT_EQ(device.id, kInternalSpeaker->id);
   EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
+}
+
+TEST_P(CrasAudioHandlerTest, IncreaseOutputVolumeByOneStep) {
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kUSBHeadphone1, kUSBHeadphone2});
+  SetUpCrasAudioHandler(audio_nodes);
+  // USB 1 have 25 steps, mean we increase 100/25=4 % of volume per step.
+  // USB 1 start from volume 0 and increase one step expect increase to 4.
+  cras_audio_handler_->ChangeActiveNodes({kUSBHeadphone1->id});
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(4, cras_audio_handler_->GetOutputVolumePercent());
+  // 0   -> step0
+  // 1-4 -> step1
+  // 5-8 -> step2
+  // Inorder to let user feel volume change, increase step1 to step2.
+  // USB 1 start from volume 2 and increase one step, expect increase to 8.
+  cras_audio_handler_->SetOutputVolumePercent(2);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(8, cras_audio_handler_->GetOutputVolumePercent());
+  // 100 is max volume
+  cras_audio_handler_->SetOutputVolumePercent(100);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(100, cras_audio_handler_->GetOutputVolumePercent());
+  // can increase from 0 to 100
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  for (int32_t i = 0; i < kUSBHeadphone1->number_of_volume_steps; ++i) {
+    cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(100, cras_audio_handler_->GetOutputVolumePercent());
+  // USB 2 have 16 steps, mean we increase 100/16=6.25 % of volume per step.
+  // USB 2 start from volume 0 and increase one step expect increase to 6;
+  cras_audio_handler_->ChangeActiveNodes({kUSBHeadphone2->id});
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(6, cras_audio_handler_->GetOutputVolumePercent());
+  // 0    -> step0
+  // 1-6  -> step1
+  // 7-12 -> step2
+  // Inorder to let user feel volume change, increase step1 to step2.
+  // USB 2 start from volume 4 and increase one step, expect increase to 12
+  cras_audio_handler_->SetOutputVolumePercent(4);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(12, cras_audio_handler_->GetOutputVolumePercent());
+  // USB 2 start from volume 0 and increase 4 step, expect increase to
+  // 25(6.25*4=25)
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  for (int32_t i = 0; i < 4; ++i) {
+    cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(25, cras_audio_handler_->GetOutputVolumePercent());
+  // 100 is max
+  cras_audio_handler_->SetOutputVolumePercent(100);
+  cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  EXPECT_EQ(100, cras_audio_handler_->GetOutputVolumePercent());
+  // can increase from 0 to 100
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  for (uint32_t i = 0; i < kUSBHeadphone2->number_of_volume_steps; ++i) {
+    cras_audio_handler_->IncreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(100, cras_audio_handler_->GetOutputVolumePercent());
+}
+
+TEST_P(CrasAudioHandlerTest, DecreaseOutputVolumeByOneStep) {
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kUSBHeadphone1, kUSBHeadphone2});
+  SetUpCrasAudioHandler(audio_nodes);
+  // USB 1 have 25 steps, mean we decrease 100/25=4 % of volume per step.
+  // USB 1 start from volume 4 and decrease one step expect decrease to 0;
+  cras_audio_handler_->ChangeActiveNodes({kUSBHeadphone1->id});
+  cras_audio_handler_->SetOutputVolumePercent(4);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
+  // 0   -> step0
+  // 1-4 -> step1
+  // 4-8 -> step2
+  // Inorder to let user feel volume change, decrease step2 to step1.
+  // USB 1 start from volume 6 and decrease one step, expect decrease to 4
+  cras_audio_handler_->SetOutputVolumePercent(6);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(4, cras_audio_handler_->GetOutputVolumePercent());
+  // 0 is min volume
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
+  // can decrease from 100 to 0
+  cras_audio_handler_->SetOutputVolumePercent(100);
+  for (int32_t i = 0; i < kUSBHeadphone1->number_of_volume_steps; ++i) {
+    cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
+  // USB 2 have 16 steps, mean we decrease 100/16=6.25 % of volume per step.
+  // USB 2 start from volume 12 and decrease one step expect decrease to 6;
+  cras_audio_handler_->ChangeActiveNodes({kUSBHeadphone2->id});
+  cras_audio_handler_->SetOutputVolumePercent(12);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(6, cras_audio_handler_->GetOutputVolumePercent());
+  // 0    -> step0
+  // 1-6  -> step1
+  // 7-12 -> step2
+  // Inorder to let user feel volume change, decrease step2 to step1.
+  // USB 2 start from volume 10 and decrease one step, expect decrease to 6
+  cras_audio_handler_->SetOutputVolumePercent(10);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(6, cras_audio_handler_->GetOutputVolumePercent());
+  // USB 2 start from volume 25 and decrease 4 step, expect decrease to 0
+  cras_audio_handler_->SetOutputVolumePercent(25);
+  for (int32_t i = 0; i < 4; ++i) {
+    cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
+  // 0 is min volume
+  cras_audio_handler_->SetOutputVolumePercent(0);
+  cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
+  // can decrease from 100 to 0
+  cras_audio_handler_->SetOutputVolumePercent(100);
+  for (int32_t i = 0; i < kUSBHeadphone2->number_of_volume_steps; ++i) {
+    cras_audio_handler_->DecreaseOutputVolumeByOneStep();
+  }
+  EXPECT_EQ(0, cras_audio_handler_->GetOutputVolumePercent());
 }
 
 TEST_P(CrasAudioHandlerTest, RestartAudioClientWithCrasReady) {

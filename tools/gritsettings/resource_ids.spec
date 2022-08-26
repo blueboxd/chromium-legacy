@@ -168,7 +168,7 @@
     "META": {"sizes": {"includes": [5]}},
     "includes": [1490],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/commander_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
     "includes": [1500],
   },
@@ -571,10 +571,9 @@
   "ash/webui/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [3120],
   },
-  "ash/webui/print_management/resources/print_management_resources.grd": {
-    "META": {"join": 2},
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/print_management/resources/ash_print_management_resources.grd": {
+    "META": {"join": 2, "sizes": {"includes": [20]}},
     "includes": [3140],
-    "structures": [3160],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/resources/trusted/ash_sample_system_web_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
@@ -644,6 +643,20 @@
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/face_ml_app_ui/resources/trusted/ash_face_ml_app_resources.grd": {
     "META": {"join": 2, "sizes": {"includes": [50],}},
     "includes": [3440],
+  },
+  # Both face_ml_app_bundle_resources.grd and face_ml_app_bundle_mock_resources.grd
+  # start with the same id because only one of them is built depending on if
+  # src_internal is available.
+  "ash/webui/face_ml_app_ui/resources/prod/face_ml_app_bundle_resources.grd": {
+    "META": {"sizes": {"includes": [120],}},  # Relies on src-internal.
+    "includes": [3460],
+  },
+  "ash/webui/face_ml_app_ui/resources/mock/face_ml_app_bundle_mock_resources.grd": {
+    "includes": [3460],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/face_ml_app_ui/resources/untrusted/ash_face_ml_app_untrusted_resources.grd": {
+    "META": {"join": 2, "sizes": {"includes": [50],}},
+    "includes": [3480],
   },
   # END chromeos/ section.
 

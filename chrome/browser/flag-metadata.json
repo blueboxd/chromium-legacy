@@ -754,6 +754,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "borealis-force-double-scale",
+    "owners": [ "hollingum" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "borealis-linux-mode",
     "owners": [ "hollingum" ],
     "expiry_milestone": 110
@@ -1493,7 +1498,7 @@
   {
     "name": "download-bubble",
     "owners": [ "bhatiarohit", "chrome-counter-abuse-alerts@google.com"],
-    "expiry_milestone": 106
+    "expiry_milestone": 108
   },
   {
     "name": "download-bubble-v2",
@@ -1501,7 +1506,7 @@
       "bhatiarohit",
       "chrome-counter-abuse-alerts@google.com"
     ],
-    "expiry_milestone": 106
+    "expiry_milestone": 108
   },
   {
     "name": "download-later",
@@ -1571,7 +1576,7 @@
   {
     "name": "eche-swa",
     "owners": [ "dhnishi" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 110
   },
   {
     "name": "eche-swa-debug-mode",
@@ -4026,7 +4031,7 @@
   {
     "name": "isolated-app-origins",
     "owners": [ "peletskyi@google.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "isolation-by-default",
@@ -5619,6 +5624,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "robust-audio-device-select-logic",
+    "owners": [ "mingxuanshi@google.com", "chromeos-audio-sw@google.com" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "rounded-display",
     "owners": [
       "zoraiznaeem",
@@ -5980,6 +5990,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "smart-sorting-new-destinations",
+    "owners": [ "bwwilliams@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 111
+  },
+  {
     "name": "smart-sorting-new-overflow-menu",
     "owners": [ "bwwilliams@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 108
@@ -6005,6 +6020,14 @@
     "name": "spectre-v2-mitigation",
     "owners": [ "chromeos-security@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "split-tabstrip",
+    "owners": [
+      "chrome-desktop-ui-sea@google.com",
+      "tbergquist"
+    ],
+    "expiry_milestone": 115
   },
   {
     "name": "start-surface",

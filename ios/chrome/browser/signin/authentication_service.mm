@@ -25,7 +25,7 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
 #import "ios/chrome/browser/signin/signin_util.h"
@@ -321,17 +321,7 @@ ChromeIdentity* AuthenticationService::GetPrimaryIdentity(
   return account_manager_service_->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
-// TODO(crbug.com/1351423): Remove asynchronous callback from SignIn function,
-// since this is no longer used by existing callers.
-void AuthenticationService::SignIn(ChromeIdentity* identity,
-                                   signin_ui::CompletionCallback completion) {
-  SignInInternal(identity);
-  if (completion) {
-    completion(HasPrimaryIdentity(signin::ConsentLevel::kSignin));
-  }
-}
-
-void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
+void AuthenticationService::SignIn(ChromeIdentity* identity) {
   ServiceStatus status = GetServiceStatus();
   CHECK(status == ServiceStatus::SigninAllowed ||
         status == ServiceStatus::SigninForcedByPolicy)

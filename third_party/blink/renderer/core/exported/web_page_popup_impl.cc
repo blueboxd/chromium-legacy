@@ -36,6 +36,7 @@
 #include "cc/base/features.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -349,8 +350,8 @@ WebPagePopupImpl::WebPagePopupImpl(
   DCHECK(popup_client_);
   popup_widget_host_.set_disconnect_handler(WTF::Bind(
       &WebPagePopupImpl::WidgetHostDisconnected, WTF::Unretained(this)));
-  if (auto* widget = opener_web_view->MainFrameViewWidget()) {
-    if (auto* device_emulator = widget->DeviceEmulator()) {
+  if (auto* main_frame_widget = opener_web_view->MainFrameViewWidget()) {
+    if (auto* device_emulator = main_frame_widget->DeviceEmulator()) {
       opener_widget_screen_origin_ = device_emulator->ViewRectOrigin();
       opener_original_widget_screen_origin_ =
           device_emulator->original_view_rect().origin();
@@ -398,7 +399,8 @@ WebPagePopupImpl::WebPagePopupImpl(
         owner_settings->GetAllowUniversalAccessFromFileURLs());
   }
 
-  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr);
+  // TODO(https://crbug.com/1355751) Initialize `storage_key`.
+  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr, StorageKey());
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
 

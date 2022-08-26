@@ -10,7 +10,7 @@
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
@@ -141,7 +141,7 @@ constexpr NSInteger kSigninTimeoutDurationSeconds = 10;
       signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN) {
     self.userPrefService->SetInteger(prefs::kSigninWebSignDismissalCount, 0);
   }
-  self.authenticationService->SignIn(identity, nil);
+  self.authenticationService->SignIn(identity);
   [self.delegate consistencyPromoSigninMediatorSigninStarted:self];
   DCHECK(self.authenticationService->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));

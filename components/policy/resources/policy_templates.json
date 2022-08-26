@@ -9345,7 +9345,7 @@
     },
     {
       'name': 'ChromeOsLockOnIdleSuspend',
-      'owners': ['xiyuan@chromium.org', 'ultrotter@chromium.org'],
+      'owners': ['xiyuan@chromium.org', 'ultrotter@chromium.org', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:9-'],
@@ -9357,27 +9357,31 @@
       'items': [
         {
           'value': True,
-          'caption': 'Lock the device when it becomes idle or suspended',
+          'caption': 'Lock the device when it suspends or the lid is closed',
         },
         {
           'value': False,
-          'caption': 'Prevent the device from locking when it becomes idle or suspended',
+          'caption': 'Do not lock the device when it suspends or the lid is closed',
         },
         {
           'value': None,
-          'caption': 'Allow users to decide whether the device should lock when it becomes idle or suspended',
+          'caption': 'Allow users to decide whether the device should lock when it suspends or the lid is closed',
         },
       ],
       'example_value': True,
       'default': None,
       'id': 61,
-      'caption': '''Enable lock when the device become idle or suspended''',
+      'caption': '''Enable lock when the device suspends or the lid is closed''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> asks users for a password to unlock the device when it becomes idle.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> asks users for a password to unlock the device when it suspends or the lid is closed.
 
-      Setting the policy to Disabled means users are not asked for a password to unlock the device from sleep.
+      Devices will lock when the lid is closed except if they are docked (using an external monitor).  In such a case, the device will not lock when the lid closes, but will lock if the external monitor is removed and the lid is still closed.
 
-      Leaving the policy unset lets the user choose whether to be prompted for a password to unlock the device from sleep.''',
+      By setting this policy to true, and <ph name="LID_CLOSE_ACTION_POLICY_NAME">LidCloseAction</ph> to <ph name="LID_CLOSE_ACTION_ENUM_DO_NOTHING">LidCloseActionDoNothing</ph>, a device will lock when the lid is closed, but will only suspend if and when configured to do so in <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph>.
+
+      Setting the policy to Disabled means users are not asked for a password to unlock the device.
+
+      Leaving the policy unset lets the user choose whether to be prompted for a password to unlock the device.''',
     },
     {
       'name': 'ChromeOsMultiProfileUserBehavior',
@@ -17298,7 +17302,7 @@
       'owners': ['andreydav@google.com', 'chromeos-commercial-identity@google.com'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:106-'],
+      'supported_on': ['chrome_os:107-'],
       'supported_chrome_os_management': ['google_cloud' ],
       'device_only': True,
       'features': {
@@ -33046,7 +33050,7 @@ This policy has no effect if the option to keep existing browsing data is not av
       'caption': 'Enable High Efficiency Mode',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome.win', 'chrome.mac', 'chrome.linux' ],
+      'future_on': ['chrome.*' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -33071,6 +33075,50 @@ This policy has no effect if the option to keep existing browsing data is not av
       'tags': [],
       'desc': '''This policy enables or disables the High Efficiency Mode setting. This setting makes it so that tabs are discarded after some period of time in the background to reclaim memory.
       If this policy is unset, the end user can control this setting in chrome://settings/performance.
+      ''',
+    },
+    {
+      'name': 'BatterySaverModeAvailability',
+      'owners': ['anthonyvd@chromium.org', 'file://components/performance_manager/OWNERS'],
+      'caption': 'Enable Battery Saver Mode',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'future_on': ['chrome.*' ],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'name': 'Disabled',
+          'value': 0,
+          'caption': 'Battery Saver Mode will be disabled.',
+        },
+        {
+          'name': 'EnabledBelowThreshold',
+          'value': 1,
+          'caption': 'Battery Saver Mode will be enabled when the device is on battery power and battery level is low.',
+        },
+        {
+          'name': 'EnabledOnBattery',
+          'value': 2,
+          'caption': 'Battery Saver Mode will be enabled when the device is on battery power.',
+        }
+      ],
+      'default': None,
+      'example_value': 1,
+      'id': 1009,
+      'tags': [],
+      'desc': '''This policy enables or disables the Battery Saver Mode setting. This setting makes it so that frame rate is throttled to lower power consumption.
+      If this policy is unset, the end user can control this setting in chrome://settings/performance.
+      The different levels are:
+      <ph name="BATTERY_SAVER_MODE_DISABLED">Disabled</ph> (0): Battery Saver Mode will be disabled.
+      <ph name="BATTERY_SAVER_MODE_ENABLED_BELOW_THRESHOLD">EnabledBelowThreshold</ph> (1): Battery Saver Mode will be enabled when the device is on battery power and battery level is low.
+      <ph name="BATTERY_SAVER_MODE_ENABLED_ON_BATTERY">EnabledOnBattery</ph> (2): Battery Saver Mode will be enabled when the device is on battery power.
       ''',
     }
   ],
@@ -34081,6 +34129,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1008,
+  'highest_id_currently_used': 1009,
   'highest_atomic_group_id_currently_used': 43
 }

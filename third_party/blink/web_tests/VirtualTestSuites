@@ -73,13 +73,6 @@
     "args": ["--attribution-reporting-debug-mode"]
   },
   {
-    "prefix": "composite-relative-keyframes",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-transforms/animation"],
-    "args": ["--enable-threaded-compositing",
-             "--enable-blink-features=CompositeRelativeKeyframes"]
-  },
-  {
     "prefix": "off-main-thread-css-paint",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/css/css-paint-api",
@@ -600,15 +593,6 @@
       "external/wpt/css/css-values/acos-asin-atan-atan2-invalid.html"
     ],
     "args": ["--disable-blink-features=CSSTrigonometricFunctions"]
-  },
-  {
-    "prefix": "import-assertions",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/html/semantics/scripting-1/the-script-element/import-assertions", 
-      "external/wpt/html/semantics/scripting-1/the-script-element/css-module",
-      "external/wpt/html/semantics/scripting-1/the-script-element/json-module"],
-    "args": ["--js-flags=--harmony-import-assertions"]
   },
   {
     "prefix": "import-maps-disabled",

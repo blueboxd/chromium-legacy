@@ -410,10 +410,6 @@
       status: {"Android": "stable"},
     },
     {
-      name: "CompositeRelativeKeyframes",
-      status: "stable"
-    },
-    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -1968,6 +1964,11 @@
       name: "SanitizerAPIv0",
       status: "stable",
       implied_by: ["SanitizerAPI"],
+    },
+    {
+      // https://wicg.github.io/webcomponents/proposals/Scoped-Custom-Element-Registries
+      name: "ScopedCustomElementRegistry",
+      status: "test",
     },
 
     // WebSpeech API with both speech recognition and synthesis functionality

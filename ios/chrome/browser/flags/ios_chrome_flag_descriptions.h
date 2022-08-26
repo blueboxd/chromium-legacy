@@ -501,6 +501,10 @@ extern const char kOmniboxZeroSuggestPrefetchingDescription[];
 extern const char kIOSOmniboxUpdatedPopupUIName[];
 extern const char kIOSOmniboxUpdatedPopupUIDescription[];
 
+// Title and description for the flag to enable Optimization Guide debug logs.
+extern const char kOptimizationGuideDebugLogsName[];
+extern const char kOptimizationGuideDebugLogsDescription[];
+
 // Title and description for the flag to enable TFLite model downloading.
 extern const char kOptimizationGuideModelDownloadingName[];
 extern const char kOptimizationGuideModelDownloadingDescription[];
@@ -562,6 +566,11 @@ extern const char kSharedHighlightingIOSDescription[];
 // Autofill field type predictions as placeholder.
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
+
+// Title and description for the flag to enable smart sorting new destinations
+// added to the overflow menu.
+extern const char kSmartSortingNewDestinationsName[];
+extern const char kSmartSortingNewDestinationsDescription[];
 
 // Title and description for the flag to enable smart sorting the new overflow
 // menu.

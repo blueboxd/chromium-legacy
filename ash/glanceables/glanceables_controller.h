@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/timer/timer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace views {
@@ -60,9 +61,15 @@ class ASH_EXPORT GlanceablesController : public wm::ActivationChangeObserver {
   // Triggers a fetch of data from the server.
   void FetchData();
 
+  // Adds blur to `widget_` and semiopaque black background to `view_`.
+  // TODO(crbug.com/1354343): investigate if there's a more efficient way to do
+  // this.
+  void ApplyBackdrop() const;
+
   std::unique_ptr<GlanceablesDelegate> delegate_;
   std::unique_ptr<views::Widget> widget_;
   GlanceablesView* view_ = nullptr;
+  base::OneShotTimer timer_;
 
   // Hides windows while glanceables are showing.
   std::unique_ptr<GlanceablesWindowHider> window_hider_;

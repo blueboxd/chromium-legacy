@@ -385,6 +385,8 @@ crbug.com/1287280 [ android android-pixel-6 no-passthrough renderer-skia-gl andr
 crbug.com/1287280 [ android android-pixel-6 no-passthrough android-chromium ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 crbug.com/1288586 [ android android-pixel-6 no-passthrough renderer-skia-gl android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ Failure ]
 crbug.com/1289884 [ android android-pixel-6 renderer-skia-vulkan android-webview-instrumentation ] * [ Failure ]
+crbug.com/1356252 [ android android-pixel-6 passthrough angle-opengles ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Failure ]
+crbug.com/1356252 [ android android-pixel-6 passthrough angle-opengles ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Failure ]
 
 crbug.com/1290953 [ android android-nexus-5x android-webview-instrumentation ] Pixel_CanvasLowLatency2D [ Failure ]
 crbug.com/1290953 [ android android-nexus-5x android-webview-instrumentation ] Pixel_CanvasLowLatency2DDrawImage [ Failure ]
@@ -445,11 +447,6 @@ crbug.com/1353189 [ linux release amd-0x7340 ] Pixel_VideoStreamFromWebGLAlphaCa
 
 # Crash on Linux FYI Release (NVIDIA) using SkiaRenderer/Vulkan
 crbug.com/1353189 [ linux renderer-skia-vulkan nvidia-0x2184 ] Pixel_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback [ Failure ]
-
-# GPU process hanging inside Gallium driver
-crbug.com/1355622 [ chromeos chromeos-board-amd64-generic no-passthrough ] Pixel_Video_Context_Loss_MP4 [ Failure ]
-crbug.com/1355622 [ chromeos chromeos-board-amd64-generic no-passthrough ] Pixel_Video_Context_Loss_VP9 [ Failure ]
-crbug.com/1355622 [ chromeos chromeos-board-amd64-generic no-passthrough ] Pixel_WebGLSadCanvas [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

@@ -86,6 +86,7 @@ source_set("browser") {
     "//components/version_info",
     "//components/webdata_services",
     "//google_apis",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/complex_tasks",
@@ -114,9 +115,9 @@ source_set("browser") {
   public_deps = [
     ":chrome_paths",
     ":chrome_url_constants",
-    ":pref_names",
     ":utils",
     "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/prefs:pref_names",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/sync/glue",
@@ -157,17 +158,10 @@ source_set("chrome_url_constants") {
 
   deps = [
     "//base",
+    "//components/optimization_guide/optimization_guide_internals/webui:url_constants",
     "//ios/components/webui:url_constants",
   ]
   frameworks = [ "UIKit.framework" ]
-}
-
-source_set("pref_names") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "pref_names.cc",
-    "pref_names.h",
-  ]
 }
 
 source_set("browser_impl") {

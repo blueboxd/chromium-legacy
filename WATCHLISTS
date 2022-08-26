@@ -116,6 +116,10 @@
     'android_webview_network_service': {
       'filepath': 'android_webview/browser/network_service/',
     },
+    'app_management': {
+      'filepath': 'chrome/browser/resources/settings/chromeos/os_apps_page'\
+                  '|chrome/browser/ui/webui/app_management',
+    },
     'app_service': {
       'filepath': 'chrome/browser/apps/app_service/'\
                   '|chrome/browser/ui/app_list/app_service/'\
@@ -1713,7 +1717,11 @@
                   '|chrome/common/profiler/'\
                   '|chrome/renderer/v8_unwinder'\
                   '|components/metrics/.*call_stack'\
-                  '|components/metrics/public/mojom/call_stack',
+                  '|components/metrics/public/mojom/call_stack'\
+                  '|build/android/gyp/create_unwind_table*'\
+                  '|build/android/gyp/extract_unwind_tables*'\
+                  '|chrome/android/features/stack_unwinder/'\
+                  '|chrome/android/modules/stack_unwinder/',
     },
     'scanning': {
       'filepath': 'ash/webui/scanning/'\
@@ -2209,6 +2217,7 @@
                        'webapks-watchlist@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'android_webview_network_service': [],
+    'app_management': ['jshikaram+watch-app_management@chromium.org'],
     'app_service': ['dominickn+watch-app_service@chromium.org',
                     'nancylingwang@chromium.org'],
     'app_shortcuts': ['dominickn+watch-app_shortcuts@chromium.org',
@@ -2795,7 +2804,7 @@
                    'yusukes+watch@chromium.org'],
     'permissions': ['dominickn+watch-permissions@chromium.org',
                     'permissions-reviews@chromium.org'],
-    'phonehub': ['hansberry+watch-phonehub@chromium.org', 
+    'phonehub': ['hansberry+watch-phonehub@chromium.org',
                  'jonmann+watch-phonehub@chromium.org'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'plugin_metadata': ['wfh+watch@chromium.org'],
@@ -2993,7 +3002,8 @@
                'kainino+watch@chromium.org'],
     'webid': ['yigu+watch@chromium.org',
               'cbiesinger@chromium.org',
-              'icer@chromium.org'],
+              'icer@chromium.org',
+              'npm+watch@chromium.org'],
     'weblayer': ['cricke+watch@chromium.org'],
     'weblayer_safe_browsing' : ['carlosil+watch@chromium.org'],
     'weblayer_ssl' : ['carlosil+watch@chromium.org'],

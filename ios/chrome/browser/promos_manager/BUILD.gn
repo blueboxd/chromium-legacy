@@ -9,14 +9,14 @@ source_set("promos_manager") {
   ]
   frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
   deps = [
     ":constants",
     ":features",
     ":types",
     "//base",
     "//components/prefs",
-    "//ios/chrome/browser:pref_names",
-    "//third_party/abseil-cpp:absl",
+    "//ios/chrome/browser/prefs:pref_names",
   ]
 }
 
@@ -52,6 +52,7 @@ source_set("constants") {
     "constants.h",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
   deps = [ "//base" ]
 }
 
@@ -81,7 +82,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//ios/chrome/browser:pref_names",
+    "//ios/chrome/browser/prefs:pref_names",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/abseil-cpp:absl",

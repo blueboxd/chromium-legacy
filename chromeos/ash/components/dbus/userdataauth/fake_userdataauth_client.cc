@@ -1141,6 +1141,13 @@ void FakeUserDataAuthClient::RemoveAuthFactor(
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
+void FakeUserDataAuthClient::GetRecoveryRequest(
+    const ::user_data_auth::GetRecoveryRequestRequest& request,
+    GetRecoveryRequestCallback callback) {
+  ::user_data_auth::GetRecoveryRequestReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
+}
+
 void FakeUserDataAuthClient::GetAuthSessionStatus(
     const ::user_data_auth::GetAuthSessionStatusRequest& request,
     GetAuthSessionStatusCallback callback) {
@@ -1179,7 +1186,7 @@ void FakeUserDataAuthClient::WaitForServiceToBeAvailable(
 }
 
 void FakeUserDataAuthClient::RunPendingWaitForServiceToBeAvailableCallbacks() {
-  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  std::vector<chromeos::WaitForServiceToBeAvailableCallback> callbacks;
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (auto& callback : callbacks)
     std::move(callback).Run(false);

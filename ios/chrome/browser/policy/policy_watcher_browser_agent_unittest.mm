@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
-#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -95,7 +95,7 @@ class PolicyWatcherBrowserAgentTest : public PlatformTest {
                                          name:@"myName"];
     AuthenticationServiceFactory::GetForBrowserState(
         chrome_browser_state_.get())
-        ->SignIn(identity, nil);
+        ->SignIn(identity);
   }
 
   PrefService* GetLocalState() { return scoped_testing_local_state_.Get(); }
@@ -302,7 +302,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, UINotShownWhileSignOut) {
       [FakeChromeIdentity identityWithEmail:@"email@google.com"
                                      gaiaID:@"gaiaID"
                                        name:@"myName"];
-  authentication_service->SignIn(identity, nil);
+  authentication_service->SignIn(identity);
 
   ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));

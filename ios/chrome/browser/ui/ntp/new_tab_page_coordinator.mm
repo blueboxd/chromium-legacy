@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -591,8 +591,7 @@ namespace {
     return;
   }
   // When the visible feed has been updated, recalculate the minimum NTP height.
-  if (![self isFollowingFeedAvailable] ||
-      ([self isFollowingFeedAvailable] && feedType == self.selectedFeed)) {
+  if (feedType == self.selectedFeed) {
     [self.ntpViewController updateFeedInsetsForMinimumHeight];
   }
 }

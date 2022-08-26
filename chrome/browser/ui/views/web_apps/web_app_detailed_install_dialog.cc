@@ -42,6 +42,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
@@ -303,7 +304,9 @@ void ShowWebAppDetailedInstallDialog(
 
   auto title = install_info->title;
   auto start_url_host = install_info->start_url.host();
-  auto description = install_info->description;
+  const std::u16string description = gfx::TruncateString(
+      install_info->description, webapps::kMaximumDescriptionLength,
+      gfx::CHARACTER_BREAK);
 
   auto delegate =
       std::make_unique<web_app::WebAppDetailedInstallDialogDelegate>(
@@ -315,7 +318,10 @@ void ShowWebAppDetailedInstallDialog(
           .SetIcon(ui::ImageModel::FromImageSkia(icon_image))
           .SetTitle(title)
           .SetSubtitle(base::UTF8ToUTF16(start_url_host))
-          .AddParagraph(ui::DialogModelLabel(description))
+          .AddParagraph(
+              ui::DialogModelLabel(description).set_is_secondary(),
+              l10n_util::GetStringUTF16(
+                  IDS_WEB_APP_DETAILED_INSTALL_DIALOG_DESCRIPTION_TITLE))
           .AddOkButton(
               base::BindOnce(
                   &web_app::WebAppDetailedInstallDialogDelegate::OnAccept,

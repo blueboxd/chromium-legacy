@@ -1623,8 +1623,6 @@ crbug.com/1347984 fragmentation/table-row-dimensions.html [ Failure ]
 crbug.com/660611 fast/multicol/flexbox/doubly-nested-with-zero-width-flexbox-and-forced-break-crash.html [ Skip ]
 
 ### Tests failing with LayoutNGFrameSet enabled:
-crbug.com/1346221 external/wpt/css/css-flexbox/frameset-crash.html [ Crash Failure ]
-crbug.com/1346221 external/wpt/css/css-overflow/overflow-no-frameset-propagation.html [ Failure ]
 crbug.com/1346221 printing/frameset.html [ Failure ]
 
 ### Tests failing with LayoutNGTableFragmentation enabled:
@@ -3714,9 +3712,6 @@ crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.h
 crbug.com/958104 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
 
-# Synthetic modules report the wrong location in errors
-crbug.com/994315 virtual/import-assertions/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Skip ]
-
 # These tests pass on the blink_rel bots but fail on the other builders
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Crash Timeout ]
@@ -4393,6 +4388,9 @@ crbug.com/818650 [ Linux ] wpt_internal/speech/scripted/speechrecognition-restar
 # Prefetching Signed Exchange DevTools tests are flaky.
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch-fail.js [ Failure Pass ]
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Failure Pass ]
+
+# Prefetching inspector protocol test is flaky
+crbug.com/1347616 virtual/prefetch/http/tests/inspector-protocol/prefetch/request-will-be-sent.https.js [ Failure Pass ]
 
 # Sheriff 2018-03-22
 crbug.com/824848 external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Failure Pass ]
@@ -6905,9 +6903,3 @@ crbug.com/1354433 [ Mac ] external/wpt/html/browsers/the-window-object/window-pr
 # Sheriff 2022-08-24
 crbug.com/1356118 [ Mac ] virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 crbug.com/1356118 [ Mac ] virtual/async-script-scheduling-finished-parsing/wpt_internal/async-script-scheduling/execution-order.sub.html [ Failure Pass ]
-
-# Temporarily disable tests to land IndexedDB frontend CLs
-crbug.com/1296584 http/tests/devtools/indexeddb/database-data.js [ Skip ]
-crbug.com/1296584 http/tests/devtools/indexeddb/database-structure.js [ Skip ]
-crbug.com/1296584 http/tests/devtools/indexeddb/database-version-number.js [ Skip ]
-crbug.com/1296584 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]

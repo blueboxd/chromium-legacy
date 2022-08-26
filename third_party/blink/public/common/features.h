@@ -66,7 +66,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kFrequencyCappingForLargeStickyAdDetection;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
-BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
@@ -168,8 +167,15 @@ BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
 // pages will not be prerendered even when kPrerender2 is enabled.
 BLINK_COMMON_EXPORT extern const char
     kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[];
+// Enables same-site cross origin Prerender2
+BLINK_COMMON_EXPORT extern const base::Feature
+    kSameSiteCrossOriginForSpeculationRulesPrerender;
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
+// Returns true when the same-site cross origin Prerender2 feature is
+// enabled.
+BLINK_COMMON_EXPORT bool
+IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled();
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
@@ -877,6 +883,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // kResourceEfficient thread type.
 BLINK_COMMON_EXPORT extern const base::Feature
     kWebRtcThreadsUseResourceEfficientType;
+
+// If enabled, CullRectUpdater will simulate the old behavior before
+// crrev.com/1033837, for comparison with the new behavior.
+BLINK_COMMON_EXPORT extern const base::Feature kOldCullRectUpdater;
 
 // If enabled, fine-grained UMA metrics for IntersectionObserver will only be
 // collected on 10% of animation frames.

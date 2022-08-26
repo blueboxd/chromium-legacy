@@ -294,9 +294,22 @@ FederatedAuthRequestImpl& FederatedAuthRequestImpl::CreateForTesting(
 void FederatedAuthRequestImpl::RequestToken(
     std::vector<IdentityProviderPtr> identity_provider_ptrs,
     bool prefer_auto_sign_in,
+    bool show_iframe_requester,
     RequestTokenCallback callback) {
   // TODO(crbug.com/1348262): Temporarily support only the first IDP, extend to
   // support multiple IDPs.
+  if (identity_provider_ptrs.empty()) {
+    std::move(callback).Run(RequestTokenStatus::kError, "");
+    return;
+  }
+
+  for (const auto& identity_provider : identity_provider_ptrs) {
+    if (!identity_provider) {
+      std::move(callback).Run(RequestTokenStatus::kError, "");
+      return;
+    }
+  }
+
   blink::mojom::IdentityProviderPtr identity_provider_ptr =
       std::move(identity_provider_ptrs[0]);
 

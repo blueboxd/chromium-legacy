@@ -91,12 +91,12 @@ Config::Config() {
 
   omnibox_action_on_navigation_intents =
       base::GetFieldTrialParamByFeatureAsBool(
-          internal::kOmniboxAction, "omnibox_action_on_navigation_intents",
+          internal::kJourneys, "omnibox_action_on_navigation_intents",
           omnibox_action_on_navigation_intents);
 
   omnibox_action_navigation_intent_score_threshold =
       base::GetFieldTrialParamByFeatureAsInt(
-          internal::kOmniboxAction,
+          internal::kJourneys,
           "omnibox_action_on_navigation_intent_score_threshold",
           omnibox_action_navigation_intent_score_threshold);
 
@@ -106,6 +106,12 @@ Config::Config() {
 
   omnibox_history_cluster_provider =
       base::FeatureList::IsEnabled(internal::kOmniboxHistoryClusterProvider);
+
+  omnibox_history_cluster_provider_counterfactual =
+      base::GetFieldTrialParamByFeatureAsBool(
+          internal::kOmniboxHistoryClusterProvider,
+          "omnibox_history_cluster_provider_counterfactual",
+          omnibox_history_cluster_provider_counterfactual);
 
   omnibox_history_cluster_provider_score =
       base::GetFieldTrialParamByFeatureAsInt(

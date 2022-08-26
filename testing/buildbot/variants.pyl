@@ -22,30 +22,30 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v107.0.5259.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v107.0.5260.0/test_ash_chrome',
     ],
-    'identifier': 'Lacros version skew testing ash 107.0.5259.0',
+    'identifier': 'Lacros version skew testing ash 107.0.5260.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v107.0.5259.0',
-          'revision': 'version:107.0.5259.0',
+          'location': 'lacros_version_skew_tests_v107.0.5260.0',
+          'revision': 'version:107.0.5260.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_DEV': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v106.0.5239.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v106.0.5249.7/test_ash_chrome',
     ],
-    'identifier': 'Lacros version skew testing ash 106.0.5239.0',
+    'identifier': 'Lacros version skew testing ash 106.0.5249.7',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v106.0.5239.0',
-          'revision': 'version:106.0.5239.0',
+          'location': 'lacros_version_skew_tests_v106.0.5249.7',
+          'revision': 'version:106.0.5249.7',
         },
       ],
     },
@@ -846,8 +846,8 @@
   'CROS_ATLAS_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '106.0.5239.0',
-      'cros_img': 'atlas-release/R106-15048.0.0',
+      'cros_chrome_version': '106.0.5249.7',
+      'cros_img': 'atlas-release/R106-15054.10.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_RELEASE_DEV',
@@ -910,7 +910,8 @@
     'skylab': {
       'cros_board': 'eve',
       'cros_chrome_version': '105.0.5190.0',
-      'cros_img': 'chromiumos-image-archive/eve-public/R105-14988.0.0',
+      'cros_img': 'eve-public/R105-14988.0.0',
+      'bucket': 'chromiumos-image-archive',
     },
     'enabled': True,
     'identifier': 'EVE_FULL',
@@ -927,8 +928,8 @@
   'CROS_HANA_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'hana',
-      'cros_chrome_version': '106.0.5239.0',
-      'cros_img': 'hana-release/R106-15048.0.0',
+      'cros_chrome_version': '106.0.5249.7',
+      'cros_img': 'hana-release/R106-15054.10.0',
     },
     'enabled': True,
     'identifier': 'HANA_RELEASE_DEV',
@@ -972,8 +973,8 @@
   'CROS_JACUZZI_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_chrome_version': '106.0.5239.0',
-      'cros_img': 'jacuzzi-release/R106-15048.0.0',
+      'cros_chrome_version': '106.0.5249.7',
+      'cros_img': 'jacuzzi-release/R106-15054.10.0',
     },
     'enabled': True,
     'identifier': 'JACUZZI_RELEASE_DEV',
@@ -1000,7 +1001,8 @@
     'skylab': {
       'cros_board': 'octopus',
       'cros_chrome_version': '105.0.5190.0',
-      'cros_img': 'chromiumos-image-archive/octopus-public/R105-14988.0.0',
+      'cros_img': 'octopus-public/R105-14988.0.0',
+      'bucket': 'chromiumos-image-archive',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_FULL',
@@ -1017,8 +1019,8 @@
   'CROS_OCTOPUS_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '106.0.5239.0',
-      'cros_img': 'octopus-release/R106-15048.0.0',
+      'cros_chrome_version': '106.0.5249.7',
+      'cros_img': 'octopus-release/R106-15054.10.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_DEV',
@@ -1053,8 +1055,8 @@
   'CROS_STRONGBAD_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_chrome_version': '105.0.5195.5',
-      'cros_img': 'strongbad-release/R105-14989.11.0',
+      'cros_chrome_version': '106.0.5249.7',
+      'cros_img': 'strongbad-release/R106-15054.10.0',
     },
     'enabled': True,
     'identifier': 'strongbad_RELEASE_DEV',

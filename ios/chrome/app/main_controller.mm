@@ -89,7 +89,7 @@
 #import "ios/chrome/browser/metrics/window_configuration_recorder.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #import "ios/chrome/browser/passwords/password_manager_util_ios.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -126,10 +126,9 @@
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/overrides/overrides_api.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
-#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/features.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #import "net/base/mac/url_conversions.h"
@@ -834,13 +833,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)sendQueuedFeedback {
-  [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kSendQueuedFeedback
-                  block:^{
-                    ios::GetChromeBrowserProvider()
-                        .GetUserFeedbackProvider()
-                        ->Synchronize();
-                  }];
+  if (ios::provider::IsUserFeedbackSupported()) {
+    [[DeferredInitializationRunner sharedInstance]
+        enqueueBlockNamed:kSendQueuedFeedback
+                    block:^{
+                      ios::provider::UploadAllPendingUserFeedback();
+                    }];
+  }
 }
 
 - (void)orientationDidChange:(NSNotification*)notification {

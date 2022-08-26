@@ -559,26 +559,27 @@ base::Value WebApp::IsolationData::AsDebugValue() const {
   base::Value::Dict value;
   value.Set(
       "content",
-      absl::visit(
-          base::Overloaded{
-              [](const WebApp::IsolationData::InstalledBundle& bundle) {
-                base::Value::Dict content;
-                content.SetByDottedPath("installed_bundle.path", bundle.path);
-                return content;
-              },
-              [](const WebApp::IsolationData::DevModeBundle& bundle) {
-                base::Value::Dict content;
-                content.SetByDottedPath("dev_mode_bundle.path", bundle.path);
-                return content;
-              },
-              [](const WebApp::IsolationData::DevModeProxy& proxy) {
-                base::Value::Dict content;
-                content.SetByDottedPath("dev_mode_proxy.proxy_url",
-                                        proxy.proxy_url);
-                return content;
-              },
-          },
-          content));
+      absl::visit(base::Overloaded{
+                      [](const WebApp::IsolationData::InstalledBundle& bundle) {
+                        base::Value::Dict content_dict;
+                        content_dict.SetByDottedPath("installed_bundle.path",
+                                                     bundle.path);
+                        return content_dict;
+                      },
+                      [](const WebApp::IsolationData::DevModeBundle& bundle) {
+                        base::Value::Dict content_dict;
+                        content_dict.SetByDottedPath("dev_mode_bundle.path",
+                                                     bundle.path);
+                        return content_dict;
+                      },
+                      [](const WebApp::IsolationData::DevModeProxy& proxy) {
+                        base::Value::Dict content_dict;
+                        content_dict.SetByDottedPath("dev_mode_proxy.proxy_url",
+                                                     proxy.proxy_url);
+                        return content_dict;
+                      },
+                  },
+                  content));
   return base::Value(std::move(value));
 }
 
@@ -686,28 +687,6 @@ base::Value WebApp::AsDebugValue() const {
   auto ConvertOptional = [](const auto& value) {
     return value ? base::Value(*value) : base::Value();
   };
-
-  auto ConvertWebAppManagementToStringType =
-      [](const WebAppManagement::Type& source) {
-        switch (source) {
-          case WebAppManagement::Type::kSystem:
-            return "System";
-          case WebAppManagement::Type::kKiosk:
-            return "Kiosk";
-          case WebAppManagement::Type::kPolicy:
-            return "Policy";
-          case WebAppManagement::Type::kSubApp:
-            return "SubApp";
-          case WebAppManagement::Type::kWebAppStore:
-            return "WebAppStore";
-          case WebAppManagement::Type::kSync:
-            return "Sync";
-          case WebAppManagement::Type::kDefault:
-            return "Default";
-          case WebAppManagement::Type::kCommandLine:
-            return "CommandLine";
-        }
-      };
 
   // Prefix with a ! so these fields appear at the top when serialized.
   root.SetStringKey("!app_id", app_id_);

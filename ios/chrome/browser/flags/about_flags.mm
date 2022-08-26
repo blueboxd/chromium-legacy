@@ -43,6 +43,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#import "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/policy/core/common/features.h"
@@ -1011,6 +1012,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionName,
      flag_descriptions::kTFLiteLanguageDetectionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
+    {"optimization-guide-debug-logs",
+     flag_descriptions::kOptimizationGuideDebugLogsName,
+     flag_descriptions::kOptimizationGuideDebugLogsDescription,
+     flags_ui::kOsIos,
+     SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
     {"optimization-guide-model-downloading",
      flag_descriptions::kOptimizationGuideModelDownloadingName,
      flag_descriptions::kOptimizationGuideModelDownloadingDescription,
@@ -1051,6 +1057,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"omnibox-https-upgrades", flag_descriptions::kOmniboxHttpsUpgradesName,
      flag_descriptions::kOmniboxHttpsUpgradesDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kDefaultTypedNavigationsToHttps)},
+    {"smart-sorting-new-destinations",
+     flag_descriptions::kSmartSortingNewDestinationsName,
+     flag_descriptions::kSmartSortingNewDestinationsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewDestinations)},
     {"smart-sorting-new-overflow-menu",
      flag_descriptions::kSmartSortingNewOverflowMenuName,
      flag_descriptions::kSmartSortingNewOverflowMenuDescription,

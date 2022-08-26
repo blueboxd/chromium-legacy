@@ -777,15 +777,22 @@ const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kCriticalPersistedTabDataSaveAndRestore[] = {
-    {"critical_persisted_tab_data_save_only", "false"}};
+    {"critical_persisted_tab_data_save_only", "false"},
+    {"delay_saves_until_deferred_startup", "false"}};
 const FeatureEntry::FeatureParam kCriticalPersistedTabDataSaveOnly[] = {
-    {"critical_persisted_tab_data_save_only", "true"}};
+    {"critical_persisted_tab_data_save_only", "true"},
+    {"delay_saves_until_deferred_startup", "false"}};
+const FeatureEntry::FeatureParam kDelaySavesUntilDeferredStartup[] = {
+    {"critical_persisted_tab_data_save_only", "false"},
+    {"delay_saves_until_deferred_startup", "true"}};
 
 const FeatureEntry::FeatureVariation kCriticalPersistedTabDataVariations[] = {
     {"Save and Restore", kCriticalPersistedTabDataSaveAndRestore,
      std::size(kCriticalPersistedTabDataSaveAndRestore), nullptr},
     {"Save Only", kCriticalPersistedTabDataSaveOnly,
-     std::size(kCriticalPersistedTabDataSaveOnly), nullptr}};
+     std::size(kCriticalPersistedTabDataSaveOnly), nullptr},
+    {"Delay saves until DeferredStartup", kDelaySavesUntilDeferredStartup,
+     std::size(kDelaySavesUntilDeferredStartup), nullptr}};
 
 const FeatureEntry::FeatureParam kLongScreenshot_AutoscrollDragSlow[] = {
     {"autoscroll", "1"}};
@@ -2784,6 +2791,8 @@ constexpr char kBorealisDiskManagementInternalName[] =
     "borealis-disk-management";
 constexpr char kBorealisForceBetaClientInternalName[] =
     "borealis-force-beta-client";
+constexpr char kBorealisForceDoubleScaleInternalName[] =
+    "borealis-force-double-scale";
 constexpr char kBorealisLinuxModeInternalName[] = "borealis-linux-mode";
 // This differs slightly from its symbol's name since "enabled" is used
 // internally to refer to whether borealis is installed or not.
@@ -3639,6 +3648,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"bluetooth-coredump", flag_descriptions::kBluetoothCoredumpName,
      flag_descriptions::kBluetoothCoredumpDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::bluetooth::features::kBluetoothCoredump)},
+    {"robust-audio-device-select-logic",
+     flag_descriptions::kRobustAudioDeviceSelectLogicName,
+     flag_descriptions::kRobustAudioDeviceSelectLogicDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kRobustAudioDeviceSelectLogic)},
     {"bluetooth-use-floss", flag_descriptions::kBluetoothUseFlossName,
      flag_descriptions::kBluetoothUseFlossDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(floss::features::kFlossEnabled)},
@@ -5597,6 +5610,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollableTabStrip,
                                     kTabScrollingVariations,
                                     "TabScrolling")},
+
+    {"split-tabstrip", flag_descriptions::kSplitTabStripName,
+     flag_descriptions::kSplitTabStripDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSplitTabStrip)},
 
     {"side-panel-improved-clobbering",
      flag_descriptions::kSidePanelImprovedClobberingName,
@@ -8283,6 +8300,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBorealisForceBetaClientName,
      flag_descriptions::kBorealisForceBetaClientDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBorealisForceBetaClient)},
+    {kBorealisForceDoubleScaleInternalName,
+     flag_descriptions::kBorealisForceDoubleScaleName,
+     flag_descriptions::kBorealisForceDoubleScaleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBorealisForceDoubleScale)},
     {kBorealisLinuxModeInternalName, flag_descriptions::kBorealisLinuxModeName,
      flag_descriptions::kBorealisLinuxModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBorealisLinuxMode)},
@@ -9283,6 +9304,10 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   if (!strcmp(kBorealisForceBetaClientInternalName, entry.internal_name)) {
+    return !base::FeatureList::IsEnabled(features::kBorealis);
+  }
+
+  if (!strcmp(kBorealisForceDoubleScaleInternalName, entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kBorealis);
   }
 

@@ -10,7 +10,7 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -70,7 +70,7 @@ class PriceAlertUtilTest : public PlatformTest {
     }
   }
 
-  void SignIn() { auth_service_->SignIn(fake_identity_, nil); }
+  void SignIn() { auth_service_->SignIn(fake_identity_); }
 
   void SignOut() {
     auth_service_->SignOut(signin_metrics::SIGNOUT_TEST,

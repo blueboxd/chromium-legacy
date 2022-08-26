@@ -21,6 +21,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
@@ -353,9 +354,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostImpl* GetOutermostMainFrame() override;
   bool IsFencedFrameRoot() const override;
   bool IsNestedWithinFencedFrame() const override;
-  void ForEachRenderFrameHost(FrameIterationCallback on_frame) override;
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHost*)> on_frame)
+      override;
   void ForEachRenderFrameHost(
-      FrameIterationAlwaysContinueCallback on_frame) override;
+      base::FunctionRef<void(RenderFrameHost*)> on_frame) override;
   // TODO (crbug.com/1251545) : Frame tree node id should only be known for
   // subframes. As such, update this method.
   int GetFrameTreeNodeId() const override;
@@ -2009,41 +2012,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for details. Content internals can also access speculative
   // RenderFrameHostImpls if necessary by using the
   // |ForEachRenderFrameHostIncludingSpeculative| variations.
-  using FrameIterationCallbackImpl =
-      base::RepeatingCallback<FrameIterationAction(RenderFrameHostImpl*)>;
-  using FrameIterationAlwaysContinueCallbackImpl =
-      base::RepeatingCallback<void(RenderFrameHostImpl*)>;
-  void ForEachRenderFrameHost(FrameIterationCallbackImpl on_frame);
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHost(
-      FrameIterationAlwaysContinueCallbackImpl on_frame);
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
+  void ForEachRenderFrameHostIncludingSpeculativeWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHostIncludingSpeculative(
-      FrameIterationCallbackImpl on_frame);
-  void ForEachRenderFrameHostIncludingSpeculative(
-      FrameIterationAlwaysContinueCallbackImpl on_frame);
-
-  // |ForEachRenderFrameHost| has multiple overloads for convenience of the
-  // caller that only differ by the provided callback's signature.
-  // |FrameIterationWrapper| converts to a common callback signature for the
-  // implementation to use.
-  template <typename RfhType>
-  static FrameIterationCallbackImpl FrameIterationWrapper(
-      base::RepeatingCallback<FrameIterationAction(RfhType*)> on_frame) {
-    return base::BindRepeating(
-        [](base::RepeatingCallback<FrameIterationAction(RfhType*)> on_frame,
-           RenderFrameHostImpl* rfh) { return on_frame.Run(rfh); },
-        on_frame);
-  }
-  template <typename RfhType>
-  static FrameIterationCallbackImpl FrameIterationWrapper(
-      base::RepeatingCallback<void(RfhType*)> on_frame) {
-    return base::BindRepeating(
-        [](base::RepeatingCallback<void(RfhType*)> on_frame,
-           RenderFrameHostImpl* rfh) {
-          on_frame.Run(rfh);
-          return FrameIterationAction::kContinue;
-        },
-        on_frame);
-  }
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
 
   bool DocumentUsedWebOTP() override;
 
@@ -2224,7 +2200,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RequestClose() override;
   void ShowCreatedWindow(const blink::LocalFrameToken& opener_frame_token,
                          WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
+                         blink::mojom::WindowFeaturesPtr window_features,
                          bool user_gesture,
                          ShowCreatedWindowCallback callback) override;
   void SetWindowRect(const gfx::Rect& bounds,
@@ -2583,7 +2559,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation_of_main_frame,
       LifecycleStateImpl lifecycle_state,
-      scoped_refptr<BrowsingContextState> browsing_context_state);
+      scoped_refptr<BrowsingContextState> browsing_context_state,
+      blink::FrameOwnerElementType frame_owner_element_type);
 
   // The SendCommit* functions below are wrappers for commit calls
   // made to mojom::NavigationClient.
@@ -3160,12 +3137,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // under the root at A0, but only B, C, and E are considered immediate local
   // roots of A0. Note that this will exclude any speculative RFHs.
   void ForEachImmediateLocalRoot(
-      const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback);
+      base::FunctionRef<void(RenderFrameHostImpl*)> func_ref);
 
   // This is the actual implementation of the various overloads of
   // |ForEachRenderFrameHost|.
-  void ForEachRenderFrameHostImpl(FrameIterationCallbackImpl on_frame,
-                                  bool include_speculative);
+  void ForEachRenderFrameHostImpl(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame,
+      bool include_speculative);
 
   // Returns the mojom::Frame interface for this frame in the renderer process.
   // May be overridden by friend subclasses for e.g. tests which wish to
@@ -3493,6 +3471,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frame_tree_node_ (per crbug.com/1179502).
   // TODO(crbug.com/1270671): make this field const when legacy mode is removed.
   scoped_refptr<BrowsingContextState> browsing_context_state_;
+
+  // Enum for the type of the frame owner element for a frame.
+  blink::FrameOwnerElementType frame_owner_element_type_;
 
   // The immediate children of this specific frame.
   std::vector<std::unique_ptr<FrameTreeNode>> children_;

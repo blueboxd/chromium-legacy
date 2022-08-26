@@ -3256,21 +3256,6 @@
             ]
         }
     ],
-    "ContextualSearchSuppressShortView": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ContextualSearchSuppressShortView"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualTriggers": [
         {
             "platforms": [
@@ -4739,32 +4724,6 @@
             ]
         }
     ],
-    "GreedyWakeupsStrategy": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "strategy": "greedy-wakeups"
-                    },
-                    "enable_features": [
-                        "WakeUpStrategyFeature"
-                    ]
-                }
-            ]
-        }
-    ],
     "GridAndGroupAndroidM5": [
         {
             "platforms": [
@@ -5847,6 +5806,31 @@
             ]
         }
     ],
+    "JourneysHaTSSurvey": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledOmniboxEntrypoint",
+                    "params": {
+                        "en_site_id": "5GjwX6M8T0ugnJ3q1cK0SahkU1Bm",
+                        "probability": "1.0",
+                        "survey": "journeys-omnibox-entrypoint",
+                        "survey-delay-duration": "0s"
+                    },
+                    "enable_features": [
+                        "JourneysSurveyForOmniboxEntrypoint"
+                    ]
+                }
+            ]
+        }
+    ],
     "JourneysHideSingleDomainClusters": [
         {
             "platforms": [
@@ -6839,6 +6823,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DisplayOpenLinkAsProfile"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimizationHintsShorterHostKeyedCacheDuration": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220729",
+                    "params": {
+                        "hints_fetch_refresh_duration_in_hours": "1",
+                        "max_store_duration_for_featured_hints_in_days": "1"
+                    },
+                    "enable_features": [
+                        "OptimizationHintsFetching"
                     ]
                 }
             ]
@@ -9561,6 +9569,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ColorProviderRedirectionForThemeProvider"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ThreadedHtmlTokenizer": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ThreadedHtmlTokenizer",
+                    "enable_features": [
+                        "ThreadedHtmlTokenizer"
                     ]
                 }
             ]

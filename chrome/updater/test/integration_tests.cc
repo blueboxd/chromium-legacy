@@ -633,7 +633,6 @@ TEST_F(IntegrationTest, UninstallCmdLine) {
   // Uninstall the idle updater.
   RunUninstallCmdLine();
   WaitForUpdaterExit();
-  ExpectClean();
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -665,7 +664,6 @@ TEST_F(IntegrationTest, UninstallIfMaxServerWakesBeforeRegistrationExceeded) {
   SetServerStarts(24);
   RunWake(0);
   WaitForUpdaterExit();
-  ExpectClean();
 }
 
 TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
@@ -683,7 +681,6 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   UninstallApp("test1");
   RunWake(0);
   WaitForUpdaterExit();
-  ExpectClean();
 }
 
 // Windows does not currently have a concept of app ownership, so this
@@ -713,7 +710,14 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
+// Disabled on Windows due to undiagnosed typelib errors even after
+// instrumenting the build; see https://crbug.com/1341471.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_SelfUpdateFromOldReal DISABLED_SelfUpdateFromOldReal
+#else
+#define MAYBE_SelfUpdateFromOldReal SelfUpdateFromOldReal
+#endif
+TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
   SetupRealUpdaterLowerVersion();
@@ -736,6 +740,29 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ExpectVersionActive(kUpdaterVersion);
   Uninstall();
 }
+
+// Tests that installing and uninstalling an old version of the updater from
+// CIPD is possible.
+// TODO(crbug.com/1341471) - this may be slightly flaky as the typelib errors
+// showing up on Windows (which resulted in disabling SelfUpdateFromOldReal) are
+// being investigated. This test is simpler than SelfUpdateFromOldReal.
+TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
+  SetupRealUpdaterLowerVersion();
+  ExpectVersionNotActive(kUpdaterVersion);
+  Uninstall();
+
+#if BUILDFLAG(IS_WIN)
+  // This deletes a tree of empty subdirectories corresponding to the crash
+  // handler of the lower version updater installed above. `Uninstall` runs
+  // `updater --uninstall` from the out directory of the build, which attempts
+  // to launch the `uninstall.cmd` script corresponding to this version of the
+  // updater from the install directory. However, there is no such script
+  // because this version was never installed, and the script is not found
+  // there.
+  DeleteUpdaterDirectory();
+#endif  // IS_WIN
+}
+
 #endif
 #endif
 

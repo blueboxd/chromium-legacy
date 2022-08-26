@@ -181,7 +181,8 @@ class RenderFrameHostFactoryForHistoryBackInterceptor
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
         renderer_initiated_creation, lifecycle_state,
-        std::move(browsing_context_state)));
+        std::move(browsing_context_state),
+        frame_tree_node->frame_owner_element_type()));
   }
 };
 
@@ -4668,11 +4669,11 @@ class SubresourceLoadingTest : public NavigationBrowserTest {
 
       // Flush all the frames in the `current_contents's active page.
       current_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-          base::BindRepeating([](RenderFrameHost* frame_to_flush) {
+          [](RenderFrameHost* frame_to_flush) {
             constexpr bool kDoNothingIfNoNetworkServiceConnection = true;
             frame_to_flush->FlushNetworkAndNavigationInterfacesForTesting(
                 kDoNothingIfNoNetworkServiceConnection);
-          }));
+          });
 
       // Traverse the `current_frame`'s opener chain.
       if (FrameTreeNode* opener_node =

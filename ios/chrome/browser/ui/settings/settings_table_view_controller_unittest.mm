@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -207,7 +207,7 @@ TEST_F(SettingsTableViewControllerTest, SyncOn) {
   SetupSyncServiceEnabledExpectations();
   ON_CALL(*sync_setup_service_mock_, GetSyncServiceState())
       .WillByDefault(Return(SyncSetupService::kNoSyncServiceError));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -234,7 +234,7 @@ TEST_F(SettingsTableViewControllerTest, SyncPasswordError) {
   // Set missing password error in Sync service.
   ON_CALL(*sync_setup_service_mock_, GetSyncServiceState())
       .WillByDefault(Return(SyncSetupService::kSyncServiceNeedsPassphrase));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -266,7 +266,7 @@ TEST_F(SettingsTableViewControllerTest, TurnsSyncOffAfterFirstSetup) {
       .WillByDefault(Return(true));
   ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
       .WillByDefault(Return(false));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -299,7 +299,7 @@ TEST_F(SettingsTableViewControllerTest,
       .WillByDefault(Return(true));
   ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
       .WillByDefault(Return(true));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -334,7 +334,7 @@ TEST_F(SettingsTableViewControllerTest, SigninDisabled) {
 TEST_F(SettingsTableViewControllerTest, SyncSetupNotComplete) {
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();

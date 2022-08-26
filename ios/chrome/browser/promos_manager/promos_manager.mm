@@ -16,7 +16,7 @@
 #import "base/time/time.h"
 #import "base/values.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/impression_limit.h"
@@ -60,10 +60,8 @@ void PromosManager::Init() {
 
   DCHECK(local_state_);
 
-  const base::Value::List& stored_active_promos =
-      local_state_->GetValueList(prefs::kIosPromosManagerActivePromos);
-
-  active_promos_ = stored_active_promos.Clone();
+  active_promos_ = ActivePromos(
+      local_state_->GetValueList(prefs::kIosPromosManagerActivePromos));
   impression_history_ = ImpressionHistory(
       local_state_->GetValueList(prefs::kIosPromosManagerImpressions));
 }
@@ -86,11 +84,36 @@ std::vector<promos_manager::Impression> PromosManager::ImpressionHistory(
     if (!stored_promo || !stored_day.has_value())
       continue;
 
-    impression_history.push_back(promos_manager::Impression(
-        promos_manager::PromoForName(*stored_promo), stored_day.value()));
+    absl::optional<promos_manager::Promo> promo =
+        promos_manager::PromoForName(*stored_promo);
+
+    // Skip malformed impression history. (This should almost never happen.)
+    if (!promo.has_value())
+      continue;
+
+    impression_history.push_back(
+        promos_manager::Impression(promo.value(), stored_day.value()));
   }
 
   return impression_history;
+}
+
+std::set<promos_manager::Promo> PromosManager::ActivePromos(
+    const base::Value::List& stored_active_promos) {
+  std::set<promos_manager::Promo> active_promos;
+
+  for (size_t i = 0; i < stored_active_promos.size(); ++i) {
+    absl::optional<promos_manager::Promo> promo =
+        promos_manager::PromoForName(stored_active_promos[i].GetString());
+
+    // Skip malformed active promos data. (This should almost never happen.)
+    if (!promo.has_value())
+      continue;
+
+    active_promos.insert(promo.value());
+  }
+
+  return active_promos;
 }
 
 NSArray<ImpressionLimit*>* PromosManager::PromoImpressionLimits(

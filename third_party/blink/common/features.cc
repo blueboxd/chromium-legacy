@@ -197,9 +197,6 @@ const base::Feature kFrequencyCappingForLargeStickyAdDetection{
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kJSONModules{"JSONModules",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDeferredFontShaping{"DeferredShaping",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -345,6 +342,11 @@ const base::Feature kPrerender2 {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kSameSiteCrossOriginForSpeculationRulesPrerender{
+    "SameSiteCrossOriginForSpeculationRulesPrerender",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPrerender2MaxNumOfRunningSpeculationRules[] =
     "max_num_of_running_speculation_rules";
 
@@ -356,6 +358,11 @@ const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
 
 bool IsPrerender2Enabled() {
   return base::FeatureList::IsEnabled(blink::features::kPrerender2);
+}
+
+bool IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled() {
+  return base::FeatureList::IsEnabled(
+      blink::features::kSameSiteCrossOriginForSpeculationRulesPrerender);
 }
 
 bool IsFencedFramesEnabled() {
@@ -1624,6 +1631,12 @@ const base::FeatureParam<int> kThreadedHtmlTokenizerTokenMaxCount{
 
 const base::Feature kWebRtcThreadsUseResourceEfficientType{
     "WebRtcThreadsUseResourceEfficientType", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// TODO(wangxianzhu): We plan to enable this feature for several canary builds,
+// to see if the simulation is accurate. Then we'll disable it by default and
+// finch, and eventually remove this feature.
+const base::Feature kOldCullRectUpdater{"OldCullRectUpdater",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kThrottleIntersectionObserverUMA{
     "ThrottleIntersectionObserverUMA", base::FEATURE_DISABLED_BY_DEFAULT};

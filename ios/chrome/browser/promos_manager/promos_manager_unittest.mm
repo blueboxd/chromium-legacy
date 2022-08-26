@@ -5,12 +5,13 @@
 #import "ios/chrome/browser/promos_manager/promos_manager_unittest.h"
 
 #import <Foundation/Foundation.h>
+#import <set>
 #import <vector>
 
 #import "base/test/scoped_feature_list.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/impression_limit.h"
@@ -102,6 +103,13 @@ TEST_F(PromosManagerTest, ReturnsNameForTestPromo) {
 TEST_F(PromosManagerTest, ReturnsTestPromoForName) {
   EXPECT_EQ(promos_manager::PromoForName("promos_manager::Promo::Test"),
             promos_manager::Promo::Test);
+}
+
+// Tests promos_manager::PromoForName correctly returns absl::nullopt for bad
+// input.
+TEST_F(PromosManagerTest, ReturnsNulloptForBadName) {
+  EXPECT_FALSE(promos_manager::PromoForName("promos_manager::Promo::FOOBAR")
+                   .has_value());
 }
 
 // Tests PromosManagerTest::TestPromo() correctly creates one mock promo.
@@ -563,4 +571,56 @@ TEST_F(PromosManagerTest, ReturnsImpressionHistoryBySkippingMalformedEntries) {
   EXPECT_EQ(expected.size(), result.size());
   EXPECT_EQ(expected[0].promo, result[0].promo);
   EXPECT_EQ(expected[0].day, result[0].day);
+}
+
+// Tests PromosManager::ActivePromos() correctly ingests active promos
+// (base::Value::List) and returns corresponding
+// std::vector<promos_manager::Promo>.
+TEST_F(PromosManagerTest, ReturnsActivePromos) {
+  base::Value::List promos;
+  promos.Append("promos_manager::Promo::DefaultBrowser");
+  promos.Append("promos_manager::Promo::AppStoreRating");
+  promos.Append("promos_manager::Promo::CredentialProviderExtension");
+
+  std::set<promos_manager::Promo> expected = {
+      promos_manager::Promo::DefaultBrowser,
+      promos_manager::Promo::AppStoreRating,
+      promos_manager::Promo::CredentialProviderExtension,
+  };
+
+  std::set<promos_manager::Promo> result =
+      promos_manager_->ActivePromos(promos);
+
+  EXPECT_EQ(expected, promos_manager_->ActivePromos(promos));
+}
+
+// Tests PromosManager::ActivePromos() correctly ingests empty active promos
+// (base::Value::List) and returns empty std::set<promos_manager::Promo>.
+TEST_F(PromosManagerTest, ReturnsBlankActivePromosForBlankPrefs) {
+  base::Value::List promos;
+
+  std::set<promos_manager::Promo> result =
+      promos_manager_->ActivePromos(promos);
+
+  EXPECT_TRUE(result.empty());
+}
+
+// Tests PromosManager::ActivePromos() correctly ingests active promos with
+// malformed data (base::Value::List) and returns corresponding
+// std::vector<promos_manager::Promo> with malformed entries pruned.
+TEST_F(PromosManagerTest, ReturnsActivePromosAndSkipsMalformedData) {
+  base::Value::List promos;
+  promos.Append("promos_manager::Promo::DefaultBrowser");
+  promos.Append("promos_manager::Promo::AppStoreRating");
+  promos.Append("promos_manager::Promo::FOOBAR");
+
+  std::set<promos_manager::Promo> expected = {
+      promos_manager::Promo::DefaultBrowser,
+      promos_manager::Promo::AppStoreRating,
+  };
+
+  std::set<promos_manager::Promo> result =
+      promos_manager_->ActivePromos(promos);
+
+  EXPECT_EQ(expected, promos_manager_->ActivePromos(promos));
 }

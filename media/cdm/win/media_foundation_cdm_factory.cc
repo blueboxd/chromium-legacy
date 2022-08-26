@@ -150,9 +150,7 @@ HRESULT MediaFoundationCdmFactory::GetCdmFactory(
   auto itr = create_cdm_factory_cbs_for_testing_.find(key_system);
   if (itr != create_cdm_factory_cbs_for_testing_.end()) {
     auto& create_cdm_factory_cb = itr->second;
-    if (!create_cdm_factory_cb)
-      return E_FAIL;
-
+    DCHECK(create_cdm_factory_cb);
     RETURN_IF_FAILED(create_cdm_factory_cb.Run(cdm_factory));
     return S_OK;
   }
@@ -189,8 +187,8 @@ void MediaFoundationCdmFactory::StoreClientToken(
   helper_->SetCdmClientToken(client_token);
 }
 
-void MediaFoundationCdmFactory::OnCdmEvent(CdmEvent event) {
-  helper_->OnCdmEvent(event);
+void MediaFoundationCdmFactory::OnCdmEvent(CdmEvent event, HRESULT hresult) {
+  helper_->OnCdmEvent(event, hresult);
 }
 
 void MediaFoundationCdmFactory::CreateMfCdm(

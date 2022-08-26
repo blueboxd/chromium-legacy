@@ -11,7 +11,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
@@ -22,6 +22,7 @@ import './crostini_arc_adb.js';
 import './crostini_export_import.js';
 import './crostini_extra_containers.js';
 import './crostini_port_forwarding.js';
+import './crostini_shared_usb_devices.js';
 import './crostini_subpage.js';
 import './bruschetta_subpage.js';
 

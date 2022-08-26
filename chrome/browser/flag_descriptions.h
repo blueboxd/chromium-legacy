@@ -350,6 +350,9 @@ extern const char kBorealisDiskManagementDescription[];
 extern const char kBorealisForceBetaClientName[];
 extern const char kBorealisForceBetaClientDescription[];
 
+extern const char kBorealisForceDoubleScaleName[];
+extern const char kBorealisForceDoubleScaleDescription[];
+
 extern const char kBorealisLinuxModeName[];
 extern const char kBorealisLinuxModeDescription[];
 
@@ -1385,6 +1388,9 @@ extern const char kThirdPartyStoragePartitioningDescription[];
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
+
+extern const char kSplitTabStripName[];
+extern const char kSplitTabStripDescription[];
 
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
@@ -2684,6 +2690,9 @@ extern const char kBluetoothWbsDogfoodDescription[];
 
 extern const char kBluetoothCoredumpName[];
 extern const char kBluetoothCoredumpDescription[];
+
+extern const char kRobustAudioDeviceSelectLogicName[];
+extern const char kRobustAudioDeviceSelectLogicDescription[];
 
 extern const char kBluetoothUseFlossName[];
 extern const char kBluetoothUseFlossDescription[];

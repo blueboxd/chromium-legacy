@@ -24,13 +24,21 @@ class FormfillPageLoadMetricsObserver
       const FormfillPageLoadMetricsObserver&) = delete;
 
   // page_load_metrics::PageLoadMetricsObserver
+  const char* GetObserverName() const override;
   ObservePolicy OnFencedFramesStart(
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url) override;
+  ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
+                                 const GURL& currently_committed_url) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  void DidActivatePrerenderedPage(
+      content::NavigationHandle* navigation_handle) override;
   void OnFeaturesUsageObserved(
       content::RenderFrameHost* rfh,
       const std::vector<blink::UseCounterFeature>& features) override;
+
+  void MaybeRecordPriorUsageOfUserData(
+      content::NavigationHandle* navigation_handle);
 
  private:
   bool user_data_field_detected_ = false;

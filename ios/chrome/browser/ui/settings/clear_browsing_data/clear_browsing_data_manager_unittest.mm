@@ -22,8 +22,8 @@
 #import "ios/chrome/browser/browsing_data/cache_counter.h"
 #import "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
@@ -195,7 +195,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   [manager_ loadModel:model_];
 
@@ -290,7 +290,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   [manager_ loadModel:model_];
 
@@ -320,7 +320,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedOut) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   // Set DSE to one from "prepoulated list".
   const std::string kEngineP1Name = "prepopulated-1";
@@ -386,7 +386,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedOut) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestCustomTextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   // Set DSE to a be fully custom.
   const std::string kEngineC1Name = "custom-1";

@@ -266,8 +266,8 @@
       'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
       'Fuchsia x64': 'release_bot_fuchsia',
-      'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
-      'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
+      'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast_receiver',
+      'fuchsia-x64-cast': 'release_bot_fuchsia_cast_receiver',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only_reclient',
     },
 
@@ -1102,13 +1102,13 @@
     },
 
     'tryserver.chromium.fuchsia': {
-      'fuchsia-arm64-cast': 'release_trybot_fuchsia_arm64_cast',
+      'fuchsia-arm64-cast': 'release_trybot_fuchsia_arm64_cast_receiver',
       'fuchsia-binary-size': 'release_fuchsia_arm64',
       'fuchsia-compile-x64-dbg': 'debug_bot_fuchsia_compile_only',
       'fuchsia-deterministic-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
-      'fuchsia-x64-cast': 'release_trybot_fuchsia_cast',
+      'fuchsia-x64-cast': 'release_trybot_fuchsia_cast_receiver',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
       'fuchsia_x64': 'release_trybot_fuchsia',
     },
@@ -1175,7 +1175,7 @@
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
-      'linux_chromium_compile_dbg_ng': 'debug_bot',
+      'linux_chromium_compile_dbg_ng': 'debug_bot_reclient',
       'linux_chromium_compile_rel_ng': 'release_trybot',
       'linux_chromium_dbg_ng': 'gpu_tests_debug_bot',
 
@@ -1185,7 +1185,7 @@
       'linux_chromium_msan_focal': 'msan_release_bot',
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
-      'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
+      'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot_reclient',
 
       # This is intentionally a release_bot and not a release_trybot to match
       # the CI configuration, where no debug builder exists.
@@ -3406,12 +3406,12 @@
       'release_bot', 'fuchsia', 'arm64', 'arm64_host',
     ],
 
-    'release_bot_fuchsia_arm64_cast': [
-      'release_bot', 'fuchsia', 'arm64', 'cast_receiver', 'no_symbols',
+    'release_bot_fuchsia_arm64_cast_receiver': [
+      'release_bot', 'fuchsia', 'arm64', 'cast_receiver_size_optimized', 'no_symbols',
     ],
 
-    'release_bot_fuchsia_cast': [
-      'release_bot', 'fuchsia', 'cast_receiver', 'no_symbols',
+    'release_bot_fuchsia_cast_receiver': [
+      'release_bot', 'fuchsia', 'cast_receiver_size_optimized', 'no_symbols',
     ],
 
     'release_bot_fuchsia_cfv2_script': [
@@ -3554,12 +3554,12 @@
       'release_trybot', 'fuchsia', 'arm64', 'arm64_host',
     ],
 
-    'release_trybot_fuchsia_arm64_cast': [
-      'release_trybot', 'fuchsia', 'arm64', 'cast_receiver',
+    'release_trybot_fuchsia_arm64_cast_receiver': [
+      'release_trybot', 'fuchsia', 'arm64', 'cast_receiver_size_optimized',
     ],
 
-    'release_trybot_fuchsia_cast': [
-      'release_trybot', 'fuchsia', 'cast_receiver',
+    'release_trybot_fuchsia_cast_receiver': [
+      'release_trybot', 'fuchsia', 'cast_receiver_size_optimized',
     ],
 
     'release_trybot_minimal_symbols_reclient': [
@@ -3590,8 +3590,8 @@
       'tsan', 'disable_nacl', 'release_bot_reclient',
     ],
 
-    'tsan_disable_nacl_release_trybot': [
-      'tsan', 'disable_nacl', 'release_trybot_minimal_symbols',
+    'tsan_disable_nacl_release_trybot_reclient': [
+      'tsan', 'disable_nacl', 'release_trybot_minimal_symbols_reclient',
     ],
 
     'ubsan_release_bot_reclient': [
@@ -3810,6 +3810,10 @@
 
     'cast_receiver': {
       'gn_args': 'enable_cast_receiver=true'
+    },
+
+    'cast_receiver_size_optimized': {
+      'args_file': '//build/config/fuchsia/size_optimized_cast_receiver_args.gn',
     },
 
     'cfi': {

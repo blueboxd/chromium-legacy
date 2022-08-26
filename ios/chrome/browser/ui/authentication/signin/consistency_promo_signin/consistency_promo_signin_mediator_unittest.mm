@@ -12,7 +12,7 @@
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -105,7 +105,7 @@ class ConsistencyPromoSigninMediatorTest : public PlatformTest {
   // Signs in and simulates cookies being added on the web.
   void SigninAndSimulateCookies(ConsistencyPromoSigninMediator* mediator,
                                 ChromeIdentity* identity) {
-    GetAuthenticationService()->SignIn(identity, nil);
+    GetAuthenticationService()->SignIn(identity);
     OCMExpect([mediator_delegate_mock_
         consistencyPromoSigninMediatorSignInDone:mediator
                                     withIdentity:identity]);
@@ -125,7 +125,7 @@ class ConsistencyPromoSigninMediatorTest : public PlatformTest {
   // Signs in and simulates a cookie error.
   void SigninAndSimulateError(ConsistencyPromoSigninMediator* mediator,
                               ChromeIdentity* identity) {
-    GetAuthenticationService()->SignIn(identity, nil);
+    GetAuthenticationService()->SignIn(identity);
     OCMExpect([mediator_delegate_mock_
         consistencyPromoSigninMediator:mediator
                         errorDidHappen:

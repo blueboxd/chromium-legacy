@@ -453,7 +453,8 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
 
   biometric_authenticator_ = std::move(biometric_authenticator);
 #elif BUILDFLAG(IS_MAC)
-  if (base::FeatureList::IsEnabled(
+  if (__builtin_available(macOS 10.13, *) &&
+      base::FeatureList::IsEnabled(
           password_manager::features::kBiometricAuthenticationInSettings)) {
     scoped_refptr<device_reauth::BiometricAuthenticator>
         biometric_authenticator =

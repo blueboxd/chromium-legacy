@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cpu_reduction_experiment.h"
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -646,7 +647,7 @@ void Scheduler::RunNextTask() {
   auto* thread_state = &per_thread_state_map_[task_runner];
 
   const bool log_histograms =
-      thread_state->cpu_reduction_experiment_filter.ShouldLogHistograms();
+      base::ShouldLogHistogramForCpuReductionExperiment();
 
   if (log_histograms) {
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
@@ -670,8 +671,6 @@ void Scheduler::RunNextTask() {
                   &SchedulingState::Comparator);
     scheduling_queue.pop_back();
   }
-
-  base::ElapsedTimer task_timer;
 
   Sequence* sequence = GetSequence(state.sequence_id);
   DCHECK(sequence);
@@ -748,12 +747,6 @@ void Scheduler::RunNextTask() {
       std::push_heap(scheduling_queue.begin(), scheduling_queue.end(),
                      &SchedulingState::Comparator);
     }
-  }
-
-  if (log_histograms) {
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "GPU.Scheduler.RunTaskTime", task_timer.Elapsed(),
-        base::Microseconds(10), base::Seconds(30), 100);
   }
 
   // Avoid scheduling another RunNextTask if we're done with all tasks.

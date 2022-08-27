@@ -7,13 +7,14 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_position.h"
 
 namespace content {
 
-class BrowserAccessibilityTest : public testing::Test {
+class BrowserAccessibilityTest : public ::testing::Test {
  public:
   BrowserAccessibilityTest();
 
@@ -30,7 +31,7 @@ class BrowserAccessibilityTest : public testing::Test {
   void SetUp() override;
 
   BrowserTaskEnvironment task_environment_;
-  ui::testing::ScopedAxModeSetter ax_mode_setter_;
+  content::testing::ScopedContentAXModeSetter ax_mode_setter_;
 };
 
 BrowserAccessibilityTest::BrowserAccessibilityTest()
@@ -61,7 +62,7 @@ TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, para1, text1),
+          MakeAXTreeUpdateForTesting(root, para1, text1),
           test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_obj = manager->GetRoot();
@@ -323,7 +324,8 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRect) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
+          MakeAXTreeUpdateForTesting(root, static_text, inline_text1,
+                                     inline_text2),
           test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
@@ -439,8 +441,8 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectPlainTextField) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, textarea, container, static_text,
-                           inline_text1),
+          MakeAXTreeUpdateForTesting(root, textarea, container, static_text,
+                                     inline_text1),
           test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
@@ -500,8 +502,8 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectMultiElement) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, static_text, inline_text1, static_text2,
-                           inline_text2),
+          MakeAXTreeUpdateForTesting(root, static_text, inline_text1,
+                                     static_text2, inline_text2),
           test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
@@ -627,7 +629,8 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectBiDi) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
+          MakeAXTreeUpdateForTesting(root, static_text, inline_text1,
+                                     inline_text2),
           test_browser_accessibility_delegate_.get()));
 
   BrowserAccessibility* root_accessible =
@@ -713,7 +716,7 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectScrolledWindow) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, static_text, inline_text),
+          MakeAXTreeUpdateForTesting(root, static_text, inline_text),
           test_browser_accessibility_delegate_.get()));
 
   browser_accessibility_manager
@@ -752,7 +755,8 @@ TEST_F(BrowserAccessibilityTest, GetAuthorUniqueId) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get()));
+          MakeAXTreeUpdateForTesting(root),
+          test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
   BrowserAccessibility* root_accessible =
@@ -799,8 +803,8 @@ TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, input, text_container, static_text,
-                           inline_text),
+          MakeAXTreeUpdateForTesting(root, input, text_container, static_text,
+                                     inline_text),
           test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
@@ -914,7 +918,7 @@ TEST_F(BrowserAccessibilityTest, GetIndexInParent) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, static_text),
+          MakeAXTreeUpdateForTesting(root, static_text),
           test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 
@@ -948,7 +952,7 @@ TEST_F(BrowserAccessibilityTest, CreatePositionAt) {
 
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root_1, gc_2, text_3),
+          MakeAXTreeUpdateForTesting(root_1, gc_2, text_3),
           test_browser_accessibility_delegate_.get()));
   ASSERT_NE(nullptr, browser_accessibility_manager.get());
 

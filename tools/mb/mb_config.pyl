@@ -1061,6 +1061,7 @@
       'gpu-fyi-try-chromeos-octopus-exp': 'gpu_tests_chromeos_octopus_release_trybot',
       'gpu-fyi-try-chromeos-zork-exp': 'gpu_tests_chromeos_zork_release_trybot',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel_dchecks',
+      'lacros-amd64-generic-rel-skylab-fyi': 'chromeos_amd64-generic_lacros_rel_fyi',
       'lacros-arm-generic-rel': 'chromeos_arm-generic_lacros_rel_dchecks',
       'lacros-arm64-generic-rel': 'chromeos_arm64-generic_lacros_rel_dchecks',
       'linux-cfm-rel': 'linux_cfm_release_trybot',
@@ -1158,6 +1159,7 @@
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck',
+      'linux-rel-inverse-fyi': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck',
       'linux-rel-ml': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_do_typecheck',
       'linux-rel-warmed': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-viz-rel': 'release_trybot',
@@ -3716,10 +3718,9 @@
       'gn_args': 'enable_chrome_android_internal=false',
     },
 
-    # It's significantly faster to build without lint and errorprone.
+    # It's significantly faster to build without static analysis checks.
     'android_fastbuild': {
-      'gn_args': ('use_errorprone_java_compiler=false '
-                  'disable_android_lint=true'),
+      'gn_args': 'android_static_analysis="off"',
     },
 
     # TODO(https://crbug.com/1020714): This is temporary. We'd like to run a

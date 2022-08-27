@@ -289,6 +289,7 @@
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/permissions_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -2720,15 +2721,10 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node,
 
   if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
     auto& state = GetDisplayLockDocumentState();
-    if (state.HasActivatableLocks()) {
-      UpdateStyleAndLayoutTree();
-      if (node->GetLayoutObject()) {
-        if (property_id == CSSPropertyID::kWidth)
-          state.UnlockToDetermineWidth(*node->GetLayoutObject());
-        else
-          state.UnlockToDetermineHeight(*node->GetLayoutObject());
-      }
-    }
+    if (property_id == CSSPropertyID::kWidth)
+      state.UnlockToDetermineWidth(*node->GetLayoutObject());
+    else
+      state.UnlockToDetermineHeight(*node->GetLayoutObject());
   }
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
@@ -3223,6 +3219,8 @@ void Document::SetPrinting(PrintingState state) {
 
   if (was_printing != is_printing) {
     GetDisplayLockDocumentState().NotifyPrintingOrPreviewChanged();
+    if (View())
+      View()->ReshapeAllDeferred();
 
     // We force the color-scheme to light for printing.
     ColorSchemeChanged();
@@ -4108,6 +4106,11 @@ void Document::SetParsingState(ParsingState parsing_state) {
       parsing_state_ == kFinishedParsing) {
     if (form_controller_ && form_controller_->HasControlStates())
       form_controller_->ScheduleRestore();
+    if (auto* view = View()) {
+      PaintTiming& timing = PaintTiming::From(*this);
+      if (!timing.FirstContentfulPaint().is_null())
+        view->ReshapeAllDeferred();
+    }
   }
 }
 
@@ -6906,10 +6909,19 @@ void Document::setAllowDeclarativeShadowRoots(bool val) {
 
 void Document::MaybeExecuteDelayedAsyncScripts(
     MilestoneForDelayedAsyncScript milestone) {
-  if (!base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
+  // This is called on each paint when DelayAsyncScriptDelayType is kEachPaint,
+  // which causes regression. Cache the feature status to avoid frequent
+  // calculation.
+  static const bool delay_async_script_execution_is_enabled =
+      base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution);
+  if (!delay_async_script_execution_is_enabled)
     return;
 
-  switch (features::kDelayAsyncScriptExecutionDelayParam.Get()) {
+  // Cache for performance reason.
+  static const features::DelayAsyncScriptDelayType
+      delay_async_script_delay_type =
+          features::kDelayAsyncScriptExecutionDelayParam.Get();
+  switch (delay_async_script_delay_type) {
     case features::DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing:
       // Notify the ScriptRunner if the first paint has been recorded and
       // we're delaying async scripts until first paint or finished parsing
@@ -7494,7 +7506,7 @@ Element* Document::TopmostPopupAutoOrHint() const {
 void Document::SetPopUpMousedownTarget(const Element* pop_up) {
   DCHECK(
       RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(GetExecutionContext()));
-  DCHECK(!pop_up || pop_up->HasValidPopupAttribute());
+  DCHECK(!pop_up || pop_up->HasPopupAttribute());
   pop_up_mousedown_target_ = pop_up;
 }
 

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/html_field_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -24,8 +23,10 @@ namespace autofill {
 // - The type_hint doesn't match the field_type.
 // - If ShouldIgnoreAutocompleteAttribute(autocomplete) is true.
 // An unrecognizable field_type doesn't stop parsing and yields
-// HTML_TYPE_UNRECOGNIZED instead.
+// HtmlFieldType::kUnrecognized instead.
 struct AutocompleteParsingResult {
+  std::string ToString() const;
+
   // `section` corresponds to the string after "section-".
   std::string section;
   HtmlFieldMode mode;
@@ -33,8 +34,15 @@ struct AutocompleteParsingResult {
   HtmlFieldType field_type;
   // webauthn is parsed, but otherwise unused.
 };
+
+bool operator==(const AutocompleteParsingResult& a,
+                const AutocompleteParsingResult& b);
+bool operator!=(const AutocompleteParsingResult& a,
+                const AutocompleteParsingResult& b);
+
 absl::optional<AutocompleteParsingResult> ParseAutocompleteAttribute(
-    const FormFieldData& field);
+    base::StringPiece autocomplete_attribute,
+    uint64_t field_max_length);
 
 // Checks if `autocomplete` is one of "on", "off" or "false". These values are
 // currently ignored by Autofill.
@@ -43,12 +51,13 @@ bool ShouldIgnoreAutocompleteAttribute(base::StringPiece autocomplete);
 // Parses `value` as an HTML field type and converts it to the corresponding
 // HtmlFieldType, if it is supposed by Autofill. Rationalization based on the
 // `field` is done.
-// HTML_TYPE_UNSPECIFIED is returned if `value` is empty, or if `value` is
-// supposed to be ignored by `kAutofillIgnoreUnmappableAutocompleteValues`.
-// Otherwise HTML_TYPE_UNRECOGNIZED is returned.
+// HtmlFieldType::kUnspecified is returned if `value` is empty, or if
+// `value` is supposed to be ignored by
+// `kAutofillIgnoreUnmappableAutocompleteValues`. Otherwise
+// HtmlFieldType::kUnrecognized is returned.
 HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
     std::string value,
-    const FormFieldData& field);
+    uint64_t field_max_length);
 
 }  // namespace autofill
 

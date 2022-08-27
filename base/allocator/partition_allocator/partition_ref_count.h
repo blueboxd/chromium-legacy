@@ -26,7 +26,7 @@
 
 namespace partition_alloc::internal {
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 namespace {
 
@@ -285,11 +285,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRefCount {
   // architectures, count_ happens stay even, which works well with the
   // double-free-detection in ReleaseFromAllocator(). Don't change the layout of
   // this class, to preserve this functionality.
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-  std::atomic<uint64_t> count_{kMemoryHeldByAllocatorBit};
-#else
-  std::atomic<uint32_t> count_{kMemoryHeldByAllocatorBit};
-#endif
+  std::atomic<CountType> count_{kMemoryHeldByAllocatorBit};
 
 #if defined(PA_REF_COUNT_CHECK_COOKIE)
   static constexpr uint32_t kCookieSalt = 0xc01dbeef;
@@ -418,12 +414,12 @@ PA_ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(
 static_assert(sizeof(PartitionRefCount) <= kInSlotRefCountBufferSize,
               "PartitionRefCount should fit into the in-slot buffer.");
 
-#else  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#else  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 static constexpr size_t kInSlotRefCountBufferSize = 0;
 constexpr size_t kPartitionRefCountOffsetAdjustment = 0;
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 constexpr size_t kPartitionRefCountSizeAdjustment = kInSlotRefCountBufferSize;
 

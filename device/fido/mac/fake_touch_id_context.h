@@ -20,6 +20,9 @@ class API_AVAILABLE(macosx(10.12.2)) FakeTouchIdContext
 
   ~FakeTouchIdContext() override;
 
+  // Will prevent the next call to PromptTouchId from running the callback.
+  void DoNotResolveNextPrompt();
+
   // TouchIdContext:
   void PromptTouchId(const std::u16string& reason, Callback callback) override;
 
@@ -33,6 +36,7 @@ class API_AVAILABLE(macosx(10.12.2)) FakeTouchIdContext
   FakeTouchIdContext();
 
   bool callback_result_ = true;
+  bool resolve_next_prompt_ = true;
 };
 
 }  // namespace mac

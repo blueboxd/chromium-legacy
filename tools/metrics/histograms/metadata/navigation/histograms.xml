@@ -712,6 +712,17 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.HostnameHasDeviationCharacters" units="count"
+    expires_after="2023-01-15">
+  <owner>meacer@chromium.org</owner>
+  <owner>chrome-trusty-transport@google.com</owner>
+  <summary>
+    Counts the number of typed and pasted main frame navigations to hostnames
+    that contain characters that are treated differently between IDNA 2003 and
+    IDNA 2008, aka deviation characters. Ignores reload navigations.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.IsLockedProcess" enum="NavigationIsLockedProcess"
     expires_after="2022-12-09">
   <owner>alexmos@chromium.org</owner>
@@ -1569,6 +1580,54 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram
+    name="Prerender.Experimental.CancellationPercentageByExcessiveMemoryUsage.SpeculationRule"
+    units="%" expires_after="2023-01-27">
+  <owner>asamidoi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records the percentage of destroyed prerenders due to the excessive memory
+    usage in started prerenders. The result should be an integer between 0 and
+    100. This is recorded when SpeculationHostImpl is destructed or a primary
+    page is updated.
+  </summary>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.CrossOriginRedirectionDomain{PrerenderTriggerType}"
+    enum="PrerenderCrossOriginRedirectionDomain" expires_after="2022-10-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    A breakdown metric for analyzing cross-origin redirection cases during
+    embedder-triggered prerendering. Recorded when a prerendering page was
+    redirected to a subdomain.
+
+    Note that for now it is not used for prerendering that are triggered by
+    speculation rules.
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.CrossOriginRedirectionProtocolChange{PrerenderTriggerType}"
+    enum="PrerenderCrossOriginRedirectionProtocolChange"
+    expires_after="2022-10-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    A breakdown metric for analyzing cross-origin redirection cases during
+    embedder-triggered prerendering, Recorded when redirections were caused due
+    to HTTP protocol upgrades.
+
+    Note that for now it is not used for prerendering that are triggered by
+    speculation rules.
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
     name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
     enum="Boolean" expires_after="2022-07-27">
   <owner>lingqi@chromium.org</owner>
@@ -1642,6 +1701,27 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     It is recored by MojoBinderPolicyApplier in the browser process once it
     receives the binding request of a kCancel Mojo interface and cannot find an
     accurate enum type for this interface.
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch{PrerenderTriggerType}"
+    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2022-10-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    A breakdown metric for analyzing cross-origin redirection cases during
+    embedder-triggered prerendering. Recorded when the embedder-triggered
+    prerendering was redirected to another origin that differs from the initial
+    one.
+
+    The cases are encoded into 3 bits(scheme mismatch, host mismatch, port
+    mismatch).
+
+    Note that for now it is not used for prerendering that are triggered by
+    speculation rules.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
 </histogram>

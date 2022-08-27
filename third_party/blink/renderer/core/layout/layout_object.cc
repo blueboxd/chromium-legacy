@@ -3653,8 +3653,10 @@ void LayoutObject::WillBeDestroyed() {
   SECURITY_DCHECK(as_image_observer_count_ == 0u);
 #endif
 
-  if (GetFrameView())
+  if (GetFrameView()) {
+    GetFrameView()->RemovePendingTransformUpdate(*this);
     SetIsBackgroundAttachmentFixedObject(false);
+  }
 }
 
 DISABLE_CFI_PERF
@@ -3961,7 +3963,7 @@ bool LayoutObject::CanHaveAdditionalCompositingReasons() const {
 
 CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
   NOT_DESTROYED();
-  return CompositingReason::kNoCompositingReason;
+  return CompositingReason::kNone;
 }
 
 bool LayoutObject::HitTestAllPhases(HitTestResult& result,

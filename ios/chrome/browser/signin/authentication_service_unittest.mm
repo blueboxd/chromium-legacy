@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
@@ -41,7 +42,6 @@
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/test/testing_application_context.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
@@ -407,8 +407,8 @@ TEST_F(AuthenticationServiceTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 
-  // Clear |kSigninLastAccounts| pref to simulate a case when the list of
-  // accounts in pref |kSigninLastAccounts| are no the same as the ones
+  // Clear `kSigninLastAccounts` pref to simulate a case when the list of
+  // accounts in pref `kSigninLastAccounts` are no the same as the ones
   browser_state_->GetPrefs()->ClearPref(prefs::kSigninLastAccounts);
 
   // When entering foreground, the have accounts changed state should be
@@ -417,7 +417,7 @@ TEST_F(AuthenticationServiceTest,
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 
   // Backgrounding and foregrounding the application a second time should update
-  // the list of accounts in |kSigninLastAccounts| and should reset the have
+  // the list of accounts in `kSigninLastAccounts` and should reset the have
   // account changed state.
   FireApplicationWillEnterForeground();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
@@ -453,7 +453,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), GetAccountId(identity(0)), error);
 
-  // MDM error for |identity_| is being cleared and the error state of refresh
+  // MDM error for `identity_` is being cleared and the error state of refresh
   // token will be updated.
   {
     bool notification_received = false;
@@ -635,7 +635,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
     return true;
   };
 
-  // User not signed out as |identity(1)| isn't the primary account.
+  // User not signed out as `identity(1)` isn't the primary account.
   EXPECT_CALL(*identity_service(),
               HandleMDMNotification(identity(1), user_info1, _))
       .WillOnce(Invoke(handle_mdm_notification_callback));
@@ -643,7 +643,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));
 
-  // User signed out as |identity_| is the primary account.
+  // User signed out as `identity_` is the primary account.
   EXPECT_CALL(*identity_service(),
               HandleMDMNotification(identity(0), user_info1, _))
       .WillOnce(Invoke(handle_mdm_notification_callback));
@@ -734,7 +734,7 @@ TEST_F(AuthenticationServiceTest, SigninDisallowedCrash) {
 }
 
 // Tests that reauth prompt is not set if the primary identity is restricted and
-// |OnPrimaryAccountRestricted| is forwarded.
+// `OnPrimaryAccountRestricted` is forwarded.
 TEST_F(AuthenticationServiceTest, TestHandleRestrictedIdentityPromptSignIn) {
   AuthenticationServiceObserverTest observer_test;
   authentication_service()->AddObserver(&observer_test);

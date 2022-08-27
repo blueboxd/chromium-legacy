@@ -16,6 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webid/fedcm_metrics.h"
@@ -339,14 +340,16 @@ class DelegatedIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
     DCHECK(delegate_);
   }
 
-  void FetchManifestList(FetchManifestListCallback callback) override {
-    delegate_->FetchManifestList(std::move(callback));
+  void FetchManifestList(const GURL& provider,
+                         FetchManifestListCallback callback) override {
+    delegate_->FetchManifestList(provider, std::move(callback));
   }
 
-  void FetchManifest(absl::optional<int> idp_brand_icon_ideal_size,
+  void FetchManifest(const GURL& provider,
+                     absl::optional<int> idp_brand_icon_ideal_size,
                      absl::optional<int> idp_brand_icon_minimum_size,
                      FetchManifestCallback callback) override {
-    delegate_->FetchManifest(idp_brand_icon_ideal_size,
+    delegate_->FetchManifest(provider, idp_brand_icon_ideal_size,
                              idp_brand_icon_minimum_size, std::move(callback));
   }
 
@@ -392,7 +395,8 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
     delayed_callbacks_.clear();
   }
 
-  void FetchManifestList(FetchManifestListCallback callback) override {
+  void FetchManifestList(const GURL& provider,
+                         FetchManifestListCallback callback) override {
     fetched_endpoints_ |= FetchedEndpoint::MANIFEST_LIST;
     std::set<GURL> url_set(config_.manifest_list.provider_urls.begin(),
                            config_.manifest_list.provider_urls.end());
@@ -401,7 +405,8 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
         base::BindOnce(std::move(callback), FetchStatus::kSuccess, url_set));
   }
 
-  void FetchManifest(absl::optional<int> idp_brand_icon_ideal_size,
+  void FetchManifest(const GURL& provider,
+                     absl::optional<int> idp_brand_icon_ideal_size,
                      absl::optional<int> idp_brand_icon_minimum_size,
                      FetchManifestCallback callback) override {
     fetched_endpoints_ |= FetchedEndpoint::MANIFEST;
@@ -656,8 +661,9 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
                               absl::optional<std::string>>
         status_to_message = {
             {FederatedAuthRequestResult::kSuccess, absl::nullopt},
-            {FederatedAuthRequestResult::kApprovalDeclined,
-             "User declined the sign-in attempt."},
+            {FederatedAuthRequestResult::kShouldEmbargo,
+             "User declined or dismissed prompt. API exponential cool down "
+             "triggered."},
             {FederatedAuthRequestResult::kErrorDisabledInSettings,
              "Third-party sign in was disabled in browser Site Settings."},
             {FederatedAuthRequestResult::kErrorFetchingManifestListHttpNotFound,
@@ -699,6 +705,8 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
              "Provider's client metadata is invalid."},
             {FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
              "Provider's token is invalid."},
+            {FederatedAuthRequestResult::kErrorRpPageNotVisible,
+             "RP page is not visible."},
         };
     std::vector<std::string> messages =
         RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
@@ -1456,7 +1464,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForUIExplicitlyDismissed) {
   configuration.wait_for_callback = false;
   configuration.customized_dialog = true;
   RequestExpectations expectations = {
-      RequestTokenStatus::kError, FederatedAuthRequestResult::kError,
+      RequestTokenStatus::kError, FederatedAuthRequestResult::kShouldEmbargo,
       FETCH_ENDPOINT_ALL_REQUEST_TOKEN & ~FetchedEndpoint::TOKEN};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
 
@@ -1473,7 +1481,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForUIExplicitlyDismissed) {
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 0);
 
   histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
-                                       TokenStatus::kNotSelectAccount, 1);
+                                       TokenStatus::kShouldEmbargo, 1);
 
   ExpectTimingUKM("Timing.ShowAccountsDialog");
   ExpectTimingUKM("Timing.CancelOnDialog");
@@ -1481,7 +1489,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForUIExplicitlyDismissed) {
   ExpectNoTimingUKM("Timing.IdTokenResponse");
   ExpectNoTimingUKM("Timing.TurnaroundTime");
 
-  ExpectRequestTokenStatusUKM(TokenStatus::kNotSelectAccount);
+  ExpectRequestTokenStatusUKM(TokenStatus::kShouldEmbargo);
   CheckAllFedCmSessionIDs();
 }
 
@@ -1570,7 +1578,8 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForWebContentsInvisible) {
   MockConfiguration configuration = kConfigurationValid;
   configuration.customized_dialog = true;
   RequestExpectations expectations = {
-      RequestTokenStatus::kError, FederatedAuthRequestResult::kError,
+      RequestTokenStatus::kError,
+      FederatedAuthRequestResult::kErrorRpPageNotVisible,
       FETCH_ENDPOINT_ALL_REQUEST_TOKEN & ~FetchedEndpoint::TOKEN};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
 
@@ -1777,7 +1786,7 @@ TEST_F(FederatedAuthRequestImplTest, MetricsForOnlyBrowserObservedSignIn) {
 // IdentityRequestDialogController::ShowAccountsDialog() callback requests it.
 TEST_F(FederatedAuthRequestImplTest, RequestEmbargo) {
   RequestExpectations expectations = {
-      RequestTokenStatus::kError, FederatedAuthRequestResult::kError,
+      RequestTokenStatus::kError, FederatedAuthRequestResult::kShouldEmbargo,
       FETCH_ENDPOINT_ALL_REQUEST_TOKEN & ~FetchedEndpoint::TOKEN};
 
   MockConfiguration configuration = kConfigurationValid;

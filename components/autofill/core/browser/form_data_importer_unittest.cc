@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -70,7 +71,6 @@ constexpr char kDefaultAddressLine1[] = "21 Laussat St";
 constexpr char kDefaultStreetAddress[] = "21 Laussat St\\nApt 123";
 constexpr char kDefaultZip[] = "94102";
 constexpr char kDefaultCity[] = "Los Angeles";
-constexpr char kDefaultDependentLocality[] = "Nob Hill";
 constexpr char kDefaultState[] = "California";
 constexpr char kDefaultCountry[] = "US";
 constexpr char kDefaultPhone[] = "+1 650-555-0000";
@@ -87,7 +87,6 @@ constexpr char kSecondMail[] = "wayne@bruce.org";
 constexpr char kSecondAddressLine1[] = "23 Main St";
 constexpr char kSecondZip[] = "94106";
 constexpr char kSecondCity[] = "Los Angeles";
-constexpr char kSecondDependentLocality[] = "Down Town";
 constexpr char kSecondState[] = "California";
 constexpr char kSecondPhone[] = "+1 651-666-1111";
 constexpr char kSecondPhoneAreaCode[] = "651";
@@ -101,7 +100,6 @@ constexpr char kThirdMail[] = "donut@whatever.net";
 constexpr char kThirdAddressLine1[] = "742 Evergreen Terrace";
 constexpr char kThirdZip[] = "65619";
 constexpr char kThirdCity[] = "Springfield";
-constexpr char kThirdDependentLocality[] = "Down Town";
 constexpr char kThirdState[] = "Oregon";
 constexpr char kThirdPhone[] = "+1 851-777-2222";
 
@@ -143,12 +141,14 @@ std::pair<std::string, std::string> GetLabelAndNameForType(
   return it->second;
 }
 
+using TypeValuePairs = std::vector<std::pair<ServerFieldType, std::string>>;
+
 // Constructs a FormData instance for |url| from a vector of type value pairs
 // that defines a sequence of fields and the filled values.
 // The field names and labels for the different types are relieved from
 // |GetLabelAndNameForType(type)|
 FormData ConstructFormDateFromTypeValuePairs(
-    std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs,
+    TypeValuePairs type_value_pairs,
     std::string url = "https://www.foo.com") {
   FormData form;
   form.url = GURL(url);
@@ -177,7 +177,7 @@ std::unique_ptr<FormStructure> ConstructFormStructureFromFormData(
 // Constructs a FormStructure instance with fields and inserted values given by
 // a vector of type and value pairs.
 std::unique_ptr<FormStructure> ConstructFormStructureFromTypeValuePairs(
-    std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs,
+    TypeValuePairs type_value_pairs,
     std::string url = "https://www.foo.com") {
   FormData form = ConstructFormDateFromTypeValuePairs(type_value_pairs, url);
   return ConstructFormStructureFromFormData(form);
@@ -187,15 +187,9 @@ std::unique_ptr<FormStructure> ConstructFormStructureFromTypeValuePairs(
 // value pairs. The values are set as |VerificationStatus::kObserved| and the
 // profile is finalizes in the end.
 AutofillProfile ConstructProfileFromTypeValuePairs(
-    std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs) {
+    TypeValuePairs type_value_pairs) {
   AutofillProfile profile;
   for (const auto& [type, value] : type_value_pairs) {
-    if (type == ADDRESS_HOME_DEPENDENT_LOCALITY &&
-        !base::FeatureList::IsEnabled(
-            features::kAutofillEnableDependentLocalityParsing)) {
-      continue;
-    }
-
     profile.SetRawInfoWithVerificationStatus(
         type, base::UTF8ToUTF16(value),
         structured_address::VerificationStatus::kObserved);
@@ -208,15 +202,13 @@ AutofillProfile ConstructProfileFromTypeValuePairs(
 // Returns a vector of ServerFieldType and value pairs used to construct the
 // default AutofillProfile, or a FormStructure or FormData instance that carries
 // that corresponding information.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetDefaultProfileTypeValuePairs() {
+TypeValuePairs GetDefaultProfileTypeValuePairs() {
   return {
       {NAME_FIRST, kDefaultFirstName},
       {NAME_LAST, kDefaultLastName},
       {EMAIL_ADDRESS, kDefaultMail},
       {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-      {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
@@ -226,10 +218,9 @@ GetDefaultProfileTypeValuePairs() {
 
 // Wraps `GetDefaultProfileTypeValuePairs()` but replaces `kDefaultCountry` with
 // `country`. If `country` is empty, ADDRESS_HOME_COUNTRY is removed entirely.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetDefaultProfileTypeValuePairsWithOverriddenCountry(
+TypeValuePairs GetDefaultProfileTypeValuePairsWithOverriddenCountry(
     const std::string& country) {
-  constexpr int kCountryIndex = 9;
+  constexpr int kCountryIndex = 8;
   auto pairs = GetDefaultProfileTypeValuePairs();
   DCHECK_EQ(pairs[kCountryIndex].first, ADDRESS_HOME_COUNTRY);
   if (country.empty())
@@ -242,8 +233,7 @@ GetDefaultProfileTypeValuePairsWithOverriddenCountry(
 // Same as |GetDefaultProfileTypeValuePairs()|, but split into two parts to test
 // multi-step imports. No part by itself satisfies the import requirements.
 // |part| specifies the requested half and can be either 1 or 2.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetSplitDefaultProfileTypeValuePairs(int part) {
+TypeValuePairs GetSplitDefaultProfileTypeValuePairs(int part) {
   DCHECK(part == 1 || part == 2);
   if (part == 1) {
     return {
@@ -258,7 +248,6 @@ GetSplitDefaultProfileTypeValuePairs(int part) {
     return {
         {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
         {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-        {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
         {ADDRESS_HOME_ZIP, kDefaultZip},
     };
   }
@@ -266,15 +255,13 @@ GetSplitDefaultProfileTypeValuePairs(int part) {
 
 // Same as |GetDefaultProfileTypeValuePairs()| but with the second profile
 // information.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetSecondProfileTypeValuePairs() {
+TypeValuePairs GetSecondProfileTypeValuePairs() {
   return {
       {NAME_FIRST, kSecondFirstName},
       {NAME_LAST, kSecondLastName},
       {EMAIL_ADDRESS, kSecondMail},
       {PHONE_HOME_WHOLE_NUMBER, kSecondPhone},
       {ADDRESS_HOME_LINE1, kSecondAddressLine1},
-      {ADDRESS_HOME_DEPENDENT_LOCALITY, kSecondDependentLocality},
       {ADDRESS_HOME_CITY, kSecondCity},
       {ADDRESS_HOME_STATE, kSecondState},
       {ADDRESS_HOME_ZIP, kSecondZip},
@@ -284,15 +271,13 @@ GetSecondProfileTypeValuePairs() {
 
 // Same as |GetDefaultProfileTypeValuePairs()| but with the third profile
 // information.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetThirdProfileTypeValuePairs() {
+TypeValuePairs GetThirdProfileTypeValuePairs() {
   return {
       {NAME_FIRST, kThirdFirstName},
       {NAME_LAST, kThirdLastName},
       {EMAIL_ADDRESS, kThirdMail},
       {PHONE_HOME_WHOLE_NUMBER, kThirdPhone},
       {ADDRESS_HOME_LINE1, kThirdAddressLine1},
-      {ADDRESS_HOME_DEPENDENT_LOCALITY, kThirdDependentLocality},
       {ADDRESS_HOME_CITY, kThirdCity},
       {ADDRESS_HOME_STATE, kThirdState},
       {ADDRESS_HOME_ZIP, kThirdZip},
@@ -301,8 +286,7 @@ GetThirdProfileTypeValuePairs() {
 }
 
 // Same as `GetDefaultProfileTypeValuePairs()`, but for credit cards.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetDefaultCreditCardTypeValuePairs() {
+TypeValuePairs GetDefaultCreditCardTypeValuePairs() {
   return {
       {CREDIT_CARD_NAME_FULL, kDefaultCreditCardName},
       {CREDIT_CARD_NUMBER, kDefaultCreditCardNumber},
@@ -712,12 +696,8 @@ class FormDataImporterTestBase {
 class FormDataImporterTest
     : public FormDataImporterTestBase,
       public testing::Test,
-      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
-  bool DependentLocalityParsingEnabled() {
-    return support_for_depending_locality_;
-  }
-
   bool ConsiderVariationCountryCodeForPhoneNumbers() {
     return consider_variation_country_code_for_phone_numbers_;
   }
@@ -732,9 +712,8 @@ class FormDataImporterTest
 
   void InitializeFeatures() {
     support_for_apartment_numbers_ = std::get<0>(GetParam());
-    support_for_depending_locality_ = std::get<1>(GetParam());
     consider_variation_country_code_for_phone_numbers_ =
-        std::get<2>(GetParam());
+        std::get<1>(GetParam());
 
     // Enable all those features by default.
     std::vector<base::Feature> enabled_features{
@@ -742,9 +721,6 @@ class FormDataImporterTest
         features::kAutofillEnableSupportForMoreStructureInNames};
 
     std::vector<base::Feature> disabled_features;
-
-    (support_for_depending_locality_ ? enabled_features : disabled_features)
-        .push_back(features::kAutofillEnableDependentLocalityParsing);
 
     (support_for_apartment_numbers_ ? enabled_features : disabled_features)
         .push_back(features::kAutofillEnableSupportForApartmentNumbers);
@@ -758,7 +734,6 @@ class FormDataImporterTest
   }
 
   bool support_for_apartment_numbers_;
-  bool support_for_depending_locality_;
   bool consider_variation_country_code_for_phone_numbers_;
 };
 
@@ -780,11 +755,14 @@ TEST_P(FormDataImporterTest, ComplementCountry) {
         ImportAddressProfilesAndVerifyExpectation(*form_structure,
                                                   expected_profiles);
       };
+  // The German profile doesn't expect a state.
+  AutofillProfile kDefaultGermanProfile =
+      ConstructDefaultProfileWithOverriddenCountry("DE");
+  kDefaultGermanProfile.ClearFields({ADDRESS_HOME_STATE});
 
   // Country part of the form:
   // If a valid country was entered, use that.
-  ImportWithCountry("Germany",
-                    {ConstructDefaultProfileWithOverriddenCountry("DE")});
+  ImportWithCountry("Germany", {kDefaultGermanProfile});
   // Reject the profile if an invalid country was entered.
   ImportWithCountry("Somewhere", {});
   // Country not part of the form: Complement using
@@ -793,12 +771,12 @@ TEST_P(FormDataImporterTest, ComplementCountry) {
   ImportWithCountry("", {ConstructDefaultProfileWithOverriddenCountry("US")});
   // Prefer variation config country code over locale
   autofill_client_->SetVariationConfigCountryCode("DE");
-  ImportWithCountry("", {ConstructDefaultProfileWithOverriddenCountry("DE")});
+  ImportWithCountry("", {kDefaultGermanProfile});
 }
 
 TEST_P(FormDataImporterTest, InvalidPhoneNumber) {
-  std::vector<std::pair<ServerFieldType, std::string>>
-      profile_with_invalid_phone_number = GetDefaultProfileTypeValuePairs();
+  TypeValuePairs profile_with_invalid_phone_number =
+      GetDefaultProfileTypeValuePairs();
   const int phone_number_index = 3;
   ASSERT_EQ(profile_with_invalid_phone_number[phone_number_index].first,
             PHONE_HOME_WHOLE_NUMBER);
@@ -846,9 +824,8 @@ TEST_P(FormDataImporterTest, PhoneNumberRegionMetrics) {
         // In order to test the phone number region deduction via the variation
         // country code and app local, the form cannot contain a country field.
         // Passing an empty country archives that.
-        std::vector<std::pair<ServerFieldType, std::string>>
-            profile_with_invalid_phone_number =
-                GetDefaultProfileTypeValuePairsWithOverriddenCountry("");
+        TypeValuePairs profile_with_invalid_phone_number =
+            GetDefaultProfileTypeValuePairsWithOverriddenCountry("");
         ASSERT_EQ(profile_with_invalid_phone_number[3].first,
                   PHONE_HOME_WHOLE_NUMBER);
         profile_with_invalid_phone_number[3].second = number;
@@ -1135,20 +1112,12 @@ TEST_P(FormDataImporterTest, ImportStructuredNameAddressProfile) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles) {
-  base::test::ScopedFeatureList dependent_locality_feature;
-  dependent_locality_feature.InitAndEnableFeature(
-      features::kAutofillEnableDependentLocalityParsing);
-
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultProfileFormStructure();
   ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
 
 TEST_P(FormDataImporterTest, ImportSecondAddressProfiles) {
-  base::test::ScopedFeatureList dependent_locality_feature;
-  dependent_locality_feature.InitAndEnableFeature(
-      features::kAutofillEnableDependentLocalityParsing);
-
   std::unique_ptr<FormStructure> form_structure =
       ConstructSecondProfileFormStructure();
   ImportAddressProfilesAndVerifyExpectation(*form_structure,
@@ -1156,14 +1125,28 @@ TEST_P(FormDataImporterTest, ImportSecondAddressProfiles) {
 }
 
 TEST_P(FormDataImporterTest, ImportThirdAddressProfiles) {
-  base::test::ScopedFeatureList dependent_locality_feature;
-  dependent_locality_feature.InitAndEnableFeature(
-      features::kAutofillEnableDependentLocalityParsing);
-
   std::unique_ptr<FormStructure> form_structure =
       ConstructThirdProfileFormStructure();
   ImportAddressProfilesAndVerifyExpectation(*form_structure,
                                             {ConstructThirdProfile()});
+}
+
+// Test that with dependent locality parsing enabled, dependent locality fields
+// are imported.
+TEST_P(FormDataImporterTest, ImportAddressProfiles_DependentLocality) {
+  base::test::ScopedFeatureList dependent_locality_feature;
+  dependent_locality_feature.InitAndEnableFeature(
+      features::kAutofillEnableDependentLocalityParsing);
+
+  // The Mexican address format contains a dependent locality.
+  TypeValuePairs mx_profile =
+      GetDefaultProfileTypeValuePairsWithOverriddenCountry("MX");
+  mx_profile.emplace_back(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                          "Bosques de las Lomas");
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructFormStructureFromTypeValuePairs(mx_profile);
+  ImportAddressProfilesAndVerifyExpectation(
+      *form_structure, {ConstructProfileFromTypeValuePairs(mx_profile)});
 }
 
 // Test that the storage is prevented if the structured address prompt feature
@@ -1197,7 +1180,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfileFromUnifiedSection) {
 
   // Assign the address field another section than the other fields.
   form_structure->field(4)->section.SetPrefixFromAutocomplete(
-      {.section = "another_section", .mode = HtmlFieldMode::HTML_MODE_NONE});
+      {.section = "another_section"});
 
   ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
@@ -1225,7 +1208,6 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_TwoEmails) {
            {EMAIL_ADDRESS, kDefaultMail},
            {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-           {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
            {ADDRESS_HOME_ZIP, kDefaultZip}});
@@ -1244,7 +1226,6 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_TwoDifferentEmails) {
            {EMAIL_ADDRESS, "another@mail.com"},
            {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-           {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
            {ADDRESS_HOME_ZIP, kDefaultZip}});
@@ -1268,7 +1249,6 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MultiplePhoneNumbers) {
            // Add a second phone field with a different number.
            {PHONE_HOME_WHOLE_NUMBER, kSecondPhone},
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-           {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
            {ADDRESS_HOME_ZIP, kDefaultZip}});
@@ -1298,7 +1278,6 @@ TEST_P(FormDataImporterTest,
        {PHONE_HOME_WHOLE_NUMBER, kSecondPhonePrefix},
        {PHONE_HOME_WHOLE_NUMBER, kSecondPhoneSuffix},
        {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-       {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
        {ADDRESS_HOME_CITY, kDefaultCity},
        {ADDRESS_HOME_STATE, kDefaultState},
        {ADDRESS_HOME_ZIP, kDefaultZip},
@@ -1322,7 +1301,6 @@ TEST_P(FormDataImporterTest,
            {EMAIL_ADDRESS, kDefaultMail},
            // Note that this formatting is without a country code.
            {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneDomesticFormatting},
-           {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
@@ -1344,14 +1322,14 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_NotEnoughFilledFields) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MinimumAddressUSA) {
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs({
+  TypeValuePairs type_value_pairs = {
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
       {ADDRESS_HOME_COUNTRY, "US"},
-  });
+  };
 
   AutofillProfile profile =
       ConstructProfileFromTypeValuePairs(type_value_pairs);
@@ -1362,13 +1340,13 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MinimumAddressUSA) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGB) {
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs({
+  TypeValuePairs type_value_pairs = {
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_ZIP, kDefaultZip},
       {ADDRESS_HOME_COUNTRY, "GB"},
-  });
+  };
 
   AutofillProfile profile =
       ConstructProfileFromTypeValuePairs(type_value_pairs);
@@ -1379,11 +1357,11 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGB) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGI) {
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs({
+  TypeValuePairs type_value_pairs = {
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_COUNTRY, "GI"},
-  });
+  };
 
   AutofillProfile profile =
       ConstructProfileFromTypeValuePairs(type_value_pairs);
@@ -1404,7 +1382,6 @@ TEST_P(FormDataImporterTest,
        {PHONE_HOME_WHOLE_NUMBER, kDefaultPhonePrefix},
        {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneSuffix},
        {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-       {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
        {ADDRESS_HOME_CITY, kDefaultCity},
        {ADDRESS_HOME_STATE, kDefaultState},
        {ADDRESS_HOME_ZIP, kDefaultZip},
@@ -1426,7 +1403,6 @@ TEST_P(FormDataImporterTest,
            {EMAIL_ADDRESS, kDefaultMail},
            {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneDomesticFormatting},
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-           {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
            {ADDRESS_HOME_ZIP, kDefaultZip},
@@ -1454,7 +1430,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_UnFocussableFields) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MultilineAddress) {
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs({
+  TypeValuePairs type_value_pairs = {
       {NAME_FULL, kDefaultFullName},
       // This is a multi-line field.
       {ADDRESS_HOME_STREET_ADDRESS, kDefaultStreetAddress},
@@ -1462,7 +1438,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MultilineAddress) {
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
       {ADDRESS_HOME_COUNTRY, "US"},
-  });
+  };
 
   AutofillProfile profile =
       ConstructProfileFromTypeValuePairs(type_value_pairs);
@@ -1496,10 +1472,9 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_TwoValidProfilesSameForm) {
   AutofillProfile alternative_profile = ConstructSecondProfile();
 
   // Get the type value pairs that correspond to the first profile.
-  std::vector<std::pair<ServerFieldType, std::string>>
-      profile_type_value_pairs = GetDefaultProfileTypeValuePairs();
-  std::vector<std::pair<ServerFieldType, std::string>>
-      second_profile_type_value_pairs = GetSecondProfileTypeValuePairs();
+  TypeValuePairs profile_type_value_pairs = GetDefaultProfileTypeValuePairs();
+  TypeValuePairs second_profile_type_value_pairs =
+      GetSecondProfileTypeValuePairs();
 
   // Now combine the two vectors and construct the single FormStructure that
   // holds both profiles.
@@ -1540,14 +1515,13 @@ TEST_P(FormDataImporterTest,
 // TODO(crbug.com/1297212): Understand flakiness.
 TEST_P(FormDataImporterTest,
        DISABLED_ImportAddressProfiles_ThreeValidProfilesSameForm) {
-  std::vector<std::pair<ServerFieldType, std::string>>
-      profile_type_value_pairs = GetDefaultProfileTypeValuePairs();
+  TypeValuePairs profile_type_value_pairs = GetDefaultProfileTypeValuePairs();
 
-  std::vector<std::pair<ServerFieldType, std::string>>
-      second_profile_type_value_pairs = GetSecondProfileTypeValuePairs();
+  TypeValuePairs second_profile_type_value_pairs =
+      GetSecondProfileTypeValuePairs();
 
-  std::vector<std::pair<ServerFieldType, std::string>>
-      third_profile_type_value_pairs = GetThirdProfileTypeValuePairs();
+  TypeValuePairs third_profile_type_value_pairs =
+      GetThirdProfileTypeValuePairs();
 
   // Merge the type value pairs into one and construct the corresponding form
   // structure.
@@ -1568,7 +1542,7 @@ TEST_P(FormDataImporterTest,
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
-  std::vector<std::pair<ServerFieldType, std::string>> initial_type_value_pairs{
+  TypeValuePairs initial_type_value_pairs{
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
@@ -1587,17 +1561,16 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   // Create a second form structure with an additional country and a differently
   // formatted phone number
-  std::vector<std::pair<ServerFieldType, std::string>>
-      conflicting_type_value_pairs(
-          {{NAME_FULL, kDefaultFullName},
-           {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-           {ADDRESS_HOME_CITY, kDefaultCity},
-           {ADDRESS_HOME_STATE, kDefaultState},
-           {ADDRESS_HOME_ZIP, kDefaultZip},
-           // The phone number is spelled differently.
-           {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneAlternativeFormatting},
-           // Country information is added.
-           {ADDRESS_HOME_COUNTRY, "US"}});
+  TypeValuePairs conflicting_type_value_pairs = {
+      {NAME_FULL, kDefaultFullName},
+      {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
+      {ADDRESS_HOME_CITY, kDefaultCity},
+      {ADDRESS_HOME_STATE, kDefaultState},
+      {ADDRESS_HOME_ZIP, kDefaultZip},
+      // The phone number is spelled differently.
+      {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneAlternativeFormatting},
+      // Country information is added.
+      {ADDRESS_HOME_COUNTRY, "US"}};
   AutofillProfile conflicting_profile =
       ConstructProfileFromTypeValuePairs(conflicting_type_value_pairs);
 
@@ -1607,17 +1580,16 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
   std::unique_ptr<FormStructure> conflicting_form_structure =
       ConstructFormStructureFromTypeValuePairs(conflicting_type_value_pairs);
 
-  std::vector<std::pair<ServerFieldType, std::string>>
-      resulting_type_value_pairs{
-          {NAME_FULL, kDefaultFullName},
-          {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-          {ADDRESS_HOME_CITY, kDefaultCity},
-          {ADDRESS_HOME_STATE, kDefaultState},
-          {ADDRESS_HOME_ZIP, kDefaultZip},
-          // The phone number remains in domestic format.
-          {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneDomesticFormatting},
-          // Country information is added.
-          {ADDRESS_HOME_COUNTRY, "US"}};
+  TypeValuePairs resulting_type_value_pairs{
+      {NAME_FULL, kDefaultFullName},
+      {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
+      {ADDRESS_HOME_CITY, kDefaultCity},
+      {ADDRESS_HOME_STATE, kDefaultState},
+      {ADDRESS_HOME_ZIP, kDefaultZip},
+      // The phone number remains in domestic format.
+      {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneDomesticFormatting},
+      // Country information is added.
+      {ADDRESS_HOME_COUNTRY, "US"}};
 
   // Verify that importing the conflicting profile will result in an update of
   // the existing profile rather than creating a new one.
@@ -1627,7 +1599,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
-  std::vector<std::pair<ServerFieldType, std::string>> initial_type_value_pairs{
+  TypeValuePairs initial_type_value_pairs{
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
@@ -1645,8 +1617,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
                                             {initial_profile});
 
   // Create a superset that includes a new email address.
-  std::vector<std::pair<ServerFieldType, std::string>>
-      superset_type_value_pairs = initial_type_value_pairs;
+  TypeValuePairs superset_type_value_pairs = initial_type_value_pairs;
   superset_type_value_pairs.emplace_back(EMAIL_ADDRESS, kDefaultMail);
 
   AutofillProfile superset_profile =
@@ -1665,7 +1636,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
-  std::vector<std::pair<ServerFieldType, std::string>> subset_type_value_pairs({
+  TypeValuePairs subset_type_value_pairs({
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
@@ -1675,8 +1646,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
       {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
   });
   // Create a superset that includes a new email address.
-  std::vector<std::pair<ServerFieldType, std::string>>
-      superset_type_value_pairs = subset_type_value_pairs;
+  TypeValuePairs superset_type_value_pairs = subset_type_value_pairs;
   superset_type_value_pairs.emplace_back(EMAIL_ADDRESS, kDefaultMail);
 
   AutofillProfile subset_profile =
@@ -1704,13 +1674,13 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_InsufficientAddress) {
   // This address is missing a state which is required in the US.
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs({
+  TypeValuePairs type_value_pairs = {
       {NAME_FULL, kDefaultFullName},
       {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_ZIP, kDefaultZip},
       {ADDRESS_HOME_COUNTRY, "US"},
-  });
+  };
 
   std::unique_ptr<FormStructure> form_structure =
       ConstructFormStructureFromTypeValuePairs(type_value_pairs);
@@ -2080,14 +2050,12 @@ TEST_P(FormDataImporterTest,
   test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
                             &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
-                            &field);
+  test::CreateTestFormField("Address:", "address1",
+                            "No. 43 Bo Aung Gyaw Street", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "Yangon", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("State:", "state", "California", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "11181", "text", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("Country:", "country", "Myanmar [Burma]", "text",
                             &field);
@@ -2099,8 +2067,9 @@ TEST_P(FormDataImporterTest,
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
-                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
-                       "San Francisco", "California", "94102", "MM", nullptr);
+                       "theprez@gmail.com", nullptr,
+                       "No. 43 Bo Aung Gyaw Street", nullptr, "Yangon", "",
+                       "11181", "MM", nullptr);
   EXPECT_THAT(personal_data_manager_->GetProfiles(),
               UnorderedElementsCompareEqual(expected));
 }
@@ -2331,9 +2300,8 @@ TEST_P(FormDataImporterTest, ImportCreditCard_Month2DigitYearCombination) {
   test::CreateTestFormField("Card Number:", "card_number", "4111111111111111",
                             "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("Exp Date:", "exp_date", "05/45", "text", &field);
-  field.autocomplete_attribute = "cc-exp";
-  field.max_length = 5;
+  test::CreateTestFormField("Exp Date:", "exp_date", "05/45", "text", "cc-exp",
+                            5, &field);
   form.fields.push_back(field);
 
   SubmitFormAndExpectImportedCardWithData(form, "John MMYY", "4111111111111111",
@@ -2352,9 +2320,8 @@ TEST_P(FormDataImporterTest, ImportCreditCard_Month4DigitYearCombination) {
   test::CreateTestFormField("Card Number:", "card_number", "4111111111111111",
                             "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("Exp Date:", "exp_date", "05/2045", "text", &field);
-  field.autocomplete_attribute = "cc-exp";
-  field.max_length = 7;
+  test::CreateTestFormField("Exp Date:", "exp_date", "05/2045", "text",
+                            "cc-exp", 7, &field);
   form.fields.push_back(field);
 
   SubmitFormAndExpectImportedCardWithData(form, "John MMYYYY",
@@ -2373,8 +2340,8 @@ TEST_P(FormDataImporterTest, ImportCreditCard_1DigitMonth4DigitYear) {
   test::CreateTestFormField("Card Number:", "card_number", "4111111111111111",
                             "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("Exp Date:", "exp_date", "5/2045", "text", &field);
-  field.autocomplete_attribute = "cc-exp";
+  test::CreateTestFormField("Exp Date:", "exp_date", "5/2045", "text", "cc-exp",
+                            &field);
   form.fields.push_back(field);
 
   SubmitFormAndExpectImportedCardWithData(form, "John MYYYY",
@@ -4362,12 +4329,11 @@ TEST_P(FormDataImporterTest, RemoveInaccessibleProfileValuesMetrics) {
 
   // Minimal importable profile, but with a state, which is setting-inaccessible
   // for Germany.
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs{
-      {ADDRESS_HOME_COUNTRY, "DE"},
-      {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
-      {ADDRESS_HOME_CITY, kDefaultCity},
-      {ADDRESS_HOME_ZIP, kDefaultZip},
-      {ADDRESS_HOME_STATE, kDefaultState}};
+  TypeValuePairs type_value_pairs = {{ADDRESS_HOME_COUNTRY, "DE"},
+                                     {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
+                                     {ADDRESS_HOME_CITY, kDefaultCity},
+                                     {ADDRESS_HOME_ZIP, kDefaultZip},
+                                     {ADDRESS_HOME_STATE, kDefaultState}};
 
   std::unique_ptr<FormStructure> form_structure =
       ConstructFormStructureFromTypeValuePairs(type_value_pairs);
@@ -4409,8 +4375,7 @@ TEST_P(FormDataImporterTest, MultiStepImportComplement) {
       {{features::kAutofillEnableMultiStepImportComplements.name, "true"}});
 
   // Import the default profile without an email address.
-  std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs =
-      GetDefaultProfileTypeValuePairs();
+  TypeValuePairs type_value_pairs = GetDefaultProfileTypeValuePairs();
   EXPECT_EQ(type_value_pairs[2].first, EMAIL_ADDRESS);
   type_value_pairs.erase(type_value_pairs.begin() + 2);
 
@@ -4426,7 +4391,10 @@ TEST_P(FormDataImporterTest, MultiStepImportComplement) {
   // of fields < kMinRequiredFieldsForHeuristics), no heuristics are used.
   FormData form =
       ConstructFormDateFromTypeValuePairs({{EMAIL_ADDRESS, kDefaultMail}});
-  form.fields[0].autocomplete_attribute = "email";
+  const char* autocomplete = "email";
+  form.fields[0].autocomplete_attribute = autocomplete;
+  form.fields[0].parsed_autocomplete =
+      ParseAutocompleteAttribute(autocomplete, form.fields[0].max_length);
   form_structure = ConstructFormStructureFromFormData(form);
   ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
@@ -4489,16 +4457,14 @@ TEST_P(FormDataImporterTest, MultiStepImportDeleteOnBrowsingHistoryCleared) {
   ImportAddressProfilesAndVerifyExpectation(*form_structure, {});
 }
 
-// Runs the suite with the feature |kAutofillEnableSupportForApartmentNumbers|,
-// |kAutofillEnableDependentLocalityParsing| and
-// |kAutofillConsiderVariationCountryCodeForPhoneNumbers| enabled and disabled.
+// Runs the suite with the feature `kAutofillEnableSupportForApartmentNumbers`
+// and `kAutofillConsiderVariationCountryCodeForPhoneNumbers` enabled and
+// disabled.
 // TODO(crbug.com/1295721): Remove
-// |kAutofillConsiderVariationCountryCodeForPhoneNumbers| when launched.
+// `kAutofillConsiderVariationCountryCodeForPhoneNumbers` when launched.
 INSTANTIATE_TEST_SUITE_P(,
                          FormDataImporterTest,
-                         testing::Combine(testing::Bool(),
-                                          testing::Bool(),
-                                          testing::Bool()));
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 class FormDataImporterNonParameterizedTest : public FormDataImporterTestBase,
                                              public testing::Test {

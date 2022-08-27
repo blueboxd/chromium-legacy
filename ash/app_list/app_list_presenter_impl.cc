@@ -93,11 +93,9 @@ bool IsShelfBackgroundTypeWithRoundedCorners(
     ShelfBackgroundType background_type) {
   switch (background_type) {
     case ShelfBackgroundType::kDefaultBg:
-    case ShelfBackgroundType::kAppList:
     case ShelfBackgroundType::kOverview:
       return true;
     case ShelfBackgroundType::kMaximized:
-    case ShelfBackgroundType::kMaximizedWithAppList:
     case ShelfBackgroundType::kOobe:
     case ShelfBackgroundType::kHomeLauncher:
     case ShelfBackgroundType::kLogin:
@@ -407,20 +405,6 @@ bool AppListPresenterImpl::IsAtLeastPartiallyVisible() const {
 
 bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_target_visibility_show_;
-}
-
-void AppListPresenterImpl::UpdateYPositionAndOpacity(float y_position_in_screen,
-                                                     float background_opacity) {
-  if (!is_target_visibility_show_)
-    return;
-
-  if (view_)
-    view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
-}
-
-void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
-  if (view_)
-    view_->EndDragFromShelf(app_list_state);
 }
 
 void AppListPresenterImpl::ProcessScrollOffset(

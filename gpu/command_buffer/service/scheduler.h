@@ -12,7 +12,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/cpu_reduction_experiment.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -410,8 +409,6 @@ class GPU_EXPORT Scheduler {
 
     // Indicates when the next task run was scheduled
     base::TimeTicks run_next_task_scheduled;
-
-    base::CpuReductionExperimentFilter cpu_reduction_experiment_filter;
   };
   base::flat_map<base::SingleThreadTaskRunner*, PerThreadState>
       per_thread_state_map_ GUARDED_BY(lock_);

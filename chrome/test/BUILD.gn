@@ -1557,7 +1557,6 @@ if (!is_android) {
       "//third_party/shell-encryption:serialization_proto",
       "//third_party/widevine/cdm:widevine_test_license_server",
       "//tools/media_engagement_preload:make_dafsa_runtime",
-      "//ui/webui/resources/cr_elements:modulize_runtime_data",
       "//ui/webui/resources/js:modulize_local_runtime_data",
       "//ui/webui/resources/js/cr:modulize_local_runtime_data",
       "//ui/webui/resources/js/cr/ui:modulize_runtime_data",
@@ -2219,6 +2218,7 @@ if (!is_android) {
       "../browser/ui/views/file_system_access/file_system_access_test_utils.h",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/incognito_clear_browsing_data_dialog_browsertest.cc",
+      "../browser/ui/views/intent_picker_dialog_browsertest.cc",
       "../browser/ui/views/privacy_sandbox/privacy_sandbox_dialog_view_browsertest.cc",
       "../browser/ui/views/privacy_sandbox/privacy_sandbox_notice_bubble_browsertest.cc",
       "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
@@ -2373,11 +2373,6 @@ if (!is_android) {
         "../browser/enterprise/connectors/file_system/signin_experience_browsertest.cc",
         "../browser/safe_browsing/download_protection/deep_scanning_browsertest.cc",
 
-        # https://crbug.com/1252812 The intent picker (launch icon) actions
-        # are not working on Lacros.
-        "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
-        "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
-
         # Lacros does not seem to have any actual WebView-based UI to test.
         "../browser/ui/webui/webui_webview_browsertest.cc",
 
@@ -2389,7 +2384,9 @@ if (!is_android) {
 
         # These tests also run on Lacros, as part of
         # lacros_chrome_browsertests_run_in_series below.
+        "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
         "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
       ]
 
       deps += [
@@ -3112,17 +3109,6 @@ if (!is_android) {
           "//chrome/browser/enterprise/connectors/device_trust/common",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
-          "//components/device_signals/core/common",
-          "//components/device_signals/core/common:features",
-        ]
-      }
-
-      if (is_chromeos_ash) {
-        sources += [ "../browser/enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator_browsertest.cc" ]
-
-        deps += [
-          "//chrome/browser/enterprise/connectors/device_trust:features",
-          "//chrome/browser/enterprise/connectors/device_trust/common",
           "//components/device_signals/core/common",
           "//components/device_signals/core/common:features",
         ]
@@ -3853,6 +3839,7 @@ if (!is_android) {
         "../browser/ash/policy/login/signin_profile_extensions_policy_browsertest.cc",
         "../browser/ash/policy/networking/network_policy_application_browsertest.cc",
         "../browser/ash/policy/networking/policy_certs_browsertest.cc",
+        "../browser/ash/policy/reporting/metrics_reporting/audio/audio_events_observer_browsertest.cc",
         "../browser/ash/policy/reporting/metrics_reporting/metric_browsertest_utils.cc",
         "../browser/ash/policy/reporting/metrics_reporting/metric_browsertest_utils.h",
         "../browser/ash/policy/reporting/metrics_reporting/network/network_events_observer_browsertest.cc",
@@ -3907,6 +3894,7 @@ if (!is_android) {
         "../browser/chromeos/tablet_mode/tablet_mode_page_behavior_browsertest.cc",
         "../browser/device_api/device_attribute_api_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
+        "../browser/enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator_browsertest.cc",
         "../browser/feedback/show_feedback_page_browsertest.cc",
         "../browser/metrics/chromeos_family_link_user_metrics_provider_browsertest.cc",
         "../browser/metrics/chromeos_metrics_provider_browsertest.cc",
@@ -4140,6 +4128,7 @@ if (!is_android) {
         "//ash/components/login/auth:test_support",
         "//ash/components/smbfs",
         "//ash/components/timezone",
+        "//ash/constants:constants",
         "//ash/keyboard/ui:test_support",
         "//ash/public/cpp/external_arc",
         "//ash/services/multidevice_setup/public/cpp:test_support",
@@ -4177,6 +4166,7 @@ if (!is_android) {
         "//chrome/browser/chromeos:key_permissions_proto",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/enterprise/connectors/device_trust:features",
+        "//chrome/browser/enterprise/connectors/device_trust/common",
         "//chrome/browser/image_decoder",
         "//chrome/browser/media/router:test_support",
         "//chrome/browser/metrics/structured",
@@ -4255,6 +4245,8 @@ if (!is_android) {
         "//components/arc:arc_test_support",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
         "//components/device_event_log",
+        "//components/device_signals/core/common",
+        "//components/device_signals/core/common:features",
         "//components/drive",
         "//components/exo:test_support",
         "//components/feedback:feedback",
@@ -4749,8 +4741,10 @@ if (is_chromeos_lacros) {
       "../browser/ui/browser_navigator_browsertest.h",
       "../browser/ui/browser_navigator_browsertest_chromeos.cc",
       "../browser/ui/startup/lacros_first_run_service_browsertest.cc",
+      "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
+      "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
       "../browser/web_applications/app_service/lacros_web_apps_controller_lacros_browsertest.cc",
     ]
 
@@ -6567,10 +6561,16 @@ test("unit_tests") {
       "../browser/password_manager/generated_password_leak_detection_pref_unittest.cc",
       "../browser/performance_manager/test_support/fake_frame_throttling_delegate.cc",
       "../browser/performance_manager/test_support/fake_frame_throttling_delegate.h",
+      "../browser/performance_manager/test_support/fake_high_efficiency_mode_toggle_delegate.cc",
+      "../browser/performance_manager/test_support/fake_high_efficiency_mode_toggle_delegate.h",
+      "../browser/performance_manager/test_support/fake_power_monitor_source.cc",
+      "../browser/performance_manager/test_support/fake_power_monitor_source.h",
       "../browser/performance_manager/test_support/page_discarding_utils.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.h",
       "../browser/performance_manager/test_support/site_data_utils.cc",
       "../browser/performance_manager/test_support/site_data_utils.h",
+      "../browser/performance_manager/test_support/test_user_performance_tuning_manager_environment.cc",
+      "../browser/performance_manager/test_support/test_user_performance_tuning_manager_environment.h",
       "../browser/platform_util_unittest.cc",
       "../browser/policy/policy_path_parser_unittest.cc",
       "../browser/policy/serial_allow_usb_devices_for_urls_policy_handler_unittest.cc",
@@ -6820,6 +6820,7 @@ test("unit_tests") {
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/recent_site_settings_helper_unittest.cc",
       "../browser/ui/webui/settings/reset_settings_handler_unittest.cc",
+      "../browser/ui/webui/settings/review_notification_permissions_helper_unittest.cc",
       "../browser/ui/webui/settings/safety_check_handler_unittest.cc",
       "../browser/ui/webui/settings/settings_clear_browsing_data_handler_unittest.cc",
       "../browser/ui/webui/settings/settings_cookies_view_handler_unittest.cc",

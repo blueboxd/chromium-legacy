@@ -19,7 +19,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
-#include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -79,16 +79,16 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 - (void)readingListFolderCreated;
 
 // Processes the data sent by the share extension. Data should be a NSDictionary
-// serialized by +|NSKeyedArchiver archivedDataWithRootObject:|.
-// |completion| is called if |data| has been fully processed.
+// serialized by +|NSKeyedArchiver archivedDataWithRootObject:`.
+// `completion` is called if `data` has been fully processed.
 - (BOOL)receivedData:(NSData*)data withCompletion:(ProceduralBlock)completion;
 
-// Reads the file pointed by |url| and calls |receivedData:| on the content.
+// Reads the file pointed by `url` and calls `receivedData:` on the content.
 // If the file is processed, delete it.
-// |completion| is only called if the file handling is completed without error.
+// `completion` is only called if the file handling is completed without error.
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion;
 
-// Deletes the file pointed by |url| then call |completion|.
+// Deletes the file pointed by `url` then call `completion`.
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion;
 
 // Called on UIApplicationDidBecomeActiveNotification notification.

@@ -376,6 +376,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "audio-peripheral-volume-granularity",
+    "owners": ["whalechang@google.com"],
+    "expiry_milestone": 117
+  },
+  {
     "name": "audio-settings-page",
     "owners": [ "gordonseto", "michaelcheco", "cros-peripherals@google.com" ],
     "expiry_milestone": 113
@@ -642,6 +647,11 @@
     "name": "battery-saver-mode-available",
     "owners": [ "chrome-performance-ui-team@google.com" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "binding-manager-connection-limit",
+    "owners": ["ckitagawa", "yfriedman"],
+    "expiry_milestone": 109
   },
   {
     "name": "binding-manager-use-not-perceptible-binding",
@@ -2134,6 +2144,11 @@
     "name": "enable-enhanced-safe-browsing-phase-2",
     "owners": [ "ajuma", "joemerramos", "bling-flags@google.com"],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-experimental-accessibility-color-enhancement-settings",
+    "owners": [ "katie", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-experimental-accessibility-dictation-with-pumpkin",
@@ -4812,6 +4827,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "omnibox-most-visited-tiles-dynamic-spacing",
+    "owners": [ "rongtan", "gangwu", "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "omnibox-most-visited-tiles-fading-on-tablet",
     "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
@@ -4944,6 +4964,11 @@
   {
     "name": "omnibox-updated-connection-security-indicators",
     "owners": [ "meacer", "chrome-trusty-transport@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "omnibox-zero-suggest-in-memory-caching",
+    "owners": [ "khalidpeer", "mahmadi", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
   },
   {
@@ -5405,6 +5430,11 @@
     "name": "query-tiles-ntp",
     "owners": [ "shaktisahu", "qinmin" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "query-tiles-on-start",
+    "owners": [ "shaktisahu", "qinmin" ],
+    "expiry_milestone": 130
   },
   {
     "name": "query-tiles-rank-tiles",

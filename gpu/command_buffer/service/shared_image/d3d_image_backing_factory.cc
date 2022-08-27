@@ -554,11 +554,15 @@ bool D3DImageBackingFactory::UseMapOnDefaultTextures() {
 bool D3DImageBackingFactory::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType gmb_type,
     viz::ResourceFormat format) {
-  return gmb_type == gfx::DXGI_SHARED_HANDLE ||
-         // Only allow single NV12 shared memory GMBs for now. This excludes
-         // dual shared memory GMBs used by software video decoder.
-         (gmb_type == gfx::SHARED_MEMORY_BUFFER &&
-          format == viz::YUV_420_BIPLANAR);
+  if (gmb_type == gfx::DXGI_SHARED_HANDLE) {
+    return GetDXGIFormat(viz::BufferFormat(format)) != DXGI_FORMAT_UNKNOWN;
+  } else if (gmb_type == gfx::SHARED_MEMORY_BUFFER) {
+    // Only allow single NV12 shared memory GMBs for now. This excludes
+    // dual shared memory GMBs used by software video decoder.
+    return format == viz::YUV_420_BIPLANAR;
+  }
+
+  return false;
 }
 
 bool D3DImageBackingFactory::IsSupported(uint32_t usage,
@@ -566,15 +570,18 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
                                          bool thread_safe,
                                          gfx::GpuMemoryBufferType gmb_type,
                                          GrContextType gr_context_type,
-                                         bool* allow_legacy_mailbox,
                                          bool is_pixel_used) {
   if (is_pixel_used) {
     return false;
   }
-  if (gmb_type != gfx::EMPTY_BUFFER &&
-      !CanImportGpuMemoryBuffer(gmb_type, format)) {
-    return false;
+  if (gmb_type == gfx::EMPTY_BUFFER) {
+    if (!GetSupportedRGBAFormat(format).has_value())
+      return false;
+  } else {
+    if (!CanImportGpuMemoryBuffer(gmb_type, format))
+      return false;
   }
+
   // TODO(crbug.com/969114): Not all shared image factory implementations
   // support concurrent read/write usage.
   constexpr uint32_t kInvalidUsage =
@@ -583,7 +590,6 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
     return false;
   }
 
-  *allow_legacy_mailbox = false;
   return true;
 }
 

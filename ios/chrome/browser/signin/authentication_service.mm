@@ -24,13 +24,13 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
@@ -65,7 +65,7 @@ enum class IOSDeviceRestoreSignedinState : int {
   kMaxValue = kUserSignedInBeforeAndAfterDeviceRestore,
 };
 
-// Returns the account id associated with |identity|.
+// Returns the account id associated with `identity`.
 CoreAccountId ChromeIdentityToAccountID(
     signin::IdentityManager* identity_manager,
     ChromeIdentity* identity) {
@@ -157,7 +157,7 @@ void AuthenticationService::Initialize(
   // Reload credentials to ensure the accounts from the token service are
   // up-to-date.
   // As UpdateHaveAccountsChangedAtColdStart is only called while the
-  // application is cold starting, |keychain_reload| must be set to true.
+  // application is cold starting, `keychain_reload` must be set to true.
   ReloadCredentialsFromIdentities(/*keychain_reload=*/true);
 
   OnApplicationWillEnterForeground();
@@ -349,7 +349,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
       identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
   CHECK(!account_info.IsEmpty());
 
-  // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
+  // `PrimaryAccountManager::SetAuthenticatedAccountId` simply ignores the call
   // if there is already a signed in user. Check that there is no signed in
   // account or that the new signed in account matches the old one to avoid a
   // mismatch between the old and the new authenticated accounts.
@@ -357,7 +357,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
     DCHECK(identity_manager_->GetPrimaryAccountMutator());
     // Initial sign-in to Chrome does not automatically turn on Sync features.
     // The Sync service will be enabled in a separate request to
-    // |GrantSyncConsent|.
+    // `GrantSyncConsent`.
     signin::PrimaryAccountMutator::PrimaryAccountError error =
         identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_id, signin::ConsentLevel::kSignin);
@@ -367,7 +367,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
 
   // The primary account should now be set to the expected account_id.
   // If CHECK_EQ() fails, having the CHECK() before would help to understand if
-  // the primary account is empty or different that |account_id|.
+  // the primary account is empty or different that `account_id`.
   // Related to crbug.com/1308448.
   CoreAccountId primary_account =
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
@@ -412,7 +412,7 @@ void AuthenticationService::GrantSyncConsent(ChromeIdentity* identity) {
   // Kick-off sync: The authentication error UI (sign in infobar and warning
   // badge in settings screen) check the sync auth error state. Sync
   // needs to be kicked off so that it resets the auth error quickly once
-  // |identity| is reauthenticated.
+  // `identity` is reauthenticated.
   sync_service_->GetUserSettings()->SetSyncRequested(true);
 }
 
@@ -581,11 +581,11 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
   }
 
   // Handle the failure of access token refresh on the next message loop cycle.
-  // |identity| is now invalid and the authentication service might need to
+  // `identity` is now invalid and the authentication service might need to
   // react to this loss of identity.
-  // Note that no reload of the credentials is necessary here, as |identity|
-  // might still be accessible in SSO, and |OnIdentityListChanged| will handle
-  // this when |identity| will actually disappear from SSO.
+  // Note that no reload of the credentials is necessary here, as `identity`
+  // might still be accessible in SSO, and `OnIdentityListChanged` will handle
+  // this when `identity` will actually disappear from SSO.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AuthenticationService::HandleForgottenIdentity,
                                 GetWeakPtr(), identity, /*should_prompt=*/true,
@@ -604,7 +604,7 @@ void AuthenticationService::HandleForgottenIdentity(
   ChromeIdentity* authenticated_identity =
       GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (authenticated_identity && authenticated_identity != invalid_identity) {
-    // |authenticated_identity| exists and is a valid identity. Nothing to do
+    // `authenticated_identity` exists and is a valid identity. Nothing to do
     // here.
     return;
   }

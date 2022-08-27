@@ -133,15 +133,20 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       const std::string& token);
   void DispatchOneLogout();
   void OnLogoutCompleted();
-  void CompleteRequest(blink::mojom::FederatedAuthRequestResult,
-                       const std::string& token,
-                       bool should_delay_callback);
+  void CompleteRequestWithError(
+      blink::mojom::FederatedAuthRequestResult result,
+      absl::optional<content::FedCmRequestIdTokenStatus> token_status,
+      bool should_delay_callback);
+  void CompleteRequest(
+      blink::mojom::FederatedAuthRequestResult result,
+      absl::optional<content::FedCmRequestIdTokenStatus> token_status,
+      const std::string& token,
+      bool should_delay_callback);
   void CompleteLogoutRequest(blink::mojom::LogoutRpsStatus);
 
   void CleanUp();
 
-  std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager(
-      const GURL& provider);
+  std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager();
   std::unique_ptr<IdentityRequestDialogController> CreateDialogController();
 
   // Creates an inspector issue related to a federated authentication request to
@@ -188,11 +193,12 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
     GURL token;
     GURL accounts;
     GURL client_metadata;
+    GURL metrics;
   } endpoints_;
 
-  // Represents whether the manifest has been validated via checking the
+  // Tracks for which IDPs the manifest URL has been checked against the IDP's
   // manifest list.
-  bool manifest_list_checked_ = false;
+  base::flat_set<GURL> manifest_lists_checked_;
   absl::optional<IdentityProviderMetadata> idp_metadata_;
 
   raw_ptr<FederatedIdentityApiPermissionContextDelegate>

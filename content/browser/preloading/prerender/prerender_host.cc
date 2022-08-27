@@ -137,7 +137,7 @@ PrerenderHost::~PrerenderHost() {
   Observe(nullptr);
 
   for (auto& observer : observers_)
-    observer.OnHostDestroyed();
+    observer.OnHostDestroyed(final_status_.value_or(FinalStatus::kDestroyed));
 
   if (!final_status_)
     RecordFinalStatus(FinalStatus::kDestroyed, attributes_.initiator_ukm_id,
@@ -588,14 +588,8 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return ActivationNavigationParamsMatch::kIsHistoryNavigationInNewChildFrame;
   }
 
-  // The spec mandates matching the referrer policy, and not the referrer URL
-  // itself, so we only compare the referrer policy here. Referrer policy is a
-  // more predictable value to match than referrer URL.
-  // https://wicg.github.io/nav-speculation/prerendering.html#navigate-activation
-  if (potential_activation.referrer->policy !=
-      common_params_->referrer->policy) {
-    return ActivationNavigationParamsMatch::kReferrerPolicy;
-  }
+  // We intentionally don't check referrer or referrer->policy. See spec
+  // discussion at https://github.com/WICG/nav-speculation/issues/18.
 
   if (potential_activation.request_destination !=
       common_params_->request_destination) {

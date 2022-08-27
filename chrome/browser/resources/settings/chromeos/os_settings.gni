@@ -8,7 +8,7 @@ import("../settings.gni")
 # TODO(crbug/1292025) Files that have their HTML wrapper file generated
 # by html_to_wrapper() go here.
 web_component_files = [
-  "chromeos/keyboard_shortcut_banner/keyboard_shortcut_banner.js",
+  "chromeos/keyboard_shortcut_banner/keyboard_shortcut_banner.ts",
   "chromeos/os_about_page/channel_switcher_dialog.ts",
   "chromeos/os_about_page/consumer_auto_update_toggle_dialog.ts",
   "chromeos/os_about_page/detailed_build_info.ts",
@@ -122,6 +122,7 @@ non_web_component_files = [
   "chromeos/os_bluetooth_page/os_bluetooth_devices_subpage_browser_proxy.js",
   "chromeos/os_bluetooth_page/settings_fast_pair_constants.js",
   "chromeos/os_languages_page/input_method_settings.js",
+  "chromeos/os_languages_page/input_method_types.js",
   "chromeos/os_languages_page/input_method_util.js",
   "chromeos/os_languages_page/languages.js",
   "chromeos/os_languages_page/languages_browser_proxy.js",

@@ -1057,6 +1057,12 @@ const char kAccessibilityServiceDescription[] =
     "This option enables the experimental Accessibility Service and runs some "
     "accessibility features in the service.";
 
+const char kExperimentalAccessibilityColorEnhancementSettingsName[] =
+    "Experimental Accessibility color enhancement settings";
+const char kExperimentalAccessibilityColorEnhancementSettingsDescription[] =
+    "This option enables the experimental Accessibility color enhancement "
+    "settings found in the OS Accessibility settings.";
+
 const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
 const char kPostQuantumCECPQ2Description[] =
     "This option enables a post-quantum (i.e. resistent to quantum computers) "
@@ -1953,6 +1959,12 @@ const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
 
+const char kOmniboxMostVisitedTilesDynamicSpacingName[] =
+    "Omnibox Most Visited Tiles Dynamic Spacing";
+const char kOmniboxMostVisitedTilesDynamicSpacingDescription[] =
+    "Exposes ~4.5 MV tiles in a carousel on a small form factor "
+    "devices, aligning the visual spacing with the NTP.";
+
 const char kOmniboxMostVisitedTilesTitleWrapAroundName[] =
     "Omnibox Most Visited Tiles Title wrap around";
 const char kOmniboxMostVisitedTilesTitleWrapAroundDescription[] =
@@ -1986,6 +1998,11 @@ const char kOmniboxZeroSuggestPrefetchingOnWebName[] =
 const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the Web (i.e. non-NTP and non-SRP URLs).";
+
+const char kOmniboxZeroSuggestInMemoryCachingName[] =
+    "Omnibox Zero Prefix Suggestion in-memory caching";
+const char kOmniboxZeroSuggestInMemoryCachingDescription[] =
+    "Enables in-memory caching of zero prefix suggestions.";
 
 const char kOmniboxOnDeviceHeadSuggestionsName[] =
     "Omnibox on device head suggestions (non-incognito only)";
@@ -3300,6 +3317,14 @@ const char kBackGestureRefactorAndroidName[] = "Back Gesture Refactor";
 const char kBackGestureRefactorAndroidDescription[] =
     "Enable Back Gesture Refactor.";
 
+const char kBindingManagerConnectionLimitName[] =
+    "Binding manager connection limit";
+const char kBindingManagerConnectionLimitDescription[] =
+    "When enabled, limits the number of connections the binding manager can "
+    "hold to background renderers. This results in lower priorities for the "
+    "least important background renderers, which may cause them to be "
+    "reclaimed by the OS if memory is needed.";
+
 const char kBindingManagerUseNotPerceptibleBindingName[] =
     "Reduced background renderer binding";
 const char kBindingManagerUseNotPerceptibleBindingDescription[] =
@@ -3694,6 +3719,9 @@ const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
 const char kQueryTilesNTPName[] = "Show query tiles in NTP";
 const char kQueryTilesNTPDescription[] = "Shows query tiles in NTP";
+const char kQueryTilesOnStartName[] = "Query tiles on start";
+const char kQueryTilesOnStartDescription[] =
+    "Show query tiles on start surface";
 const char kQueryTilesSingleTierName[] = "Show only one level of query tiles";
 const char kQueryTilesSingleTierDescription[] =
     "Show only one level of query tiles";
@@ -5248,6 +5276,14 @@ const char kQuickAnswersForMoreLocalesDescription[] =
 const char kEapGtcWifiAuthenticationName[] = "EAP-GTC WiFi Authentication";
 const char kEapGtcWifiAuthenticationDescription[] =
     "Allows configuration of WiFi networks using EAP-GTC authentication";
+
+const char kAudioPeripheralVolumeGranularityName[] =
+    "Audio Peripheral Volume Granularity";
+const char kAudioPeripheralVolumeGranularityDescription[] =
+    "Change audio peripheral volume granularity as close as peripheral "
+    "reported. "
+    "If the reported volume granularity are too small or too big. use 25 steps "
+    "instead.";
 
 const char kEcheSWAName[] = "Enable Eche feature";
 const char kEcheSWADescription[] = "This is the main flag for enabling Eche.";

@@ -65,6 +65,13 @@ bool IsFillOnAccountSelectFeatureEnabled() {
 }
 #endif
 
+#if BUILDFLAG(IS_MAC)
+bool IsBiometricAuthenticationForFillingEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kBiometricAuthenticationForFilling);
+}
+#endif
+
 bool IsPublicSuffixMatchOrAffiliationBasedMatch(const PasswordForm& form) {
   return form.is_public_suffix_match || form.is_affiliation_based_match;
 }
@@ -96,9 +103,14 @@ void Autofill(PasswordManagerClient* client,
       PreferredRealmIsFromAndroid(fill_data));
   driver->SetPasswordFillData(fill_data);
 
-  client->PasswordWasAutofilled(best_matches,
-                                url::Origin::Create(form_for_autofill.url),
-                                &federated_matches);
+  // Matches can be empty when there are only WebAuthn credentials available.
+  // In that case there will be no actual fill so the client doesn't need
+  // to be notified.
+  if (!best_matches.empty() || !federated_matches.empty()) {
+    client->PasswordWasAutofilled(best_matches,
+                                  url::Origin::Create(form_for_autofill.url),
+                                  &federated_matches);
+  }
 }
 
 std::string GetPreferredRealm(const PasswordForm& form) {
@@ -197,6 +209,12 @@ LikelyFormFilling SendFillInformationToRenderer(
       WaitForUsernameReason::kDontWait;
   if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
+// TODO(1354081): Use settings toggle to check if reauth should be
+// triggered.
+#if BUILDFLAG(IS_MAC)
+  } else if (IsBiometricAuthenticationForFillingEnabled()) {
+    wait_for_username_reason = WaitForUsernameReason::kBiometricAuthentication;
+#endif
   } else if (preferred_match && preferred_match->is_affiliation_based_match &&
              !IsValidAndroidFacetURI(preferred_match->signon_realm)) {
     wait_for_username_reason = WaitForUsernameReason::kAffiliatedWebsite;
@@ -217,7 +235,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   } else if (IsFillOnAccountSelectFeatureEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
   } else if (observed_form.accepts_webauthn_credentials &&
-             client->GetWebAuthnCredentialsDelegate()
+             client->GetWebAuthnCredentialsDelegateForDriver(driver)
                  ->IsWebAuthnAutofillEnabled()) {
     wait_for_username_reason =
         WaitForUsernameReason::kAcceptsWebAuthnCredentials;

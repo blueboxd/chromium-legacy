@@ -4387,8 +4387,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DefaultBrowser.InfoBar.UserInteraction"
-    enum="DefaultBrowserInfoBarUserInteraction" expires_after="M85">
+    enum="DefaultBrowserInfoBarUserInteraction" expires_after="M115">
   <owner>pmonette@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
   <summary>
     Possible user interactions with the default browser info bar.
   </summary>
@@ -5778,6 +5779,17 @@ chromium-metrics-reviews@google.com.
     Record the outcome of checking help contents. Fires when user leaves the
     search page by clicking continue or by clicking x on top right to close the
     app.
+  </summary>
+</histogram>
+
+<histogram name="Feedback.ChromeOSApp.HelpContentSearchResultCount"
+    units="numbers" expires_after="2023-08-15">
+  <owner>longbowei@google.com</owner>
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the number of help content results returned in each search. Fires
+    when user clicks and views the help content on search page.
   </summary>
 </histogram>
 
@@ -7685,6 +7697,18 @@ chromium-metrics-reviews@google.com.
     The Linux sandbox status. This describes what sandboxing features are
     enabled (such as the suid/namespace sandboxes, various namespaces, seccomp
     bpf, ...). Emitted once at startup.
+  </summary>
+</histogram>
+
+<histogram name="Linux.Wayland.BaseShellUsed" enum="LinuxWaylandShellName"
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
+  <owner>rjkroege@chromium.org</owner>
+  <owner>adunaev@igalia.com</owner>
+  <summary>
+    The Linux Wayland base shell protocol used actually. Logged in each session
+    when the browser creates the first shell surface.
   </summary>
 </histogram>
 

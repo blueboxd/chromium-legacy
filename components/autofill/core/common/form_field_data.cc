@@ -29,9 +29,6 @@ namespace {
 // deserialization routine from previous kFormFieldDataPickleVersion format.
 const int kFormFieldDataPickleVersion = 9;
 
-// Default section name for the fields.
-static constexpr char kDefaultSection[] = "-default";
-
 void WriteSelectOption(const SelectOption& option, base::Pickle* pickle) {
   pickle->WriteString16(option.value);
   pickle->WriteString16(option.content);
@@ -241,10 +238,18 @@ auto IdentityTuple(const FormFieldData& f) {
       SimilarityTuple(f),
       std::tie(f.autocomplete_attribute, f.placeholder, f.max_length,
                f.css_classes, f.is_focusable, f.should_autocomplete, f.role,
-               f.text_direction));
+               f.text_direction, f.options));
 }
 
 }  // namespace
+
+bool operator==(const SelectOption& lhs, const SelectOption& rhs) {
+  return std::tie(lhs.value, lhs.content) == std::tie(rhs.value, rhs.content);
+}
+
+bool operator!=(const SelectOption& lhs, const SelectOption& rhs) {
+  return !(lhs == rhs);
+}
 
 Section::Section() = default;
 Section::Section(const Section& section) = default;
@@ -308,7 +313,7 @@ void Section::SetPrefixToCreditCard() {
 }
 
 bool Section::SetPrefixFromAutocomplete(Autocomplete autocomplete) {
-  if (autocomplete.section.empty() && autocomplete.mode == HTML_MODE_NONE)
+  if (autocomplete.section.empty() && autocomplete.mode == HtmlFieldMode::kNone)
     return false;
   prefix_ = std::move(autocomplete);
   return true;
@@ -325,6 +330,8 @@ void Section::SetPrefixFromFieldIdentifier(
 }
 
 std::string Section::ToString() const {
+  constexpr char kDefaultSection[] = "-default";
+
   std::string section_name;
   if (const Autocomplete* autocomplete = absl::get_if<Autocomplete>(&prefix_)) {
     // To prevent potential section name collisions, append `kDefaultSection`
@@ -333,7 +340,7 @@ std::string Section::ToString() const {
     // street-address" would have the same prefix.
     section_name =
         autocomplete->section +
-        (autocomplete->mode != HTML_MODE_NONE
+        (autocomplete->mode != HtmlFieldMode::kNone
              ? "-" + std::string(HtmlFieldModeToStringPiece(autocomplete->mode))
              : kDefaultSection);
   } else if (const FieldIdentifier* f =
@@ -348,6 +355,9 @@ std::string Section::ToString() const {
   }
 
   section_name = section_name.empty() ? kDefaultSection : section_name;
+
+  // TODO(1153539): Remove `FieldTypeGroupSuffix` completely when the sectioning
+  // is redesigned.
   switch (field_type_group_) {
     case FieldTypeGroupSuffix::kNoGroup:
       return section_name;
@@ -357,6 +367,7 @@ std::string Section::ToString() const {
       return section_name + "-cc";
   }
   NOTREACHED();
+  return "";
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const Section& section) {
@@ -427,6 +438,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.name);
   pickle->WriteString16(field_data.value);
   pickle->WriteString(field_data.form_control_type);
+  // We don't serialize the `parsed_autocomplete`. See http://crbug.com/1353392.
   pickle->WriteString(field_data.autocomplete_attribute);
   pickle->WriteUInt64(field_data.max_length);
   pickle->WriteBool(field_data.is_autofilled);
@@ -591,6 +603,11 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "value='" << field.value << "' "
             << "control='" << field.form_control_type << "' "
             << "autocomplete='" << field.autocomplete_attribute << "' "
+            << "parsed_autocomplete='"
+            << (field.parsed_autocomplete
+                    ? field.parsed_autocomplete->ToString()
+                    : "")
+            << "' "
             << "placeholder='" << field.placeholder << "' "
             << "max_length=" << field.max_length << " "
             << "css_classes='" << field.css_classes << "' "
@@ -628,6 +645,9 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {
   buffer << Tr{} << "Label:" << truncated_label;
   buffer << Tr{} << "Form control type:" << field.form_control_type;
   buffer << Tr{} << "Autocomplete attribute:" << field.autocomplete_attribute;
+  buffer << Tr{} << "Parsed autocomplete attribute:"
+         << (field.parsed_autocomplete ? field.parsed_autocomplete->ToString()
+                                       : "");
   buffer << Tr{} << "Aria label:" << field.aria_label;
   buffer << Tr{} << "Aria description:" << field.aria_description;
   buffer << Tr{} << "Section:" << field.section;

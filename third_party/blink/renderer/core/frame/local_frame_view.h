@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -508,8 +509,12 @@ class CORE_EXPORT LocalFrameView final
   bool DefaultAllowDeferredShaping() const {
     return default_allow_deferred_shaping_;
   }
+  // TODO(crbug.com/1259085): Stop using the word 'Lock' for DeferredShaping.
   void RequestToLockDeferred(Element& element);
   bool LockDeferredRequested(Element& element) const;
+  void UnregisterShapingDeferredElement(Element& element);
+  size_t ReshapeAllDeferred();
+  void ScheduleReshapeAllDeferred();
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -798,6 +803,11 @@ class CORE_EXPORT LocalFrameView final
            RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled();
   }
 
+  void AddPendingTransformUpdate(LayoutObject& object);
+  void RemovePendingTransformUpdate(const LayoutObject& object);
+  void UpdateAllPendingTransforms();
+  void ClearAllPendingTransformUpdates();
+
  protected:
   void FrameRectsChanged(const gfx::Rect&) override;
   void SelfVisibleChanged() override;
@@ -1042,6 +1052,7 @@ class CORE_EXPORT LocalFrameView final
   bool AnyFrameIsPrintingOrPaintingPreview();
 
   DarkModeFilter& EnsureDarkModeFilter();
+  void ReshapeAllDeferredInternal();
 
   LayoutSize size_;
 
@@ -1050,7 +1061,8 @@ class CORE_EXPORT LocalFrameView final
 
   Member<LocalFrame> frame_;
 
-  HeapVector<Member<Element>> deferred_to_be_locked_;
+  TaskHandle reshaping_task_handle_;
+  HeapHashSet<Member<Element>> deferred_to_be_locked_;
   LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
   LayoutUnit current_minimum_top_;
   bool allow_deferred_shaping_ = false;
@@ -1151,8 +1163,9 @@ class CORE_EXPORT LocalFrameView final
   bool needs_focus_on_fragment_;
 
   // True if the frame has deferred commits at least once per document load.
-  // We won't defer again for the same document.
-  bool have_deferred_commits_ = false;
+  // We won't defer again for the same document. This is only meaningful for
+  // main frames.
+  bool have_deferred_main_frame_commits_ = false;
 
   bool visual_viewport_or_overlay_needs_repaint_ = false;
 
@@ -1201,6 +1214,8 @@ class CORE_EXPORT LocalFrameView final
 
   // Filter used for inverting the document background for forced darkening.
   std::unique_ptr<DarkModeFilter> dark_mode_filter_;
+
+  Member<HeapHashSet<Member<LayoutObject>>> pending_transform_updates_;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

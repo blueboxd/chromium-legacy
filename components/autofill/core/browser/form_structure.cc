@@ -1023,7 +1023,7 @@ void FormStructure::LogQualityMetrics(
     if (field->previously_autofilled())
       num_edited_autofilled_fields++;
 
-    if (type.html_type() == HTML_TYPE_ONE_TIME_CODE)
+    if (type.html_type() == HtmlFieldType::kOneTimeCode)
       has_observed_one_time_code_field = true;
 
     // The form was not perfectly filled if a non-empty field was not
@@ -1216,8 +1216,8 @@ void FormStructure::LogQualityMetricsBasedOnAutocomplete(
   const AutofillMetrics::QualityMetricType metric_type =
       AutofillMetrics::TYPE_AUTOCOMPLETE_BASED;
   for (const auto& field : fields_) {
-    if (field->html_type() != HTML_TYPE_UNSPECIFIED &&
-        field->html_type() != HTML_TYPE_UNRECOGNIZED) {
+    if (field->html_type() != HtmlFieldType::kUnspecified &&
+        field->html_type() != HtmlFieldType::kUnrecognized) {
       AutofillMetrics::LogHeuristicPredictionQualityMetrics(
           form_interactions_ukm_logger, *this, *field, metric_type);
       AutofillMetrics::LogServerPredictionQualityMetrics(
@@ -1254,8 +1254,8 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   has_author_specified_upi_vpa_hint_ = false;
   for (const std::unique_ptr<AutofillField>& field : fields_) {
     field->section = Section();
-    auto parsing_result = ParseAutocompleteAttribute(*field);
-    if (!parsing_result)
+
+    if (!field->parsed_autocomplete)
       continue;
 
     // A parsable autocomplete value was specified. Even an invalid field_type
@@ -1263,22 +1263,23 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     // attribute like autocomplete="other" on a field to disable all Autofill
     // heuristics for the form.
     has_author_specified_types_ = true;
-    if (parsing_result->field_type == HTML_TYPE_UNSPECIFIED)
+    if (field->parsed_autocomplete->field_type == HtmlFieldType::kUnspecified)
       continue;
 
     // TODO(crbug.com/702223): Flesh out support for UPI-VPA.
-    if (parsing_result->field_type == HTML_TYPE_UPI_VPA) {
+    if (field->parsed_autocomplete->field_type == HtmlFieldType::kUpiVpa) {
       has_author_specified_upi_vpa_hint_ = true;
-      parsing_result->field_type = HTML_TYPE_UNRECOGNIZED;
+      field->parsed_autocomplete->field_type = HtmlFieldType::kUnrecognized;
     }
 
     // Compute a section name based on the specified hints and apply the result.
     if (field->section.SetPrefixFromAutocomplete(
-            {.section = parsing_result->section,
-             .mode = parsing_result->mode})) {
+            {.section = field->parsed_autocomplete->section,
+             .mode = field->parsed_autocomplete->mode})) {
       has_author_specified_sections_ = true;
     }
-    field->SetHtmlType(parsing_result->field_type, parsing_result->mode);
+    field->SetHtmlType(field->parsed_autocomplete->field_type,
+                       field->parsed_autocomplete->mode);
   }
   was_parsed_for_autocomplete_attributes_ = true;
 }
@@ -2465,11 +2466,11 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     if (field->server_type_prediction_is_override())
       server_type += " (manual override)";
     auto html_type_description =
-        field->html_type() != HTML_TYPE_UNSPECIFIED
+        field->html_type() != HtmlFieldType::kUnspecified
             ? base::StrCat(
                   {", html: ", FieldTypeToStringPiece(field->html_type())})
             : "";
-    if (field->html_type() == HTML_TYPE_UNRECOGNIZED &&
+    if (field->html_type() == HtmlFieldType::kUnrecognized &&
         (!base::FeatureList::IsEnabled(
              features::kAutofillServerTypeTakesPrecedence) ||
          !field->server_type_prediction_is_override())) {
@@ -2542,11 +2543,11 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     if (field->server_type_prediction_is_override())
       server_type += " (manual override)";
     auto html_type_description =
-        field->html_type() != HTML_TYPE_UNSPECIFIED
+        field->html_type() != HtmlFieldType::kUnspecified
             ? base::StrCat(
                   {", html: ", FieldTypeToStringPiece(field->html_type())})
             : "";
-    if (field->html_type() == HTML_TYPE_UNRECOGNIZED &&
+    if (field->html_type() == HtmlFieldType::kUnrecognized &&
         (!base::FeatureList::IsEnabled(
              features::kAutofillServerTypeTakesPrecedence) ||
          !field->server_type_prediction_is_override())) {

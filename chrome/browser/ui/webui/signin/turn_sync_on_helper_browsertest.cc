@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -47,7 +49,8 @@ class Delegate : public TurnSyncOnHelper::Delegate {
   using CallbackVariant =
       absl::variant<signin::SigninChoiceCallback, SyncConfirmationCallback>;
 
-  explicit Delegate(Choices choices) : choices_(choices) {}
+  explicit Delegate(Choices choices)
+      : choices_(choices), run_loop_(std::make_unique<base::RunLoop>()) {}
   ~Delegate() override = default;
 
   // TurnSyncOnHelper::Delegate:
@@ -79,6 +82,15 @@ class Delegate : public TurnSyncOnHelper::Delegate {
 
   base::WeakPtr<Delegate> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  void WaitUntilBlock() {
+    DCHECK(run_loop_);
+    run_loop_->Run();
+
+    // After the wait ends, reset the `run_loop_` to wait for the next choice.
+    run_loop_.reset();
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   // Call this function when the delegate is blocked, with new `choices` that
@@ -152,12 +164,15 @@ class Delegate : public TurnSyncOnHelper::Delegate {
 
     blocking_step_ = step;
     blocking_callback_ = std::move(callback);
+    DCHECK(run_loop_);
+    run_loop_->Quit();
   }
 
   Choices choices_;
 
   BlockingStep blocking_step_ = BlockingStep::kNone;
   CallbackVariant blocking_callback_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   base::WeakPtrFactory<Delegate> weak_ptr_factory_{this};
 };
@@ -189,10 +204,10 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest,
   ASSERT_EQ(primary_account_id, identity_manager()->GetPrimaryAccountId(
                                     signin::ConsentLevel::kSignin));
 
+  base::RunLoop run_loop;
   Delegate::Choices choices = {.sync_optin_choice = absl::nullopt};
   auto owned_delegate = std::make_unique<Delegate>(choices);
   base::WeakPtr<Delegate> delegate = owned_delegate->GetWeakPtr();
-  base::RunLoop run_loop;
   new TurnSyncOnHelper(
       profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
@@ -200,6 +215,7 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest,
       TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
       std::move(owned_delegate), run_loop.QuitClosure());
 
+  delegate->WaitUntilBlock();
   EXPECT_EQ(Delegate::BlockingStep::kSyncConfirmation,
             delegate->blocking_step());
   EXPECT_EQ(signin::ConsentLevel::kSync,
@@ -211,8 +227,8 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest,
   delegate->UpdateChoicesAndAdvanceFlow(choices);
 
   // The flow should complete and destroy the delegate and TurnSyncOnHelper.
-  EXPECT_FALSE(delegate);
   run_loop.Run();
+  EXPECT_FALSE(delegate);
 
   // Account consistency (via `SigninManager`) should kick in via a posted task
   // and reset the PrimaryAccount.

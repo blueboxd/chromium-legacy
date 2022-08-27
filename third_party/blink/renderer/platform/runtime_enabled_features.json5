@@ -356,10 +356,6 @@
       status: "stable",
     },
     {
-      name: "ClickRetargetting",
-      status: "experimental",
-    },
-    {
       name: "ClientHintsMetaEquivDelegateCH",
       status: "stable",
     },
@@ -1277,7 +1273,7 @@
       // crbug.com/1346221
       name: "LayoutNGFrameSet",
       depends_on: ["LayoutNG"],
-      status: "test",
+      status: "stable",
     },
     {
       // Block fragmentation support in the grid layout algorithm.

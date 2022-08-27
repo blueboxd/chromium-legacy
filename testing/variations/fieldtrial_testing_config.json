@@ -1475,30 +1475,6 @@
             ]
         }
     ],
-    "AutofillRemoveInaccessibleProfileValues": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "remove_inaccessible_fields_on_startup": "false"
-                    },
-                    "enable_features": [
-                        "AutofillRemoveInaccessibleProfileValues"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillRemoveInvalidPhoneNumberOnImport": [
         {
             "platforms": [
@@ -1599,43 +1575,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillSectionUponRedundantNameInfo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillServerTypeTakesPrecedence": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillServerTypeTakesPrecedence"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillServerTypeTakesPrecedenceOnWebView": [
-        {
-            "platforms": [
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillServerTypeTakesPrecedence"
                     ]
                 }
             ]
@@ -3263,11 +3202,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Handles_20220118",
+                    "name": "Handles_20220826",
                     "enable_features": [
                         "ContextualTriggersSelectionHandles"
                     ],
                     "disable_features": [
+                        "ContextualTriggersSelectionMenu",
                         "ContextualTriggersSelectionSize"
                     ]
                 }
@@ -6441,6 +6381,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "ios",
                 "linux",
@@ -8064,6 +8005,27 @@
             ]
         }
     ],
+    "ReduceCpuUtilization": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReduceCpuUtilization"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReduceOpsTaskSplitting": [
         {
             "platforms": [
@@ -8189,6 +8151,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -9935,21 +9898,6 @@
                     },
                     "enable_features": [
                         "UseMultipleOverlays"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UseNativeThreadPool": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseNativeThreadPool"
                     ]
                 }
             ]

@@ -91,7 +91,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     kDragInProgress,
     kDragCancelInProgress,
     kDragCompleteInProgress,
-    kDragAppListInProgress,
     kDragHomeToOverviewInProgress,
     kFlingBubbleLauncherInProgress,
   };
@@ -354,10 +353,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   DragStatus drag_status_for_test() const { return drag_status_; }
 
-  bool IsDraggingApplist() const {
-    return drag_status_ == kDragAppListInProgress;
-  }
-
   // Gets the target HotseatState based on the current state of HomeLauncher,
   // Overview, Shelf, and any active gestures.
   // TODO(manucornet): Move this to the hotseat class.
@@ -547,8 +542,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Drag related functions, utilized by both gesture drag and mouse drag:
   bool IsDragAllowed() const;
-  bool StartAppListDrag(const ui::LocatedEvent& event_in_screen,
-                        float scroll_y_hint);
   bool StartShelfDrag(const ui::LocatedEvent& event_in_screen,
                       const gfx::Vector2dF& scroll_hint);
   // Sets the Hotseat up to be dragged, if applicable.
@@ -557,12 +550,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                   float scroll_x,
                   float scroll_y);
   void CompleteDrag(const ui::LocatedEvent& event_in_screen);
-  void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
   void CompleteDragHomeToOverview(const ui::LocatedEvent& event_in_screen);
   void CancelDrag(absl::optional<ShelfWindowDragResult> window_drag_result);
   void CompleteDragWithChangedVisibility();
-
-  float GetAppListBackgroundOpacityOnShelfOpacity();
 
   // Returns true if the gesture is swiping up on a hidden shelf or swiping down
   // on a visible shelf; other gestures should not change shelf visibility.
@@ -674,17 +664,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // hotseat.
   int last_drag_velocity_ = 0;
 
-  // Tracks the amount of launcher that above the shelf bottom during dragging.
-  float launcher_above_shelf_bottom_amount_ = 0.f;
-
   // Manage the auto-hide state during drag.
   ShelfAutoHideState drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
-
-  // Whether the feature ProductivityLauncher is enabled.
-  const bool is_productivity_launcher_enabled_;
 
   // Pretarget handler responsible for hiding the hotseat.
   std::unique_ptr<ui::EventHandler> hotseat_event_handler_;
@@ -701,12 +685,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
   ShelfBackgroundType shelf_background_type_ = ShelfBackgroundType::kDefaultBg;
-
-  // Shelf will become transparent if launcher is opened. Stores the shelf
-  // background type before open the launcher when start to drag the launcher
-  // from shelf.
-  ShelfBackgroundType shelf_background_type_before_drag_ =
-      ShelfBackgroundType::kDefaultBg;
 
   ScopedSessionObserver scoped_session_observer_{this};
   base::ScopedObservation<WallpaperController, WallpaperControllerObserver>

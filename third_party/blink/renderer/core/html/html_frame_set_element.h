@@ -43,7 +43,7 @@ class HTMLFrameSetElement final : public HTMLElement {
   // HTMLElement override
   bool IsHTMLFrameSetElement() const override { return true; }
 
-  bool HasFrameBorder() const { return frameborder_; }
+  bool HasFrameBorder() const;
   bool NoResize() const;
 
   wtf_size_t TotalRows() const {
@@ -57,7 +57,7 @@ class HTMLFrameSetElement final : public HTMLElement {
   void DirtyEdgeInfo();
   void DirtyEdgeInfoAndFullPaintInvalidation();
 
-  bool HasBorderColor() const { return border_color_set_; }
+  bool HasBorderColor() const;
 
   const Vector<HTMLDimension>& RowLengths() const { return row_lengths_; }
   const Vector<HTMLDimension>& ColLengths() const { return col_lengths_; }
@@ -145,9 +145,6 @@ class HTMLFrameSetElement final : public HTMLElement {
 
   int border_;
   bool border_set_;
-
-  bool border_color_set_;
-
   bool frameborder_;
   bool frameborder_set_;
   bool is_edge_info_dirty_ = true;

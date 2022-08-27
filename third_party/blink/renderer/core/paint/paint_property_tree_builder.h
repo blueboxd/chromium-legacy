@@ -258,8 +258,7 @@ struct PaintPropertyTreeBuilderContext final {
 
   // This is always recalculated in PaintPropertyTreeBuilder::UpdateForSelf()
   // which overrides the inherited value.
-  CompositingReasons direct_compositing_reasons =
-      CompositingReason::kNoCompositingReason;
+  CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 };
 
 class VisualViewportPaintPropertyTreeBuilder {
@@ -368,6 +367,10 @@ class PaintPropertyTreeBuilder {
     return properties_changed_.Max() > PaintPropertyChangeType::kUnchanged;
   }
 
+  static void DirectlyUpdateTransformMatrix(const LayoutObject& object);
+
+  static bool ScheduleDeferredTransformNodeUpdate(LayoutObject& object);
+
  private:
   ALWAYS_INLINE void InitFragmentPaintProperties(
       FragmentData&,
@@ -403,6 +406,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
 
   bool IsInNGFragmentTraversal() const { return pre_paint_info_; }
+  static bool CanDoDeferredTransformNodeUpdate(const LayoutObject& object);
 
   const LayoutObject& object_;
   NGPrePaintInfo* pre_paint_info_;

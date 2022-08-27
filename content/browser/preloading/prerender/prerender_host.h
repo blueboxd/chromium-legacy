@@ -55,16 +55,6 @@ class WebContentsImpl;
 // is owned by PrerenderHostRegistry.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called on the page activation.
-    virtual void OnActivated() {}
-
-    // Called from the PrerenderHost's destructor. The observer should drop any
-    // reference to the host.
-    virtual void OnHostDestroyed() {}
-  };
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class FinalStatus {
@@ -118,7 +108,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. This enum corresponds to
   // PrerenderActivationNavigationParamsMatch in
-  // tools/metrics/histograms/test_data/enums.xml
+  // tools/metrics/histograms/enums.xml
   enum class ActivationNavigationParamsMatch {
     kOk = 0,
     kInitiatorFrameToken = 1,
@@ -143,9 +133,19 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kInitiatorOriginTrialFeature = 20,
     kHrefTranslate = 21,
     kIsHistoryNavigationInNewChildFrame = 22,
-    kReferrerPolicy = 23,
+    // kReferrerPolicy = 23,  Obsolete
     kRequestDestination = 24,
     kMaxValue = kRequestDestination,
+  };
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called on the page activation.
+    virtual void OnActivated() {}
+
+    // Called from the PrerenderHost's destructor. The observer should drop any
+    // reference to the host.
+    virtual void OnHostDestroyed(PrerenderHost::FinalStatus status) {}
   };
 
   // Returns the PrerenderHost that the given `frame_tree_node` is in, if it is

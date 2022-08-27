@@ -404,8 +404,6 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  // TODO(crbug.com/1342408): remove this after we confirm the timer behavior.
-  DCHECK_LE(timing->respond_with_settled_time, base::TimeTicks::Now());
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
@@ -488,17 +486,6 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   response_head_->load_timing.receive_headers_end =
       response_head_->load_timing.receive_headers_start;
   response_source_ = response->response_source;
-
-  // TODO(crbug.com/1342408): remove the following DCHECK if this is not
-  // in the culprit path.
-  // This DCHECK is for ensuring that the condition met before
-  // `ThrottlingURLLoader::OnReceiveResponse` is called via mojom.
-  // Expecting this is called by `ServiceWorkerSubresourceLoader::OnResponse`
-  // or `ServiceWorkerSubresourceLoader::OnResponseStream`,
-  // and `response_head_->load_timing.service_worker_respond_with_settled`
-  // has been set in `UpdateResponseTiming`.
-  DCHECK_LE(response_head_->load_timing.service_worker_respond_with_settled,
-            response_head_->response_start);
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.

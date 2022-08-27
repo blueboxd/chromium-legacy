@@ -360,7 +360,7 @@ const base::Feature kAutofillHighlightOnlyChangedValuesInPreviewMode{
 // granted precedence over html type attributes.
 // TODO(crbug.com/1170384) Remove once launched
 const base::Feature kAutofillServerTypeTakesPrecedence{
-    "AutofillServerTypeTakesPrecedence", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillServerTypeTakesPrecedence", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
@@ -463,7 +463,7 @@ const base::Feature kAutofillRationalizeStreetAddressAndAddressLine{
 // TODO(crbug.com/1299435): Cleanup when launched.
 const base::Feature kAutofillRemoveInaccessibleProfileValues{
     "AutofillRemoveInaccessibleProfileValues",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 // If enabled, setting-inaccessible field types are additionally removed from
 // existing profiles on startup. These can exit in profile imported prior to
 // AutofillRemoveInaccessibleProfileValues.

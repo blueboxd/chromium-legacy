@@ -12,7 +12,7 @@
 #import "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/signin/public/identity_manager/tribool.h"
-#import "ios/chrome/browser/chrome_paths.h"
+#import "ios/chrome/browser/paths/paths.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,7 +38,7 @@ void RecordSentinelErrorHistogram(SigninIOSDeviceRestoreSentinelError error) {
 }
 
 // Creates a sentinel file asynchronously, and set ExcludeFromBackupFlag
-// according to |exclude_from_backup|.
+// according to `exclude_from_backup`.
 void CreateSentinelFileAsync(const base::FilePath sentinel_path,
                              bool exclude_from_backup) {
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
@@ -80,7 +80,7 @@ const base::FilePath::CharType kSentinelThatIsBackedUp[] =
 const base::FilePath::CharType kSentinelThatIsNotBackedUp[] =
     FILE_PATH_LITERAL("NotBackedUpSentinel");
 
-// Computes the full path for a sentinel file with name |sentinel_name|.
+// Computes the full path for a sentinel file with name `sentinel_name`.
 // This method can return an emtpy string if failed.
 base::FilePath PathForSentinel(const base::FilePath::CharType* sentinel_name) {
   base::FilePath user_data_path;

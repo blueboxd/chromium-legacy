@@ -608,6 +608,10 @@ extern const char kAccessibilityOSSettingsVisibilityDescription[];
 extern const char kAccessibilityServiceName[];
 extern const char kAccessibilityServiceDescription[];
 
+extern const char kExperimentalAccessibilityColorEnhancementSettingsName[];
+extern const char
+    kExperimentalAccessibilityColorEnhancementSettingsDescription[];
+
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
@@ -1105,6 +1109,9 @@ extern const char kOmniboxModernizeVisualUpdateDescription[];
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
 
+extern const char kOmniboxMostVisitedTilesDynamicSpacingName[];
+extern const char kOmniboxMostVisitedTilesDynamicSpacingDescription[];
+
 extern const char kOmniboxMostVisitedTilesTitleWrapAroundName[];
 extern const char kOmniboxMostVisitedTilesTitleWrapAroundDescription[];
 
@@ -1161,6 +1168,9 @@ extern const char kOmniboxZeroSuggestPrefetchingOnSRPDescription[];
 
 extern const char kOmniboxZeroSuggestPrefetchingOnWebName[];
 extern const char kOmniboxZeroSuggestPrefetchingOnWebDescription[];
+
+extern const char kOmniboxZeroSuggestInMemoryCachingName[];
+extern const char kOmniboxZeroSuggestInMemoryCachingDescription[];
 
 extern const char kOmniboxMaxZeroSuggestMatchesName[];
 extern const char kOmniboxMaxZeroSuggestMatchesDescription[];
@@ -1860,6 +1870,9 @@ extern const char kAppMenuMobileSiteOptionDescription[];
 extern const char kBackGestureRefactorAndroidName[];
 extern const char kBackGestureRefactorAndroidDescription[];
 
+extern const char kBindingManagerConnectionLimitName[];
+extern const char kBindingManagerConnectionLimitDescription[];
+
 extern const char kBindingManagerUseNotPerceptibleBindingName[];
 extern const char kBindingManagerUseNotPerceptibleBindingDescription[];
 
@@ -2103,6 +2116,8 @@ extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
 extern const char kQueryTilesNTPName[];
 extern const char kQueryTilesNTPDescription[];
+extern const char kQueryTilesOnStartName[];
+extern const char kQueryTilesOnStartDescription[];
 extern const char kQueryTilesSingleTierName[];
 extern const char kQueryTilesSingleTierDescription[];
 extern const char kQueryTilesEnableQueryEditingName[];
@@ -2989,6 +3004,9 @@ extern const char kQuickAnswersForMoreLocalesDescription[];
 
 extern const char kEapGtcWifiAuthenticationName[];
 extern const char kEapGtcWifiAuthenticationDescription[];
+
+extern const char kAudioPeripheralVolumeGranularityName[];
+extern const char kAudioPeripheralVolumeGranularityDescription[];
 
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];

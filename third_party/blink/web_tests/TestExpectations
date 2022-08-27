@@ -82,6 +82,10 @@ crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 # Tested by paint/background/root-element-background-transparency.html for now.
 external/wpt/css/compositing/root-element-background-transparency.html [ Failure ]
 
+# Deferred Shaping
+# The following test fails due to scrollable area size difference.
+external/wpt/css/CSS2/backgrounds/background-attachment-004.xht [ Failure ]
+
 # ====== Synchronous, budgeted HTML parser tests from here ========================
 # See crbug.com/1254921 for details.
 # These tests either started failing outright, or became flaky, when the new HTML
@@ -95,10 +99,6 @@ crbug.com/1254933 css3/filters/filterRegions.html [ Failure ]
 
 # Script preloaded: No
 crbug.com/1254940 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-redirect.html [ Failure ]
-
-# Test fails:
-crbug.com/1254942 http/tests/security/subresourceIntegrity/revalidation-failed-script.html [ Failure Pass ]
-crbug.com/1254942 http/tests/security/subresourceIntegrity/empty-after-revalidate-script.html [ Failure Pass ]
 
 # Two paint failures:
 crbug.com/1254943 paint/invalidation/overflow/resize-child-within-overflow.html [ Failure ]
@@ -698,6 +698,8 @@ crbug.com/882975 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-z
 crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure Timeout ]
 
 crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
+
+crbug.com/1046784 http/tests/devtools/elements/styles-3/styles-disable-then-delete.js [ Skip ]
 
 # Subpixel rounding differences that are incorrect.
 crbug.com/997202 compositing/overflow/scaled-overflow.html [ Failure ]
@@ -1622,9 +1624,6 @@ crbug.com/1347984 fragmentation/table-row-dimensions.html [ Failure ]
 ### Tests failing with LayoutNGFlexFragmentation enabled:
 crbug.com/660611 fast/multicol/flexbox/doubly-nested-with-zero-width-flexbox-and-forced-break-crash.html [ Skip ]
 
-### Tests failing with LayoutNGFrameSet enabled:
-crbug.com/1346221 printing/frameset.html [ Failure ]
-
 ### Tests failing with LayoutNGTableFragmentation enabled:
 crbug.com/1078927 external/wpt/css/CSS2/floats-clear/clearance-containing-fragmented-float-crash.html [ Crash Failure ]
 crbug.com/1295905 [ Mac11-arm64 ] external/wpt/css/css-break/table/sections-and-captions-mixed-order.html [ Failure ]
@@ -1691,6 +1690,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-09
 crbug.com/958381 [ Mac ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
 crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
 crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
+
+crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 # TablesNG ends
 
@@ -1834,6 +1835,8 @@ crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-001.html [ Fai
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-002.html [ Failure ]
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-003.html [ Failure ]
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-004.html [ Failure ]
+crbug.com/1353352 fast/css3-text/css3-text-decoration/text-decoration-line-grammar-error.html [ Failure ]
+crbug.com/1353352 fast/css3-text/css3-text-decoration/text-decoration-line-spelling-error.html [ Failure ]
 crbug.com/1024156 external/wpt/css/css-pseudo/highlight-currentcolor-root-implicit-default-001.html [ Failure ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-currentcolor-root-implicit-default-001.html [ Pass ]
 crbug.com/1147859 [ Mac ] external/wpt/css/css-pseudo/highlight-currentcolor-painting-properties-001.html [ Failure ]
@@ -3261,6 +3264,10 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10.20h2 ] wpt_internal/orientation-event/motion/page-visibility.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-conditional/at-supports-font-format-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-conditional/at-supports-font-tech-001.html [ Failure ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-zero-intersection-area.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/document-transition/wpt_internal/document-transition/commit-timeout-crash.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-preferred.html [ Failure ]
 crbug.com/626703 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-preferred.html [ Failure ]
@@ -3786,6 +3793,7 @@ crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-nobackground-00
 crbug.com/481431 external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
 crbug.com/829028 [ Mac ] external/wpt/css/css-multicol/multicol-list-item-004.html [ Failure ]
 crbug.com/829028 [ Mac ] external/wpt/css/css-multicol/multicol-list-item-005.html [ Failure ]
+crbug.com/1356561 external/wpt/css/css-multicol/multicol-overflow-transform-001.html [ Failure Pass ]
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]
@@ -6883,7 +6891,6 @@ crbug.com/1310202 [ Win ] wpt_internal/navigation-api/ordering-and-transition/na
 
 # Sheriff 2022-08-12
 crbug.com/1352248 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/overlay-popup-non-ad-followed-by-ad.html [ Failure Pass ]
-crbug.com/1352543 [ Linux ] http/tests/devtools/elements/styles-3/styles-disable-then-delete.js [ Failure Pass ]
 crbug.com/1352545 [ Linux ] external/wpt/html/cross-origin-opener-policy/coop-sandbox-redirects-cuts-opener.https.html [ Failure Pass ]
 crbug.com/1352545 [ Linux ] external/wpt/html/interaction/focus/chrome-object-tab-focus-bug.html [ Failure Pass ]
 crbug.com/1352566 [ Mac ] external/wpt/html/browsers/browsing-the-web/history-traversal/event-order/before-load-hash-twice.html [ Failure Pass ]
@@ -6902,4 +6909,14 @@ crbug.com/1354433 [ Mac ] external/wpt/html/browsers/the-window-object/window-pr
 
 # Sheriff 2022-08-24
 crbug.com/1356118 [ Mac ] virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Linux ] virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 crbug.com/1356118 [ Mac ] virtual/async-script-scheduling-finished-parsing/wpt_internal/async-script-scheduling/execution-order.sub.html [ Failure Pass ]
+crbug.com/1356118 [ Linux ] virtual/async-script-scheduling-finished-parsing/wpt_internal/async-script-scheduling/execution-order.sub.html [ Failure Pass ]
+
+# Sheriff 2022-08-26
+crbug.com/1356118 [ Mac ] external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Mac ] virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Mac ] virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Linux ] external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Linux ] virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+crbug.com/1356118 [ Linux ] virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]

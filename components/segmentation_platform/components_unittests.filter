@@ -2,6 +2,7 @@ ConfigParserTest.*
 CustomInputProcessorTest.*
 DatabaseMaintenanceImplTest.*
 DefaultModelManagerTest.*
+DummyModelProviderFactoryImplTest.*
 DummySegmentationPlatformServiceTest.*
 FailedUkmDatabaseTest.*
 FeatureAggregatorImplTest.*
@@ -9,11 +10,13 @@ FeatureListQueryProcessorTest.*
 FeedUserModelTest.*
 HistogramSignalHandlerTest.*
 HistoryDelegateImplTest.*
+IntentionalUserModelTest.*
 LowUserEngagementModelTest.*
 MetadataUtilsTest.*
 ModelExecutionManagerTest.*
 ModelExecutionSchedulerTest.*
 ModelExecutorTest.*
+ModelProviderFactoryImplTest.*
 OptimizationGuideSegmentationModelProviderTest.*
 PriceTrackingActionModelTest.*
 PriceTrackingInputDelegateTest.*

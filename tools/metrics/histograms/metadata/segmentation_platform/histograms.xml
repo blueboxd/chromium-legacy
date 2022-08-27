@@ -27,8 +27,12 @@ chromium-metrics-reviews@google.com.
   <variant name="ChromeStartAndroid"/>
   <variant name="CrossDeviceUser"/>
   <variant name="FeedUserSegment"/>
+  <variant name="FrequentFeatureUser"/>
+  <variant name="IntentionalUser"/>
   <variant name="PowerUserSegment"/>
   <variant name="QueryTiles"/>
+  <variant name="ResumeHeavyUser"/>
+  <variant name="ShoppingUser"/>
 </variants>
 
 <variants name="ModelExecutionStatus">
@@ -44,8 +48,12 @@ chromium-metrics-reviews@google.com.
   <variant name="CrossDeviceUser"/>
   <variant name="DummyFeature"/>
   <variant name="FeedUserSegment"/>
+  <variant name="FrequentFeatureUser"/>
+  <variant name="IntentionalUser"/>
   <variant name="PowerUser"/>
   <variant name="QueryTiles"/>
+  <variant name="ResumeHeavyUser"/>
+  <variant name="ShoppingUser"/>
 </variants>
 
 <variants name="SegmentationModel">
@@ -55,10 +63,14 @@ chromium-metrics-reviews@google.com.
   <variant name="CrossDeviceUser"/>
   <variant name="Dummy"/>
   <variant name="FeedUserSegment"/>
+  <variant name="FrequentFeatureUserSegment"/>
+  <variant name="IntentionalUser"/>
   <variant name="NewTab"/>
   <variant name="PowerUserSegment"/>
   <variant name="QueryTiles"/>
+  <variant name="ResumeHeavyUserSegment"/>
   <variant name="Share"/>
+  <variant name="ShoppingUser"/>
   <variant name="Unknown"/>
   <variant name="Voice"/>
 </variants>

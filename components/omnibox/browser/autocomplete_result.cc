@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -426,7 +427,7 @@ void AutocompleteResult::GroupAndDemoteMatchesInGroups() {
     }
     any_matches_in_groups = true;
 
-    const SuggestionGroupId group_id = match.suggestion_group_id.value();
+    const omnibox::GroupId group_id = match.suggestion_group_id.value();
     if (suggestion_groups_map_.find(group_id) != suggestion_groups_map_.end()) {
       // Record suggestion group information into the additional_info field
       // for chrome://omnibox.
@@ -978,7 +979,7 @@ AutocompleteResult::GetMatchDedupComparators() const {
 }
 
 std::u16string AutocompleteResult::GetHeaderForSuggestionGroup(
-    SuggestionGroupId suggestion_group_id) const {
+    omnibox::GroupId suggestion_group_id) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
   return base::UTF8ToUTF16(it->second.group_config_info.header_text());
@@ -986,7 +987,7 @@ std::u16string AutocompleteResult::GetHeaderForSuggestionGroup(
 
 bool AutocompleteResult::IsSuggestionGroupHidden(
     PrefService* prefs,
-    SuggestionGroupId suggestion_group_id) const {
+    omnibox::GroupId suggestion_group_id) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
   if (!it->second.original_group_id.has_value()) {
@@ -1009,7 +1010,7 @@ bool AutocompleteResult::IsSuggestionGroupHidden(
 
 void AutocompleteResult::SetSuggestionGroupHidden(
     PrefService* prefs,
-    SuggestionGroupId suggestion_group_id,
+    omnibox::GroupId suggestion_group_id,
     bool hidden) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
@@ -1022,7 +1023,7 @@ void AutocompleteResult::SetSuggestionGroupHidden(
 }
 
 SuggestionGroupPriority AutocompleteResult::GetPriorityForSuggestionGroup(
-    SuggestionGroupId suggestion_group_id) const {
+    omnibox::GroupId suggestion_group_id) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
   return it->second.priority;

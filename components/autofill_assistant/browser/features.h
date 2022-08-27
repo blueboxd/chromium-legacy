@@ -5,9 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FEATURES_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FEATURES_H_
 
-namespace base {
-struct Feature;
-}
+#include "base/feature_list.h"
 
 namespace autofill_assistant {
 namespace features {
@@ -38,6 +36,7 @@ extern const base::Feature kAutofillAssistantUrlHeuristic4;
 extern const base::Feature kAutofillAssistantUrlHeuristic5;
 extern const base::Feature kAutofillAssistantUrlHeuristics;
 extern const base::Feature kAutofillAssistantVerifyGetActionsResponses;
+extern const base::Feature kAutofillAssistantCudFilterProfiles;
 
 }  // namespace features
 }  // namespace autofill_assistant

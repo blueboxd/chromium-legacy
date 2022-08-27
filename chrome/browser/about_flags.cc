@@ -3282,6 +3282,27 @@ const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam
+    kBindingManagerConnectionLimit_10_connections[] = {
+        {"max_connections", "10"}};
+const FeatureEntry::FeatureParam
+    kBindingManagerConnectionLimit_20_connections[] = {
+        {"max_connections", "20"}};
+const FeatureEntry::FeatureParam
+    kBindingManagerConnectionLimit_40_connections[] = {
+        {"max_connections", "40"}};
+const FeatureEntry::FeatureVariation
+    kBindingManagerConnectionLimitVariations[] = {
+        {"- 10 connections", kBindingManagerConnectionLimit_10_connections,
+         std::size(kBindingManagerConnectionLimit_10_connections), nullptr},
+        {"- 20 connections", kBindingManagerConnectionLimit_20_connections,
+         std::size(kBindingManagerConnectionLimit_20_connections), nullptr},
+        {"- 40 connections", kBindingManagerConnectionLimit_40_connections,
+         std::size(kBindingManagerConnectionLimit_40_connections), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4576,6 +4597,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-ntp", flag_descriptions::kQueryTilesNTPName,
      flag_descriptions::kQueryTilesNTPDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInNTP)},
+    {"query-tiles-on-start", flag_descriptions::kQueryTilesOnStartName,
+     flag_descriptions::kQueryTilesOnStartDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesOnStart)},
     {"query-tiles-single-tier", flag_descriptions::kQueryTilesSingleTierName,
      flag_descriptions::kQueryTilesSingleTierDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesSingleTier)},
@@ -4920,6 +4944,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDockedMagnifierResizingName,
      flag_descriptions::kDockedMagnifierResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kDockedMagnifierResizing)},
+    {"enable-experimental-accessibility-color-enhancement-settings",
+     flag_descriptions::kExperimentalAccessibilityColorEnhancementSettingsName,
+     flag_descriptions::
+         kExperimentalAccessibilityColorEnhancementSettingsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityColorEnhancementSettings)},
     {"enable-system-proxy-for-system-services",
      flag_descriptions::kSystemProxyForSystemServicesName,
      flag_descriptions::kSystemProxyForSystemServicesDescription, kOsCrOS,
@@ -5144,6 +5175,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEapGtcWifiAuthenticationName,
      flag_descriptions::kEapGtcWifiAuthenticationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEapGtcWifiAuthentication)},
+    {"audio-peripheral-volume-granularity",
+     flag_descriptions::kAudioPeripheralVolumeGranularityName,
+     flag_descriptions::kAudioPeripheralVolumeGranularityDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAudioPeripheralVolumeGranularity)},
     {"eche-swa", flag_descriptions::kEcheSWAName,
      flag_descriptions::kEcheSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWA)},
@@ -5187,6 +5222,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesName,
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
+
+    {"omnibox-most-visited-tiles-dynamic-spacing",
+     flag_descriptions::kOmniboxMostVisitedTilesDynamicSpacingName,
+     flag_descriptions::kOmniboxMostVisitedTilesDynamicSpacingDescription,
+     kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kMostVisitedTilesDynamicSpacing)},
 
     {"omnibox-remove-suggestion-header-capitalization",
      flag_descriptions::kOmniboxRemoveSuggestionHeaderCapitalizationName,
@@ -5261,6 +5301,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebName,
      flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetchingOnWeb)},
+
+    {"omnibox-zero-suggest-in-memory-caching",
+     flag_descriptions::kOmniboxZeroSuggestInMemoryCachingName,
+     flag_descriptions::kOmniboxZeroSuggestInMemoryCachingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestInMemoryCaching)},
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
@@ -9212,6 +9257,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableMerchantOptOutErrorDialog)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"binding-manager-connection-limit",
+     flag_descriptions::kBindingManagerConnectionLimitName,
+     flag_descriptions::kBindingManagerConnectionLimitDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(::features::kBindingManagerConnectionLimit,
+                                    kBindingManagerConnectionLimitVariations,
+                                    "BindingManagerConnectionLimit")},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

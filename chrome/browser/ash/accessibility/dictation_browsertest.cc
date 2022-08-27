@@ -885,6 +885,50 @@ IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartReplacePhrase) {
   WaitForRecognitionStopped();
 }
 
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartInsertBefore) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Insert "basketball and" before "tennis".
+  // Final text area value should be "I like basketball and tennis".
+  SendFinalResultAndWaitForTextAreaValue(
+      "バスケットボールとをテニスの前に挿入",
+      "私はバスケットボールとテニスが好きです。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDictate) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Select the entire text using the SMART_SELECT_BETWEEN command.
+  SendFinalResultAndWaitForSelectionChanged("私はから好きですまで選択");
+  // Dictate "congratulations", which should replace the selected text.
+  SendFinalResultAndWaitForTextAreaValue("おめでとう", "おめでとう。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDelete) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Select between "I" and "tennis" using the SMART_SELECT_BETWEEN command
+  // (roughly the first half of the text).
+  SendFinalResultAndWaitForSelectionChanged("私はからテニスまで選択");
+  // Perform the delete command.
+  SendFinalResultAndWaitForTextAreaValue("削除", "が好きです。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
 class DictationCommandsTest : public DictationTest {
  protected:
   DictationCommandsTest() {}

@@ -528,7 +528,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   CompositingReasons GetCompositingReasons() const {
     // TODO(pdr): Remove this.
-    return CompositingReason::kNoCompositingReason;
+    return CompositingReason::kNone;
   }
 
   void UpdateDescendantDependentFlags();
@@ -742,6 +742,11 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // the flag is set, the descendant-dependent tree walk as well.
   void MarkAncestorChainForFlagsUpdate(
       DescendantDependentFlagsUpdateFlag = kNeedsDescendantDependentUpdate);
+
+  // For transform updates we use a fast path that will not change
+  // NeedsPaintPropertyUpdate, but still need to set
+  // NeedsDescendantDependentFlagsUpdate to true, and will use this function.
+  void SetNeedsDescendantDependentFlagsUpdate();
 
   void UpdateTransform(const ComputedStyle* old_style,
                        const ComputedStyle& new_style);

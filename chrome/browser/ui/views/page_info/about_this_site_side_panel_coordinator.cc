@@ -17,11 +17,11 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "components/page_info/core/about_this_site_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/vector_icons.h"
 
 void ShowAboutThisSiteSidePanel(content::WebContents* web_contents,
                                 const content::OpenURLParams& params) {
@@ -59,14 +59,15 @@ void AboutThisSideSidePanelCoordinator::RegisterEntry(
   registered_but_not_shown_ = true;
 
   // Check if the view is already registered.
-  if (!registry->GetEntryForId(SidePanelEntry::Id::kAboutThisSite)) {
+  if (!registry->GetEntryForKey(
+          SidePanelEntry::Key(SidePanelEntry::Id::kAboutThisSite))) {
     const int icon_size = ChromeLayoutProvider::Get()->GetDistanceMetric(
         ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE);
     auto entry = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kAboutThisSite,
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE),
-        ui::ImageModel::FromVectorIcon(vector_icons::kGoogleColorIcon,
-                                       ui::kColorIcon, icon_size),
+        ui::ImageModel::FromVectorIcon(views::kInfoIcon, ui::kColorIcon,
+                                       icon_size),
         base::BindRepeating(
             &AboutThisSideSidePanelCoordinator::CreateAboutThisSiteWebView,
             base::Unretained(this)));
@@ -104,7 +105,7 @@ void AboutThisSideSidePanelCoordinator::DidFinishNavigation(
   }
   // Remove SidePanel entry when user navigates to a different page.
   SidePanelRegistry::Get(web_contents())
-      ->Deregister(SidePanelEntry::Id::kAboutThisSite);
+      ->Deregister(SidePanelEntry::Key(SidePanelEntry::Id::kAboutThisSite));
   about_this_site_side_panel_view_ = nullptr;
   last_url_params_.reset();
 }

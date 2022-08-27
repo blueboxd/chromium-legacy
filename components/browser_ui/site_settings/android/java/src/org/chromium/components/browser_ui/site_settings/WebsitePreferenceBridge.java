@@ -352,6 +352,25 @@ public class WebsitePreferenceBridge {
                 contentSettingType, primaryPattern, secondaryPattern, setting);
     }
 
+    /**
+     * Convert pattern to domain wildcard pattern. If fail to extract domain from the pattern,
+     * return the original pattern.
+     * @param pattern The original pattern to be converted to domain wildcard pattern.
+     * @return The domain wildcard pattern.
+     */
+    public static String toDomainWildcardPattern(String pattern) {
+        return WebsitePreferenceBridgeJni.get().toDomainWildcardPattern(pattern);
+    }
+
+    /**
+     * Convert pattern to host only pattern.
+     * @param pattern The original pattern to be converted to host only pattern.
+     * @return The host only pattern.
+     */
+    public static String toHostOnlyPattern(String pattern) {
+        return WebsitePreferenceBridgeJni.get().toHostOnlyPattern(pattern);
+    }
+
     @NativeMethods
     public interface Natives {
         boolean isNotificationEmbargoedForOrigin(
@@ -413,5 +432,7 @@ public class WebsitePreferenceBridge {
         boolean isContentSettingManagedByCustodian(
                 BrowserContextHandle browserContextHandle, int contentSettingType);
         boolean getLocationAllowedByPolicy(BrowserContextHandle browserContextHandle);
+        String toDomainWildcardPattern(String pattern);
+        String toHostOnlyPattern(String pattern);
     }
 }

@@ -10,7 +10,6 @@ import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/include_polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("./cr_elements.gni")
 
@@ -18,10 +17,6 @@ preprocess_folder = "$root_gen_dir/ui/webui/resources/preprocessed/cr_elements"
 if (include_polymer) {
   preprocess_src_manifest = "preprocessed_src_manifest.json"
   preprocess_gen_manifest = "preprocessed_gen_manifest.json"
-}
-
-if (is_chromeos_ash) {
-  preprocess_polymer2_manifest = "preprocessed_polymer2_manifest.json"
 }
 
 if (include_polymer) {
@@ -34,12 +29,6 @@ if (include_polymer) {
       "$target_gen_dir/$preprocess_gen_manifest",
     ]
 
-    if (is_chromeos_ash) {
-      manifest_files += [
-        # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
-        "$target_gen_dir/$preprocess_polymer2_manifest",
-      ]
-    }
     resource_path_prefix = "cr_elements"
   }
 }
@@ -58,13 +47,6 @@ group("preprocess") {
       ":preprocess_src",
     ]
   }
-
-  if (is_chromeos_ash) {
-    public_deps += [
-      # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
-      ":preprocess_polymer2",
-    ]
-  }
 }
 
 # TS files are passed to a separate target so that they are not listed in the
@@ -80,35 +62,22 @@ preprocess_if_expr("preprocess_ts") {
   }
 }
 
-if (is_chromeos_ash) {
-  preprocess_if_expr("preprocess_polymer2") {
-    in_folder = "./"
-    out_folder = "$preprocess_folder"
-    out_manifest = "$target_gen_dir/$preprocess_polymer2_manifest"
-    in_files = [
-      "action_link_css.html",
-      "chromeos/cros_color_overrides.html",
-      "cr_actionable_row_style.html",
-      "cr_container_shadow_behavior.html",
-      "cr_container_shadow_behavior.js",
-      "cr_icons_css.html",
-      "cr_scrollable_behavior.html",
-      "cr_scrollable_behavior.js",
-      "find_shortcut_behavior.js",
-      "hidden_style_css.html",
-      "icons.html",
-      "md_select_css.html",
-      "shared_style_css.html",
-      "shared_vars_css.html",
-    ]
-  }
-}
-
 if (include_polymer) {
   preprocess_if_expr("preprocess_src") {
     in_folder = "."
     out_folder = preprocess_folder
-    in_files = [ "policy/cr_policy_indicator_behavior.js" ]
+    in_files = [
+      "cr_scrollable_behavior.js",
+      "policy/cr_policy_indicator_behavior.js",
+    ]
+
+    if (is_chromeos_ash) {
+      in_files += [
+        "cr_container_shadow_behavior.js",
+        "find_shortcut_behavior.js",
+      ]
+    }
+
     out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   }
 
@@ -124,7 +93,6 @@ if (include_polymer) {
       "cr_dialog/cr_dialog.js",
       "cr_icons_css.m.js",
       "cr_lottie/cr_lottie.js",
-      "cr_scrollable_behavior.m.js",
       "hidden_style_css.m.js",
       "icons.m.js",
       "md_select_css.m.js",
@@ -136,10 +104,7 @@ if (include_polymer) {
     ]
 
     if (is_chromeos_ash) {
-      in_files += [
-        "chromeos/cros_color_overrides.m.js",
-        "cr_container_shadow_behavior.m.js",
-      ]
+      in_files += [ "chromeos/cros_color_overrides.m.js" ]
     }
   }
 }
@@ -147,8 +112,6 @@ if (include_polymer) {
 if (include_polymer) {
   group("closure_compile") {
     deps = [
-      ":cr_elements_resources",
-
       # Targets for auto-generated Polymer 3 JS Modules
       ":cr_elements_module_resources",
       "cr_button:closure_compile_module",
@@ -156,22 +119,6 @@ if (include_polymer) {
       "cr_lottie:closure_compile_module",
       "policy:closure_compile_module",
     ]
-  }
-
-  js_type_check("cr_elements_resources") {
-    uses_legacy_modules = true
-    deps = [
-      ":cr_container_shadow_behavior",
-      ":cr_scrollable_behavior",
-    ]
-  }
-
-  js_library("cr_scrollable_behavior") {
-    deps = [ "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted" ]
-  }
-
-  js_library("cr_container_shadow_behavior") {
-    deps = [ "//ui/webui/resources/js:assert" ]
   }
 }
 
@@ -224,14 +171,6 @@ if (include_polymer) {
     html_file = "icons.html"
     html_type = "iron-iconset"
   }
-
-  js_modulizer("modulize") {
-    input_files = [ "cr_scrollable_behavior.js" ]
-
-    if (is_chromeos_ash) {
-      input_files += [ "cr_container_shadow_behavior.js" ]
-    }
-  }
 }
 
 if (include_polymer) {
@@ -243,7 +182,6 @@ if (include_polymer) {
       ":hidden_style_css_module",
       ":icons_module",
       ":md_select_css_module",
-      ":modulize",
       ":shared_style_css_module",
       ":shared_vars_css_module",
       "cr_button:web_components",
@@ -261,31 +199,27 @@ if (include_polymer) {
 if (include_polymer) {
   js_type_check("cr_elements_module_resources") {
     is_polymer3 = true
-    deps = [ ":cr_scrollable_behavior.m" ]
+    deps = [ ":cr_scrollable_behavior" ]
 
     if (is_chromeos_ash) {
       deps += [
-        ":cr_container_shadow_behavior.m",
+        ":cr_container_shadow_behavior",
         ":find_shortcut_behavior",
       ]
     }
   }
 
   if (is_chromeos_ash) {
-    js_library("cr_container_shadow_behavior.m") {
-      sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js" ]
+    js_library("cr_container_shadow_behavior") {
       deps = [ "//ui/webui/resources/js:assert.m" ]
-      extra_deps = [ ":modulize" ]
     }
   }
 
-  js_library("cr_scrollable_behavior.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_scrollable_behavior.m.js" ]
+  js_library("cr_scrollable_behavior") {
     deps = [
       "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
       "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     ]
-    extra_deps = [ ":modulize" ]
   }
 }
 

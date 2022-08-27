@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -75,7 +76,6 @@ HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     : HTMLElement(html_names::kFramesetTag, document),
       border_(6),
       border_set_(false),
-      border_color_set_(false),
       frameborder_(true),
       frameborder_set_(false) {
   SetHasCustomStyleCallbacks();
@@ -129,6 +129,7 @@ void HTMLFrameSetElement::ParseAttribute(
         frameborder_set_ = true;
       } else if (EqualIgnoringASCIICase(value, "yes") ||
                  EqualIgnoringASCIICase(value, "1")) {
+        frameborder_ = true;
         frameborder_set_ = true;
       }
     } else {
@@ -136,6 +137,10 @@ void HTMLFrameSetElement::ParseAttribute(
       frameborder_set_ = false;
     }
     DirtyEdgeInfoAndFullPaintInvalidation();
+    for (auto& frame_set :
+         Traversal<HTMLFrameSetElement>::DescendantsOf(*this)) {
+      frame_set.DirtyEdgeInfoAndFullPaintInvalidation();
+    }
   } else if (name == html_names::kNoresizeAttr) {
     DirtyEdgeInfo();
   } else if (name == html_names::kBorderAttr) {
@@ -150,7 +155,15 @@ void HTMLFrameSetElement::ParseAttribute(
           layout_invalidation_reason::kAttributeChanged);
     }
   } else if (name == html_names::kBordercolorAttr) {
-    border_color_set_ = !value.IsEmpty();
+    if (GetLayoutBox()) {
+      for (const auto& frame_set :
+           Traversal<HTMLFrameSetElement>::DescendantsOf(*this)) {
+        if (auto* box = frame_set.GetLayoutBox()) {
+          box->SetNeedsLayoutAndFullPaintInvalidation(
+              layout_invalidation_reason::kAttributeChanged);
+        }
+      }
+    }
   } else if (name == html_names::kOnafterprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kAfterprint,
@@ -266,6 +279,14 @@ void HTMLFrameSetElement::ParseAttribute(
   }
 }
 
+bool HTMLFrameSetElement::HasFrameBorder() const {
+  if (frameborder_set_)
+    return frameborder_;
+  if (const auto* frame_set = DynamicTo<HTMLFrameSetElement>(parentNode()))
+    return frame_set->HasFrameBorder();
+  return true;
+}
+
 bool HTMLFrameSetElement::NoResize() const {
   if (FastHasAttribute(html_names::kNoresizeAttr))
     return true;
@@ -279,6 +300,14 @@ int HTMLFrameSetElement::Border(const ComputedStyle& style) const {
     return 0;
   return std::max(ClampTo<int>(border_ * style.EffectiveZoom()), 1);
 }
+
+bool HTMLFrameSetElement::HasBorderColor() const {
+  if (FastHasAttribute(html_names::kBordercolorAttr))
+    return true;
+  if (const auto* frame_set = DynamicTo<HTMLFrameSetElement>(parentNode()))
+    return frame_set->HasBorderColor();
+  return false;
+};
 
 FrameEdgeInfo HTMLFrameSetElement::EdgeInfo() const {
   const_cast<HTMLFrameSetElement*>(this)->CollectEdgeInfoIfDirty();
@@ -396,13 +425,9 @@ void HTMLFrameSetElement::AttachLayoutTree(AttachContext& context) {
   // FIXME: This is not dynamic.
   if (HTMLFrameSetElement* frameset =
           Traversal<HTMLFrameSetElement>::FirstAncestor(*this)) {
-    if (!frameborder_set_)
-      frameborder_ = frameset->HasFrameBorder();
-    if (frameborder_) {
+    if (HasFrameBorder()) {
       if (!border_set_)
         border_ = frameset->HasFrameBorder() ? frameset->border_ : 0;
-      if (!border_color_set_)
-        border_color_set_ = frameset->HasBorderColor();
     }
   }
 

@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -38,10 +39,12 @@
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -481,7 +484,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kWebAuthn,
         password_client_->IsIncognito());
-    password_client_->GetWebAuthnCredentialsDelegate()
+    password_client_
+        ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
         ->SelectWebAuthnCredential(
             absl::holds_alternative<autofill::Suggestion::BackendId>(payload)
                 ? absl::get<autofill::Suggestion::BackendId>(payload).value()
@@ -491,7 +495,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kWebAuthnSignInWithAnotherDevice,
         password_client_->IsIncognito());
-    password_client_->GetWebAuthnCredentialsDelegate()->LaunchWebAuthnFlow();
+    password_client_
+        ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
+        ->LaunchWebAuthnFlow();
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
@@ -499,8 +505,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
 
     scoped_refptr<device_reauth::BiometricAuthenticator> authenticator =
         password_client_->GetBiometricAuthenticator();
-    // Note: this is currently only implemented on Android. For desktop,
-    // the `authenticator` will be null.
+    // Note: this is currently only implemented on Android and Mac. For other
+    // platforms, the `authenticator` will be null.
     if (!password_manager_util::CanUseBiometricAuth(
             authenticator.get(),
             device_reauth::BiometricAuthRequester::kAutofillSuggestion)) {
@@ -508,14 +514,29 @@ void PasswordAutofillManager::DidAcceptSuggestion(
           FillSuggestion(GetUsernameFromSuggestion(value), frontend_id);
       DCHECK(success);
     } else {
+      authenticator_ = std::move(authenticator);
+#if BUILDFLAG(IS_ANDROID)
       // `this` cancels the authentication when it is destructed, which
       // invalidates the callback, so using base::Unretained here is safe.
-      authenticator_ = std::move(authenticator);
       authenticator_->Authenticate(
           device_reauth::BiometricAuthRequester::kAutofillSuggestion,
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
                          base::Unretained(this), value, frontend_id),
           /*use_last_valid_auth=*/true);
+#elif BUILDFLAG(IS_MAC)
+      const std::u16string origin =
+          base::UTF8ToUTF16(GetShownOrigin(url::Origin::Create(
+              password_manager_driver_->GetLastCommittedURL())));
+
+      // `this` cancels the authentication when it is destructed, which
+      // invalidates the callback, so using base::Unretained here is safe.
+      authenticator_->AuthenticateWithMessage(
+          device_reauth::BiometricAuthRequester::kAutofillSuggestion,
+          l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_FILLING_REAUTH,
+                                     origin),
+          base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
+                         base::Unretained(this), value, frontend_id));
+#endif
     }
   }
   autofill_client_->HideAutofillPopup(
@@ -686,15 +707,19 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
   // Add WebAuthn credentials suitable for an ongoing request if available.
   WebAuthnCredentialsDelegate* delegate =
-      password_client_->GetWebAuthnCredentialsDelegate();
-  if (show_webauthn_credentials && delegate->IsWebAuthnAutofillEnabled()) {
-    std::vector<autofill::Suggestion> webauthn_suggestions =
+      password_client_->GetWebAuthnCredentialsDelegateForDriver(
+          password_manager_driver_);
+  if (show_webauthn_credentials && delegate &&
+      delegate->IsWebAuthnAutofillEnabled()) {
+    absl::optional<std::vector<autofill::Suggestion>> webauthn_suggestions =
         delegate->GetWebAuthnSuggestions();
-    for (auto& suggestion : webauthn_suggestions) {
-      suggestion.custom_icon = page_favicon_;
+    if (webauthn_suggestions.has_value()) {
+      for (auto& suggestion : *webauthn_suggestions) {
+        suggestion.custom_icon = page_favicon_;
+      }
+      suggestions.insert(suggestions.end(), webauthn_suggestions->begin(),
+                         webauthn_suggestions->end());
     }
-    suggestions.insert(suggestions.end(), webauthn_suggestions.begin(),
-                       webauthn_suggestions.end());
   }
 
   if (!fill_data_ && !show_account_storage_optin &&
@@ -712,7 +737,8 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
 #if !BUILDFLAG(IS_ANDROID)
   // Add "Sign in with another device" button.
-  if (show_webauthn_credentials && delegate->IsWebAuthnAutofillEnabled()) {
+  if (show_webauthn_credentials && delegate &&
+      delegate->IsWebAuthnAutofillEnabled()) {
     suggestions.push_back(CreateWebAuthnEntry());
   }
 #endif  // !BUILDFLAG(IS_ANDROID)

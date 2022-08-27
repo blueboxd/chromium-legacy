@@ -40,7 +40,7 @@ _disable_partition_alloc = is_component_build || (is_win && is_debug)
 
 # - NaCl: No plans to support it.
 # - iOS: not done yet.
-_is_partition_alloc_platform = !is_nacl && !is_ios
+_is_partition_alloc_platform = !is_nacl && !is_ios && !is_mac
 
 # Under Windows debug build, the allocator shim is not compatible with CRT.
 #     NaCl in particular does seem to link some binaries statically

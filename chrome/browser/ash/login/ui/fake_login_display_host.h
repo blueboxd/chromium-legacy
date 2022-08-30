@@ -62,7 +62,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void ShowAllowlistCheckFailedError() override;
   void ShowOsInstallScreen() override;
   void ShowGuestTosScreen() override;
-  void HideOobeDialog(bool saml_video_timeout = false) override;
+  void HideOobeDialog(bool saml_page_closed = false) override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
   void CancelPasswordChangedFlow() override;
@@ -85,6 +85,8 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   bool IsWizardControllerCreated() const final;
   WizardContext* GetWizardContextForTesting() final;
   bool IsWebUIStarted() const final;
+  base::WeakPtr<ash::quick_start::TargetDeviceBootstrapController>
+  GetQuickStartBootstrapController() final;
 
  private:
   class FakeBaseScreen;

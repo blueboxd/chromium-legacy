@@ -162,6 +162,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -526,7 +527,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 /* statusBarColorProvider= */ this, getIntentRequestTracker(),
                 mTabReparentingControllerSupplier,
                 /*ephemeralTabCoordinatorSupplier=*/new ObservableSupplierImpl<>(),
-                false, mBackPressManager);
+                false, mBackPressManager, /* unblockDrawForOverviewPageRunnable= */ null);
         // clang-format on
     }
 
@@ -722,6 +723,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * This function implements the actual layout inflation, Subclassing Activities that override
      * this method without calling super need to call {@link #onInitialLayoutInflationComplete()}.
      */
+    // TODO(crbug.com/1336778): Remove the @SuppressLint.
+    @SuppressLint("MissingInflatedId")
     protected void doLayoutInflation() {
         try (TraceEvent te = TraceEvent.scoped("ChromeActivity.doLayoutInflation")) {
             // Allow disk access for the content view and toolbar container setup.
@@ -1722,14 +1725,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
         };
         display.addObserver(mDisplayAndroidObserver);
-
-        // Make sure the user is reporting into one of the feed spinner groups, so that we can
-        // analyze daily power impact for a typical Chrome user. The flag only has an effect if the
-        // spinner is shown, but our earlier UMA analysis shows that it may have a side-effect on
-        // a future browsing session's power, even if the spinner is not shown (by causing more
-        // cold-starts).
-        // TODO(crbug.com/1151391): Remove after analysis is complete.
-        ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_SPINNER_ALWAYS_ANIMATE);
     }
 
     /**
@@ -1987,17 +1982,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Sets the overlay mode.
-     * Overlay mode means that we are currently using AndroidOverlays to display video, and
-     * that the compositor's surface should support alpha and not be marked as opaque.
-     */
-    public void setOverlayMode(boolean useOverlayMode) {
-        if (mCompositorViewHolderSupplier.hasValue()) {
-            mCompositorViewHolderSupplier.get().setOverlayMode(useOverlayMode);
-        }
-    }
-
-    /**
      * @return The content offset provider, may be null.
      */
     public ContentOffsetProvider getContentOffsetProvider() {
@@ -2208,68 +2192,58 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /** Handles back press events for Chrome in various states. */
     protected final void handleOnBackPressed() {
+        assert !BackPressManager.isEnabled()
+            : "Back press should be handled by implementors of BackPressHandler if enabled";
         if (mNativeInitialized) RecordUserAction.record("SystemBack");
 
-        if (!BackPressManager.isEnabled()) {
-            if (TextBubble.getCountSupplier().get() != null
-                    && TextBubble.getCountSupplier().get() > 0) {
-                // TODO(crbug.com/1279941): should this stop propagating the event?
-                TextBubble.dismissBubbles();
-                BackPressManager.record(Type.TEXT_BUBBLE);
-            }
+        if (TextBubble.getCountSupplier().get() != null
+                && TextBubble.getCountSupplier().get() > 0) {
+            // TODO(crbug.com/1279941): should this stop propagating the event?
+            TextBubble.dismissBubbles();
+            BackPressManager.record(Type.TEXT_BUBBLE);
+        }
 
-            if (VrModuleProvider.getDelegate().onBackPressed()) {
-                BackPressManager.record(Type.VR_DELEGATE);
-                return;
-            };
+        if (VrModuleProvider.getDelegate().onBackPressed()) {
+            BackPressManager.record(Type.VR_DELEGATE);
+            return;
+        }
 
-            ArDelegate arDelegate = ArDelegateProvider.getDelegate();
-            if (arDelegate != null && arDelegate.onBackPressed()) {
-                BackPressManager.record(Type.AR_DELEGATE);
-                return;
-            };
+        ArDelegate arDelegate = ArDelegateProvider.getDelegate();
+        if (arDelegate != null && arDelegate.onBackPressed()) {
+            BackPressManager.record(Type.AR_DELEGATE);
+            return;
+        }
 
-            if (mCompositorViewHolderSupplier.hasValue()) {
-                LayoutManagerImpl layoutManager =
-                        mCompositorViewHolderSupplier.get().getLayoutManager();
-                if (layoutManager != null && layoutManager.onBackPressed()) {
-                    // Back press metrics recording is handled by LayoutManagerImpl internally.
-                    return;
-                };
-            }
-
-            SelectionPopupController controller = getSelectionPopupController();
-            if (controller != null && controller.isSelectActionBarShowing()) {
-                controller.clearSelection();
-                BackPressManager.record(Type.SELECTION_POPUP);
+        if (mCompositorViewHolderSupplier.hasValue()) {
+            LayoutManagerImpl layoutManager =
+                    mCompositorViewHolderSupplier.get().getLayoutManager();
+            if (layoutManager != null && layoutManager.onBackPressed()) {
+                // Back press metrics recording is handled by LayoutManagerImpl internally.
                 return;
             }
+        }
 
-            if (getManualFillingComponent().onBackPressed()) {
-                BackPressManager.record(Type.MANUAL_FILLING);
-                return;
-            }
+        SelectionPopupController controller = getSelectionPopupController();
+        if (controller != null && controller.isSelectActionBarShowing()) {
+            controller.clearSelection();
+            BackPressManager.record(Type.SELECTION_POPUP);
+            return;
+        }
 
-            if (exitFullscreenIfShowing()) {
-                BackPressManager.record(Type.FULLSCREEN);
-                return;
-            }
+        if (getManualFillingComponent().onBackPressed()) {
+            BackPressManager.record(Type.MANUAL_FILLING);
+            return;
+        }
+
+        if (exitFullscreenIfShowing()) {
+            BackPressManager.record(Type.FULLSCREEN);
+            return;
         }
 
         handleBackPressed();
     }
 
     private void initializeBackPressHandling() {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                ChromeActivity.this.handleOnBackPressed();
-            }
-        };
-        // Order matters here: first-come, last-served.
-        // TODO(crbug.com/1279941): remove this line when all contents of handleOnBackPressed are
-        // migrated to BackGestureManager.
-        getOnBackPressedDispatcher().addCallback(this, callback);
         if (BackPressManager.isEnabled()) {
             getOnBackPressedDispatcher().addCallback(this, mBackPressManager.getCallback());
             // TODO(crbug.com/1279941): consider move to RootUiCoordinator.
@@ -2304,6 +2278,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         new FullscreenBackPressHandler(controlManager.getFullscreenManager()),
                         BackPressHandler.Type.FULLSCREEN);
             });
+        } else {
+            OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    ChromeActivity.this.handleOnBackPressed();
+                }
+            };
+            getOnBackPressedDispatcher().addCallback(this, callback);
         }
     }
 
@@ -2568,8 +2550,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         profile, currentTab.getUrl(), usingDesktopUserAgent);
                 currentTab.reload();
             } else {
-                TabUtils.switchUserAgent(
-                        currentTab, usingDesktopUserAgent, /* forcedByUser */ true);
+                TabUtils.switchUserAgent(currentTab, usingDesktopUserAgent, /* forcedByUser */ true,
+                        UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION);
             }
             RequestDesktopUtils.recordUserChangeUserAgent(usingDesktopUserAgent, getActivityTab());
             return true;

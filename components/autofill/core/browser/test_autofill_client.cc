@@ -254,6 +254,17 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
+bool TestAutofillClient::IsTouchToFillCreditCardSupported() {
+  return false;
+}
+
+bool TestAutofillClient::ShowTouchToFillCreditCard(
+    base::WeakPtr<TouchToFillDelegate> delegate) {
+  return false;
+}
+
+void TestAutofillClient::HideTouchToFillCreditCard() {}
+
 void TestAutofillClient::ShowAutofillPopup(
     const AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {}
@@ -313,7 +324,8 @@ bool TestAutofillClient::AreServerCardsSupported() const {
 
 void TestAutofillClient::ExecuteCommand(int id) {}
 
-void TestAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {}
+void TestAutofillClient::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
+}
 
 void TestAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {

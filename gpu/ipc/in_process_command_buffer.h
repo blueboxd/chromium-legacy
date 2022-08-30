@@ -122,6 +122,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       TransferBufferAllocationOption option =
           TransferBufferAllocationOption::kLoseContextOnOOM) override;
   void DestroyTransferBuffer(int32_t id) override;
+  void ForceLostContext(error::ContextLostReason reason) override;
 
   // GpuControl implementation (called on client thread):
   void SetGpuControlClient(GpuControlClient*) override;
@@ -183,8 +184,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
     void SetError();
     void WrapTaskWithGpuCheck(base::OnceClosure task);
-
-    bool EnableWrappedSkImage() const;
 
    private:
     raw_ptr<InProcessCommandBuffer> command_buffer_;
@@ -252,6 +251,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void RegisterTransferBufferOnGpuThread(int32_t id,
                                          scoped_refptr<Buffer> buffer);
   void DestroyTransferBufferOnGpuThread(int32_t id);
+  void ForceLostContextOnGpuThread(error::ContextLostReason reason);
 
   void SetGetBufferOnGpuThread(int32_t shm_id, base::WaitableEvent* completion);
 

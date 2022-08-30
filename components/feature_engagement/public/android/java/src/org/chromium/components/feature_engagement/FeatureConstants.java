@@ -17,7 +17,6 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_SHARE_FEATURE,
         FeatureConstants.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_VOICE_SEARCH_FEATURE,
         FeatureConstants.ADD_TO_HOMESCREEN_MESSAGE_FEATURE,
-        FeatureConstants.ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE,
         FeatureConstants.AUTO_DARK_OPT_OUT_FEATURE,
         FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE,
         FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE,
@@ -77,7 +76,6 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
         FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE,
         FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE,
-        FeatureConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE,
         FeatureConstants.SHARED_HIGHLIGHTING_RECEIVER_FEATURE,
         FeatureConstants.SHARING_HUB_WEBNOTES_STYLIZE_FEATURE,
         FeatureConstants.VIDEO_TUTORIAL_NTP_CHROME_INTRO_FEATURE,
@@ -85,7 +83,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.VIDEO_TUTORIAL_NTP_SEARCH_FEATURE,
         FeatureConstants.VIDEO_TUTORIAL_NTP_SUMMARY_FEATURE,
         FeatureConstants.VIDEO_TUTORIAL_NTP_VOICE_SEARCH_FEATURE,
-        FeatureConstants.VIDEO_TUTORIAL_TRY_NOW_FEATURE})
+        FeatureConstants.VIDEO_TUTORIAL_TRY_NOW_FEATURE, FeatureConstants.PRICE_DROP_NTP_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -95,7 +93,6 @@ public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_VOICE_SEARCH_FEATURE =
             "IPH_AdaptiveButtonInTopToolbarCustomization_VoiceSearch";
     String ADD_TO_HOMESCREEN_MESSAGE_FEATURE = "IPH_AddToHomescreenMessage";
-    String ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE = "IPH_AddToHomescreenTextBubble";
     String AUTO_DARK_OPT_OUT_FEATURE = "IPH_AutoDarkOptOut";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE = "IPH_AutoDarkUserEducationMessage";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE =
@@ -381,12 +378,6 @@ public @interface FeatureConstants {
     String SHARED_HIGHLIGHTING_BUILDER_FEATURE = "IPH_SharedHighlightingBuilder";
 
     /**
-     * An IPH feature to prompt users to click home button on the tab switcher surface when start
-     * surface is enabled.
-     */
-    String START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE = "IPH_StartSurfaceTabSwitcherHomeButton";
-
-    /**
      * An IPH feature encouraging users to create highlights.
      */
     String SHARED_HIGHLIGHTING_RECEIVER_FEATURE = "IPH_SharedHighlightingReceiver";
@@ -395,4 +386,9 @@ public @interface FeatureConstants {
      * An IPH feature to inform users about the Webnotes Stylize feature in Sharing Hub.
      */
     String SHARING_HUB_WEBNOTES_STYLIZE_FEATURE = "IPH_SharingHubWebnotesStylize";
+
+    /**
+     * An IPH feature to inform users that a price drop has occurred in any of their open tabs
+     */
+    String PRICE_DROP_NTP_FEATURE = "IPH_PriceDropNTP";
 }

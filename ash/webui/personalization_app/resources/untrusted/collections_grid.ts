@@ -4,7 +4,7 @@
 
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 import './setup.js';
-import '../trusted/wallpaper/trusted_style.css.js';
+import '../css/wallpaper.css.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {afterNextRender, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -374,14 +374,14 @@ export class CollectionsGrid extends PolymerElement {
     }
   }
 
-  getClassForEmptyTile_(tile: ImageTile): string {
+  private getClassForEmptyTile_(tile: ImageTile): string {
     return `photo-inner-container ${
         (this.isGooglePhotosTile_(tile) ? 'google-photos-empty' :
                                           'photo-empty')}`;
   }
 
-  getImageUrlForEmptyTile_(tile: ImageTile): string {
-    return `chrome://personalization/common/${
+  private getImageUrlForEmptyTile_(tile: ImageTile): string {
+    return `chrome://personalization/images/${
         (this.isGooglePhotosTile_(tile) ? 'google_photos.svg' :
                                           'no_images.svg')}`;
   }

@@ -125,6 +125,9 @@ std::string ProtocolUtils::CreateCapabilitiesByHashRequest(
     non_sensitive_context.mutable_chrome()->set_chrome_version(
         client_context.chrome().chrome_version());
   }
+  if (client_context.has_platform_type()) {
+    non_sensitive_context.set_platform_type(client_context.platform_type());
+  }
   *request.mutable_client_context() = non_sensitive_context;
 
   std::string serialized_request;
@@ -469,6 +472,12 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
               action.set_native_value().value(),
               base::BindOnce(&WebController::SetNativeValue,
                              delegate->GetWebController()->GetWeakPtr())));
+    case ActionProto::ActionInfoCase::kSetNativeChecked:
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.set_native_checked().client_id(),
+          base::BindOnce(&WebController::SetNativeChecked,
+                         delegate->GetWebController()->GetWeakPtr(),
+                         action.set_native_checked().checked()));
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -740,6 +749,10 @@ absl::optional<ActionProto> ProtocolUtils::ParseFromString(
     case ActionProto::ActionInfoCase::kSetNativeValue:
       success = ParseActionFromString(action_id, bytes, error_message,
                                       proto.mutable_set_native_value());
+      break;
+    case ActionProto::ActionInfoCase::kSetNativeChecked:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_native_checked());
       break;
     case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
       success = ParseActionFromString(
@@ -1018,6 +1031,7 @@ RoundtripNetworkStats ProtocolUtils::ComputeNetworkStats(
     const ServiceRequestSender::ResponseInfo& response_info,
     const std::vector<std::unique_ptr<Action>>& actions) {
   RoundtripNetworkStats stats;
+  stats.set_num_roundtrips(1);
   stats.set_roundtrip_decoded_body_size_bytes(response.size());
   stats.set_roundtrip_encoded_body_size_bytes(
       response_info.encoded_body_length);

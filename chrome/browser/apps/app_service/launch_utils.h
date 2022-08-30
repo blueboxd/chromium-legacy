@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
@@ -56,26 +57,24 @@ AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
     int event_flags,
     apps::mojom::LaunchSource source,
     int64_t display_id,
-    apps::mojom::LaunchContainer fallback_container);
+    apps::LaunchContainer fallback_container);
 
 apps::AppLaunchParams CreateAppLaunchParamsForIntent(
     const std::string& app_id,
     int32_t event_flags,
     apps::mojom::LaunchSource source,
     int64_t display_id,
-    apps::mojom::LaunchContainer fallback_container,
+    apps::LaunchContainer fallback_container,
     apps::mojom::IntentPtr&& intent,
     Profile* profile);
 
 extensions::AppLaunchSource GetAppLaunchSource(
     apps::mojom::LaunchSource launch_source);
 
-// Returns event flag for |container| and |disposition|. If |prefer_container|
-// is true, |disposition| will be ignored. Otherwise, |container| is ignored and
-// an event flag based on |disposition| will be returned.
-int GetEventFlags(apps::mojom::LaunchContainer container,
-                  WindowOpenDisposition disposition,
-                  bool prefer_container);
+// Returns event flag for |disposition|. If |prefer_container|
+// is true, |disposition| will be ignored. Otherwise, an event flag based on
+// |disposition| will be returned.
+int GetEventFlags(WindowOpenDisposition disposition, bool prefer_container);
 
 // Returns the browser's session id for restoration if |web_contents| is valid
 // for a system web app, or for a web app not opened in tab. Otherwise, returns
@@ -89,6 +88,9 @@ apps::mojom::WindowInfoPtr MakeWindowInfo(int64_t display_id);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Helper to convert apps::mojom::WindowInfoPtr to arc::mojom::WindowInfoPtr.
+arc::mojom::WindowInfoPtr MakeArcWindowInfo(WindowInfoPtr window_info);
+
+// TODO(crbug.com/1253250): Remove. Prefer the non mojom MakeArcWindowInfo.
 arc::mojom::WindowInfoPtr MakeArcWindowInfo(
     apps::mojom::WindowInfoPtr window_info);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

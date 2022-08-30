@@ -76,6 +76,7 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -453,6 +454,7 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
     case mojom::ViewType::kExtensionBackgroundPage:
     case mojom::ViewType::kExtensionDialog:
     case mojom::ViewType::kExtensionPopup:
+    case mojom::ViewType::kOffscreenDocument:
       // These are the only types that are tracked by the ExtensionTag.
       task_manager::WebContentsTags::CreateForExtension(web_contents,
                                                         view_type);
@@ -702,6 +704,49 @@ void ChromeExtensionsBrowserClient::GetFavicon(
         callback) const {
   favicon_util::GetFaviconForExtensionRequest(browser_context, extension, url,
                                               tracker, std::move(callback));
+}
+
+std::vector<content::BrowserContext*>
+ChromeExtensionsBrowserClient::GetRelatedContextsForExtension(
+    content::BrowserContext* browser_context,
+    const Extension& extension) const {
+  return util::GetAllRelatedProfiles(
+      Profile::FromBrowserContext(browser_context), extension);
+}
+
+std::unique_ptr<const PermissionSet>
+ChromeExtensionsBrowserClient::AddAdditionalAllowedHosts(
+    const PermissionSet& desired_permissions,
+    const PermissionSet& granted_permissions) const {
+  auto get_new_host_patterns = [](const URLPatternSet& desired_patterns,
+                                  const URLPatternSet& granted_patterns) {
+    URLPatternSet new_patterns = granted_patterns.Clone();
+    for (const URLPattern& pattern : desired_patterns) {
+      // The chrome://favicon permission is special. It is requested by
+      // extensions to access stored favicons, but is not a traditional
+      // host permission. Since it cannot be reasonably runtime-granted
+      // while the user is on the site (i.e., the user never visits
+      // chrome://favicon/), we auto-grant it and treat it like an API
+      // permission.
+      bool is_chrome_favicon = pattern.scheme() == content::kChromeUIScheme &&
+                               pattern.host() == chrome::kChromeUIFaviconHost;
+      if (is_chrome_favicon)
+        new_patterns.AddPattern(pattern);
+    }
+    return new_patterns;
+  };
+
+  URLPatternSet new_explicit_hosts =
+      get_new_host_patterns(desired_permissions.explicit_hosts(),
+                            granted_permissions.explicit_hosts());
+  URLPatternSet new_scriptable_hosts =
+      get_new_host_patterns(desired_permissions.scriptable_hosts(),
+                            granted_permissions.scriptable_hosts());
+
+  return std::make_unique<PermissionSet>(
+      granted_permissions.apis().Clone(),
+      granted_permissions.manifest_permissions().Clone(),
+      std::move(new_explicit_hosts), std::move(new_scriptable_hosts));
 }
 
 }  // namespace extensions

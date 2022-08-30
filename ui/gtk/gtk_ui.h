@@ -10,12 +10,18 @@
 #include <vector>
 
 #include "base/containers/fixed_flat_map.h"
+#include "base/memory/raw_ptr.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gtk/gtk_ui_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/linux_ui/window_frame_provider.h"
 #include "ui/views/window/frame_buttons.h"
+
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "printing/printing_context_linux.h"  // nogncheck
+#endif
 
 typedef struct _GParamSpec GParamSpec;
 typedef struct _GtkParamSpec GtkParamSpec;
@@ -52,8 +58,7 @@ class GtkUi : public views::LinuxUI {
 
   // ui::LinuxInputMethodContextFactory:
   std::unique_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
-      ui::LinuxInputMethodContextDelegate* delegate,
-      bool is_simple) const override;
+      ui::LinuxInputMethodContextDelegate* delegate) const override;
 
   // gfx::LinuxFontDelegate:
   gfx::FontRenderParams GetDefaultFontRenderParams() const override;
@@ -71,7 +76,6 @@ class GtkUi : public views::LinuxUI {
 
   // views::LinuxUI:
   bool Initialize() override;
-  bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color, bool use_custom_frame) const override;
   bool GetDisplayProperty(int id, int* result) const override;
   SkColor GetFocusRingColor() const override;
@@ -100,6 +104,13 @@ class GtkUi : public views::LinuxUI {
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  // printing::PrintingContextLinuxDelegate:
+  printing::PrintDialogLinuxInterface* CreatePrintDialog(
+      printing::PrintingContextLinux* context) override;
+  gfx::Size GetPdfPaperSize(printing::PrintingContextLinux* context) override;
+#endif
 
  private:
   using TintMap = std::map<int, color_utils::HSL>;
@@ -142,7 +153,7 @@ class GtkUi : public views::LinuxUI {
 
   std::unique_ptr<GtkUiPlatform> platform_;
 
-  NativeThemeGtk* native_theme_;
+  raw_ptr<NativeThemeGtk> native_theme_;
 
   // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.

@@ -5,6 +5,7 @@
 #include "remoting/protocol/webrtc_video_encoder_factory.h"
 
 #include "base/check.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "remoting/protocol/webrtc_video_encoder_wrapper.h"
@@ -42,7 +43,11 @@ std::unique_ptr<webrtc::VideoEncoder>
 WebrtcVideoEncoderFactory::CreateVideoEncoder(
     const webrtc::SdpVideoFormat& format) {
   return std::make_unique<WebrtcVideoEncoderWrapper>(
-      format, main_task_runner_, video_channel_state_observer_);
+      format, session_options_, main_task_runner_,
+      base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::TaskPriority::HIGHEST},
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED),
+      video_channel_state_observer_);
 }
 
 std::vector<webrtc::SdpVideoFormat>
@@ -54,6 +59,12 @@ void WebrtcVideoEncoderFactory::SetVideoChannelStateObserver(
     base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   video_channel_state_observer_ = video_channel_state_observer;
+}
+
+void WebrtcVideoEncoderFactory::ApplySessionOptions(
+    const SessionOptions& options) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  session_options_ = options;
 }
 
 }  // namespace remoting::protocol

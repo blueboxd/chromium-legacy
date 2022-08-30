@@ -20,6 +20,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -33,20 +34,21 @@
 #include "chromeos/ash/services/assistant/platform/audio_input_host_impl.h"
 #include "chromeos/ash/services/assistant/platform/audio_output_delegate_impl.h"
 #include "chromeos/ash/services/assistant/platform/platform_delegate_impl.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_browser_delegate.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
+#include "chromeos/ash/services/assistant/public/cpp/device_actions.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/ash/services/assistant/service_context.h"
 #include "chromeos/ash/services/assistant/timer_host.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/services/assistant/public/cpp/assistant_browser_delegate.h"
-#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
-#include "chromeos/services/assistant/public/cpp/device_actions.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/libassistant/public/mojom/android_app_info.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -57,10 +59,15 @@ namespace chromeos {
 namespace assistant {
 namespace {
 
+using InstallResult = chromeos::assistant::LibassistantDlcInstallResult;
+
 static base::OnceCallback<void()> initialized_internal_callback_for_testing;
 static bool is_first_init = true;
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
+
+inline constexpr char kDlcInstallResultHistogram[] =
+    "Assistant.Libassistant.DlcInstallResult";
 
 // The DLC ID of Libassistant.so, used to download and mount the library.
 constexpr char kLibassistantDlcId[] = "assistant-dlc";
@@ -88,6 +95,33 @@ chromeos::libassistant::mojom::BootupConfigPtr CreateBootupConfig(
   result->s3_server_uri_override = s3_server_uri_override;
   result->device_id_override = device_id_override;
   return result;
+}
+
+void RecordLibassistantDlcInstallResult(
+    const chromeos::DlcserviceClient::InstallResult& result) {
+  InstallResult install_result = InstallResult::kErrorInternal;
+  if (result.error == dlcservice::kErrorNone) {
+    install_result = InstallResult::kSuccess;
+  }
+  if (result.error == dlcservice::kErrorInternal) {
+    install_result = InstallResult::kErrorInternal;
+  }
+  if (result.error == dlcservice::kErrorBusy) {
+    install_result = InstallResult::kErrorBusy;
+  }
+  if (result.error == dlcservice::kErrorNeedReboot) {
+    install_result = InstallResult::kErrorNeedReboot;
+  }
+  if (result.error == dlcservice::kErrorInvalidDlc) {
+    install_result = InstallResult::kErrorInvalidDlc;
+  }
+  if (result.error == dlcservice::kErrorAllocation) {
+    install_result = InstallResult::kErrorAllocation;
+  }
+  if (result.error == dlcservice::kErrorNoImageFound) {
+    install_result = InstallResult::kErrorNoImageFound;
+  }
+  base::UmaHistogramEnumeration(kDlcInstallResultHistogram, install_result);
 }
 
 }  // namespace
@@ -479,6 +513,7 @@ void AssistantManagerServiceImpl::OnInstallDlcComplete(
     DVLOG(1) << "Failed to install libassistant.so from DLC: " << result.error;
   }
 
+  RecordLibassistantDlcInstallResult(result);
   InitAssistant(user, dlc_path_);
 }
 

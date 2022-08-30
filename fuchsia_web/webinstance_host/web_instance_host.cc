@@ -39,7 +39,7 @@
 #include "components/fuchsia_component_support/config_reader.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "content/public/common/content_switches.h"
-#include "fuchsia/base/string_util.h"
+#include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/webengine/features.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -53,8 +53,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
-
-namespace cr_fuchsia {
 
 namespace {
 
@@ -261,7 +259,7 @@ void HandleCorsExemptHeadersParam(fuchsia::web::CreateContextParams* params,
   std::vector<base::StringPiece> cors_exempt_headers;
   cors_exempt_headers.reserve(params->cors_exempt_headers().size());
   for (const auto& header : params->cors_exempt_headers()) {
-    cors_exempt_headers.push_back(cr_fuchsia::BytesAsString(header));
+    cors_exempt_headers.push_back(BytesAsString(header));
   }
 
   launch_args->AppendSwitchNative(switches::kCorsExemptHeaders,
@@ -355,12 +353,12 @@ std::vector<std::string> GetRequiredServicesForConfig(
   // at:
   //   https://fuchsia.dev/reference/fidl/fuchsia.web#CreateContextParams.service_directory
   std::vector<std::string> services{
-      "fuchsia.buildinfo.Provider", "fuchsia.device.NameProvider",
-      "fuchsia.fonts.Provider",     "fuchsia.intl.PropertyProvider",
-      "fuchsia.logger.LogSink",     "fuchsia.memorypressure.Provider",
-      "fuchsia.process.Launcher",
+      "fuchsia.buildinfo.Provider",      "fuchsia.device.NameProvider",
+      "fuchsia.fonts.Provider",          "fuchsia.hwinfo.Product",
+      "fuchsia.intl.PropertyProvider",   "fuchsia.logger.LogSink",
+      "fuchsia.memorypressure.Provider", "fuchsia.process.Launcher",
       "fuchsia.settings.Display",  // Used if preferred theme is DEFAULT.
-      "fuchsia.sysmem.Allocator",   "fuchsia.ui.scenic.Scenic"};
+      "fuchsia.sysmem.Allocator",        "fuchsia.ui.scenic.Scenic"};
 
   // TODO(crbug.com/1209031): Provide these conditionally, once corresponding
   // ContextFeatureFlags have been defined.
@@ -736,5 +734,3 @@ fuchsia::sys::Launcher* WebInstanceHost::IsolatedEnvironmentLauncher() {
 
   return isolated_environment_launcher_.get();
 }
-
-}  // namespace cr_fuchsia

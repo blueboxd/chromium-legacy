@@ -258,6 +258,15 @@ UkmPageLoadMetricsObserver::OnFencedFramesStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UkmPageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // PrerenderPageLoadMetricsObserver records prerendering version of metrics
+  // and this PLMO can stop on prerendering.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
   main_frame_request_redirect_count_++;
@@ -769,6 +778,8 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   builder.SetNet_MediaBytes2(
       ukm::GetExponentialBucketMinForBytes(media_bytes_));
 
+  builder.SetSoftNavigationCount(GetDelegate().GetSoftNavigationCount());
+
   if (main_frame_timing_)
     ReportMainResourceTimingMetrics(builder);
 
@@ -1206,9 +1217,6 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
     builder.SetWorstCaseAfter5Sec(smoothness_data.worst_smoothness_after5sec);
   builder.Record(ukm::UkmRecorder::Get());
 
-  base::UmaHistogramPercentage(
-      "Graphics.Smoothness.PerSession.AveragePercentDroppedFrames",
-      smoothness_data.avg_smoothness);
   base::UmaHistogramPercentage(
       "Graphics.Smoothness.PerSession.95pctPercentDroppedFrames_1sWindow",
       smoothness_data.percentile_95);

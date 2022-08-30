@@ -7,12 +7,13 @@
 
 #include <vector>
 
-#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "base/containers/fixed_flat_map.h"
+#include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/geometry/point.h"
 
 class Profile;
 
@@ -118,16 +119,17 @@ const std::string& GetTerminalHomeUrl();
 GURL GenerateTerminalURL(
     Profile* profile,
     const std::string& setings_profile,
-    const ContainerId& container_id = ContainerId::GetDefault(),
+    const guest_os::GuestId& container_id = DefaultContainerId(),
     const std::string& cwd = "",
     const std::vector<std::string>& terminal_args = {});
 
 // Launches the terminal tabbed app.
-void LaunchTerminal(Profile* profile,
-                    int64_t display_id = display::kInvalidDisplayId,
-                    const ContainerId& container_id = ContainerId::GetDefault(),
-                    const std::string& cwd = "",
-                    const std::vector<std::string>& terminal_args = {});
+void LaunchTerminal(
+    Profile* profile,
+    int64_t display_id = display::kInvalidDisplayId,
+    const guest_os::GuestId& container_id = DefaultContainerId(),
+    const std::string& cwd = "",
+    const std::vector<std::string>& terminal_args = {});
 
 void LaunchTerminalHome(Profile* profile, int64_t display_id);
 
@@ -161,7 +163,11 @@ std::string ShortcutIdForSSH(const std::string& profileId);
 
 // Menu shortcut ID for Linux container.
 std::string ShortcutIdFromContainerId(Profile* profile,
-                                      const crostini::ContainerId& id);
+                                      const guest_os::GuestId& id);
+
+// Parse Intent extras from shortcut ID.
+base::flat_map<std::string, std::string> ExtrasFromShortcutId(
+    const base::Value& shortcut);
 
 // Returns list of SSH connections {<profile-id>, <description>}.
 std::vector<std::pair<std::string, std::string>> GetSSHConnections(

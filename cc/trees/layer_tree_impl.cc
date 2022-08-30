@@ -152,7 +152,7 @@ LayerTreeImpl::LayerTreeImpl(
       is_first_frame_after_commit_tracker_(-1),
       hud_layer_(nullptr),
       property_trees_(host_impl),
-      background_color_(0),
+      background_color_(SkColors::kTransparent),
       last_scrolled_scroll_node_index_(kInvalidPropertyNodeId),
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
@@ -1210,17 +1210,6 @@ void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
   float clamped_page_scale = ClampPageScaleFactorToLimits(active_page_scale);
-  // Temporary crash logging for https://crbug.com/845097.
-  static bool has_dumped_without_crashing = false;
-  if (!host_impl_->settings().is_for_scalable_page &&
-      clamped_page_scale != 1.f && !has_dumped_without_crashing) {
-    has_dumped_without_crashing = true;
-    static auto* psf_oopif_error = base::debug::AllocateCrashKeyString(
-        "psf_oopif_error", base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(
-        psf_oopif_error, base::StringPrintf("%f", clamped_page_scale));
-    base::debug::DumpWithoutCrashing();
-  }
   if (page_scale_factor()->SetCurrent(clamped_page_scale))
     DidUpdatePageScale();
 }
@@ -2302,7 +2291,7 @@ static bool PointIsClippedByAncestorClipNode(
   for (const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
        clip_node->id > kViewportPropertyNodeId;
        clip_node = clip_tree.parent(clip_node)) {
-    if (clip_node->clip_type == ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
+    if (clip_node->AppliesLocalClip()) {
       clip = gfx::ToEnclosingRect(clip_node->clip);
 
       gfx::Transform screen_space_transform =

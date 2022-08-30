@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_host.h"
@@ -432,7 +433,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
   ExtensionHostTestHelper host_helper(profile());
   // Change active tabs, the extension popup should close.
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   host_helper.WaitForHostDestroyed();
 
   EXPECT_FALSE(ExtensionActionTestHelper::Create(browser())->HasPopup());
@@ -613,8 +615,9 @@ class MainFrameSizeWaiter : public content::WebContentsObserver {
 // TODO(crbug.com/1249851): Test crashes on Windows
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
-#elif BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
-// TODO(crbug.com/1269076): Test is flaky for linux tsan builds
+#elif BUILDFLAG(IS_LINUX) && \
+    (defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER))
+// TODO(crbug.com/1269076): Test is flaky for linux tsan and asan builds
 #define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
 #elif BUILDFLAG(IS_MAC)
 // TODO(crbug.com/1269076): Test is flaky on Mac as well.
@@ -786,7 +789,6 @@ class RenderFrameChangedWatcher : public content::WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
                        BrowserActionPopupWithIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browser_action/popup_with_iframe")));
   const Extension* extension = GetSingleLoadedExtension();
@@ -825,6 +827,71 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
 
   // Confirm that the new page (popup_iframe.html) is actually loaded.
   content::DOMMessageQueue dom_message_queue(frame_host);
+  std::string json;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&json));
+  EXPECT_EQ("\"DONE\"", json);
+
+  EXPECT_TRUE(ClosePopup());
+}
+
+class BrowserActionInteractiveFencedFrameTest
+    : public BrowserActionInteractiveTest {
+ public:
+  ~BrowserActionInteractiveFencedFrameTest() override = default;
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveFencedFrameTest,
+                       BrowserActionPopupWithFencedFrame) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browser_action/popup_with_fencedframe")));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Simulate a click on the browser action to open the popup.
+  ASSERT_TRUE(OpenPopupViaToolbar(extension->id()));
+
+  // Find a primary main frame associated in the popup.
+  extensions::ProcessManager* manager =
+      extensions::ProcessManager::Get(browser()->profile());
+  std::set<content::RenderFrameHost*> hosts =
+      manager->GetRenderFrameHostsForExtension(extension->id());
+  const auto& it =
+      base::ranges::find_if(hosts, [](content::RenderFrameHost* host) {
+        return host->IsInPrimaryMainFrame();
+      });
+  content::RenderFrameHost* primary_rfh = (it != hosts.end()) ? *it : nullptr;
+  ASSERT_TRUE(primary_rfh);
+
+  // Navigate the popup's fenced frame to a (cross-site) web page via its
+  // parent, and wait for that page to send a message, which will ensure that
+  // the page has loaded.
+  GURL foo_url(https_server.GetURL("a.test", "/popup_fencedframe.html"));
+
+  content::RenderFrameHost* fenced_frame_rfh =
+      fenced_frame_test_helper().GetMostRecentlyAddedFencedFrame(primary_rfh);
+  ASSERT_TRUE(fenced_frame_rfh);
+
+  RenderFrameChangedWatcher watcher(
+      content::WebContents::FromRenderFrameHost(fenced_frame_rfh));
+  std::string script =
+      "document.querySelector('fencedframe').src = '" + foo_url.spec() + "'";
+  EXPECT_TRUE(ExecuteScript(primary_rfh, script));
+  fenced_frame_rfh = watcher.WaitAndReturnNewFrame();
+
+  // Confirm that the new page (popup_fencedframe.html) is actually loaded.
+  content::DOMMessageQueue dom_message_queue(fenced_frame_rfh);
   std::string json;
   EXPECT_TRUE(dom_message_queue.WaitForMessage(&json));
   EXPECT_EQ("\"DONE\"", json);

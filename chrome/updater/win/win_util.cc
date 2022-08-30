@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/base_paths_win.h"
 #include "base/callback_helpers.h"
@@ -166,6 +167,28 @@ HWND CreateForegroundParentWindowForUAC() {
     ::SetForegroundWindow(foreground_parent);
   }
   return foreground_parent.Detach();
+}
+
+// Compares the OS, service pack, and build numbers using `::VerifyVersionInfo`,
+// in accordance with `type_mask` and `oper`.
+bool CompareOSVersionsInternal(const OSVERSIONINFOEX& os,
+                               DWORD type_mask,
+                               BYTE oper) {
+  DCHECK(type_mask);
+  DCHECK(oper);
+
+  ULONGLONG cond_mask = 0;
+  cond_mask = ::VerSetConditionMask(cond_mask, VER_MAJORVERSION, oper);
+  cond_mask = ::VerSetConditionMask(cond_mask, VER_MINORVERSION, oper);
+  cond_mask = ::VerSetConditionMask(cond_mask, VER_SERVICEPACKMAJOR, oper);
+  cond_mask = ::VerSetConditionMask(cond_mask, VER_SERVICEPACKMINOR, oper);
+  cond_mask = ::VerSetConditionMask(cond_mask, VER_BUILDNUMBER, oper);
+
+  // `::VerifyVersionInfo` could return `FALSE` due to an error other than
+  // `ERROR_OLD_WIN_VERSION`. We do not handle that case here.
+  // https://msdn.microsoft.com/ms725492.
+  OSVERSIONINFOEX os_in = os;
+  return ::VerifyVersionInfo(&os_in, type_mask, cond_mask);
 }
 
 }  // namespace
@@ -487,8 +510,7 @@ bool PathOwnedByUser(const base::FilePath& path) {
   return true;
 }
 
-// TODO(crbug.com/1212187): maybe handle filtered tokens.
-HRESULT IsUserAdmin(bool& is_user_admin) {
+HRESULT IsTokenAdmin(HANDLE token, bool& is_token_admin) {
   SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
   PSID administrators_group = nullptr;
   if (!::AllocateAndInitializeSid(&nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID,
@@ -499,10 +521,15 @@ HRESULT IsUserAdmin(bool& is_user_admin) {
   base::ScopedClosureRunner free_sid(
       base::BindOnce([](PSID sid) { ::FreeSid(sid); }, administrators_group));
   BOOL is_member = false;
-  if (!::CheckTokenMembership(NULL, administrators_group, &is_member))
+  if (!::CheckTokenMembership(token, administrators_group, &is_member))
     return HRESULTFromLastError();
-  is_user_admin = is_member;
+  is_token_admin = is_member;
   return S_OK;
+}
+
+// TODO(crbug.com/1212187): maybe handle filtered tokens.
+HRESULT IsUserAdmin(bool& is_user_admin) {
+  return IsTokenAdmin(NULL, is_user_admin);
 }
 
 HRESULT IsUserNonElevatedAdmin(bool& is_user_non_elevated_admin) {
@@ -750,6 +777,39 @@ bool IsServiceRunning(const std::wstring& service_name) {
 HKEY UpdaterScopeToHKeyRoot(UpdaterScope scope) {
   return scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE
                                         : HKEY_CURRENT_USER;
+}
+
+absl::optional<OSVERSIONINFOEX> GetOSVersion() {
+  // `::RtlGetVersion` is being used here instead of `::GetVersionEx`, because
+  // the latter function can return the incorrect version if it is shimmed using
+  // an app compat shim.
+  using RtlGetVersion = LONG(WINAPI*)(OSVERSIONINFOEX*);
+  static const RtlGetVersion rtl_get_version = reinterpret_cast<RtlGetVersion>(
+      ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"));
+  if (!rtl_get_version)
+    return absl::nullopt;
+
+  OSVERSIONINFOEX os_out = {};
+  os_out.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+  rtl_get_version(&os_out);
+  if (!os_out.dwMajorVersion)
+    return absl::nullopt;
+
+  return os_out;
+}
+
+bool CompareOSVersions(const OSVERSIONINFOEX& os_version, BYTE oper) {
+  DCHECK(oper);
+
+  constexpr DWORD kOSTypeMask = VER_MAJORVERSION | VER_MINORVERSION |
+                                VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
+  constexpr DWORD kBuildTypeMask = VER_BUILDNUMBER;
+
+  // If the OS and the service pack match, return the build number comparison.
+  return CompareOSVersionsInternal(os_version, kOSTypeMask, VER_EQUAL)
+             ? CompareOSVersionsInternal(os_version, kBuildTypeMask, oper)
+             : CompareOSVersionsInternal(os_version, kOSTypeMask, oper);
 }
 
 }  // namespace updater

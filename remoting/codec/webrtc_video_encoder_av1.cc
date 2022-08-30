@@ -51,9 +51,10 @@ void WebrtcVideoEncoderAV1::SetLosslessColor(bool want_lossless) {
 }
 
 bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
-  // Set the config's width and height now that it's known.
+  // Set the width, height, and thread count now that the frame size is known.
   config_.g_w = size.width();
   config_.g_h = size.height();
+  config_.g_threads = GetEncoderThreadCount(config_.g_w);
 
   // Initialize an encoder instance.
   scoped_aom_codec codec(new aom_codec_ctx_t, DestroyAomCodecContext);
@@ -86,7 +87,7 @@ bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
   // TODO(joedow): Experiment with AV1E_SET_TILE_ROWS. Note that the total
   // number of COLUMNS and ROWS should add up to, at most, config_.g_threads.
 
-  // These make realtime encoder faster.
+  // These make realtime encoding faster.
   error =
       aom_codec_control(codec.get(), AV1E_SET_TUNE_CONTENT, AOM_CONTENT_SCREEN);
   DCHECK_EQ(error, AOM_CODEC_OK) << "Failed to set AOM_CONTENT_SCREEN";
@@ -219,17 +220,17 @@ void WebrtcVideoEncoderAV1::ConfigureCodecParams() {
   // Encoder config values are defined in:
   // //third_party/libaom/source/libaom/aom/aom_encoder.h
   config_.g_profile = 0;
-  // Width and height are reset once the frame size is known.
+  // Width, height, and thread count are set once the frame size is known.
   config_.g_w = 0;
   config_.g_h = 0;
+  config_.g_threads = 0;
+
   config_.g_input_bit_depth = 8;
   config_.g_pass = AOM_RC_ONE_PASS;
   config_.g_lag_in_frames = 0;
   config_.g_error_resilient = 0;
   config_.g_timebase.num = 1;
   config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
-  config_.g_threads =
-      std::min(((base::SysInfo::NumberOfProcessors() + 1) / 2), 8);
 
   config_.kf_mode = AOM_KF_DISABLED;
 
@@ -336,7 +337,7 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   bool got_data = false;
 
   auto encoded_frame = std::make_unique<EncodedFrame>();
-  encoded_frame->size = frame_size;
+  encoded_frame->dimensions = frame_size;
   encoded_frame->codec = webrtc::kVideoCodecAV1;
 
   while (!got_data) {
@@ -348,8 +349,8 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     switch (aom_packet->kind) {
       case AOM_CODEC_CX_FRAME_PKT: {
         got_data = true;
-        encoded_frame->data.assign(
-            reinterpret_cast<const char*>(aom_packet->data.frame.buf),
+        encoded_frame->data = webrtc::EncodedImageBuffer::Create(
+            reinterpret_cast<const uint8_t*>(aom_packet->data.frame.buf),
             aom_packet->data.frame.sz);
         encoded_frame->key_frame =
             aom_packet->data.frame.flags & AOM_FRAME_IS_KEY;

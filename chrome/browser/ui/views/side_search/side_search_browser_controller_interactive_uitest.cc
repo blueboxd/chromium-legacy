@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
@@ -221,7 +222,7 @@ class SideSearchBrowserControllerTest
             SideSearchBrowserController::VIEW_ID_SIDE_PANEL_CLOSE_BUTTON)));
   }
 
-  SidePanel* GetSidePanelFor(Browser* browser) {
+  virtual SidePanel* GetSidePanelFor(Browser* browser) {
     return BrowserViewFor(browser)->side_search_side_panel_for_testing();
   }
 
@@ -434,8 +435,16 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
       SideSearchAvailabilityChangeType::kBecomeAvailable, 1);
 }
 
+// TODO(crbug.com/1340387): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_SidePanelButtonShowsCorrectlyMultipleTabs \
+  DISABLED_SidePanelButtonShowsCorrectlyMultipleTabs
+#else
+#define MAYBE_SidePanelButtonShowsCorrectlyMultipleTabs \
+  SidePanelButtonShowsCorrectlyMultipleTabs
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
-                       SidePanelButtonShowsCorrectlyMultipleTabs) {
+                       MAYBE_SidePanelButtonShowsCorrectlyMultipleTabs) {
   // The side panel button should never be visible on non-matching pages.
   AppendTab(browser(), GetNonMatchingUrl());
   ActivateTabAt(browser(), 1);
@@ -569,9 +578,17 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
   EXPECT_FALSE(side_panel->Contains(focus_manager->GetFocusedView()));
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
+  DISABLED_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
+#else
+#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
+  SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
+#endif
 IN_PROC_BROWSER_TEST_P(
     SideSearchBrowserControllerTest,
-    SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
+    MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
   NavigateToMatchingSearchPageAndOpenSidePanel(browser());
 
   Browser* browser2 = CreateBrowser(browser()->profile());
@@ -663,8 +680,16 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
       "SideSearch.SidePanel.TimeShownOpenedViaTabSwitch", 2);
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1341272): Test is flaky on Mac.
+#define MAYBE_SwitchingTabsHandlesFocusCorrectly \
+  DISABLED_SwitchingTabsHandlesFocusCorrectly
+#else
+#define MAYBE_SwitchingTabsHandlesFocusCorrectly \
+  SwitchingTabsHandlesFocusCorrectly
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
-                       SwitchingTabsHandlesFocusCorrectly) {
+                       MAYBE_SwitchingTabsHandlesFocusCorrectly) {
   auto* browser_view = BrowserViewFor(browser());
   auto* side_panel = GetSidePanelFor(browser());
   auto* contents_view = browser_view->contents_web_view();
@@ -720,8 +745,15 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
   EXPECT_FALSE(side_panel->GetVisible());
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_SidePanelCrashesCloseSidePanel \
+  DISABLED_SidePanelCrashesCloseSidePanel
+#else
+#define MAYBE_SidePanelCrashesCloseSidePanel SidePanelCrashesCloseSidePanel
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
-                       SidePanelCrashesCloseSidePanel) {
+                       MAYBE_SidePanelCrashesCloseSidePanel) {
   // Open two tabs with the side panel open.
   NavigateToMatchingSearchPageAndOpenSidePanel(browser());
   AppendTab(browser(), GetNonMatchingUrl());
@@ -833,6 +865,177 @@ IN_PROC_BROWSER_TEST_P(SideSearchIconViewTest,
   histogram_tester_.ExpectBucketCount(
       "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
       SideSearchPageActionLabelVisibility::kNotVisible, 1);
+}
+
+// Fixture for testing side panel v2 only
+// TODO(yuhengh): Break this away to its own test file.
+class SideSearchV2Test : public SideSearchBrowserControllerTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({features::kUnifiedSidePanel}, {});
+    SideSearchBrowserControllerTest::SetUp();
+  }
+  void TearDown() override {
+    SideSearchBrowserControllerTest::TearDown();
+    scoped_feature_list_.Reset();
+  }
+  SidePanel* GetSidePanelFor(Browser* browser) override {
+    return BrowserViewFor(browser)->right_aligned_side_panel();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Only instantiate tests for DSE configuration.
+INSTANTIATE_TEST_SUITE_P(All, SideSearchV2Test, ::testing::Values(true));
+
+IN_PROC_BROWSER_TEST_P(SideSearchV2Test, SwitchSidePanelInSingleTab) {
+  auto* browser_view = BrowserViewFor(browser());
+  auto* coordinator = browser_view->side_panel_coordinator();
+  coordinator->SetNoDelaysForTesting();
+
+  // Tab 0 with side search available and open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to reading list side panel.
+  coordinator->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(SidePanelEntry::Id::kReadingList,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch back to side search side panel.
+  coordinator->Show(SidePanelEntry::Id::kSideSearch);
+  EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+}
+
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1341272): Test is flaky on Mac.
+#define MAYBE_SwitchTabsWithGlobalSidePanel \
+  DISABLED_SwitchTabsWithGlobalSidePanel
+#else
+#define MAYBE_SwitchTabsWithGlobalSidePanel SwitchTabsWithGlobalSidePanel
+#endif
+IN_PROC_BROWSER_TEST_P(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
+  auto* browser_view = BrowserViewFor(browser());
+  auto* coordinator = browser_view->side_panel_coordinator();
+  coordinator->SetNoDelaysForTesting();
+
+  // Tab 0 without side search available and open with reading list.
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
+  coordinator->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_EQ(SidePanelEntry::Id::kReadingList,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Tab 1 with side search available and open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Tab 2 with side search available and open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Tab 3 with side search available but not open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(SidePanelEntry::Id::kReadingList,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 0, side panel is open with reading list.
+  ActivateTabAt(browser(), 0);
+  EXPECT_EQ(SidePanelEntry::Id::kReadingList,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 1, side panel is open with side search.
+  ActivateTabAt(browser(), 1);
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 2, side panel is open with side search.
+  ActivateTabAt(browser(), 2);
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 3, side panel is open with reading list.
+  ActivateTabAt(browser(), 3);
+  EXPECT_EQ(SidePanelEntry::Id::kReadingList,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+}
+
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_SwitchTabsWithoutGlobalSidePanel \
+  DISABLED_SwitchTabsWithoutGlobalSidePanel
+#else
+#define MAYBE_SwitchTabsWithoutGlobalSidePanel SwitchTabsWithoutGlobalSidePanel
+#endif
+IN_PROC_BROWSER_TEST_P(SideSearchV2Test,
+                       MAYBE_SwitchTabsWithoutGlobalSidePanel) {
+  auto* browser_view = BrowserViewFor(browser());
+  auto* coordinator = browser_view->side_panel_coordinator();
+
+  // Tab 0 without side search available.
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
+
+  // Tab 1 with side search available and open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Tab 2 with side search available and open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Tab 3 with side search available but not open.
+  AppendTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
+
+  // Switch to tab 0, side panel is closed.
+  ActivateTabAt(browser(), 0);
+  EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
+
+  // Switch to tab 1, side panel is open with side search.
+  ActivateTabAt(browser(), 1);
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 2, side panel is open with side search.
+  ActivateTabAt(browser(), 2);
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+
+  // Switch to tab 3, side panel is closed.
+  ActivateTabAt(browser(), 3);
+  EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
 }
 
 // Fixture for testing side panel clobbering behavior with global panels.
@@ -987,9 +1190,17 @@ IN_PROC_BROWSER_TEST_P(SideSearchDSEClobberingTest,
   }
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows \
+  DISABLED_ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows
+#else
+#define MAYBE_ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows \
+  ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows
+#endif
 IN_PROC_BROWSER_TEST_P(
     SideSearchDSEClobberingTest,
-    ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows) {
+    MAYBE_ContextualAndGlobalPanelsBehaveAsExpectedWhenDraggingBetweenWindows) {
   // Open two browsers with three tabs each. Both have open global side panel
   // and an open side search panel for their last tab.
   Browser* browser2 = CreateBrowser(browser()->profile());
@@ -1032,8 +1243,16 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_FALSE(side_search_panel1->GetVisible());
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_ClosingTheContextualPanelClosesAllBrowserPanels \
+  DISABLED_ClosingTheContextualPanelClosesAllBrowserPanels
+#else
+#define MAYBE_ClosingTheContextualPanelClosesAllBrowserPanels \
+  ClosingTheContextualPanelClosesAllBrowserPanels
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchDSEClobberingTest,
-                       ClosingTheContextualPanelClosesAllBrowserPanels) {
+                       MAYBE_ClosingTheContextualPanelClosesAllBrowserPanels) {
   SetupBrowserForClobberingTests(browser());
   auto* global_panel = GetGlobalSidePanelFor(browser());
   auto* side_search_panel = GetSidePanelFor(browser());
@@ -1116,8 +1335,15 @@ class SideSearchExtensionsTest : public SideSearchBrowserControllerTest {
 
 INSTANTIATE_TEST_SUITE_P(All, SideSearchExtensionsTest, ::testing::Bool());
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340387): Test is flaky on Mac.
+#define MAYBE_ContentScriptsExecuteInSidePanel \
+  DISABLED_ContentScriptsExecuteInSidePanel
+#else
+#define MAYBE_ContentScriptsExecuteInSidePanel ContentScriptsExecuteInSidePanel
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchExtensionsTest,
-                       ContentScriptsExecuteInSidePanel) {
+                       MAYBE_ContentScriptsExecuteInSidePanel) {
   const GURL first_url = embedded_test_server()->GetURL("first.example", "/");
   const GURL second_url = embedded_test_server()->GetURL("second.example", "/");
   const GURL third_url = embedded_test_server()->GetURL("third.example", "/");
@@ -1159,8 +1385,16 @@ IN_PROC_BROWSER_TEST_P(SideSearchExtensionsTest,
   EXPECT_EQ("", content::EvalJs(side_contents, "document.body.innerText;"));
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1340903): Test is flaky on Mac.
+#define MAYBE_WebRequestInterceptsSidePanelNavigations \
+  DISABLED_WebRequestInterceptsSidePanelNavigations
+#else
+#define MAYBE_WebRequestInterceptsSidePanelNavigations \
+  WebRequestInterceptsSidePanelNavigations
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchExtensionsTest,
-                       WebRequestInterceptsSidePanelNavigations) {
+                       MAYBE_WebRequestInterceptsSidePanelNavigations) {
   const GURL first_url = embedded_test_server()->GetURL("first.example", "/");
   const GURL second_url = embedded_test_server()->GetURL("second.example", "/");
   const GURL third_url = embedded_test_server()->GetURL("third.example", "/");

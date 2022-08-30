@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> tråde, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Nye funktioner er tilgængelige. Tryk på pil op for at få flere oplysninger.</translation>
 <translation id="1059913517121127803">Kunne ikke begynde at scanne</translation>
+<translation id="1062407476771304334">Erstat</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">En firewall blev registreret</translation>
 <translation id="1075811647922107217">Sidestørrelse</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Bruger</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Vinduet Opdater firmware for eksterne enheder er åbent. <ph name="NUM_UPDATES" /> opdateringer er tilgængelige.</translation>
+<translation id="1145516343487477149">Find artikler i Hjælp og svar på almindelige spørgsmål om Chromebook</translation>
+<translation id="1165039591588034296">Fejl</translation>
 <translation id="1175697296044146566">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Gennemsnitligt (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> administrerer din enhed og kan muligvis overvåge din aktivitet.</translation>
 <translation id="147809995039451286">Opdateringen kunne ikke downloades</translation>
 <translation id="1478594628797167447">Scanner</translation>
+<translation id="1483493594462132177">Send</translation>
 <translation id="1491076385728777984">Opdaterer firmware på <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> administrerer denne bruger, og vedkommende kan administrere indstillinger og overvåge brugeraktivitet via fjernadgang.</translation>
 <translation id="150962533380566081">Ugyldig PUK-kode.</translation>
@@ -82,7 +86,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kør opladningstest</translation>
 <translation id="1631385268983122904">Du skal ikke samle enheden endnu.</translation>
-<translation id="1639239467298939599">Indlæser</translation>
+<translation id="1639239467298939599">Indlæser...</translation>
 <translation id="1641857168437328880">Dokumentindføring (én side)</translation>
 <translation id="1643449475550628585">Skift baggrundsbillede dagligt</translation>
 <translation id="1644574205037202324">Historik</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Billederne kunne ikke indlæses. Tjek din netværksforbindelse, eller prøv at indlæse billederne igen.</translation>
 <translation id="1751249301761991853">Personlig</translation>
 <translation id="1753496554272155572">Forlad forhåndsvisning af baggrund</translation>
+<translation id="1755556344721611131">Appen Diagnostik</translation>
 <translation id="175763766237925754">Godt (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Deaktiver Mørkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Deaktiver mørk tilstand</translation>
+<translation id="1881188606372070653">Gå til <ph name="BEGIN_LINK1" />siden Hjælp til Juridisk<ph name="END_LINK1" /> for at anmode om indholdsændringer af juridiske årsager. Visse konto- og systemoplysninger kan blive sendt til Google. Vi bruger de oplysninger, du giver os, til at løse tekniske problemer og forbedre vores tjenester. Oplysningerne håndteres i henhold til vores <ph name="BEGIN_LINK2" />privatlivspolitik<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />servicevilkår<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Hardwarerevision</translation>
+<translation id="1904932688895783618">Her er nogle andre nyttige ressourcer:</translation>
 <translation id="1905710495812624430">Det maksimale antal forsøg er overskredet.</translation>
 <translation id="1908234395526491708">Mislykkede UDP-anmodninger</translation>
 <translation id="1932611479324127242">Deaktivering af batteri</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Prøv fejlfindingstrinnene</translation>
 <translation id="2016848882344942759">--intet white-label--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Opret forbindelse til et netværk, og genindlæs siden for at se baggrunden.</translation>
 <translation id="2080070583977670716">Flere indstillinger</translation>
 <translation id="2085089206770112532">Reducer skærmens lysstyrke</translation>
 <translation id="2105810540595158374">Enheden er en spilcontroller.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Aktivér mørkt tilstand</translation>
 <translation id="2177831236093724629">Der blev fundet <ph name="LINK_BEGIN" />ukvalificerede komponenter<ph name="LINK_END" />. Opdater til den nyeste version af Chrome OS for at sikre, at alle kvalificerede komponenter identificeres.</translation>
 <translation id="2180197493692062006">Der opstod en fejl. Prøv at åbne appen igen.</translation>
+<translation id="2182088270354640012">Tak for din feedback. Din feedback er med til at forbedre Chrome OS og gennemgås af Chrome OS-teamet. Vi modtager et stort antal rapporter, så du modtager ikke et direkte svar.</translation>
 <translation id="2209788852729124853">Nulstil trafiktællere</translation>
 <translation id="2212733584906323460">Navneløsning</translation>
 <translation id="2217935453350629363">Nuværende hastighed</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Diagnosticering af forbindelse</translation>
 <translation id="3084958266922136097">Deaktiver Pauseskærm</translation>
 <translation id="3091839911843451378">Handlingen mislykkedes – Stoppede</translation>
+<translation id="3096753366938912951">Læg låget på en jævn overflade</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Enheden har forbindelse.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Søger efter scannere</translation>
 <translation id="3246869037381808805">Udskriftjobs, der er ældre end 1 dag, fjernes</translation>
 <translation id="3268178239013324452">Handlingen mislykkedes – Åben låge</translation>
+<translation id="3275729367986477355">Billede til avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Rediger fil}one{Rediger fil}other{Rediger filer}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Nøgleretning</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Skift baggrund</translation>
 <translation id="360565022852130722">Wi-Fi-netværket er beskyttet med den svage protokol WEP 802.1x</translation>
 <translation id="3606583719724308068">Stor forsinkelse til HTTPS-websites</translation>
+<translation id="361575905210396100">Tak for din feedback</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3632579075709132555">Slå Privatlivsskærm til/fra</translation>
+<translation id="3643198267586205643">Opdater OS</translation>
 <translation id="3643810137582748570">Spring kalibreringen over</translation>
 <translation id="3651050199673793219">Vælg en temperaturenhed</translation>
 <translation id="3678765385266369662">Vælg, hvordan du vil deaktivere Write Protect</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Lås</translation>
 <translation id="38114475217616659">Ryd hele historikken</translation>
 <translation id="3820172043799983114">Ugyldig pinkode.</translation>
+<translation id="3824259034819781947">Vedhæft filer</translation>
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3856304145690230735">Basegyroskop</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Signalstyrke</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="473775607612524610">Opdater</translation>
+<translation id="4740255236714854844">Placer basen på en jævn overflade</translation>
 <translation id="4744944742468440486">Oplysninger relateret til det, du har markeret</translation>
 <translation id="4751272708893364980">Se logs over godkendelse af varereturnering</translation>
 <translation id="4773299976671772492">Stoppet</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Få yderligere hjælp ved at gå til <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritme til komprimering</translation>
 <translation id="4794140124556169553">Systemets ydeevne kan blive påvirket under kørsel af en CPU-test</translation>
+<translation id="4800589996161293643">Hjælpeforum for Chromebook</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4808449224298348341">Udskriftsjobbet <ph name="DOCUMENT_TITLE" /> blev annulleret</translation>
 <translation id="4809927044794281115">Lyst tema</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Se billeder, klokken, vejret og medieoplysninger, når din skærm er inaktiv.</translation>
 <translation id="5039804452771397117">Tillad</translation>
+<translation id="5044978354634658544">Indsæt USB-nøgle</translation>
 <translation id="5049856988445523908">SIM-kortet er låst (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Gruppenavn</translation>
 <translation id="5051044138948155788">Dette er den eneste side. Du videreføres til startsiden for scanning.</translation>
@@ -470,10 +487,12 @@
 <translation id="5168185087976003268">Batteriets tilstand</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
 <translation id="5179530508336824319">Aktivér Write Protect for at fortsætte til næste skærm. Gå til producentens supportside for at få vejledning.</translation>
+<translation id="5181140330217080051">Downloader</translation>
 <translation id="5190187232518914472">Genoplev dine bedste minder. Gå til <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" /> for at tilføje eller redigere album.</translation>
 <translation id="5212543919916444558">Jeg kan ikke finde noget på skærmen, jeg kan hjælpe med. Prøv at trykke på mikrofonen for at spørge mig om noget.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Log ud</translation>
+<translation id="522307662484862935">Undlad at medtage mailadresse</translation>
 <translation id="5227902338748591677">Tidsplan for Mørkt tema</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -525,6 +544,7 @@
 <translation id="5620281292257375798">Kun internt</translation>
 <translation id="5649768706273821470">Lyt</translation>
 <translation id="5655283760733841251">Øg tastaturets lysstyrke</translation>
+<translation id="5659593005791499971">Mail</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familie</translation>
@@ -537,6 +557,7 @@
 <translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="5784136236926853061">Stor HTTP-forsinkelse</translation>
 <translation id="578753362485952307">Hvis du vil genbruge et bundkort i en anden enhed, skal du gå til <ph name="LINK_BEGIN" />genbrugsprocessen<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Fuldført</translation>
 <translation id="5832805196449965646">Tilføj person</translation>
 <translation id="583281660410589416">Ukendt</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -598,6 +619,7 @@
 <translation id="6284632978374966585">Aktivér Mørkt tema</translation>
 <translation id="6295178529664209245">Vil du fortsætte reparationen?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />-testen er annulleret</translation>
+<translation id="631063167932043783">Appen Udforsk</translation>
 <translation id="6319207335391420837">Opdater firmware på <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Aktivér Pauseskærm</translation>
 <translation id="6325525973963619867">Mislykket</translation>
@@ -609,6 +631,7 @@
 <translation id="6379086450106841622">Touchskærm</translation>
 <translation id="6381741036071372448">Test dit tastatur</translation>
 <translation id="6388847657025262518">Scannerens dokumentføder sidder fast. Løs problemet, og prøv igen.</translation>
+<translation id="6394634179843537518">Tilføj fil</translation>
 <translation id="6410257289063177456">Billedfiler</translation>
 <translation id="641081527798843608">Emnematch</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -625,6 +648,7 @@
 <translation id="6516990319416533844">Du kan teste, hvor hurtigt batteriet oplades, ved at aflade det i en kortere periode</translation>
 <translation id="6517239166834772319">Udforsk</translation>
 <translation id="6527081081771465939">Ukendt Wi-Fi-sikkerhedsprotokol</translation>
+<translation id="6535178685492749208">Du er offline. Din feedback sendes senere.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Handlingen mislykkedes – Ingen forbindelse til printer</translation>
 <translation id="6566314079205407217">Scanning af flere sider</translation>
@@ -642,6 +666,7 @@
 <translation id="6659594942844771486">Fane</translation>
 <translation id="6692996468359469499">Få oplysninger om det, du har markeret</translation>
 <translation id="6704062477274546131">DNS-udførelse</translation>
+<translation id="6721744718589119342">Vi sender dig muligvis en mail med en opdatering eller anmodning om flere oplysninger</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6723847290197874913">Tastaturlys</translation>
 <translation id="672609503628871915">Se de nye funktioner</translation>
@@ -702,10 +727,12 @@
 <translation id="7297226631177386107">Der kan ikke oprettes forbindelse gennem firewallen til HTTPS-websites</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Spørg eksperterne i hjælpeforummet for Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tryk på søgetasten og mellemrumstasten for at se resultater i Google Søgning.</translation>
 <translation id="7343649194310845056">Netværksenheder</translation>
 <translation id="7359657277149375382">Filtype</translation>
+<translation id="73631062356239394">Del diagnosticeringsdata</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">Varenummer</translation>
 <translation id="7397270852490618635">Deaktiver Lyst tema</translation>
@@ -736,15 +763,18 @@
 <translation id="7657530360897961171">Fejl ved reparation af <ph name="DEVICE_TYPE" /></translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665800271478495366">Skift avatar</translation>
+<translation id="7682274994254393134">Reparationsstart</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
 <translation id="7701040980221191251">Ingen</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Antal gennemførte cyklusser</translation>
 <translation id="7747039790905080783">Forhåndsdelt nøgle</translation>
 <translation id="7762130827864645708">Din adgangskode er ændret. Brug den nye adgangskode fremover.</translation>
+<translation id="7762839321248874531">Send <ph name="BEGIN_LINK1" />system- og appoplysninger<ph name="END_LINK1" /> samt <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Match af domænesuffiks</translation>
 <translation id="7769672763586021400">Model-id</translation>
 <translation id="7784116172884276937">Der er ikke konfigureret nogen DNS-servere</translation>
+<translation id="779591286616261875">Send ny rapport</translation>
 <translation id="7799817062559422778">Lys tilstand</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -811,6 +841,7 @@
 <translation id="8382302752385457774">White-label</translation>
 <translation id="8395584934117017006">Denne <ph name="DEVICE_TYPE" /> administreres af en virksomhed</translation>
 <translation id="8398927464629426868">Den aktuelle hastighed for opladning eller afladning på enheden</translation>
+<translation id="8420955526972171689">Kør tests og fejlfinding af hardwareproblemer</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Indbygget tastatur</translation>
 <translation id="8431300646573772016">Nyt i Chrome OS</translation>
@@ -896,6 +927,7 @@
 <translation id="9082718469794970195">Brug denne video</translation>
 <translation id="9087578468327036362">Rapportér denne forespørgsel</translation>
 <translation id="9088306295921699330">Aktuelt forbrug</translation>
+<translation id="9092255287806472980">Din feedback er med til at forbedre Chrome OS og gennemgås af vores team. Vi modtager et stort antal rapporter, så vi kan ikke sende dig et svar.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Du er nødt til at skille enheden ad</translation>
 <translation id="9098156406873149060">Behold brugerdata</translation>
@@ -910,6 +942,7 @@
 <translation id="9149391708638971077">Kør hukommelsestest</translation>
 <translation id="9173638680043580060">Mindre end ét minut tilbage</translation>
 <translation id="917720651393141712">Test</translation>
+<translation id="9188992814426075118">Dit tastatur kan automatisk tilpasses din baggrund</translation>
 <translation id="9204237731135241582">Gateway kan ikke kontaktes fra Android-apps</translation>
 <translation id="9211490828691860325">Alle skriveborde</translation>
 <translation id="922179502584117429">Den aktuelle version, <ph name="VERSION_NUMBER" />, er forældet</translation>

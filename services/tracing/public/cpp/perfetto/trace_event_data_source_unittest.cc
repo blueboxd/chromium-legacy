@@ -27,7 +27,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/task_execution_macros.h"
-#include "base/trace_event/thread_instruction_count.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
 #include "base/tracing/trace_time.h"
@@ -35,6 +34,7 @@
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/perfetto/test_utils.h"
+#include "services/tracing/public/cpp/perfetto/custom_event_recorder.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/perfetto/producer_test_utils.h"
@@ -72,9 +72,11 @@ constexpr const char kCategoryGroup[] = "browser";
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 std::unique_ptr<perfetto::TracingSession> g_tracing_session;
+constexpr const char kPrivacyFiltered[] = "";
 #else
 constexpr uint32_t kClockIdAbsolute = 64;
 constexpr uint32_t kClockIdIncremental = 65;
+constexpr const char kPrivacyFiltered[] = "PRIVACY_FILTERED";
 #endif
 
 class TraceEventDataSourceTest
@@ -107,7 +109,7 @@ class TraceEventDataSourceTest
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     PerfettoTracedProcess::GetTaskRunner()->ResetTaskRunnerForTesting(
         base::ThreadTaskRunnerHandle::Get());
-    TraceEventDataSource::GetInstance()->ResetForTesting();
+    CustomEventRecorder::GetInstance();  //->ResetForTesting();
     TraceEventMetadataSource::GetInstance()->ResetForTesting();
 #else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
@@ -267,7 +269,7 @@ class TraceEventDataSourceTest
 
   const perfetto::protos::TracePacket* GetFinalizedPacket(size_t packet_index) {
     auto& packets = GetFinalizedPackets();
-    EXPECT_GT(packets.size(), packet_index);
+    CHECK(packet_index < packets.size());
     return packets.at(packet_index).get();
   }
 
@@ -345,15 +347,12 @@ class TraceEventDataSourceTest
         packet->trace_packet_defaults().track_event_defaults().track_uuid(),
         0u);
 
-    // TODO(skyostil): Add support for thread ticks.
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     if (base::ThreadTicks::IsSupported()) {
       EXPECT_GT(packet->trace_packet_defaults()
                     .track_event_defaults()
                     .extra_counter_track_uuids_size(),
                 0);
     }
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
     default_track_uuid_ =
         packet->trace_packet_defaults().track_event_defaults().track_uuid();
@@ -457,10 +456,7 @@ class TraceEventDataSourceTest
 
     EXPECT_EQ(packet->track_descriptor().counter().type(),
               perfetto::protos::CounterDescriptor::COUNTER_THREAD_TIME_NS);
-    // TODO(mohitms): Support/enable microsecond thread time counters.
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     EXPECT_EQ(packet->track_descriptor().counter().unit_multiplier(), 1000u);
-#endif
   }
 
   void ExpectProcessTrack(const perfetto::protos::TracePacket* packet,
@@ -480,7 +476,9 @@ class TraceEventDataSourceTest
     EXPECT_NE(packet->track_descriptor().process().pid(), 0);
 
     if (filtering_enabled) {
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
       EXPECT_FALSE(packet->track_descriptor().process().has_process_name());
+#endif
     } else {
       EXPECT_EQ(packet->track_descriptor().process().process_name(),
                 kTestProcess);
@@ -645,9 +643,9 @@ class TraceEventDataSourceTest
     }
 
     if (name.iid > 0) {
-      EXPECT_EQ(packet->track_event().name_iid(), name.iid);
+      EXPECT_EQ(name.iid, packet->track_event().name_iid());
     } else if (!name.value.empty()) {
-      EXPECT_EQ(packet->track_event().name(), name.value);
+      EXPECT_EQ(name.value, packet->track_event().name());
     }
 
     TrackEvent::Type track_event_type;
@@ -1557,7 +1555,7 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, kEventName, handle, /*thread_id=*/1,
       /*explicit_timestamps=*/true, base::TimeTicks() + base::Microseconds(30),
-      base::ThreadTicks(), base::trace_event::ThreadInstructionCount());
+      base::ThreadTicks());
 
   // Updating the duration of an event that wasn't added before tracing begun
   // will only emit an END event, again without category or name.
@@ -1565,7 +1563,7 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, "other_event_name", handle, /*thread_id=*/1,
       /*explicit_timestamps=*/true, base::TimeTicks() + base::Microseconds(40),
-      base::ThreadTicks(), base::trace_event::ThreadInstructionCount());
+      base::ThreadTicks());
 
   // Complete event for the current thread emits thread time, too.
   trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
@@ -1610,8 +1608,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
       /*absolute_timestamp=*/10, /*tid_override=*/0);
 }
 
+// TODO(b/236578755)
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-// TODO(skyostil): Add support for thread time.
 #define MAYBE_ExplicitThreadTimeForDifferentThread \
   DISABLED_ExplicitThreadTimeForDifferentThread
 #else
@@ -1908,21 +1906,20 @@ TEST_F(TraceEventDataSourceTest, InternedStrings) {
     ExpectInternedEventNames(e_packet3, {{2u, "e2"}});
     ExpectInternedDebugAnnotationNames(e_packet3, {{2u, "arg2"}});
 
-    // Resetting the interning state causes ThreadDescriptor and interning
-    // entries to be emitted again, with the same interning IDs.
-    TraceEventDataSource::GetInstance()->ClearIncrementalState();
-
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     // TODO(skyostil): Perfetto doesn't let us clear the interning state
     // explicitly, so not testing that here for now.
     if (!i)
       break;
+#else
+    // Resetting the interning state causes ThreadDescriptor and interning
+    // entries to be emitted again, with the same interning IDs.
+    TraceEventDataSource::GetInstance()->ClearIncrementalState();
 #endif
   }
 }
 
 // TODO(skyostil): Implement post-process event filtering.
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 TEST_F(TraceEventDataSourceTest, FilteringSimpleTraceEvent) {
   StartTraceEventDataSource(/* privacy_filtering_enabled =*/true);
   TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
@@ -1942,8 +1939,13 @@ TEST_F(TraceEventDataSourceTest, FilteringSimpleTraceEvent) {
 
 TEST_F(TraceEventDataSourceTest, FilteringEventWithArgs) {
   StartTraceEventDataSource(/* privacy_filtering_enabled =*/true);
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // New SDK does not accept TRACE_EVENT_FLAG values.
+  TRACE_EVENT_INSTANT(kCategoryGroup, "bar", "foo", 42, "bar", "string_val");
+#else
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
                        42, "bar", "string_val");
+#endif
 
   size_t packet_index = ExpectStandardPreamble(
       /*start_packet_index=*/0u,
@@ -1963,6 +1965,18 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithArgs) {
 
 TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
   StartTraceEventDataSource(/* privacy_filtering_enabled =*/true);
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // 1). Perfetto SDK does not accept TRACE_EVENT_FLAG values.
+  // 2). To include dynamic event names despite privacy filtering, we need to
+  //     manually `set event()->set_name()`. Java names are a valid use case of
+  //     this.
+  TRACE_EVENT_INSTANT(kCategoryGroup, TRACE_STR_COPY(std::string("bar")), "arg1_name",
+                      "arg1_val", "arg2_name", "arg2_val");
+  TRACE_EVENT_INSTANT(
+      kCategoryGroup, nullptr,
+      [](perfetto::EventContext& ev) { ev.event()->set_name("javaName"); },
+      "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+#else
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar",
                        TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY,
                        "arg1_name", "arg1_val", "arg2_name", "arg2_val");
@@ -1970,13 +1984,14 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
                        TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY |
                            TRACE_EVENT_FLAG_JAVA_STRING_LITERALS,
                        "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+#endif
 
   size_t packet_index = ExpectStandardPreamble(
       /*start_packet_index=*/0u,
       /*privacy_filtering_enabled=*/true);
 
   auto* e_packet = GetFinalizedPacket(packet_index++);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, "PRIVACY_FILTERED",
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, kPrivacyFiltered,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
 
   const auto& annotations = e_packet->track_event().debug_annotations();
@@ -1994,7 +2009,6 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
 
   ExpectInternedDebugAnnotationNames(e_packet, {});
 }
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
   auto* metadata_source = TraceEventMetadataSource::GetInstance();

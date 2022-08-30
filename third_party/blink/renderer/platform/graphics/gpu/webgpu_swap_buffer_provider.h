@@ -41,11 +41,12 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
       WGPUTextureFormat format);
   ~WebGPUSwapBufferProvider() override;
 
-  viz::ResourceFormat Format() const { return format_; }
+  viz::ResourceFormat Format() const;
   const gfx::Size& Size() const;
   cc::Layer* CcLayer();
   void SetFilterQuality(cc::PaintFlags::FilterQuality);
   void Neuter();
+  void DiscardCurrentSwapBuffer();
   WGPUTexture GetNewTexture(const gfx::Size& size);
 
   struct WebGPUMailboxTextureAndSize {
@@ -108,10 +109,9 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   Client* client_;
   WGPUDevice device_;
+  WGPUTextureDescriptor texture_desc_;
   scoped_refptr<cc::TextureLayer> layer_;
   bool neutered_ = false;
-
-  WGPUTextureUsage usage_;
 
   // The maximum number of in-flight swap-buffers waiting to be used for
   // recycling.
@@ -125,7 +125,6 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   uint32_t wire_texture_id_ = 0;
   uint32_t wire_texture_generation_ = 0;
   std::unique_ptr<SwapBuffer> current_swap_buffer_;
-  viz::ResourceFormat format_;
 };
 
 }  // namespace blink

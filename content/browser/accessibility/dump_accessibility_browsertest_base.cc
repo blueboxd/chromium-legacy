@@ -52,7 +52,8 @@ bool AccessibilityTreeContainsAllChildTrees(const ui::AXNode& node) {
   if (!num_children) {
     // No children. All content is contained unless there is supposed to be
     // a child tree for this node.
-    return !ui::IsChildTreeOwner(node.GetRole());
+    return !ui::IsChildTreeOwner(node.GetRole()) ||
+           node.data().GetRestriction() == ax::mojom::Restriction::kDisabled;
   }
 
   for (size_t i = 0; i < num_children; i++) {
@@ -185,7 +186,7 @@ void DumpAccessibilityTestBase::WaitForEndOfTest() const {
   AccessibilityNotificationWaiter waiter(GetWebContents(), ui::kAXModeComplete,
                                          ax::mojom::Event::kEndOfTest);
   GetManager()->SignalEndOfTest();
-  waiter.WaitForNotification();
+  ASSERT_TRUE(waiter.WaitForNotification());
 }
 
 void DumpAccessibilityTestBase::PerformAndWaitForDefaultActions() {
@@ -223,7 +224,7 @@ void DumpAccessibilityTestBase::PerformAndWaitForDefaultActions() {
     action_data.action = ax::mojom::Action::kDoDefault;
     action_element->AccessibilityPerformAction(action_data);
 
-    waiter.WaitForNotification();
+    ASSERT_TRUE(waiter.WaitForNotification());
   }
 }
 
@@ -253,7 +254,7 @@ void DumpAccessibilityTestBase::WaitForExpectedText() {
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
         GetWebContents(), ui::kAXModeComplete, ax::mojom::Event::kNone);
-    accessibility_waiter.WaitForNotification();
+    ASSERT_TRUE(accessibility_waiter.WaitForNotification());
   }
 }
 
@@ -310,17 +311,9 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
       test_helper_.GetExpectationFilePath(file_path, expectations_qualifier);
   if (!expected_file.empty()) {
     expected_lines = test_helper_.LoadExpectationFile(expected_file);
-  }
-#if BUILDFLAG(IS_FUCHSIA)
-  else {
-    LOG(INFO) << "No expectation file present, ignoring test on this "
-                 "platform.";
-    return;
-  }
-#endif
-  // TODO: UIA is not yet supported, see crbug.com/1327652, crbug.com/1329523,
-  // crbug.com/1329847.
-  if (GetParam() == ui::AXApiType::kWinUIA) {
+  } else if (GetParam() == ui::AXApiType::kWinUIA) {
+    // TODO: UIA is not yet supported, see crbug.com/1327652, crbug.com/1329523,
+    // crbug.com/1329847.
     LOG(INFO) << "No expectation file present, ignoring test on this "
                  "platform.";
     return;
@@ -338,14 +331,16 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     EXPECT_TRUE(NavigateToURL(shell(), url));
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
-    accessibility_waiter.WaitForNotification();
+    ASSERT_TRUE(accessibility_waiter.WaitForNotification());
   } else {
     // Enable accessibility, then load the test html and wait for the
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
     EXPECT_TRUE(NavigateToURL(shell(), url));
-    accessibility_waiter.WaitForNotification();
+    // TODO(https://crbug.com/1332468): Investigate why this does not return
+    // true.
+    ASSERT_TRUE(accessibility_waiter.WaitForNotification());
   }
 
   WaitForAllFramesLoaded();
@@ -356,8 +351,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // Execute and wait for specified string
   for (const auto& function_name : scenario_.execute) {
     DLOG(INFO) << "executing: " << function_name;
-    base::Value result =
-        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
+    base::Value result = ExecuteScriptAndGetValue(
+        web_contents->GetPrimaryMainFrame(), function_name);
     const std::string& str = result.is_string() ? result.GetString() : "";
     // If no string is specified, do not wait.
     bool wait_for_string = str != "";
@@ -380,7 +375,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
       // after code execution are captured.
       AccessibilityNotificationWaiter accessibility_waiter(
           web_contents, ui::AXMode(), ax::mojom::Event::kNone);
-      accessibility_waiter.WaitForNotification();
+      ASSERT_TRUE(accessibility_waiter.WaitForNotification());
     }
   }
 
@@ -446,7 +441,7 @@ void DumpAccessibilityTestBase::WaitForAllFramesLoaded() {
   for (;;) {
     VLOG(1) << "Top of WaitForAllFramesLoaded() loop";
     RenderFrameHostImpl* main_frame =
-        static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+        static_cast<RenderFrameHostImpl*>(web_contents->GetPrimaryMainFrame());
     BrowserAccessibilityManager* manager =
         main_frame->browser_accessibility_manager();
     if (manager) {
@@ -483,7 +478,7 @@ void DumpAccessibilityTestBase::WaitForAllFramesLoaded() {
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
-    accessibility_waiter.WaitForNotification();
+    ASSERT_TRUE(accessibility_waiter.WaitForNotification());
   }
 }
 
@@ -547,7 +542,9 @@ DumpAccessibilityTestBase::CaptureEvents(InvokeAction invoke_action) {
   // Wait for at least one event. This may unblock either when |waiter|
   // observes either an ax::mojom::Event or ui::AXEventGenerator::Event, or
   // when |event_recorder| records a platform event.
-  waiter.WaitForNotification();
+  // TODO(https://crbug.com/1332468): Investigate why this does not return
+  // true.
+  EXPECT_TRUE(waiter.WaitForNotification());
 
   // More than one accessibility event could have been generated.
   // To make sure we've received all accessibility events, add a

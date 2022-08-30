@@ -282,6 +282,16 @@ void ShellSurface::RemoveObserver(ShellSurfaceObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
+void ShellSurface::OnSetFrame(SurfaceFrameType type) {
+  ShellSurfaceBase::OnSetFrame(type);
+
+  if (!widget_)
+    return;
+  widget_->GetNativeWindow()->SetProperty(
+      aura::client::kUseWindowBoundsForShadow,
+      frame_type_ != SurfaceFrameType::SHADOW);
+}
+
 void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
   views::Widget* parent_widget =
       parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
@@ -416,16 +426,11 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
     // being notified of the change before |this|.
     UpdateShadow();
 
-    Configure();
+    // A window state change will send a configuration event. Avoid sending
+    // two configuration events for the same change.
+    if (!window_state_is_changing_)
+      Configure();
   }
-}
-
-void ShellSurface::OnWindowAddedToRootWindow(aura::Window* window) {
-  ShellSurfaceBase::OnWindowAddedToRootWindow(window);
-  if (window != widget_->GetNativeWindow())
-    return;
-  if (!origin_change_callback_.is_null())
-    origin_change_callback_.Run(GetClientBoundsInScreen(widget_).origin());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +439,7 @@ void ShellSurface::OnWindowAddedToRootWindow(aura::Window* window) {
 void ShellSurface::OnPreWindowStateTypeChange(
     ash::WindowState* window_state,
     chromeos::WindowStateType old_type) {
+  window_state_is_changing_ = true;
   chromeos::WindowStateType new_type = window_state->GetStateType();
   if (chromeos::IsMinimizedWindowStateType(old_type) ||
       chromeos::IsMinimizedWindowStateType(new_type)) {
@@ -467,14 +473,16 @@ void ShellSurface::OnPreWindowStateTypeChange(
 void ShellSurface::OnPostWindowStateTypeChange(
     ash::WindowState* window_state,
     chromeos::WindowStateType old_type) {
-  chromeos::WindowStateType new_type = window_state->GetStateType();
-  // For exo-client using client-side decoration, window-state information is
-  // needed to toggle the maximize and restore buttons. When the window is
-  // restored, we show a maximized button; otherwise we show a restore button.
-  if (chromeos::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
-      chromeos::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
-    Configure();
-  }
+  // Send the new state to the exo-client when the state changes. This is
+  // important for client presentation. For example exo-client using client-side
+  // decoration, window-state information is needed to toggle the maximize and
+  // restore buttons. When the window is restored, we show a maximized button;
+  // otherwise we show a restore button.
+  //
+  // Note that configuration events on bounds change is suppressed during state
+  // change, because it is assumed that a configuration event will always be
+  // sent at the end of a state change.
+  Configure();
 
   if (widget_) {
     UpdateWidgetBounds();
@@ -483,6 +491,7 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
   // Re-enable animations if they were disabled in pre state change handler.
   animations_disabler_.reset();
+  window_state_is_changing_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -61,15 +61,12 @@ class TestPermissionBubbleViewDelegate
   void SetBubbleShown() override {}
   void SetDecisionTime() override {}
 
-  base::WeakPtr<permissions::PermissionPrompt::Delegate> GetWeakPtr() override;
-
   void set_requests(std::vector<permissions::PermissionRequest*> requests) {
     requests_ = requests;
   }
 
  private:
   std::vector<permissions::PermissionRequest*> requests_;
-  base::WeakPtrFactory<TestPermissionBubbleViewDelegate> weak_factory_{this};
 };
 
 // Use this class to test on a default window or an app window. Inheriting from

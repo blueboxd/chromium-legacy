@@ -19,11 +19,9 @@ class BuiltInBackendToAndroidBackendMigrator {
  public:
   // |built_in_backend| and |android_backend| must not be null and must outlive
   // the migrator.
-  BuiltInBackendToAndroidBackendMigrator(
-      PasswordStoreBackend* built_in_backend,
-      PasswordStoreBackend* android_backend,
-      PrefService* prefs,
-      PasswordStoreBackend::SyncDelegate* sync_delegate);
+  BuiltInBackendToAndroidBackendMigrator(PasswordStoreBackend* built_in_backend,
+                                         PasswordStoreBackend* android_backend,
+                                         PrefService* prefs);
 
   BuiltInBackendToAndroidBackendMigrator(
       const BuiltInBackendToAndroidBackendMigrator&) = delete;
@@ -36,6 +34,8 @@ class BuiltInBackendToAndroidBackendMigrator {
   ~BuiltInBackendToAndroidBackendMigrator();
 
   void StartMigrationIfNecessary();
+
+  void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
  private:
   struct IsPasswordLess;
@@ -56,11 +56,6 @@ class BuiltInBackendToAndroidBackendMigrator {
   // all retrieved credentials.
   void MigrateNonSyncableData(PasswordStoreBackend* target_backend,
                               LoginsResultOrError logins_or_error);
-
-  // Performs the rolling migration that synchronises entries between
-  // |built_in_backend_| and |android_backend_| to keep them in consistent
-  // state. Calls |MigratePasswordsBetweenAndroidAndBuiltInBackends| internally.
-  void RunRollingMigration();
 
   // Migrates password between |built_in_backend_| and |android_backend_|.
   // |result| consists of passwords from the |built_in_backend_| let's call them
@@ -109,15 +104,6 @@ class BuiltInBackendToAndroidBackendMigrator {
   // migration.
   bool ShouldMigrateNonSyncableData();
 
-  // Removes blocklisted forms with non-empty |username_value| or
-  // |password_value| from |backend|.
-  // |result_callback| is called with the |LoginsResult| containing valid forms
-  // only or |PasswordStoreBackendError| if it contained in |logins_or_error|.
-  // |logins_or_error| is modified in place.
-  void RemoveBlacklistedFormsWithValues(PasswordStoreBackend* backend,
-                                        LoginsOrErrorReply result_callback,
-                                        LoginsResultOrError logins_or_error);
-
   const raw_ptr<PasswordStoreBackend> built_in_backend_;
   const raw_ptr<PasswordStoreBackend> android_backend_;
 
@@ -125,7 +111,7 @@ class BuiltInBackendToAndroidBackendMigrator {
 
   std::unique_ptr<MigrationMetricsReporter> metrics_reporter_;
 
-  const raw_ptr<PasswordStoreBackend::SyncDelegate> sync_delegate_;
+  raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
   bool non_syncable_data_migration_in_progress_ = false;
 

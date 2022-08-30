@@ -88,7 +88,6 @@ class ElementRareData;
 class ExceptionState;
 class FocusOptions;
 class GetInnerHTMLOptions;
-class HTMLFieldSetElement;
 class HTMLSelectMenuElement;
 class HTMLTemplateElement;
 class Image;
@@ -103,11 +102,12 @@ class ResizeObservation;
 class ResizeObserver;
 class ResizeObserverSize;
 class ScrollIntoViewOptions;
-class IsVisibleOptions;
+class CheckVisibilityOptions;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
+class StyleEngine;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
@@ -163,11 +163,11 @@ enum class PopupValueType {
   kNone,
   kAuto,
   kHint,
-  kAsync,
+  kManual,
 };
 constexpr const char* kPopupTypeValueAuto = "auto";
 constexpr const char* kPopupTypeValueHint = "hint";
-constexpr const char* kPopupTypeValueAsync = "async";
+constexpr const char* kPopupTypeValueManual = "manual";
 
 enum class PopupTriggerAction {
   kNone,
@@ -179,6 +179,16 @@ enum class PopupTriggerAction {
 enum class HidePopupFocusBehavior {
   kNone,
   kFocusPreviousElement,
+};
+
+enum class HidePopupForcingLevel {
+  kHideAfterAnimations,
+  kHideImmediately,
+};
+
+enum class HidePopupIndependence {
+  kLeaveUnrelated,
+  kHideUnrelated,
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -564,13 +574,26 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   PopupData* GetPopupData() const;
   PopupValueType PopupType() const;
   bool popupOpen() const;
-  void showPopup(ExceptionState& exception_state);
-  void hidePopup(ExceptionState& exception_state);
-  void hidePopupInternal(HidePopupFocusBehavior focus_behavior);
-  static const Element* NearestOpenAncestralPopup(Node* start_node);
+  void showPopUp(ExceptionState& exception_state);
+  void hidePopUp(ExceptionState& exception_state);
+  void HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
+                         HidePopupForcingLevel forcing_level);
+  void PopupHideFinishIfNeeded();
+  static const Element* NearestOpenAncestralPopup(const Node* node,
+                                                  bool inclusive = false);
+  // Retrieves the element pointed to by this element's 'anchor' content
+  // attribute, if that element exists, and if this element is a pop-up.
+  Element* anchorElement() const;
   static void HandlePopupLightDismiss(const Event& event);
   void InvokePopup(Element* invoker);
   void SetPopupFocusOnShow();
+  // This hides all visible popups up to, but not including,
+  // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
+  static void HideAllPopupsUntil(const Element*,
+                                 Document&,
+                                 HidePopupFocusBehavior,
+                                 HidePopupForcingLevel,
+                                 HidePopupIndependence);
 
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.
@@ -582,11 +605,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual const QualifiedName& SubResourceAttributeName() const;
 
   // Only called by the parser immediately after element construction.
-  void ParserSetAttributes(const Vector<Attribute>&);
+  void ParserSetAttributes(const Vector<Attribute, kAttributePrealloc>&);
 
   // Remove attributes that might introduce scripting from the vector leaving
   // the element unchanged.
-  void StripScriptingAttributes(Vector<Attribute>&) const;
+  void StripScriptingAttributes(Vector<Attribute, kAttributePrealloc>&) const;
 
   bool SharesSameElementData(const Element& other) const {
     return GetElementData() == other.GetElementData();
@@ -630,6 +653,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
            NeedsLayoutSubtreeUpdate();
   }
   void RebuildLayoutTree(WhitespaceAttacher&);
+
+  // Reattach layout tree for all children but not the element itself. This is
+  // only used for UpdateStyleAndLayoutTreeForContainer when:
+  // 1. Re-attaching fieldset when the fieldset layout tree changes and the size
+  //    query container is a fieldset.
+  // 2. Re-attaching for legacy box tree when table-* boxes have columns.
+  //
+  // Case 2 is only necessary until table fragmentation is shipped for LayoutNG.
+  //
+  void ReattachLayoutTreeChildren(base::PassKey<StyleEngine>);
+
   void HandleSubtreeModifications();
   void PseudoStateChanged(CSSSelector::PseudoType);
   void PseudoStateChangedForTesting(CSSSelector::PseudoType);
@@ -888,6 +922,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   scoped_refptr<ComputedStyle> StyleForPseudoElement(const StyleRecalcContext&,
                                                      const StyleRequest&);
 
+  // Returns the ComputedStyle after applying the declarations in the @try block
+  // at the given index. Returns nullptr if the current element doesn't use
+  // position fallback, or if the index is out of bound.
+  // The style is computed on demand and cached on the ComputedStyle of |this|.
+  const ComputedStyle* StyleForPositionFallback(unsigned index);
+
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
   virtual bool MatchesDefaultPseudoClass() const { return false; }
@@ -1140,7 +1180,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   FocusgroupFlags GetFocusgroupFlags() const;
 
-  bool isVisible(IsVisibleOptions* options) const;
+  bool checkVisibility(CheckVisibilityOptions* options) const;
 
   bool IsDocumentElement() const;
 
@@ -1243,11 +1283,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void AdjustForceLegacyLayout(const ComputedStyle*,
                                bool* should_force_legacy_layout);
 
-  // Reattach layout tree for all children but not the element itself. This is
-  // only used for reattaching fieldset children when the fieldset is a query
-  // container for size container queries.
-  void ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>);
-
  private:
   friend class AXObject;
   struct AffectedByPseudoStateChange;
@@ -1325,10 +1360,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     kRebuildLayoutTree,
     kAttachLayoutTree,
   };
-
-  // Retrieves the element pointed to by this element's 'anchor' content
-  // attribute, if that element exists.
-  Element* anchorElement() const;
 
   // Special focus handling for popups.
   Element* GetPopupFocusableArea(bool autofocus_only) const;

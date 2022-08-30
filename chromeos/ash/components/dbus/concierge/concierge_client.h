@@ -48,20 +48,6 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient : public DBusClient {
     virtual ~VmObserver() = default;
   };
 
-  // Used for observing all concierge signals related to running
-  // containers (e.g. startup).
-  class ContainerObserver {
-   public:
-    // OnContainerStartupFailed is signaled by Concierge after the long-running
-    // container startup process's failure is detected. Note the signal protocol
-    // buffer type is the same as in OnContainerStarted.
-    virtual void OnContainerStartupFailed(
-        const vm_tools::concierge::ContainerStartedSignal& signal) = 0;
-
-   protected:
-    virtual ~ContainerObserver() = default;
-  };
-
   // Used for observing all concierge signals related to VM disk image
   // operations, e.g. importing.
   class DiskImageObserver {
@@ -89,11 +75,6 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient : public DBusClient {
   // Removes an observer if added.
   virtual void RemoveVmObserver(VmObserver* observer) = 0;
 
-  // Adds an observer for container startup.
-  virtual void AddContainerObserver(ContainerObserver* observer) = 0;
-  // Removes an observer if added.
-  virtual void RemoveContainerObserver(ContainerObserver* observer) = 0;
-
   // Adds an observer for disk image operations.
   virtual void AddDiskImageObserver(DiskImageObserver* observer) = 0;
   // Adds an observer for disk image operations.
@@ -103,10 +84,6 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient : public DBusClient {
   // before RestartCrostini is called.
   virtual bool IsVmStartedSignalConnected() = 0;
   virtual bool IsVmStoppedSignalConnected() = 0;
-
-  // IsContainerStartupFailedSignalConnected must return true before
-  // StartContainer is called.
-  virtual bool IsContainerStartupFailedSignalConnected() = 0;
 
   // IsDiskImageProgressSignalConnected must return true before
   // ImportDiskImage is called.
@@ -269,12 +246,6 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient : public DBusClient {
       const vm_tools::concierge::ResizeDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::ResizeDiskImageResponse>
           callback) = 0;
-
-  // Sets the cryptohome id of the given VM.
-  // |callback| is called after the method call finishes.
-  virtual void SetVmId(
-      const vm_tools::concierge::SetVmIdRequest& request,
-      DBusMethodCallback<vm_tools::concierge::SetVmIdResponse> callback) = 0;
 
   // Reclaims memory of the given VM.
   // |callback| is called after the method call finishes.

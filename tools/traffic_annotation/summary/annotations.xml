@@ -114,7 +114,7 @@ Refer to README.md for content description and update process.
  <item id="gcm_unregistration" added_in_milestone="62" content_hash_code="01cbf67f" os_list="linux,windows,chromeos,android" file_path="google_apis/gcm/engine/unregistration_request.cc" />
  <item id="geo_language_provider" added_in_milestone="65" type="partial" second_id="network_location_request" content_hash_code="03e4d160" os_list="linux,windows,chromeos,android" semantics_fields="1" policy_fields="3,4" file_path="components/language/content/browser/geo_language_provider.cc" />
  <item id="heartbeat_sender" added_in_milestone="86" content_hash_code="07dd0efd" os_list="linux,windows,chromeos" file_path="remoting/host/heartbeat_sender.cc" />
- <item id="hintsfetcher_gethintsrequest" added_in_milestone="75" content_hash_code="0365cd74" os_list="linux,windows,chromeos,android" file_path="components/optimization_guide/core/hints_fetcher.cc" />
+ <item id="hintsfetcher_gethintsrequest" added_in_milestone="75" content_hash_code="04bb400f" os_list="linux,windows,chromeos,android" file_path="components/optimization_guide/core/hints_fetcher.cc" />
  <item id="history_notice_utils_notice" added_in_milestone="62" type="partial" second_id="web_history_service" content_hash_code="07cc4c62" os_list="linux,windows,chromeos,android" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/history_notice_utils.cc" />
  <item id="history_notice_utils_popup" added_in_milestone="62" type="partial" second_id="web_history_service" content_hash_code="01d3338e" os_list="linux,windows,chromeos,android" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/history_notice_utils.cc" />
  <item id="history_ui_favicon_request_handler_get_favicon" added_in_milestone="77" content_hash_code="03d16565" os_list="linux,windows,chromeos,android" file_path="components/favicon/core/history_ui_favicon_request_handler_impl.cc" />
@@ -162,9 +162,8 @@ Refer to README.md for content description and update process.
  <item id="open_search" added_in_milestone="62" content_hash_code="04f2de86" os_list="linux,windows,chromeos,android" file_path="components/search_engines/template_url_fetcher.cc" />
  <item id="openscreen_message" added_in_milestone="83" content_hash_code="076a1faf" os_list="linux,windows,chromeos,android" file_path="components/openscreen_platform/udp_socket.cc" />
  <item id="openscreen_tls_message" added_in_milestone="83" content_hash_code="00f4022a" os_list="linux,windows,chromeos,android" file_path="components/openscreen_platform/tls_connection_factory.cc" />
- <item id="optimization_guide_model" added_in_milestone="79" content_hash_code="01ee6e67" os_list="linux,windows,chromeos,android" file_path="components/optimization_guide/core/prediction_model_fetcher_impl.cc" />
- <item id="optimization_guide_model_download" added_in_milestone="88" content_hash_code="05d71d9b" os_list="linux,windows,android,chromeos" file_path="components/optimization_guide/core/prediction_model_download_manager.cc" />
- <item id="origin_policy_loader" added_in_milestone="69" content_hash_code="07fd1eaf" os_list="linux,windows,chromeos,android" file_path="services/network/origin_policy/origin_policy_fetcher.cc" />
+ <item id="optimization_guide_model" added_in_milestone="79" content_hash_code="018a9f3d" os_list="linux,windows,chromeos,android" file_path="components/optimization_guide/core/prediction_model_fetcher_impl.cc" />
+ <item id="optimization_guide_model_download" added_in_milestone="88" content_hash_code="0062d36f" os_list="linux,windows,android,chromeos" file_path="components/optimization_guide/core/prediction_model_download_manager.cc" />
  <item id="parallel_download_job" added_in_milestone="62" content_hash_code="064736f3" os_list="linux,windows,chromeos,android" file_path="components/download/internal/common/parallel_download_job.cc" />
  <item id="password_protection_request" added_in_milestone="62" content_hash_code="01869413" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/core/browser/password_protection/password_protection_request.cc" />
  <item id="password_requirements_spec_fetch" added_in_milestone="69" content_hash_code="005550dc" os_list="linux,windows,chromeos,android" file_path="components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.cc" />
@@ -189,7 +188,7 @@ Refer to README.md for content description and update process.
  <item id="proxy_config_direct" added_in_milestone="67" content_hash_code="072602b0" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_with_annotation.cc" />
  <item id="proxy_config_headless" added_in_milestone="67" content_hash_code="049def4d" os_list="linux,windows,chromeos" file_path="headless/lib/browser/headless_request_context_manager.cc" />
  <item id="proxy_config_settings" added_in_milestone="67" content_hash_code="0129f6d1" os_list="linux,windows,chromeos,android" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc" />
- <item id="proxy_config_system" added_in_milestone="67" content_hash_code="0497cf89" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/configured_proxy_resolution_service.cc" />
+ <item id="proxy_config_system" added_in_milestone="67" content_hash_code="0497cf89" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_service.cc" />
  <item id="proxy_config_windows_resolver" added_in_milestone="86" content_hash_code="075530ef" os_list="windows" file_path="net/proxy_resolution/win/windows_system_proxy_resolution_request.cc" />
  <item id="qr_code_save" added_in_milestone="84" content_hash_code="045593bd" os_list="linux,windows,chromeos" file_path="chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.cc" />
  <item id="query_tiles_fetcher" added_in_milestone="84" content_hash_code="0100b835" os_list="linux,windows,chromeos,android" file_path="components/query_tiles/internal/tile_fetcher.cc" />
@@ -365,7 +364,7 @@ Refer to README.md for content description and update process.
  <item id="help_content_provider" added_in_milestone="102" content_hash_code="0839311f" os_list="chromeos" file_path="ash/webui/os_feedback_ui/backend/help_content_provider.cc" />
  <item id="managed_acccount_signin_restrictions_secure_connect_chromeos" added_in_milestone="102" content_hash_code="068bc93d" os_list="chromeos" file_path="chrome/browser/ui/webui/signin/user_cloud_signin_restriction_policy_fetcher_chromeos.cc" />
  <item id="wallpaper_download_google_photo" added_in_milestone="102" content_hash_code="034be7b5" os_list="chromeos" file_path="ash/wallpaper/wallpaper_controller_impl.cc" />
- <item id="quick_answers_spellchecker" added_in_milestone="102" content_hash_code="06e81b7f" os_list="chromeos" file_path="chromeos/components/quick_answers/utils/spell_checker.cc" />
+ <item id="quick_answers_spellchecker" added_in_milestone="102" content_hash_code="06e81b7f" os_list="chromeos" file_path="chromeos/components/quick_answers/utils/spell_check_language.cc" />
  <item id="printing_oauth2_token_exchange_request" added_in_milestone="102" type="partial" second_id="printing_oauth2_http_exchange" content_hash_code="059df373" os_list="chromeos" semantics_fields="2,4" file_path="chrome/browser/ash/printing/oauth2/ipp_endpoint_token_fetcher.cc" />
  <item id="fedcm_account_profile_image_fetcher" added_in_milestone="102" content_hash_code="07d6a3e2" os_list="linux,windows,chromeos" file_path="chrome/browser/ui/views/webid/account_selection_bubble_view.cc" />
  <item id="device_activity_client_health_check" added_in_milestone="102" content_hash_code="0506113c" os_list="chromeos" file_path="ash/components/device_activity/device_activity_client.cc" />
@@ -378,4 +377,6 @@ Refer to README.md for content description and update process.
  <item id="drivefs_http_client" added_in_milestone="104" content_hash_code="042b8f2c" os_list="chromeos" file_path="ash/components/drivefs/drivefs_http_client.cc" />
  <item id="borealis_splash_logo_loader" added_in_milestone="104" content_hash_code="031855a1" os_list="chromeos" file_path="chrome/browser/ui/views/borealis/borealis_splash_screen_view.cc" />
  <item id="pending_beacon_api" added_in_milestone="105" content_hash_code="02288864" os_list="linux,windows,android,chromeos" file_path="content/browser/renderer_host/pending_beacon_service.cc" />
+ <item id="printing_server_printers_query" added_in_milestone="106" content_hash_code="06f4759c" os_list="chromeos" file_path="chrome/browser/ash/printing/server_printers_fetcher.cc" />
+ <item id="download_bubble_retry_download" added_in_milestone="105" content_hash_code="000b1439" os_list="linux,windows,chromeos" file_path="chrome/browser/download/bubble/download_bubble_controller.cc" />
 </annotations>

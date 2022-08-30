@@ -8,12 +8,16 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
+#import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
-#import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -22,6 +26,7 @@
 
 @protocol ActivityServicePositioner;
 class Browser;
+@class BookmarkInteractionController;
 @class BrowserContainerViewController;
 @class BrowserViewControllerHelper;
 @class BubblePresenter;
@@ -32,16 +37,23 @@ class Browser;
 // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
 // from BVC
 @class DownloadManagerCoordinator;
+class FullscreenController;
+@protocol HelpCommands;
 @class KeyCommandsProvider;
+@class NewTabPageCoordinator;
+@protocol PopupMenuCommands;
+@class PopupMenuCoordinator;
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
 @protocol PopupMenuUIUpdating;
 class PrerenderService;
 @class PrimaryToolbarCoordinator;
 @class SecondaryToolbarCoordinator;
+@class SideSwipeController;
+@protocol SnackbarCommands;
 @class TabStripCoordinator;
 @class TabStripLegacyCoordinator;
+@protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
-@protocol ToolbarCoordinating;
 @protocol IncognitoReauthCommands;
 
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
@@ -50,13 +62,20 @@ class PrerenderService;
 typedef struct {
   PrerenderService* prerenderService;
   BubblePresenter* bubblePresenter;
+  PopupMenuCoordinator* popupMenuCoordinator;
   DownloadManagerCoordinator* downloadManagerCoordinator;
-  id<ToolbarCoordinating> toolbarInterface;
-  id<PopupMenuUIUpdating> UIUpdater;
+  NewTabPageCoordinator* ntpCoordinator;
   PrimaryToolbarCoordinator* primaryToolbarCoordinator;
   SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
   TabStripCoordinator* tabStripCoordinator;
   TabStripLegacyCoordinator* legacyTabStripCoordinator;
+  SideSwipeController* sideSwipeController;
+  BookmarkInteractionController* bookmarkInteractionController;
+  FullscreenController* fullscreenController;
+  id<TextZoomCommands> textZoomHandler;
+  id<HelpCommands> helpHandler;
+  id<PopupMenuCommands> popupMenuCommandsHandler;
+  id<SnackbarCommands> snackbarCommandsHandler;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -65,22 +84,22 @@ typedef struct {
     : UIViewController <FindBarPresentationDelegate,
                         IncognitoReauthConsumer,
                         LogoAnimationControllerOwnerOwner,
+                        OmniboxPopupPresenterDelegate,
                         PageInfoPresentation,
-                        PrintControllerDelegate,
-                        SigninPresenter,
-                        SyncPresenter,
                         ThumbStripSupporting,
                         ToolbarCoordinatorDelegate,
                         WebNavigationNTPDelegate,
-                        WebStateContainerViewProvider>
+                        WebStateContainerViewProvider,
+                        BrowserCommands,
+                        NewTabPageCommands>
 
 // Initializes a new BVC.
-// |browser| is the browser whose tabs this BVC will display.
-// |browserContainerViewController| is the container object this BVC will exist
+// `browser` is the browser whose tabs this BVC will display.
+// `browserContainerViewController` is the container object this BVC will exist
 // inside.
 // `dispatcher` is the dispatcher instance this BVC will use.
 // TODO(crbug.com/992582): Remove references to model objects -- including
-//   |browser| and |dispatcher| -- from this class.
+//   `browser` and `dispatcher` -- from this class.
 - (instancetype)initWithBrowser:(Browser*)browser
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
@@ -164,9 +183,6 @@ typedef struct {
 
 // Shows the voice search UI.
 - (void)startVoiceSearch;
-
-// Returns the number of tabs with the NTP open.
-- (int)liveNTPCount;
 
 @end
 

@@ -395,9 +395,9 @@ class EqualsFramesMatcher : public ::testing::MatcherInterface<
   explicit EqualsFramesMatcher(const InitFrame (*expect_frames)[N])
       : expect_frames_(expect_frames) {}
 
-  virtual bool MatchAndExplain(
+  bool MatchAndExplain(
       std::vector<std::unique_ptr<WebSocketFrame>>* actual_frames,
-      ::testing::MatchResultListener* listener) const {
+      ::testing::MatchResultListener* listener) const override {
     if (actual_frames->size() != N) {
       *listener << "the vector size is " << actual_frames->size();
       return false;
@@ -436,11 +436,11 @@ class EqualsFramesMatcher : public ::testing::MatcherInterface<
     return true;
   }
 
-  virtual void DescribeTo(std::ostream* os) const {
+  void DescribeTo(std::ostream* os) const override {
     *os << "matches " << *expect_frames_;
   }
 
-  virtual void DescribeNegationTo(std::ostream* os) const {
+  void DescribeNegationTo(std::ostream* os) const override {
     *os << "does not match " << *expect_frames_;
   }
 
@@ -901,8 +901,7 @@ class WebSocketChannelEventInterfaceTest : public WebSocketChannelTest {
             std::make_unique<StrictMock<MockWebSocketEventInterface>>()) {
   }
 
-  ~WebSocketChannelEventInterfaceTest() override {
-  }
+  ~WebSocketChannelEventInterfaceTest() override = default;
 
   // Tests using this fixture must set expectations on the event_interface_ mock
   // object before calling CreateChannelAndConnect() or
@@ -2656,7 +2655,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
   connect_data_.socket_url = wss_url;
   AuthChallengeInfo auth_info;
   absl::optional<AuthCredentials> credentials;
-  scoped_refptr<HttpResponseHeaders> response_headers =
+  auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   IPEndPoint remote_endpoint(net::IPAddress(127, 0, 0, 1), 80);
 

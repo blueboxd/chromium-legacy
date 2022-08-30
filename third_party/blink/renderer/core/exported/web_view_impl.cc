@@ -835,7 +835,7 @@ Node* WebViewImpl::BestTapNode(
   }
 
   // Editable nodes should not be highlighted (e.g., <input>)
-  if (HasEditableStyle(*best_touch_node))
+  if (IsEditable(*best_touch_node))
     return nullptr;
 
   Node* hand_cursor_ancestor = FindLinkHighlightAncestor(best_touch_node);
@@ -1011,15 +1011,10 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by the PopupWidgetHost disconnecting
   // and calling Close().
-  WebPagePopup* popup_widget = WebPagePopup::Create(
+  page_popup_ = WebPagePopupImpl::Create(
       std::move(popup_widget_host), std::move(widget_host),
-      std::move(widget_receiver), agent_group_scheduler.DefaultTaskRunner());
-  popup_widget->InitializeCompositing(agent_group_scheduler,
-                                      opener_widget->GetOriginalScreenInfos(),
-                                      /*settings=*/nullptr);
-
-  page_popup_ = To<WebPagePopupImpl>(popup_widget);
-  page_popup_->Initialize(this, client);
+      std::move(widget_receiver), this, agent_group_scheduler,
+      opener_widget->GetOriginalScreenInfos(), client);
   EnablePopupMouseWheelEventListener(web_opener_frame->LocalRoot());
   return page_popup_.get();
 }
@@ -1250,7 +1245,7 @@ void WebViewImpl::ResizeViewWhileAnchored(
     gfx::Size old_size = frame_view->Size();
     UpdateICBAndResizeViewport(visible_viewport_size);
     gfx::Size new_size = frame_view->Size();
-    frame_view->MarkViewportConstrainedObjectsForLayout(
+    frame_view->MarkFixedPositionObjectsForLayout(
         old_size.width() != new_size.width(),
         old_size.height() != new_size.height());
   }
@@ -1365,10 +1360,6 @@ void WebViewImpl::SetScreenOrientationOverrideForTesting(
       }
     }
   }
-}
-
-void WebViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
-  web_widget_->UseSynchronousResizeModeForTesting(enable);
 }
 
 void WebViewImpl::SetWindowRectSynchronouslyForTesting(
@@ -1524,6 +1515,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view_impl->SetTabsToLinks(prefs.tabs_to_links);
 
+  DCHECK(!(web_view_impl->IsFencedFrameRoot() &&
+           prefs.allow_running_insecure_content));
   settings->SetAllowRunningOfInsecureContent(
       prefs.allow_running_insecure_content);
   settings->SetDisableReadingFromCanvas(prefs.disable_reading_from_canvas);
@@ -1871,7 +1864,7 @@ void WebViewImpl::SetPageFocus(bool enable) {
         focused_frame->GetDocument()->UpdateStyleAndLayoutTree();
         if (element->IsTextControl()) {
           element->UpdateSelectionOnFocus(SelectionBehaviorOnFocus::kRestore);
-        } else if (HasEditableStyle(*element)) {
+        } else if (IsEditable(*element)) {
           // updateFocusAppearance() selects all the text of
           // contentseditable DIVs. So we set the selection explicitly
           // instead. Note that this has the side effect of moving the
@@ -3389,6 +3382,9 @@ void WebViewImpl::UpdateWebPreferences(
     web_preferences_.shrinks_viewport_contents_to_fit = false;
     web_preferences_.main_frame_resizes_are_orientation_changes = false;
     web_preferences_.text_autosizing_enabled = false;
+
+    // Insecure content should not be allowed in a fenced frame.
+    web_preferences_.allow_running_insecure_content = false;
 
 #if BUILDFLAG(IS_ANDROID)
     // Reusing the global for unowned main frame is only used for

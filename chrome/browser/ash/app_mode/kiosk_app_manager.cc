@@ -704,6 +704,10 @@ void KioskAppManager::CleanUp() {
   apps_.clear();
   usb_stick_updater_.reset();
   external_cache_.reset();
+
+  if (!app_session_)
+    return;
+  app_session_->ShuttingDown();
 }
 
 const KioskAppData* KioskAppManager::GetAppData(
@@ -825,9 +829,9 @@ void KioskAppManager::OnExtensionDownloadFailed(
 
 KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {
   PrefService* prefs = g_browser_process->local_state();
-  const base::Value* dict =
-      prefs->GetDictionary(KioskAppManager::kKioskDictionaryName);
-  absl::optional<int> value = dict->FindIntKey(kKeyAutoLoginState);
+  const base::Value::Dict& dict =
+      prefs->GetValueDict(KioskAppManager::kKioskDictionaryName);
+  absl::optional<int> value = dict.FindInt(kKeyAutoLoginState);
   if (!value.has_value())
     return AutoLoginState::kNone;
 

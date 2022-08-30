@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -18,7 +19,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/public/autofill_assistant_factory.h"
-#include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -46,18 +47,26 @@ ApcClientImpl::ApcClientImpl(content::WebContents* web_contents)
 
 ApcClientImpl::~ApcClientImpl() = default;
 
-bool ApcClientImpl::Start(const GURL& url,
+void ApcClientImpl::Start(const GURL& url,
                           const std::string& username,
-                          bool skip_login) {
+                          bool skip_login,
+                          ResultCallback callback) {
   // If the unified side panel is not enabled, trying to register an entry in it
   // later on will crash.
-  if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel))
-    return false;
+  if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    std::move(callback).Run(false);
+    return;
+  }
 
   // Ensure that only one run is ongoing.
-  if (is_running_)
-    return false;
+  if (is_running_) {
+    std::move(callback).Run(false);
+    return;
+  }
   is_running_ = true;
+  result_callback_ = std::move(callback);
+
+  GetRuntimeManager()->SetUIState(autofill_assistant::UIState::kShown);
 
   url_ = url;
   username_ = username;
@@ -68,14 +77,14 @@ bool ApcClientImpl::Start(const GURL& url,
   onboarding_coordinator_ = CreateOnboardingCoordinator();
   onboarding_coordinator_->PerformOnboarding(base::BindOnce(
       &ApcClientImpl::OnOnboardingComplete, base::Unretained(this)));
-
-  return true;
 }
 
-void ApcClientImpl::Stop() {
+void ApcClientImpl::Stop(bool success) {
+  GetRuntimeManager()->SetUIState(autofill_assistant::UIState::kNotShown);
   onboarding_coordinator_.reset();
   external_script_controller_.reset();
   is_running_ = false;
+  std::exchange(result_callback_, base::DoNothing()).Run(success);
 }
 
 bool ApcClientImpl::IsRunning() const {
@@ -86,9 +95,12 @@ bool ApcClientImpl::IsRunning() const {
 // has been given.
 void ApcClientImpl::OnOnboardingComplete(bool success) {
   if (!success) {
-    Stop();
+    Stop(/*success=*/false);
     return;
   }
+
+  side_panel_coordinator_ = CreateSidePanel();
+  side_panel_coordinator_->AddObserver(this);
 
   base::flat_map<std::string, std::string> params_map;
   params_map[kPasswordChangeUsername] = username_;
@@ -103,26 +115,25 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
       skip_login_ ? base::NumberToString(kSourcePasswordChangeLeakWarning)
                   : base::NumberToString(kSourcePasswordChangeSettings);
 
-  external_script_controller_ = CreateExternalScriptController();
+  external_script_controller_ = CreateHeadlessScriptController();
   external_script_controller_->StartScript(
       params_map,
       base::BindOnce(&ApcClientImpl::OnRunComplete, base::Unretained(this)));
 }
 
 void ApcClientImpl::OnRunComplete(
-    autofill_assistant::ExternalScriptController::ScriptResult result) {
+    autofill_assistant::HeadlessScriptController::ScriptResult result) {
   // TODO(crbug.com/1324089): Handle failed result.
-  Stop();
+  Stop(result.success);
 }
 
 void ApcClientImpl::OnHidden() {
-  // The side panel was hidden, so we need to destroy it.
+  Stop(/*success=*/false);
+
+  // The two resets below are not included in `Stop()`, since we may wish to
+  // render content in the side panel even for a stopped flow.
+  apc_external_action_delegate_.reset();
   side_panel_coordinator_.reset();
-
-  // TODO(crbug.com/1324089): Destroy the ApcExternalAction delegate and decide
-  // whether to log any data about the shutdown.
-
-  Stop();
 }
 
 std::unique_ptr<ApcOnboardingCoordinator>
@@ -130,20 +141,29 @@ ApcClientImpl::CreateOnboardingCoordinator() {
   return ApcOnboardingCoordinator::Create(&GetWebContents());
 }
 
-std::unique_ptr<autofill_assistant::ExternalScriptController>
-ApcClientImpl::CreateExternalScriptController() {
-  side_panel_coordinator_ =
-      AssistantSidePanelCoordinator::Create(&GetWebContents());
+std::unique_ptr<AssistantSidePanelCoordinator>
+ApcClientImpl::CreateSidePanel() {
+  return AssistantSidePanelCoordinator::Create(&GetWebContents());
+}
+
+std::unique_ptr<autofill_assistant::HeadlessScriptController>
+ApcClientImpl::CreateHeadlessScriptController() {
   apc_external_action_delegate_ = std::make_unique<ApcExternalActionDelegate>(
       side_panel_coordinator_.get());
   apc_external_action_delegate_->SetupDisplay();
+  apc_external_action_delegate_->ShowStartingScreen(url_);
 
   std::unique_ptr<autofill_assistant::AutofillAssistant> autofill_assistant =
       autofill_assistant::AutofillAssistantFactory::CreateForBrowserContext(
           GetWebContents().GetBrowserContext(),
           std::make_unique<autofill_assistant::CommonDependenciesChrome>());
-  return autofill_assistant->CreateExternalScriptController(
+  return autofill_assistant->CreateHeadlessScriptController(
       &GetWebContents(), apc_external_action_delegate_.get());
+}
+
+autofill_assistant::RuntimeManager* ApcClientImpl::GetRuntimeManager() {
+  return autofill_assistant::RuntimeManager::GetOrCreateForWebContents(
+      &GetWebContents());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ApcClientImpl);

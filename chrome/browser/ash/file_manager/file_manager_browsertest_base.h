@@ -90,6 +90,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test needs the files-swa feature.
     bool files_swa = false;
 
+    // Whether test needs the files-app-experimental feature.
+    bool files_experimental = false;
+
     // Whether test needs the media-swa apps.
     bool media_swa = false;
 
@@ -124,6 +127,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should run with the Web Drive Office feature.
     bool enable_web_drive_office = false;
 
+    // Whether test should run with the Upload Office to Cloud feature.
+    bool enable_upload_office_to_cloud = false;
+
     // Whether test should run with the GuestOs <-> Files app integration.
     bool enable_guest_os_files = false;
 
@@ -132,6 +138,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
     // Whether test needs the files-filters-in-recents-v2 flag.
     bool enable_filters_in_recents_v2 = false;
+
+    // Whether test should run with the DriveFsMirroring flag.
+    bool enable_mirrorsync = false;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;
@@ -187,13 +196,13 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   // Process test extension command |name|, with arguments |value|. Write the
   // results to |output|.
   void OnCommand(const std::string& name,
-                 const base::DictionaryValue& value,
+                 const base::Value::Dict& value,
                  std::string* output);
 
   // Checks if the command is a GuestOs one. If so, handles it and returns
   // true, otherwise it returns false.
   bool HandleGuestOsCommands(const std::string& name,
-                             const base::DictionaryValue& value,
+                             const base::Value::Dict& value,
                              std::string* output);
 
   // Called during setup if needed, to create a drive integration service for

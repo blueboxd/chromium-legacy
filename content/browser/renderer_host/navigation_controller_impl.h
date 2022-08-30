@@ -217,6 +217,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const std::string& extra_headers,
       network::mojom::SourceLocationPtr source_location,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool is_form_submission,
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time,
       absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
@@ -801,7 +802,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  raw_ptr<NavigationEntryImpl> pending_entry_ = nullptr;
+  raw_ptr<NavigationEntryImpl, DanglingUntriaged> pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped

@@ -542,17 +542,6 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   auto* frame_view = box->GetFrameView();
   frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(*box);
 
-  // The feature |kOptimizeViewportConstrainedPaintInvalidation| is for testing
-  // the performance of removing the paint invalidation of viewport constrained
-  // objects after scrolling.
-  if (IsA<LayoutView>(box) && frame_view->HasViewportConstrainedObjects() &&
-      !base::FeatureList::IsEnabled(
-          features::kOptimizeViewportConstrainedPaintInvalidation) &&
-      !frame_view->InvalidateViewportConstrainedObjects()) {
-    box->SetShouldDoFullPaintInvalidation();
-    box->SetSubtreeShouldCheckForPaintInvalidation();
-  }
-
   // TODO(chrishtr): remove this slow path once crbug.com/906885 is fixed.
   // See also https://bugs.chromium.org/p/chromium/issues/detail?id=903287#c10.
   if (Layer()->EnclosingPaginationLayer())
@@ -1139,8 +1128,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
   // Being the global root scroller will affect clipping size due to browser
   // controls behavior so we need to update compositing based on updated clip
   // geometry.
-  if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
-    element->SetNeedsCompositingUpdate();
+  Layer()->SetNeedsCompositingInputsUpdate();
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
   // On Android, where the VisualViewport supplies scrollbars, we need to
@@ -2186,8 +2174,7 @@ void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
   LayoutSize current_size = GetLayoutBox()->Size();
   current_size.Scale(1 / zoom_factor);
 
-  LayoutSize adjusted_old_offset = LayoutSize(
-      old_offset.Width() / zoom_factor, old_offset.Height() / zoom_factor);
+  LayoutSize adjusted_old_offset = old_offset * (1.f / zoom_factor);
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     new_offset.set_x(-new_offset.x());
     adjusted_old_offset.SetWidth(-adjusted_old_offset.Width());

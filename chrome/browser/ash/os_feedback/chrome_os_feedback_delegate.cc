@@ -24,9 +24,9 @@
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "components/feedback/content/content_tracing_manager.h"
 #include "components/feedback/feedback_common.h"
 #include "components/feedback/feedback_data.h"
@@ -84,6 +84,17 @@ bool ShouldAddAttachment(const AttachedFilePtr& attached_file) {
   }
   return true;
 }
+
+// Key-value pair to be added to FeedbackData when user grants consent to Google
+// to follow-up on feedback report. See (go/feedback-user-consent-faq) for more
+// information.
+// Consent key matches cross-platform key.
+constexpr char kFeedbackUserConsentKey[] = "feedbackUserCtlConsent";
+// Consent value matches JavaScript: `String(true)`.
+constexpr char kFeedbackUserConsentGrantedValue[] = "true";
+// Consent value matches JavaScript: `String(false)`.
+constexpr char kFeedbackUserConsentDeniedValue[] = "false";
+constexpr char kExtraDiagnosticsKey[] = "EXTRA_DIAGNOSTICS";
 
 }  // namespace
 
@@ -167,11 +178,26 @@ void ChromeOsFeedbackDelegate::SendReport(
   if (feedback_context->page_url.has_value()) {
     feedback_data->set_page_url(feedback_context->page_url.value().spec());
   }
+  if (feedback_context->extra_diagnostics.has_value() &&
+      !feedback_context->extra_diagnostics.value().empty()) {
+    feedback_data->AddLog(kExtraDiagnosticsKey,
+                          feedback_context->extra_diagnostics.value());
+  }
 
   scoped_refptr<base::RefCountedMemory> png_data = GetScreenshotData();
   if (report->include_screenshot && png_data && png_data.get()) {
     feedback_data->set_image(
         std::string(png_data->front_as<char>(), png_data->size()));
+  }
+
+  // Append consent value to report. For cross platform implementations see:
+  // extensions/browser/api/feedback_private/feedback_private_api.cc
+  if (report->contact_user_consent_granted) {
+    feedback_data->AddLog(kFeedbackUserConsentKey,
+                          kFeedbackUserConsentGrantedValue);
+  } else {
+    feedback_data->AddLog(kFeedbackUserConsentKey,
+                          kFeedbackUserConsentDeniedValue);
   }
 
   const AttachedFilePtr& attached_file = report->attached_file;
@@ -202,8 +228,11 @@ void ChromeOsFeedbackDelegate::OnSendFeedbackDone(SendReportCallback callback,
 }
 
 void ChromeOsFeedbackDelegate::OpenDiagnosticsApp() {
-  web_app::LaunchSystemWebAppAsync(profile_,
-                                   ash::SystemWebAppType::DIAGNOSTICS);
+  ash::LaunchSystemWebAppAsync(profile_, ash::SystemWebAppType::DIAGNOSTICS);
+}
+
+void ChromeOsFeedbackDelegate::OpenExploreApp() {
+  ash::LaunchSystemWebAppAsync(profile_, ash::SystemWebAppType::HELP);
 }
 
 }  // namespace ash

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "content/browser/devtools/devtools_throttle_handle.h"
-#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -244,6 +244,11 @@ void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
 void FencedFrameCreated(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
     FencedFrame* fenced_frame);
+
+// Tells tracing that process `pid` is being used for an auction worklet
+// associated to `owner`.
+void DidCreateProcessForAuctionWorklet(RenderFrameHostImpl* owner,
+                                       base::ProcessId pid);
 
 void ReportCookieIssue(
     RenderFrameHostImpl* render_frame_host_impl,

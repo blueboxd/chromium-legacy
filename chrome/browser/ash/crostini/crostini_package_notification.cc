@@ -17,7 +17,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
@@ -48,7 +47,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
     Profile* profile,
     NotificationType notification_type,
     PackageOperationStatus status,
-    const ContainerId& container_id,
+    const guest_os::GuestId& container_id,
     const std::u16string& app_name,
     const std::string& notification_id,
     CrostiniPackageService* package_service)
@@ -100,12 +99,11 @@ PackageOperationStatus CrostiniPackageNotification::GetOperationStatus() const {
 
 void CrostiniPackageNotification::OnRegistryUpdated(
     guest_os::GuestOsRegistryService* registry_service,
-    guest_os::GuestOsRegistryService::VmType vm_type,
+    guest_os::VmType vm_type,
     const std::vector<std::string>& updated_apps,
     const std::vector<std::string>& removed_apps,
     const std::vector<std::string>& inserted_apps) {
-  if (vm_type != guest_os::GuestOsRegistryService::VmType::
-                     ApplicationList_VmType_TERMINA) {
+  if (vm_type != guest_os::VmType::TERMINA) {
     return;
   }
   inserted_apps_.insert(inserted_apps.begin(), inserted_apps.end());

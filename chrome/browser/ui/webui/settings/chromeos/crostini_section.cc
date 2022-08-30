@@ -14,12 +14,13 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/guest_os_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -397,9 +398,9 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
             IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_MESSAGE));
   }
 
-  if (auto* pretty_name_value = crostini::GetContainerPrefValue(
+  if (auto* pretty_name_value = guest_os::GetContainerPrefValue(
           profile_, crostini::DefaultContainerId(),
-          crostini::prefs::kContainerOsPrettyNameKey)) {
+          guest_os::prefs::kContainerOsPrettyNameKey)) {
     std::string pretty_name = pretty_name_value->GetString();
     html_source->AddString("crostiniContainerUpgradeSubtext",
                            l10n_util::GetStringFUTF16(

@@ -46,7 +46,6 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -255,14 +254,7 @@ void AutofillAgent::BindPendingReceiver(
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(ui::PageTransition transition) {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  // TODO(dvadym): check if we need to check if it is main frame navigation
-  // http://crbug.com/443155
-  if (frame->Parent())
-    return;  // Not a top-level navigation.
-
   // Navigation to a new page or a page refresh.
-
   element_.Reset();
 
   form_cache_.Reset();
@@ -295,14 +287,17 @@ void AutofillAgent::DidChangeScrollOffset() {
 
 void AutofillAgent::DidChangeScrollOffsetImpl(
     const WebFormControlElement& element) {
-  if (element != element_ || element_.IsNull() || focus_requires_scroll_ ||
-      !is_popup_possibly_visible_ || !element_.Focused())
+  if (element != element_ || element.IsNull() || focus_requires_scroll_ ||
+      !is_popup_possibly_visible_ || !element.Focused()) {
     return;
+  }
+
+  DCHECK(IsOwnedByFrame(element, render_frame()));
 
   FormData form;
   FormFieldData field;
   if (FindFormAndFieldForFormControlElement(
-          element_, field_data_manager_.get(),
+          element, field_data_manager_.get(),
           static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
                                    GetExtractDatalistMask()),
           &form, &field)) {
@@ -526,8 +521,8 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
     WebLocalFrame* frame = render_frame()->GetWebFrame();
     std::vector<FormData> forms;
     forms.push_back(updated_form);
-    // Always communicate to browser process for topmost frame.
-    if (!forms.empty() || !frame->Parent()) {
+    // Always communicate to browser process for the outermost main frame.
+    if (!forms.empty() || frame->IsOutermostMainFrame()) {
       GetAutofillDriver().FormsSeen(forms, {});
     }
   }
@@ -984,9 +979,9 @@ void AutofillAgent::ProcessForms() {
   FormCache::UpdateFormCacheResult cache =
       form_cache_.UpdateFormCache(field_data_manager_.get());
 
-  // Always communicate to browser process for topmost frame.
+  // Always communicate to browser process for the outermost main frame.
   if (!cache.updated_forms.empty() || !cache.removed_forms.empty() ||
-      !render_frame()->GetWebFrame()->Parent()) {
+      render_frame()->GetWebFrame()->IsOutermostMainFrame()) {
     GetAutofillDriver().FormsSeen(cache.updated_forms,
                                   std::move(cache.removed_forms).extract());
   }
@@ -1269,19 +1264,13 @@ void AutofillAgent::OnFormSubmitted(const WebFormElement& form) {
 }
 
 void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
-  // Only handle iframe for FRAME_DETACHED or main frame for
-  // SAME_DOCUMENT_NAVIGATION.
-  if ((source == SubmissionSource::FRAME_DETACHED &&
-       !render_frame()->GetWebFrame()->Parent()) ||
-      (source == SubmissionSource::SAME_DOCUMENT_NAVIGATION &&
-       render_frame()->GetWebFrame()->Parent())) {
-    ResetLastInteractedElements();
-    OnFormNoLongerSubmittable();
-    SendPotentiallySubmittedFormToBrowser();
-    return;
-  }
-
-  if (source == SubmissionSource::FRAME_DETACHED) {
+  if (source == SubmissionSource::FRAME_DETACHED &&
+      render_frame()->GetWebFrame()->IsOutermostMainFrame()) {
+    // No op.
+  } else if (source == SubmissionSource::SAME_DOCUMENT_NAVIGATION &&
+             !render_frame()->GetWebFrame()->IsOutermostMainFrame()) {
+    // No op.
+  } else if (source == SubmissionSource::FRAME_DETACHED) {
     // Should not access the frame because it is now detached. Instead, use
     // |provisionally_saved_form_|.
     if (provisionally_saved_form_.has_value())

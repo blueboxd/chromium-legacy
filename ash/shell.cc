@@ -105,7 +105,7 @@
 #include "ash/shutdown_controller_impl.h"
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/dark_mode_controller.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -196,9 +196,9 @@
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ash/components/dbus/usb/usbguard_client.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -434,6 +434,11 @@ void Shell::OnCastingSessionStartedOrStopped(bool started) {
 void Shell::OnRootWindowAdded(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnRootWindowAdded(root_window);
+}
+
+void Shell::OnRootWindowWillShutdown(aura::Window* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnRootWindowWillShutdown(root_window);
 }
 
 void Shell::OnDictationStarted() {
@@ -718,10 +723,6 @@ Shell::~Shell() {
   // it before destroying |tablet_mode_controller_|.
   accessibility_controller_->Shutdown();
 
-  // Because this function will call |SessionController::RemoveObserver|, do it
-  // before destroying |session_controller_|.
-  accelerator_controller_->Shutdown();
-
   // Must be destructed before human_presence_orientation_controller_.
   power_prefs_.reset();
 
@@ -829,9 +830,12 @@ Shell::~Shell() {
   keyboard_backlight_color_controller_.reset();
   rgb_keyboard_manager_.reset();
 
-  // `AshColorProvider` observes `WallPaperController` and must be destructed
-  // before it.
   ash_color_provider_.reset();
+
+  // Depends on `geolocation_controller_` and `wallpaper_controller_`, so it
+  // must be destructed before the geolocation controller and wallpaper
+  // controller.
+  dark_light_mode_controller_.reset();
 
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
@@ -859,10 +863,6 @@ Shell::~Shell() {
   docked_magnifier_controller_ = nullptr;
   // Similarly for PrivacyScreenController.
   privacy_screen_controller_ = nullptr;
-
-  // Depends on `geolocation_controller_`, so it must be destructed before the
-  // geolocation controller.
-  dark_mode_controller_.reset();
 
   geolocation_controller_.reset();
 
@@ -1107,7 +1107,8 @@ void Shell::Init(
     env->set_context_factory(context_factory);
 
   ash_color_provider_ = std::make_unique<AshColorProvider>();
-
+  ui::ColorProviderManager::Get().AppendColorProviderInitializer(
+      base::BindRepeating(AddCrosStylesColorMixer));
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(AddAshColorMixer));
 
@@ -1123,7 +1124,7 @@ void Shell::Init(
   // been initialized.
   night_light_controller_ = std::make_unique<NightLightControllerImpl>();
 
-  dark_mode_controller_ = std::make_unique<DarkModeController>();
+  dark_light_mode_controller_ = std::make_unique<DarkLightModeControllerImpl>();
 
   // Privacy Screen depends on the display manager, so initialize it after
   // display manager was properly initialized.
@@ -1443,10 +1444,6 @@ void Shell::Init(
   // Initialize the D-Bus bus and services for ash.
   dbus_bus_ = dbus_bus;
   ash_dbus_services_ = std::make_unique<AshDBusServices>(dbus_bus.get());
-
-  // By this point ash shell should have initialized its D-Bus signal
-  // listeners, so inform the session manager that Ash is initialized.
-  session_controller_->EmitAshInitialized();
 }
 
 void Shell::InitializeDisplayManager() {

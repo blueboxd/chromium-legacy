@@ -264,9 +264,12 @@ TODO(crbug.com/1035895): Document UI/UX.
 
 The user interface is localized in the following languages: TBD.
 
-TODO(crbug.com/1014591): Implement install cancellation.
+TODO(crbug.com/1014591): Implement install cancellation, including cancellation
+ping.
 
-The install flow can be stopped before the payload finished downloading.
+The install flow can be stopped before the payload finishes downloading. In this
+case, the event ping associated with the install attempt will be sent with an
+`eventresult` of 4 (cancelled).
 
 TODO(crbug.com/1286580): Implement silent mode.
 
@@ -295,6 +298,9 @@ update fails repeatedly.
 The updater communicates with update servers using the
 [Omaha Protocol](protocol_3_1.md).
 
+The updater uses platform-native network stacks (WinHTTP on Windows and
+NSURLSession on macOS).
+
 #### Security
 It is not possible to MITM the updater even if the network (including TLS) is
 compromised. The integrity of the client-server communication is guaranteed
@@ -306,7 +312,8 @@ even if the response was erroneous (misformatted or unparsable), until the
 next normally scheduled update check.
 
 #### DOS Mitigation
-The updater sends DoS mitigation headers in requests to the server.
+The updater sends [DoS mitigation headers](protocol_3_1.md) in requests to the
+server.
 
 When the server responds with an `X-Retry-After header`, the client does not
 issue another update check until the specified period has passed (maximum 24
@@ -333,6 +340,12 @@ specific.
 The macOS API is [defined here](installer_api_mac.md).
 
 TODO(crbug.com/1035895): Document Windows installer APIs
+
+TODO(crbug.com/1339454): Run installers at BELOW_NORMAL_PRIORITY_CLASS if the
+update flow is a background flow.
+
+### Enterprise Enrollment
+TODO(crbug.com/1339451): Document enterprise enrollment and the token.
 
 ### Enterprise Policies
 Enterprise policies can prevent the installation of applications:
@@ -527,29 +540,29 @@ TODO(crbug.com/1331030): Implement differential update support.
 
 ### Update Timing
 The updater runs periodic tasks every hour, checking its own status, detecting
-application uninstalls, and potential checking for updates (if it has been at
-least 5 hours since the last update check).
+application uninstalls, and potentially checking for updates.
 
-TODO(crbug.com/1329868): implement the following algorithm.
-The updater scatters its routine updates:
-* Two updaters installed in identical situations and at the same time, after
-  some period of time, do not have synchronized times at which they check
-  for updates.
-  * For example, the updater may randomly choose to wait 6 hours instead of 5 to
-    perform the next check. The probability of choosing 6 hours is .1.
-  * The change only applies to users who have not overridden their
-    `UpdateCheckMs` feature.
-  * For testing purposes, the feature can be disabled by creating an
-    DWORD value `DisableUpdateAppsHourlyJitter` in `UpdateDev`.
-  * For testing purposes, an `UpdateDev` value can set the jitter time to a
-    constant value, in the same [0, 60) seconds range. The name of the value is
-    `AutoUpdateJitterMs` and it represents the time to wait before an update
-    check is made in milliseconds.
-* The global load from updaters is scattered among the minutes of the hour, the
-  seconds of the minute, and the milliseconds of the second.
-  * For example, load spikes on the first minute of the hour, or
-    the first second of every minute, or even the first millisecond of every
-    second are undesirable.
+The updater has a base update check period of 4.5 hours (though this can be
+overridden by policy). Each time the updater runs routine tasks, the update
+check is only run if the period has elapsed since the last check.
+
+Since the updater's periodic tasks are run every hour, in practice the update
+check period is always rounded up to the nearest hour.
+
+To prevent multiple updaters from synchronizing their update checks (for
+example, if a large cohort of machines is powered on at the the same time),
+the updater will randomly use a longer update check period (120% of the normal
+period) with 10% probability.
+
+The updater will always check for updates if the time since the last check is
+negative (e.g. due to clock wander).
+
+Once the updater commits to checking for updates, it will delay the actual
+check by a random number of milliseconds up to one minute. This avoids
+sychronizing traffic to the first second of each minute (or the first
+millisecond of each second).
+
+Background updates can be disabled entirely through policy.
 
 #### Windows Scheduling of Updates
 The update tasks are scheduled using the OS task scheduler.
@@ -659,16 +672,58 @@ The integrity of the payload is verified.
 There is no download cache. Payloads are re-downloaded for applications which
 fail to install.
 
+### Logging
+All updater logs are written to `{UPDATER_DATA_DIR}\updater.log`.
+
+On macOS for system-scope updaters, `{UPDATER_DATA_DIR}` is
+`/Library/Application Support/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}`.
+
+On macOS for user-scope updaters, `{UPDATER_DATA_DIR}` is
+`~/Library/Application Support/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}`.
+
+On Windows for system-scope updaters, `{UPDATER_DATA_DIR}` is
+`%PROGRAMFILES%\{COMPANY_SHORTNAME}\{PRODUCT_FULLNAME}`. (A 32-bit updater uses
+use `%PROGRAMFILESX86%` if appropriate instead.)
+
+On Windows for user-scope updaters, `{UPDATER_DATA_DIR}` is
+`%LOCALAPPDATA%\{COMPANY_SHORTNAME}\{PRODUCT_FULLNAME}`.
+
 ## Services
 
 ### Crash Reporting
 TODO(crbug.com/1035895): Document updater crash reporting.
 
+### Process Launcher (Deprecated, please use the Application Commands feature)
+The feature allows installed products to pre-register and later run elevated
+command lines in the format `c:\program files\foo\exe.exe params`. Multiple
+command lines can be registered per `app_id`.
+
+This feature is only for system applications.
+
+The program path is always an absolute path. Additionally, the program path is
+also a child of %ProgramFiles% or %ProgramFiles(x86)%. For instance:
+* `c:\path-to-exe\exe.exe` is an invalid path.
+* `"c:\Program Files\subdir\exe.exe"` is a valid path.
+* `"c:\Program Files (x86)\subdir\exe.exe"` is also a valid path.
+
+#### Registration
+Commands are registered in the registry with the following format:
+
+```
+    Update\Clients\{`app_id`}
+        REG_SZ `command_id` == "c:\Program Files\subdir\exe.exe p1 p2"
+```
+
+#### Usage
+Once registered, commands may be invoked using the `LaunchCmdElevated` method in
+the `IProcessLauncher` interface.
+
 ### Application Commands (applicable to the Windows version of the Updater)
 The feature allows installed products to pre-register and later run command
 lines in the format `c:\path-to-exe\exe.exe {params}` (elevated for system
 applications). `{params}` is optional and can also include replaceable
-parameters substituted at runtime.
+parameters substituted at runtime. Multiple app commands can be registered per
+`app_id`.
 
 The program path is always an absolute path. Additionally, for system
 applications,  the program path is also a child of %ProgramFiles% or
@@ -684,6 +739,7 @@ App commands are registered in the registry with the following formats:
 ```
     Update\Clients\{`app_id`}\Commands\`command_id`
         REG_SZ "CommandLine" == {command format}
+        {optional} REG_DWORD "AutoRunOnOSUpgrade" == {1}
 ```
 * Older command layout format, which may be deprecated in the future:
 ```
@@ -696,6 +752,12 @@ Example `{command format}`: `c:\path-to\echo.exe %1 %2 %3 StaticParam4`
 As shown above, `{command format}` needs to be the complete path to an
 executable followed by optional parameters.
 
+If "AutoRunOnOSUpgrade" is non-zero, the command is invoked when the updater
+detects an OS upgrade. In this case, `command format` can optionally contain a
+single substitutible parameter, which is filled in with the OS versions in the
+format `{Previous OS Version}-{Current OS Version}`. It is ok to have a static
+command line as well if the OS versions information is not required.
+
 #### Usage
 Once registered, commands may be invoked using the `execute` method in the
 `IAppCommandWeb` interface.
@@ -706,15 +768,15 @@ interface IAppCommandWeb : IDispatch {
   [propget] HRESULT status([out, retval] UINT*);
   [propget] HRESULT exitCode([out, retval] DWORD*);
   [propget] HRESULT output([out, retval] BSTR*);
-  HRESULT execute([in, optional] VARIANT parameter1,
-                  [in, optional] VARIANT parameter2,
-                  [in, optional] VARIANT parameter3,
-                  [in, optional] VARIANT parameter4,
-                  [in, optional] VARIANT parameter5,
-                  [in, optional] VARIANT parameter6,
-                  [in, optional] VARIANT parameter7,
-                  [in, optional] VARIANT parameter8,
-                  [in, optional] VARIANT parameter9);
+  HRESULT execute([in, optional] VARIANT substitution1,
+                  [in, optional] VARIANT substitution2,
+                  [in, optional] VARIANT substitution3,
+                  [in, optional] VARIANT substitution4,
+                  [in, optional] VARIANT substitution5,
+                  [in, optional] VARIANT substitution6,
+                  [in, optional] VARIANT substitution7,
+                  [in, optional] VARIANT substitution8,
+                  [in, optional] VARIANT substitution9);
 };
 ```
 
@@ -729,8 +791,8 @@ cmd = app.command(command);
 cmd.execute();
 ```
 
-Parameters placeholders (`%1-%9`) are filled by the numbered parameters in
-`IAppCommandWeb::execute`. Placeholders without corresponding parameters
+Parameters placeholders (`%1-%9`) are filled by the numbered substitutions in
+`IAppCommandWeb::execute`. Placeholders without corresponding substitutions
 cause the execution to fail.
 
 Clients may poll for the execution status of commands that they have invoked by
@@ -745,7 +807,7 @@ as `%ProgramFiles%` for security, since it runs elevated.
 * placeholders take the form of a percent character `%` followed by a digit.
 Literal `%` characters are escaped by doubling them.
 
-For example, if parameters to `IAppCommandWeb::execute` are `AA` and `BB`
+For example, if substitutions to `IAppCommandWeb::execute` are `AA` and `BB`
 respectively, a command format of:
   `echo.exe %1 %%2 %%%2`
 becomes the command line

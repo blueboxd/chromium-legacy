@@ -22,7 +22,7 @@
 #include "chrome/browser/ash/arc/instance_throttle/arc_provisioning_throttle_observer.h"
 #include "chrome/browser/ash/arc/instance_throttle/arc_switch_throttle_observer.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 
 namespace arc {
 
@@ -176,7 +176,7 @@ void SetArcCpuRestrictionCallback(
 }
 
 void SetArcContainerCpuRestriction(CpuRestrictionState cpu_restriction_state) {
-  if (!chromeos::SessionManagerClient::Get()) {
+  if (!ash::SessionManagerClient::Get()) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
@@ -190,7 +190,7 @@ void SetArcContainerCpuRestriction(CpuRestrictionState cpu_restriction_state) {
       state = login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND;
       break;
   }
-  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
+  ash::SessionManagerClient::Get()->SetArcCpuRestriction(
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 

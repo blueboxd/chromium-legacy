@@ -236,11 +236,7 @@ namespace apps {
 
 class PublisherTest : public extensions::ExtensionServiceTestBase {
  public:
-  PublisherTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kAppServiceOnAppTypeInitializedWithoutMojom);
-  }
-
+  PublisherTest() = default;
   PublisherTest(const PublisherTest&) = delete;
   PublisherTest& operator=(const PublisherTest&) = delete;
 
@@ -642,13 +638,11 @@ TEST_F(PublisherTest, BuiltinAppsOnApps) {
 
 class StandaloneBrowserPublisherTest : public PublisherTest {
  public:
-  StandaloneBrowserPublisherTest() : PublisherTest() {
+  StandaloneBrowserPublisherTest() {
     crosapi::browser_util::SetLacrosEnabledForTest(true);
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(
-        {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary,
-         kAppServiceOnAppTypeInitializedWithoutMojom},
-        {});
+        {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary}, {});
   }
 
   StandaloneBrowserPublisherTest(const StandaloneBrowserPublisherTest&) =
@@ -1000,27 +994,96 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiUpdated) {
   EXPECT_EQ(app_id6, observer.updated_ids()[5]);
 }
 
-// Check that when Lacros is primary, the app is disabled by policy and does
-// not handle intents.
-TEST_F(StandaloneBrowserPublisherTest, ExtensionAppsDisabledByPolicy) {
+// Verify if OnApps was never called, the registration of AppController will not
+// initialize the web app type.
+TEST_F(StandaloneBrowserPublisherTest, WebAppsNotInitializedIfRegisterFirst) {
+  WebAppsCrosapi* web_apps_crosapi =
+      WebAppsCrosapiFactory::GetForProfile(profile());
+
+  AppRegistryCache& cache =
+      AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
+  AppRegistryCacheObserver observer(&cache);
+
+  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
+
+  // Verify no app updated, since Crosapi is not ready yet.
+  EXPECT_TRUE(observer.app_types().empty());
+  EXPECT_TRUE(observer.updated_ids().empty());
+
+  // Register Crosapi first, there should be no app updates because OnApps
+  // was never called.
+  mojo::PendingReceiver<crosapi::mojom::AppController> pending_receiver1;
+  mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
+      pending_receiver1.InitWithNewPipeAndPassRemote();
+  web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
+  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
+
+  EXPECT_TRUE(observer.app_types().empty());
+  EXPECT_TRUE(observer.updated_ids().empty());
+
+  std::vector<AppPtr> apps1;
+  std::string app_id1 = "a";
+  std::string app_id2 = "b";
+  apps1.push_back(MakeApp(AppType::kWeb, app_id1,
+                          /*name=*/"TestApp", Readiness::kReady));
+  apps1.push_back(MakeApp(AppType::kWeb, app_id2,
+                          /*name=*/"TestApp", Readiness::kReady));
+  web_apps_crosapi->OnApps(std::move(apps1));
+
+  std::vector<AppPtr> apps2;
+  std::string app_id3 = "c";
+  apps2.push_back(MakeApp(AppType::kWeb, app_id3,
+                          /*name=*/"TestApp", Readiness::kReady));
+  web_apps_crosapi->OnApps(std::move(apps2));
+  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
+
+  EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id1));
+  EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id2));
+  EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id3));
+  ASSERT_EQ(1u, observer.app_types().size());
+  EXPECT_EQ(AppType::kWeb, observer.app_types()[0]);
+  ASSERT_EQ(3u, observer.updated_ids().size());
+  EXPECT_EQ(app_id1, observer.updated_ids()[0]);
+  EXPECT_EQ(app_id2, observer.updated_ids()[1]);
+  EXPECT_EQ(app_id3, observer.updated_ids()[2]);
+}
+
+TEST_F(StandaloneBrowserPublisherTest, WebAppsInitializedForEmptyList) {
+  WebAppsCrosapi* web_apps_crosapi =
+      WebAppsCrosapiFactory::GetForProfile(profile());
+
+  AppRegistryCache& cache =
+      AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
+  AppRegistryCacheObserver observer(&cache);
+
+  web_apps_crosapi->OnApps(std::vector<AppPtr>{});
+  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
+  // Verify no app updated, since Crosapi is not ready yet.
+  EXPECT_TRUE(observer.app_types().empty());
+  EXPECT_TRUE(observer.updated_ids().empty());
+
+  mojo::PendingReceiver<crosapi::mojom::AppController> pending_receiver1;
+  mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
+      pending_receiver1.InitWithNewPipeAndPassRemote();
+  web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
+  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
+  ASSERT_EQ(1u, observer.app_types().size());
+  EXPECT_EQ(AppType::kWeb, observer.app_types()[0]);
+  EXPECT_TRUE(observer.updated_ids().empty());
+}
+
+// Check that when Lacros is primary, extension apps are not published to the
+// app service.
+TEST_F(StandaloneBrowserPublisherTest, ExtensionAppsNotPublished) {
   // Install a "web store" app.
   scoped_refptr<extensions::Extension> store =
       MakeExtensionApp("webstore", "0.0", "http://google.com",
                        std::string(extensions::kWebStoreAppId));
   service_->AddExtension(store.get());
 
-  AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
-  VerifyApp(AppType::kChromeApp, store->id(), store->name(),
-            Readiness::kDisabledByPolicy, InstallReason::kDefault,
-            InstallSource::kChromeWebStore, {}, base::Time(), base::Time(),
-            apps::Permissions(),
-            /*is_platform_app=*/true, /*recommendable=*/true,
-            /*searchable=*/true,
-            /*show_in_launcher=*/false, /*show_in_shelf=*/false,
-            /*show_in_search=*/false, /*show_in_management=*/false,
-            /*handles_intents=*/false, /*allow_uninstall=*/true,
-            /*has_badge=*/false, /*paused=*/false);
+  AppRegistryCache& cache =
+      AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
+  EXPECT_EQ(AppType::kUnknown, cache.GetAppType(store->id()));
 }
 
 // This framework conveniently sets up everything but borealis.
@@ -1035,9 +1098,7 @@ class BorealisPublisherTest : public StandaloneBrowserPublisherTest {
   BorealisPublisherTest() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(
-        {features::kBorealis, chromeos::features::kBorealisPermitted,
-         kAppServiceOnAppTypeInitializedWithoutMojom},
-        {});
+        {features::kBorealis, chromeos::features::kBorealisPermitted}, {});
   }
 };
 

@@ -30,8 +30,8 @@
 
 @implementation ContentSuggestionsMostVisitedTileView
 
-- (instancetype)initWithFrame:(CGRect)frame placeholder:(BOOL)isPlaceholder {
-  self = [super initWithFrame:frame placeholder:isPlaceholder];
+- (instancetype)initWithFrame:(CGRect)frame {
+  self = [super initWithFrame:frame];
   if (self) {
     _faviconView = [[FaviconView alloc] init];
     _faviconView.font = [UIFont systemFontOfSize:22];
@@ -50,7 +50,7 @@
 
 - (instancetype)initWithConfiguration:
     (ContentSuggestionsMostVisitedItem*)config {
-  self = [self initWithFrame:CGRectZero placeholder:!config];
+  self = [self initWithFrame:CGRectZero];
   if (self) {
     if (!config) {
       // If there is no config, then this is a placeholder tile.
@@ -89,6 +89,9 @@
   UIPreviewParameters* previewParameters = [[UIPreviewParameters alloc] init];
   previewParameters.backgroundColor =
       [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
+  CGRect previewPath = CGRectInset(interaction.view.bounds, -2, -12);
+  previewParameters.visiblePath =
+      [UIBezierPath bezierPathWithRoundedRect:previewPath cornerRadius:12];
   return [[UITargetedPreview alloc] initWithView:self
                                       parameters:previewParameters];
 }

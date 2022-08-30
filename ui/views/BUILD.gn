@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//skia/features.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
@@ -133,6 +134,7 @@ component("views") {
     "controls/image_view_base.h",
     "controls/label.h",
     "controls/link.h",
+    "controls/link_fragment.h",
     "controls/menu/menu_config.h",
     "controls/menu/menu_controller.h",
     "controls/menu/menu_controller_delegate.h",
@@ -360,6 +362,7 @@ component("views") {
     "controls/image_view_base.cc",
     "controls/label.cc",
     "controls/link.cc",
+    "controls/link_fragment.cc",
     "controls/menu/menu_config.cc",
     "controls/menu/menu_controller.cc",
     "controls/menu/menu_delegate.cc",
@@ -552,12 +555,16 @@ component("views") {
   ]
 
   if (is_chromeos_ash) {
-    public += [ "highlight_border.h" ]
-    sources += [ "highlight_border.cc" ]
     deps += [
       "//ash/constants",
       "//ui/base/ime/ash",
     ]
+  }
+
+  if (is_chromeos) {
+    public += [ "highlight_border.h" ]
+    sources += [ "highlight_border.cc" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (is_linux || is_chromeos || is_fuchsia) {
@@ -566,12 +573,18 @@ component("views") {
   }
 
   if (is_linux || is_chromeos_lacros) {
-    public_deps += [ "//ui/base/cursor:theme_manager" ]
+    public_deps += [
+      "//printing/buildflags",
+      "//ui/base/cursor:theme_manager",
+    ]
     deps += [
       "//build:chromecast_buildflags",
       "//ui/base/ime/linux",
       "//ui/shell_dialogs",
     ]
+    if (enable_basic_printing) {
+      deps += [ "//printing" ]
+    }
     public += [
       "linux_ui/device_scale_factor_observer.h",
       "linux_ui/linux_ui.h",
@@ -823,7 +836,7 @@ component("views") {
       if (is_linux) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
         sources += [
-          "widget/desktop_aura/desktop_screen_linux.cc",
+          "widget/desktop_aura/desktop_screen_ozone_linux.cc",
           "widget/desktop_aura/desktop_window_tree_host_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.h",
@@ -1142,6 +1155,7 @@ test("views_unittests") {
     "controls/editable_combobox/editable_combobox_unittest.cc",
     "controls/image_view_unittest.cc",
     "controls/label_unittest.cc",
+    "controls/link_fragment_unittest.cc",
     "controls/link_unittest.cc",
     "controls/menu/menu_controller_unittest.cc",
     "controls/menu/menu_item_view_unittest.cc",
@@ -1313,6 +1327,7 @@ test("views_unittests") {
 
   if (is_mac) {
     sources += [
+      "accessibility/view_ax_platform_node_delegate_mac_unittest.cc",
       "cocoa/bridged_native_widget_unittest.mm",
       "cocoa/cocoa_mouse_capture_unittest.mm",
       "cocoa/drag_drop_client_mac_unittest.mm",

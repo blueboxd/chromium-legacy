@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
@@ -29,8 +30,6 @@ class RuleFeatureSetTest : public testing::Test {
  public:
   RuleFeatureSetTest() = default;
 
-  void Trace(Visitor* visitor) const { visitor->Trace(rule_feature_set_); }
-
   void SetUp() override {
     document_ = HTMLDocument::CreateForTest();
     auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_);
@@ -40,41 +39,39 @@ class RuleFeatureSetTest : public testing::Test {
     document_->body()->setInnerHTML("<b><i></i></b>");
   }
 
-  HeapVector<Member<const MediaQueryFeatureExpNode>> FeaturesFrom(
-      const MediaQuery& query) {
-    HeapVector<MediaQueryExp> expressions;
-    if (query.ExpNode())
-      query.ExpNode()->CollectExpressions(expressions);
-    HeapVector<Member<const MediaQueryFeatureExpNode>> features;
-    for (const MediaQueryExp& exp : expressions) {
-      features.push_back(MakeGarbageCollected<MediaQueryFeatureExpNode>(exp));
-    }
-    return features;
-  }
-
   RuleFeatureSet::SelectorPreMatch CollectFeatures(
       const String& selector_text) {
     return CollectFeaturesTo(selector_text, rule_feature_set_);
   }
 
   static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
-      CSSSelectorList selector_list,
+      CSSSelectorVector& selector_vector,
+      const StyleScope* style_scope,
+      RuleFeatureSet& set) {
+    if (selector_vector.IsEmpty()) {
+      return RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
+    }
+
+    auto* style_rule = StyleRule::Create(
+        selector_vector,
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));
+    return CollectFeaturesTo(style_rule, style_scope, set);
+  }
+
+  static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
+      StyleRule* style_rule,
       const StyleScope* style_scope,
       RuleFeatureSet& set) {
     Vector<wtf_size_t> indices;
-    for (const CSSSelector* s = selector_list.First(); s;
-         s = selector_list.Next(*s)) {
-      indices.push_back(selector_list.SelectorIndex(*s));
+    for (const CSSSelector* s = style_rule->FirstSelector(); s;
+         s = CSSSelectorList::Next(*s)) {
+      indices.push_back(style_rule->SelectorIndex(*s));
     }
-
-    auto* style_rule = MakeGarbageCollected<StyleRule>(
-        std::move(selector_list),
-        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));
 
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
-    for (unsigned i = 0; i < indices.size(); ++i) {
-      RuleData rule_data(style_rule, indices[i], 0, 0, kRuleHasNoSpecialState);
+    for (wtf_size_t index : indices) {
+      RuleData rule_data(style_rule, index, 0, 0, kRuleHasNoSpecialState);
       if (set.CollectFeaturesFromRuleData(&rule_data, style_scope))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
     }
@@ -84,11 +81,10 @@ class RuleFeatureSetTest : public testing::Test {
   static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
       const String& selector_text,
       RuleFeatureSet& set) {
-    CSSSelectorList selector_list = CSSParser::ParseSelector(
+    CSSSelectorVector selector_vector = CSSParser::ParseSelector(
         StrictCSSParserContext(SecureContextMode::kInsecureContext), nullptr,
         selector_text);
-    return CollectFeaturesTo(std::move(selector_list),
-                             nullptr /* style_scope */, set);
+    return CollectFeaturesTo(selector_vector, nullptr /* style_scope */, set);
   }
 
   void ClearFeatures() { rule_feature_set_.Clear(); }
@@ -1486,93 +1482,33 @@ TEST_F(RuleFeatureSetTest, invalidatesNonTerminalHas) {
   }
 }
 
-TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
-  MediaQuerySet* min_width1 =
-      MediaQueryParser::ParseMediaQuerySet("(min-width: 1000px)", nullptr);
-  MediaQuerySet* min_width2 =
-      MediaQueryParser::ParseMediaQuerySet("(min-width: 2000px)", nullptr);
-  MediaQuerySet* min_resolution1 =
-      MediaQueryParser::ParseMediaQuerySet("(min-resolution: 72dpi)", nullptr);
-  MediaQuerySet* min_resolution2 =
-      MediaQueryParser::ParseMediaQuerySet("(min-resolution: 300dpi)", nullptr);
+TEST_F(RuleFeatureSetTest, MediaQueryResultFlagsEquality) {
+  RuleFeatureSet empty;
 
-  {
-    RuleFeatureSet set1;
-    RuleFeatureSet set2;
-    RuleFeatureSet set3;
-    for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-        set2.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-        set3.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, false));
-      }
-    }
-    EXPECT_EQ(set1, set2);
-    EXPECT_NE(set1, set3);
-    EXPECT_NE(set3, set2);
-  }
+  RuleFeatureSet viewport_dependent;
+  viewport_dependent.MutableMediaQueryResultFlags().is_viewport_dependent =
+      true;
 
-  {
-    RuleFeatureSet set1;
-    for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-      }
-    }
+  RuleFeatureSet device_dependent;
+  device_dependent.MutableMediaQueryResultFlags().is_device_dependent = true;
 
-    RuleFeatureSet set2;
-    for (const auto& query : min_width2->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-      }
-    }
+  RuleFeatureSet font_unit;
+  font_unit.MutableMediaQueryResultFlags().unit_flags =
+      MediaQueryExpValue::kFontRelative;
 
-    EXPECT_NE(set1, set2);
-  }
+  RuleFeatureSet dynamic_viewport_unit;
+  dynamic_viewport_unit.MutableMediaQueryResultFlags().unit_flags =
+      MediaQueryExpValue::kDynamicViewport;
 
-  {
-    RuleFeatureSet set1;
-    RuleFeatureSet set2;
-    RuleFeatureSet set3;
-    for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set1.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-        set2.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-        set3.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, false));
-      }
-    }
-    EXPECT_EQ(set1, set2);
-    EXPECT_NE(set1, set3);
-    EXPECT_NE(set3, set2);
-  }
+  EXPECT_EQ(empty, empty);
+  EXPECT_EQ(viewport_dependent, viewport_dependent);
+  EXPECT_EQ(device_dependent, device_dependent);
+  EXPECT_EQ(font_unit, font_unit);
 
-  {
-    RuleFeatureSet set1;
-    for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set1.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-      }
-    }
-
-    RuleFeatureSet set2;
-    for (const auto& query : min_resolution2->QueryVector()) {
-      for (const auto& feature : FeaturesFrom(*query)) {
-        set2.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(*feature, true));
-      }
-    }
-
-    EXPECT_NE(set1, set2);
-  }
+  EXPECT_NE(viewport_dependent, device_dependent);
+  EXPECT_NE(empty, device_dependent);
+  EXPECT_NE(font_unit, viewport_dependent);
+  EXPECT_NE(font_unit, dynamic_viewport_unit);
 }
 
 struct RefTestData {
@@ -1887,9 +1823,7 @@ class RuleFeatureSetScopeRefTest
     auto* style_rule = DynamicTo<StyleRule>(rule);
     ASSERT_TRUE(style_rule);
 
-    DCHECK(style_rule->SelectorList().IsValid());
-
-    CollectFeaturesTo(style_rule->SelectorList().Copy(), scope, set);
+    CollectFeaturesTo(style_rule, scope, set);
   }
 
   void Compare(const RuleFeatureSet& main,

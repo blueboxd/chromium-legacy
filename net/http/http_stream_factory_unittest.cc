@@ -504,7 +504,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
 using HttpStreamFactoryTest = TestWithTaskEnvironment;
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
-  for (size_t i = 0; i < std::size(kTests); ++i) {
+  for (const auto& test : kTests) {
     SpdySessionDependencies session_deps(
         ConfiguredProxyResolutionService::CreateDirect());
     std::unique_ptr<HttpNetworkSession> session(
@@ -522,14 +522,14 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
     mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                      std::move(owned_transport_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelper(kTests[i], session.get());
-    EXPECT_EQ(kTests[i].num_streams, transport_conn_pool->last_num_streams());
-    EXPECT_EQ(GetGroupId(kTests[i]), transport_conn_pool->last_group_id());
+    PreconnectHelper(test, session.get());
+    EXPECT_EQ(test.num_streams, transport_conn_pool->last_num_streams());
+    EXPECT_EQ(GetGroupId(test), transport_conn_pool->last_group_id());
   }
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
-  for (size_t i = 0; i < std::size(kTests); ++i) {
+  for (const auto& test : kTests) {
     SpdySessionDependencies session_deps(
         ConfiguredProxyResolutionService::CreateFixed(
             "http_proxy", TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -546,14 +546,14 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelper(kTests[i], session.get());
-    EXPECT_EQ(kTests[i].num_streams, http_proxy_pool->last_num_streams());
-    EXPECT_EQ(GetGroupId(kTests[i]), http_proxy_pool->last_group_id());
+    PreconnectHelper(test, session.get());
+    EXPECT_EQ(test.num_streams, http_proxy_pool->last_num_streams());
+    EXPECT_EQ(GetGroupId(test), http_proxy_pool->last_group_id());
   }
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
-  for (size_t i = 0; i < std::size(kTests); ++i) {
+  for (const auto& test : kTests) {
     SpdySessionDependencies session_deps(
         ConfiguredProxyResolutionService::CreateFixed(
             "socks4://socks_proxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -570,14 +570,14 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(socks_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelper(kTests[i], session.get());
-    EXPECT_EQ(kTests[i].num_streams, socks_proxy_pool->last_num_streams());
-    EXPECT_EQ(GetGroupId(kTests[i]), socks_proxy_pool->last_group_id());
+    PreconnectHelper(test, session.get());
+    EXPECT_EQ(test.num_streams, socks_proxy_pool->last_num_streams());
+    EXPECT_EQ(GetGroupId(test), socks_proxy_pool->last_group_id());
   }
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
-  for (size_t i = 0; i < std::size(kTests); ++i) {
+  for (const auto& test : kTests) {
     SpdySessionDependencies session_deps(
         ConfiguredProxyResolutionService::CreateDirect());
     std::unique_ptr<HttpNetworkSession> session(
@@ -604,13 +604,13 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
     mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                      std::move(owned_transport_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelper(kTests[i], session.get());
+    PreconnectHelper(test, session.get());
     // We shouldn't be preconnecting if we have an existing session, which is
     // the case for https://www.google.com.
-    if (kTests[i].ssl)
+    if (test.ssl)
       EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
     else
-      EXPECT_EQ(kTests[i].num_streams, transport_conn_pool->last_num_streams());
+      EXPECT_EQ(test.num_streams, transport_conn_pool->last_num_streams());
   }
 }
 
@@ -952,18 +952,18 @@ class MockQuicData {
   ~MockQuicData() = default;
 
   void AddRead(std::unique_ptr<quic::QuicEncryptedPacket> packet) {
-    reads_.push_back(
-        MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
+    reads_.emplace_back(ASYNC, packet->data(), packet->length(),
+                        packet_number_++);
     packets_.push_back(std::move(packet));
   }
 
   void AddRead(IoMode mode, int rv) {
-    reads_.push_back(MockRead(mode, rv, packet_number_++));
+    reads_.emplace_back(mode, rv, packet_number_++);
   }
 
   void AddWrite(std::unique_ptr<quic::QuicEncryptedPacket> packet) {
-    writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
-                                packet_number_++));
+    writes_.emplace_back(SYNCHRONOUS, packet->data(), packet->length(),
+                         packet_number_++);
     packets_.push_back(std::move(packet));
   }
 
@@ -1039,9 +1039,9 @@ int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
   base::Value dict = pool->GetInfoAsValue("", "");
   EXPECT_TRUE(dict.is_dict());
-  const base::Value* groups = dict.FindDictKey("groups");
+  const base::Value::Dict* groups = dict.GetDict().FindDict("groups");
   if (groups) {
-    count = groups->DictSize();
+    count = groups->size();
   }
   return count;
 }
@@ -1052,14 +1052,14 @@ int GetSpdySessionCount(HttpNetworkSession* session) {
       session->spdy_session_pool()->SpdySessionPoolInfoToValue());
   if (!value || !value->is_list())
     return -1;
-  return value->GetListDeprecated().size();
+  return value->GetList().size();
 }
 
 // Return count of sockets handed out by a given socket pool.
 int GetHandedOutSocketCount(ClientSocketPool* pool) {
   base::Value dict = pool->GetInfoAsValue("", "");
   EXPECT_TRUE(dict.is_dict());
-  return dict.FindIntKey("handed_out_socket_count").value_or(-1);
+  return dict.GetDict().FindInt("handed_out_socket_count").value_or(-1);
 }
 
 // Return count of distinct QUIC sessions.
@@ -3552,8 +3552,8 @@ TEST_F(ProcessAlternativeServicesTest, ProcessEmptyAltSvc) {
   url::SchemeHostPort origin;
   NetworkIsolationKey network_isolation_key;
 
-  scoped_refptr<HttpResponseHeaders> headers(
-      base::MakeRefCounted<HttpResponseHeaders>(""));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
+
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
 
@@ -3582,8 +3582,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
                    .GetAlternativeServiceInfos(origin, network_isolation_key)
                    .empty());
 
-  scoped_refptr<HttpResponseHeaders> headers(
-      base::MakeRefCounted<HttpResponseHeaders>(""));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
   headers->AddHeader("alt-svc", "clear");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
@@ -3605,8 +3604,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       SchemefulSite(GURL("https://example.com")),
       SchemefulSite(GURL("https://example.com")));
 
-  scoped_refptr<HttpResponseHeaders> headers(
-      base::MakeRefCounted<HttpResponseHeaders>(""));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
   headers->AddHeader("alt-svc",
                      "h3-29=\":443\","
                      "h3-Q050=\":443\","
@@ -3643,8 +3641,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
       SchemefulSite(GURL("https://example.com")),
       SchemefulSite(GURL("https://example.com")));
 
-  scoped_refptr<HttpResponseHeaders> headers(
-      base::MakeRefCounted<HttpResponseHeaders>(""));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
   headers->AddHeader("alt-svc", "h2=\"other.example.com:443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(

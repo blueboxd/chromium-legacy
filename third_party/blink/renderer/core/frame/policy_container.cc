@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/renderer/core/frame/csp/conversion_util.h"
 
 namespace blink {
@@ -36,9 +37,10 @@ std::unique_ptr<PolicyContainer> PolicyContainer::CreateFromWebPolicyContainer(
       mojom::blink::PolicyContainerPolicies::New(
           container->policies.cross_origin_embedder_policy,
           container->policies.referrer_policy,
-          container->policies.ip_address_space,
           ConvertToMojoBlink(
-              std::move(container->policies.content_security_policies)));
+              std::move(container->policies.content_security_policies)),
+          container->policies.is_anonymous, container->policies.sandbox_flags);
+
   return std::make_unique<PolicyContainer>(std::move(container->remote),
                                            std::move(policies));
 }
@@ -46,11 +48,6 @@ std::unique_ptr<PolicyContainer> PolicyContainer::CreateFromWebPolicyContainer(
 network::mojom::blink::ReferrerPolicy PolicyContainer::GetReferrerPolicy()
     const {
   return policies_->referrer_policy;
-}
-
-network::mojom::blink::IPAddressSpace PolicyContainer::GetIPAddressSpace()
-    const {
-  return policies_->ip_address_space;
 }
 
 void PolicyContainer::UpdateReferrerPolicy(

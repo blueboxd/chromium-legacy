@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGEMENT_FEDERATED_CREDENTIAL_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_rps_request.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -15,8 +14,6 @@
 
 namespace blink {
 
-class CredentialRequestOptions;
-class FederatedAccountLoginRequest;
 class FederatedCredentialInit;
 
 class MODULES_EXPORT FederatedCredential final : public Credential {
@@ -31,26 +28,10 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
       const String& name,
       const KURL& icon_url);
 
-  static FederatedCredential* Create(const KURL& provider_url,
-                                     const String& client_id,
-                                     const String& hint,
-                                     const CredentialRequestOptions* options);
-
-  static bool IsRejectingPromiseDueToCSP(ContentSecurityPolicy* policy,
-                                         ScriptPromiseResolver* resolver,
-                                         const KURL& provider_url);
-
   FederatedCredential(const String& id,
                       scoped_refptr<const SecurityOrigin> provider,
                       const String& name,
                       const KURL& icon_url);
-
-  FederatedCredential(const KURL& provider_url,
-                      const String& client_id,
-                      const String& hint,
-                      const CredentialRequestOptions* options);
-
-  void Trace(Visitor*) const override;
 
   scoped_refptr<const SecurityOrigin> GetProviderAsOrigin() const {
     return provider_origin_;
@@ -72,24 +53,10 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
     return g_empty_string;
   }
 
-  ScriptPromise login(ScriptState* script_state,
-                      FederatedAccountLoginRequest* request);
-
-  ScriptPromise logout(ScriptState* script_state);
-
-  ScriptPromise revoke(ScriptState*, const String& hint, ExceptionState&);
-
-  static ScriptPromise logoutRps(
-      ScriptState*,
-      const HeapVector<Member<FederatedCredentialLogoutRpsRequest>>&);
-
  private:
   const scoped_refptr<const SecurityOrigin> provider_origin_;
   const String name_;
   const KURL icon_url_;
-  const KURL provider_url_;
-  const String client_id_;
-  Member<const CredentialRequestOptions> options_;
 };
 
 }  // namespace blink

@@ -8,8 +8,7 @@
 #include "net/third_party/quiche/src/quiche/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
-namespace test {
+namespace net::test {
 namespace {
 
 class TestDelegate : public quic::QuicAlarm::DelegateWithoutContext {
@@ -28,7 +27,7 @@ class TestDelegate : public quic::QuicAlarm::DelegateWithoutContext {
 class QuicChromiumAlarmFactoryTest : public ::testing::Test {
  protected:
   QuicChromiumAlarmFactoryTest()
-      : runner_(new TestTaskRunner(&clock_)),
+      : runner_(base::MakeRefCounted<TestTaskRunner>(&clock_)),
         alarm_factory_(runner_.get(), &clock_) {}
 
   scoped_refptr<TestTaskRunner> runner_;
@@ -226,5 +225,4 @@ TEST_F(QuicChromiumAlarmFactoryTest, CreateAlarmAndUpdate) {
 }
 
 }  // namespace
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

@@ -142,13 +142,13 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenInvalidUrl) {
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  EXPECT_FALSE(presenter().AddPassword(form));
+  EXPECT_FALSE(presenter().AddCredential(CredentialUIEntry(form)));
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
 
   form.url = GURL("withoutscheme.com");
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  EXPECT_FALSE(presenter().AddPassword(form));
+  EXPECT_FALSE(presenter().AddCredential(CredentialUIEntry(form)));
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
   histogram_tester.ExpectTotalCount(
@@ -167,7 +167,7 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenEmptyPassword) {
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  EXPECT_FALSE(presenter().AddPassword(form));
+  EXPECT_FALSE(presenter().AddCredential(CredentialUIEntry(form)));
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
   histogram_tester.ExpectTotalCount(
@@ -193,7 +193,7 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordUnblocklistsOrigin) {
   ASSERT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(blocked_form));
 
   // Add a new entry with the same origin.
-  EXPECT_TRUE(presenter().AddPassword(form_to_add));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(form_to_add)));
   RunUntilIdle();
 
   // The entry should be added despite the origin was blocklisted.
@@ -271,8 +271,6 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
 
-  std::vector<PasswordForm> forms = {form};
-
   const std::u16string new_username = u"new_username";
   // The result of the update should have a new username and no password
   // issues.
@@ -280,13 +278,16 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
   updated_username.username_value = new_username;
   updated_username.password_issues.clear();
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.username = new_username;
+
   // Verify that editing a username triggers the right notifications.
   base::HistogramTester histogram_tester;
 
   EXPECT_CALL(observer, OnEdited(updated_username));
   EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_username)));
-  EXPECT_TRUE(
-      presenter().EditSavedPasswords(forms, new_username, form.password_value));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(
       store().stored_passwords(),
@@ -324,21 +325,24 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsernameClearsPartialIssues) {
 
   std::vector<PasswordForm> forms = {form};
 
-  const std::u16string new_username = u"new_username";
+  const std::u16string kNewUsername = u"new_username";
   // The result of the update should have a new username and weak and reused
   // password issues.
   PasswordForm updated_username = form;
-  updated_username.username_value = new_username;
+  updated_username.username_value = kNewUsername;
   updated_username.password_issues = {
       {InsecureType::kReused,
        InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
       {InsecureType::kWeak,
        InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.username = kNewUsername;
+
   EXPECT_CALL(observer, OnEdited(updated_username));
   EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_username)));
-  EXPECT_TRUE(
-      presenter().EditSavedPasswords(forms, new_username, form.password_value));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(
       store().stored_passwords(),
@@ -364,8 +368,6 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
 
-  std::vector<PasswordForm> forms = {form};
-
   const std::u16string new_password = u"new_password";
   PasswordForm updated_password = form;
   // The result of the update should have a new password and no password
@@ -374,12 +376,15 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
   updated_password.date_password_modified = base::Time::Now();
   updated_password.password_issues.clear();
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.password = new_password;
+
   base::HistogramTester histogram_tester;
   // Verify that editing a password triggers the right notifications.
   EXPECT_CALL(observer, OnEdited(updated_password));
   EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_password)));
-  EXPECT_TRUE(
-      presenter().EditSavedPasswords(forms, form.username_value, new_password));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(
       store().stored_passwords(),
@@ -402,13 +407,15 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
 
   store().AddLogin(form);
   RunUntilIdle();
-  std::vector<PasswordForm> forms = {form};
 
   const std::u16string kNewNoteValue = u"new note";
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(presenter().EditSavedPasswords(
-      forms, form.username_value, form.password_value, kNewNoteValue));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
 
   // The note with the non-empty display name should be untouched. Another note
@@ -434,12 +441,14 @@ TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
 
   store().AddLogin(form);
   RunUntilIdle();
-  std::vector<PasswordForm> forms = {form};
 
   const std::u16string kNewNoteValue = u"new note";
 
-  EXPECT_TRUE(presenter().EditSavedPasswords(
-      forms, form.username_value, form.password_value, kNewNoteValue));
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
@@ -463,9 +472,12 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
 
   const std::u16string kNewNoteValue = u"new note";
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(presenter().EditSavedPasswords(
-      forms, form.username_value, form.password_value, kNewNoteValue));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
@@ -487,9 +499,13 @@ TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   store().AddLogin(form);
   RunUntilIdle();
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.note = PasswordNote(u"", base::Time::Now());
+
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(presenter().EditSavedPasswords(forms, form.username_value,
-                                             form.password_value, u""));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
+
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
@@ -544,8 +560,6 @@ TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
 
-  std::vector<PasswordForm> forms = {form};
-
   const std::u16string new_username = u"new_username";
   const std::u16string new_password = u"new_password";
 
@@ -557,12 +571,16 @@ TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
   updated_both.date_password_modified = base::Time::Now();
   updated_both.password_issues.clear();
 
+  CredentialUIEntry credential_to_edit(form);
+  credential_to_edit.username = new_username;
+  credential_to_edit.password = new_password;
+
   base::HistogramTester histogram_tester;
   // Verify that editing username and password triggers the right notifications.
   EXPECT_CALL(observer, OnEdited(updated_both));
   EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_both)));
-  EXPECT_TRUE(
-      presenter().EditSavedPasswords(forms, new_username, new_password));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(store().stored_passwords(),
               ElementsAre(Pair(form.signon_realm, ElementsAre(updated_both))));
@@ -587,20 +605,21 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
 
-  std::vector<PasswordForm> forms{form1};
-
+  CredentialUIEntry credential_to_edit(form1);
+  credential_to_edit.username = form2.username_value;
   // Updating the form with the username which is already used for same website
   // fails.
-  const std::u16string new_username = u"test2@gmail.com";
-  EXPECT_FALSE(presenter().EditSavedPasswords(forms, new_username,
-                                              form1.password_value));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kAlreadyExisits,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(store().stored_passwords(),
               ElementsAre(Pair(form1.signon_realm, ElementsAre(form1, form2))));
 
+  credential_to_edit = CredentialUIEntry(form1);
+  credential_to_edit.password = u"";
   // Updating the form with the empty password fails.
-  EXPECT_FALSE(presenter().EditSavedPasswords(forms, form1.username_value,
-                                              std::u16string()));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kEmptyPassword,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   EXPECT_THAT(store().stored_passwords(),
               ElementsAre(Pair(form1.signon_realm, ElementsAre(form1, form2))));
@@ -625,9 +644,9 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordWithoutChanges) {
   base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnEdited).Times(0);
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  std::vector<PasswordForm> forms = {form};
-  EXPECT_TRUE(presenter().EditSavedPasswords(forms, form.username_value,
-                                             form.password_value));
+
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kNothingChanged,
+            presenter().EditSavedCredentials(CredentialUIEntry(form)));
   RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       "PasswordManager.PasswordEditUpdatedValues",
@@ -637,9 +656,10 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordWithoutChanges) {
 }
 
 TEST_F(SavedPasswordsPresenterTest, EditPasswordsEmptyList) {
-  EXPECT_FALSE(presenter().EditSavedPasswords(
-      SavedPasswordsPresenter::SavedPasswordsView(), u"test1@gmail.com",
-      u"password"));
+  CredentialUIEntry credential(
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore));
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kNotFound,
+            presenter().EditSavedCredentials(credential));
 }
 
 TEST_F(SavedPasswordsPresenterTest, EditUpdatesDuplicates) {
@@ -729,6 +749,25 @@ TEST_F(SavedPasswordsPresenterTest,
               UnorderedElementsAre(CredentialUIEntry(form),
                                    CredentialUIEntry(blocked_form),
                                    CredentialUIEntry(federated_form)));
+}
+
+TEST_F(SavedPasswordsPresenterTest, UndoRemoval) {
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  CredentialUIEntry credential = CredentialUIEntry(form);
+
+  ASSERT_THAT(presenter().GetSavedCredentials(), ElementsAre(credential));
+
+  presenter().RemoveCredential(credential);
+  RunUntilIdle();
+  EXPECT_THAT(presenter().GetSavedCredentials(), IsEmpty());
+
+  presenter().UndoLastRemoval();
+  RunUntilIdle();
+  EXPECT_THAT(presenter().GetSavedCredentials(), ElementsAre(credential));
 }
 
 namespace {
@@ -829,7 +868,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
 
   EXPECT_CALL(observer,
               OnSavedPasswordsChanged(ElementsAre(profile_store_form)));
-  EXPECT_TRUE(presenter().AddPassword(profile_store_form));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(profile_store_form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(profile_store_form.signon_realm,
@@ -846,7 +885,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
 
   EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
                             profile_store_form, account_store_form)));
-  EXPECT_TRUE(presenter().AddPassword(account_store_form));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(account_store_form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(profile_store_form.signon_realm,
@@ -880,7 +919,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(form)));
-  EXPECT_TRUE(presenter().AddPassword(form));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(form.signon_realm, ElementsAre(form))));
@@ -890,7 +929,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   // Add a password with note.
   EXPECT_CALL(observer,
               OnSavedPasswordsChanged(UnorderedElementsAre(form, form2)));
-  EXPECT_TRUE(presenter().AddPassword(form2));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(form2)));
   RunUntilIdle();
   EXPECT_THAT(
       profile_store().stored_passwords(),
@@ -915,7 +954,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   form.date_password_modified = base::Time::Now();
 
   EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(form)));
-  EXPECT_TRUE(presenter().AddPassword(form));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(form.signon_realm, ElementsAre(form))));
@@ -925,7 +964,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   PasswordForm similar_form = form;
   similar_form.password_value = u"new password";
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  EXPECT_FALSE(presenter().AddPassword(similar_form));
+  EXPECT_FALSE(presenter().AddCredential(CredentialUIEntry(similar_form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(form.signon_realm, ElementsAre(form))));
@@ -935,7 +974,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   // fail.
   similar_form.in_store = PasswordForm::Store::kAccountStore;
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
-  EXPECT_FALSE(presenter().AddPassword(similar_form));
+  EXPECT_FALSE(presenter().AddCredential(CredentialUIEntry(similar_form)));
   RunUntilIdle();
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(form.signon_realm, ElementsAre(form))));
@@ -962,7 +1001,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   ASSERT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(blocked_form));
 
   // Add a new entry with the same origin to the profile store.
-  EXPECT_TRUE(presenter().AddPassword(form_to_add));
+  EXPECT_TRUE(presenter().AddCredential(CredentialUIEntry(form_to_add)));
   RunUntilIdle();
 
   // The entry should be added despite the origin was blocklisted.
@@ -999,8 +1038,11 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditUsername) {
 
   auto new_username = account_store_form.username_value;
   std::vector<PasswordForm> forms_to_edit{profile_store_form};
-  EXPECT_TRUE(presenter().EditSavedPasswords(
-      forms_to_edit, new_username, profile_store_form.password_value));
+  CredentialUIEntry credential_to_edit(profile_store_form);
+  credential_to_edit.username = new_username;
+
+  EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
+            presenter().EditSavedCredentials(credential_to_edit));
   RunUntilIdle();
   profile_store_form.username_value = new_username;
   profile_store_form.password_issues.clear();
@@ -1115,43 +1157,6 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, DeleteCredentialBothStores) {
   // should have been deleted from both stores.
   EXPECT_TRUE(profile_store().IsEmpty());
   EXPECT_TRUE(account_store().IsEmpty());
-}
-
-TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
-       ReturnsUsernamesForRealmFromSameStore) {
-  PasswordForm form =
-      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
-
-  PasswordForm other_form = form;
-  other_form.username_value = u"test2@gmail.com";
-
-  PasswordForm account_store_form = other_form;
-  account_store_form.username_value = u"test3@gmail.com";
-  account_store_form.in_store = PasswordForm::Store::kAccountStore;
-
-  profile_store().AddLogin(form);
-  profile_store().AddLogin(other_form);
-
-  account_store().AddLogin(account_store_form);
-
-  RunUntilIdle();
-
-  ASSERT_THAT(profile_store().stored_passwords(),
-              ElementsAre(Pair(form.signon_realm,
-                               UnorderedElementsAre(form, other_form))));
-
-  ASSERT_THAT(account_store().stored_passwords(),
-              ElementsAre(Pair(account_store_form.signon_realm,
-                               ElementsAre(account_store_form))));
-
-  EXPECT_THAT(
-      presenter().GetUsernamesForRealm(form.signon_realm,
-                                       /*is_using_account_store=*/false),
-      UnorderedElementsAre(form.username_value, other_form.username_value));
-
-  EXPECT_THAT(presenter().GetUsernamesForRealm(account_store_form.signon_realm,
-                                               /*is_using_account_store=*/true),
-              ElementsAre(account_store_form.username_value));
 }
 
 TEST_F(SavedPasswordsPresenterWithTwoStoresTest, GetUniquePasswords) {
@@ -1269,6 +1274,30 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditPasswordBothStores) {
   EXPECT_THAT(account_store().stored_passwords(),
               ElementsAre(Pair(account_store_form.signon_realm,
                                ElementsAre(expected_account_store_form))));
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, UndoRemoval) {
+  PasswordForm profile_store_form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+
+  PasswordForm account_store_form = profile_store_form;
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, presenter().GetSavedCredentials().size());
+  CredentialUIEntry credential = presenter().GetSavedCredentials()[0];
+  ASSERT_EQ(2u, credential.stored_in.size());
+  presenter().RemoveCredential(credential);
+  RunUntilIdle();
+
+  EXPECT_THAT(presenter().GetSavedCredentials(), IsEmpty());
+
+  presenter().UndoLastRemoval();
+  RunUntilIdle();
+  EXPECT_THAT(presenter().GetSavedCredentials(), ElementsAre(credential));
 }
 
 }  // namespace password_manager

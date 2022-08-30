@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_supported_limits.h"
+#include "third_party/blink/renderer/modules/webgpu/string_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -38,9 +39,6 @@ GPUSupportedFeatures* MakeFeatureNameSet(const DawnProcTable& procs,
 
   for (WGPUFeatureName f : feature_names) {
     switch (f) {
-      case WGPUFeatureName_Depth24UnormStencil8:
-        features->AddFeatureName("depth24unorm-stencil8");
-        break;
       case WGPUFeatureName_Depth32FloatStencil8:
         features->AddFeatureName("depth32float-stencil8");
         break;
@@ -62,8 +60,8 @@ GPUSupportedFeatures* MakeFeatureNameSet(const DawnProcTable& procs,
       case WGPUFeatureName_IndirectFirstInstance:
         features->AddFeatureName("indirect-first-instance");
         break;
-      case WGPUFeatureName_DepthClamping:
-        features->AddFeatureName("depth-clamping");
+      case WGPUFeatureName_DepthClipControl:
+        features->AddFeatureName("depth-clip-control");
         break;
       case WGPUFeatureName_DawnShaderFloat16:
         features->AddFeatureName("shader-float16");
@@ -101,6 +99,7 @@ GPUAdapter::GPUAdapter(
     device_ = String::Format("0x%08x", properties.deviceID);
   }
   description_ = properties.name;
+  driver_ = properties.driverDescription;
 
   WGPUSupportedLimits limits = {};
   GetProcs().adapterGetLimits(handle_, &limits);
@@ -114,7 +113,8 @@ void GPUAdapter::AddConsoleWarning(ExecutionContext* execution_context,
   if (execution_context && allowed_console_warnings_remaining_ > 0) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kRendering,
-        mojom::blink::ConsoleMessageLevel::kWarning, message);
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        StringFromASCIIAndUTF8(message));
     execution_context->AddConsoleMessage(console_message);
 
     allowed_console_warnings_remaining_--;
@@ -168,7 +168,8 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
     case WGPURequestDeviceStatus_Unknown:
       DCHECK_EQ(dawn_device, nullptr);
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError, error_message));
+          DOMExceptionCode::kOperationError,
+          StringFromASCIIAndUTF8(error_message)));
       break;
     default:
       NOTREACHED();
@@ -241,11 +242,20 @@ ScriptPromise GPUAdapter::requestAdapterInfo(
     }
   }
 
-  // TODO(dawn:1427): If unmask_hints are given ask the user for consent to
-  // expose more information and, if given, include device_ and description_ in
-  // the returned GPUAdapterInfo.
-  auto* adapter_info =
-      MakeGarbageCollected<GPUAdapterInfo>(vendor_, architecture_, "", "");
+  GPUAdapterInfo* adapter_info;
+  if (RuntimeEnabledFeatures::WebGPUDeveloperFeaturesEnabled()) {
+    // If WebGPU developer features have been enabled then provide unmasked
+    // versions of all available adapter info values, including some that are
+    // only available when the flag is enabled.
+    adapter_info = MakeGarbageCollected<GPUAdapterInfo>(
+        vendor_, architecture_, device_, description_, driver_);
+  } else {
+    // TODO(dawn:1427): If unmask_hints are given ask the user for consent to
+    // expose more information and, if given, include device_ and description_
+    // in the returned GPUAdapterInfo.
+    adapter_info = MakeGarbageCollected<GPUAdapterInfo>(vendor_, architecture_);
+  }
+
   resolver->Resolve(adapter_info);
 
   return promise;

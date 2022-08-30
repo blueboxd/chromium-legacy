@@ -33,7 +33,7 @@ suite('AboutPageTest', function() {
     LifetimeBrowserProxyImpl.setInstance(lifetimeBrowserProxy);
 
     aboutBrowserProxy = new TestAboutPageBrowserProxyChromeOS();
-    AboutPageBrowserProxyImpl.setInstance(aboutBrowserProxy);
+    AboutPageBrowserProxyImpl.setInstanceForTesting(aboutBrowserProxy);
     return initNewPage();
   });
 
@@ -625,13 +625,15 @@ suite('AboutPageTest', function() {
       // Wait for overrides + response values.
       await aboutBrowserProxy.whenCalled('isManagedAutoUpdateEnabled');
 
-      const mau_toggle = buildInfoPage.$$('#managedAutoUpdateToggle');
+      const mau_toggle =
+          buildInfoPage.shadowRoot.querySelector('#managedAutoUpdateToggle');
       assertTrue(!!mau_toggle);
       // Managed auto update toggle should always be disabled to toggle.
       assertTrue(!!mau_toggle.hasAttribute('disabled'));
       assertEquals(isToggleEnabled, mau_toggle.checked);
       // Consumer auto update toggle should not exist.
-      assertFalse(!!buildInfoPage.$$('#consumerAutoUpdateToggle'));
+      assertFalse(!!buildInfoPage.shadowRoot.querySelector(
+          '#consumerAutoUpdateToggle'));
     }
 
     await checkManagedAutoUpdateToggle(true);
@@ -672,8 +674,10 @@ suite('AboutPageTest', function() {
       ]);
 
       // Managed auto update toggle should not exist.
-      assertFalse(!!buildInfoPage.$$('#managedAutoUpdateToggle'));
-      const cauToggle = buildInfoPage.$$('#consumerAutoUpdateToggle');
+      assertFalse(
+          !!buildInfoPage.shadowRoot.querySelector('#managedAutoUpdateToggle'));
+      const cauToggle =
+          buildInfoPage.shadowRoot.querySelector('#consumerAutoUpdateToggle');
       if (showToggle) {
         assertTrue(!!cauToggle);
         assertEquals(isTogglingAllowed, !cauToggle.disabled);
@@ -749,6 +753,57 @@ suite('AboutPageTest', function() {
         `Diagnostics should be focused for settingId=${diagnosticsId}.`);
   });
 
+  test('FirmwareUpdatesBadge No Updates', async function() {
+    loadTimeData.overrideValues({isFirmwareUpdaterAppEnabled: true});
+
+    aboutBrowserProxy.setFirmwareUpdatesCount(0);
+    await initNewPage();
+    flush();
+    await aboutBrowserProxy.whenCalled('getFirmwareUpdateCount');
+
+    assertTrue(!!page.$.firmwareUpdateBadge);
+    assertTrue(!!page.$.firmwareUpdateBadgeSeparator);
+
+    assertTrue(page.$.firmwareUpdateBadge.hidden);
+    assertTrue(page.$.firmwareUpdateBadgeSeparator.hidden);
+  });
+
+  test('FirmwareUpdatesBadge N Updates', async function() {
+    loadTimeData.overrideValues({isFirmwareUpdaterAppEnabled: true});
+
+    for (let i = 1; i < 10; i++) {
+      aboutBrowserProxy.setFirmwareUpdatesCount(i);
+      await initNewPage();
+      flush();
+      await aboutBrowserProxy.whenCalled('getFirmwareUpdateCount');
+
+      assertTrue(!!page.$.firmwareUpdateBadge);
+      assertTrue(!!page.$.firmwareUpdateBadgeSeparator);
+
+      assertFalse(page.$.firmwareUpdateBadge.hidden);
+      assertEquals('os-settings:counter-' + i, page.$.firmwareUpdateBadge.icon);
+
+      assertFalse(page.$.firmwareUpdateBadgeSeparator.hidden);
+    }
+  });
+
+  test('FirmwareUpdatesBadge 10 Updates', async function() {
+    loadTimeData.overrideValues({isFirmwareUpdaterAppEnabled: true});
+
+    aboutBrowserProxy.setFirmwareUpdatesCount(10);
+    await initNewPage();
+    flush();
+    await aboutBrowserProxy.whenCalled('getFirmwareUpdateCount');
+
+    assertTrue(!!page.$.firmwareUpdateBadge);
+    assertTrue(!!page.$.firmwareUpdateBadgeSeparator);
+
+    assertFalse(page.$.firmwareUpdateBadge.hidden);
+    assertEquals('os-settings:counter-9', page.$.firmwareUpdateBadge.icon);
+
+    assertFalse(page.$.firmwareUpdateBadgeSeparator.hidden);
+  });
+
   test('LaunchFirmwareUpdates', async function() {
     loadTimeData.overrideValues({
       isDeepLinkingEnabled: true,
@@ -812,8 +867,8 @@ suite('DetailedBuildInfoTest', function() {
   setup(function() {
     browserProxy = new TestAboutPageBrowserProxyChromeOS();
     deviceNameBrowserProxy = new TestDeviceNameBrowserProxy();
-    AboutPageBrowserProxyImpl.setInstance(browserProxy);
-    DeviceNameBrowserProxyImpl.setInstance(deviceNameBrowserProxy);
+    AboutPageBrowserProxyImpl.setInstanceForTesting(browserProxy);
+    DeviceNameBrowserProxyImpl.setInstanceForTesting(deviceNameBrowserProxy);
     PolymerTest.clearBody();
   });
 
@@ -1123,7 +1178,7 @@ suite('EditHostnameDialogTest', function() {
 
   setup(function() {
     deviceNameBrowserProxy = new TestDeviceNameBrowserProxy();
-    DeviceNameBrowserProxyImpl.setInstance(deviceNameBrowserProxy);
+    DeviceNameBrowserProxyImpl.setInstanceForTesting(deviceNameBrowserProxy);
     PolymerTest.clearBody();
   });
 
@@ -1324,7 +1379,7 @@ suite('ChannelSwitcherDialogTest', function() {
     currentChannel = BrowserChannel.BETA;
     browserProxy = new TestAboutPageBrowserProxyChromeOS();
     browserProxy.setChannels(currentChannel, currentChannel);
-    AboutPageBrowserProxyImpl.setInstance(browserProxy);
+    AboutPageBrowserProxyImpl.setInstanceForTesting(browserProxy);
     PolymerTest.clearBody();
     dialog = document.createElement('settings-channel-switcher-dialog');
     document.body.appendChild(dialog);
@@ -1414,7 +1469,7 @@ suite('Consumer auto update dialog popup', function() {
   setup(function() {
     events = [];
     browserProxy = new TestAboutPageBrowserProxyChromeOS();
-    AboutPageBrowserProxyImpl.setInstance(browserProxy);
+    AboutPageBrowserProxyImpl.setInstanceForTesting(browserProxy);
     PolymerTest.clearBody();
     dialog =
         document.createElement('settings-consumer-auto-update-toggle-dialog');
@@ -1459,7 +1514,7 @@ suite('AboutPageTest_OfficialBuild', function() {
 
   setup(function() {
     browserProxy = new TestAboutPageBrowserProxyChromeOS();
-    AboutPageBrowserProxyImpl.setInstance(browserProxy);
+    AboutPageBrowserProxyImpl.setInstanceForTesting(browserProxy);
     PolymerTest.clearBody();
     page = document.createElement('os-settings-about-page');
     document.body.appendChild(page);

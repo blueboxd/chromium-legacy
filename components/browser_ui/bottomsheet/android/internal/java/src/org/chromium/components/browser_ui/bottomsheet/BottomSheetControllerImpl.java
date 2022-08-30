@@ -95,6 +95,13 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
     private final BackPressHandler mBackPressHandler;
 
     /**
+     * An observer that observes changes to the bottom sheet content {@code
+     * BottomSheetContent#mBackPressStateChangedSupplier} and updates the {@code
+     * BottomSheetControllerImpl#mBackPressStateChangedSupplier}.
+     */
+    private Callback<Boolean> mContentBackPressStateChangedObserver;
+
+    /**
      * Build a new controller of the bottom sheet.
      * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
      * @param initializedCallback A callback for the sheet being created (as the sheet is not
@@ -102,26 +109,31 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
      * @param window A means of accessing the screen size.
      * @param keyboardDelegate A means of hiding the keyboard.
      * @param root The view that should contain the sheet.
-     * @param baseHeightProvider Provides the height of base app area the sheet content is drawn on.
      */
     public BottomSheetControllerImpl(final Supplier<ScrimCoordinator> scrim,
             Callback<View> initializedCallback, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root,
-            Supplier<Integer> baseHeightProvider) {
+            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
         mScrimCoordinatorSupplier = scrim;
         mPendingSheetObservers = new ArrayList<>();
         mSuppressionTokens = new TokenHolder(() -> onSuppressionTokensChanged());
 
         mSheetInitializer = () -> {
-            initializeSheet(
-                    initializedCallback, window, keyboardDelegate, root, baseHeightProvider);
+            initializeSheet(initializedCallback, window, keyboardDelegate, root);
         };
 
         mBackPressHandler = new BackPressHandler() {
             @Override
             public void handleBackPress() {
-                boolean ret = BottomSheetControllerImpl.this.handleBackPress();
-                assert ret;
+                assert mBottomSheet != null && !mSuppressionTokens.hasTokens()
+                        && mBottomSheet.getCurrentSheetContent() != null;
+                if (Boolean.TRUE.equals(mBottomSheet.getCurrentSheetContent()
+                                                .getBackPressStateChangedSupplier()
+                                                .get())) {
+                    mBottomSheet.getCurrentSheetContent().onBackPressed();
+                    return;
+                }
+                int sheetState = mBottomSheet.getMinSwipableSheetState();
+                mBottomSheet.setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
             }
 
             @Override
@@ -142,11 +154,9 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
      * @param window A means of accessing the screen size.
      * @param keyboardDelegate A means of hiding the keyboard.
      * @param root The view that should contain the sheet.
-     * @param baseHeightProvider Provides the height of base app area the sheet content is drawn on.
      */
     private void initializeSheet(Callback<View> initializedCallback, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root,
-            Supplier<Integer> baseHeightProvider) {
+            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
         mBottomSheetContainer = root.get();
         mBottomSheetContainer.setVisibility(View.VISIBLE);
 
@@ -155,7 +165,7 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
         mBottomSheet = (BottomSheet) root.get().findViewById(R.id.bottom_sheet);
         initializedCallback.onResult(mBottomSheet);
 
-        mBottomSheet.init(window, keyboardDelegate, baseHeightProvider);
+        mBottomSheet.init(window, keyboardDelegate);
         mBottomSheet.setAccessibilityUtil(mAccessibilityUtil);
 
         // Initialize the queue with a comparator that checks content priority.
@@ -196,6 +206,7 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
 
                 mScrimCoordinatorSupplier.get().showScrim(scrimProperties);
                 mScrimShown = true;
+                updateBackPressStateChangedSupplier();
             }
 
             @Override
@@ -219,6 +230,7 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
                         mBottomSheet.setSheetState(SheetState.HIDDEN, true);
                     }
                 }
+                updateBackPressStateChangedSupplier();
             }
 
             @Override
@@ -550,6 +562,16 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
         }
 
         BottomSheetContent nextContent = mContentQueue.poll();
+        if (mBottomSheet.getCurrentSheetContent() != null) {
+            mBottomSheet.getCurrentSheetContent().getBackPressStateChangedSupplier().removeObserver(
+                    mContentBackPressStateChangedObserver);
+        }
+        if (nextContent != null) {
+            mContentBackPressStateChangedObserver =
+                    (contentWillHandleBackPress) -> updateBackPressStateChangedSupplier();
+            nextContent.getBackPressStateChangedSupplier().addObserver(
+                    mContentBackPressStateChangedObserver);
+        }
         mBottomSheet.showContent(nextContent);
         mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), animate);
     }
@@ -602,6 +624,10 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
      */
     private void updateBackPressStateChangedSupplier() {
         mBackPressStateChangedSupplier.set(mBottomSheet != null && !mSuppressionTokens.hasTokens()
-                && mBottomSheet.getCurrentSheetContent() != null);
+                && mBottomSheet.getCurrentSheetContent() != null
+                && (Boolean.TRUE.equals(mBottomSheet.getCurrentSheetContent()
+                                                .getBackPressStateChangedSupplier()
+                                                .get())
+                        || mBottomSheet.isSheetOpen()));
     }
 }

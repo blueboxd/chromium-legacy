@@ -226,6 +226,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableGetDisplayMedia, features::kUserMediaScreenCapturing},
 #endif
+    {wf::EnableIdentityInCanMakePaymentEventFeature,
+     features::kIdentityInCanMakePaymentEventFeature, kSetOnlyIfOverridden},
     {wf::EnableIdleDetection, features::kIdleDetection, kSetOnlyIfOverridden},
     {wf::EnableInstalledApp, features::kInstalledApp},
     {wf::EnableLazyInitializeMediaControls,
@@ -260,7 +262,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePushSubscriptionChangeEvent,
      features::kPushSubscriptionChangeEvent},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
-    {wf::EnableScrollUnification, features::kScrollUnification},
     {wf::EnableSecurePaymentConfirmation, features::kSecurePaymentConfirmation},
     {wf::EnableSecurePaymentConfirmationDebug,
      features::kSecurePaymentConfirmationDebug},
@@ -312,6 +313,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableRemoveMobileViewportDoubleTap,
      features::kRemoveMobileViewportDoubleTap},
     {wf::EnableZeroCopyTabCapture, blink::features::kZeroCopyTabCapture},
+    {wf::EnableEventPath, blink::features::kEventPath},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -334,6 +336,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kCancelFormSubmissionInDefaultHandler},
           {"ClipboardCustomFormats", blink::features::kClipboardCustomFormats},
           {"CSSContainerQueries", blink::features::kCSSContainerQueries},
+          {"CSSOverflowForReplacedElements",
+           blink::features::kCSSOverflowForReplacedElements,
+           kSetOnlyIfOverridden},
           {"ComputePressure", blink::features::kComputePressure,
            kSetOnlyIfOverridden},
           {"DeferredShaping", blink::features::kDeferredFontShaping},
@@ -363,13 +368,14 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           // the feature is in stable with no issues.
           {"OffsetParentNewSpecBehavior",
            blink::features::kOffsetParentNewSpecBehavior},
-          {"OriginPolicy", features::kOriginPolicy},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
           {"Parakeet", blink::features::kParakeet},
           {"PendingBeaconAPI", blink::features::kPendingBeaconAPI},
           {"PrefersColorSchemeClientHintHeader",
            blink::features::kPrefersColorSchemeClientHintHeader},
           {"FirstPartySets", features::kFirstPartySets},
+          {"QuickIntensiveWakeUpThrottlingAfterLoading",
+           blink::features::kQuickIntensiveWakeUpThrottlingAfterLoading},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
           {"SanitizerAPIv0", blink::features::kSanitizerAPIv0},
           {"SecureContextFixForWorkers",
@@ -387,13 +393,14 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"ViewportHeightClientHintHeader",
            blink::features::kViewportHeightClientHintHeader},
           {"WebAppDarkMode", blink::features::kWebAppEnableDarkMode},
-          {"WebAppHandleLinks", blink::features::kWebAppEnableHandleLinks},
           {"WebAppLaunchHandler", blink::features::kWebAppEnableLaunchHandler},
           {"WebAppTabStrip", features::kDesktopPWAsTabStrip},
           {"WebAppTranslations", blink::features::kWebAppEnableTranslations},
           {"WebAppWindowControlsOverlay",
            features::kWebAppWindowControlsOverlay},
           {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
+          {"WGIGamepadTriggerRumble",
+           features::kEnableWindowsGamingInputDataFetcher},
           {"WindowOpenNewPopupBehavior",
            blink::features::kWindowOpenNewPopupBehavior},
           // TODO(crbug.com/1185950): Remove this flag when the feature is fully
@@ -408,10 +415,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kClientHintThirdPartyDelegation},
           {"UserAgentReduction", blink::features::kReduceUserAgent},
           {"UserAgentFull", blink::features::kFullUserAgent},
+          {"VariableCOLRV1", blink::features::kVariableCOLRV1},
           {"WindowPlacement", blink::features::kWindowPlacement},
           {"WindowPlacementFullscreenOnScreensChange",
            blink::features::kWindowPlacementFullscreenOnScreensChange},
-          {"EventPath", blink::features::kEventPath},
           {"MediaStreamTrackTransfer", features::kMediaStreamTrackTransfer}};
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -476,6 +483,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
        true},
       {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
+      {wrf::EnableWebGPUDeveloperFeatures,
+       switches::kEnableWebGPUDeveloperFeatures, true},
       {wrf::EnableDirectSockets, switches::kIsolatedAppOrigins, true},
   };
   for (const auto& mapping : switchToFeatureMapping) {
@@ -498,6 +507,18 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     if (base::StringToInt(port_str, &port) && port == 0) {
       WebRuntimeFeatures::EnableAutomationControlled(true);
     }
+  }
+
+  // Enable or disable EventPath if Enterprise Policy passes
+  // --event-path-policy=0 or =1 on the command line. This overrides any
+  // existing setting via base::Feature.
+  if (command_line.HasSwitch(blink::switches::kEventPathPolicy)) {
+    const std::string value =
+        command_line.GetSwitchValueASCII(blink::switches::kEventPathPolicy);
+    if (value == blink::switches::kEventPathPolicy_ForceEnable)
+      WebRuntimeFeatures::EnableEventPath(true);
+    if (value == blink::switches::kEventPathPolicy_ForceDisable)
+      WebRuntimeFeatures::EnableEventPath(false);
   }
 }
 
@@ -565,11 +586,17 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   }
 
   // Enables the Blink feature only when the base feature variation is enabled.
-  if (base::FeatureList::IsEnabled(features::kFedCm) &&
-      base::GetFieldTrialParamByFeatureAsBool(
-          features::kFedCm, features::kFedCmIdpSignoutFieldTrialParamName,
-          false)) {
-    WebRuntimeFeatures::EnableFedCmIdpSignout(true);
+  if (base::FeatureList::IsEnabled(features::kFedCm)) {
+    if (base::GetFieldTrialParamByFeatureAsBool(
+            features::kFedCm, features::kFedCmIdpSignoutFieldTrialParamName,
+            false)) {
+      WebRuntimeFeatures::EnableFedCmIdpSignout(true);
+    }
+    if (base::GetFieldTrialParamByFeatureAsBool(
+            features::kFedCm, features::kFedCmIframeSupportFieldTrialParamName,
+            false)) {
+      WebRuntimeFeatures::EnableFedCmIframeSupport(true);
+    }
   }
 }
 

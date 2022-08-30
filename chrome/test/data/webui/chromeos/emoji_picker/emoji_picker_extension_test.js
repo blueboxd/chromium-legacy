@@ -4,7 +4,7 @@
 
 import {EmojiPicker} from 'chrome://emoji-picker/emoji_picker.js';
 import {EmojiPickerApiProxyImpl} from 'chrome://emoji-picker/emoji_picker_api_proxy.js';
-import {EMOJI_BUTTON_CLICK, V2_CONTENT_LOADED} from 'chrome://emoji-picker/events.js';
+import {EMOJI_BUTTON_CLICK, EMOJI_PICKER_READY} from 'chrome://emoji-picker/events.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertGT, assertTrue} from '../../chai_assert.js';
@@ -25,7 +25,8 @@ suite('emoji-picker-extension', () => {
   /** @type {function(...!string): ?HTMLElement} */
   let findEmojiFirstButton;
   /** @type {string} */
-  const emoticonGroupSelector = 'emoji-group[category="emoticon"]';
+  const emoticonGroupSelector =
+        'emoji-group[category="emoticon"]:not(.history)';
   /** @type {string} */
   const emoticonHistoryGroupSelector =
         '[data-group="emoticon-history"] > emoji-group[category="emoticon"]';
@@ -35,10 +36,21 @@ suite('emoji-picker-extension', () => {
     document.body.innerHTML = '';
     window.localStorage.clear();
 
+     // Set default incognito state to False.
+    EmojiPickerApiProxyImpl.getInstance().isIncognitoTextField = () =>
+        new Promise((resolve) => resolve({incognito: false}));
+    EmojiPicker.configs = () => ({
+      'dataUrls': {
+        'emoji': [
+            '/emoji_test_ordering_start.json',
+            '/emoji_test_ordering_remaining.json'
+        ],
+        'emoticon': ['/emoticon_test_ordering.json'],
+      },
+    });
+
     emojiPicker =
         /** @type {!EmojiPicker} */ (document.createElement('emoji-picker'));
-    emojiPicker.emojiDataUrl = '/emoji_test_ordering';
-    emojiPicker.emoticonDataUrl = '/emoticon_test_ordering.json';
 
     findInEmojiPicker = (...path) => deepQuerySelector(emojiPicker, path);
 
@@ -52,7 +64,7 @@ suite('emoji-picker-extension', () => {
 
     // Wait until emoji data is loaded before executing tests.
     return new Promise((resolve) => {
-      emojiPicker.addEventListener(V2_CONTENT_LOADED, () => {
+      emojiPicker.addEventListener(EMOJI_PICKER_READY, () => {
         flush();
         resolve();
       });
@@ -113,8 +125,11 @@ suite('emoji-picker-extension', () => {
       });
 
   test('all emoticon groups should be rendered.', () => {
+    const numEmoticons = emojiPicker.categoriesData.filter(
+        item => item.category === 'emoticon').length;
+    assertGT(numEmoticons, 0);
     assertEquals(
-        emojiPicker.emoticonData.length,
+        numEmoticons,
         emojiPicker.shadowRoot.querySelectorAll(
             emoticonGroupSelector).length);
   });
@@ -125,15 +140,28 @@ suite('emoji-picker-extension', () => {
       async () => {
         const allEmoticonGroups =
             emojiPicker.shadowRoot.querySelectorAll(emoticonGroupSelector);
+
+        const emoticonData = emojiPicker.categoriesData.filter(
+            item => item.category === 'emoticon');
+        const emoticonGroupElements =
+            emojiPicker.categoriesGroupElements.filter(
+                item => item.category === 'emoticon');
+
+        // The first group element is 'Recently used'.
+        assertEquals(emoticonGroupElements[0].name, 'Recently used');
+
+        // Emoticon group elements are created for all data + history.
+        assertEquals(emoticonGroupElements.length, emoticonData.length + 1);
+
         for (let idx = 0; idx < allEmoticonGroups.length; ++idx) {
           const group = allEmoticonGroups[idx];
           const actualFirstGroupName =
               group.shadowRoot.querySelector('#heading-left').innerHTML.trim();
-          const expectedFirstGroupName = emojiPicker.emoticonData[idx].group;
+          const expectedFirstGroupName = emoticonGroupElements[idx+1].name;
           assertEquals(expectedFirstGroupName, actualFirstGroupName);
 
           const expectedNumberOfEmoticons =
-              emojiPicker.emoticonData[idx].emoji.length;
+            emoticonGroupElements[idx+1].emoji.length;
           await waitForCondition(
               () => expectedNumberOfEmoticons ===
                   group.shadowRoot.querySelectorAll('.emoji-button').length);
@@ -146,10 +174,13 @@ suite('emoji-picker-extension', () => {
       async () => {
         const firstEmoticonButton = await waitForCondition(
             () => findEmojiFirstButton(emoticonGroupSelector));
+        const emoticonGroupElements =
+            emojiPicker.categoriesGroupElements.filter(
+                item => item.category === 'emoticon' && !item.isHistory);
         const expectedEmoticonString =
-            emojiPicker.emoticonData[0].emoji[0].base.string;
+            emoticonGroupElements[0].emoji[0].base.string;
         const expectedEmoticonName =
-            emojiPicker.emoticonData[0].emoji[0].base.name;
+            emoticonGroupElements[0].emoji[0].base.name;
         const buttonClickPromise = new Promise(
             (resolve) =>
                 emojiPicker.addEventListener(EMOJI_BUTTON_CLICK, (event) => {
@@ -185,8 +216,7 @@ suite('emoji-picker-extension', () => {
       'clicking at recently used emoticon buttons should trigger emoticon ' +
           'insertion.',
       async () => {
-        EmojiPickerApiProxyImpl.getInstance().isIncognitoTextField = () =>
-            new Promise((resolve) => resolve({incognito: false}));
+        emojiPicker.updateIncognitoState(false);
 
         const emoticonButton = findEmojiFirstButton(emoticonGroupSelector);
         emoticonButton.click();
@@ -212,9 +242,7 @@ suite('emoji-picker-extension', () => {
       'recently used emoticon group should contain the correct emoticon ' +
           'after it is clicked.',
       async () => {
-        EmojiPickerApiProxyImpl.getInstance().isIncognitoTextField = () =>
-            new Promise((resolve) => resolve({incognito: false}));
-
+        emojiPicker.updateIncognitoState(false);
         const emoticonButton = findEmojiFirstButton(emoticonGroupSelector);
         emoticonButton.click();
 

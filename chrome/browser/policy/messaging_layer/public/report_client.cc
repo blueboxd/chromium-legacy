@@ -36,6 +36,7 @@
 #include "components/reporting/encryption/encryption_module.h"
 #include "components/reporting/encryption/verification.h"
 #include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_module.h"
 #include "components/reporting/storage/storage_module_interface.h"
@@ -76,8 +77,8 @@ void ReportingClient::CreateLocalStorageModule(
 // UploadClient.
 class ReportingClient::Uploader : public UploaderInterface {
  public:
-  using UploadCallback =
-      base::OnceCallback<Status(bool, std::vector<EncryptedRecord>)>;
+  using UploadCallback = base::OnceCallback<
+      Status(bool, std::vector<EncryptedRecord>, ScopedReservation)>;
 
   static std::unique_ptr<Uploader> Create(bool need_encryption_key,
                                           UploadCallback upload_callback) {
@@ -126,6 +127,7 @@ class ReportingClient::Uploader : public UploaderInterface {
     bool completed_{false};
     const bool need_encryption_key_;
     std::vector<EncryptedRecord> encrypted_records_;
+    ScopedReservation encrypted_records_reservation_;
 
     UploadCallback upload_callback_;
   };
@@ -146,13 +148,14 @@ ReportingClient::Uploader::Helper::Helper(
 
 void ReportingClient::Uploader::Helper::ProcessRecord(
     EncryptedRecord data,
-    ScopedReservation scoped_reservation,  // TODO(b/233089187): Use it.
+    ScopedReservation scoped_reservation,
     base::OnceCallback<void(bool)> processed_cb) {
   if (completed_) {
     std::move(processed_cb).Run(false);
     return;
   }
   encrypted_records_.emplace_back(std::move(data));
+  encrypted_records_reservation_.HandOver(scoped_reservation);
   std::move(processed_cb).Run(true);
 }
 
@@ -189,7 +192,8 @@ void ReportingClient::Uploader::Helper::Completed(Status final_status) {
   DCHECK(upload_callback_);
   Status upload_status =
       std::move(upload_callback_)
-          .Run(need_encryption_key_, std::move(encrypted_records_));
+          .Run(need_encryption_key_, std::move(encrypted_records_),
+               std::move(encrypted_records_reservation_));
   if (!upload_status.ok()) {
     LOG(ERROR) << "Unable to upload records: " << upload_status;
   }
@@ -345,10 +349,11 @@ void ReportingClient::DeliverAsyncStartUploader(
                 base::BindOnce(
                     [](EncryptedReportingUploadProvider* upload_provider,
                        bool need_encryption_key,
-                       std::vector<EncryptedRecord> records) {
+                       std::vector<EncryptedRecord> records,
+                       ScopedReservation scoped_reservation) {
                       upload_provider->RequestUploadEncryptedRecords(
                           need_encryption_key, std::move(records),
-                          base::DoNothing());
+                          std::move(scoped_reservation), base::DoNothing());
                       return Status::StatusOK();
                     },
                     base::Unretained(instance->upload_provider_.get())));

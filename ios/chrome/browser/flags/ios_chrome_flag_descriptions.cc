@@ -11,15 +11,22 @@
 
 namespace flag_descriptions {
 
-const char kAddPasswordsInSettingsName[] = "Add passwords in settings";
-const char kAddPasswordsInSettingsDescription[] =
-    "Enables manually creating password credentials from the settings";
+const char kAdaptiveSuggestionsCountName[] = "Omnibox adaptive suggestions";
+const char kAdaptiveSuggestionsCountDescription[] =
+    "Allows Omnibox to dynamically adjust number of offered suggestions to "
+    "fill in the space between Omnibox and the soft keyboard.";
 
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
+
+const char kAutofillEnableNewCardUnmaskPromptViewName[] =
+    "Enable the new Card Unmask Prompt View for Autofill.";
+const char kAutofillEnableNewCardUnmaskPromptViewDescription[] =
+    "Displays the new autofill prompt for entering a credit card's CVC and "
+    "(optional) expiration date.";
 
 const char kAutofillEnableRankingFormulaName[] =
     "Enable new Autofill suggestion ranking formula";
@@ -56,6 +63,11 @@ const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
+
+const char kAutofillParseIbanFieldsName[] = "Parse IBAN fields in forms";
+const char kAutofillParseIbanFieldsDescription[] =
+    "When enabled, Autofill will attempt to find International Bank Account "
+    "Number (IBAN) fields when parsing forms.";
 
 const char kAutofillParseMerchantPromoCodeFieldsName[] =
     "Parse promo code fields in forms";
@@ -127,6 +139,12 @@ extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Calendar "
     "event handling";
+
+extern const char kEnableExpKitCalendarTextClassifierName[] =
+    "Text Classifier in Experience Kit Calendar";
+extern const char kEnableExpKitCalendarTextClassifierDescription[] =
+    "When enabled, Experience Kit Calendar will use Text Classifier library in "
+    "entity detection where possible.";
 
 const char kContentSuggestionsHeaderMigrationName[] =
     "Content Suggestions header migration";
@@ -277,10 +295,6 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
-const char kEnableLongMessageDurationName[] = "Enable long message duration";
-const char kEnableLongMessageDurationDescription[] =
-    "Enables a long duration when an overlay message is shown.";
-
 const char kEnableNewDownloadAPIName[] = "Enable new download API";
 const char kEnableNewDownloadAPIDescription[] =
     "Enable new download API (restricted to iOS 15.0+).";
@@ -378,6 +392,11 @@ const char kIOSEnablePasswordManagerBrandingUpdateName[] =
 const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
     "Updates icons, strings, and views for Google Password Manager.";
 
+const char kIOSPasswordUISplitName[] = "Password Manager UI Split";
+const char kIOSPasswordUISplitDescription[] =
+    "Splits Password Settings and "
+    "Password Manager into two separate UIs.";
+
 const char kIOSSharedHighlightingColorChangeName[] =
     "IOS Shared Highlighting color change";
 const char kIOSSharedHighlightingColorChangeDescription[] =
@@ -421,14 +440,14 @@ const char kMetrickitCrashReportName[] = "Metrickit crash reports";
 const char kMetrickitCrashReportDescription[] =
     "Enables sending Metrickit crash reports";
 
+const char kMetrickitNonCrashReportName[] = "Metrickit non-crash reports";
+const char kMetrickitNonCrashReportDescription[] =
+    "Enables sending Metrickit reports for non crash type (hang, "
+    "cpu-exception, diskwrite-exception)";
+
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
-
-const char kMuteCompromisedPasswordsName[] =
-    "Mute & Unmute compromised passwords in bulk leak check";
-const char kMuteCompromisedPasswordsDescription[] =
-    "Enables muting/unmuting compromised passwords in bulk leak check.";
 
 const char kNewMobileIdentityConsistencyFREName[] = "New MICE FRE";
 const char kNewMobileIdentityConsistencyFREDescription[] =
@@ -485,16 +504,21 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "before the user has typed any input. This provides overrides for the "
     "default suggestion locations.";
 
-const char kOmniboxLocalHistoryZeroSuggestName[] =
-    "Omnibox local zero-prefix suggestions";
-const char kOmniboxLocalHistoryZeroSuggestDescription[] =
-    "Configures the omnibox zero-prefix suggestion to use local search "
-    "history.";
+const char kOmniboxMaxURLMatchesName[] = "Omnibox Max URL matches";
+const char kOmniboxMaxURLMatchesDescription[] =
+    "Limit the number of URL suggestions in the omnibox. The omnibox will "
+    "still display more than MaxURLMatches if there are no non-URL suggestions "
+    "to replace them.";
 
 const char kOmniboxNewImplementationName[] =
     "Use experimental omnibox textfield";
 const char kOmniboxNewImplementationDescription[] =
     "Uses a textfield implementation that doesn't use UILabels internally";
+
+const char kOmniboxPasteButtonName[] = "Omnibox paste to search button";
+const char kOmniboxPasteButtonDescription[] =
+    "Add a paste button when showing clipboard suggestions in the omnibox. iOS "
+    "16 and above.";
 
 const char kIOSOmniboxUpdatedPopupUIName[] = "Popup refresh";
 const char kIOSOmniboxUpdatedPopupUIDescription[] =
@@ -573,10 +597,6 @@ const char kSingleCellContentSuggestionsName[] =
 const char kSingleCellContentSuggestionsDescription[] =
     "Uses a single cell for all items in the NTP's content suggestions.";
 
-const char kSingleNtpName[] = "Enable Single NTP";
-const char kSingleNtpDescription[] =
-    "When enabled, uses one NTP for all tabs in a Browser";
-
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
@@ -586,6 +606,11 @@ const char kSmartSortingNewOverflowMenuName[] =
     "Smart Sorting the new Overflow Menu";
 const char kSmartSortingNewOverflowMenuDescription[] =
     "Enables smart sorting the new overflow menu carousel by frecency.";
+
+const char kNewOverflowMenuShareChromeActionName[] =
+    "Share Chrome App action in the new overflow menu";
+const char kNewOverflowMenuShareChromeActionDescription[] =
+    "Enables the Share Chrome App action in the new overflow menu.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
@@ -602,6 +627,10 @@ const char kSyntheticCrashReportsForUteName[] =
 const char kSyntheticCrashReportsForUteDescription[] =
     "When enabled the app will create synthetic crash report when chrome "
     "starts up after Unexplained Termination Event (UTE).";
+
+const char kSyncEnableHistoryDataTypeName[] = "Enable History sync data type";
+const char kSyncEnableHistoryDataTypeDescription[] =
+    "Enables the History sync data type instead of TypedURLs";
 
 const char kSyncTrustedVaultPassphraseiOSRPCName[] =
     "Enable RPC for sync trusted vault passphrase.";
@@ -659,6 +688,10 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
+
+extern const char kTrendingQueriesModuleName[] = "Show Trending Queries module";
+extern const char kTrendingQueriesModuleDescription[] =
+    "When enabled, the trending queries module will be shown in the NTP";
 
 extern const char kUIViewWindowObservingName[] =
     "Support KVO on UIView's window property.";

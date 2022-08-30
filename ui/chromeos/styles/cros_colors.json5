@@ -17,6 +17,9 @@
       field_name: 'cros_colors',
       field_id: 2,
     },
+    ColorMappings: {
+      set_name: 'LegacySemantic'
+    },
   },
   colors: {
     /* =========================================================================
@@ -50,7 +53,7 @@
       generate_inverted: true,
     },
     color_warning: {
-      light: "$google_yellow_600",
+      light: "$google_yellow_900",
       dark: "$google_yellow_300",
       generate_per_mode: true,
       generate_inverted: true,
@@ -106,8 +109,10 @@
      * Text colors.
      */
     text_color_primary: {
-      default: "$color_primary",
+      light: "$color_primary_light",
+      dark: "$color_primary_dark",
       debug: "$google_green_400",
+      generate_inverted: true,
     },
     text_color_secondary: {
       light: "$color_secondary_light",
@@ -130,8 +135,10 @@
      * Icon colors.
      */
     icon_color_primary: {
-      default: "$color_primary",
+      light: "$color_primary_light",
+      dark: "$color_primary_dark",
       debug: "#ff00ff",
+      generate_inverted: true,
     },
     icon_color_secondary: {
       light: "$color_secondary_light",
@@ -373,6 +380,11 @@
       dark: "$google_grey_500",
     },
     menu_item_background_hover: "$ripple_color",
+
+    /* nudge */
+    nudge_label_color: "$text_color_primary_inverted",
+    nudge_icon_color: "$icon_color_primary_inverted",
+    nudge_background_color: "$color_prominent",
 
     /* scroll bar */
     app_scrollbar_color_hover: {

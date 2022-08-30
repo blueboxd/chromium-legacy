@@ -4,19 +4,36 @@
     height: 100%;
   }
 
-  textarea {
+  #descriptionText {
+    background-color: var(--cros-textfield-background-color);
+    border: none;
+    border-radius: 4px;
+    color: var(--cros-text-color-primary);
+    font-family: var(--feedback-roboto-font-family);
+    font-size: 13px;
     height: 162px;
+    line-height: 20px;
+    padding: 10px;
+    resize: none;
     width: 514px;
   }
 
-  #desciptionHeader {
+  #descriptionText:focus {
+    outline: 2px solid var(--cros-focus-ring-color);
+  }
+
+  #descriptionText::placeholder {
+    color: var(--cros-color-disabled);
+    font-family: var(--feedback-roboto-font-family);
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  #descriptionHeader {
     align-items: center;
     display: flex;
     flex-direction: row;
-  }
-
-  #desciptionHeader a {
-    margin: 0 0 0 auto;
+    justify-content: space-between;
   }
 
   #helpContentFrame {
@@ -30,19 +47,20 @@
 </style>
 <div id="container">
   <div id="header">
-    <h1 id="title">[[i18n('pageTitle')]]</h1>
+    <h1 class="page-title">[[i18n('pageTitle')]]</h1>
   </div>
   <div id="content">
     <div id="descriptionPane">
-      <div id="desciptionHeader">
-        <p id="descriptionTitle">[[i18n('descriptionLabel')]]</p>
+      <div id="descriptionHeader">
+        <h2 id="descriptionTitle">[[i18n('descriptionLabel')]]</h2>
         <a id="feedbackWritingGuidance" href="[[feedbackWritingGuidanceUrl_()]]"
             target="_blank">
             [[i18n('feedbackHelpLinkLabel')]]
         </a>
       </div>
       <textarea id="descriptionText" aria-labelledby="descriptionTitle"
-          aria-required="true" on-input="handleInputChanged_" placeholder="[[i18n('descriptionHint')]]">
+          aria-required="true" on-input="handleInputChanged_"
+          placeholder="[[i18n('descriptionHint')]]" tabindex="1">
       </textarea>
       <p id="descriptionEmptyError" aria-hidden="true" hidden>
         [[i18n('descriptionRequired')]]

@@ -38,8 +38,9 @@ public class CommerceSubscriptionsService {
     private PauseResumeWithNativeObserver mPauseResumeWithNativeObserver;
 
     /** Creates a new instance. */
-    CommerceSubscriptionsService(
-            SubscriptionsManagerImpl subscriptionsManager, IdentityManager identityManager) {
+    CommerceSubscriptionsService(SubscriptionsManagerImpl subscriptionsManager,
+            IdentityManager identityManager,
+            PriceDropNotificationManager priceDropNotificationManager) {
         mSubscriptionManager = subscriptionsManager;
         mIdentityManager = identityManager;
         mIdentityManagerObserver = new IdentityManager.Observer() {
@@ -50,7 +51,7 @@ public class CommerceSubscriptionsService {
         };
         mIdentityManager.addObserver(mIdentityManagerObserver);
         mSharedPreferencesManager = SharedPreferencesManager.getInstance();
-        mPriceDropNotificationManager = new PriceDropNotificationManager();
+        mPriceDropNotificationManager = priceDropNotificationManager;
         mMetrics = new CommerceSubscriptionsMetrics();
     }
 

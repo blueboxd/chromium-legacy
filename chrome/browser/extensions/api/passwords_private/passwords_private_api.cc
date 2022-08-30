@@ -22,6 +22,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -52,15 +53,17 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
       api::passwords_private::ChangeSavedPassword::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  if (!GetDelegate(browser_context())
-           ->ChangeSavedPassword(parameters->ids, parameters->params)) {
-    return RespondNow(Error(
-        "Could not change the password. Either the password is empty, the user "
-        "is not authenticated, vector of ids is empty or no matching password "
-        "could be found at least for one of the ids."));
+  auto new_ids = GetDelegate(browser_context())
+                     ->ChangeSavedPassword(parameters->ids, parameters->params);
+  if (new_ids.has_value()) {
+    return RespondNow(ArgumentList(
+        api::passwords_private::ChangeSavedPassword::Results::Create(
+            new_ids.value())));
   }
-
-  return RespondNow(NoArguments());
+  return RespondNow(Error(
+      "Could not change the password. Either the password is empty, the user "
+      "is not authenticated, vector of ids is empty or no matching password "
+      "could be found at least for one of the ids."));
 }
 
 // PasswordsPrivateRemoveSavedPasswordFunction
@@ -68,16 +71,8 @@ ResponseAction PasswordsPrivateRemoveSavedPasswordFunction::Run() {
   auto parameters =
       api::passwords_private::RemoveSavedPassword::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
-  GetDelegate(browser_context())->RemoveSavedPasswords({parameters->id});
-  return RespondNow(NoArguments());
-}
-
-// PasswordsPrivateRemoveSavedPasswordsFunction
-ResponseAction PasswordsPrivateRemoveSavedPasswordsFunction::Run() {
-  auto parameters =
-      api::passwords_private::RemoveSavedPasswords::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-  GetDelegate(browser_context())->RemoveSavedPasswords(parameters->ids);
+  GetDelegate(browser_context())
+      ->RemoveSavedPassword(parameters->id, parameters->from_stores);
   return RespondNow(NoArguments());
 }
 
@@ -86,16 +81,7 @@ ResponseAction PasswordsPrivateRemovePasswordExceptionFunction::Run() {
   auto parameters =
       api::passwords_private::RemovePasswordException::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
-  GetDelegate(browser_context())->RemovePasswordExceptions({parameters->id});
-  return RespondNow(NoArguments());
-}
-
-// PasswordsPrivateRemovePasswordExceptionsFunction
-ResponseAction PasswordsPrivateRemovePasswordExceptionsFunction::Run() {
-  auto parameters =
-      api::passwords_private::RemovePasswordExceptions::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-  GetDelegate(browser_context())->RemovePasswordExceptions(parameters->ids);
+  GetDelegate(browser_context())->RemovePasswordException(parameters->id);
   return RespondNow(NoArguments());
 }
 
@@ -217,7 +203,7 @@ void PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted(
   if (error.empty())
     Respond(NoArguments());
   else
-    Error(error);
+    Respond(Error(error));
 }
 
 // PasswordsPrivateCancelExportPasswordsFunction
@@ -405,6 +391,24 @@ ResponseAction PasswordsPrivateRecordChangePasswordFlowStartedFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+// PasswordsPrivateRefreshScriptsIfNecessaryFunction:
+PasswordsPrivateRefreshScriptsIfNecessaryFunction::
+    ~PasswordsPrivateRefreshScriptsIfNecessaryFunction() = default;
+
+ResponseAction PasswordsPrivateRefreshScriptsIfNecessaryFunction::Run() {
+  GetDelegate(browser_context())
+      ->RefreshScriptsIfNecessary(base::BindOnce(
+          &PasswordsPrivateRefreshScriptsIfNecessaryFunction::OnRefreshed,
+          base::RetainedRef(this)));
+
+  // OnRefreshed() might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateRefreshScriptsIfNecessaryFunction::OnRefreshed() {
+  Respond(NoArguments());
+}
+
 // PasswordsPrivateStartPasswordCheckFunction:
 PasswordsPrivateStartPasswordCheckFunction::
     ~PasswordsPrivateStartPasswordCheckFunction() = default;
@@ -443,6 +447,35 @@ ResponseAction PasswordsPrivateGetPasswordCheckStatusFunction::Run() {
   return RespondNow(ArgumentList(
       api::passwords_private::GetPasswordCheckStatus::Results::Create(
           GetDelegate(browser_context())->GetPasswordCheckStatus())));
+}
+
+// PasswordsPrivateStartAutomatedPasswordChangeFunction:
+PasswordsPrivateStartAutomatedPasswordChangeFunction::
+    ~PasswordsPrivateStartAutomatedPasswordChangeFunction() = default;
+
+ResponseAction PasswordsPrivateStartAutomatedPasswordChangeFunction::Run() {
+  auto parameters =
+      api::passwords_private::StartAutomatedPasswordChange::Params::Create(
+          args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  // Forward the call to the delegate.
+  GetDelegate(browser_context())
+      ->StartAutomatedPasswordChange(
+          parameters->credential,
+          base::BindOnce(&PasswordsPrivateStartAutomatedPasswordChangeFunction::
+                             OnResultReceived,
+                         base::RetainedRef(this)));
+
+  // `OnResultReceived()` might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateStartAutomatedPasswordChangeFunction::OnResultReceived(
+    bool success) {
+  Respond(ArgumentList(
+      api::passwords_private::StartAutomatedPasswordChange::Results::Create(
+          success)));
 }
 
 // PasswordsPrivateIsAccountStoreDefaultFunction

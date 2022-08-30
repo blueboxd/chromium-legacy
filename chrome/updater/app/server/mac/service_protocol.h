@@ -42,13 +42,28 @@
 
 // Checks for update of a given app, with specified priority. Sends repeated
 // updates of progress and returns the result in the reply block.
-- (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
+- (void)checkForUpdateWithAppId:(NSString* _Nonnull)appId
                installDataIndex:(NSString* _Nullable)installDataIndex
                        priority:(CRUPriorityWrapper* _Nonnull)priority
         policySameVersionUpdate:
             (CRUPolicySameVersionUpdateWrapper* _Nonnull)policySameVersionUpdate
                     updateState:(CRUUpdateStateObserver* _Nonnull)updateState
                           reply:(void (^_Nonnull)(int rc))reply;
+
+// Installs the given app.
+- (void)installWithAppId:(NSString* _Nonnull)appId
+               brandCode:(NSString* _Nullable)brandCode
+               brandPath:(NSString* _Nullable)brandPath
+                     tag:(NSString* _Nullable)ap
+                 version:(NSString* _Nullable)version
+    existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
+        installDataIndex:(NSString* _Nullable)installDataIndex
+                priority:(CRUPriorityWrapper* _Nonnull)priority
+             updateState:(CRUUpdateStateObserver* _Nonnull)updateState
+                   reply:(void (^_Nonnull)(int rc))reply;
+
+// Cancels any in-progress installations for the app ID.
+- (void)cancelInstallsWithAppId:(NSString* _Nonnull)appId;
 
 // Registers app and returns the result in the reply block.
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId

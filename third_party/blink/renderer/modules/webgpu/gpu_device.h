@@ -127,7 +127,8 @@ class GPUDevice final : public EventTargetWithInlineData,
       const GPURenderBundleEncoderDescriptor* descriptor,
       ExceptionState& exception_state);
 
-  GPUQuerySet* createQuerySet(const GPUQuerySetDescriptor* descriptor);
+  GPUQuerySet* createQuerySet(const GPUQuerySetDescriptor* descriptor,
+                              ExceptionState& exception_state);
 
   void pushErrorScope(const V8GPUErrorFilter& filter);
   ScriptPromise popErrorScope(ScriptState* script_state);
@@ -141,19 +142,16 @@ class GPUDevice final : public EventTargetWithInlineData,
   void InjectError(WGPUErrorType type, const char* message);
   void AddConsoleWarning(const char* message);
 
-  void EnsureExternalTextureDestroyed(GPUExternalTexture* externalTexture);
-
   void AddActiveExternalTexture(GPUExternalTexture* external_texture);
   void RemoveActiveExternalTexture(GPUExternalTexture* external_texture);
 
   bool ValidateTextureFormatUsage(V8GPUTextureFormat format,
                                   ExceptionState& exception_state);
+  std::string formattedLabel() const;
 
  private:
   using LostProperty =
       ScriptPromiseProperty<Member<GPUDeviceLostInfo>, ToV8UndefinedGenerator>;
-
-  void DestroyExternalTexturesMicrotask();
 
   // Used by USING_PRE_FINALIZER.
   void Dispose();
@@ -202,9 +200,6 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   static constexpr int kMaxAllowedConsoleWarnings = 500;
   int allowed_console_warnings_remaining_ = kMaxAllowedConsoleWarnings;
-
-  bool has_destroy_external_texture_microtask_ = false;
-  HeapVector<Member<GPUExternalTexture>> external_textures_pending_destroy_;
 
   // Keep a list of all active GPUExternalTexture. Eagerly destroy them
   // when the device is destroyed (via .destroy) to free the memory.

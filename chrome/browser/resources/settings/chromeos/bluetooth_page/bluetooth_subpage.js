@@ -8,22 +8,23 @@
  *  properties and devices.
  */
 
-import '//resources/cr_components/chromeos/bluetooth/bluetooth_dialog.js';
-import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import '//resources/cr_elements/shared_style_css.m.js';
-import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '//resources/polymer/v3_0/iron-list/iron-list.js';
-import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_dialog.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../../settings_shared_css.js';
 import './bluetooth_device_list_item.js';
 
-import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics, recordUserInitiatedReconnectionAttemptDuration} from '//resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
-import {CrScrollableBehavior, CrScrollableBehaviorInterface} from '//resources/cr_elements/cr_scrollable_behavior.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
-import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from '//resources/js/list_property_update_behavior.m.js';
-import {flush, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics, recordUserInitiatedReconnectionAttemptDuration} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
+import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -195,7 +196,7 @@ class SettingsBluetoothSubpageElement extends
       /**
        * Contains the settingId of any deep link that wasn't able to be shown,
        * null otherwise.
-       * @private {?chromeos.settings.mojom.Setting}
+       * @private {?Setting}
        */
       pendingSettingId_: {
         type: Number,
@@ -204,16 +205,16 @@ class SettingsBluetoothSubpageElement extends
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kBluetoothOnOff,
-          chromeos.settings.mojom.Setting.kBluetoothConnectToDevice,
-          chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice,
-          chromeos.settings.mojom.Setting.kBluetoothPairDevice,
-          chromeos.settings.mojom.Setting.kBluetoothUnpairDevice,
+          Setting.kBluetoothOnOff,
+          Setting.kBluetoothConnectToDevice,
+          Setting.kBluetoothDisconnectFromDevice,
+          Setting.kBluetoothPairDevice,
+          Setting.kBluetoothUnpairDevice,
         ]),
       },
 
@@ -275,7 +276,7 @@ class SettingsBluetoothSubpageElement extends
 
   /**
    * Overridden from DeepLinkingBehavior.
-   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @param {!Setting} settingId
    * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
@@ -283,12 +284,10 @@ class SettingsBluetoothSubpageElement extends
     // button on a paired device), FocusRowBehavior prevents the Focus Row from
     // being focused. We clear lastFocused_ so that we can focus the row (such
     // as a paired/unpaired device).
-    if (settingId ===
-            chromeos.settings.mojom.Setting.kBluetoothConnectToDevice ||
-        settingId ===
-            chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice ||
-        settingId === chromeos.settings.mojom.Setting.kBluetoothPairDevice ||
-        settingId === chromeos.settings.mojom.Setting.kBluetoothUnpairDevice) {
+    if (settingId === Setting.kBluetoothConnectToDevice ||
+        settingId === Setting.kBluetoothDisconnectFromDevice ||
+        settingId === Setting.kBluetoothPairDevice ||
+        settingId === Setting.kBluetoothUnpairDevice) {
       this.lastFocused_ = null;
     }
     // Should continue with deep link attempt.

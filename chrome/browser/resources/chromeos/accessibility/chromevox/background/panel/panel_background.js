@@ -11,6 +11,7 @@ import {ISearch} from '/chromevox/background/panel/i_search.js';
 import {ISearchHandler} from '/chromevox/background/panel/i_search_handler.js';
 import {PanelNodeMenuBackground} from '/chromevox/background/panel/panel_node_menu_background.js';
 import {PanelTabMenuBackground} from '/chromevox/background/panel/panel_tab_menu_background.js';
+import {CursorRange} from '/common/cursors/range.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 
@@ -35,6 +36,7 @@ export class PanelBackground {
     window.panelBackground = PanelBackground.instance;
 
     PanelBackground.stateObserver_ = new PanelStateObserver();
+    ChromeVoxState.addObserver(PanelBackground.stateObserver_);
 
     BridgeHelper.registerHandler(
         BridgeTargets.PANEL_BACKGROUND, BridgeActions.CLEAR_SAVED_NODE,
@@ -209,7 +211,7 @@ export class PanelBackground {
     if (!node) {
       return;
     }
-    ChromeVoxState.instance.navigateToRange(cursors.Range.fromNode(node));
+    ChromeVoxState.instance.navigateToRange(CursorRange.fromNode(node));
   }
 
   /** @override */
@@ -241,11 +243,11 @@ export class PanelBackground {
       o.format('$role', node);
     } else {
       o.withRichSpeechAndBraille(
-          cursors.Range.fromNode(node), null, OutputEventType.NAVIGATE);
+          CursorRange.fromNode(node), null, OutputEventType.NAVIGATE);
     }
     o.go();
 
-    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
+    ChromeVoxState.instance.setCurrentRange(CursorRange.fromNode(node));
   }
 
   /** @private */
@@ -259,10 +261,12 @@ export class PanelBackground {
    */
   async waitForPanelCollapse_() {
     return new Promise(async resolve => {
-      const desktop = await new Promise(chrome.automation.getDesktop);
+      const desktop =
+          await new Promise((resolve) => chrome.automation.getDesktop(resolve));
       // Watch for a focus event outside the panel.
       const onFocus = event => {
-        if (event.target.docUrl.contains('chromevox/panel')) {
+        if (event.target.docUrl &&
+            event.target.docUrl.includes('chromevox/panel')) {
           return;
         }
 

@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" />（<ph name="THREAD_COUNT" /> 个线程，<ph name="CPU_MAX_CLOCK_SPEED" />GHz）</translation>
 <translation id="1047773237499189053">有可用的新功能，使用向上键即可了解详情。</translation>
 <translation id="1059913517121127803">无法启动扫描</translation>
+<translation id="1062407476771304334">替换</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">检测到防火墙</translation>
 <translation id="1075811647922107217">页面大小</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">用户</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">“更新外部设备的固件”窗口已打开。有 <ph name="NUM_UPDATES" /> 项可用的更新。</translation>
+<translation id="1145516343487477149">查找帮助文章和常见 Chromebook 问题解答</translation>
+<translation id="1165039591588034296">错误</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> 负责管理此设备，而且也许能够监控您的活动。</translation>
 <translation id="147809995039451286">无法下载更新</translation>
 <translation id="1478594628797167447">扫描器</translation>
+<translation id="1483493594462132177">发送</translation>
 <translation id="1491076385728777984">正在更新“<ph name="DEVICE_NAME" />”上的固件</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> 负责管理此用户，而且可能会远程管理设置并监控用户活动。</translation>
 <translation id="150962533380566081">PUK 无效。</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">无法加载这些图片。请检查您的网络连接状况，或尝试重新加载这些图片。</translation>
 <translation id="1751249301761991853">个人</translation>
 <translation id="1753496554272155572">退出壁纸预览</translation>
+<translation id="1755556344721611131">“诊断”应用</translation>
 <translation id="175763766237925754">良好 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">关闭深色主题</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">关闭深色模式</translation>
+<translation id="1881188606372070653">若要依法提出内容更改请求，请前往<ph name="BEGIN_LINK1" />法律帮助页面<ph name="END_LINK1" />。系统可能会将一些帐号信息和系统信息发送给 Google。我们会借助您向我们提供的信息来解决技术问题和提升服务质量，并且会在使用这些信息的过程中严格遵守 Google 的<ph name="BEGIN_LINK2" />隐私权政策<ph name="END_LINK2" />和<ph name="BEGIN_LINK3" />服务条款<ph name="END_LINK3" />。</translation>
 <translation id="1887850431809612466">硬件版本</translation>
+<translation id="1904932688895783618">以下是一些其他的实用资源：</translation>
 <translation id="1905710495812624430">已超过允许的尝试次数上限。</translation>
 <translation id="1908234395526491708">UDP 请求失败</translation>
 <translation id="1932611479324127242">切断电池供电</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">尝试问题排查步骤</translation>
 <translation id="2016848882344942759">--无白标签--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">若要查看屏保，请连接到网络并重新加载此页面。</translation>
 <translation id="2080070583977670716">更多设置</translation>
 <translation id="2085089206770112532">调低显示屏亮度</translation>
 <translation id="2105810540595158374">设备类型是游戏控制器。</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">开启深色模式</translation>
 <translation id="2177831236093724629">发现了<ph name="LINK_BEGIN" />不支持的组件<ph name="LINK_END" />。为确保系统能识别所有受支持的组件，请将您的 Chrome 操作系统更新到最新版本。</translation>
 <translation id="2180197493692062006">出了点问题。请尝试重新打开此应用。</translation>
+<translation id="2182088270354640012">感谢您提供反馈。您的反馈将有助于我们改进 Chrome OS，并将由 Chrome OS 团队审核。由于我们收到的举报数量众多，您无法收到直接回复。</translation>
 <translation id="2209788852729124853">重置流量计数器</translation>
 <translation id="2212733584906323460">域名解析</translation>
 <translation id="2217935453350629363">当前速度</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">网络连接诊断</translation>
 <translation id="3084958266922136097">停用屏保功能</translation>
 <translation id="3091839911843451378">失败 - 已停止</translation>
+<translation id="3096753366938912951">将盖子放在平坦的表面上</translation>
 <translation id="3102119246920354026">缓存</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">设备已连接。</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">正在搜寻扫描器</translation>
 <translation id="3246869037381808805">系统会自动移除存在时长已超过 1 天的打印任务</translation>
 <translation id="3268178239013324452">失败 - 机盖未关</translation>
+<translation id="3275729367986477355">头像图片</translation>
 <translation id="3283504360622356314">{0,plural, =1{修改文件}other{修改文件}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
 <translation id="3291996639387199448">密钥方向</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">更换壁纸</translation>
 <translation id="360565022852130722">Wi-Fi 网络采用了防护能力较弱的 WEP 802.1x 协议</translation>
 <translation id="3606583719724308068">HTTPS 网站的延迟时间较长</translation>
+<translation id="361575905210396100">感谢您的反馈</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3621202678540785336">输入</translation>
 <translation id="3632579075709132555">隐私保护屏幕开关</translation>
+<translation id="3643198267586205643">更新 OS</translation>
 <translation id="3643810137582748570">跳过校准</translation>
 <translation id="3651050199673793219">选择温度单位</translation>
 <translation id="3678765385266369662">请选择您想如何关闭写保护</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">锁定</translation>
 <translation id="38114475217616659">清除所有打印记录</translation>
 <translation id="3820172043799983114">PIN 码无效。</translation>
+<translation id="3824259034819781947">附加文件</translation>
 <translation id="3838338534323494292">新密码</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3856304145690230735">底座陀螺仪</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">信号强度</translation>
 <translation id="4731797938093519117">家长访问</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4740255236714854844">将底座放在平坦的表面上</translation>
 <translation id="4744944742468440486">与您所选内容相关的信息</translation>
 <translation id="4751272708893364980">查看 RMA 日志</translation>
 <translation id="4773299976671772492">已停止</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">如需更多帮助，请访问<ph name="BEGIN_LINK" />帮助中心<ph name="END_LINK" />。</translation>
 <translation id="4793756956024303490">压缩算法</translation>
 <translation id="4794140124556169553">运行 CPU 测试可能会影响系统性能</translation>
+<translation id="4800589996161293643">Chromebook 社区</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4808449224298348341">已取消打印任务“<ph name="DOCUMENT_TITLE" />”</translation>
 <translation id="4809927044794281115">浅色主题</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">当您的屏幕处于空闲状态时，显示照片、时间、天气和媒体信息。</translation>
 <translation id="5039804452771397117">允许</translation>
+<translation id="5044978354634658544">插入 USB</translation>
 <translation id="5049856988445523908">SIM 卡已锁定 (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">群组名称</translation>
 <translation id="5051044138948155788">这是目前仅有的一个页面了。此操作会将您转到扫描开始屏幕。</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">电池寿命</translation>
 <translation id="5170568018924773124">在文件夹中显示</translation>
 <translation id="5179530508336824319">启用写保护即可继续前往下一个屏幕。如需获取说明，请前往设备制造商的支持页面。</translation>
+<translation id="5181140330217080051">正在下载</translation>
 <translation id="5190187232518914472">重现您的美好回忆。如需添加或编辑影集，请转至 <ph name="LINK_BEGIN" />Google 相册<ph name="LINK_END" />。</translation>
 <translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。
 请尝试通过点按麦克风图标向我提问。</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">退出</translation>
+<translation id="522307662484862935">不附加电子邮件地址</translation>
 <translation id="5227902338748591677">深色主题时间表</translation>
 <translation id="5234764350956374838">关闭</translation>
 <translation id="5252456968953390977">漫游</translation>
@@ -499,7 +518,7 @@
 <translation id="5372659122375744710">Wi-Fi 网络不安全</translation>
 <translation id="5376354385557966694">自动浅色模式</translation>
 <translation id="537872351913703572">设备将由另一用户或组织使用</translation>
-<translation id="5389159777326897627">壁纸和样式</translation>
+<translation id="5389159777326897627">壁纸与样式</translation>
 <translation id="5389224261615877010">彩虹色</translation>
 <translation id="5395600419410242651">清除所有数据</translation>
 <translation id="5400907029458559844">设备正在连接。</translation>
@@ -526,6 +545,7 @@
 <translation id="5620281292257375798">仅供内部使用</translation>
 <translation id="5649768706273821470">收听</translation>
 <translation id="5655283760733841251">调高键盘亮度</translation>
+<translation id="5659593005791499971">电子邮件</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">家用</translation>
@@ -538,6 +558,7 @@
 <translation id="57838592816432529">静音</translation>
 <translation id="5784136236926853061">HTTP 延迟时间较长</translation>
 <translation id="578753362485952307">若要对主板进行再加工以用于另一设备，请前往<ph name="LINK_BEGIN" />再加工流程<ph name="LINK_END" />。</translation>
+<translation id="5790085346892983794">成功</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5843706793424741864">华氏度</translation>
@@ -599,6 +620,7 @@
 <translation id="6284632978374966585">开启深色主题</translation>
 <translation id="6295178529664209245">继续修复？</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />测试已被取消</translation>
+<translation id="631063167932043783">“探索”应用</translation>
 <translation id="6319207335391420837">更新“<ph name="DEVICE_NAME" />”上的固件</translation>
 <translation id="6321407676395378991">开启屏保功能</translation>
 <translation id="6325525973963619867">失败</translation>
@@ -610,6 +632,7 @@
 <translation id="6379086450106841622">触摸屏</translation>
 <translation id="6381741036071372448">测试您的键盘</translation>
 <translation id="6388847657025262518">扫描仪的文件馈送器卡纸了。请检查馈送器，然后重试。</translation>
+<translation id="6394634179843537518">添加文件</translation>
 <translation id="6410257289063177456">图片文件</translation>
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@
 <translation id="6516990319416533844">若要测试电池充电速率，请先耗掉少许电池电量</translation>
 <translation id="6517239166834772319">探索</translation>
 <translation id="6527081081771465939">未知的 Wi-Fi 安全协议</translation>
+<translation id="6535178685492749208">您目前处于离线状态。系统会在晚些时候发送您的反馈。</translation>
 <translation id="65587193855025101">平台式</translation>
 <translation id="6564646048574748301">失败 - 无法连接到打印机</translation>
 <translation id="6566314079205407217">多页面扫描</translation>
@@ -643,6 +667,7 @@
 <translation id="6659594942844771486">标签页</translation>
 <translation id="6692996468359469499">获取与您的所选项相关的信息</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
+<translation id="6721744718589119342">如果需要您提供更多信息或想向您提供最新信息，我们可能会向您发送电子邮件</translation>
 <translation id="6723839937902243910">电源</translation>
 <translation id="6723847290197874913">键盘背光</translation>
 <translation id="672609503628871915">了解一下新变化</translation>
@@ -703,10 +728,12 @@
 <translation id="7297226631177386107">无法通过防火墙连接到 HTTPS 网站</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">在 Chromebook 帮助论坛中向专家提问</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />；<ph name="RESULT_TEXT" />；按搜索键 + 空格键即可查看“Google 搜索”中的结果。</translation>
 <translation id="7343649194310845056">网络设备</translation>
 <translation id="7359657277149375382">文件类型</translation>
+<translation id="73631062356239394">分享诊断数据</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">关闭浅色主题</translation>
@@ -737,15 +764,18 @@
 <translation id="7657530360897961171"><ph name="DEVICE_TYPE" /> 修复流程出错</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665800271478495366">更换头像</translation>
+<translation id="7682274994254393134">开始维修</translation>
 <translation id="7690294790491645610">再次输入新密码</translation>
 <translation id="7701040980221191251">无</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">循环计数</translation>
 <translation id="7747039790905080783">预共享的密钥</translation>
 <translation id="7762130827864645708">您已成功更改了密码。从现在开始，请改用这个新密码。</translation>
+<translation id="7762839321248874531">发送<ph name="BEGIN_LINK1" />系统和应用信息<ph name="END_LINK1" />以及<ph name="BEGIN_LINK2" />指标<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">域名后缀匹配</translation>
 <translation id="7769672763586021400">型号 ID</translation>
 <translation id="7784116172884276937">未设置 DNS 服务器</translation>
+<translation id="779591286616261875">发送新报告</translation>
 <translation id="7799817062559422778">浅色模式</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
@@ -812,6 +842,7 @@
 <translation id="8382302752385457774">白标签</translation>
 <translation id="8395584934117017006">此 <ph name="DEVICE_TYPE" /> 由企业管理</translation>
 <translation id="8398927464629426868">设备当前的充电或放电速度</translation>
+<translation id="8420955526972171689">运行硬件测试以排查硬件问题</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">内部键盘</translation>
 <translation id="8431300646573772016">Chrome 操作系统的新变化</translation>
@@ -897,6 +928,7 @@
 <translation id="9082718469794970195">使用此视频</translation>
 <translation id="9087578468327036362">报告此次查询</translation>
 <translation id="9088306295921699330">目前用量</translation>
+<translation id="9092255287806472980">您的反馈将有助于我们改进 Chrome OS，并将由我们的团队审核。由于举报数量众多，我们无法发送回复。</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">您将需要拆开此设备</translation>
 <translation id="9098156406873149060">保留用户数据</translation>
@@ -911,6 +943,7 @@
 <translation id="9149391708638971077">运行内存测试</translation>
 <translation id="9173638680043580060">还剩不到 1 分钟</translation>
 <translation id="917720651393141712">测试</translation>
+<translation id="9188992814426075118">键盘可自动与您的壁纸匹配</translation>
 <translation id="9204237731135241582">无法从 Android 应用连接网关</translation>
 <translation id="9211490828691860325">所有桌面</translation>
 <translation id="922179502584117429">当前版本 (<ph name="VERSION_NUMBER" />) 已过期</translation>

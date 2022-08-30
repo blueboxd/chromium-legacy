@@ -50,7 +50,7 @@ namespace {
 class FakeClipboardHostImpl : public ClipboardHostImpl {
  public:
   FakeClipboardHostImpl(
-      RenderFrameHost* render_frame_host,
+      RenderFrameHost& render_frame_host,
       mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver)
       : ClipboardHostImpl(render_frame_host, std::move(receiver)) {}
 
@@ -110,7 +110,7 @@ class ClipboardHostImplTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
-    ClipboardHostImpl::Create(web_contents()->GetMainFrame(),
+    ClipboardHostImpl::Create(web_contents()->GetPrimaryMainFrame(),
                               remote_.BindNewPipeAndPassReceiver());
   }
 
@@ -295,8 +295,9 @@ class ClipboardHostImplScanTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
-    fake_clipboard_host_impl_ = new FakeClipboardHostImpl(
-        web_contents()->GetMainFrame(), remote_.BindNewPipeAndPassReceiver());
+    fake_clipboard_host_impl_ =
+        new FakeClipboardHostImpl(*web_contents()->GetPrimaryMainFrame(),
+                                  remote_.BindNewPipeAndPassReceiver());
   }
 
   ~ClipboardHostImplScanTest() override {
@@ -500,7 +501,7 @@ TEST_F(ClipboardHostImplScanTest, MainFrameURL) {
   // `FakeClipboardHostImpl` is a `DocumentService` and manages its own
   // lifetime.
   raw_ptr<FakeClipboardHostImpl> fake_clipboard_host_impl_grandchild =
-      new FakeClipboardHostImpl(grandchild_rfh,
+      new FakeClipboardHostImpl(*grandchild_rfh,
                                 remote_grandchild.BindNewPipeAndPassReceiver());
 
   // Policy controller accepts the paste request.

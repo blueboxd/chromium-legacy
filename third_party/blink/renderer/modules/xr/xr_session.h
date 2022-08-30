@@ -89,6 +89,8 @@ class XRSession final
   static constexpr char kCannotCancelHitTestSource[] =
       "Hit test source could not be canceled! Ensure that it was not already "
       "canceled.";
+  static constexpr char kCannotReportPoses[] =
+      "Poses cannot be given out for the current state.";
 
   // Runs all the video.requestVideoFrameCallback() callbacks associated with
   // one HTMLVideoElement. |double| is the |high_res_now_ms|, derived from
@@ -313,8 +315,6 @@ class XRSession final
   bool RemoveHitTestSource(XRHitTestSource* hit_test_source);
   bool RemoveHitTestSource(XRTransientInputHitTestSource* hit_test_source);
 
-  void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
-
   bool UsesInputEventing() { return uses_input_eventing_; }
   bool LightEstimationEnabled() { return !!world_light_probe_; }
 
@@ -416,7 +416,6 @@ class XRSession final
       const device::mojom::blink::XRFrameDataPtr& frame_data);
 
   // XRSessionClient
-  void OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) override;
   void OnExitPresent() override;
   void OnVisibilityStateChanged(
       device::mojom::blink::XRVisibilityState visibility_state) override;

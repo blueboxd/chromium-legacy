@@ -293,7 +293,15 @@ void AutocompleteResult::SortAndCull(
 
     RotateMatchToFront(top_match, &matches_);
 
-    DiscourageTopMatchFromBeingSearchEntity(&matches_);
+    // The search provider may pre-deduplicate search suggestions. It's possible
+    // for the un-deduped search suggestion that replaces a default search
+    // entity suggestion to not have had `ComputeStrippedDestinationURL()`
+    // invoked. Make sure to invoke it now as `AutocompleteController` relies on
+    // `stripped_destination_url` to detect result changes. If
+    // `stripped_destination_url` is already set, i.e. it was not a pre-deduped
+    // search suggestion, `ComputeStrippedDestinationURL()` will early exit.
+    if (DiscourageTopMatchFromBeingSearchEntity(&matches_))
+      matches_[0].ComputeStrippedDestinationURL(input, template_url_service);
   }
 
   // Limit URL matches per OmniboxMaxURLMatches.
@@ -327,7 +335,7 @@ void AutocompleteResult::SortAndCull(
   }
 
   // Group search suggestions above URL suggestions.
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   if (matches_.size() > 2 &&
       !base::FeatureList::IsEnabled(omnibox::kAdaptiveSuggestionsCount)) {
 #else
@@ -385,7 +393,7 @@ void AutocompleteResult::GroupAndDemoteMatchesWithHeaders() {
       // additional_info field for chrome://omnibox.
       int group_id = it->suggestion_group_id.value();
       it->RecordAdditionalInfo("suggestion_group_id", group_id);
-      const std::u16string header = GetHeaderForGroupId(group_id);
+      const std::u16string header = GetHeaderForSuggestionGroup(group_id);
       if (!header.empty()) {
         it->RecordAdditionalInfo("header string", header);
       } else {
@@ -647,14 +655,18 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
 }
 
 // static
-void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
+bool AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
     ACMatches* matches) {
   if (matches->empty())
-    return;
+    return false;
 
   auto top_match = matches->begin();
   if (top_match->type != ACMatchType::SEARCH_SUGGEST_ENTITY)
-    return;
+    return false;
+
+  // We define an iterator to capture the non-entity duplicate match (if any)
+  // so that we can later use it with duplicate_matches.erase().
+  auto non_entity_it = top_match->duplicate_matches.end();
 
   // Search the duplicates for an equivalent non-entity search suggestion.
   for (auto it = top_match->duplicate_matches.begin();
@@ -666,17 +678,51 @@ void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
       continue;
     }
 
+    // Capture the first eligible non-entity duplicate we find, but continue the
+    // search for a potential server-provided duplicate, which is considered to
+    // be an even better candidate for the reasons outlined below.
+    if (non_entity_it == top_match->duplicate_matches.end()) {
+      non_entity_it = it;
+    }
+
+    // When an entity suggestion (SEARCH_SUGGEST_ENTITY) is received from
+    // google.com, we also receive a non-entity version of the same suggestion
+    // which (a) gets placed in the |duplicate_matches| list of the entity
+    // suggestion (as part of the deduplication process) and (b) has the same
+    // |deletion_url| as the entity suggestion.
+    // When the user attempts to remove the SEARCH_SUGGEST_ENTITY suggestion
+    // from the omnibox, the suggestion removal code will fire off network
+    // requests to the suggestion's own |deletion_url| as well as to any
+    // deletion_url's present on matches in the associated |duplicate_matches|
+    // list, which in this case would result in redundant network calls to the
+    // same URL.
+    // By prioritizing the "undeduping" (i.e. moving a duplicate match out of
+    // the |duplicate_matches| list) and promotion of the non-entity
+    // SEARCH_SUGGEST (or any other "specialized search") duplicate as the
+    // top match, we are deliberately separating the two matches that have the
+    // same |deletion_url|, thereby eliminating any redundant network calls
+    // upon suggestion removal.
+    if (it->type == ACMatchType::SEARCH_SUGGEST ||
+        AutocompleteMatch::IsSpecializedSearchType(it->type)) {
+      non_entity_it = it;
+      break;
+    }
+  }
+
+  if (non_entity_it != top_match->duplicate_matches.end()) {
     // Copy the non-entity match, then erase it from the list of duplicates.
     // We do this first, because the insertion operation invalidates all
     // iterators, including |top_match|.
-    AutocompleteMatch non_entity_match_copy = *it;
-    top_match->duplicate_matches.erase(it);
+    AutocompleteMatch non_entity_match_copy = *non_entity_it;
+    top_match->duplicate_matches.erase(non_entity_it);
 
     // Promote the non-entity match to the top, then immediately return, since
     // all our iterators are invalid after the insertion.
     matches->insert(matches->begin(), std::move(non_entity_match_copy));
-    return;
+    return true;
   }
+
+  return false;
 }
 
 // static
@@ -899,7 +945,7 @@ AutocompleteResult::GetMatchDedupComparators() const {
   return comparators;
 }
 
-std::u16string AutocompleteResult::GetHeaderForGroupId(
+std::u16string AutocompleteResult::GetHeaderForSuggestionGroup(
     int suggestion_group_id) const {
   const auto& it = headers_map_.find(suggestion_group_id);
   if (it != headers_map_.end())
@@ -907,7 +953,7 @@ std::u16string AutocompleteResult::GetHeaderForGroupId(
   return std::u16string();
 }
 
-bool AutocompleteResult::IsSuggestionGroupIdHidden(
+bool AutocompleteResult::IsSuggestionGroupHidden(
     PrefService* prefs,
     int suggestion_group_id) const {
   omnibox::SuggestionGroupVisibility user_preference =
@@ -931,40 +977,6 @@ void AutocompleteResult::MergeHeadersMap(
 void AutocompleteResult::MergeHiddenGroupIds(
     const std::vector<int>& hidden_group_ids) {
   hidden_group_ids_.insert(hidden_group_ids.begin(), hidden_group_ids.end());
-}
-// static
-void AutocompleteResult::LogUpdateMetrics(
-    const std::vector<MatchDedupComparator>& old_result,
-    const AutocompleteResult& new_result,
-    bool in_start) {
-  bool any_match_changed = false;
-
-  for (size_t i = 0; i < old_result.size(); ++i) {
-    // Log a change for changed or removed matches. Don't log for
-    // matches appended to the bottom since that's less disruptive.
-    if (i >= new_result.size() ||
-        old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
-      if (in_start) {
-        UMA_HISTOGRAM_EXACT_LINEAR(
-            "Omnibox.CrossInputMatchStability.MatchChange", i,
-            kMaxAutocompletePositionValue);
-      } else {
-        UMA_HISTOGRAM_EXACT_LINEAR("Omnibox.MatchStability.AsyncMatchChange2",
-                                   i, kMaxAutocompletePositionValue);
-      }
-      any_match_changed = true;
-    }
-  }
-
-  if (in_start) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition",
-        any_match_changed);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition",
-        any_match_changed);
-  }
 }
 
 // static

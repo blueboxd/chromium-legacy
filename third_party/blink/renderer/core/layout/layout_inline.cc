@@ -410,12 +410,7 @@ bool LayoutInline::ComputeInitialShouldCreateBoxFragment(
       style.MayHaveMargin())
     return true;
 
-  // TODO(crbug.com/1008951): This is to force decorating boxes not to be
-  // culled. Probably not sufficient, see |StopPropagateTextDecorations| and
-  // |IsTextDecorationBoundary|. Also better if decorating box can be computed
-  // for culled inline too from the performance perspective.
-  if (RuntimeEnabledFeatures::TextDecoratingBoxEnabled() &&
-      style.GetTextDecorationLine() != TextDecorationLine::kNone)
+  if (!style.AnchorName().IsNull())
     return true;
 
   return ComputeIsAbsoluteContainer(&style) ||
@@ -1219,7 +1214,7 @@ LayoutUnit LayoutInline::MarginBottom() const {
 bool LayoutInline::NodeAtPoint(HitTestResult& result,
                                const HitTestLocation& hit_test_location,
                                const PhysicalOffset& accumulated_offset,
-                               HitTestAction hit_test_action) {
+                               HitTestPhase phase) {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
     // TODO(crbug.com/965976): We should fix the root cause of the missed
@@ -1263,7 +1258,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       NGInlinePaintContext inline_context;
       if (NGBoxFragmentPainter(cursor, item, *box_fragment, &inline_context)
               .NodeAtPoint(result, hit_test_location, child_offset,
-                           accumulated_offset, hit_test_action)) {
+                           accumulated_offset, phase)) {
         return true;
       }
     }
@@ -1271,8 +1266,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
   }
 
   return LineBoxes()->HitTest(LineLayoutBoxModel(this), result,
-                              hit_test_location, accumulated_offset,
-                              hit_test_action);
+                              hit_test_location, accumulated_offset, phase);
 }
 
 bool LayoutInline::HitTestCulledInline(HitTestResult& result,

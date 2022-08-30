@@ -136,10 +136,6 @@ class AndroidPlatformConfiguration : public DefaultPlatformConfiguration {
   bool IsEnabledForThread(
       metrics::CallStackProfileParams::Process process,
       metrics::CallStackProfileParams::Thread thread) const override;
-
- protected:
-  bool IsSupportedForChannel(
-      absl::optional<version_info::Channel> release_channel) const override;
 };
 
 AndroidPlatformConfiguration::AndroidPlatformConfiguration(
@@ -230,21 +226,12 @@ bool AndroidPlatformConfiguration::IsEnabledForThread(
   switch (process) {
     case metrics::CallStackProfileParams::Process::kRenderer:
       return true;
+    case metrics::CallStackProfileParams::Process::kBrowser:
+      return thread == metrics::CallStackProfileParams::Thread::kMain;
 
     default:
       return false;
   }
-}
-
-bool AndroidPlatformConfiguration::IsSupportedForChannel(
-    absl::optional<version_info::Channel> release_channel) const {
-  // Enable on canary, for now.
-  if (release_channel && *release_channel == version_info::Channel::CANARY)
-    return true;
-
-  // Otherwise enable in dedicated ThreadProfiler browser tests.
-  // TODO(https://crbug.com/1004855): Enable across all browser tests.
-  return browser_test_mode_enabled();
 }
 #endif  // BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
 

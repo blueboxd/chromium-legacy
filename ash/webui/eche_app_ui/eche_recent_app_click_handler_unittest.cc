@@ -44,10 +44,10 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
             &EcheRecentAppClickHandlerTest::FakeLaunchEcheAppFunction,
             base::Unretained(this)),
         base::BindRepeating(
-            &EcheRecentAppClickHandlerTest::FakeCloseEcheAppFunction,
+            &EcheRecentAppClickHandlerTest::FakeLaunchNotificationFunction,
             base::Unretained(this)),
         base::BindRepeating(
-            &EcheRecentAppClickHandlerTest::FakeLaunchNotificationFunction,
+            &EcheRecentAppClickHandlerTest::FakeCloseNotificationFunction,
             base::Unretained(this)));
     stream_status_change_handler_ =
         std::make_unique<EcheStreamStatusChangeHandler>();
@@ -79,7 +79,7 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
     num_notifications_shown_++;
   }
 
-  void FakeCloseEcheAppFunction() {
+  void FakeCloseNotificationFunction(const std::string& notification_id) {
     // Do nothing.
   }
 

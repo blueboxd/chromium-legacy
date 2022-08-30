@@ -53,13 +53,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableExactMatchForNonLatinLocale;
 // Enables launcher search results for OS settings.
 ASH_PUBLIC_EXPORT extern const base::Feature kLauncherSettingsSearch;
 
-// Enables using aggregated model in ranking non-app results for
-// non empty queries.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
-
-// Enables normalization of search results in the launcher.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableLauncherSearchNormalization;
-
 // Enables categorical search in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
 
@@ -77,9 +70,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDynamicSearchUpdateAnimation;
 // Forces the Launcher provider to send Omnibox search queries to the lacros
 // browser. If disabled, queries are sent to the ash browser.
 ASH_PUBLIC_EXPORT extern const base::Feature kLauncherLacrosIntegration;
-
-// Shows a feedback dialog when removing a continue section suggestion.
-ASH_PUBLIC_EXPORT extern const base::Feature kFeedbackOnContinueSectionRemove;
 
 // Controls the bubble launcher (productivity launcher in clamshell) width. When
 // enabled, the bubble UI will be narrower.
@@ -107,7 +97,6 @@ ASH_PUBLIC_EXPORT bool IsSearchResultInlineIconEnabled();
 ASH_PUBLIC_EXPORT bool IsDynamicSearchUpdateAnimationEnabled();
 ASH_PUBLIC_EXPORT base::TimeDelta DynamicSearchUpdateAnimationDuration();
 ASH_PUBLIC_EXPORT bool IsLauncherLacrosIntegrationEnabled();
-ASH_PUBLIC_EXPORT bool IsFeedbackOnContinueSectionRemoveEnabled();
 ASH_PUBLIC_EXPORT bool IsCompactBubbleLauncherEnabled();
 ASH_PUBLIC_EXPORT bool IsLauncherPlayStoreSearchEnabled();
 

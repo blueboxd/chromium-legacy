@@ -128,12 +128,14 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredDark) \
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
+  E_CPONLY(kColorProgressBarPaused) \
   E_CPONLY(kColorSeparator) \
   E_CPONLY(kColorShadowBase) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationThree) \
   E_CPONLY(kColorShadowValueKeyShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueKeyShadowElevationThree) \
+  E_CPONLY(kColorSidePanelComboboxBorder) \
   E_CPONLY(kColorSliderThumb) \
   E_CPONLY(kColorSliderThumbMinimal) \
   E_CPONLY(kColorSliderTrack) \
@@ -184,10 +186,35 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define PLATFORM_SPECIFIC_COLOR_IDS \
+  /* NOTE: Nearly all of the following CrOS color ids will need to be re- */ \
+  /* evaluated once CrOS fully supports the color pipeline. */ \
+  E_CPONLY(kColorAshActionLabelFocusRingEdit) \
+  E_CPONLY(kColorAshActionLabelFocusRingError) \
+  E_CPONLY(kColorAshActionLabelFocusRingHover) \
+  \
+  /* TODO(skau): Remove Compat value when dark/light mode launches. */ \
+  E_CPONLY(kColorAshAppListFocusRingCompat) \
+  E_CPONLY(kColorAshAppListFocusRingNoKeyboard) \
+  E_CPONLY(kColorAshAppListSeparator) \
+  E_CPONLY(kColorAshAppListSeparatorLight) \
+  E_CPONLY(kColorAshArcInputMenuSeparator) \
+  E_CPONLY(kColorAshFocusRing) \
+  /* TODO(kylixrd): Determine whether this special color should follow */ \
+  /* light/dark mode. Remove if it should equal kColorAshFocusRing. */ \
+  E_CPONLY(kColorAshEditFinishFocusRing) \
+  E_CPONLY(kColorAshIconInOobe) \
+  \
+  /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \
+  E_CPONLY(kColorAshLightFocusRing) \
+  \
+  E_CPONLY(kColorAshOnboardingFocusRing) \
+  \
   E_CPONLY(kColorAshSystemUIBorderColor1) \
   E_CPONLY(kColorAshSystemUIBorderColor2) \
+  E_CPONLY(kColorAshSystemUIBorderColor3) \
   E_CPONLY(kColorAshSystemUIHighlightColor1) \
   E_CPONLY(kColorAshSystemUIHighlightColor2) \
+  E_CPONLY(kColorAshSystemUIHighlightColor3) \
   \
   /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \
   E_CPONLY(kColorAshSystemUILightBorderColor1) \
@@ -199,6 +226,7 @@
   E_CPONLY(kColorAshSystemUIMenuIcon) \
   E_CPONLY(kColorAshSystemUIMenuItemBackgroundSelected) \
   E_CPONLY(kColorAshSystemUIMenuSeparator) \
+  \
   E_CPONLY(kColorNativeColor1) \
   E_CPONLY(kColorNativeColor1Shade1) \
   E_CPONLY(kColorNativeColor1Shade2) \

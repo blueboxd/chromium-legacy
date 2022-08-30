@@ -50,7 +50,7 @@ function setTilePosition(tile: HTMLElement, {x, y}: {x: number, y: number}) {
   tile.style.top = `${y}px`;
 }
 
-function getHitIndex(rects: Array<DOMRect>, x: number, y: number): number {
+function getHitIndex(rects: DOMRect[], x: number, y: number): number {
   return rects.findIndex(
       r => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
 }
@@ -231,7 +231,7 @@ export class MostVisitedElement extends MostVisitedElementBase {
   private showAdd_: boolean;
   private showToastButtons_: boolean;
   private screenWidth_: ScreenWidth;
-  private tiles_: Array<MostVisitedTile>;
+  private tiles_: MostVisitedTile[];
   private toastContent_: string;
   private visible_: boolean;
 
@@ -242,7 +242,7 @@ export class MostVisitedElement extends MostVisitedElementBase {
   private setMostVisitedInfoListenerId_: number|null = null;
   private actionMenuTargetIndex_: number = -1;
   private dragOffset_: {x: number, y: number}|null;
-  private tileRects_: Array<DOMRect> = [];
+  private tileRects_: DOMRect[] = [];
   private isRtl_: boolean;
   private eventTracker_: EventTracker;
   private boundOnWidthChange_: () => void;
@@ -548,9 +548,9 @@ export class MostVisitedElement extends MostVisitedElementBase {
   private getFaviconUrl_(url: Url): string {
     const faviconUrl = new URL('chrome://favicon2/');
     faviconUrl.searchParams.set('size', '24');
-    faviconUrl.searchParams.set('scale_factor', '1x');
-    faviconUrl.searchParams.set('show_fallback_monogram', '');
-    faviconUrl.searchParams.set('page_url', url.url);
+    faviconUrl.searchParams.set('scaleFactor', '1x');
+    faviconUrl.searchParams.set('showFallbackMonogram', '');
+    faviconUrl.searchParams.set('pageUrl', url.url);
     return faviconUrl.href;
   }
 

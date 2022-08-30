@@ -4,9 +4,12 @@
 
 #include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/analysis/fake_files_request_handler.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,6 +63,11 @@ std::unique_ptr<ContentAnalysisDelegate> FakeContentAnalysisDelegate::Create(
   auto ret = std::make_unique<FakeContentAnalysisDelegate>(
       delete_closure, status_callback, std::move(dm_token), web_contents,
       std::move(data), std::move(callback));
+  FilesRequestHandler::SetFactoryForTesting(base::BindRepeating(
+      &FakeFilesRequestHandler::Create,
+      base::BindRepeating(
+          &FakeContentAnalysisDelegate::FakeUploadFileForDeepScanning,
+          base::Unretained(ret.get()))));
   return ret;
 }
 
@@ -164,11 +172,14 @@ void FakeContentAnalysisDelegate::Response(
       break;
     case AnalysisConnector::FILE_ATTACHED:
     case AnalysisConnector::FILE_DOWNLOADED:
-      FileRequestCallback(path, result_, response);
+      DCHECK(GetFilesRequestHandlerForTesting());
+      GetFilesRequestHandlerForTesting()->FileRequestCallbackForTesting(
+          path, result_, response);
       break;
     case AnalysisConnector::PRINT:
       PageRequestCallback(result_, response);
       break;
+    case AnalysisConnector::FILE_TRANSFER:
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
       NOTREACHED();
   }
@@ -187,7 +198,7 @@ void FakeContentAnalysisDelegate::UploadTextForDeepScanning(
       response_delay);
 }
 
-void FakeContentAnalysisDelegate::UploadFileForDeepScanning(
+void FakeContentAnalysisDelegate::FakeUploadFileForDeepScanning(
     safe_browsing::BinaryUploadService::Result result,
     const base::FilePath& path,
     std::unique_ptr<safe_browsing::BinaryUploadService::Request> request) {

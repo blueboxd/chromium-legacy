@@ -10,15 +10,15 @@ option java_multiple_files = true;
 
 package autofill_assistant;
 
-import "browser/action_strategy.proto";
-import "browser/action_value.proto";
-import "browser/cud_condition.proto";
-import "browser/dom_action.proto";
-import "browser/generic_ui.proto";
-import "browser/model.proto";
-import "browser/view_layout.proto";
-import "content/common/proto/semantic_feature_overrides.proto";
-import "browser/public/external_action.proto";
+import "components/autofill_assistant/browser/action_strategy.proto";
+import "components/autofill_assistant/browser/action_value.proto";
+import "components/autofill_assistant/browser/cud_condition.proto";
+import "components/autofill_assistant/browser/dom_action.proto";
+import "components/autofill_assistant/browser/generic_ui.proto";
+import "components/autofill_assistant/browser/model.proto";
+import "components/autofill_assistant/browser/view_layout.proto";
+import "components/autofill_assistant/content/common/proto/semantic_feature_overrides.proto";
+import "components/autofill_assistant/browser/public/external_action.proto";
 
 // A field trial containing the name of the trial and the name of the
 // randomly selected trial group.
@@ -140,6 +140,11 @@ message ClientContextProto {
   // The model for semantic dom annotation.
   message AnnotateDomModelContextProto {
     optional int64 model_version = 1;
+
+    // If set to true, serve semantic selectors even if a user is not part of
+    // an official server side experiment. This is used for emulator use cases
+    // that do not necessarily have a signed in user or an account.
+    optional bool force_semantic_selection = 2;
   }
   optional AnnotateDomModelContextProto annotate_dom_model_context = 22;
 
@@ -694,6 +699,9 @@ message RoundtripNetworkStats {
   // actions that were not executed, so this list can be longer than
   // |processed_actions|.
   repeated ActionNetworkStats action_stats = 3;
+  // Used for Chrome metrics only; in backend-metrics, this will always be 1 and
+  // can be ignored.
+  optional int32 num_roundtrips = 4;
 }
 
 // Next request to get a script's actions.
@@ -1062,6 +1070,7 @@ message ActionProto {
     RegisterPasswordResetRequestProto register_password_reset_request = 94;
     ExternalActionProto external_action = 95;
     SetNativeValueProto set_native_value = 96;
+    SetNativeCheckedProto set_native_checked = 97;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1486,12 +1495,12 @@ message ElementFinderInfoProto {
     MODEL_LOAD_TIMEOUT = 5;
   }
   message PredictedElement {
-    // Whether the inference returned the expectation.
-    optional bool matches_css_element = 1;
     // The predicted objective and predicted role of this element.
-    optional SelectorProto.SemanticInformation semantic_information = 2;
+    optional SelectorProto.SemanticFilter semantic_filter = 4;
     // The element's backend node id.
     optional int32 backend_node_id = 3;
+
+    reserved 1, 2;
   }
   message SemanticInferenceResult {
     // If this is empty, the model inference did not find any results.
@@ -1525,7 +1534,7 @@ enum PseudoType {
 }
 
 // A reference to one or more elements on the page, possibly nested in frames.
-// Next ID: 15
+// Next ID: 12
 message SelectorProto {
   // Filters for the element on the page. Filter are applied sequentially, using
   // the output of the previous filter as input. The root of these filters is
@@ -1544,6 +1553,8 @@ message SelectorProto {
   // The returned elements will be sorted by their order in the document.
   // Elements that were matched via the labelled filter will have the same order
   // as their label.
+  //
+  // Next ID: 17
   message Filter {
     oneof filter {
       // Enter the document of an iframe or shadow root. The next filters apply
@@ -1651,6 +1662,16 @@ message SelectorProto {
 
       // Retrieve parent of current elements.
       EmptyFilter parent = 15;
+
+      // Run the ML model over extracted node signals and retrieve a matching
+      // result.
+      // TODO(b/233340267): By convention this must be the first filter in the
+      // list. It can be followed by any set of other filters.
+      // TODO(b/233340267): The filter only supports returning a single element,
+      // although that element can have any number of children. Should it find
+      // multiple elements, the Selector will return a |TOO_MANY_ELEMENTS|
+      // error.
+      SemanticFilter semantic = 16;
     }
 
     reserved 10;
@@ -1739,27 +1760,22 @@ message SelectorProto {
     optional int32 index = 1;
   }
 
-  // If set, and the model inference is enabled on the client, will run model
-  // inference and compare if the found element has been inferred along
-  // the expectation.
-  message SemanticInformation {
+  message SemanticFilter {
     // The objective we expect this Selector to have.
     optional int32 objective = 1;
     // The role we expect this Selector to have.
-    optional int32 semantic_role = 2;
+    optional int32 role = 2;
     // Timeout, defaults to 5s.
     // TODO(b/218482826): Consider moving this to settings.
     optional int32 model_timeout_ms = 3 [default = 5000];
     // If true, ignore the objective and treat it as a wildcard '*' when
     // matching.
     optional bool ignore_objective = 4;
-    // If true, executes CSS alongside, comparing the results at the end. Uses
-    // the CSS result going forward.
-    optional bool check_matches_css_element = 5;
-  }
-  optional SemanticInformation semantic_information = 11;
 
-  reserved 1 to 8;
+    reserved 5;
+  }
+
+  reserved 1 to 8, 11;
 }
 
 enum OptionalStep {
@@ -3454,11 +3470,11 @@ message JsFlowProto {
   optional string js_flow = 1;
 }
 
-// Action which forwards a proto to the owner of the |ExternalScriptController|
+// Action which forwards a proto to the owner of the |HeadlessScriptController|
 // for the current flow. Not supported for internal flows.
 message ExternalActionProto {
   // The opaque proto to be forwarded to the owner of the
-  // |ExternalScriptController| for this flow.
+  // |HeadlessScriptController| for this flow.
   optional external.ActionInfo info = 1;
 
   // Whether to show the touchable area in the overlay.

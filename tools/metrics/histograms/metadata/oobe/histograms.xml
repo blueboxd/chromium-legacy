@@ -32,6 +32,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="OOBE.ArcTermsOfServiceScreen.UserActions"
+    enum="ArcTosScreenUserActions" expires_after="2022-12-13">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Tracks all user actions on the ArcTermsOfService screen. Recorded when user
+    clicks on buttons on the ArcTermsOfService screen.
+  </summary>
+</histogram>
+
 <histogram name="OOBE.BootToSignInCompleted" units="ms"
     expires_after="2022-04-03">
   <owner>alemate@chromium.org</owner>
@@ -41,7 +51,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Enrollment" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2022-12-18">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -51,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Signin" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2022-12-18">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -165,6 +175,18 @@ chromium-metrics-reviews@google.com.
     Records the amount of time that each page within the gesture navigation OOBE
     screen is shown. Recorded when the gesture navigation oobe screen is
     exiting.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.HidDetectionScreen.BluetoothPairingAttempts"
+    units="attempts" expires_after="2023-05-06">
+  <owner>gordonseto@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the total number of pairing attempts with Bluetooth human interface
+    devices (HID). This metric is emitted after the HID detection screen exits
+    in OOBE. It does not include devices attempted to be paired with before or
+    after the HID detection screen.
   </summary>
 </histogram>
 

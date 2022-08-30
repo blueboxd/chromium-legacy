@@ -400,8 +400,6 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
 
 }  // namespace
 
-WEB_UI_CONTROLLER_TYPE_IMPL(PrintPreviewUI)
-
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
                                std::unique_ptr<PrintPreviewHandler> handler)
     : ConstrainedWebDialogUI(web_ui),
@@ -722,11 +720,8 @@ void PrintPreviewUI::SetInitialParams(
     const mojom::RequestPrintPreviewParams& params) {
   if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
     return;
-
-  PrintPreviewUI* print_preview_ui = print_preview_dialog->GetWebUI()
-                                         ->GetController()
-                                         ->GetAs<PrintPreviewUI>();
-  CHECK(print_preview_ui);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+      print_preview_dialog->GetWebUI()->GetController());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   print_preview_ui->source_is_arc_ = params.is_from_arc;
 #endif

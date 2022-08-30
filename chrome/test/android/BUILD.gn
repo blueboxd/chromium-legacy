@@ -38,7 +38,7 @@ android_library("chrome_java_test_pagecontroller") {
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Utils.java",
   ]
   deps = [
-    ":chrome_java_test_support",
+    ":chrome_java_integration_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
@@ -96,7 +96,7 @@ instrumentation_test_apk("chrome_java_test_wpr_tests") {
   # Skia Gold dependency
   data_deps = [ "//ui/base:goldctl" ]
   deps = [
-    ":chrome_java_test_support",
+    ":chrome_java_integration_test_support",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/browser/flags:java",
@@ -131,7 +131,7 @@ instrumentation_test_apk("chrome_java_test_feed_test") {
   # Skia Gold dependency
   data_deps = [ "//ui/base:goldctl" ]
   deps = [
-    ":chrome_java_test_support",
+    ":chrome_java_integration_test_support",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/browser/flags:java",
@@ -209,7 +209,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_codelab") {
   }
 }
 
-junit_binary("chrome_java_test_pagecontroller_junit_tests") {
+robolectric_binary("chrome_java_test_pagecontroller_junit_tests") {
   testonly = true
   sources = [
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2LocatorTest.java",
@@ -257,7 +257,11 @@ java_group("chrome_java_unit_test_support") {
 
 android_library("chrome_java_integration_only_test_support") {
   testonly = true
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//chrome/android/features/tab_ui:test_support_javalib",
+    "//chrome/android/features/tab_ui:unit_device_javatests",
+  ]
   sources = [
     "javatests/src/org/chromium/chrome/browser/history/HistoryTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/history/StubbedHistoryProvider.java",
@@ -274,10 +278,6 @@ android_library("chrome_java_integration_only_test_support") {
     "javatests/src/org/chromium/chrome/test/batch/BlankCTATabInitialStateRule.java",
     "javatests/src/org/chromium/chrome/test/gcore/MockChromeGoogleApiClient.java",
     "javatests/src/org/chromium/chrome/test/invalidation/IntentSavingContext.java",
-    "javatests/src/org/chromium/chrome/test/omaha/AttributeFinder.java",
-    "javatests/src/org/chromium/chrome/test/omaha/MockRequestGenerator.java",
-    "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsDelayedProvider.java",
-    "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsProvider.java",
     "javatests/src/org/chromium/chrome/test/util/BookmarkTestRule.java",
     "javatests/src/org/chromium/chrome/test/util/BookmarkTestUtil.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeApplicationTestUtils.java",
@@ -304,7 +304,6 @@ android_library("chrome_java_integration_only_test_support") {
     "javatests/src/org/chromium/chrome/test/util/browser/compositor/layouts/DisableChromeAnimations.java",
     "javatests/src/org/chromium/chrome/test/util/browser/contextmenu/ContextMenuUtils.java",
     "javatests/src/org/chromium/chrome/test/util/browser/offlinepages/FakeOfflinePageBridge.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/signin/AccountManagerTestRule.java",
     "javatests/src/org/chromium/chrome/test/util/browser/signin/SigninTestRule.java",
     "javatests/src/org/chromium/chrome/test/util/browser/signin/SigninTestUtil.java",
     "javatests/src/org/chromium/chrome/test/util/browser/suggestions/SuggestionsDependenciesRule.java",
@@ -313,7 +312,6 @@ android_library("chrome_java_integration_only_test_support") {
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabCreator.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabCreatorManager.java",
     "javatests/src/org/chromium/chrome/test/util/browser/webapps/WebApkIntentDataProviderBuilder.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/webapps/WebappTestHelper.java",
     "javatests/src/org/chromium/chrome/test/util/browser/webapps/WebappTestPage.java",
   ]
 
@@ -404,18 +402,29 @@ android_library("chrome_java_integration_only_test_support") {
 
 android_library("chrome_java_test_support_common") {
   testonly = true
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//chrome/android/features/tab_ui:unit_device_javatests",
+    "//chrome/browser/ui/android/night_mode:unit_device_javatests",
+    "//chrome/browser/ui/android/omnibox:unit_device_javatests",
+  ]
   sources = [
+    "javatests/src/org/chromium/chrome/browser/homepage/HomepageTestRule.java",
     "javatests/src/org/chromium/chrome/browser/tab/MockTab.java",
     "javatests/src/org/chromium/chrome/test/ChromeJUnit4ClassRunner.java",
     "javatests/src/org/chromium/chrome/test/ChromeJUnit4RunnerDelegate.java",
+    "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsDelayedProvider.java",
+    "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsProvider.java",
     "javatests/src/org/chromium/chrome/test/util/ActivityTestUtils.java",
+    "javatests/src/org/chromium/chrome/test/util/ByteBufferTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeRestriction.java",
     "javatests/src/org/chromium/chrome/test/util/ToolbarUnitTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/browser/Features.java",
     "javatests/src/org/chromium/chrome/test/util/browser/FieldTrials.java",
+    "javatests/src/org/chromium/chrome/test/util/browser/signin/AccountManagerTestRule.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModel.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModelSelector.java",
+    "javatests/src/org/chromium/chrome/test/util/browser/webapps/WebappTestHelper.java",
   ]
 
   deps = [
@@ -423,7 +432,9 @@ android_library("chrome_java_test_support_common") {
     "//base:base_java_test_support",
     "//build/android:build_java",
     "//chrome/android:chrome_java",
+    "//chrome/browser/android/browserservices/intents:java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/preferences:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/ui/android/toolbar:java",
@@ -433,6 +444,8 @@ android_library("chrome_java_test_support_common") {
     "//components/browser_ui/widget/android:test_support_java",
     "//components/embedder_support/android:util_java",
     "//components/policy/android:policy_java_test_support",
+    "//components/signin/public/android:java",
+    "//components/signin/public/android:signin_java_test_support",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

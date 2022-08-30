@@ -18,6 +18,8 @@
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/win/app_command_runner.h"
+#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -165,8 +167,8 @@ class LegacyProcessLauncherImpl
   // Overrides for IProcessLauncher/IProcessLauncher2.
   IFACEMETHODIMP LaunchCmdLine(const WCHAR* cmd_line) override;
   IFACEMETHODIMP LaunchBrowser(DWORD browser_type, const WCHAR* url) override;
-  IFACEMETHODIMP LaunchCmdElevated(const WCHAR* app_guid,
-                                   const WCHAR* cmd_id,
+  IFACEMETHODIMP LaunchCmdElevated(const WCHAR* app_id,
+                                   const WCHAR* command_id,
                                    DWORD caller_proc_id,
                                    ULONG_PTR* proc_handle) override;
   IFACEMETHODIMP LaunchCmdLineEx(const WCHAR* cmd_line,
@@ -214,80 +216,74 @@ class LegacyProcessLauncherImpl
 //
 // Placeholders may be embedded within words, and appropriate quoting of
 // back-slash, double-quotes, space, and tab is applied if necessary.
-//
-// TODO(crbug/1316682): Implement AutoRunOnOSUpgrade app commands.
 class LegacyAppCommandWebImpl
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
           IAppCommandWeb,
           IDispatch> {
  public:
-  // Creates an instance of `IAppCommandWeb` for the given `app_id` and
-  // `command_id`. Returns an error if the command format does not exist in the
-  // registry, or if the command format in the registry has an invalid
-  // formatting.
-  static HRESULT CreateAppCommandWeb(UpdaterScope scope,
-                                     const std::wstring& app_id,
-                                     const std::wstring& command_id,
-                                     IDispatch** app_command_web);
-
   LegacyAppCommandWebImpl();
   LegacyAppCommandWebImpl(const LegacyAppCommandWebImpl&) = delete;
   LegacyAppCommandWebImpl& operator=(const LegacyAppCommandWebImpl&) = delete;
+
+  // Initializes an instance of `IAppCommandWeb` for the given `scope`,
+  // `app_id`, and `command_id`. Returns an error if the command format does not
+  // exist in the registry, or if the command format in the registry has an
+  // invalid formatting, or if the type information could not be initialized.
+  HRESULT RuntimeClassInitialize(UpdaterScope scope,
+                                 const std::wstring& app_id,
+                                 const std::wstring& command_id);
 
   // Overrides for IAppCommandWeb.
   IFACEMETHODIMP get_status(UINT* status) override;
   IFACEMETHODIMP get_exitCode(DWORD* exit_code) override;
   IFACEMETHODIMP get_output(BSTR* output) override;
 
-  // Executes the AppCommand with the optional parameters provided. `execute`
-  // will fail if the number of non-empty VARIANT parameters provided to
+  // Executes the AppCommand with the optional substitutions provided. `execute`
+  // fails if the number of non-empty VARIANT substitutions provided to
   // `execute` are less than the number of parameter placeholders in the
   // loaded-from-the-registry command format. Each placeholder %N is replaced
-  // with the corresponding `parameterN`.
-  IFACEMETHODIMP execute(VARIANT parameter1,
-                         VARIANT parameter2,
-                         VARIANT parameter3,
-                         VARIANT parameter4,
-                         VARIANT parameter5,
-                         VARIANT parameter6,
-                         VARIANT parameter7,
-                         VARIANT parameter8,
-                         VARIANT parameter9) override;
+  // with the corresponding `substitutionN`.
+  // An empty (VT_EMPTY) or invalid (non BSTR) substitution causes the following
+  // substitutions to be ignored; for example, if `substitution2` is VT_EMPTY,
+  // then `substitution3` through `substitution9` will be ignored.
+  IFACEMETHODIMP execute(VARIANT substitution1,
+                         VARIANT substitution2,
+                         VARIANT substitution3,
+                         VARIANT substitution4,
+                         VARIANT substitution5,
+                         VARIANT substitution6,
+                         VARIANT substitution7,
+                         VARIANT substitution8,
+                         VARIANT substitution9) override;
 
   // Overrides for IDispatch.
-  // TODO(crbug/1316683): Implement the IDispatch methods for the AppCommand
-  // implementation.
-  IFACEMETHODIMP GetTypeInfoCount(UINT*) override;
-  IFACEMETHODIMP GetTypeInfo(UINT, LCID, ITypeInfo**) override;
-  IFACEMETHODIMP GetIDsOfNames(REFIID, LPOLESTR*, UINT, LCID, DISPID*) override;
-  IFACEMETHODIMP Invoke(DISPID,
-                        REFIID,
-                        LCID,
-                        WORD,
-                        DISPPARAMS*,
-                        VARIANT*,
-                        EXCEPINFO*,
-                        UINT*) override;
+  IFACEMETHODIMP GetTypeInfoCount(UINT* type_info_count) override;
+  IFACEMETHODIMP GetTypeInfo(UINT type_info_index,
+                             LCID locale_id,
+                             ITypeInfo** type_info) override;
+  IFACEMETHODIMP GetIDsOfNames(REFIID iid,
+                               LPOLESTR* names_to_be_mapped,
+                               UINT count_of_names_to_be_mapped,
+                               LCID locale_id,
+                               DISPID* dispatch_ids) override;
+  IFACEMETHODIMP Invoke(DISPID dispatch_id,
+                        REFIID iid,
+                        LCID locale_id,
+                        WORD flags,
+                        DISPPARAMS* dispatch_parameters,
+                        VARIANT* result,
+                        EXCEPINFO* exception_info,
+                        UINT* arg_error_index) override;
 
  private:
   ~LegacyAppCommandWebImpl() override;
 
-  static HRESULT CreateLegacyAppCommandWebImpl(
-      UpdaterScope scope,
-      const std::wstring& app_id,
-      const std::wstring& command_id,
-      Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl>& web_impl);
+  HRESULT InitializeTypeInfo();
 
-  bool InitializeExecutable(UpdaterScope scope, const base::FilePath& exe_path);
-  HRESULT Initialize(UpdaterScope scope, std::wstring command_format);
-
-  absl::optional<std::wstring> FormatCommandLine(
-      const std::vector<std::wstring>& parameters) const;
-
-  base::FilePath executable_;
-  std::vector<std::wstring> parameters_;
   base::Process process_;
+  AppCommandRunner app_command_runner_;
+  Microsoft::WRL::ComPtr<ITypeInfo> type_info_;
 
   friend class LegacyAppCommandWebImplTest;
 };

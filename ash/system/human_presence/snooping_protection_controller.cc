@@ -17,8 +17,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/ash/components/dbus/hps/hps_service.pb.h"
 #include "chromeos/ash/components/human_presence/human_presence_configuration.h"
-#include "chromeos/dbus/hps/hps_service.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -66,8 +66,8 @@ SnoopingProtectionController::SnoopingProtectionController()
   // error.
   //
   // Might not exist in unit tests.
-  if (chromeos::HumanPresenceDBusClient::Get()) {
-    chromeos::HumanPresenceDBusClient::Get()->WaitForServiceToBeAvailable(
+  if (HumanPresenceDBusClient::Get()) {
+    HumanPresenceDBusClient::Get()->WaitForServiceToBeAvailable(
         base::BindOnce(&SnoopingProtectionController::StartServiceObservation,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -84,8 +84,8 @@ SnoopingProtectionController::~SnoopingProtectionController() {
   // TODO(crbug.com/1241704): only disable if the service is enabled.
   //
   // Might not exist in unit tests.
-  if (chromeos::HumanPresenceDBusClient::Get())
-    chromeos::HumanPresenceDBusClient::Get()->DisableHpsNotify();
+  if (HumanPresenceDBusClient::Get())
+    HumanPresenceDBusClient::Get()->DisableHpsNotify();
 
   for (auto& observer : observers_)
     observer.OnSnoopingProtectionControllerDestroyed();
@@ -262,14 +262,17 @@ void SnoopingProtectionController::ReconfigureService(State* new_state) {
     const absl::optional<hps::FeatureConfig> config =
         hps::GetEnableSnoopingProtectionConfig();
     if (!config.has_value()) {
-      LOG(ERROR) << "Couldn't parse notify configuration";
+      LOG(ERROR) << "SnoopingProtectionController: couldn't parse HpsNotify "
+                    "configuration.";
       return;
     }
+    LOG(ERROR)
+        << "SnoopingProtectionController: enabling HpsNotify from chrome.";
 
-    chromeos::HumanPresenceDBusClient::Get()->EnableHpsNotify(*config);
+    HumanPresenceDBusClient::Get()->EnableHpsNotify(*config);
 
     // Populate our initial HPS state for consistency with the service.
-    chromeos::HumanPresenceDBusClient::Get()->GetResultHpsNotify(
+    HumanPresenceDBusClient::Get()->GetResultHpsNotify(
         base::BindOnce(&SnoopingProtectionController::UpdateServiceState,
                        weak_ptr_factory_.GetWeakPtr()));
     new_state->service_configured = true;
@@ -278,7 +281,7 @@ void SnoopingProtectionController::ReconfigureService(State* new_state) {
   }
 
   // No longer need signals to be emitted.
-  chromeos::HumanPresenceDBusClient::Get()->DisableHpsNotify();
+  HumanPresenceDBusClient::Get()->DisableHpsNotify();
   new_state->service_configured = false;
 }
 
@@ -295,11 +298,10 @@ void SnoopingProtectionController::StartServiceObservation(
   // Special case: at this point, the service could have been left in an enabled
   // state by a previous session that crashed (and hence didn't clean up
   // properly). Disable it here, which is a no-op if it is already disabled.
-  chromeos::HumanPresenceDBusClient::Get()->DisableHpsNotify();
+  HumanPresenceDBusClient::Get()->DisableHpsNotify();
 
   // Start listening for state updates and restarts/shutdowns.
-  human_presence_dbus_observation_.Observe(
-      chromeos::HumanPresenceDBusClient::Get());
+  human_presence_dbus_observation_.Observe(HumanPresenceDBusClient::Get());
 
   // Configure the service and poll its initial value if necessary.
   ReconfigureService(&state_);

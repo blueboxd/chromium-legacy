@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -36,8 +37,8 @@ import org.chromium.ui.test.util.UiRestriction;
 // NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_DISABLE_ONLINE_DETECTION})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchCriticalTest extends ContextualSearchInstrumentationBase {
@@ -111,45 +112,6 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         // Once the bar opens, we make a new request at normal priority.
         expandPanelAndAssert();
         assertLoadedNormalPriorityUrl();
-        Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
-    }
-
-    /**
-     * Tests that a live request that fails (for an invalid URL) does a failover to a
-     * normal priority request once the user triggers the failover by opening the panel.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "https://crbug.com/1140413")
-    public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
-            throws Exception {
-        // Test fails with out-of-process network service. crbug.com/1071721
-        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess2")) return;
-
-        mFakeServer.reset();
-        mFakeServer.setLowPriorityPathInvalid();
-        mFakeServer.setActuallyLoadALiveSerp();
-        simulateResolveSearch("search");
-        assertLoadedLowPriorityInvalidUrl();
-        Assert.assertTrue(mFakeServer.didAttemptLoadInvalidUrl());
-
-        // we should not automatically issue a new request.
-        Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
-
-        // Fake a navigation error if offline.
-        // When connected to the Internet this error may already have happened due to actually
-        // trying to load the invalid URL.  But on test bots that are not online we need to
-        // fake that a navigation happened with an error. See crbug.com/682953 for details.
-        if (!mManager.isOnline()) {
-            boolean isFailure = true;
-            fakeContentViewDidNavigate(isFailure);
-        }
-
-        // Once the bar opens, we make a new request at normal priority.
-        expandPanelAndAssert();
-        waitForNormalPriorityUrlLoaded();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
 
@@ -245,15 +207,13 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     }
 
     /**
-     * Tests swiping panel up and down after a tap search will only load the Content once.
+     * Tests that moving panel up and down after a resolving search will only load the Content once.
      */
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    // Previously flaky. See https://crbug.com/1032955
-    @DisabledTest(message = "https://crbug.com/1291558")
     public void testResolveMultipleSwipeOnlyLoadsContentOnce(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and make sure Content is not visible.
@@ -266,9 +226,8 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel down should not change the visibility or load content again.
-        swipePanelDown();
-        waitForPanelToPeek();
+        // Shrinking the Panel down should not change the visibility or load content again.
+        peekPanel();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
@@ -284,16 +243,14 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     }
 
     /**
-     * Tests swiping panel up and down after a non-resolving search will only load the Content
-     * once.
+     * Tests that moving the panel up and down after a non-resolving search will only load the
+     * Content once.
      */
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    // Previously flaky https://crbug.com/1032760 on sdk<P.
-    @DisabledTest(message = "https://crbug.com/1291558")
     public void testNonResolveMultipleSwipeOnlyLoadsContentOnce(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a non-resolve search and make sure no Content is created.
@@ -307,9 +264,8 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel down should not change the visibility or load content again.
-        swipePanelDown();
-        waitForPanelToPeek();
+        // Shrinking the Panel down should not change the visibility or load content again.
+        peekPanel();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 

@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_implementation.h"
@@ -227,7 +226,7 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglWaitSyncKHRProc>(GetGLProcAddress("eglWaitSyncKHR"));
 }
 
-void ExtensionsEGL::InitializeClientExtensionSettings() {
+void ClientExtensionsEGL::InitializeClientExtensionSettings() {
   std::string client_extensions(GetClientExtensions());
   [[maybe_unused]] gfx::ExtensionSet extensions(
       gfx::MakeExtensionSet(client_extensions));
@@ -266,7 +265,7 @@ void ExtensionsEGL::InitializeClientExtensionSettings() {
       gfx::HasExtension(extensions, "EGL_MESA_platform_surfaceless");
 }
 
-void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
+void DisplayExtensionsEGL::InitializeExtensionSettings(EGLDisplay display) {
   std::string platform_extensions(GetPlatformExtensions(display));
   [[maybe_unused]] gfx::ExtensionSet extensions(
       gfx::MakeExtensionSet(platform_extensions));
@@ -285,6 +284,8 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
       gfx::HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   b_EGL_ANGLE_context_virtualization =
       gfx::HasExtension(extensions, "EGL_ANGLE_context_virtualization");
+  b_EGL_ANGLE_create_context_backwards_compatible = gfx::HasExtension(
+      extensions, "EGL_ANGLE_create_context_backwards_compatible");
   b_EGL_ANGLE_create_context_client_arrays =
       gfx::HasExtension(extensions, "EGL_ANGLE_create_context_client_arrays");
   b_EGL_ANGLE_create_context_webgl_compatibility = gfx::HasExtension(
@@ -297,10 +298,14 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
       gfx::HasExtension(extensions, "EGL_ANGLE_display_texture_share_group");
   b_EGL_ANGLE_external_context_and_surface =
       gfx::HasExtension(extensions, "EGL_ANGLE_external_context_and_surface");
+  b_EGL_ANGLE_keyed_mutex =
+      gfx::HasExtension(extensions, "EGL_ANGLE_keyed_mutex");
   b_EGL_ANGLE_power_preference =
       gfx::HasExtension(extensions, "EGL_ANGLE_power_preference");
   b_EGL_ANGLE_query_surface_pointer =
       gfx::HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
+  b_EGL_ANGLE_robust_resource_initialization =
+      gfx::HasExtension(extensions, "EGL_ANGLE_robust_resource_initialization");
   b_EGL_ANGLE_stream_producer_d3d_texture =
       gfx::HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture");
   b_EGL_ANGLE_surface_d3d_texture_2d_share_handle = gfx::HasExtension(
@@ -313,6 +318,8 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
       gfx::HasExtension(extensions, "EGL_ANGLE_vulkan_image");
   b_EGL_ANGLE_window_fixed_size =
       gfx::HasExtension(extensions, "EGL_ANGLE_window_fixed_size");
+  b_EGL_ARM_implicit_external_sync =
+      gfx::HasExtension(extensions, "EGL_ARM_implicit_external_sync");
   b_EGL_CHROMIUM_create_context_bind_generates_resource = gfx::HasExtension(
       extensions, "EGL_CHROMIUM_create_context_bind_generates_resource");
   b_EGL_CHROMIUM_sync_control =
@@ -323,6 +330,8 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
       gfx::HasExtension(extensions, "EGL_EXT_gl_colorspace_display_p3");
   b_EGL_EXT_gl_colorspace_display_p3_passthrough = gfx::HasExtension(
       extensions, "EGL_EXT_gl_colorspace_display_p3_passthrough");
+  b_EGL_EXT_image_dma_buf_import =
+      gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import");
   b_EGL_EXT_image_dma_buf_import_modifiers =
       gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import_modifiers");
   b_EGL_EXT_image_flush_external =
@@ -331,6 +340,8 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
       gfx::HasExtension(extensions, "EGL_EXT_pixel_format_float");
   b_EGL_IMG_context_priority =
       gfx::HasExtension(extensions, "EGL_IMG_context_priority");
+  b_EGL_KHR_create_context =
+      gfx::HasExtension(extensions, "EGL_KHR_create_context");
   b_EGL_KHR_fence_sync = gfx::HasExtension(extensions, "EGL_KHR_fence_sync");
   b_EGL_KHR_gl_colorspace =
       gfx::HasExtension(extensions, "EGL_KHR_gl_colorspace");
@@ -350,6 +361,8 @@ void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
   b_EGL_KHR_wait_sync = gfx::HasExtension(extensions, "EGL_KHR_wait_sync");
   b_EGL_MESA_image_dma_buf_export =
       gfx::HasExtension(extensions, "EGL_MESA_image_dma_buf_export");
+  b_EGL_NOK_texture_from_pixmap =
+      gfx::HasExtension(extensions, "EGL_NOK_texture_from_pixmap");
   b_EGL_NV_post_sub_buffer =
       gfx::HasExtension(extensions, "EGL_NV_post_sub_buffer");
   b_EGL_NV_robustness_video_memory_purge =

@@ -8,8 +8,8 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
@@ -369,14 +369,24 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkSimLockEnableSublabel",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE_SUBLABEL},
       {"networkSimLockedTitle", IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE},
+      {"networkSimLockPolicyAdminSubtitle",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_POLICY_ADMIN_SUBTITLE},
       {"networkSimPukDialogSubtitle",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE},
+      {"networkSimPukDialogManagedSubtitle",
+       IDS_SETTINGS_INTERNET_NETWORK_MANAGED_SIM_LOCKED_PUK_SUBTITLE},
+      {"networkSimPukDialogManagedWarningNoFailures",
+       IDS_SETTINGS_INTERNET_NETWORK_MANAGED_SIM_LOCKED_PUK_WARNING_NO_FAILURES},
       {"networkSimPukDialogWarningNoFailures",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_NO_FAILURES},
       {"networkSimPukDialogWarningWithFailure",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURE},
       {"networkSimPukDialogWarningWithFailures",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURES},
+      {"networkSimPukDialogManagedWarningWithFailure",
+       IDS_SETTINGS_INTERNET_NETWORK_MANAGED_SIM_LOCKED_PUK_WARNING_WITH_FAILURE},
+      {"networkSimPukDialogManagedWarningWithFailures",
+       IDS_SETTINGS_INTERNET_NETWORK_MANAGED_SIM_LOCKED_PUK_WARNING_WITH_FAILURES},
       {"networkSimLockedWarning",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING},
       {"networkSimReEnterNewPin",
@@ -426,8 +436,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("useAttachApn",
                           chromeos::features::ShouldUseAttachApn());
-  html_source->AddBoolean("esimPolicyEnabled",
-                          chromeos::features::IsESimPolicyEnabled());
+  html_source->AddBoolean("isSimLockPolicyEnabled",
+                          chromeos::features::IsSimLockPolicyEnabled());
 }
 
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -457,6 +467,10 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showHiddenNetworkWarning",
       base::FeatureList::IsEnabled(ash::features::kHiddenNetworkWarning));
+
+  html_source->AddBoolean(
+      "enableHiddenNetworkMigration",
+      base::FeatureList::IsEnabled(ash::features::kHiddenNetworkMigration));
 
   // Login screen and public account users can only create shared network
   // configurations. Other users default to unshared network configurations.

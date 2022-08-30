@@ -113,7 +113,7 @@ class TracingSampleProfilerTest
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     PerfettoTracedProcess::GetTaskRunner()->ResetTaskRunnerForTesting(
         base::ThreadTaskRunnerHandle::Get());
-    TraceEventDataSource::GetInstance()->ResetForTesting();
+    TracingSamplerProfiler::ResetDataSourceForTesting();
 #else
     auto perfetto_wrapper = std::make_unique<base::tracing::PerfettoTaskRunner>(
         base::ThreadTaskRunnerHandle::Get());
@@ -278,11 +278,7 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   ValidateReceivedEvents();
 }
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-TEST_F(TracingSampleProfilerTest, DISABLED_TestStartupTracing) {
-#else
 TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
-#endif
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   TracingSamplerProfiler::SetupStartupTracingForTesting();
   base::RunLoop().RunUntilIdle();
@@ -316,11 +312,7 @@ TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
   }
 }
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-TEST_F(TracingSampleProfilerTest, DISABLED_JoinStartupTracing) {
-#else
 TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
-#endif
   TracingSamplerProfiler::SetupStartupTracingForTesting();
   base::RunLoop().RunUntilIdle();
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
@@ -500,7 +492,9 @@ TEST_F(TracingProfileBuilderTest, ValidModule) {
   base::TestModule module;
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+      false /* is_startup_tracing */,
+#else
       std::make_unique<TestTraceWriter>(producer()),
 #endif
       false);
@@ -511,7 +505,9 @@ TEST_F(TracingProfileBuilderTest, ValidModule) {
 TEST_F(TracingProfileBuilderTest, InvalidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+      false /* is_startup_tracing */,
+#else
       std::make_unique<TestTraceWriter>(producer()),
 #endif
       false);
@@ -521,10 +517,10 @@ TEST_F(TracingProfileBuilderTest, InvalidModule) {
 
 #if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-TEST_F(TracingProfileBuilderTest, MangleELFModuleID) {
+TEST_F(TracingProfileBuilderTest, TransformELFModuleIDToBreakpadFormat) {
   base::TestModule module;
   // See explanation for the module_id mangling in
-  // TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit.
+  // base::TransformModuleIDToBreakpadFormat implementation.
   module.set_id("7F0715C286F8B16C10E4AD349CDA3B9B56C7A773");
 
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(

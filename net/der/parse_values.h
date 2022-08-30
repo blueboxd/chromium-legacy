@@ -11,9 +11,7 @@
 #include "net/der/input.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace net {
-
-namespace der {
+namespace net::der {
 
 // Reads a DER-encoded ASN.1 BOOLEAN value from |in| and puts the resulting
 // value in |out|. Returns whether the encoded value could successfully be
@@ -111,13 +109,6 @@ NET_EXPORT_PRIVATE bool operator>=(const GeneralizedTime& lhs,
 [[nodiscard]] NET_EXPORT bool ParseUTCTime(const Input& in,
                                            GeneralizedTime* out);
 
-// Like ParseUTCTime, but it is more lenient in what is accepted. DER requires
-// a UTCTime to be in the format YYMMDDhhmmssZ; this function will accept both
-// that and YYMMDDhhmmZ, which is a valid BER encoding of a UTCTime which
-// sometimes incorrectly appears in X.509 certificates.
-[[nodiscard]] NET_EXPORT bool ParseUTCTimeRelaxed(const Input& in,
-                                                  GeneralizedTime* out);
-
 // Reads a DER-encoded ASN.1 GeneralizedTime value from |in| and puts the
 // resulting value in |out|, returning true if the GeneralizedTime could
 // be parsed successfully. This function is even more restrictive than the
@@ -155,8 +146,6 @@ NET_EXPORT_PRIVATE bool operator>=(const GeneralizedTime& lhs,
 // result in |out| as UTF-8, returning true if successful.
 [[nodiscard]] NET_EXPORT bool ParseBmpString(Input in, std::string* out);
 
-}  // namespace der
-
-}  // namespace net
+}  // namespace net::der
 
 #endif  // NET_DER_PARSE_VALUES_H_

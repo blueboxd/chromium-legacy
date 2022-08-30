@@ -125,7 +125,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // |render_frame_host|: The RFH that owns this instance.
   // |receiver|: The instance will be bound to this receiver's pipe.
   WebBluetoothServiceImpl(
-      RenderFrameHost* render_frame_host,
+      RenderFrameHost& render_frame_host,
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
 
   ~WebBluetoothServiceImpl() override;
@@ -461,10 +461,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void CancelPairing(const blink::WebBluetoothDeviceId& device_id) override;
   void SetPinCode(const blink::WebBluetoothDeviceId& device_id,
                   const std::string& pincode) override;
-  void PromptForBluetoothCredentials(
+  void PromptForBluetoothPairing(
       const std::u16string& device_identifier,
-      BluetoothCredentialsCallback callback) override;
-
+      BluetoothDelegate::PairPromptCallback callback,
+      BluetoothDelegate::PairingKind pairing_kind) override;
+  void PairConfirmed(const blink::WebBluetoothDeviceId& device_id) override;
   // Used to open a BluetoothChooser and start a device discovery session.
   std::unique_ptr<BluetoothDeviceChooserController> device_chooser_controller_;
 

@@ -160,10 +160,7 @@ bool ShouldSendDownloadReport(download::DownloadDangerType danger_type) {
 // static
 DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
     download::DownloadItem* download) {
-  DownloadUIModel::DownloadUIModelPtr model(
-      new DownloadItemModel(download),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
-  return model;
+  return std::make_unique<DownloadItemModel>(download);
 }
 
 // static
@@ -171,10 +168,8 @@ DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
     download::DownloadItem* download,
     std::unique_ptr<DownloadUIModel::StatusTextBuilderBase>
         status_text_builder) {
-  DownloadUIModel::DownloadUIModelPtr model(
-      new DownloadItemModel(download, std::move(status_text_builder)),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
-  return model;
+  return std::make_unique<DownloadItemModel>(download,
+                                             std::move(status_text_builder));
 }
 
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
@@ -618,19 +613,21 @@ bool DownloadItemModel::HasUserGesture() const {
 }
 
 void DownloadItemModel::OnDownloadUpdated(DownloadItem* download) {
-  for (auto& obs : observers_)
-    obs.OnDownloadUpdated();
+  if (delegate_)
+    delegate_->OnDownloadUpdated();
 }
 
 void DownloadItemModel::OnDownloadOpened(DownloadItem* download) {
-  for (auto& obs : observers_)
-    obs.OnDownloadOpened();
+  if (delegate_)
+    delegate_->OnDownloadOpened();
 }
 
 void DownloadItemModel::OnDownloadDestroyed(DownloadItem* download) {
-  for (auto& obs : observers_)
-    obs.OnDownloadDestroyed();
+  ContentId id = GetContentId();
   download_ = nullptr;
+  // The object could get deleted after this.
+  if (delegate_)
+    delegate_->OnDownloadDestroyed(id);
 }
 
 void DownloadItemModel::OpenUsingPlatformHandler() {
@@ -686,6 +683,8 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
       return DownloadUIModel::IsCommandEnabled(download_commands, command);
   }
   NOTREACHED();
@@ -725,6 +724,8 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
       return false;
   }
   return false;
@@ -840,6 +841,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
     case DownloadCommands::DEEP_SCAN:
@@ -901,6 +904,27 @@ void DownloadItemModel::CompleteSafeBrowsingScan() {
                     kSafeBrowsingUserDataKey));
     state->CompleteDownload();
   }
+}
+
+void DownloadItemModel::ReviewScanningVerdict(
+    content::WebContents* web_contents) {
+  auto command_callback =
+      [](std::unique_ptr<DownloadItemModel> model,
+         std::unique_ptr<DownloadCommands> download_commands,
+         DownloadCommands::Command command) {
+        model->ExecuteCommand(download_commands.get(), command);
+      };
+  enterprise_connectors::ShowDownloadReviewDialog(
+      GetFileNameToReportUser().LossyDisplayName(), profile(), download_,
+      web_contents, download_->GetDangerType(),
+      base::BindOnce(
+          command_callback, std::make_unique<DownloadItemModel>(download_),
+          std::make_unique<DownloadCommands>(DownloadUIModel::GetWeakPtr()),
+          DownloadCommands::KEEP),
+      base::BindOnce(
+          command_callback, std::make_unique<DownloadItemModel>(download_),
+          std::make_unique<DownloadCommands>(DownloadUIModel::GetWeakPtr()),
+          DownloadCommands::DISCARD));
 }
 #endif
 

@@ -18,15 +18,15 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.RelatedSearchesControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeResolveSearch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -36,10 +36,11 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
-        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION + ","
-                + ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION})
+        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION})
+@EnableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_DISABLE_ONLINE_DETECTION})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+// TODO(crbug.com/1338223):update the tests to be batched.
+@DoNotBatch(reason = "Tests cannot runn batched due to RecordHistogram#forgetHistogram method.")
 public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentationBase {
     @Override
     @Before
@@ -228,8 +229,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Expand the panel and assert that it ends up in the right place.
-        // TODO(crbug.com/1258165): switch to expandPanelAndAssert();
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         // Don't select any Related Searches suggestion, and close the panel
         closePanel();
@@ -239,8 +239,6 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @FlakyTest(message = "https://crbug.com/1182040")
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1240342")
     public void testRelatedSearchesItemSelected() throws Exception {
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
         mFakeServer.reset();

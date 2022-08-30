@@ -83,6 +83,14 @@
 
 namespace partition_alloc::internal {
 
+// This type trait verifies a type can be used as a pointer offset.
+//
+// We support pointer offsets in signed (ptrdiff_t) or unsigned (size_t) values.
+// Smaller types are also allowed.
+template <typename Z>
+static constexpr bool offset_type =
+    std::is_integral_v<Z> && sizeof(Z) <= sizeof(ptrdiff_t);
+
 static constexpr size_t kAllocInfoSize = 1 << 20;
 
 struct AllocInfo {
@@ -171,6 +179,11 @@ struct PartitionOptions {
     kEnabled,
   };
 
+  enum class BackupRefPtrZapping : uint8_t {
+    kDisabled,
+    kEnabled,
+  };
+
   enum class UseConfigurablePool : uint8_t {
     kNo,
     kIfAvailable,
@@ -182,12 +195,14 @@ struct PartitionOptions {
                              Quarantine quarantine,
                              Cookie cookie,
                              BackupRefPtr backup_ref_ptr,
+                             BackupRefPtrZapping backup_ref_ptr_zapping,
                              UseConfigurablePool use_configurable_pool)
       : aligned_alloc(aligned_alloc),
         thread_cache(thread_cache),
         quarantine(quarantine),
         cookie(cookie),
         backup_ref_ptr(backup_ref_ptr),
+        backup_ref_ptr_zapping(backup_ref_ptr_zapping),
         use_configurable_pool(use_configurable_pool) {}
 
   AlignedAlloc aligned_alloc;
@@ -195,6 +210,7 @@ struct PartitionOptions {
   Quarantine quarantine;
   Cookie cookie;
   BackupRefPtr backup_ref_ptr;
+  BackupRefPtrZapping backup_ref_ptr_zapping;
   UseConfigurablePool use_configurable_pool;
 };
 
@@ -241,6 +257,7 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     bool allow_cookie;
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
     bool brp_enabled_;
+    bool brp_zapping_enabled_;
 #endif
     bool use_configurable_pool;
 
@@ -305,6 +322,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
   std::atomic<size_t> total_size_of_brp_quarantined_bytes{0};
   std::atomic<size_t> total_count_of_brp_quarantined_slots{0};
+  std::atomic<size_t> cumulative_size_of_brp_quarantined_bytes{0};
+  std::atomic<size_t> cumulative_count_of_brp_quarantined_slots{0};
 #endif
   // Slot span memory which has been provisioned, and is currently unused as
   // it's part of an empty SlotSpan. This is not clean memory, since it has
@@ -729,6 +748,14 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif
   }
 
+  bool brp_zapping_enabled() const {
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+    return flags.brp_zapping_enabled_;
+#else
+    return false;
+#endif
+  }
+
   PA_ALWAYS_INLINE bool uses_configurable_pool() const {
     return flags.use_configurable_pool;
   }
@@ -955,8 +982,9 @@ PartitionAllocGetSlotStartInBRPPool(uintptr_t address) {
 //
 // This isn't a general purpose function. The caller is responsible for ensuring
 // that the ref-count is in place for this allocation.
+template <typename Z, typename = std::enable_if_t<offset_type<Z>, void>>
 PA_ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(uintptr_t address,
-                                                    ptrdiff_t delta_in_bytes) {
+                                                    Z delta_in_bytes) {
   // Required for pointers right past an allocation. See
   // |PartitionAllocGetSlotStartInBRPPool()|.
   uintptr_t adjusted_address = address - kPartitionPastAllocationAdjustment;
@@ -1269,7 +1297,8 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
     // If there are no more references to the allocation, it can be freed
     // immediately. Otherwise, defer the operation and zap the memory to turn
     // potential use-after-free issues into unexploitable crashes.
-    if (PA_UNLIKELY(!ref_count->IsAliveWithNoKnownRefs()))
+    if (PA_UNLIKELY(!ref_count->IsAliveWithNoKnownRefs() &&
+                    brp_zapping_enabled()))
       internal::SecureMemset(object, internal::kQuarantinedByte,
                              slot_span->GetUsableSize(this));
 
@@ -1278,6 +1307,10 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
           slot_span->GetSlotSizeForBookkeeping(), std::memory_order_relaxed);
       total_count_of_brp_quarantined_slots.fetch_add(1,
                                                      std::memory_order_relaxed);
+      cumulative_size_of_brp_quarantined_bytes.fetch_add(
+          slot_span->GetSlotSizeForBookkeeping(), std::memory_order_relaxed);
+      cumulative_count_of_brp_quarantined_slots.fetch_add(
+          1, std::memory_order_relaxed);
       return;
     }
   }
@@ -2021,30 +2054,12 @@ using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;
 static_assert(offsetof(ThreadSafePartitionRoot, lock_) ==
                   internal::kPartitionCachelineSize,
               "Padding is incorrect");
-}  // namespace partition_alloc
-
-namespace base {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::PartitionOptions;
-using ::partition_alloc::PurgeFlags;
-using ::partition_alloc::ThreadSafePartitionRoot;
-
-namespace internal {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::internal::ScopedSyscallTimer;
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-using ::partition_alloc::internal::PartitionAllocFreeForRefCounting;
+// Usage in `raw_ptr.cc` is notable enough to merit a non-internal alias.
 using ::partition_alloc::internal::PartitionAllocGetSlotStartInBRPPool;
-using ::partition_alloc::internal::PartitionAllocIsValidPtrDelta;
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
-}  // namespace internal
-
-}  // namespace base
+}  // namespace partition_alloc
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_H_

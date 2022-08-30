@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/raw_ptr.h"
@@ -117,6 +118,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  sk_sp<SkColorSpace> color_space,
                                  bool is_overlay,
                                  const gpu::Mailbox& mailbox) override;
+  SkCanvas* RecordOverdrawForCurrentPaint() override;
   void EndPaint(base::OnceClosure on_finished,
                 base::OnceCallback<void(gfx::GpuFenceHandle)>
                     return_release_fence_cb) override;
@@ -195,6 +197,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                       std::vector<gpu::SyncToken> sync_tokens,
                       bool make_current,
                       bool need_framebuffer);
+  void ScheduleOrRetainGpuTask(base::OnceClosure callback,
+                               std::vector<gpu::SyncToken> tokens);
 
   enum class SyncMode {
     kNoWait = 0,

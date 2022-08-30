@@ -220,6 +220,7 @@ void BackForwardCacheBrowserTest::SetupFeaturesAndParameters() {
 
   feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                               disabled_features_);
+  vmodule_switches_.InitWithSwitches("back_forward_cache_impl=1");
 }
 
 void BackForwardCacheBrowserTest::EnableFeatureAndSetParams(
@@ -411,19 +412,19 @@ void BackForwardCacheBrowserTest::StartRecordingEvents(
 }
 
 void BackForwardCacheBrowserTest::MatchEventList(RenderFrameHostImpl* rfh,
-                                                 base::ListValue list,
+                                                 base::Value list,
                                                  base::Location location) {
   EXPECT_EQ(list, EvalJs(rfh, "window.testObservedEvents"))
       << location.ToString();
 }
 
-  // Creates a minimal HTTPS server, accessible through https_server().
-  // Returns a pointer to the server.
+// Creates a minimal HTTPS server, accessible through https_server().
+// Returns a pointer to the server.
 net::EmbeddedTestServer* BackForwardCacheBrowserTest::CreateHttpsServer() {
   https_server_ = std::make_unique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_->AddDefaultHandlers(GetTestDataFilePath());
-  https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
   return https_server();
 }
 
@@ -881,8 +882,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, ResponseHeaders) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
-  GURL url_a(https_server()->GetURL("a.com", "/set-header?X-Foo: bar"));
-  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(https_server()->GetURL("a.test", "/set-header?X-Foo: bar"));
+  GURL url_b(https_server()->GetURL("b.test", "/title1.html"));
 
   // 1) Navigate to A.
   NavigationHandleObserver observer1(web_contents(), url_a);
@@ -1060,8 +1061,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(CreateHttpsServer()->Start());
 
-  GURL http_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL https_url(https_server()->GetURL("a.com", "/title1.html"));
+  GURL http_url(embedded_test_server()->GetURL("a.test", "/title1.html"));
+  GURL https_url(https_server()->GetURL("a.test", "/title1.html"));
   GURL file_url = net::FilePathToFileURL(GetTestFilePath("", "title1.html"));
   GURL data_url = GURL("data:text/html,");
   GURL blank_url = GURL(url::kAboutBlankURL);
@@ -2034,7 +2035,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 1) Navigate to |url_1| and hide the tab.
   EXPECT_TRUE(NavigateToURL(shell(), url_1));
-  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetPrimaryMainFrame();
   // We need to set it to Visibility::VISIBLE first in case this is the first
   // time the visibility is updated.
   web_contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
@@ -2080,7 +2081,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Navigate to |url_3| which is same-origin with |url_1|, so we can check
   // the localStorage values.
   EXPECT_TRUE(NavigateToURL(shell(), url_3));
-  RenderFrameHostImpl* main_frame_3 = web_contents->GetMainFrame();
+  RenderFrameHostImpl* main_frame_3 = web_contents->GetPrimaryMainFrame();
 
   // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
   // are set correctly.
@@ -2927,6 +2928,72 @@ bool BackForwardCacheBrowserTest::IsUnloadAllowedToEnterBackForwardCache() {
 #endif
 }
 
+bool BackForwardCacheBrowserTest::AddBlocklistedFeature(RenderFrameHost* rfh) {
+  return ExecJs(rfh, R"(
+    let object = document.createElement("object");
+    object.type = "application/x-blink-test-plugin";
+    document.body.appendChild(object);
+  )");
+}
+
+void BackForwardCacheBrowserTest::ExpectNotRestoredDueToBlocklistedFeature(
+    base::Location location) {
+  ExpectNotRestored(
+      {NotRestoredReason::kBlocklistedFeatures},
+      {blink::scheduler::WebSchedulerTrackedFeature::kContainsPlugins}, {}, {},
+      {}, location);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FrameWithBlocklistedFeatureNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page that contains a blocklisted feature.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  RenderFrameHostWrapper rfh(current_frame_host());
+
+  ASSERT_TRUE(AddBlocklistedFeature(rfh.get()));
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page with the unsupported feature should be deleted (not cached).
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
+
+  // Go back.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestoredDueToBlocklistedFeature(FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SubframeWithBlocklistedFeatureNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe that contains a blocklisted feature.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b)")));
+
+  RenderFrameHostWrapper rfh(
+      current_frame_host()->child_at(0)->current_frame_host());
+
+  ASSERT_TRUE(AddBlocklistedFeature(rfh.get()));
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page with the unsupported feature should be deleted (not cached).
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
+
+  // Go back.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestoredDueToBlocklistedFeature(FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, UnloadHandlerPresent) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -3103,7 +3170,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheFencedFrameBrowserTest,
   content::RenderFrameHostImpl* fenced_frame_host =
       static_cast<content::RenderFrameHostImpl*>(
           fenced_frame_test_helper().CreateFencedFrame(
-              web_contents()->GetMainFrame(), url_b));
+              web_contents()->GetPrimaryMainFrame(), url_b));
   RenderFrameHostWrapper fenced_frame_host_wrapper(fenced_frame_host);
 
   // 3) Navigate to C on the fenced frame host.

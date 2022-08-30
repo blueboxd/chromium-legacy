@@ -55,7 +55,7 @@ class TableViewTestHelper {
 
   size_t visible_col_count() { return table_->visible_columns().size(); }
 
-  int GetActiveVisibleColumnIndex() {
+  absl::optional<size_t> GetActiveVisibleColumnIndex() {
     return table_->GetActiveVisibleColumnIndex();
   }
 
@@ -116,7 +116,7 @@ class TableViewTestHelper {
     expected_bounds.push_back(header_row);
 
     // Generate the bounds for the table rows and cells.
-    for (int row_index = 0; row_index < table_->GetRowCount(); row_index++) {
+    for (size_t row_index = 0; row_index < table_->GetRowCount(); row_index++) {
       auto table_row = std::vector<gfx::Rect>();
       gfx::Rect table_row_bounds =
           table_->CalculateTableRowAccessibilityBounds(row_index);
@@ -137,7 +137,9 @@ class TableViewTestHelper {
   }
 
  private:
-  raw_ptr<TableView> table_;
+  // TODO(crbug.com/1298696): views_unittests breaks with MTECheckedPtr
+  // enabled. Triage.
+  raw_ptr<TableView, DegradeToNoOpWhenMTE> table_;
 };
 
 namespace {
@@ -167,34 +169,34 @@ class TestTableModel2 : public ui::TableModel {
   TestTableModel2& operator=(const TestTableModel2&) = delete;
 
   // Adds a new row at index |row| with values |c1_value| and |c2_value|.
-  void AddRow(int row, int c1_value, int c2_value);
+  void AddRow(size_t row, int c1_value, int c2_value);
 
   // Adds new rows starting from |row| to |row| + |length| with the value
   // of |row| times the |value_multiplier|. The |value_multiplier| can be used
   // to distinguish these rows from the rest.
-  void AddRows(int row, int length, int value_multiplier);
+  void AddRows(size_t row, size_t length, int value_multiplier);
 
   // Removes the row at index |row|.
-  void RemoveRow(int row);
+  void RemoveRow(size_t row);
 
   // Removes all the rows starting from |row| to |row| + |length|.
-  void RemoveRows(int row, int length);
+  void RemoveRows(size_t row, size_t length);
 
   // Changes the values of the row at |row|.
-  void ChangeRow(int row, int c1_value, int c2_value);
+  void ChangeRow(size_t row, int c1_value, int c2_value);
 
   // Reorders rows in the model.
-  void MoveRows(int row_from, int length, int row_to);
+  void MoveRows(size_t row_from, size_t length, size_t row_to);
 
   // Allows overriding the tooltip for testing.
   void SetTooltip(const std::u16string& tooltip);
 
   // ui::TableModel:
-  int RowCount() override;
-  std::u16string GetText(int row, int column_id) override;
-  std::u16string GetTooltip(int row) override;
+  size_t RowCount() override;
+  std::u16string GetText(size_t row, int column_id) override;
+  std::u16string GetTooltip(size_t row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
-  int CompareValues(int row1, int row2, int column_id) override;
+  int CompareValues(size_t row1, size_t row2, int column_id) override;
 
  private:
   raw_ptr<ui::TableModelObserver> observer_ = nullptr;
@@ -212,8 +214,8 @@ TestTableModel2::TestTableModel2() {
   AddRow(3, 3, 0);
 }
 
-void TestTableModel2::AddRow(int row, int c1_value, int c2_value) {
-  DCHECK(row >= 0 && row <= static_cast<int>(rows_.size()));
+void TestTableModel2::AddRow(size_t row, int c1_value, int c2_value) {
+  DCHECK(row <= rows_.size());
   std::vector<int> new_row;
   new_row.push_back(c1_value);
   new_row.push_back(c2_value);
@@ -222,14 +224,13 @@ void TestTableModel2::AddRow(int row, int c1_value, int c2_value) {
     observer_->OnItemsAdded(row, 1);
 }
 
-void TestTableModel2::AddRows(int row, int length, int value_multiplier) {
-  DCHECK(row >= 0 && length >= 0);
+void TestTableModel2::AddRows(size_t row, size_t length, int value_multiplier) {
   // Do not DCHECK here since we are testing the OnItemsAdded callback.
-  if (row >= 0 && row <= static_cast<int>(rows_.size())) {
-    for (int i = row; i < row + length; i++) {
+  if (row <= rows_.size()) {
+    for (size_t i = row; i < row + length; i++) {
       std::vector<int> new_row;
-      new_row.push_back(i + value_multiplier);
-      new_row.push_back(i + value_multiplier);
+      new_row.push_back(static_cast<int>(i) + value_multiplier);
+      new_row.push_back(static_cast<int>(i) + value_multiplier);
       rows_.insert(rows_.begin() + i, new_row);
     }
   }
@@ -238,39 +239,36 @@ void TestTableModel2::AddRows(int row, int length, int value_multiplier) {
     observer_->OnItemsAdded(row, length);
 }
 
-void TestTableModel2::RemoveRow(int row) {
-  DCHECK(row >= 0 && row < static_cast<int>(rows_.size()));
+void TestTableModel2::RemoveRow(size_t row) {
+  DCHECK(row < rows_.size());
   rows_.erase(rows_.begin() + row);
   if (observer_)
     observer_->OnItemsRemoved(row, 1);
 }
 
-void TestTableModel2::RemoveRows(int row, int length) {
-  DCHECK(row >= 0 && length >= 0);
-  if (row >= 0 && row <= static_cast<int>(rows_.size())) {
-    rows_.erase(rows_.begin() + row,
-                rows_.begin() + base::clamp(row + length, 0,
-                                            static_cast<int>(rows_.size())));
+void TestTableModel2::RemoveRows(size_t row, size_t length) {
+  if (row <= rows_.size()) {
+    rows_.erase(
+        rows_.begin() + row,
+        rows_.begin() + base::clamp(row + length, size_t{0}, rows_.size()));
   }
 
   if (observer_ && length > 0)
     observer_->OnItemsRemoved(row, length);
 }
 
-void TestTableModel2::ChangeRow(int row, int c1_value, int c2_value) {
-  DCHECK(row >= 0 && row < static_cast<int>(rows_.size()));
+void TestTableModel2::ChangeRow(size_t row, int c1_value, int c2_value) {
+  DCHECK(row < rows_.size());
   rows_[row][0] = c1_value;
   rows_[row][1] = c2_value;
   if (observer_)
     observer_->OnItemsChanged(row, 1);
 }
 
-void TestTableModel2::MoveRows(int row_from, int length, int row_to) {
-  DCHECK_GT(length, 0);
-  DCHECK_GE(row_from, 0);
-  DCHECK_LE(row_from + length, static_cast<int>(rows_.size()));
-  DCHECK_GE(row_to, 0);
-  DCHECK_LE(row_to + length, static_cast<int>(rows_.size()));
+void TestTableModel2::MoveRows(size_t row_from, size_t length, size_t row_to) {
+  DCHECK_GT(length, 0u);
+  DCHECK_LE(row_from + length, rows_.size());
+  DCHECK_LE(row_to + length, rows_.size());
 
   auto old_start = rows_.begin() + row_from;
   std::vector<std::vector<int>> temp(old_start, old_start + length);
@@ -284,15 +282,15 @@ void TestTableModel2::SetTooltip(const std::u16string& tooltip) {
   tooltip_ = tooltip;
 }
 
-int TestTableModel2::RowCount() {
-  return static_cast<int>(rows_.size());
+size_t TestTableModel2::RowCount() {
+  return rows_.size();
 }
 
-std::u16string TestTableModel2::GetText(int row, int column_id) {
+std::u16string TestTableModel2::GetText(size_t row, int column_id) {
   return base::NumberToString16(rows_[row][column_id]);
 }
 
-std::u16string TestTableModel2::GetTooltip(int row) {
+std::u16string TestTableModel2::GetTooltip(size_t row) {
   return tooltip_ ? *tooltip_ : u"Tooltip" + base::NumberToString16(row);
 }
 
@@ -300,14 +298,14 @@ void TestTableModel2::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
-int TestTableModel2::CompareValues(int row1, int row2, int column_id) {
+int TestTableModel2::CompareValues(size_t row1, size_t row2, int column_id) {
   return rows_[row1][column_id] - rows_[row2][column_id];
 }
 
 // Returns the view to model mapping as a string.
 std::string GetViewToModelAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->GetRowCount(); ++i) {
+  for (size_t i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += " ";
     result += base::NumberToString(table->ViewToModel(i));
@@ -318,7 +316,7 @@ std::string GetViewToModelAsString(TableView* table) {
 // Returns the model to view mapping as a string.
 std::string GetModelToViewAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->GetRowCount(); ++i) {
+  for (size_t i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += " ";
     result += base::NumberToString(table->ModelToView(i));
@@ -330,7 +328,7 @@ std::string GetModelToViewAsString(TableView* table) {
 // scrolled out of view are included; hidden columns are excluded.
 std::string GetRowsInViewOrderAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->GetRowCount(); ++i) {
+  for (size_t i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += ", ";  // Comma between each row.
 
@@ -608,7 +606,10 @@ class TableViewTest : public ViewsTestBase,
   std::unique_ptr<TestTableModel2> model_;
 
   // Owned by |parent_|.
-  raw_ptr<TableView> table_ = nullptr;
+  //
+  // TODO(crbug.com/1298696): views_unittests breaks with MTECheckedPtr
+  // enabled. Triage.
+  raw_ptr<TableView, DegradeToNoOpWhenMTE> table_ = nullptr;
 
   std::unique_ptr<TableViewTestHelper> helper_;
 
@@ -641,7 +642,7 @@ TEST_P(TableViewTest, RebuildVirtualAccessibilityChildren) {
   EXPECT_TRUE(data.HasState(ax::mojom::State::kFocusable));
   EXPECT_EQ(ax::mojom::Restriction::kReadOnly, data.GetRestriction());
   EXPECT_EQ(table_->GetRowCount(),
-            static_cast<int>(
+            static_cast<size_t>(
                 data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount)));
   EXPECT_EQ(helper_->visible_col_count(),
             static_cast<size_t>(data.GetIntAttribute(
@@ -664,15 +665,15 @@ TEST_P(TableViewTest, RebuildVirtualAccessibilityChildren) {
                        ax::mojom::IntAttribute::kTableCellColumnIndex));
   }
 
-  int i = 0;
+  size_t i = 0;
   for (auto child_iter = view_accessibility.virtual_children().begin() + 1;
        i < table_->GetRowCount(); ++child_iter, ++i) {
     const auto& row = *child_iter;
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
     EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
-    EXPECT_EQ(
-        i, row_data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex));
+    EXPECT_EQ(i, static_cast<size_t>(row_data.GetIntAttribute(
+                     ax::mojom::IntAttribute::kTableRowIndex)));
     ASSERT_FALSE(row_data.HasState(ax::mojom::State::kInvisible));
 
     ASSERT_EQ(helper_->visible_col_count(), row->children().size());
@@ -681,8 +682,8 @@ TEST_P(TableViewTest, RebuildVirtualAccessibilityChildren) {
       ASSERT_TRUE(cell);
       const ui::AXNodeData& cell_data = cell->GetData();
       EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
-      EXPECT_EQ(i, cell_data.GetIntAttribute(
-                       ax::mojom::IntAttribute::kTableCellRowIndex));
+      EXPECT_EQ(i, static_cast<size_t>(cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellRowIndex)));
       EXPECT_EQ(j++, cell_data.GetIntAttribute(
                          ax::mojom::IntAttribute::kTableCellColumnIndex));
       ASSERT_FALSE(cell_data.HasState(ax::mojom::State::kInvisible));
@@ -723,26 +724,26 @@ TEST_P(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
 }
 
 TEST_P(TableViewTest, GetVirtualAccessibilityBodyRow) {
-  for (int i = 0; i < table_->GetRowCount(); ++i) {
+  for (size_t i = 0; i < table_->GetRowCount(); ++i) {
     const AXVirtualView* row = helper_->GetVirtualAccessibilityBodyRow(i);
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
     EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
-    EXPECT_EQ(i, static_cast<int>(row_data.GetIntAttribute(
+    EXPECT_EQ(i, static_cast<size_t>(row_data.GetIntAttribute(
                      ax::mojom::IntAttribute::kTableRowIndex)));
   }
 }
 
 TEST_P(TableViewTest, GetVirtualAccessibilityCell) {
-  for (int i = 0; i < table_->GetRowCount(); ++i) {
-    for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
+  for (size_t i = 0; i < table_->GetRowCount(); ++i) {
+    for (size_t j = 0; j < helper_->visible_col_count(); ++j) {
       const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(i, j);
       ASSERT_TRUE(cell);
       const ui::AXNodeData& cell_data = cell->GetData();
       EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
-      EXPECT_EQ(i, static_cast<int>(cell_data.GetIntAttribute(
+      EXPECT_EQ(i, static_cast<size_t>(cell_data.GetIntAttribute(
                        ax::mojom::IntAttribute::kTableCellRowIndex)));
-      EXPECT_EQ(j, static_cast<int>(cell_data.GetIntAttribute(
+      EXPECT_EQ(j, static_cast<size_t>(cell_data.GetIntAttribute(
                        ax::mojom::IntAttribute::kTableCellColumnIndex)));
     }
   }
@@ -860,12 +861,12 @@ TEST_P(TableViewTest, ResizeViaKeyboard) {
   EXPECT_NE(0, x);
 
   // Table starts off with no visible column being active.
-  ASSERT_EQ(-1, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_FALSE(helper_->GetActiveVisibleColumnIndex().has_value());
 
   ui::ListSelectionModel new_selection;
   new_selection.SetSelectedIndex(1);
   helper_->SetSelectionModel(new_selection);
-  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
 
   PressKey(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
   // This should shrink the first column and pull the second column in.
@@ -1062,12 +1063,12 @@ TEST_P(TableViewTest, SortOnSpaceBar) {
   table_->RequestFocus();
   ASSERT_TRUE(table_->sort_descriptors().empty());
   // Table starts off with no visible column being active.
-  ASSERT_EQ(-1, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_FALSE(helper_->GetActiveVisibleColumnIndex().has_value());
 
   ui::ListSelectionModel new_selection;
   new_selection.SetSelectedIndex(1);
   helper_->SetSelectionModel(new_selection);
-  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
 
   PressKey(ui::VKEY_SPACE);
   ASSERT_EQ(1u, table_->sort_descriptors().size());
@@ -1080,7 +1081,7 @@ TEST_P(TableViewTest, SortOnSpaceBar) {
   EXPECT_FALSE(table_->sort_descriptors()[0].ascending);
 
   PressKey(ui::VKEY_RIGHT);
-  ASSERT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
 
   PressKey(ui::VKEY_SPACE);
   ASSERT_EQ(2u, table_->sort_descriptors().size());
@@ -1102,15 +1103,15 @@ TEST_P(TableViewTest, ActiveCellBoundsFollowColumnSorting) {
   table_->ToggleSortOrder(0);
   ClickOnRow(0, 0);
   EXPECT_EQ(helper_->GetCellBounds(0, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(0, table_->ViewToModel(0));
+  EXPECT_EQ(0u, table_->ViewToModel(0));
 
   ClickOnRow(1, 0);
   EXPECT_EQ(helper_->GetCellBounds(1, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(1, table_->ViewToModel(1));
+  EXPECT_EQ(1u, table_->ViewToModel(1));
 
   ClickOnRow(2, 0);
   EXPECT_EQ(helper_->GetCellBounds(2, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(2, table_->ViewToModel(2));
+  EXPECT_EQ(2u, table_->ViewToModel(2));
 
   // Toggle the sort order of the second column. The active row will stay in
   // sync with the view index, meanwhile the model's change which shows that
@@ -1118,15 +1119,15 @@ TEST_P(TableViewTest, ActiveCellBoundsFollowColumnSorting) {
   table_->ToggleSortOrder(1);
   ClickOnRow(0, 0);
   EXPECT_EQ(helper_->GetCellBounds(0, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(3, table_->ViewToModel(0));
+  EXPECT_EQ(3u, table_->ViewToModel(0));
 
   ClickOnRow(1, 0);
   EXPECT_EQ(helper_->GetCellBounds(1, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(0, table_->ViewToModel(1));
+  EXPECT_EQ(0u, table_->ViewToModel(1));
 
   ClickOnRow(2, 0);
   EXPECT_EQ(helper_->GetCellBounds(2, 0), helper_->GetActiveCellBounds());
-  EXPECT_EQ(1, table_->ViewToModel(2));
+  EXPECT_EQ(1u, table_->ViewToModel(2));
 
   // Verifying invalid active indexes return an empty rect.
   new_selection.Clear();
@@ -1161,11 +1162,11 @@ class TableGrouperImpl : public TableGrouper {
   TableGrouperImpl(const TableGrouperImpl&) = delete;
   TableGrouperImpl& operator=(const TableGrouperImpl&) = delete;
 
-  void SetRanges(const std::vector<int>& ranges) { ranges_ = ranges; }
+  void SetRanges(const std::vector<size_t>& ranges) { ranges_ = ranges; }
 
   // TableGrouper overrides:
-  void GetGroupRange(int model_index, GroupRange* range) override {
-    int offset = 0;
+  void GetGroupRange(size_t model_index, GroupRange* range) override {
+    size_t offset = 0;
     size_t range_index = 0;
     for (; range_index < ranges_.size() && offset < model_index; ++range_index)
       offset += ranges_[range_index];
@@ -1180,7 +1181,7 @@ class TableGrouperImpl : public TableGrouper {
   }
 
  private:
-  std::vector<int> ranges_;
+  std::vector<size_t> ranges_;
 };
 
 }  // namespace
@@ -1193,10 +1194,7 @@ TEST_P(TableViewTest, Grouping) {
   // B 2
   //   3
   TableGrouperImpl grouper;
-  std::vector<int> ranges;
-  ranges.push_back(2);
-  ranges.push_back(2);
-  grouper.SetRanges(ranges);
+  grouper.SetRanges({2, 2});
   table_->SetGrouper(&grouper);
 
   // Toggle the sort order of the first column, shouldn't change anything.
@@ -1520,11 +1518,7 @@ TEST_P(TableViewTest, KeyUpDown) {
   //   3
   model_->AddRow(2, 5, 0);
   TableGrouperImpl grouper;
-  std::vector<int> ranges;
-  ranges.push_back(2);
-  ranges.push_back(1);
-  ranges.push_back(2);
-  grouper.SetRanges(ranges);
+  grouper.SetRanges({2, 1, 2});
   table_->SetGrouper(&grouper);
 
   TableViewObserverImpl observer;
@@ -1596,7 +1590,7 @@ TEST_P(TableViewTest, KeyUpDown) {
 
   EXPECT_EQ("2 3 4 0 1", GetViewToModelAsString(table_));
 
-  table_->Select(-1);
+  table_->Select(absl::nullopt);
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   observer.GetChangedCountAndClear();
@@ -1668,89 +1662,89 @@ TEST_P(TableViewTest, KeyLeftRight) {
   table_->RequestFocus();
 
   // Initially no active visible column.
-  EXPECT_EQ(-1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_FALSE(helper_->GetActiveVisibleColumnIndex().has_value());
 
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   helper_->SetSelectionModel(ui::ListSelectionModel());
-  EXPECT_EQ(-1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_FALSE(helper_->GetActiveVisibleColumnIndex().has_value());
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
 
   PressKey(ui::VKEY_LEFT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   ui::ListSelectionModel new_selection;
   new_selection.SetSelectedIndex(1);
   helper_->SetSelectionModel(new_selection);
-  EXPECT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   PressKey(ui::VKEY_LEFT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   PressKey(ui::VKEY_LEFT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   table_->SetColumnVisibility(0, false);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   // Since the first column was hidden, the active visible column should not
   // advance.
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   // If visibility to the first column is restored, the active visible column
   // should be unchanged because columns are always added to the end.
   table_->SetColumnVisibility(0, true);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
 
   // If visibility to the first column is removed, the active visible column
   // should be decreased by one.
   table_->SetColumnVisibility(0, false);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   PressKey(ui::VKEY_LEFT);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   table_->SetColumnVisibility(0, true);
-  EXPECT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
@@ -1767,8 +1761,7 @@ TEST_P(TableViewTest, HomeEnd) {
   //   3
   model_->AddRow(2, 5, 0);
   TableGrouperImpl grouper;
-  std::vector<int> ranges{2, 1, 2};
-  grouper.SetRanges(ranges);
+  grouper.SetRanges({2, 1, 2});
   table_->SetGrouper(&grouper);
 
   TableViewObserverImpl observer;
@@ -1803,11 +1796,7 @@ TEST_P(TableViewTest, Multiselection) {
   //   3
   model_->AddRow(2, 5, 0);
   TableGrouperImpl grouper;
-  std::vector<int> ranges;
-  ranges.push_back(2);
-  ranges.push_back(1);
-  ranges.push_back(2);
-  grouper.SetRanges(ranges);
+  grouper.SetRanges({2, 1, 2});
   table_->SetGrouper(&grouper);
 
   // Initially no selection.
@@ -1859,11 +1848,7 @@ TEST_P(TableViewTest, MultiselectionWithSort) {
   //   3
   model_->AddRow(2, 5, 0);
   TableGrouperImpl grouper;
-  std::vector<int> ranges;
-  ranges.push_back(2);
-  ranges.push_back(1);
-  ranges.push_back(2);
-  grouper.SetRanges(ranges);
+  grouper.SetRanges({2, 1, 2});
   table_->SetGrouper(&grouper);
 
   // Sort the table descending by column 1, view now looks like:
@@ -2103,19 +2088,19 @@ TEST_P(TableViewTest, TableHeaderColumnAccessibleViewsFocusable) {
   // columns.
   PressKey(ui::VKEY_RIGHT);
   RunPendingMessages();
-  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(0),
             view_accessibility.FocusedVirtualChild());
 
   PressKey(ui::VKEY_RIGHT);
   RunPendingMessages();
-  ASSERT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(1u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(1),
             view_accessibility.FocusedVirtualChild());
 
   PressKey(ui::VKEY_LEFT);
   RunPendingMessages();
-  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  ASSERT_EQ(0u, helper_->GetActiveVisibleColumnIndex());
   EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(0),
             view_accessibility.FocusedVirtualChild());
 }

@@ -60,6 +60,10 @@ export function fileAttachmentTestSuite() {
     await initializePage();
     // Verify the add file label is in the page.
     assertEquals('Add file', getElementContent('#addFileLabel'));
+    // Verify the i18n string is added.
+    assertTrue(page.i18nExists('addFileLabel'));
+    // Verify the replace file label is in the page.
+    assertEquals('Replace', getElementContent('#replaceFileLabel'));
     // The addFileContainer should be visible when no file is selected.
     assertTrue(isVisible(getElement('#addFileContainer')));
     // The replaceFileContainer should be invisible when no file is selected.
@@ -126,7 +130,10 @@ export function fileAttachmentTestSuite() {
 
     // Set selected file manually.
     /** @type {!File} */
-    const fakeFile = /** @type {!File} */ ({name: 'fake.zip'});
+    const fakeFile = /** @type {!File} */ ({
+      name: 'fake.zip',
+      type: 'application/zip',
+    });
     page.setSelectedFileForTesting(fakeFile);
 
     // The selected file name is set properly.
@@ -163,6 +170,7 @@ export function fileAttachmentTestSuite() {
     /** @type {!File} */
     const fakeFile = /** @type {!File} */ ({
       name: 'fake.zip',
+      type: 'application/zip',
       size: MAX_ATTACH_FILE_SIZE,
     });
     page.setSelectedFileForTesting(fakeFile);
@@ -185,6 +193,7 @@ export function fileAttachmentTestSuite() {
     /** @type {!File} */
     const fakeFile = /** @type {!File} */ ({
       name: 'fake.zip',
+      type: 'application/zip',
       size: MAX_ATTACH_FILE_SIZE,
       arrayBuffer: async () => {
         return new Uint8Array(fakeData).buffer;
@@ -216,6 +225,7 @@ export function fileAttachmentTestSuite() {
     /** @type {!File} */
     const fakeFile = /** @type {!File} */ ({
       name: 'fake.zip',
+      type: 'application/zip',
       size: MAX_ATTACH_FILE_SIZE + 1,
       arrayBuffer: async () => {
         return new Uint8Array(fakeData).buffer;
@@ -227,10 +237,38 @@ export function fileAttachmentTestSuite() {
 
     // Error message should be visible.
     assertTrue(getElement('#fileTooBigErrorMessage').open);
+    assertEquals(
+        `Can't upload file larger than 10 MB`,
+        getElementContent('#fileTooBigErrorMessage > #errorMessage'));
     // There should not be a selected file.
     assertEquals('', getElementContent('#selectedFileName'));
     const attachedFile = await page.getAttachedFile();
     // AttachedFile should be null.
     assertTrue(!attachedFile);
+  });
+
+  // Test that files that are image type have a preview.
+  test('imageFilePreview', async () => {
+    await initializePage();
+    const selectFileCheckbox = getElement('#selectFileCheckbox');
+    const fakeData = [12, 11, 99];
+
+    /** @type {!File} */
+    const fakeImageFile = /** @type {!File} */ ({
+      name: 'fake.png',
+      type: 'image/png',
+      size: MAX_ATTACH_FILE_SIZE,
+      arrayBuffer: async () => {
+        return new Uint8Array(fakeData).buffer;
+      },
+    });
+    // getImageUrl_ should return an url when file is image type.
+    const imageUrl = await page.getImageUrl_(fakeImageFile);
+    assertTrue(imageUrl.length > 0);
+    // There should be a preview image.
+    page.selectedImageUrl_ = imageUrl;
+    const selectedImage = getElement('#selectedFileImage');
+    assertTrue(!!selectedImage.src);
+    assertEquals(imageUrl, selectedImage.src);
   });
 }

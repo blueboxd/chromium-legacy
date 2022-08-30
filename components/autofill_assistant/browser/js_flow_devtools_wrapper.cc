@@ -9,6 +9,7 @@
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/js_flow_util.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
@@ -91,6 +92,8 @@ void JsFlowDevtoolsWrapper::OnGetFrameTree(
     std::unique_ptr<page::GetFrameTreeResult> result) {
   if (!result) {
     LOG(ERROR) << "failed to retrieve frame tree";
+    Metrics::RecordJsFlowStartedEvent(
+        Metrics::JsFlowStartedEvent::FAILED_TO_GET_FRAME_TREE);
     init_status_ =
         JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr);
     FinishInit();
@@ -112,6 +115,8 @@ void JsFlowDevtoolsWrapper::OnIsolatedWorldCreated(
     std::unique_ptr<page::CreateIsolatedWorldResult> result) {
   if (!result) {
     LOG(ERROR) << "failed to create isolated world";
+    Metrics::RecordJsFlowStartedEvent(
+        Metrics::JsFlowStartedEvent::FAILED_TO_CREATE_ISOLATED_WORLD);
     init_status_ =
         JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr);
     FinishInit();

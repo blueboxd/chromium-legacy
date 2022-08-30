@@ -63,8 +63,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
-#include "services/network/origin_policy/origin_policy_constants.h"
-#include "services/network/origin_policy/origin_policy_manager.h"
+#include "services/network/network_service_memory_cache_writer.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/corb/orb_impl.h"
@@ -77,7 +76,6 @@
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
@@ -88,7 +86,6 @@
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/http_raw_headers.mojom.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -170,9 +167,10 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
         network::mojom::DataElementDataView::Tag::kChunkedDataPipe) {
       auto& element =
           body->elements_mutable()->at(0).As<DataElementChunkedDataPipe>();
+      const bool has_null_source = element.read_only_once().value();
       auto upload_data_stream =
           std::make_unique<ChunkedDataPipeUploadDataStream>(
-              body, element.ReleaseChunkedDataPipeGetter());
+              body, element.ReleaseChunkedDataPipeGetter(), has_null_source);
       if (element.read_only_once()) {
         upload_data_stream->EnableCache();
       }
@@ -300,39 +298,6 @@ const struct {
     {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
     {"Via", ConcerningHeaderId::kVia},
 };
-
-void ReportFetchUploadStreamingUMA(const net::URLRequest* request,
-                                   bool allow_http1_for_streaming_upload) {
-  // Same as tools/metrics/histograms/enums.xml's.
-  enum class HttpProtocolScheme {
-    kHTTP1_1 = 0,
-    kHTTP2 = 1,
-    kQUIC = 2,
-    kMaxValue = kQUIC
-  } protocol;
-  const auto connection_info = request->response_info().connection_info;
-  switch (net::HttpResponseInfo::ConnectionInfoToCoarse(connection_info)) {
-    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP1:
-      protocol = HttpProtocolScheme::kHTTP1_1;
-      break;
-    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP2:
-      protocol = HttpProtocolScheme::kHTTP2;
-      break;
-    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_QUIC:
-      protocol = HttpProtocolScheme::kQUIC;
-      break;
-    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_OTHER:
-      protocol = HttpProtocolScheme::kHTTP1_1;
-      break;
-  }
-  if (allow_http1_for_streaming_upload) {
-    base::UmaHistogramEnumeration("Net.Fetch.UploadStreamingProtocolAllowH1",
-                                  protocol);
-  } else {
-    base::UmaHistogramEnumeration("Net.Fetch.UploadStreamingProtocolNotAllowH1",
-                                  protocol);
-  }
-}
 
 // Parses AcceptCHFrame and removes client hints already in the headers.
 std::vector<mojom::WebClientHintsType> ComputeAcceptCHFrameHints(
@@ -753,10 +718,7 @@ URLLoader::URLLoader(
   // they should be ignored by CORS checks.
   net::HttpRequestHeaders merged_headers = request.headers;
   merged_headers.MergeFrom(request.cors_exempt_headers);
-  if (request.obey_origin_policy) {
-    origin_policy_manager_ = context.GetOriginPolicyManager();
-    DCHECK(origin_policy_manager_);
-  }
+
   // This should be ensured by the CorsURLLoaderFactory(), which is called
   // before URLLoaders are created.
   DCHECK(AreRequestHeadersSafe(merged_headers));
@@ -945,6 +907,7 @@ class URLLoader::FileOpenerForUpload {
 
     network_context_client_->OnFileUploadRequested(
         process_id_, /*async=*/true, batch_paths,
+        url_loader_->url_request_->url(),
         base::BindOnce(&FileOpenerForUpload::OnFilesForUploadOpened,
                        weak_ptr_factory_.GetWeakPtr(), num_files_to_request));
   }
@@ -988,8 +951,8 @@ void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
     // initializing before getting deleted.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&URLLoader::NotifyCompleted, base::Unretained(this),
-                       net::ERR_ACCESS_DENIED));
+        base::BindOnce(&URLLoader::NotifyCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), net::ERR_ACCESS_DENIED));
     return;
   }
   url_request_->LogBlockedBy("Opening Files");
@@ -1008,7 +971,7 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
     // initializing before getting deleted.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
-                                  base::Unretained(this), error_code));
+                                  weak_ptr_factory_.GetWeakPtr(), error_code));
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -1157,6 +1120,8 @@ void URLLoader::FollowRedirect(
   // Reset the state of the PNA checker - redirects should be treated like new
   // requests by the same client.
   private_network_access_checker_.ResetForRedirect();
+
+  memory_cache_writer_.reset();
 
   // Removing headers can't make the set of pre-existing headers unsafe, but
   // adding headers can.
@@ -1521,6 +1486,14 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
                                        net::SSLCertRequestInfo* cert_info) {
   DCHECK(!client_cert_responder_receiver_.is_bound());
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreUrlFetcherCertRequests) &&
+      factory_params_.is_trusted) {
+    ContinueWithoutCertificate();
+    return;
+  }
+
   if (!url_loader_network_observer_) {
     CancelRequest();
     return;
@@ -1555,10 +1528,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   has_received_response_ = true;
 
   ReportFlaggedResponseCookies();
-  if (has_fetch_streaming_upload_body_) {
-    ReportFetchUploadStreamingUMA(url_request_.get(),
-                                  allow_http1_for_streaming_upload_);
-  }
 
   if (net_error != net::OK) {
     NotifyCompleted(net_error);
@@ -1578,6 +1547,11 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                        weak_ptr_factory_.GetWeakPtr()));
     // |this| may have been deleted.
     return;
+  }
+
+  if (memory_cache_) {
+    memory_cache_writer_ = memory_cache_->MaybeCreateWriter(
+        url_request_.get(), request_destination_, response_);
   }
 
   ContinueOnResponseStarted();
@@ -1667,6 +1641,21 @@ void URLLoader::ContinueOnResponseStarted() {
     return;
   }
 
+  // Enforce FLEDGE auction-only signals -- the renderer process isn't allowed
+  // to read auction-only signals for FLEDGE auctions; only the browser process
+  // is allowed to read those, and only the browser process can issue trusted
+  // requests.
+  std::string fledge_auction_only_signals;
+  if (!factory_params_.is_trusted && response_->headers &&
+      response_->headers->GetNormalizedHeader("X-FLEDGE-Auction-Only",
+                                              &fledge_auction_only_signals) &&
+      base::EqualsCaseInsensitiveASCII(fledge_auction_only_signals, "true")) {
+    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
+    url_request_->AbortAndCloseConnection();
+    DeleteSelf();
+    return;
+  }
+
   // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
   // Read Blocking / CORB).
   if (factory_params_.is_corb_enabled) {
@@ -1708,42 +1697,6 @@ void URLLoader::ContinueOnResponseStarted() {
       // treat the response as "text/plain".  This is the most secure option.
       response_->mime_type.assign("text/plain");
     }
-  }
-
-  // If necessary, retrieve the associated origin policy, before sending the
-  // response to the client.
-  if (origin_policy_manager_ && url_request_->response_headers()) {
-    // The request should have been rejected in IsolationInfo if this were
-    // empty.
-    DCHECK(!url_request_->isolation_info().IsEmpty());
-
-    absl::optional<std::string> origin_policy_header;
-    std::string origin_policy_header_value;
-    if (url_request_->response_headers()->GetNormalizedHeader(
-            "origin-policy", &origin_policy_header_value)) {
-      origin_policy_header = origin_policy_header_value;
-    }
-
-    OriginPolicyManager::RetrieveOriginPolicyCallback
-        origin_policy_manager_done =
-            base::BindOnce(&URLLoader::OnOriginPolicyManagerRetrieveDone,
-                           weak_ptr_factory_.GetWeakPtr());
-
-    // Create IsolationInfo as if this were an uncredentialed subresource
-    // request of the original URL.
-    net::IsolationInfo isolation_info = net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kOther,
-        url_request_->isolation_info().top_frame_origin().value(),
-        url_request_->isolation_info().frame_origin().value(),
-        net::SiteForCookies());
-    origin_policy_manager_->RetrieveOriginPolicy(
-        url::Origin::Create(url_request_->url()), isolation_info,
-        origin_policy_header, std::move(origin_policy_manager_done));
-
-    // The callback will continue by calling
-    // `StartReading()` after retrieving the origin
-    // policy.
-    return;
   }
 
   StartReading();
@@ -1799,6 +1752,11 @@ void URLLoader::ReadMore() {
 void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
   DCHECK(read_in_progress_);
   read_in_progress_ = false;
+
+  if (memory_cache_writer_ && pending_write_) {
+    memory_cache_writer_->OnDataRead(
+        pending_write_->buffer() + pending_write_buffer_offset_, num_bytes);
+  }
 
   size_t new_data_offset = pending_write_buffer_offset_;
   if (num_bytes > 0) {
@@ -2143,6 +2101,9 @@ void URLLoader::NotifyCompleted(int error_code) {
 
     status.pervasive_payload_requested = pervasive_payload_requested_;
 
+    if (memory_cache_writer_)
+      memory_cache_writer_->OnCompleted(status);
+
     url_loader_client_.Get()->OnComplete(status);
   }
 
@@ -2222,19 +2183,10 @@ void URLLoader::NotifyEarlyResponse(
   mojom::IPAddressSpace ip_address_space =
       CalculateClientAddressSpace(url_request_->url(), params);
 
-  // Populate origin trial tokens.
-  std::vector<std::string> origin_trial_tokens;
-  size_t iter = 0;
-  std::string value;
-  while (headers->EnumerateHeader(&iter, "Origin-Trial", &value)) {
-    origin_trial_tokens.push_back(value);
-  }
-
   mojom::ReferrerPolicy referrer_policy = ParseReferrerPolicy(*headers);
 
-  url_loader_client_.Get()->OnReceiveEarlyHints(
-      mojom::EarlyHints::New(std::move(parsed_headers), referrer_policy,
-                             ip_address_space, std::move(origin_trial_tokens)));
+  url_loader_client_.Get()->OnReceiveEarlyHints(mojom::EarlyHints::New(
+      std::move(parsed_headers), referrer_policy, ip_address_space));
 }
 
 void URLLoader::SetRawRequestHeadersAndNotify(
@@ -2443,11 +2395,15 @@ void URLLoader::CompleteBlockedResponse(
   status.decoded_body_length = 0;
   status.should_report_corb_blocking = should_report_corb_blocking;
   status.blocked_by_response_reason = reason;
+
+  if (memory_cache_writer_)
+    memory_cache_writer_->OnCompleted(status);
   url_loader_client_.Get()->OnComplete(status);
 
   // Reset the connection to the URLLoaderClient.  This helps ensure that we
   // won't accidentally leak any data to the renderer from this point on.
   url_loader_client_.Reset();
+  memory_cache_writer_.reset();
 }
 
 URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb(
@@ -2562,13 +2518,6 @@ void URLLoader::StartReading() {
 
   // Start reading...
   ReadMore();
-}
-
-void URLLoader::OnOriginPolicyManagerRetrieveDone(
-    const OriginPolicy& origin_policy) {
-  response_->origin_policy = origin_policy;
-
-  StartReading();
 }
 
 bool URLLoader::ShouldForceIgnoreSiteForCookies(

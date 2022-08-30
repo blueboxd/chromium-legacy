@@ -27,7 +27,7 @@ const CGFloat kIconSize = 56;
 @synthesize countLabel = _countLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame placeholder:NO];
+  self = [super initWithFrame:frame];
   if (self) {
     _iconView = [[UIImageView alloc] initWithFrame:self.bounds];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -84,7 +84,7 @@ const CGFloat kIconSize = 56;
     _countContainer = [[UIView alloc] init];
     _countContainer.backgroundColor = [UIColor colorNamed:kBackgroundColor];
     // Unfortunately, simply setting a CALayer borderWidth and borderColor
-    // on |_countContainer|, and setting a background color on |_countLabel|
+    // on `_countContainer`, and setting a background color on `_countLabel`
     // will result in the inner color bleeeding thru to the outside.
     _countContainer.layer.cornerRadius = kCountBorderWidth / 2;
     _countContainer.layer.masksToBounds = YES;

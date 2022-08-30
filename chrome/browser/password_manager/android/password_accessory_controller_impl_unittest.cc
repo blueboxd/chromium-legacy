@@ -66,7 +66,6 @@ using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using base::test::RunOnceCallback;
 using device_reauth::BiometricAuthRequester;
-using device_reauth::BiometricsAvailability;
 using device_reauth::MockBiometricAuthenticator;
 using password_manager::CreateEntry;
 using password_manager::CredentialCache;
@@ -919,7 +918,7 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfNoAuthAvailable) {
   EXPECT_CALL(*password_client(), GetBiometricAuthenticator)
       .WillOnce(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kNotEnrolled));
+      .WillOnce(Return(false));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
                                    Eq(selected_field.display_text())));
@@ -948,9 +947,10 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfAuthSuccessful) {
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+      .WillOnce(Return(true));
   EXPECT_CALL(*mock_authenticator_.get(),
-              Authenticate(BiometricAuthRequester::kFallbackSheet, _))
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _,
+                           /*use_last_valid_auth=*/true))
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/true));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
@@ -980,9 +980,10 @@ TEST_F(PasswordAccessoryControllerTest, DoesntFillPasswordIfAuthFails) {
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+      .WillOnce(Return(true));
   EXPECT_CALL(*mock_authenticator_.get(),
-              Authenticate(BiometricAuthRequester::kFallbackSheet, _))
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _,
+                           /*use_last_valid_auth=*/true))
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/false));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
@@ -1013,9 +1014,10 @@ TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+      .WillOnce(Return(true));
   EXPECT_CALL(*mock_authenticator_.get(),
-              Authenticate(BiometricAuthRequester::kFallbackSheet, _));
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _,
+                           /*use_last_valid_auth=*/true));
 
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),

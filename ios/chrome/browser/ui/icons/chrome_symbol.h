@@ -42,33 +42,33 @@ extern NSString* const kFailMarkCircleFillSymbol;
 extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;
 
-// Returns a SF symbol named |symbolName| configured with the given
-// |configuration|.
+// Returns a SF symbol named `symbolName` configured with the given
+// `configuration`.
 UIImage* DefaultSymbolWithConfiguration(NSString* symbolName,
                                         UIImageConfiguration* configuration);
 
-// Returns a custom symbol named |symbolName| configured with the given
-// |configuration|.
+// Returns a custom symbol named `symbolName` configured with the given
+// `configuration`.
 UIImage* CustomSymbolWithConfiguration(NSString* symbolName,
                                        UIImageConfiguration* configuration);
 
-// Returns a SF symbol named |symbolName| configured with the default
-// configuration and the given |pointSize|.
-UIImage* DefaultSymbolWithPointSize(NSString* symbolName, NSInteger pointSize);
+// Returns a SF symbol named `symbolName` configured with the default
+// configuration and the given `pointSize`.
+UIImage* DefaultSymbolWithPointSize(NSString* symbolName, CGFloat pointSize);
 
-// Returns a custom symbol named |symbolName| configured with the default
-// configuration and the given |pointSize|.
-UIImage* CustomSymbolWithPointSize(NSString* symbolName, NSInteger pointSize);
+// Returns a custom symbol named `symbolName` configured with the default
+// configuration and the given `pointSize`.
+UIImage* CustomSymbolWithPointSize(NSString* symbolName, CGFloat pointSize);
 
-// Returns a SF symbol named |symbolName| as a template image, configured with
-// the default configuration and the given |pointSize|.
+// Returns a SF symbol named `symbolName` as a template image, configured with
+// the default configuration and the given `pointSize`.
 UIImage* DefaultSymbolTemplateWithPointSize(NSString* symbolName,
-                                            NSInteger pointSize);
+                                            CGFloat pointSize);
 
-// Returns a custom symbol named |symbolName| as a template image, configured
-// with the default configuration and the given |pointSize|.
+// Returns a custom symbol named `symbolName` as a template image, configured
+// with the default configuration and the given `pointSize`.
 UIImage* CustomSymbolTemplateWithPointSize(NSString* symbolName,
-                                           NSInteger pointSize);
+                                           CGFloat pointSize);
 
 // Returns YES if the kUseSFSymbols flag is enabled.
 bool UseSymbols();

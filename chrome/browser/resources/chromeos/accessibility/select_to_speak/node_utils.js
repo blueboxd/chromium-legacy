@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {RectUtil} from '/common/rect_util.js';
 import {ParagraphUtils} from '/select_to_speak/paragraph_utils.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
@@ -478,8 +479,7 @@ export class NodeUtils {
     return AutomationUtil.findAllNodes(
         blockParent, constants.Dir.FORWARD,
         /* pred= */ NodeUtils.isValidLeafNode, /* opt_restrictions= */ {
-          root: (node) =>
-              node === blockParent,  // Only traverse within the block
+          root: node => node === blockParent,  // Only traverse within the block
         });
   }
 

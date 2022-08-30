@@ -43,6 +43,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
@@ -282,6 +283,11 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   EXPECT_FALSE(MigratePathFromOldFormat(
       profile_.get(), DownloadPrefs::GetDefaultDownloadDirectory(),
       FilePath::FromUTF8Unsafe("/home/chronos/user/dl"), &path));
+
+  // Won't migrate because old_path is already migrated.
+  EXPECT_FALSE(
+      MigratePathFromOldFormat(profile_.get(), kMyFilesFolder.DirName(),
+                               kMyFilesFolder.AppendASCII("a/b"), &path));
 }
 
 TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
@@ -325,6 +331,7 @@ TEST_F(FileManagerPathUtilTest, ConvertBetweenFileSystemURLAndPathInsideVM) {
 
   // Initialize DBUS and running container.
   chromeos::DBusThreadManager::Initialize();
+  ash::ChunneldClient::InitializeFake();
   ash::CiceroneClient::InitializeFake();
   ash::ConciergeClient::InitializeFake();
   ash::SeneschalClient::InitializeFake();
@@ -501,6 +508,7 @@ TEST_F(FileManagerPathUtilTest, ConvertBetweenFileSystemURLAndPathInsideVM) {
   profile_.reset();
   ash::SeneschalClient::Shutdown();
   ash::ConciergeClient::Shutdown();
+  ash::ChunneldClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 
@@ -1156,7 +1164,7 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
   volume_manager->AddVolumeForTesting(Volume::CreateForSftpGuestOs(
       "guest_os_label", base::FilePath("/mount_path/guest_os"),
       base::FilePath("/remote_mount_path/guest_os"),
-      guest_os::VmType::ApplicationList_VmType_TERMINA));
+      guest_os::VmType::TERMINA));
 
   volume_manager->AddVolumeForTesting(Volume::CreateForMTP(
       base::FilePath("/mount_path/mtp"), "mtp_label", false));

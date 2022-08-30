@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "base/memory/raw_ptr.h"
 
 #include <cstddef>
 #include <memory>
@@ -294,7 +295,7 @@ class WaylandWindowTest : public WaylandTest {
     return nullptr;
   }
 
-  wl::MockXdgSurface* xdg_surface_;
+  raw_ptr<wl::MockXdgSurface> xdg_surface_;
 
   MouseEvent test_mouse_event_;
 };
@@ -309,7 +310,7 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeConfiguresWaylandWindow) {
   uint32_t serial = 0;
   auto state = InitializeWlArrayWithActivatedState();
 
-  window_->set_update_visual_size_immediately(false);
+  window_->set_update_visual_size_immediately_for_testing(false);
   auto* mock_surface = server_.GetObject<wl::MockSurface>(
       window_->root_surface()->GetSurfaceId());
 
@@ -339,8 +340,8 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeConfiguresWaylandWindow) {
 // WaylandSurface state changes are sent to wayland compositor when
 // ApplyPendingState() is called.
 TEST_P(WaylandWindowTest, ApplyPendingStatesAndCommit) {
-  window_->set_update_visual_size_immediately(false);
-  window_->set_apply_pending_state_on_update_visual_size(false);
+  window_->set_update_visual_size_immediately_for_testing(false);
+  window_->set_apply_pending_state_on_update_visual_size_for_testing(false);
 
   auto* mock_surface = server_.GetObject<wl::MockSurface>(
       window_->root_surface()->GetSurfaceId());
@@ -465,7 +466,7 @@ TEST_P(WaylandWindowTest, DisregardUnpassedWindowConfigure) {
   const auto kNormalBounds3 = gfx::Rect{0, 0, 700, 400};
   uint32_t serial = 1;
 
-  window_->set_update_visual_size_immediately(false);
+  window_->set_update_visual_size_immediately_for_testing(false);
 
   // Send 3 configures, and call UpdateVisualSize out of order. The out-of-order
   // UpdateVisualSize(kNormalBounds2) should disregarded b/c kNormalBounds2
@@ -504,7 +505,7 @@ TEST_P(WaylandWindowTest, MismatchUpdateVisualSize) {
   const auto kNormalBounds3 = gfx::Rect{0, 0, 700, 400};
   uint32_t serial = 1;
 
-  window_->set_update_visual_size_immediately(false);
+  window_->set_update_visual_size_immediately_for_testing(false);
   auto* mock_surface = server_.GetObject<wl::MockSurface>(
       window_->root_surface()->GetSurfaceId());
 
@@ -536,7 +537,7 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeClearsPreviousUnackedConfigures) {
   uint32_t serial = 1;
   auto state = InitializeWlArrayWithActivatedState();
 
-  window_->set_update_visual_size_immediately(false);
+  window_->set_update_visual_size_immediately_for_testing(false);
 
   // Send 3 configures. Calling UpdateVisualSize(kNormalBounds3) will cause the
   // kNormalBounds3 to be passed onto UI compositor. Hence, kNormalBounds1/2/3
@@ -1955,7 +1956,7 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
   ASSERT_TRUE(surface);
 
   struct {
-    wl::TestOutput* output;
+    raw_ptr<wl::TestOutput> output;
     const char* label;
   } screen[] = {{main_output, "main output"},
                 {secondary_output, "secondary output"}};
@@ -2875,16 +2876,22 @@ TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
 
     Sync();
 
-    constexpr uint32_t enter_serial = 1;
-    constexpr uint32_t button_press_serial = 2;
-    constexpr uint32_t button_release_serial = 3;
+    constexpr uint32_t keyboard_enter_serial = 1;
+    constexpr uint32_t pointer_enter_serial = 2;
+    constexpr uint32_t button_press_serial = 3;
+    constexpr uint32_t button_release_serial = 4;
 
     wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
         window_->root_surface()->GetSurfaceId());
     struct wl_array empty;
     wl_array_init(&empty);
-    wl_keyboard_send_enter(server_.seat()->keyboard()->resource(), enter_serial,
-                           toplevel_surface->resource(), &empty);
+    wl_keyboard_send_enter(server_.seat()->keyboard()->resource(),
+                           keyboard_enter_serial, toplevel_surface->resource(),
+                           &empty);
+
+    wl_pointer_send_enter(server_.seat()->pointer()->resource(),
+                          pointer_enter_serial, toplevel_surface->resource(),
+                          wl_fixed_from_int(0), wl_fixed_from_int(0));
 
     // Send two events - button down and button up.
     wl_pointer_send_button(server_.seat()->pointer()->resource(),
@@ -3484,7 +3491,8 @@ TEST_P(WaylandWindowTest, StartWithMinimized) {
   // The window geometry has to be set to the current bounds of the window for
   // minimized state.
   gfx::Rect bounds = window_->GetBoundsInPixels();
-  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, bounds.width(), bounds.height()));
+  EXPECT_CALL(*xdg_surface_,
+              SetWindowGeometry(0, 0, bounds.width(), bounds.height()));
   // Send one additional empty configuration event for minimized state.
   // (which means the surface is not maximized, fullscreen or activated)
   states = ScopedWlArray();
@@ -3504,9 +3512,8 @@ class BlockableWaylandToplevelWindow : public WaylandToplevelWindow {
       MockWaylandPlatformWindowDelegate* delegate) {
     auto window =
         std::make_unique<BlockableWaylandToplevelWindow>(delegate, connection);
-    window->set_update_visual_size_immediately(/*update_immediately=*/true);
-    window->set_apply_pending_state_on_update_visual_size(
-        /*apply_immediately=*/true);
+    window->set_update_visual_size_immediately_for_testing(true);
+    window->set_apply_pending_state_on_update_visual_size_for_testing(true);
 
     PlatformWindowInitProperties properties;
     properties.bounds = bounds;

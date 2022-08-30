@@ -26,14 +26,19 @@ import java.util.Arrays;
  * forwards native calls to it.
  */
 class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
+    /**
+     * The size of the maskable icon's safe zone as a fraction of the icon's edge size as defined
+     * in https://www.w3.org/TR/appmanifest/
+     */
+    public static final float MASKABLE_ICON_SAFE_ZONE_DIAMETER_RATIO = 0.8f;
+
     private long mNativeView;
     private final AccountSelectionComponent mAccountSelectionComponent;
 
     private AccountSelectionBridge(long nativeView, WindowAndroid windowAndroid,
             BottomSheetController bottomSheetController) {
         mNativeView = nativeView;
-        mAccountSelectionComponent = new AccountSelectionCoordinator();
-        mAccountSelectionComponent.initialize(
+        mAccountSelectionComponent = new AccountSelectionCoordinator(
                 windowAndroid.getContext().get(), bottomSheetController, this);
     }
 
@@ -50,7 +55,8 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     @CalledByNative
     static int getBrandIconIdealSize() {
         Resources resources = ContextUtils.getApplicationContext().getResources();
-        return Math.round(resources.getDimension(R.dimen.account_selection_sheet_icon_size));
+        return Math.round(resources.getDimension(R.dimen.account_selection_sheet_icon_size)
+                / MASKABLE_ICON_SAFE_ZONE_DIAMETER_RATIO);
     }
 
     @CalledByNative
@@ -64,7 +70,7 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
 
     @CalledByNative
     private void destroy() {
-        mAccountSelectionComponent.hideBottomSheet();
+        mAccountSelectionComponent.close();
         mNativeView = 0;
     }
 

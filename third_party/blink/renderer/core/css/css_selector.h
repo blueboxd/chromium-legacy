@@ -281,6 +281,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoMultiSelectFocus,
     kPseudoHostHasAppearance,
     kPseudoTopLayer,
+    kPseudoPopupHidden,
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
@@ -304,7 +305,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoPageTransitionIncomingImage,
   };
 
-  enum class AttributeMatchType {
+  enum class AttributeMatchType : int {
     kCaseSensitive,
     kCaseInsensitive,
     kCaseSensitiveAlways,
@@ -340,6 +341,7 @@ class CORE_EXPORT CSSSelector {
   // http://www.w3.org/TR/css3-selectors/#attrnmsp
   const QualifiedName& Attribute() const;
   AttributeMatchType AttributeMatch() const;
+  bool IsCaseSensitiveAttribute() const;
   // Returns the argument of a parameterized selector. For example, :lang(en-US)
   // would have an argument of en-US.
   // Note that :nth-* selectors don't store an argument and just store the
@@ -410,11 +412,6 @@ class CORE_EXPORT CSSSelector {
     is_last_in_selector_list_ = is_last;
   }
 
-  bool IsLastInOriginalList() const { return is_last_in_original_list_; }
-  void SetLastInOriginalList(bool is_last) {
-    is_last_in_original_list_ = is_last;
-  }
-
   bool IsLastInTagHistory() const { return is_last_in_tag_history_; }
   void SetLastInTagHistory(bool is_last) { is_last_in_tag_history_ = is_last; }
 
@@ -454,7 +451,6 @@ class CORE_EXPORT CSSSelector {
   unsigned has_rare_data_ : 1;
   unsigned is_for_page_ : 1;
   unsigned tag_is_implicit_ : 1;
-  unsigned is_last_in_original_list_ : 1;
 
   void SetPseudoType(PseudoType pseudo_type) {
     pseudo_type_ = pseudo_type;
@@ -486,8 +482,12 @@ class CORE_EXPORT CSSSelector {
         int a_;  // Used for :nth-*
         int b_;  // Used for :nth-*
       } nth_;
-      AttributeMatchType
-          attribute_match_;  // used for attribute selector (with value)
+
+      struct {
+        AttributeMatchType
+            attribute_match_;  // used for attribute selector (with value)
+        bool is_case_sensitive_attribute_;
+      } attr_;
 
       struct {
         // Used for :has() with pseudos in its argument. e.g. :has(:hover)
@@ -510,8 +510,8 @@ class CORE_EXPORT CSSSelector {
   };
   void CreateRareData();
 
-  // The type tag for DataUnion is actually inferred from multiple state variables in the
-  // containing CSSSelector using the following rules.
+  // The type tag for DataUnion is actually inferred from multiple state
+  // variables in the containing CSSSelector using the following rules.
   //
   //  if (match_ == kTag) {
   //     /* data_.tag_q_name_ is valid */
@@ -521,10 +521,10 @@ class CORE_EXPORT CSSSelector {
   //     /* data_.value_ is valid */
   //  }
   //
-  // Note that it is important to placement-new and explicitly destruct the fields when
-  // shifting between types tags for a DataUnion! Otherwise there will be undefined
-  // behavior! This luckily only happens when transitioning from a normal |value_| to
-  // a |rare_data_|.
+  // Note that it is important to placement-new and explicitly destruct the
+  // fields when shifting between types tags for a DataUnion! Otherwise there
+  // will be undefined behavior! This luckily only happens when transitioning
+  // from a normal |value_| to a |rare_data_|.
   union DataUnion {
     enum ConstructUninitializedTag { kConstructUninitialized };
     explicit DataUnion(ConstructUninitializedTag) {}
@@ -552,7 +552,13 @@ inline const QualifiedName& CSSSelector::Attribute() const {
 inline CSSSelector::AttributeMatchType CSSSelector::AttributeMatch() const {
   DCHECK(IsAttributeSelector());
   DCHECK(has_rare_data_);
-  return data_.rare_data_->bits_.attribute_match_;
+  return data_.rare_data_->bits_.attr_.attribute_match_;
+}
+
+inline bool CSSSelector::IsCaseSensitiveAttribute() const {
+  DCHECK(IsAttributeSelector());
+  DCHECK(has_rare_data_);
+  return data_.rare_data_->bits_.attr_.is_case_sensitive_attribute_;
 }
 
 inline bool CSSSelector::IsASCIILower(const AtomicString& value) {
@@ -588,7 +594,6 @@ inline CSSSelector::CSSSelector()
       has_rare_data_(false),
       is_for_page_(false),
       tag_is_implicit_(false),
-      is_last_in_original_list_(false),
       data_(DataUnion::kConstructEmptyValue) {}
 
 inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
@@ -601,7 +606,6 @@ inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
       has_rare_data_(false),
       is_for_page_(false),
       tag_is_implicit_(tag_is_implicit),
-      is_last_in_original_list_(false),
       data_(tag_q_name) {}
 
 inline CSSSelector::CSSSelector(const CSSSelector& o)
@@ -613,7 +617,6 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
       has_rare_data_(o.has_rare_data_),
       is_for_page_(o.is_for_page_),
       tag_is_implicit_(o.tag_is_implicit_),
-      is_last_in_original_list_(o.is_last_in_original_list_),
       data_(DataUnion::kConstructUninitialized) {
   if (o.match_ == kTag) {
     new (&data_.tag_q_name_) QualifiedName(o.data_.tag_q_name_);

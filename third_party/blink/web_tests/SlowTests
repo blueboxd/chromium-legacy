@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Win Win7 Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Win Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Slow ]
 
@@ -84,10 +84,22 @@ crbug.com/1300409 http/tests/inspector-protocol/network/websocket/offline-no-sen
 crbug.com/1280873 http/tests/inspector-protocol/network/xhr-cors-preflight-redirect-failure.js [ Slow ]
 crbug.com/1280697 http/tests/inspector-protocol/network/block_cross_site_document_load.js [ Slow ]
 crbug.com/1280585 http/tests/inspector-protocol/network/xhr-post-replay-cors.js [ Slow ]
-crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax.js [ Slow ]
+crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-browser-navigate.js [ Slow ]
+crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-js-navigate.js [ Slow ]
+crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-js-subresource.js [ Slow ]
 crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info.js [ Slow ]
-crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Slow ]
-crbug.com/1280736 http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict.js [ Slow ]
+crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-browser-navigate.js [ Slow ]
+crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-navigate.js [ Slow ]
+crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-subresource.js [ Slow ]
+crbug.com/1280736 http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-browser-navigate.js [ Slow ]
+crbug.com/1280736 http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-js-navigate.js [ Slow ]
+crbug.com/1280736 http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-js-subresource.js [ Slow ]
+crbug.com/1327867 http/tests/inspector-protocol/network/initiator-minified.js [ Slow ]
+crbug.com/1325514 http/tests/inspector-protocol/network/cookies-protocol-test.js [ Slow ]
+crbug.com/1280882 http/tests/inspector-protocol/network/cors-errors.js [ Slow ]
+crbug.com/1289238 http/tests/inspector-protocol/network/same-site-issue-warn-cookie-navigation-context-downgrade.js [ Slow ]
+crbug.com/1300352 http/tests/inspector-protocol/network/blocked-cookie-not-on-path.js [ Slow ]
+crbug.com/1318449 http/tests/inspector-protocol/window-open-effective-opener.js [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 
@@ -546,10 +558,6 @@ crbug.com/1047818 external/wpt/css/css-masking/idlharness.html [ Slow ]
 # This test contains a slow loading image that results in timeouts.
 crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Slow ]
 
-# Reaching the stack size limit makes for a consistently slow test with
-# occasional timeouts on Win7
-crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]
-
 crbug.com/1066517 http/tests/websocket/workers/worker-reload.html [ Slow ]
 
 crbug.com/1091716 svg/as-object/sizing/svg-in-object-placeholder-auto-auto-intrinsic-ratio.html [ Slow ]
@@ -628,7 +636,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-au
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Slow ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add-new-rule.js [ Slow ]
 crbug.com/937170 external/wpt/IndexedDB/interleaved-cursors-large.html [ Slow ]
-crbug.com/937991 [ Release Win7 ] http/tests/devtools/cache-storage/cache-data.js [ Slow ]
 crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Slow ]
 crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Slow ]
 crbug.com/977015 [ Win ] http/tests/devtools/elements/shadow/shadow-slot-assignment.js [ Slow ]
@@ -794,5 +801,4 @@ crbug.com/1298800 http/tests/misc/drag-bookmark.html [ Slow ]
 crbug.com/1314927 external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.worker.html [ Slow ]
 crbug.com/1314927 external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
 
-crbug.com/1307791 external/wpt/credential-management/fedcm-logout.sub.https.html [ Slow ]
 crbug.com/1327869 css3/calc/simple-calcs-prefixed.html [ Slow ]

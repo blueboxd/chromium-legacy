@@ -11,7 +11,9 @@
 #include "base/traits_bag.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -19,8 +21,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-namespace gl {
-namespace init {
+namespace gl::init {
 
 // This code emulates GL fences (GL_APPLE_sync or GL_ARB_sync) via
 // EGL_KHR_fence_sync extension. It's used to provide Skia ways of
@@ -81,7 +82,7 @@ void glWaitSyncEmulateEGL(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   DCHECK(timeout == GL_TIMEOUT_IGNORED);
   DCHECK(flags == 0);
 
-  if (!g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+  if (!GetDefaultDisplayEGL()->ext->b_EGL_KHR_wait_sync) {
     eglClientWaitSyncKHR(data->display, data->sync, 0, EGL_FOREVER_KHR);
     return;
   }
@@ -297,8 +298,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->gl##chrome_name##Fn, progress_reporter, version_info.is_angle)
 #define BIND(fname, ...) BIND_EXTENSION(fname, fname, __VA_ARGS__)
 
-  GrGLInterface* interface = new GrGLInterface();
-  GrGLInterface::Functions* functions = &interface->fFunctions;
+  GrGLInterface* gl_interface = new GrGLInterface();
+  GrGLInterface::Functions* functions = &gl_interface->fFunctions;
   BIND(ActiveTexture);
   BIND(AttachShader);
   BIND(BindAttribLocation);
@@ -323,6 +324,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   BIND(CompileShader, Slow);
   BIND(CompressedTexImage2D, Slow, NeedFlushOnMac);
   BIND(CompressedTexSubImage2D, Slow);
+  BIND(CopyBufferSubData);
   BIND(CopyTexSubImage2D, Slow);
 #if BUILDFLAG(IS_APPLE)
   functions->fCreateProgram = [func = gl->glCreateProgramFn]() {
@@ -717,13 +719,16 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
 
   if (!gl->glFenceSyncFn) {
     // NOTE: Skia uses the same function pointers without APPLE suffix
+#if !defined(USE_EGL)
     if (extensions.has("GL_APPLE_sync")) {
       BIND_EXTENSION(FenceSync, FenceSyncAPPLE);
       BIND_EXTENSION(IsSync, IsSyncAPPLE);
       BIND_EXTENSION(ClientWaitSync, ClientWaitSyncAPPLE);
       BIND_EXTENSION(WaitSync, WaitSyncAPPLE);
       BIND_EXTENSION(DeleteSync, DeleteSyncAPPLE);
-    } else if (g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+    }
+#else
+    if (GetDefaultDisplayEGL()->ext->b_EGL_KHR_fence_sync) {
       // Emulate APPLE_sync via egl
       extensions.add("GL_APPLE_sync");
 
@@ -733,6 +738,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       functions->fWaitSync = glWaitSyncEmulateEGL;
       functions->fDeleteSync = glDeleteSyncEmulateEGL;
     }
+#endif  // USE_EGL
   } else if (use_version_es2) {
     // We have gl sync, but want to Skia use ES2 that doesn't have fences.
     // To provide Skia with ways of sync to prevent it calling glFinish we set
@@ -752,11 +758,10 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
 #undef BIND
 #undef BIND_EXTENSION
 
-  interface->fStandard = standard;
-  interface->fExtensions.swap(&extensions);
-  sk_sp<GrGLInterface> returned(interface);
+  gl_interface->fStandard = standard;
+  gl_interface->fExtensions.swap(&extensions);
+  sk_sp<GrGLInterface> returned(gl_interface);
   return returned;
 }
 
-}  // namespace init
-}  // namespace gl
+}  // namespace gl::init

@@ -37,12 +37,11 @@ ReauthenticatorBridge::~ReauthenticatorBridge() {
 }
 
 bool ReauthenticatorBridge::CanUseAuthentication(JNIEnv* env) {
-  return authenticator_ &&
-         authenticator_->CanAuthenticate(requester_) ==
-             device_reauth::BiometricsAvailability::kAvailable;
+  return authenticator_ && authenticator_->CanAuthenticate(requester_);
 }
 
-void ReauthenticatorBridge::Reauthenticate(JNIEnv* env) {
+void ReauthenticatorBridge::Reauthenticate(JNIEnv* env,
+                                           bool use_last_valid_auth) {
   if (!authenticator_) {
     return;
   }
@@ -53,7 +52,8 @@ void ReauthenticatorBridge::Reauthenticate(JNIEnv* env) {
   authenticator_->Authenticate(
       requester_,
       base::BindOnce(&ReauthenticatorBridge::OnReauthenticationCompleted,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      use_last_valid_auth);
 }
 
 void ReauthenticatorBridge::OnReauthenticationCompleted(bool auth_succeeded) {

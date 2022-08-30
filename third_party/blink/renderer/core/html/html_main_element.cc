@@ -12,13 +12,6 @@ namespace blink {
 HTMLMainElement::HTMLMainElement(Document& document)
     : HTMLElement(html_names::kMainTag, document) {}
 
-void HTMLMainElement::ChildrenChanged(const ChildrenChange& children_change) {
-  HTMLElement::ChildrenChanged(children_change);
-  if (!children_change.ByParser()) {
-    NotifySoftNavigationHeuristics();
-  }
-}
-
 Node::InsertionNotificationRequest HTMLMainElement::InsertedInto(
     ContainerNode& container_node) {
   // Here we don't really know that the insertion was API driven rather than
@@ -30,16 +23,24 @@ Node::InsertionNotificationRequest HTMLMainElement::InsertedInto(
 
 void HTMLMainElement::NotifySoftNavigationHeuristics() {
   const Document& document = GetDocument();
-  if (LocalDOMWindow* window = document.domWindow()) {
-    if (LocalFrame* frame = window->GetFrame()) {
-      if (frame->IsMainFrame()) {
-        if (ScriptState* script_state = ToScriptStateForMainWorld(frame)) {
-          SoftNavigationHeuristics* heuristics =
-              SoftNavigationHeuristics::From(*window);
-          heuristics->ModifiedDOM(script_state);
-        }
-      }
-    }
+  LocalDOMWindow* window = document.domWindow();
+  if (!window) {
+    return;
   }
+
+  LocalFrame* frame = window->GetFrame();
+  if (!frame || !frame->IsMainFrame()) {
+    return;
+  }
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    return;
+  }
+
+  SoftNavigationHeuristics* heuristics =
+      SoftNavigationHeuristics::From(*window);
+  DCHECK(heuristics);
+  heuristics->ModifiedMain(script_state);
 }
+
 }  // namespace blink

@@ -26,10 +26,9 @@
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -67,13 +66,13 @@ PersonalizationResult::PersonalizationResult(
 PersonalizationResult::~PersonalizationResult() = default;
 
 void PersonalizationResult::Open(int event_flags) {
-  ::web_app::SystemAppLaunchParams launch_params;
+  ::ash::SystemAppLaunchParams launch_params;
   launch_params.url = GURL(id());
   // Record entry point to Personalization Hub through Launcher search.
   ash::personalization_app::LogPersonalizationEntryPoint(
       ash::PersonalizationEntryPoint::kLauncherSearch);
-  web_app::LaunchSystemWebAppAsync(
-      profile_, ash::SystemWebAppType::PERSONALIZATION, launch_params);
+  ash::LaunchSystemWebAppAsync(profile_, ash::SystemWebAppType::PERSONALIZATION,
+                               launch_params);
 }
 
 PersonalizationProvider::PersonalizationProvider(Profile* profile)
@@ -166,27 +165,14 @@ void PersonalizationProvider::OnSearchDone(
 }
 
 void PersonalizationProvider::StartLoadIcon() {
-  apps::AppType app_type = app_service_proxy_->AppRegistryCache().GetAppType(
-      web_app::kPersonalizationAppId);
-
-  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    app_service_proxy_->LoadIcon(
-        app_type, web_app::kPersonalizationAppId, apps::IconType::kStandard,
-        ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-        /*allow_placeholder_icon=*/false,
-        base::BindOnce(&PersonalizationProvider::OnLoadIcon,
-                       app_service_weak_ptr_factory_.GetWeakPtr()));
-
-  } else {
-    app_service_proxy_->LoadIcon(
-        apps::ConvertAppTypeToMojomAppType(app_type),
-        web_app::kPersonalizationAppId, apps::mojom::IconType::kStandard,
-        ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-        /*allow_placeholder_icon=*/false,
-        apps::MojomIconValueToIconValueCallback(
-            base::BindOnce(&PersonalizationProvider::OnLoadIcon,
-                           app_service_weak_ptr_factory_.GetWeakPtr())));
-  }
+  app_service_proxy_->LoadIcon(
+      app_service_proxy_->AppRegistryCache().GetAppType(
+          web_app::kPersonalizationAppId),
+      web_app::kPersonalizationAppId, apps::IconType::kStandard,
+      ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+      /*allow_placeholder_icon=*/false,
+      base::BindOnce(&PersonalizationProvider::OnLoadIcon,
+                     app_service_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PersonalizationProvider::OnLoadIcon(::apps::IconValuePtr icon_value) {

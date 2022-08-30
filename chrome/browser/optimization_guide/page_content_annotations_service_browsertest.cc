@@ -456,8 +456,9 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
   bool load_model_on_startup_ = true;
 };
 
+// Disabled. https://crbug.com/1338408
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
-                       ModelExecutes) {
+                       DISABLED_ModelExecutes) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
@@ -731,8 +732,16 @@ class PageContentAnnotationsServiceNoHistoryTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Flaky on Linux Tests (dbg): crbug.com/1338040
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
+#define MAYBE_ModelExecutesButDoesntWriteToHistory \
+  DISABLED_ModelExecutesButDoesntWriteToHistory
+#else
+#define MAYBE_ModelExecutesButDoesntWriteToHistory \
+  ModelExecutesButDoesntWriteToHistory
+#endif
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
-                       ModelExecutesButDoesntWriteToHistory) {
+                       MAYBE_ModelExecutesButDoesntWriteToHistory) {
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
@@ -756,8 +765,15 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
   EXPECT_FALSE(GetContentAnnotationsForURL(url).has_value());
 }
 
+// Flaky on Linux Tests (dbg): crbug.com/1338408
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
+#define MAYBE_ModelExecutesAndUsesCachedResult \
+  DISABLED_ModelExecutesAndUsesCachedResult
+#else
+#define MAYBE_ModelExecutesAndUsesCachedResult ModelExecutesAndUsesCachedResult
+#endif
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
-                       ModelExecutesAndUsesCachedResult) {
+                       MAYBE_ModelExecutesAndUsesCachedResult) {
   {
     base::HistogramTester histogram_tester;
 

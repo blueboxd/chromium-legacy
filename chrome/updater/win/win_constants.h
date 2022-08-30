@@ -13,8 +13,6 @@ namespace updater {
 
 extern const wchar_t kLegacyGoogleUpdaterAppID[];
 
-extern const wchar_t kUpdaterProcessName[];
-
 // The prefix to use for global names in WIN32 API's. The prefix is necessary
 // to avoid collision on kernel object names.
 extern const wchar_t kGlobalPrefix[];
@@ -62,6 +60,7 @@ extern const wchar_t kRegValueInstallerSuccessLaunchCmdLine[];
 // AppCommand registry constants.
 extern const wchar_t kRegKeyCommands[];
 extern const wchar_t kRegValueCommandLine[];
+extern const wchar_t kRegValueAutoRunOnOSUpgrade[];
 
 // Device management.
 //

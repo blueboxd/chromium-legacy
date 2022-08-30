@@ -67,8 +67,7 @@ unsigned GetPolicyValue(const AddressSorterPosix::PolicyTable& table,
                         const IPAddress& address) {
   if (address.IsIPv4())
     return GetPolicyValue(table, ConvertIPv4ToIPv4MappedIPv6(address));
-  for (unsigned i = 0; i < table.size(); ++i) {
-    const AddressSorterPosix::PolicyEntry& entry = table[i];
+  for (const auto& entry : table) {
     IPAddress prefix(entry.prefix);
     if (IPAddressMatchesPrefix(address, prefix, entry.prefix_length))
       return entry.value;
@@ -277,7 +276,7 @@ void AddressSorterPosix::Sort(const std::vector<IPEndPoint>& endpoints,
   std::vector<std::unique_ptr<DestinationInfo>> sort_list;
 
   for (const IPEndPoint& endpoint : endpoints) {
-    std::unique_ptr<DestinationInfo> info(new DestinationInfo());
+    auto info = std::make_unique<DestinationInfo>();
     info->endpoint = endpoint;
     info->scope = GetScope(ipv4_scope_table_, info->endpoint.address());
     info->precedence =
@@ -369,7 +368,7 @@ void AddressSorterPosix::OnIPAddressChanged() {
     return;
   }
 
-  for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next) {
+  for (struct ifaddrs* ifa = addrs; ifa != nullptr; ifa = ifa->ifa_next) {
     IPEndPoint src;
     if (!src.FromSockAddr(ifa->ifa_addr, ifa->ifa_addr->sa_len))
       continue;
@@ -412,8 +411,8 @@ void AddressSorterPosix::FillPolicy(const IPAddress& address,
 
 // static
 std::unique_ptr<AddressSorter> AddressSorter::CreateAddressSorter() {
-  return std::unique_ptr<AddressSorter>(
-      new AddressSorterPosix(ClientSocketFactory::GetDefaultFactory()));
+  return std::make_unique<AddressSorterPosix>(
+      ClientSocketFactory::GetDefaultFactory());
 }
 
 }  // namespace net

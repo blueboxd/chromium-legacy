@@ -2,8 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build_overrides/ipcz.gni")
 import("//testing/test.gni")
+
+enable_multiprocess_tests = is_linux
+
+buildflag_header("test_buildflags") {
+  header = "test_buildflags.h"
+  flags = [ "ENABLE_IPCZ_MULTIPROCESS_TESTS=$enable_multiprocess_tests" ]
+}
 
 shared_library("ipcz_shared") {
   output_name = "ipcz"
@@ -129,27 +137,38 @@ ipcz_source_set("reference_drivers") {
   testonly = true
 
   public = [
+    "reference_drivers/async_reference_driver.h",
     "reference_drivers/blob.h",
-    "reference_drivers/single_process_reference_driver.h",
+    "reference_drivers/sync_reference_driver.h",
   ]
 
   sources = [
+    "reference_drivers/async_reference_driver.cc",
     "reference_drivers/blob.cc",
     "reference_drivers/object.cc",
     "reference_drivers/object.h",
     "reference_drivers/random.cc",
     "reference_drivers/random.h",
-    "reference_drivers/single_process_reference_driver.cc",
+    "reference_drivers/single_process_reference_driver_base.cc",
+    "reference_drivers/single_process_reference_driver_base.h",
+    "reference_drivers/sync_reference_driver.cc",
   ]
 
-  if (is_linux) {
+  if (enable_multiprocess_tests) {
     public += [
       "reference_drivers/file_descriptor.h",
+      "reference_drivers/handle_eintr.h",
       "reference_drivers/memfd_memory.h",
+      "reference_drivers/multiprocess_reference_driver.h",
+      "reference_drivers/socket_transport.h",
+      "reference_drivers/wrapped_file_descriptor.h",
     ]
     sources += [
       "reference_drivers/file_descriptor.cc",
       "reference_drivers/memfd_memory.cc",
+      "reference_drivers/multiprocess_reference_driver.cc",
+      "reference_drivers/socket_transport.cc",
+      "reference_drivers/wrapped_file_descriptor.cc",
     ]
   }
 
@@ -158,7 +177,7 @@ ipcz_source_set("reference_drivers") {
     ":util",
   ]
   public_deps = [ ":ipcz_header" ]
-  configs = [ ":ipcz_include_src_dir" ]
+  public_configs = [ ":ipcz_include_src_dir" ]
 
   deps = []
   if (is_fuchsia) {
@@ -199,6 +218,7 @@ ipcz_source_set("impl") {
     "ipcz/driver_transport.h",
     "ipcz/fragment.h",
     "ipcz/fragment_descriptor.h",
+    "ipcz/fragment_ref.h",
     "ipcz/link_side.h",
     "ipcz/link_type.h",
     "ipcz/message.h",
@@ -210,6 +230,7 @@ ipcz_source_set("impl") {
     "ipcz/parcel.h",
     "ipcz/parcel_queue.h",
     "ipcz/portal.h",
+    "ipcz/ref_counted_fragment.h",
     "ipcz/remote_router_link.h",
     "ipcz/router.h",
     "ipcz/sequence_number.h",
@@ -231,6 +252,7 @@ ipcz_source_set("impl") {
     "ipcz/driver_transport.cc",
     "ipcz/fragment.cc",
     "ipcz/fragment_descriptor.cc",
+    "ipcz/fragment_ref.cc",
     "ipcz/handle_type.h",
     "ipcz/link_side.cc",
     "ipcz/link_type.cc",
@@ -256,6 +278,7 @@ ipcz_source_set("impl") {
     "ipcz/parcel.cc",
     "ipcz/parcel_queue.cc",
     "ipcz/portal.cc",
+    "ipcz/ref_counted_fragment.cc",
     "ipcz/remote_router_link.cc",
     "ipcz/router.cc",
     "ipcz/router_descriptor.cc",
@@ -311,8 +334,9 @@ ipcz_source_set("ipcz_tests_sources") {
     "ipcz/node_connector_test.cc",
     "ipcz/node_link_test.cc",
     "ipcz/parcel_queue_test.cc",
+    "ipcz/ref_counted_fragment_test.cc",
     "ipcz/sequenced_queue_test.cc",
-    "reference_drivers/single_process_reference_driver_test.cc",
+    "reference_drivers/sync_reference_driver_test.cc",
     "remote_portal_test.cc",
     "test/mock_driver.cc",
     "test/mock_driver.h",
@@ -328,8 +352,14 @@ ipcz_source_set("ipcz_tests_sources") {
     "util/stack_trace_test.cc",
   ]
 
-  if (is_linux) {
-    sources += [ "reference_drivers/memfd_memory_test.cc" ]
+  if (enable_multiprocess_tests) {
+    public = [ "test/test_child_launcher.h" ]
+    sources += [
+      "reference_drivers/memfd_memory_test.cc",
+      "reference_drivers/multiprocess_reference_driver_test.cc",
+      "reference_drivers/socket_transport_test.cc",
+      "test/test_child_launcher.cc",
+    ]
   }
 
   deps = [
@@ -337,12 +367,13 @@ ipcz_source_set("ipcz_tests_sources") {
     "//testing/gtest",
     "//third_party/abseil-cpp:absl",
   ]
+  public_deps = [ ":test_buildflags" ]
   ipcz_deps = [
     ":impl",
     ":ipcz",
-    ":reference_drivers",
     ":util",
   ]
+  ipcz_public_deps = [ ":reference_drivers" ]
 
   configs = [ ":ipcz_include_src_dir" ]
 }
@@ -355,6 +386,7 @@ test("ipcz_tests") {
   sources = [ "test/run_all_tests.cc" ]
   deps = [
     ":ipcz_tests_sources_standalone",
+    ":test_buildflags",
     "${ipcz_src_root}/standalone",
     "//testing/gtest",
   ]

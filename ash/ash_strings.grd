@@ -2096,6 +2096,16 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_STATUS_SEPARATOR" desc="The separator symbol between battery percentage string and battery remaining time string">
         ''' - '''
       </message>
+      <!-- Status tray channel indicator strings -->
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_BETA" desc="The string used to indicate that this device is on the beta release track">
+        Beta Channel
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_DEV" desc="The string used to indicate that this device is on the development release track">
+        Dev Channel
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_CANARY" desc="The string used to indicate that this device is on the canary release track">
+        Canary Channel
+      </message>
       <!-- Status Tray Network strings -->
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
         Network
@@ -2950,6 +2960,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
         Your PIN or password still couldn't be verified. Note: If you recently changed your password, use your old password. Your new password will be applied once you sign out.
+      </message>
+      <message name="IDS_ASH_LOGIN_FORGOT_PASSWORD" desc="Label of the button to recover your password">
+        Forgot password
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
         Caps Lock is on.
@@ -4319,6 +4332,9 @@ Here are some things you can try to get started.
       <message name="IDS_APP_LIST_BLOCKED_APP" desc="The spoken feedback text when a focused app is blocked.">
         Blocked
       </message>
+      <message name="IDS_APP_LIST_NEW_INSTALL_ACCESSIBILE_DESCRIPTION" desc="The spoken feedback text when a focused app is newly installed.">
+        New install
+      </message>
       <message name="IDS_APP_LIST_PAUSED_APP" desc="The spoken feedback text when a focused app is paused.">
         Paused
       </message>
@@ -4562,10 +4578,16 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
         Remove suggestion
       </message>
-      <message name="IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION" desc="Button title to show the launcher continue section after it has been hidden.">
-        Continue where you left off
+      <message name="IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION" desc="Context menu label to show the launcher continue section after it has been hidden.">
+        Show all suggestions
       </message>
       <message name="IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION" desc="Context menu label to hide the launcher continue section (which defaults to being shown).">
+        Hide all suggestions
+      </message>
+      <message name="IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION_TOOLTIP" desc="Tooltip for button that shows the launcher continue section after it has been hidden.">
+        Show all suggestions
+      </message>
+      <message name="IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION_TOOLTIP" desc="Tooltip for button that hides the launcher continue section (which defaults to being shown).">
         Hide all suggestions
       </message>
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT" desc="Text for the privacy notice of the continue section of the launcher in clamshell mode, which shows recent files and apps that the user can continue using.">
@@ -5018,7 +5040,7 @@ New install
         Your battery is kept at 80% while plugged in to extend battery life.
       </message>
       <message name="IDS_ASH_ADAPTIVE_CHARGING_NOTIFICATION_MESSAGE_TEMPORARY" desc="Notification message explaining the battery is temporarily at 80%. The message includes the predicted time at which charging will resume.">
-        Your battery is temporarily at 80% while plugged in to extend battery life. Your battery will fully charge by <ph name="FULLY_CHARGE_TIME">$1<ex>7:30 AM</ex></ph>.
+        Extending your battery life. Battery will fully charge by <ph name="FULLY_CHARGE_TIME">$1<ex>7:30 AM</ex></ph>.
       </message>
       <message name="IDS_ASH_ADAPTIVE_CHARGING_NOTIFICATION_FULLY_CHARGE_NOW_BUTTON_TEXT" desc="Text in notification button to fully charge the device.">
         Fully charge now
@@ -5031,6 +5053,15 @@ New install
       <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_BACKLIGHT_ACCESSIBLE_NAME" desc="The accessible text for the brightness slider keyboard backlight icon.">
         Keyboard backlight color
       </message>
+
+      <!-- Eche feature -->
+      <message name="IDS_ASH_ECHE_TOAST_COPY_PASTE_NOT_IMPLEMENTED" desc="A toast message that we show when user tries to use ctrl+c or ctrl+v in the Eche window.">
+        Can't copy or paste content at this time
+      </message>
+      <message name="IDS_ASH_ECHE_TOAST_TABLET_MODE_NOT_SUPPORTED" desc="A toast message that we show when user tries to switch to tablet mode.">
+        Can't stream apps in tablet mode. Try again in laptop mode.
+      </message>
+
     </messages>
   </release>
 </grit>

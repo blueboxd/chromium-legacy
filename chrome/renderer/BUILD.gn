@@ -147,6 +147,7 @@ static_library("renderer") {
     "//components/feed:buildflags",
     "//components/feed:feature_list",
     "//components/feed/content/renderer:feed_renderer",
+    "//components/heap_profiling/in_process",
     "//components/history_clusters/core",
     "//components/metrics:child_call_stack_profile_builder",
     "//components/network_hints/renderer",
@@ -379,6 +380,8 @@ static_library("renderer") {
 
   if (!is_android) {
     sources += [
+      "accessibility/read_anything_app_controller.cc",
+      "accessibility/read_anything_app_controller.h",
       "media/chrome_speech_recognition_client.cc",
       "media/chrome_speech_recognition_client.h",
       "searchbox/searchbox.cc",
@@ -387,7 +390,10 @@ static_library("renderer") {
       "searchbox/searchbox_extension.h",
     ]
 
-    deps += [ "//components/crx_file" ]
+    deps += [
+      "//chrome/common/accessibility:mojo_bindings",
+      "//components/crx_file",
+    ]
   }
 
   if (is_android) {

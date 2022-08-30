@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
@@ -27,8 +28,6 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/common/constants.h"
 #include "ui/display/types/display_constants.h"
@@ -36,7 +35,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/file_manager/app_id.h"
-#include "chrome/common/chrome_features.h"
 #endif
 
 namespace apps {
@@ -103,43 +101,11 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
   return nullptr;
 }
 
-std::unique_ptr<IconLoader::Releaser>
-AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconType icon_type,
-    int32_t size_hint_in_dip,
-    bool allow_placeholder_icon,
-    apps::mojom::Publisher::LoadIconCallback callback) {
-  if (overriding_icon_loader_for_testing_) {
-    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
-        app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
-        allow_placeholder_icon, std::move(callback));
-  }
-
-  if (host_->app_service_.is_connected() && icon_key) {
-    // TODO(crbug.com/826982): Mojo doesn't guarantee the order of messages,
-    // so multiple calls to this method might not resolve their callbacks in
-    // order. As per khmel@, "you may have race here, assume you publish change
-    // for the app and app requested new icon. But new icon is not delivered
-    // yet and you resolve old one instead. Now new icon arrives asynchronously
-    // but you no longer notify the app or do?"
-    RecordIconLoadMethodMetrics(IconLoadingMethod::kViaMojomCall);
-    host_->app_service_->LoadIcon(app_type, app_id, std::move(icon_key),
-                                  icon_type, size_hint_in_dip,
-                                  allow_placeholder_icon, std::move(callback));
-  } else {
-    std::move(callback).Run(apps::mojom::IconValue::New());
-  }
-  return nullptr;
-}
-
 AppServiceProxyBase::AppServiceProxyBase(Profile* profile)
     : inner_icon_loader_(this),
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
-                         apps::IconCache::GarbageCollectionPolicy::kEager),
+                         IconCache::GarbageCollectionPolicy::kEager),
       profile_(profile) {
   if (base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
     preferred_apps_impl_ = std::make_unique<apps::PreferredAppsImpl>(
@@ -149,7 +115,10 @@ AppServiceProxyBase::AppServiceProxyBase(Profile* profile)
 
 AppServiceProxyBase::~AppServiceProxyBase() = default;
 
-void AppServiceProxyBase::ReInitializeForTesting(Profile* profile) {
+void AppServiceProxyBase::ReInitializeForTesting(
+    Profile* profile,
+    base::OnceClosure read_completed_for_testing,
+    base::OnceClosure write_completed_for_testing) {
   // Some test code creates a profile and profile-linked services, like the App
   // Service, before the profile is fully initialized. Such tests can call this
   // after full profile initialization to ensure the App Service implementation
@@ -157,6 +126,13 @@ void AppServiceProxyBase::ReInitializeForTesting(Profile* profile) {
   app_service_.reset();
   profile_ = profile;
   is_using_testing_profile_ = true;
+  if (base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
+    preferred_apps_impl_ = std::make_unique<apps::PreferredAppsImpl>(
+        this, profile ? profile->GetPath() : base::FilePath(),
+        std::move(read_completed_for_testing),
+        std::move(write_completed_for_testing));
+  }
+  publishers_.clear();
   Initialize();
 }
 
@@ -253,7 +229,8 @@ void AppServiceProxyBase::OnPreferredAppSet(
     ReplacedAppPreferences replaced_app_preferences) {
   for (const auto& iter : publishers_) {
     iter.second->OnPreferredAppSet(
-        app_id, intent_filter->Clone(), intent->Clone(),
+        app_id, intent_filter ? intent_filter->Clone() : nullptr,
+        intent ? intent->Clone() : nullptr,
         CloneIntentFiltersMap(replaced_app_preferences));
   }
 }
@@ -299,20 +276,6 @@ AppServiceProxyBase::LoadIconFromIconKey(AppType app_type,
       allow_placeholder_icon, std::move(callback));
 }
 
-std::unique_ptr<apps::IconLoader::Releaser>
-AppServiceProxyBase::LoadIconFromIconKey(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconType icon_type,
-    int32_t size_hint_in_dip,
-    bool allow_placeholder_icon,
-    apps::mojom::Publisher::LoadIconCallback callback) {
-  return outer_icon_loader_.LoadIconFromIconKey(
-      app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
-      allow_placeholder_icon, std::move(callback));
-}
-
 void AppServiceProxyBase::Launch(const std::string& app_id,
                                  int32_t event_flags,
                                  apps::mojom::LaunchSource launch_source,
@@ -326,9 +289,8 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
           }
 
           RecordAppLaunch(update.AppId(), launch_source);
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
                                update.AppId(), event_flags, launch_source,
@@ -352,9 +314,8 @@ void AppServiceProxyBase::LaunchAppWithFiles(
             return;
           }
 
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           // TODO(crbug/1117655): File manager records metrics for apps it
           // launched. So we only record launches from other places. We should
@@ -399,9 +360,8 @@ void AppServiceProxyBase::LaunchAppWithIntent(
           if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
             RecordAppLaunch(update.AppId(), launch_source);
           }
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           app_service_->LaunchAppWithIntent(
               ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
@@ -640,19 +600,52 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForFiles(
 
 void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
                                           const GURL& url) {
-  AddPreferredApp(app_id, apps_util::CreateIntentFromUrl(url));
+  if (preferred_apps_impl_) {
+    AddPreferredApp(
+        app_id, std::make_unique<Intent>(apps_util::kIntentActionView, url));
+  } else {
+    AddPreferredApp(app_id, apps_util::CreateIntentFromUrl(url));
+  }
+}
+
+void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
+                                          const IntentPtr& intent) {
+  DCHECK(!app_id.empty());
+  DCHECK(preferred_apps_impl_);
+
+  auto intent_filter = FindBestMatchingFilter(intent);
+  if (!intent_filter) {
+    return;
+  }
+
+  // Treat kUseBrowserForLink like an app with a single supported link, so
+  // that any apps with overlapping supported links will have their preference
+  // removed correctly.
+  if (app_id == apps_util::kUseBrowserForLink) {
+    std::vector<IntentFilterPtr> filters;
+    filters.push_back(std::move(intent_filter));
+    preferred_apps_impl_->SetSupportedLinksPreference(AppType::kUnknown, app_id,
+                                                      std::move(filters));
+    return;
+  }
+
+  if (apps_util::IsSupportedLinkForApp(app_id, intent_filter)) {
+    SetSupportedLinksPreference(app_id);
+    return;
+  }
+
+  preferred_apps_list_.AddPreferredApp(app_id, intent_filter);
+  preferred_apps_impl_->AddPreferredApp(
+      app_registry_cache_.GetAppType(app_id), app_id, std::move(intent_filter),
+      intent->Clone(), /*from_publisher=*/false);
 }
 
 void AppServiceProxyBase::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentPtr& intent) {
-  // TODO(https://crbug.com/853604): Remove this and convert to a DCHECK
-  // after finding out the root cause.
-  if (app_id.empty()) {
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
-  auto mojom_intent_filter = FindBestMatchingFilter(intent);
+  DCHECK(!app_id.empty());
+
+  auto mojom_intent_filter = FindBestMatchingMojomFilter(intent);
   if (!mojom_intent_filter || !app_service_.is_connected()) {
     return;
   }
@@ -759,7 +752,7 @@ void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
 void AppServiceProxyBase::OnApps(std::vector<AppPtr> deltas,
                                  AppType app_type,
                                  bool should_notify_initialized) {
-  if (app_service_.is_connected()) {
+  if (preferred_apps_impl_ || app_service_.is_connected()) {
     for (const auto& delta : deltas) {
       if (delta->readiness != Readiness::kUnknown &&
           !apps_util::IsInstalled(delta->readiness)) {
@@ -819,7 +812,33 @@ void AppServiceProxyBase::InitializePreferredApps(
       ConvertMojomPreferredAppsToPreferredApps(mojom_preferred_apps));
 }
 
-apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(
+IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(
+    const IntentPtr& intent) {
+  IntentFilterPtr best_matching_intent_filter;
+  if (!intent) {
+    return best_matching_intent_filter;
+  }
+
+  int best_match_level = static_cast<int>(IntentFilterMatchLevel::kNone);
+  app_registry_cache_.ForEachApp(
+      [&intent, &best_match_level,
+       &best_matching_intent_filter](const apps::AppUpdate& update) {
+        for (auto& filter : update.IntentFilters()) {
+          if (!intent->MatchFilter(filter)) {
+            continue;
+          }
+          auto match_level = filter->GetFilterMatchLevel();
+          if (match_level <= best_match_level) {
+            continue;
+          }
+          best_matching_intent_filter = std::move(filter);
+          best_match_level = match_level;
+        }
+      });
+  return best_matching_intent_filter;
+}
+
+apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingMojomFilter(
     const apps::mojom::IntentPtr& mojom_intent) {
   apps::mojom::IntentFilterPtr best_matching_intent_filter;
   if (!app_service_.is_bound() || !mojom_intent) {
@@ -857,7 +876,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
     Profile* profile,
     const apps::AppUpdate& update,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::LaunchContainer container) {}
+    apps::LaunchContainer container) {}
 
 void AppServiceProxyBase::PerformPostUninstallTasks(
     apps::AppType app_type,

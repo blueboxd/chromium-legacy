@@ -27,29 +27,17 @@ FederatedIdentitySharingPermissionContext::
 FederatedIdentitySharingPermissionContext::
     ~FederatedIdentitySharingPermissionContext() = default;
 
-bool FederatedIdentitySharingPermissionContext::
-    HasSharingPermissionForAnyAccount(const url::Origin& relying_party,
-                                      const url::Origin& identity_provider) {
-  return HasPermission(relying_party, identity_provider, absl::nullopt);
-}
-
 bool FederatedIdentitySharingPermissionContext::HasSharingPermission(
     const url::Origin& relying_party,
     const url::Origin& identity_provider,
     const std::string& account_id) {
-  return HasPermission(relying_party, identity_provider, account_id);
+  return HasPermission(relying_party, relying_party, identity_provider,
+                       account_id);
 }
 
 void FederatedIdentitySharingPermissionContext::GrantSharingPermission(
     const url::Origin& relying_party,
     const url::Origin& identity_provider,
     const std::string& account_id) {
-  GrantPermission(relying_party, identity_provider, account_id);
-}
-
-void FederatedIdentitySharingPermissionContext::RevokeSharingPermission(
-    const url::Origin& relying_party,
-    const url::Origin& identity_provider,
-    const std::string& account_id) {
-  RevokePermission(relying_party, identity_provider, account_id);
+  GrantPermission(relying_party, relying_party, identity_provider, account_id);
 }

@@ -36,6 +36,7 @@
 #include "pdf/paint_ready_rect.h"
 #include "pdf/pdf_accessibility_data_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
+#include "pdf/test/mock_web_associated_url_loader.h"
 #include "pdf/test/test_helpers.h"
 #include "pdf/test/test_pdfium_engine.h"
 #include "printing/metafile_skia.h"
@@ -46,11 +47,11 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
-#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/common/loader/http_body_element_type.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -98,14 +99,12 @@ using ::testing::MockFunction;
 using ::testing::NiceMock;
 using ::testing::Pointwise;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SizeIs;
 
 // `kCanvasSize` needs to be big enough to hold plugin's snapshots during
 // testing.
 constexpr gfx::Size kCanvasSize(100, 100);
-
-// A common device scale for high DPI displays.
-constexpr float kDeviceScale = 2.0f;
 
 // Note: Make sure `kDefaultColor` is different from `kPaintColor` and the
 // plugin's background color. This will help identify bitmap changes after
@@ -168,49 +167,11 @@ SkBitmap GenerateExpectedBitmapForPaint(const gfx::Rect& expected_clipped_rect,
   return expected_bitmap;
 }
 
-blink::WebMouseEvent CreateDefaultMouseDownEvent() {
-  blink::WebMouseEvent web_event(
-      blink::WebInputEvent::Type::kMouseDown,
-      /*position=*/gfx::PointF(),
-      /*global_position=*/gfx::PointF(),
-      blink::WebPointerProperties::Button::kLeft,
-      /*click_count_param=*/1, blink::WebInputEvent::Modifiers::kLeftButtonDown,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  web_event.SetFrameScale(1);
-  return web_event;
-}
-
 class MockHeaderVisitor : public blink::WebHTTPHeaderVisitor {
  public:
   MOCK_METHOD(void,
               VisitHeader,
               (const blink::WebString&, const blink::WebString&),
-              (override));
-};
-
-class MockWebAssociatedURLLoader : public blink::WebAssociatedURLLoader {
- public:
-  MockWebAssociatedURLLoader() {
-    ON_CALL(*this, LoadAsynchronously)
-        .WillByDefault([](const blink::WebURLRequest& /*request*/,
-                          blink::WebAssociatedURLLoaderClient* client) {
-          // TODO(crbug.com/1322928): Must trigger callback to free `UrlLoader`.
-          client->DidReceiveResponse(blink::WebURLResponse());
-          client->DidFinishLoading();
-        });
-  }
-
-  // blink::WebAssociatedURLLoader:
-  MOCK_METHOD(void,
-              LoadAsynchronously,
-              (const blink::WebURLRequest&,
-               blink::WebAssociatedURLLoaderClient*),
-              (override));
-  MOCK_METHOD(void, Cancel, (), (override));
-  MOCK_METHOD(void, SetDefersLoading, (bool), (override));
-  MOCK_METHOD(void,
-              SetLoadingTaskRunner,
-              (base::SingleThreadTaskRunner*),
               (override));
 };
 
@@ -238,7 +199,17 @@ class FakePdfViewWebPluginClient : public PdfViewWebPlugin::Client {
  public:
   FakePdfViewWebPluginClient() {
     ON_CALL(*this, CreateAssociatedURLLoader).WillByDefault([]() {
-      return std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
+      auto associated_loader =
+          std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
+      ON_CALL(*associated_loader, LoadAsynchronously)
+          .WillByDefault([](const blink::WebURLRequest& /*request*/,
+                            blink::WebAssociatedURLLoaderClient* client) {
+            // TODO(crbug.com/1322928): Must trigger callback to free
+            // `UrlLoader`.
+            client->DidReceiveResponse(blink::WebURLResponse());
+            client->DidFinishLoading();
+          });
+      return associated_loader;
     });
     ON_CALL(*this, GetEmbedderOriginString)
         .WillByDefault(
@@ -864,6 +835,7 @@ TEST_F(PdfViewWebPluginTest, GetContentRestrictionsWithNoPermissions) {
   EXPECT_EQ(kContentRestrictionCopy | kContentRestrictionCut |
                 kContentRestrictionPaste | kContentRestrictionPrint,
             plugin_->GetContentRestrictions());
+  EXPECT_FALSE(plugin_->CanCopy());
 }
 
 TEST_F(PdfViewWebPluginTest, GetContentRestrictionsWithCopyAllowed) {
@@ -874,6 +846,7 @@ TEST_F(PdfViewWebPluginTest, GetContentRestrictionsWithCopyAllowed) {
   EXPECT_EQ(kContentRestrictionCut | kContentRestrictionPaste |
                 kContentRestrictionPrint,
             plugin_->GetContentRestrictions());
+  EXPECT_TRUE(plugin_->CanCopy());
 }
 
 TEST_F(PdfViewWebPluginTest, GetContentRestrictionsWithPrintLowQualityAllowed) {
@@ -1090,11 +1063,35 @@ TEST_F(PdfViewWebPluginTest, UpdateGeometryScrollOverflowScaled) {
   UpdatePluginGeometryWithoutWaiting(2.0f, gfx::Rect(3, 4, 5, 6));
 }
 
-TEST_F(PdfViewWebPluginTest, SetCaretPositionIgnoresOrigin) {
+TEST_F(PdfViewWebPluginTest, SetCaretPosition) {
   SetDocumentDimensions({16, 9});
   UpdatePluginGeometryWithoutWaiting(1.0f, {10, 20, 20, 5});
 
   EXPECT_CALL(*engine_ptr_, SetCaretPosition(gfx::Point(2, 3)));
+  plugin_->SetCaretPosition({4.0f, 3.0f});
+}
+
+TEST_F(PdfViewWebPluginTest, SetCaretPositionNegativeOrigin) {
+  SetDocumentDimensions({16, 9});
+  UpdatePluginGeometryWithoutWaiting(1.0f, {-10, -20, 20, 5});
+
+  EXPECT_CALL(*engine_ptr_, SetCaretPosition(gfx::Point(2, 3)));
+  plugin_->SetCaretPosition({4.0f, 3.0f});
+}
+
+TEST_F(PdfViewWebPluginTest, SetCaretPositionFractional) {
+  SetDocumentDimensions({16, 9});
+  UpdatePluginGeometryWithoutWaiting(1.0f, {10, 20, 20, 5});
+
+  EXPECT_CALL(*engine_ptr_, SetCaretPosition(gfx::Point(1, 2)));
+  plugin_->SetCaretPosition({3.9f, 2.9f});
+}
+
+TEST_F(PdfViewWebPluginTest, SetCaretPositionScaled) {
+  SetDocumentDimensions({16, 9});
+  UpdatePluginGeometryWithoutWaiting(2.0f, {20, 40, 40, 10});
+
+  EXPECT_CALL(*engine_ptr_, SetCaretPosition(gfx::Point(4, 6)));
   plugin_->SetCaretPosition({4.0f, 3.0f});
 }
 
@@ -1342,62 +1339,33 @@ TEST_F(PdfViewWebPluginTest, HandleSetBackgroundColorMessage) {
   EXPECT_EQ(SK_ColorGREEN, plugin_->GetBackgroundColor());
 }
 
-class PdfViewWebPluginMouseEventsTest : public PdfViewWebPluginTest {
- protected:
-  class TestPDFiumEngineForMouseEvents : public TestPDFiumEngine {
-   public:
-    explicit TestPDFiumEngineForMouseEvents(PDFEngine::Client* client)
-        : TestPDFiumEngine(client) {}
+TEST_F(PdfViewWebPluginTest, HandleInputEvent) {
+  UpdatePluginGeometryWithoutWaiting(2.0f, {0, 0, 20, 20});
 
-    // TestPDFiumEngine:
-    bool HandleInputEvent(const blink::WebInputEvent& event) override {
-      // Since blink::WebInputEvent is an abstract class, we cannot use equal
-      // matcher to verify its value. Here we test with blink::WebMouseEvent
-      // specifically.
-      if (!blink::WebInputEvent::IsMouseEventType(event.GetType()))
-        return false;
+  EXPECT_CALL(*engine_ptr_, HandleInputEvent)
+      .WillRepeatedly([](const blink::WebInputEvent& event) {
+        if (!blink::WebInputEvent::IsMouseEventType(event.GetType())) {
+          ADD_FAILURE() << "Unexpected event type: " << event.GetType();
+          return false;
+        }
 
-      scaled_mouse_event_ = std::make_unique<blink::WebMouseEvent>();
-      *scaled_mouse_event_ = static_cast<const blink::WebMouseEvent&>(event);
-      return true;
-    }
+        const auto& mouse_event =
+            static_cast<const blink::WebMouseEvent&>(event);
+        EXPECT_EQ(blink::WebInputEvent::Type::kMouseDown,
+                  mouse_event.GetType());
+        EXPECT_EQ(gfx::PointF(10.0f, 40.0f), mouse_event.PositionInWidget());
+        return true;
+      });
 
-    const blink::WebMouseEvent* GetScaledMouseEvent() const {
-      return scaled_mouse_event_.get();
-    }
-
-   private:
-    std::unique_ptr<blink::WebMouseEvent> scaled_mouse_event_;
-  };
-
-  void SetUpClient() override {
-    EXPECT_CALL(*client_ptr_, CreateEngine).WillOnce([this]() {
-      auto engine = std::make_unique<NiceMock<TestPDFiumEngineForMouseEvents>>(
-          plugin_.get());
-      engine_ptr_ = engine.get();
-      return engine;
-    });
-  }
-
-  TestPDFiumEngineForMouseEvents* engine() {
-    return static_cast<TestPDFiumEngineForMouseEvents*>(engine_ptr_);
-  }
-};
-
-TEST_F(PdfViewWebPluginMouseEventsTest, HandleInputEvent) {
-  EXPECT_CALL(*client_ptr_, DeviceScaleFactor)
-      .WillRepeatedly(Return(kDeviceScale));
-  UpdatePluginGeometry(kDeviceScale, gfx::Rect(20, 20));
+  blink::WebMouseEvent mouse_event;
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseDown);
+  mouse_event.SetPositionInWidget(10.0f, 20.0f);
 
   ui::Cursor dummy_cursor;
-  plugin_->HandleInputEvent(
-      blink::WebCoalescedInputEvent(CreateDefaultMouseDownEvent(),
-                                    ui::LatencyInfo()),
-      &dummy_cursor);
-
-  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
-  ASSERT_TRUE(event);
-  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f), event->PositionInWidget());
+  EXPECT_EQ(blink::WebInputEventResult::kHandledApplication,
+            plugin_->HandleInputEvent(
+                blink::WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()),
+                &dummy_cursor));
 }
 
 class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
@@ -1479,6 +1447,57 @@ TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginUnicode) {
 TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginEmpty) {
   const blink::WebString text;
   TestImeCommitTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginTest, SelectionChanged) {
+  plugin_->EnableAccessibility();
+  plugin_->DocumentLoadComplete();
+  UpdatePluginGeometryWithoutWaiting(1.0f, {300, 56, 20, 5});
+  SetDocumentDimensions({16, 9});
+
+  AccessibilityViewportInfo viewport_info;
+  EXPECT_CALL(pdf_service_, SelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                             gfx::PointF(52.0f, 60.0f), 80));
+  EXPECT_CALL(*accessibility_data_handler_ptr_, SetAccessibilityViewportInfo)
+      .WillOnce(SaveArg<0>(&viewport_info));
+  plugin_->SelectionChanged({-10, -20, 30, 40}, {50, 60, 70, 80});
+
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
+  pdf_receiver_.FlushForTesting();
+}
+
+TEST_F(PdfViewWebPluginTest, SelectionChangedNegativeOrigin) {
+  plugin_->EnableAccessibility();
+  plugin_->DocumentLoadComplete();
+  UpdatePluginGeometryWithoutWaiting(1.0f, {-300, -56, 20, 5});
+  SetDocumentDimensions({16, 9});
+
+  AccessibilityViewportInfo viewport_info;
+  EXPECT_CALL(pdf_service_, SelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                             gfx::PointF(52.0f, 60.0f), 80));
+  EXPECT_CALL(*accessibility_data_handler_ptr_, SetAccessibilityViewportInfo)
+      .WillOnce(SaveArg<0>(&viewport_info));
+  plugin_->SelectionChanged({-10, -20, 30, 40}, {50, 60, 70, 80});
+
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
+  pdf_receiver_.FlushForTesting();
+}
+
+TEST_F(PdfViewWebPluginTest, SelectionChangedScaled) {
+  plugin_->EnableAccessibility();
+  plugin_->DocumentLoadComplete();
+  UpdatePluginGeometryWithoutWaiting(2.0f, {600, 112, 40, 10});
+  SetDocumentDimensions({16, 9});
+
+  AccessibilityViewportInfo viewport_info;
+  EXPECT_CALL(pdf_service_, SelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                             gfx::PointF(52.0f, 60.0f), 80));
+  EXPECT_CALL(*accessibility_data_handler_ptr_, SetAccessibilityViewportInfo)
+      .WillOnce(SaveArg<0>(&viewport_info));
+  plugin_->SelectionChanged({-20, -40, 60, 80}, {100, 120, 140, 160});
+
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
+  pdf_receiver_.FlushForTesting();
 }
 
 TEST_F(PdfViewWebPluginTest, ChangeTextSelection) {

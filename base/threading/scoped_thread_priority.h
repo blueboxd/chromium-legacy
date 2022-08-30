@@ -17,7 +17,7 @@
 namespace base {
 
 class Location;
-enum class ThreadPriority : int;
+enum class ThreadType : int;
 
 // INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(name) produces an identifier by
 // appending the current line number to |name|. This is used to avoid name
@@ -63,6 +63,20 @@ enum class ThreadPriority : int;
       INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                  \
           scoped_may_load_library_at_background_priority)(FROM_HERE, nullptr);
 
+// Boosts the current thread's priority to match the priority of threads of
+// |target_thread_type| in this scope.
+class BASE_EXPORT ScopedBoostPriority {
+ public:
+  explicit ScopedBoostPriority(ThreadType target_thread_type);
+  ~ScopedBoostPriority();
+
+  ScopedBoostPriority(const ScopedBoostPriority&) = delete;
+  ScopedBoostPriority& operator=(const ScopedBoostPriority&) = delete;
+
+ private:
+  absl::optional<ThreadType> original_thread_type_;
+};
+
 namespace internal {
 
 class BASE_EXPORT ScopedMayLoadLibraryAtBackgroundPriority {
@@ -83,7 +97,7 @@ class BASE_EXPORT ScopedMayLoadLibraryAtBackgroundPriority {
  private:
 #if BUILDFLAG(IS_WIN)
   // The original priority when invoking entering the scope().
-  absl::optional<ThreadPriority> original_thread_priority_;
+  absl::optional<ThreadType> original_thread_type_;
   const raw_ptr<std::atomic_bool> already_loaded_;
 #endif
 };

@@ -15,8 +15,8 @@
     {
       protocol: [
         "chromium.cast.DataReset",
-        "fuchsia.web.FrameHost",
         "fuchsia.sys.Runner",
+        "fuchsia.web.FrameHost",
       ]
     }
   ],
@@ -24,8 +24,8 @@
     {
       protocol: [
         "chromium.cast.DataReset",
-        "fuchsia.web.FrameHost",
         "fuchsia.sys.Runner",
+        "fuchsia.web.FrameHost",
       ],
       from: "self",
     }
@@ -37,6 +37,12 @@
       path: "/config/data",
     },
     {
+      availability: "optional",
+      directory: "config-data-for-testing",
+      rights: [ "r*" ],
+      path: "/config/data-for-testing",
+    },
+    {
       protocol: [
         // Capabilities to be passed to WebEngine instances.
         "fuchsia.accessibility.semantics.SemanticsManager",
@@ -46,6 +52,7 @@
         "fuchsia.feedback.ComponentDataRegister",
         "fuchsia.feedback.CrashReportingProductRegister",
         "fuchsia.fonts.Provider",
+        "fuchsia.hwinfo.Product",
         "fuchsia.input.virtualkeyboard.ControllerCreator",
         "fuchsia.intl.PropertyProvider",
         // "fuchsia.legacymetrics.MetricsRecorder",
@@ -53,8 +60,6 @@
         "fuchsia.media.AudioDeviceEnumerator",
         "fuchsia.media.ProfileProvider",
         "fuchsia.media.SessionAudioConsumerFactory",
-        "fuchsia.media.drm.PlayReady",
-        "fuchsia.media.drm.Widevine",
         "fuchsia.mediacodec.CodecFactory",
         "fuchsia.memorypressure.Provider",
         "fuchsia.net.interfaces.State",
@@ -69,6 +74,14 @@
         "fuchsia.ui.input3.Keyboard",
         "fuchsia.ui.scenic.Scenic",
       ]
+    },
+    {
+      // Optional capabilities to be passed to WebEngine instances.
+      protocol: [
+        "fuchsia.media.drm.PlayReady",
+        "fuchsia.media.drm.Widevine",
+      ],
+      availability: "optional"
     },
     {
       storage: "cache",

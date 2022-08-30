@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.os.Build;
-import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
@@ -18,7 +17,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
-import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -34,12 +32,6 @@ public class TabUiFeatureUtilities {
     public static final BooleanCachedFieldTrialParameter SKIP_SLOW_ZOOMING =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM, true);
-
-    private static final String TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM =
-            "tab_grid_layout_android_new_tab_tile";
-    public static final StringCachedFieldTrialParameter TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE =
-            new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                    TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
 
     public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
     public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =
@@ -163,6 +155,29 @@ public class TabUiFeatureUtilities {
     }
 
     /**
+     * @return Whether the tab strip improvements are enabled.
+     * @param context The activity context.
+     */
+    public static boolean isTabStripImprovementsEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS);
+    }
+
+    /**
+     * @return Whether tab groups are enabled for tablet.
+     * @param context The activity context.
+     */
+    public static boolean isTabletTabGroupsEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
+    }
+
+    public static boolean isTabletTabManagementImprovementsEnabled(Context context) {
+        return isTabletGridTabSwitcherEnabled(context) && isTabStripImprovementsEnabled(context)
+                && isTabletTabGroupsEnabled(context);
+    }
+
+    /**
      * Set whether the tablet grid tab switcher polish is enabled for testing.
      */
     public static void setTabletGridTabSwitcherPolishEnabledForTesting(@Nullable Boolean enabled) {
@@ -175,7 +190,8 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isTabletGridTabSwitcherPolishEnabled(Context context) {
         if (sGridTabSwitcherPolishEnabledForTesting != null) {
-            return sGridTabSwitcherPolishEnabledForTesting;
+            return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                    && sGridTabSwitcherPolishEnabledForTesting;
         }
         return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
                 && GRID_TAB_SWITCHER_FOR_TABLETS_POLISH.getValue();
@@ -196,23 +212,12 @@ public class TabUiFeatureUtilities {
     public static boolean isTabGroupsAndroidEnabled(Context context) {
         // Disable tab group for tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return isTabletTabGroupsEnabled(context);
+            return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
         }
 
         return !DeviceClassManager.enableAccessibilityLayout(context)
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
-    }
-  
-    /**
-     * @return Whether tab groups are enabled for tablet.
-     * @param context The activity context.
-     */
-    public static boolean isTabletTabGroupsEnabled(Context context) {
-        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
     }
 
     /**
@@ -239,10 +244,6 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isTabThumbnailAspectRatioNotOne() {
         return Double.compare(1.0, THUMBNAIL_ASPECT_RATIO.getValue()) != 0;
-    }
-
-    public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
-        return TextUtils.equals(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE.getValue(), "NewTabTile");
     }
 
     /**

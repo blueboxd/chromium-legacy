@@ -2252,6 +2252,8 @@ void LockContentsView::ShowAuthErrorMessage() {
       unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog &&
       Shell::Get()->session_controller()->GetSessionState() !=
           session_manager::SessionState::LOGIN_SECONDARY) {
+    // TODO(crbug.com/1335222): Once implemented, we should show the recovery
+    // flow here instead of just gaia signin.
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
         big_view->auth_user()->current_user().basic_user_info.account_id);
     return;
@@ -2304,9 +2306,25 @@ void LockContentsView::ShowAuthErrorMessage() {
   container->AddChildView(std::move(label));
   container->AddChildView(std::move(learn_more_button));
 
+  if (ash::features::IsCryptohomeRecoveryFlowUIEnabled()) {
+    // The forgot password flow is only accessible from the login screen but
+    // not from the lock screen.
+    if (screen_type_ == LockScreen::ScreenType::kLogin &&
+        Shell::Get()->session_controller()->GetSessionState() !=
+            session_manager::SessionState::LOGIN_SECONDARY) {
+      auto forgot_password_button = std::make_unique<SystemLabelButton>(
+          base::BindRepeating(&LockContentsView::ForgotPasswordButtonPressed,
+                              base::Unretained(this)),
+          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_FORGOT_PASSWORD),
+          /*multiline=*/true);
+
+      container->AddChildView(std::move(forgot_password_button));
+    }
+  }
+
   auth_error_bubble_->SetAnchorView(
       big_view->auth_user()->GetActiveInputView());
-  auth_error_bubble_->SetContent(container.release());
+  auth_error_bubble_->SetContent(std::move(container));
   auth_error_bubble_->set_accessible_name(error_text);
   auth_error_bubble_->Show();
 }
@@ -2397,6 +2415,20 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
 void LockContentsView::LearnMoreButtonPressed() {
   Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp(
       GetWidget()->GetNativeWindow());
+  HideAuthErrorMessage();
+}
+
+void LockContentsView::ForgotPasswordButtonPressed() {
+  LoginBigUserView* big_view = CurrentBigUserView();
+  if (!big_view->auth_user()) {
+    LOG(ERROR) << "Forgot password button pressed without focused user";
+    return;
+  }
+
+  // TODO(crbug.com/1335222): Initiate recovery flow instead of blanked gaia
+  // sign in.
+  Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+      big_view->auth_user()->current_user().basic_user_info.account_id);
   HideAuthErrorMessage();
 }
 
@@ -2610,15 +2642,11 @@ void LockContentsView::UpdateKioskDefaultMessageVisibility() {
     return;
 
   if (!kiosk_default_message_) {
-    // KioskAppDefaultMessage is owned by itself and would be destroyed when
-    // its widget got destroyed, which happened when the widget's window got
-    // destroyed.
-    kiosk_default_message_ = new KioskAppDefaultMessage();
+    kiosk_default_message_ =
+        AddChildView(std::make_unique<KioskAppDefaultMessage>());
   }
-  if (has_kiosk_apps_)
-    kiosk_default_message_->GetWidget()->Hide();
-  else
-    kiosk_default_message_->GetWidget()->Show();
+
+  kiosk_default_message_->SetVisible(!has_kiosk_apps_);
 }
 
 void LockContentsView::SetKioskLicenseModeForTesting(

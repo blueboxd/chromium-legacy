@@ -50,7 +50,7 @@ typedef std::list<std::pair<BrokenAlternativeService, base::TimeTicks>>
 class RecentlyBrokenAlternativeServices
     : public base::LRUCache<BrokenAlternativeService, int> {
  public:
-  RecentlyBrokenAlternativeServices(
+  explicit RecentlyBrokenAlternativeServices(
       int max_recently_broken_alternative_service_entries)
       : base::LRUCache<BrokenAlternativeService, int>(
             max_recently_broken_alternative_service_entries) {}
@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
     virtual void OnExpireBrokenAlternativeService(
         const AlternativeService& expired_alternative_service,
         const NetworkIsolationKey& network_isolation_key) = 0;
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
   };
 
   // |delegate| will be notified when a broken alternative service expires. It

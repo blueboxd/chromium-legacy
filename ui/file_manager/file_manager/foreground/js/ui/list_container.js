@@ -12,7 +12,7 @@ import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {util} from '../../../common/js/util.js';
-import {FileListModel} from '../file_list_model.js';
+import {FileListModel, GROUP_BY_FIELD_DIRECTORY, GROUP_BY_FIELD_MODIFICATION_TIME} from '../file_list_model.js';
 import {ListThumbnailLoader} from '../list_thumbnail_loader.js';
 
 import {FileGrid} from './file_grid.js';
@@ -125,6 +125,13 @@ export class ListContainer {
      */
     this.allowContextMenuByTouch_ = false;
 
+    /**
+     * List container needs to know if the current active directory is Recent
+     * or not so it can update groupBy filed accordingly.
+     * @public {boolean}
+     */
+    this.isOnRecent = false;
+
     // Overriding the default role 'list' to 'listbox' for better accessibility
     // on ChromeOS.
     this.table.list.setAttribute('role', 'listbox');
@@ -133,7 +140,6 @@ export class ListContainer {
     this.grid.id = 'file-list';
     this.element.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.element.addEventListener('keypress', this.onKeyPress_.bind(this));
-    this.element.addEventListener('mousemove', this.onMouseMove_.bind(this));
     this.element.addEventListener(
         'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
@@ -235,6 +241,8 @@ export class ListContainer {
     // view that is not in use.
     switch (listType) {
       case ListContainer.ListType.DETAIL:
+        this.dataModel.groupByField =
+            this.isOnRecent ? GROUP_BY_FIELD_MODIFICATION_TIME : null;
         this.table.dataModel = this.dataModel;
         this.table.setListThumbnailLoader(this.listThumbnailLoader);
         this.table.selectionModel = this.selectionModel;
@@ -246,6 +254,13 @@ export class ListContainer {
         break;
 
       case ListContainer.ListType.THUMBNAIL:
+        if (this.isOnRecent) {
+          this.dataModel.groupByField = util.isRecentsFilterV2Enabled() ?
+              GROUP_BY_FIELD_MODIFICATION_TIME :
+              null;
+        } else {
+          this.dataModel.groupByField = GROUP_BY_FIELD_DIRECTORY;
+        }
         this.grid.dataModel = this.dataModel;
         this.grid.setListThumbnailLoader(this.listThumbnailLoader);
         this.grid.selectionModel = this.selectionModel;
@@ -261,13 +276,6 @@ export class ListContainer {
         break;
     }
     this.endBatchUpdates();
-  }
-
-  /**
-   * Clears hover highlighting in the list container until next mouse move.
-   */
-  clearHover() {
-    this.element.classList.add('nohover');
   }
 
   /**
@@ -341,19 +349,6 @@ export class ListContainer {
       event.stopImmediatePropagation();
       return;
     }
-
-    switch (event.key) {
-      case 'Home':
-      case 'End':
-      case 'ArrowUp':
-      case 'ArrowDown':
-      case 'ArrowLeft':
-      case 'ArrowRight':
-        // When navigating with keyboard we hide the distracting mouse hover
-        // highlighting until the user moves the mouse again.
-        this.clearHover();
-        break;
-    }
   }
 
   /**
@@ -379,16 +374,6 @@ export class ListContainer {
     if (this.textSearchState.text) {
       dispatchSimpleEvent(this.element, ListContainer.EventType.TEXT_SEARCH);
     }
-  }
-
-  /**
-   * Mousemove event handler for the div#list-container element.
-   * @param {Event} event Mouse event.
-   * @private
-   */
-  onMouseMove_(event) {
-    // The user grabbed the mouse, restore the hover highlighting.
-    this.element.classList.remove('nohover');
   }
 }
 

@@ -82,7 +82,6 @@ class DocumentStyleSheetCollection;
 class ElementRuleCollector;
 class FontSelector;
 class HTMLBodyElement;
-class HTMLFieldSetElement;
 class HTMLSelectElement;
 class MediaQueryEvaluator;
 class Node;
@@ -305,9 +304,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool HasViewportDependentMediaQueries() {
     DCHECK(global_rule_set_);
     UpdateActiveStyle();
-    return !global_rule_set_->GetRuleFeatureSet()
-                .ViewportDependentMediaQueryResults()
-                .IsEmpty();
+    return global_rule_set_->GetRuleFeatureSet()
+        .HasViewportDependentMediaQueries();
   }
 
   class InApplyAnimationUpdateScope {
@@ -579,6 +577,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     return active_user_style_sheets_;
   }
 
+  // Report a warning to the console that we are combining legacy layout and
+  // container queries.
+  void ReportUseOfLegacyLayoutWithContainerQueries();
+
  private:
   // FontSelectorClient implementation.
   void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
@@ -720,9 +722,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void RebuildLayoutTreeForTraversalRootAncestors(Element* parent);
 
-  // Separate path for layout tree rebuild for html fieldset as a size query
-  // container.
-  void RebuildFieldSetContainer(HTMLFieldSetElement& fieldset);
+  // Separate path for layout tree rebuild for re-attaching children of a
+  // fieldset size query container, or a size query container which must use
+  // legacy layout fallback, during layout.
+  void ReattachContainerSubtree(Element& container);
 
   // Invalidate ancestors or siblings affected by :has() state change
   inline void InvalidateElementAffectedByHas(Element&, bool for_pseudo_change);
@@ -811,6 +814,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // Set to true if we allow marking for reattachment from layout tree rebuild.
   // AllowMarkStyleDirtyFromRecalcScope.
   bool allow_mark_for_reattach_from_rebuild_layout_tree_{false};
+
+  // Set to true if we have detected an element which is a size query container
+  // rendered in legacy layout.
+  bool legacy_layout_query_container_{false};
 
   // See enum ViewportUnitFlag.
   unsigned viewport_unit_dirty_flags_{0};

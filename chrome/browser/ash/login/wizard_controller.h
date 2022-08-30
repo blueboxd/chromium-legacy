@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
@@ -198,6 +199,9 @@ class WizardController : public OobeUI::Observer {
   // Returns a given screen. Creates it lazily.
   BaseScreen* GetScreen(OobeScreenId screen_id);
 
+  // Returns a given OobescreenId with both name and external_api_prefix.
+  OobeScreenId GetScreenByName(const std::string& screen_name);
+
   // Returns the current ScreenManager instance.
   ScreenManager* screen_manager() const { return screen_manager_.get(); }
 
@@ -323,7 +327,8 @@ class WizardController : public OobeUI::Observer {
   void OnEulaAccepted(bool usage_statistics_reporting_enabled);
   void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
-  void OnAutoEnrollmentCheckScreenExit();
+  void OnAutoEnrollmentCheckScreenExit(
+      AutoEnrollmentCheckScreen::Result result);
   void OnEnrollmentScreenExit(EnrollmentScreen::Result result);
   void OnEnrollmentDone();
   void OnEnableAdbSideloadingScreenExit();

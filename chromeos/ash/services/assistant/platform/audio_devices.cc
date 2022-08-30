@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
@@ -99,6 +99,7 @@ absl::optional<uint64_t> GetPreferredDeviceId(
       continue;
 
     switch (device.type) {
+      case chromeos::AudioDeviceType::kMic:
       case chromeos::AudioDeviceType::kUsb:
       case chromeos::AudioDeviceType::kHeadphone:
       case chromeos::AudioDeviceType::kInternalMic:

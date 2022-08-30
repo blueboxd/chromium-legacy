@@ -543,6 +543,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       allow_stale_resources_(false),
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
+
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
 }
@@ -635,6 +636,8 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     final_response.SetResourceLoadTiming(nullptr);
     info->SetFinalResponse(final_response);
     info->SetLoadResponseEnd(info->InitialTime());
+    if (render_blocking_behavior == RenderBlockingBehavior::kBlocking)
+      info->SetRenderBlockingStatus(/*render_blocking_status=*/true);
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
@@ -869,9 +872,8 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       redirect_status);
 
   // This may modify params.Url() (via the resource_request argument).
-  Context().PopulateResourceRequest(
-      resource_type, params.GetClientHintsPreferences(),
-      params.GetResourceWidth(), resource_request, options);
+  Context().PopulateResourceRequest(resource_type, params.GetResourceWidth(),
+                                    resource_request, options);
 
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
@@ -996,6 +998,18 @@ ResourceFetcher::GetOrCreateSubresourceWebBundleList() {
   return subresource_web_bundles_;
 }
 
+ukm::MojoUkmRecorder* ResourceFetcher::UkmRecorder() {
+  if (ukm_recorder_)
+    return ukm_recorder_.get();
+
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+      recorder.InitWithNewPipeAndPassReceiver());
+  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+
+  return ukm_recorder_.get();
+}
+
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
@@ -1052,8 +1066,16 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   absl::optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, pauser);
   if (blocked_reason) {
-    return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
-                                     client);
+    auto* resource = ResourceForBlockedRequest(params, factory,
+                                               blocked_reason.value(), client);
+    StorePerformanceTimingInitiatorInformation(
+        resource, params.GetRenderBlockingBehavior());
+    if (auto info = resource_timing_info_map_.Take(resource)) {
+      PopulateAndAddResourceTimingInfo(resource, info,
+                                       /*response_end=*/base::TimeTicks::Now());
+      Context().AddResourceTiming(*info);
+    }
+    return resource;
   }
 
   Resource* resource = nullptr;
@@ -1323,7 +1345,8 @@ Resource* ResourceFetcher::CreateResourceForLoading(
 }
 
 void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
-    Resource* resource) {
+    Resource* resource,
+    RenderBlockingBehavior render_blocking_behavior) {
   const AtomicString& fetch_initiator = resource->Options().initiator_info.name;
   if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
@@ -1332,6 +1355,9 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
       fetch_initiator, base::TimeTicks::Now(),
       resource->GetResourceRequest().GetRequestContext(),
       resource->GetResourceRequest().GetRequestDestination());
+
+  if (render_blocking_behavior == RenderBlockingBehavior::kBlocking)
+    info->SetRenderBlockingStatus(/*render_blocking_status=*/true);
 
   resource_timing_info_map_.insert(resource, std::move(info));
 }
@@ -1941,9 +1967,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().ShouldPopulateResourceTiming()) {
       PopulateAndAddResourceTimingInfo(resource, info, response_end);
-      auto receiver = Context().TakePendingWorkerTimingReceiver(
-          resource->GetResponse().RequestId());
-      info->SetWorkerTimingReceiver(std::move(receiver));
       Context().AddResourceTiming(*info);
     }
   }
@@ -2104,7 +2127,8 @@ bool ResourceFetcher::StartLoad(
     }
     resource->VirtualTimePauser().PauseVirtualTime();
 
-    StorePerformanceTimingInitiatorInformation(resource);
+    StorePerformanceTimingInitiatorInformation(resource,
+                                               render_blocking_behavior);
   }
 
   loader->Start();

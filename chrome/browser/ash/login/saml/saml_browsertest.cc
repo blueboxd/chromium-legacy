@@ -70,16 +70,16 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
-#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -148,7 +148,7 @@ constexpr test::UIPath kSamlCloseButton = {"gaia-signin", "signin-frame-dialog",
                                            "saml-close-button"};
 constexpr test::UIPath kSamlBackButton = {"gaia-signin", "signin-frame-dialog",
                                           "saml-back-button"};
-const test::UIPath kGaiaLoading = {"gaia-signin", "gaia-loading"};
+const test::UIPath kGaiaLoading = {"gaia-signin", "step-loading"};
 const test::UIPath kSamlInterstitial = {"gaia-signin", "saml-interstitial"};
 
 constexpr test::UIPath kFatalErrorActionButton = {"signin-fatal-error",
@@ -1891,9 +1891,9 @@ void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {
 
 void SAMLDeviceAttestationTest::SetAllowedUrlsPolicy(
     const std::vector<std::string>& allowed_urls) {
-  std::vector<base::Value> allowed_urls_values;
+  base::Value::List allowed_urls_values;
   for (const auto& url : allowed_urls) {
-    allowed_urls_values.push_back(base::Value(url));
+    allowed_urls_values.Append(url);
   }
   settings_provider_->Set(kDeviceWebBasedAttestationAllowedUrls,
                           base::Value(std::move(allowed_urls_values)));

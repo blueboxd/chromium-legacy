@@ -41,13 +41,13 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
-#include "fuchsia/base/message_port.h"
 #include "fuchsia_web/webengine/browser/accessibility_bridge.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/event_filter.h"
 #include "fuchsia_web/webengine/browser/frame_layout_manager.h"
 #include "fuchsia_web/webengine/browser/frame_window_tree_host.h"
 #include "fuchsia_web/webengine/browser/media_player_impl.h"
+#include "fuchsia_web/webengine/browser/message_port.h"
 #include "fuchsia_web/webengine/browser/navigation_policy_handler.h"
 #include "fuchsia_web/webengine/browser/receiver_session_client.h"
 #include "fuchsia_web/webengine/browser/url_request_rewrite_type_converters.h"
@@ -607,16 +607,17 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
 
 void FrameImpl::MaybeStartCastStreaming(
     content::NavigationHandle* navigation_handle) {
-  if (!context_->has_cast_streaming_enabled() || !receiver_session_client_)
+  if (!context_->has_cast_streaming_enabled() || !receiver_session_client_ ||
+      receiver_session_client_->HasReceiverSession()) {
     return;
+  }
 
   mojo::AssociatedRemote<cast_streaming::mojom::DemuxerConnector>
       demuxer_connector;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()
       ->GetInterface(&demuxer_connector);
-  receiver_session_client_->SetCastStreamingReceiver(
-      std::move(demuxer_connector));
+  receiver_session_client_->SetDemuxerConnector(std::move(demuxer_connector));
 }
 
 void FrameImpl::UpdateRenderViewZoomLevel(
@@ -847,8 +848,8 @@ void FrameImpl::PostMessage(std::string origin,
 
     for (fuchsia::web::OutgoingTransferable& outgoing :
          *message.mutable_outgoing_transfer()) {
-      blink::WebMessagePort blink_port = cr_fuchsia::BlinkMessagePortFromFidl(
-          std::move(outgoing.message_port()));
+      blink::WebMessagePort blink_port =
+          BlinkMessagePortFromFidl(std::move(outgoing.message_port()));
       if (!blink_port.IsValid()) {
         callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
         return;

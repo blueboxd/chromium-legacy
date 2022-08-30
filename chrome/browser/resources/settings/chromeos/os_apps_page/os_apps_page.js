@@ -7,31 +7,32 @@
  * 'os-settings-apps-page' is the settings page containing app related settings.
  *
  */
-import '//resources/cr_elements/cr_button/cr_button.m.js';
-import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import '//resources/cr_elements/cr_link_row/cr_link_row.js';
-import '//resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared_css.js';
 import '../../settings_shared_css.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
 import '../guest_os/guest_os_shared_paths.js';
-import '//resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import './android_apps_subpage.js';
 import './app_notifications_page/app_notifications_subpage.js';
 import './app_management_page/app_management_page.js';
 import './app_management_page/app_detail_view.js';
-import '//resources/cr_components/app_management/uninstall_button.js';
+import 'chrome://resources/cr_components/app_management/uninstall_button.js';
 import '../../controls/settings_dropdown_menu.js';
 
-import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from '//resources/cr_components/app_management/constants.js';
-import {getAppIcon, getSelectedApp} from '//resources/cr_components/app_management/util.js';
-import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'chrome://resources/cr_components/app_management/constants.js';
+import {getAppIcon, getSelectedApp} from 'chrome://resources/cr_components/app_management/util.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
@@ -208,14 +209,14 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kManageAndroidPreferences,
-          chromeos.settings.mojom.Setting.kTurnOnPlayStore,
-          chromeos.settings.mojom.Setting.kRestoreAppsAndPages,
+          Setting.kManageAndroidPreferences,
+          Setting.kTurnOnPlayStore,
+          Setting.kRestoreAppsAndPages,
         ]),
       },
     };
@@ -224,7 +225,12 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   connectedCallback() {
     super.connectedCallback();
 
-    this.watch('app_', state => getSelectedApp(state));
+    this.watch('app_', state => {
+      // Don't set `app_` to `null`, since it triggers Polymer
+      // data bindings of <app-management-uninstall-button> which does not
+      // accept `null`, use `undefined` instead.
+      return getSelectedApp(state) || undefined;
+    });
 
     /**
      * @private {!chromeos.settings.appNotification.mojom.AppNotificationsHandlerInterface}

@@ -21,10 +21,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
-#include "chromeos/network/network_handler_test_helper.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,7 +96,7 @@ class MinimumVersionPolicyHandlerTest
   base::test::ScopedFeatureList feature_list_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
-  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+  ash::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<chromeos::NetworkHandlerTestHelper>
       network_handler_test_helper_;
   std::unique_ptr<base::Version> current_version_;
@@ -108,12 +109,8 @@ MinimumVersionPolicyHandlerTest::MinimumVersionPolicyHandlerTest()
 }
 
 void MinimumVersionPolicyHandlerTest::SetUp() {
-  auto fake_update_engine_client =
-      std::make_unique<chromeos::FakeUpdateEngineClient>();
-  fake_update_engine_client_ = fake_update_engine_client.get();
   chromeos::DBusThreadManager::Initialize();
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-      std::move(fake_update_engine_client));
+  fake_update_engine_client_ = ash::UpdateEngineClient::InitializeFakeForTest();
   network_handler_test_helper_ =
       std::make_unique<chromeos::NetworkHandlerTestHelper>();
 
@@ -134,6 +131,7 @@ void MinimumVersionPolicyHandlerTest::SetUp() {
 void MinimumVersionPolicyHandlerTest::TearDown() {
   minimum_version_policy_handler_.reset();
   network_handler_test_helper_.reset();
+  ash::UpdateEngineClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 

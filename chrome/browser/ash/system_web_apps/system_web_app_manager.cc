@@ -22,10 +22,12 @@
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_background_task.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -42,7 +44,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
@@ -241,20 +242,20 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
   system_app_delegates_ = CreateSystemWebApps(profile_);
 }
 
-SystemWebAppManager::~SystemWebAppManager() = default;
+SystemWebAppManager::~SystemWebAppManager() {
+  // SystemWebAppManager lifetime matches WebAppProvider lifetime (see
+  // BrowserContextDependencyManager) but we reset pointers to
+  // system_app_delegates_ for integrity with DCHECKs.
+  if (provider_)
+    ConnectProviderToSystemWebAppDelegateMap(nullptr);
+}
 
 // static
 SystemWebAppManager* SystemWebAppManager::Get(Profile* profile) {
   if (!web_app::AreSystemWebAppsSupported())
     return nullptr;
 
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-  if (!provider)
-    return nullptr;
-
-  provider->CheckIsConnected();
-  return provider->system_web_app_manager_.get();
+  return GetForLocalAppsUnchecked(profile);
 }
 
 // static
@@ -269,24 +270,33 @@ web_app::WebAppProvider* SystemWebAppManager::GetWebAppProvider(
 // static
 SystemWebAppManager* SystemWebAppManager::GetForLocalAppsUnchecked(
     Profile* profile) {
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-  if (!provider)
+  SystemWebAppManager* swa_manager =
+      SystemWebAppManagerFactory::GetForProfile(profile);
+  if (!swa_manager)
     return nullptr;
 
-  provider->CheckIsConnected();
-  return provider->system_web_app_manager_.get();
+  swa_manager->CheckIsConnected();
+  return swa_manager;
 }
 
 // static
 SystemWebAppManager* SystemWebAppManager::GetForTest(Profile* profile) {
   web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForTest(profile);
+      SystemWebAppManager::GetWebAppProvider(profile);
   if (!provider)
     return nullptr;
 
-  provider->CheckIsConnected();
-  return provider->system_web_app_manager_.get();
+  SystemWebAppManager* swa_manager = GetForLocalAppsUnchecked(profile);
+  DCHECK(swa_manager);
+  swa_manager->CheckIsConnected();
+
+  if (provider->on_registry_ready().is_signaled())
+    return swa_manager;
+
+  base::RunLoop run_loop;
+  provider->on_registry_ready().Post(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+  return swa_manager;
 }
 
 void SystemWebAppManager::StopBackgroundTasks() {
@@ -297,11 +307,6 @@ void SystemWebAppManager::StopBackgroundTasks() {
 
 bool SystemWebAppManager::IsAppEnabled(SystemWebAppType type) const {
   return IsSystemWebAppEnabled(system_app_delegates_, type);
-}
-
-void SystemWebAppManager::Shutdown() {
-  shutting_down_ = true;
-  StopBackgroundTasks();
 }
 
 void SystemWebAppManager::SetSubsystems(
@@ -318,6 +323,25 @@ void SystemWebAppManager::SetSubsystems(
   // `SetSubsystems` and `Start` can be called multiple times in tests.
   ui_manager_observation_.Reset();
   ui_manager_observation_.Observe(ui_manager);
+}
+
+void SystemWebAppManager::ConnectSubsystems(web_app::WebAppProvider* provider) {
+  DCHECK(provider);
+  DCHECK(!provider_);
+  provider_ = provider;
+
+  SetSubsystems(&provider->externally_managed_app_manager(),
+                &provider->registrar(), &provider->sync_bridge(),
+                &provider->ui_manager(), &provider->policy_manager());
+
+  ConnectProviderToSystemWebAppDelegateMap(&system_app_delegates_);
+}
+
+void SystemWebAppManager::ScheduleStart() {
+  CheckIsConnected();
+
+  provider_->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&SystemWebAppManager::Start, GetWeakPtr()));
 }
 
 void SystemWebAppManager::Start() {
@@ -368,6 +392,11 @@ void SystemWebAppManager::Start() {
       web_app::ExternalInstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized, GetWeakPtr(),
                      should_force_install_apps, install_start_time));
+}
+
+void SystemWebAppManager::Shutdown() {
+  shutting_down_ = true;
+  StopBackgroundTasks();
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
@@ -518,16 +547,6 @@ void SystemWebAppManager::SetUpdatePolicyForTesting(UpdatePolicy policy) {
 
 void SystemWebAppManager::ResetOnAppsSynchronizedForTesting() {
   on_apps_synchronized_ = std::make_unique<base::OneShotEvent>();
-}
-
-// static
-void SystemWebAppManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastUpdateVersion, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastInstalledLocale, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastAttemptedVersion, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastAttemptedLocale, "");
-  registry->RegisterIntegerPref(::prefs::kSystemWebAppInstallFailureCount, 0);
 }
 
 const base::Version& SystemWebAppManager::CurrentVersion() const {
@@ -715,6 +734,21 @@ bool SystemWebAppManager::CheckAndIncrementRetryAttempts() {
     return false;
   }
   return true;
+}
+
+void SystemWebAppManager::CheckIsConnected() const {
+  DCHECK(provider_) << "Attempted to access SystemWebAppManager while "
+                       "it is is not connected to WebAppProvider.";
+}
+
+void SystemWebAppManager::ConnectProviderToSystemWebAppDelegateMap(
+    const SystemWebAppDelegateMap* system_web_apps_delegate_map) const {
+  DCHECK(provider_);
+
+  provider_->manifest_update_manager().SetSystemWebAppDelegateMap(
+      system_web_apps_delegate_map);
+  provider_->policy_manager().SetSystemWebAppDelegateMap(
+      system_web_apps_delegate_map);
 }
 
 }  // namespace ash

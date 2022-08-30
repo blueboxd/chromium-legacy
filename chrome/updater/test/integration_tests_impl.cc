@@ -291,7 +291,7 @@ void RunWakeActive(UpdaterScope scope, int expected_exit_code) {
 
   // Invoke the wake client of that version.
   base::CommandLine command_line(
-      GetVersionedUpdaterFolderPathForVersion(scope, active_version)
+      GetVersionedInstallDirectory(scope, active_version)
           ->Append(GetExecutableRelativePath()));
   command_line.AppendSwitch(kWakeSwitch);
   int exit_code = -1;
@@ -320,6 +320,12 @@ void UpdateAll(UpdaterScope scope) {
       base::BindOnce(base::BindLambdaForTesting(
           [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
   loop.Run();
+}
+
+void DeleteUpdaterDirectory(UpdaterScope scope) {
+  absl::optional<base::FilePath> install_dir = GetBaseInstallDirectory(scope);
+  ASSERT_TRUE(install_dir);
+  ASSERT_TRUE(base::DeletePathRecursively(*install_dir));
 }
 
 void SetupFakeUpdaterPrefs(UpdaterScope scope, const base::Version& version) {

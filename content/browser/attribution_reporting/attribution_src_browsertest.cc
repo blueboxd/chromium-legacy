@@ -109,7 +109,7 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  base::raw_ptr<MockAttributionHost> mock_attribution_host_;
+  base::raw_ptr<MockAttributionHost, DanglingUntriaged> mock_attribution_host_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered) {
@@ -151,7 +151,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        SourceRegisteredViaEligibilityHeader) {
   const char* kTestCases[] = {
       "createAttributionEligibleImgSrc($1);", "createAttributionSrcScript($1);",
-      "doAttributionEligibleFetch($1);", "doAttributionEligibleXHR($1);"};
+      "doAttributionEligibleFetch($1);", "doAttributionEligibleXHR($1);",
+      "createAttributionEligibleScriptSrc($1);"};
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
 
@@ -1330,7 +1331,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFencedFrameBrowserTest,
   GURL fenced_frame_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
 
-  RenderFrameHost* parent = web_contents()->GetMainFrame();
+  RenderFrameHost* parent = web_contents()->GetPrimaryMainFrame();
 
   RenderFrameHost* fenced_frame_host;
   if (fenced_frame_helper_) {

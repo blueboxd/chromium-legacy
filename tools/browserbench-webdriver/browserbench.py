@@ -7,6 +7,7 @@ from selenium import webdriver
 
 import json
 import logging
+import platform
 import selenium
 import subprocess
 import sys
@@ -36,6 +37,12 @@ class BrowserBench(object):
     if optargs.arguments:
       for arg in optargs.arguments.split(','):
         options.add_argument(arg)
+    else:
+      # If no arguments were given, enable field trial config and no first run.
+      # These ensure a consistent set of flags.
+      options.add_argument('--no-first-run')
+      options.add_argument('--enable-field-trial-config')
+
     if optargs.chrome_path:
       options.binary_location = optargs.chrome_path
     service = webdriver.chrome.service.Service(
@@ -170,6 +177,13 @@ class BrowserBench(object):
 
     logging.info('Script starting')
 
+    caffeinate_process = None
+    if platform.system() == 'Darwin':
+      logging.info('Starting caffeinate')
+      # Caffeinate ensures the machine is not sleeping/idle.
+      caffeinate_process = subprocess.Popen(
+          ['/usr/bin/caffeinate', '-uims', '-t', '300'])
+
     parser = OptionParser()
     parser.add_option('-b',
                       '--browser',
@@ -181,10 +195,11 @@ class BrowserBench(object):
                       dest='executable',
                       help="""Path to the executable to the driver binary. For
                               safari this is the path to safaridriver.""")
-    parser.add_option('-a',
-                      '--arguments',
-                      dest='arguments',
-                      help='Extra arguments to pass to the browser.')
+    parser.add_option(
+        '-a',
+        '--arguments',
+        dest='arguments',
+        help='Extra arguments to pass to the browser (chrome only).')
     parser.add_option('-g',
                       '--githash',
                       dest='githash',
@@ -235,6 +250,8 @@ class BrowserBench(object):
         else:
           logging.critical('Got exception running, retried too many times, '
                            'giving up')
+          if caffeinate_process:
+            caffeinate_process.kill()
           raise e
       # When rerunning, first try killing the browser in hopes of state
       # resetting.
@@ -242,6 +259,8 @@ class BrowserBench(object):
 
     logging.info('Test completed')
     self._ProduceOutput(measurements, extra_key_values)
+    if caffeinate_process:
+      caffeinate_process.kill()
 
   def AddExtraParserOptions(self, parser):
     pass

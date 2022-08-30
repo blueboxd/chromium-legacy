@@ -206,14 +206,14 @@ NetworkTimeTracker::NetworkTimeTracker(
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service),
       time_query_completed_(false) {
-  const base::Value* time_mapping =
-      pref_service_->GetDictionary(prefs::kNetworkTimeMapping);
-  absl::optional<double> time_js = time_mapping->FindDoubleKey(kPrefTime);
-  absl::optional<double> ticks_js = time_mapping->FindDoubleKey(kPrefTicks);
+  const base::Value::Dict& time_mapping =
+      pref_service_->GetValueDict(prefs::kNetworkTimeMapping);
+  absl::optional<double> time_js = time_mapping.FindDouble(kPrefTime);
+  absl::optional<double> ticks_js = time_mapping.FindDouble(kPrefTicks);
   absl::optional<double> uncertainty_js =
-      time_mapping->FindDoubleKey(kPrefUncertainty);
+      time_mapping.FindDouble(kPrefUncertainty);
   absl::optional<double> network_time_js =
-      time_mapping->FindDoubleKey(kPrefNetworkTime);
+      time_mapping.FindDouble(kPrefNetworkTime);
   if (time_js && ticks_js && uncertainty_js && network_time_js) {
     time_at_last_measurement_ = base::Time::FromJsTime(*time_js);
     ticks_at_last_measurement_ =
@@ -279,15 +279,18 @@ void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
       resolution + latency +
       kNumTimeMeasurements * base::Milliseconds(kTicksResolutionMs);
 
-  base::DictionaryValue time_mapping;
-  time_mapping.SetDouble(kPrefTime, time_at_last_measurement_.ToJsTime());
-  time_mapping.SetDouble(kPrefTicks, static_cast<double>(
-      ticks_at_last_measurement_.ToInternalValue()));
-  time_mapping.SetDouble(kPrefUncertainty, static_cast<double>(
-      network_time_uncertainty_.ToInternalValue()));
-  time_mapping.SetDouble(kPrefNetworkTime,
-      network_time_at_last_measurement_.ToJsTime());
-  pref_service_->Set(prefs::kNetworkTimeMapping, time_mapping);
+  base::Value::Dict time_mapping;
+  time_mapping.Set(kPrefTime, time_at_last_measurement_.ToJsTime());
+  time_mapping.Set(
+      kPrefTicks,
+      static_cast<double>(ticks_at_last_measurement_.ToInternalValue()));
+  time_mapping.Set(
+      kPrefUncertainty,
+      static_cast<double>(network_time_uncertainty_.ToInternalValue()));
+  time_mapping.Set(kPrefNetworkTime,
+                   network_time_at_last_measurement_.ToJsTime());
+  pref_service_->Set(prefs::kNetworkTimeMapping,
+                     base::Value(std::move(time_mapping)));
 }
 
 bool NetworkTimeTracker::AreTimeFetchesEnabled() const {
@@ -488,6 +491,7 @@ void NetworkTimeTracker::CheckTime(CheckTimeType check_type) {
   resource_request->load_flags =
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->enable_load_timing = true;
   // This cancels any outstanding fetch.
   time_fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                    traffic_annotation);
@@ -497,8 +501,6 @@ void NetworkTimeTracker::CheckTime(CheckTimeType check_type) {
       base::BindOnce(&NetworkTimeTracker::OnURLLoaderComplete,
                      base::Unretained(this), check_type),
       max_response_size_);
-
-  fetch_started_ = tick_clock_->NowTicks();
 
   timer_.Stop();  // Restarted in OnURLLoaderComplete().
 }
@@ -561,7 +563,9 @@ bool NetworkTimeTracker::UpdateTimeFromResponse(
 
   // Record histograms for the latency of the time query and the time delta
   // between time fetches.
-  base::TimeDelta latency = tick_clock_->NowTicks() - fetch_started_;
+  base::TimeDelta latency =
+      time_fetcher_->ResponseInfo()->load_timing.receive_headers_start -
+      time_fetcher_->ResponseInfo()->load_timing.send_end;
   LOCAL_HISTOGRAM_TIMES("NetworkTimeTracker.TimeQueryLatency", latency);
 
   if (!last_fetched_time_.is_null()) {

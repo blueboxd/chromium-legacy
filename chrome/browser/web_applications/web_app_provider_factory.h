@@ -41,14 +41,14 @@ class WebAppProviderFactory : public BrowserContextKeyedServiceFactory {
   // Called by WebAppProvider static methods.
   static WebAppProvider* GetForProfile(Profile* profile);
 
-  void DependsOnExtensionsSystem();
-
   // BrowserContextKeyedServiceFactory
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 };
 
 }  // namespace web_app

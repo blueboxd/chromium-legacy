@@ -37,6 +37,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/prefetch_service_delegate.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/sms_fetcher.h"
@@ -427,6 +428,15 @@ void ContentBrowserClient::UpdateRendererPreferencesForWorker(
     BrowserContext* browser_context,
     blink::RendererPreferences* out_prefs) {
   // |browser_context| may be null (e.g. during shutdown of a service worker).
+}
+
+void ContentBrowserClient::RequestFilesAccess(
+    const std::vector<base::FilePath>& files,
+    const GURL& destination_url,
+    base::OnceCallback<void(file_access::ScopedFileAccess)>
+        continuation_callback) {
+  std::move(continuation_callback)
+      .Run(file_access::ScopedFileAccess::Allowed());
 }
 
 void ContentBrowserClient::AllowWorkerFileSystem(
@@ -1080,12 +1090,6 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcher(
   // |browser_context| may be null (e.g. during shutdown of a service worker).
 }
 
-absl::optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
-    network::OriginPolicyState error_reason,
-    content::NavigationHandle* handle) {
-  return absl::nullopt;
-}
-
 bool ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return false;
 }
@@ -1314,6 +1318,12 @@ bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
 std::unique_ptr<SpeculationHostDelegate>
 ContentBrowserClient::CreateSpeculationHostDelegate(
     RenderFrameHost& render_frame_host) {
+  return nullptr;
+}
+
+std::unique_ptr<PrefetchServiceDelegate>
+ContentBrowserClient::CreatePrefetchServiceDelegate(
+    BrowserContext* browser_context) {
   return nullptr;
 }
 

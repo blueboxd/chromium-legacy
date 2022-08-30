@@ -178,6 +178,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void UpdateAll() const override { RunCommand("update_all", {}); }
 
+  void DeleteUpdaterDirectory() const override {
+    RunCommand("delete_updater_directory", {});
+  }
+
   void InstallApp(const std::string& app_id) const override {
     RunCommand("install_app", {Param("app_id", app_id)});
   }
@@ -303,7 +307,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     const base::CommandLine command_line =
         *base::CommandLine::ForCurrentProcess();
     base::FilePath path(command_line.GetProgram());
+#if !BUILDFLAG(IS_WIN)
+    // Check the presence of the program on non-Windows platform only, because
+    // on Windows the program may run without extension.
     EXPECT_TRUE(base::PathExists(path));
+#endif
     path = path.DirName();
     EXPECT_TRUE(base::PathExists(path));
     path = MakeAbsoluteFilePath(path);

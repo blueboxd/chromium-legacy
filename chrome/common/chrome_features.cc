@@ -53,7 +53,7 @@ const base::Feature kAnonymousUpdateChecks{"AnonymousUpdateChecks",
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -65,12 +65,6 @@ const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
 const base::Feature kAppProvisioningStatic{"AppProvisioningStatic",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if !BUILDFLAG(IS_ANDROID)
-// App Service related flags. See components/services/app_service/README.md.
-const base::Feature kAppServiceLoadIconWithoutMojom{
-    "AppServiceLoadIconWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_MAC)
 // Can be used to disable RemoteCocoa (hosting NSWindows for apps in the app
@@ -144,11 +138,6 @@ const base::Feature kClientStorageAccessContextAuditing{
 
 const base::Feature kConsolidatedSiteStorageControls{
     "ConsolidatedSiteStorageControls", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kContinuousSearch{"ContinuousSearch",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables "usm" service in the list of user services returned by
@@ -310,10 +299,6 @@ const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-// Serves web app settings at chrome://app-settings/<app-id>.
-const base::Feature kDesktopPWAsWebAppSettingsPage{
-    "DesktopPWAsWebAppSettingsPage", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether Chrome Apps are supported. See https://crbug.com/1221251.
 // If the feature is disabled, Chrome Apps continue to work. If enabled, Chrome
 // Apps will not launch and will be marked in the UI as deprecated.
@@ -392,6 +377,12 @@ const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
 // Enable web app uninstallation from Windows settings or control panel.
 const base::Feature kEnableWebAppUninstallFromOsSettings{
     "EnableWebAppUninstallFromOsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if !BUILDFLAG(IS_ANDROID)
+// Enable WebHID on extension service workers.
+const base::Feature kEnableWebHidOnExtensionServiceWorker{
+    "EnableWebHidOnExtensionServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 // Lazy initialize IndividualSettings for extensions from enterprise policy
@@ -620,10 +611,6 @@ const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, shows a demo of in-product help in a WebUI context.
-const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 const base::Feature kLinuxLowMemoryMonitor{"LinuxLowMemoryMonitor",
@@ -786,9 +773,6 @@ const base::Feature kPrefixWebAppWindowsWithAppName{
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPrivacyGuide{"PrivacyGuide",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPrivacyGuide2{"PrivacyGuide2",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1214,6 +1198,6 @@ const base::Feature kSupportsRtcWakeOver24Hours{
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kUseWebAppDBInsteadOfExternalPrefs{
-    "UseWebAppDBInsteadOfExternalPrefs", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseWebAppDBInsteadOfExternalPrefs", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

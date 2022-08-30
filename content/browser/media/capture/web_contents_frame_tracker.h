@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -32,8 +33,7 @@ class RenderFrameHost;
 // WebContentsVideoCaptureDevice |device| class any time the frame sink or
 // main render frame's view changes.
 class CONTENT_EXPORT WebContentsFrameTracker final
-    : public WebContentsObserver,
-      public base::SupportsWeakPtr<WebContentsFrameTracker> {
+    : public WebContentsObserver {
  public:
   // We generally retrieve certain properties by accessing fields on the
   // WebContents object, however these properties may come from a different
@@ -61,11 +61,15 @@ class CONTENT_EXPORT WebContentsFrameTracker final
     virtual float GetScaleOverrideForCapture() const = 0;
   };
 
-  // NOTE on lifetime: |device| should outlive the WebContentsFrameTracker. The
-  // |device| will be exclusively accessed on the sequence that is used to
-  // construct |this| (which must not be the UI thread).
-  WebContentsFrameTracker(base::WeakPtr<WebContentsVideoCaptureDevice> device,
-                          MouseCursorOverlayController* cursor_controller);
+  // The |device| weak pointer will be used to post tasks back to the device via
+  // |device_task_runner|.
+  //
+  // See the cursor_controller_ member comments for cursor_controller lifetime
+  // documentation.
+  WebContentsFrameTracker(
+      scoped_refptr<base::SequencedTaskRunner> device_task_runner,
+      base::WeakPtr<WebContentsVideoCaptureDevice> device,
+      MouseCursorOverlayController* cursor_controller);
 
   WebContentsFrameTracker(WebContentsFrameTracker&&) = delete;
   WebContentsFrameTracker(const WebContentsFrameTracker&) = delete;
@@ -86,16 +90,15 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // the post" system is used and the first capturer's preferred size is set.
   gfx::Size CalculatePreferredSize(const gfx::Size& capture_size);
 
-  // Determines the preferred capture scale factor based on the content size and
-  // current conditions. This method requires the |content_size|, which is the
-  // resulting frame size from the first captured frame, and thus has an
-  // implicit relationship with |CalculatePreferredSize|, which is used to help
-  // size the backing WebContents before any frames are captured. Ideally, the
-  // result of calculating the preferred size results in a content size that
-  // does not need any scaling, however in practice this is not always true and
-  // we need to adjust the DPI of the WebContents to get an appropriately sized
-  // VideoFrame.
-  float CalculatePreferredScaleFactor(const gfx::Size& content_size);
+  // Determines the preferred DPI scaling factor based on the current content
+  // size of the video frame, meaning the populated pixels, and the unscaled
+  // current content size, meaning the original size of the frame before scaling
+  // was applied to fit the frame. These values are used to compare against
+  // the currently requested |capture_size_| set in
+  // |WillStartCapturingWebContents()|.
+  float CalculatePreferredScaleFactor(
+      const gfx::Size& current_content_size,
+      const gfx::Size& unscaled_current_content_size);
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
@@ -118,7 +121,9 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // By including it in frame's metadata, Viz informs Blink what was the
   // latest invocation of cropTo() before a given frame was produced.
   //
-  // The callback reports success/failure.
+  // The callback reports success/failure. The callback may be called on an
+  // arbitrary sequence, so the caller is responsible for re-posting it
+  // to the desired target sequence as necessary.
   void Crop(const base::Token& crop_id,
             uint32_t crop_version,
             base::OnceCallback<void(media::mojom::CropRequestResult)> callback);
@@ -154,7 +159,8 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // will be posted to the UI thread before the MouseCursorOverlayController
   // deleter task.
 #if !BUILDFLAG(IS_ANDROID)
-  raw_ptr<MouseCursorOverlayController> cursor_controller_ = nullptr;
+  raw_ptr<MouseCursorOverlayController, DanglingUntriaged> cursor_controller_ =
+      nullptr;
 #endif
 
   // We may not have a frame sink ID target at all times.
@@ -187,8 +193,14 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // changes.
   float capture_scale_override_ = 1.0f;
 
-  // The last set capture size.
+  // The consumer-requested capture size, set in |WillStartCapturingWebContents|
+  // to indicate the preferred frame size from the video frame consumer. Note
+  // that frames will not necessarily be this size due to a variety of reasons,
+  // so the |current_content_size| passed into |CalculatePreferredScaleFactor|
+  // may differ from this value.
   gfx::Size capture_size_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace content

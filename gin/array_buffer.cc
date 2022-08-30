@@ -30,7 +30,8 @@ static_assert(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
               "array buffers must have two internal fields");
 
 // ArrayBufferAllocator -------------------------------------------------------
-base::ThreadSafePartitionRoot* ArrayBufferAllocator::partition_ = nullptr;
+partition_alloc::ThreadSafePartitionRoot* ArrayBufferAllocator::partition_ =
+    nullptr;
 
 void* ArrayBufferAllocator::Allocate(size_t length) {
   unsigned int flags = partition_alloc::AllocFlags::kZeroFill |
@@ -73,16 +74,18 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 
 // static
 void ArrayBufferAllocator::InitializePartition() {
-  static base::NoDestructor<base::PartitionAllocator> partition_allocator{};
+  static base::NoDestructor<partition_alloc::PartitionAllocator>
+      partition_allocator{};
 
   // These configuration options are copied from blink's ArrayBufferPartition.
   partition_allocator->init({
-      base::PartitionOptions::AlignedAlloc::kDisallowed,
-      base::PartitionOptions::ThreadCache::kDisabled,
-      base::PartitionOptions::Quarantine::kAllowed,
-      base::PartitionOptions::Cookie::kAllowed,
-      base::PartitionOptions::BackupRefPtr::kDisabled,
-      base::PartitionOptions::UseConfigurablePool::kIfAvailable,
+      partition_alloc::PartitionOptions::AlignedAlloc::kDisallowed,
+      partition_alloc::PartitionOptions::ThreadCache::kDisabled,
+      partition_alloc::PartitionOptions::Quarantine::kAllowed,
+      partition_alloc::PartitionOptions::Cookie::kAllowed,
+      partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+      partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
+      partition_alloc::PartitionOptions::UseConfigurablePool::kIfAvailable,
   });
 
   partition_ = partition_allocator->root();

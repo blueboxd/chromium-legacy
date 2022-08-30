@@ -5,16 +5,11 @@
 #include <memory>
 #include <string>
 
-#include "ash/shell.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crostini/crostini_manager.h"
-#include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/ash/crostini/fake_crostini_features.h"
-#include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
-#include "chrome/browser/ash/policy/login/login_policy_test_base.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
@@ -27,6 +22,8 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -36,6 +33,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -43,10 +41,10 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-// TODO(crbug.com/1262948): Enable and modify for lacros.
 namespace policy {
 
 namespace {
@@ -132,8 +130,8 @@ class FakeDlpController : public DataTransferDlpController,
     return false;
   }
 
-  views::Widget* widget_ = nullptr;
-  FakeClipboardNotifier* helper_ = nullptr;
+  raw_ptr<views::Widget> widget_ = nullptr;
+  raw_ptr<FakeClipboardNotifier> helper_ = nullptr;
   absl::optional<ui::DataTransferEndpoint> blink_data_dst_;
   base::RepeatingClosure blink_quit_cb_ = base::DoNothing();
   bool force_paste_on_warn_ = false;
@@ -188,7 +186,7 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(DlpRulesManagerFactory::GetForPrimaryProfile());
 
     reporting_manager_ = std::make_unique<DlpReportingManager>();
-    SetReportQueueForReportingManager(reporting_manager_.get(), events,
+    SetReportQueueForReportingManager(reporting_manager_.get(), events_,
                                       base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*rules_manager_, GetReportingManager)
         .WillByDefault(::testing::Return(reporting_manager_.get()));
@@ -211,23 +209,6 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
     reporting_manager_.reset();
   }
 
-  void SetupCrostini() {
-    crostini::FakeCrostiniFeatures crostini_features;
-    crostini_features.set_is_allowed_now(true);
-    crostini_features.set_enabled(true);
-
-    // Setup CrostiniManager for testing.
-    crostini::CrostiniManager* crostini_manager =
-        crostini::CrostiniManager::GetForProfile(browser()->profile());
-    crostini_manager->set_skip_restart_for_testing();
-    crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
-    crostini_manager->AddRunningContainerForTesting(
-        crostini::kCrostiniDefaultVmName,
-        crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                                "testuser", "/home/testuser",
-                                "PLACEHOLDER_IP"));
-  }
-
   void SetupTextfield() {
     // Create a widget containing a single, focusable textfield.
     widget_ = std::make_unique<views::Widget>();
@@ -243,6 +224,11 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
     // Show the widget.
     widget_->SetBounds(gfx::Rect(0, 0, 100, 100));
     widget_->Show();
+
+    views::test::WidgetActivationWaiter waiter(widget_.get(), true);
+    widget_->Show();
+    waiter.Wait();
+
     ASSERT_TRUE(widget_->IsActive());
 
     // Focus the textfield and confirm initial state.
@@ -251,17 +237,17 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(textfield_->GetText().empty());
 
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
-        ash::Shell::GetPrimaryRootWindow());
+        widget_->GetNativeWindow()->GetRootWindow());
   }
 
-  MockDlpRulesManager* rules_manager_;
+  raw_ptr<MockDlpRulesManager> rules_manager_;
   std::unique_ptr<DlpReportingManager> reporting_manager_;
-  std::vector<DlpPolicyEvent> events;
+  std::vector<DlpPolicyEvent> events_;
   FakeClipboardNotifier helper_;
   std::unique_ptr<FakeDlpController> dlp_controller_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   std::unique_ptr<views::Widget> widget_;
-  views::Textfield* textfield_ = nullptr;
+  raw_ptr<views::Textfield> textfield_ = nullptr;
 };
 
 // Flaky on MSan bots: http://crbug.com/1178328
@@ -284,7 +270,6 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   {
     ListPrefUpdate update(g_browser_process->local_state(),
                           policy_prefs::kDlpRulesList);
-    base::Value rules(base::Value::Type::LIST);
 
     base::Value src_urls1(base::Value::Type::LIST);
     src_urls1.Append(kMailUrl);
@@ -334,8 +319,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
       ui::ClipboardBuffer::kCopyPaste, &data_dst3, &result3);
   EXPECT_EQ(std::u16string(), result3);
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
-  ASSERT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kBlock)));
@@ -354,68 +339,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
 }
 
 // Flaky on MSan bots: http://crbug.com/1178328
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_BlockComponent DISABLED_BlockComponent
-#else
-#define MAYBE_BlockComponent BlockComponent
-#endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
-  SetupCrostini();
-  {
-    ListPrefUpdate update(g_browser_process->local_state(),
-                          policy_prefs::kDlpRulesList);
-
-    base::Value src_urls(base::Value::Type::LIST);
-    src_urls.Append(kMailUrl);
-    base::Value dst_components(base::Value::Type::LIST);
-    dst_components.Append(dlp::kArc);
-    dst_components.Append(dlp::kCrostini);
-    base::Value restrictions(base::Value::Type::LIST);
-    restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-        dlp::kClipboardRestriction, dlp::kBlockLevel));
-    update->Append(dlp_test_util::CreateRule(
-        "rule #1", "Block Gmail", std::move(src_urls),
-        /*dst_urls=*/base::Value(base::Value::Type::LIST),
-        std::move(dst_components), std::move(restrictions)));
-  }
-
-  {
-    ui::ScopedClipboardWriter writer(
-        ui::ClipboardBuffer::kCopyPaste,
-        std::make_unique<ui::DataTransferEndpoint>((GURL(kMailUrl))));
-    writer.WriteText(kClipboardText116);
-  }
-  ui::DataTransferEndpoint data_dst1(ui::EndpointType::kDefault);
-  std::u16string result1;
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &data_dst1, &result1);
-  EXPECT_EQ(kClipboardText116, result1);
-
-  ui::DataTransferEndpoint data_dst2(ui::EndpointType::kArc);
-  std::u16string result2;
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &data_dst2, &result2);
-  EXPECT_EQ(std::u16string(), result2);
-  ASSERT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kMailUrl, DlpRulesManager::Component::kArc,
-                             DlpRulesManager::Restriction::kClipboard,
-                             DlpRulesManager::Level::kBlock)));
-
-  ui::DataTransferEndpoint data_dst3(ui::EndpointType::kCrostini);
-  std::u16string result3;
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &data_dst3, &result3);
-  EXPECT_EQ(std::u16string(), result3);
-  ASSERT_EQ(events.size(), 2u);
-  EXPECT_THAT(events[1], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kMailUrl, DlpRulesManager::Component::kCrostini,
-                             DlpRulesManager::Restriction::kClipboard,
-                             DlpRulesManager::Level::kBlock)));
-}
-
-// Flaky on MSan bots: http://crbug.com/1178328
-#if defined(MEMORY_SANITIZER)
+// Currently failing on Lacros: http://crbug.com/1336261
+#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_WarnDestination DISABLED_WarnDestination
 #else
 #define MAYBE_WarnDestination WarnDestination
@@ -462,8 +387,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
   widget = helper_.GetWidget()->GetWeakPtr();
   EXPECT_FALSE(widget->IsClosed());
-  ASSERT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kWarn)));
@@ -488,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
   widget = helper_.GetWidget()->GetWeakPtr();
   EXPECT_FALSE(widget->IsClosed());
-  EXPECT_EQ(events.size(), 1u);  // It shouldn't be reported again.
+  EXPECT_EQ(events_.size(), 1u);  // It shouldn't be reported again.
 
   // Initiate a paste on nullptr data_dst.
   std::u16string result;
@@ -500,81 +425,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
   widget = helper_.GetWidget()->GetWeakPtr();
   EXPECT_FALSE(widget->IsClosed());
-  ASSERT_EQ(events.size(), 2u);
-  EXPECT_THAT(events[1],
+  ASSERT_EQ(events_.size(), 2u);
+  EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kWarn)));
 
   FlushMessageLoop();
-}
-
-// Flaky on MSan bots: http://crbug.com/1178328
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_WarnComponent DISABLED_WarnComponent
-#else
-#define MAYBE_WarnComponent WarnComponent
-#endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnComponent) {
-  SetupCrostini();
-
-  {
-    ListPrefUpdate update(g_browser_process->local_state(),
-                          policy_prefs::kDlpRulesList);
-    base::Value rule(base::Value::Type::DICTIONARY);
-    base::Value src_urls(base::Value::Type::DICTIONARY);
-    base::Value src_urls_list(base::Value::Type::LIST);
-    src_urls_list.Append(base::Value(kMailUrl));
-    src_urls.SetKey("urls", std::move(src_urls_list));
-    rule.SetKey("sources", std::move(src_urls));
-
-    base::Value dst_components(base::Value::Type::DICTIONARY);
-    base::Value dst_components_list(base::Value::Type::LIST);
-    dst_components_list.Append(base::Value("ARC"));
-    dst_components_list.Append(base::Value("CROSTINI"));
-    dst_components_list.Append(base::Value("PLUGIN_VM"));
-    dst_components.SetKey("components", std::move(dst_components_list));
-    rule.SetKey("destinations", std::move(dst_components));
-
-    base::Value restrictions(base::Value::Type::DICTIONARY);
-    base::Value restrictions_list(base::Value::Type::LIST);
-    base::Value class_level_dict(base::Value::Type::DICTIONARY);
-    class_level_dict.SetKey("class", base::Value("CLIPBOARD"));
-    class_level_dict.SetKey("level", base::Value("WARN"));
-    restrictions_list.Append(std::move(class_level_dict));
-    rule.SetKey("restrictions", std::move(restrictions_list));
-
-    update->Append(std::move(rule));
-  }
-
-  {
-    ui::ScopedClipboardWriter writer(
-        ui::ClipboardBuffer::kCopyPaste,
-        std::make_unique<ui::DataTransferEndpoint>((GURL(kMailUrl))));
-    writer.WriteText(kClipboardText116);
-  }
-
-  ui::DataTransferEndpoint arc_endpoint(ui::EndpointType::kArc);
-  std::u16string result;
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &arc_endpoint, &result);
-  EXPECT_EQ(kClipboardText116, result);
-  ASSERT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kMailUrl, DlpRulesManager::Component::kArc,
-                             DlpRulesManager::Restriction::kClipboard,
-                             DlpRulesManager::Level::kWarn)));
-
-  ui::DataTransferEndpoint crostini_endpoint(ui::EndpointType::kCrostini);
-  result.clear();
-  ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &crostini_endpoint, &result);
-  EXPECT_EQ(kClipboardText116, result);
-  ASSERT_EQ(events.size(), 2u);
-  EXPECT_THAT(events[1], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kMailUrl, DlpRulesManager::Component::kCrostini,
-                             DlpRulesManager::Restriction::kClipboard,
-                             DlpRulesManager::Level::kWarn)));
 }
 
 class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
@@ -594,13 +451,13 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
         g_browser_process->local_state());
 
     reporting_manager_ = std::make_unique<DlpReportingManager>();
-    SetReportQueueForReportingManager(reporting_manager_.get(), events,
+    SetReportQueueForReportingManager(reporting_manager_.get(), events_,
                                       base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*rules_manager_, GetReportingManager)
         .WillByDefault(::testing::Return(reporting_manager_.get()));
 
     dlp_controller_ =
-        std::make_unique<FakeDlpController>(*rules_manager_, &helper);
+        std::make_unique<FakeDlpController>(*rules_manager_, &helper_);
   }
 
   void TearDownOnMainThread() override {
@@ -629,8 +486,8 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<::testing::NiceMock<MockDlpRulesManager>> rules_manager_;
   std::unique_ptr<DlpReportingManager> reporting_manager_;
-  std::vector<DlpPolicyEvent> events;
-  FakeClipboardNotifier helper;
+  std::vector<DlpPolicyEvent> events_;
+  FakeClipboardNotifier helper_;
   std::unique_ptr<FakeDlpController> dlp_controller_;
 };
 
@@ -709,20 +566,20 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
   run_loop.Run();
 
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
-  base::WeakPtr<views::Widget> widget = helper.GetWidget()->GetWeakPtr();
+  base::WeakPtr<views::Widget> widget = helper_.GetWidget()->GetWeakPtr();
   EXPECT_FALSE(widget->IsClosed());
-  EXPECT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  EXPECT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kWarn)));
 
   ASSERT_TRUE(dlp_controller_->blink_data_dst_.has_value());
-  helper.BlinkProceedPressed(dlp_controller_->blink_data_dst_.value());
+  helper_.BlinkProceedPressed(dlp_controller_->blink_data_dst_.value());
 
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
-  EXPECT_EQ(events.size(), 2u);
-  EXPECT_THAT(events[1],
+  EXPECT_EQ(events_.size(), 2u);
+  EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard)));
 
@@ -804,19 +661,19 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_CancelWarn) {
   run_loop.Run();
 
   ASSERT_TRUE(dlp_controller_->ObserveWidget());
-  base::WeakPtr<views::Widget> widget = helper.GetWidget()->GetWeakPtr();
+  base::WeakPtr<views::Widget> widget = helper_.GetWidget()->GetWeakPtr();
   EXPECT_FALSE(widget->IsClosed());
   ASSERT_TRUE(dlp_controller_->blink_data_dst_.has_value());
-  EXPECT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  EXPECT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kWarn)));
 
-  helper.CancelWarningPressed(dlp_controller_->blink_data_dst_.value());
+  helper_.CancelWarningPressed(dlp_controller_->blink_data_dst_.value());
 
   EXPECT_EQ("", EvalJs(GetActiveWebContents(), "p"));
-  EXPECT_EQ(events.size(), 1u);
+  EXPECT_EQ(events_.size(), 1u);
 
   EXPECT_TRUE(!widget || widget->IsClosed());
 }
@@ -892,11 +749,11 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
   dlp_controller_->force_paste_on_warn_ = true;
   GetActiveWebContents()->Paste();
   EXPECT_FALSE(dlp_controller_->ObserveWidget());
-  EXPECT_FALSE(helper.GetWidget());
+  EXPECT_FALSE(helper_.GetWidget());
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
 
-  EXPECT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  EXPECT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard)));
 }
@@ -976,8 +833,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
   EXPECT_FALSE(dlp_controller_->ObserveWidget());
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
 
-  EXPECT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0],
+  EXPECT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kReport)));

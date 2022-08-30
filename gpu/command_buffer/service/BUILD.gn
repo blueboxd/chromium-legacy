@@ -48,8 +48,6 @@ target(link_target_type, "service_sources") {
     "gpu_switches.h",
     "image_factory.cc",
     "image_factory.h",
-    "image_manager.cc",
-    "image_manager.h",
     "mailbox_manager.h",
     "memory_tracking.cc",
     "memory_tracking.h",
@@ -110,6 +108,8 @@ target(link_target_type, "gles2_sources") {
     "abstract_texture_impl.h",
     "buffer_manager.cc",
     "buffer_manager.h",
+    "bug_1307307_tracker.cc",
+    "bug_1307307_tracker.h",
     "client_service_map.h",
     "context_group.cc",
     "context_group.h",
@@ -361,14 +361,6 @@ target(link_target_type, "gles2_sources") {
       "//ui/base:features",
       "//ui/ozone",
     ]
-
-    # Adding this dependency for collecting some metrics checking GL
-    # extensions used on Ozone platforms. Will be removed once the
-    # metrics are collected (in 2-3 months hopefully).
-    # Ref bug: https://crbug.com/1310028
-    if (ozone_platform_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
   }
 
   if (enable_vulkan) {

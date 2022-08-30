@@ -5,7 +5,6 @@
 assert(is_fuchsia)
 
 import("//build/config/fuchsia/generate_runner_scripts.gni")
-import("//build/config/fuchsia/symbol_archive.gni")
 import("//build/config/locales.gni")
 import("//testing/test.gni")
 import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
@@ -119,9 +118,7 @@ component("web_engine_core") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
-    "//fuchsia/base",
-    "//fuchsia/base:message_port",
-    "//fuchsia/base:modular",
+    "//fuchsia_web/common",
     "//fuchsia_web/webengine/mojom",
 
     # TODO(crbug.com/1081525): Move context_provider to its own target and move
@@ -240,6 +237,8 @@ component("web_engine_core") {
     "browser/frame_window_tree_host.h",
     "browser/media_player_impl.cc",
     "browser/media_player_impl.h",
+    "browser/message_port.cc",
+    "browser/message_port.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
     "browser/navigation_policy_handler.cc",
@@ -320,7 +319,6 @@ executable("web_engine_exe") {
     ":switches",
     ":web_engine_core",
     "//base",
-    "//components/fuchsia_component_support",
     "//content/public/app",
   ]
   sources = [ "web_engine_main.cc" ]
@@ -361,6 +359,7 @@ fuchsia_component("context_provider_component") {
 }
 
 fuchsia_package("web_engine") {
+  # TODO(fxbug.dev/100944): Add appropriate visibility when fixed.
   deps = [
     ":context_provider_component",
     ":web_instance_component",
@@ -370,6 +369,9 @@ fuchsia_package("web_engine") {
 }
 
 fuchsia_package_installer("web_engine_installer") {
+  # Force this template to apply visibility. See the bug below.
+  # TODO(crbug.com/1328459): Remove once the bug is fixed.
+  visibility += []
   package = ":web_engine"
 }
 
@@ -396,6 +398,7 @@ fuchsia_component("context_provider_with_webui_component") {
 }
 
 fuchsia_package("web_engine_with_webui") {
+  # TODO(fxbug.dev/100944): Add appropriate visibility when fixed.
   deps = [
     ":context_provider_with_webui_component",
     ":web_instance_component",
@@ -406,6 +409,10 @@ fuchsia_package("web_engine_with_webui") {
 }
 
 fuchsia_package_installer("web_engine_with_webui_installer") {
+  visibility += [
+    "//chrome/test/*",
+    "//content/test/*",
+  ]
   package = ":web_engine_with_webui"
 }
 
@@ -418,6 +425,7 @@ source_set("browsertest_core") {
     "test/frame_for_test.h",
     "test/scenic_test_helper.cc",
     "test/scenic_test_helper.h",
+    "test/scoped_connection_checker.h",
     "test/test_data.cc",
     "test/test_data.h",
     "test/web_engine_browser_test.cc",
@@ -430,7 +438,7 @@ source_set("browsertest_core") {
     ":web_engine_core",
     "//content/public/browser",
     "//content/test:test_support",
-    "//fuchsia/base/test:test_support",
+    "//fuchsia_web/common/test:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
@@ -494,8 +502,8 @@ test("web_engine_browsertests") {
     "//components/version_info",
     "//content/public/browser",
     "//content/test:test_support",
-    "//fuchsia/base",
-    "//fuchsia/base/test:test_support",
+    "//fuchsia_web/common",
+    "//fuchsia_web/common/test:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -567,7 +575,7 @@ test("web_engine_unittests") {
     "//components/url_rewrite/common",
     "//components/url_rewrite/mojom",
     "//content/test:test_support",
-    "//fuchsia/base/test:test_support",
+    "//fuchsia_web/common/test:test_support",
     "//mojo/core/embedder",
     "//services/media_session/public/mojom",
     "//services/network:network_service",
@@ -596,6 +604,8 @@ test("web_engine_unittests") {
 
 test("web_engine_integration_tests") {
   sources = [
+    "test/context_provider_test_connector.cc",
+    "test/context_provider_test_connector.h",
     "test_debug_listener.cc",
     "test_debug_listener.h",
     "web_engine_debug_integration_test.cc",
@@ -604,7 +614,8 @@ test("web_engine_integration_tests") {
     "web_engine_integration_test_base.cc",
     "web_engine_integration_test_base.h",
 
-    # TODO(crbug.com/1081525): Move to //fuchsia_web/webinstance_host/.
+    # TODO(crbug.com/1081525): Move to //fuchsia_web/webinstance_host/ and
+    # remove the deps below.
     "web_instance_host_integration_test.cc",
   ]
   data = [ "test/data" ]
@@ -613,9 +624,8 @@ test("web_engine_integration_tests") {
     "//base",
     "//base:test_log_listener_safe",
     "//components/version_info",
-    "//fuchsia/base",
-    "//fuchsia/base:run_all_integration_tests",
-    "//fuchsia/base/test:test_support",
+    "//fuchsia_web/common/test:run_all_integration_tests",
+    "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/webinstance_host",
     "//media",
     "//media/fuchsia/audio:test_support",
@@ -637,52 +647,5 @@ test("web_engine_integration_tests") {
     "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
     "//build/config/fuchsia/test/web_engine_required_capabilities.test-cmx",
     "//build/config/fuchsia/test/web_instance_host_capabilities.test-cmx",
-  ]
-}
-
-fuchsia_component("web_engine_shell_component") {
-  testonly = true
-  manifest = "test/web_engine_shell.cmx"
-  data_deps = [ ":web_engine_shell_exec" ]
-}
-
-fuchsia_package("web_engine_shell_pkg") {
-  testonly = true
-  package_name = "web_engine_shell"
-  deps = [ ":web_engine_shell_component" ]
-}
-
-fuchsia_package_installer("web_engine_shell") {
-  testonly = true
-  package = ":web_engine_shell_pkg"
-  package_name = "web_engine_shell"
-  package_deps = [
-    [
-      ":web_engine",
-      "web_engine",
-    ],
-    [
-      ":web_engine_with_webui",
-      "web_engine_with_webui",
-    ],
-  ]
-}
-
-executable("web_engine_shell_exec") {
-  testonly = true
-  sources = [ "test/web_engine_shell.cc" ]
-
-  data = [ "test/shell_data" ]
-
-  deps = [
-    "//base",
-    "//fuchsia/base",
-    "//fuchsia_web/webinstance_host",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
-    "//third_party/fuchsia-sdk/sdk/pkg/fdio",
-    "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
-    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
-    "//url",
   ]
 }

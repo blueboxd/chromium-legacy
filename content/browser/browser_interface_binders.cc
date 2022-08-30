@@ -35,8 +35,8 @@
 #include "content/browser/ml/ml_service_factory.h"
 #include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
-#include "content/browser/prerender/prerender_internals.mojom.h"
-#include "content/browser/prerender/prerender_internals_ui.h"
+#include "content/browser/preloading/prerender/prerender_internals.mojom.h"
+#include "content/browser/preloading/prerender/prerender_internals_ui.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/browser/process_internals/process_internals_ui.h"
 #include "content/browser/quota/quota_context.h"
@@ -618,8 +618,8 @@ BindServiceWorkerReceiverForStorageKey(
 template <typename Interface>
 void EmptyBinderForFrame(RenderFrameHost* host,
                          mojo::PendingReceiver<Interface> receiver) {
-  DLOG(ERROR) << "Empty binder for interface " << Interface::Name_
-              << " for the frame/document scope";
+  DVLOG(1) << "Empty binder for interface " << Interface::Name_
+           << " for the frame/document scope";
 }
 
 BatteryMonitorBinder& GetBatteryMonitorBinderOverride() {
@@ -740,16 +740,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::ComputePressureHost>(base::BindRepeating(
       &RenderFrameHostImpl::BindComputePressureHost, base::Unretained(host)));
 
-  map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
-      [](RenderFrameHostImpl* host,
-         mojo::PendingReceiver<blink::mojom::ContactsManager> receiver) {
-        DCHECK(host);
-
-        // The object is bound to the lifetime of `render_frame_host`'s logical
-        // document by virtue of being a `DocumentService` implementation.
-        new ContactsManagerImpl(host, std::move(receiver));
-      },
-      base::Unretained(host)));
+  map->Add<blink::mojom::ContactsManager>(
+      base::BindRepeating(ContactsManagerImpl::Create, base::Unretained(host)));
 
   map->Add<blink::mojom::ContentSecurityNotifier>(base::BindRepeating(
       [](RenderFrameHostImpl* host,
@@ -1442,6 +1434,10 @@ void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
                           base::Unretained(host)));
   map->Add<blink::mojom::ReportingServiceProxy>(base::BindRepeating(
       &CreateReportingServiceProxyForServiceWorker, base::Unretained(host)));
+#if !BUILDFLAG(IS_ANDROID)
+  map->Add<blink::mojom::HidService>(base::BindRepeating(
+      &ServiceWorkerHost::BindHidService, base::Unretained(host)));
+#endif
 
   // RenderProcessHost binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindServiceWorkerReceiver(
@@ -1508,10 +1504,16 @@ void PopulateBinderMapWithContext(
       BindServiceWorkerReceiverForOriginAndFrameId(
           &RenderProcessHostImpl::CreateNotificationService, host));
 
+  // This is called when `host` is constructed. ServiceWorkerVersion, which
+  // constructs `host`, checks that context() is not null and also uses
+  // BrowserContext right after constructing `host`, so this is safe.
+  BrowserContext* browser_context =
+      host->version()->context()->wrapper()->browser_context();
+
   // Give the embedder a chance to register binders.
   GetContentClient()
       ->browser()
-      ->RegisterBrowserInterfaceBindersForServiceWorker(map);
+      ->RegisterBrowserInterfaceBindersForServiceWorker(browser_context, map);
 }
 
 void PopulateBinderMap(ServiceWorkerHost* host, mojo::BinderMap* map) {

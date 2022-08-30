@@ -145,7 +145,7 @@ FileAnalysisRequest::FileAnalysisRequest(
     std::string mime_type,
     bool delay_opening_file,
     BinaryUploadService::ContentAnalysisCallback callback)
-    : Request(std::move(callback), analysis_settings.analysis_url),
+    : Request(std::move(callback), analysis_settings.cloud_or_local_settings),
       has_cached_result_(false),
       block_unsupported_types_(analysis_settings.block_unsupported_file_types),
       tag_settings_(analysis_settings.tags),
@@ -196,7 +196,8 @@ bool FileAnalysisRequest::FileSupportedByDlp(
     const std::string& mime_type) const {
   for (const std::string& tag : content_analysis_request().tags()) {
     if (tag == "dlp" && tag_settings_.count("dlp")) {
-      const auto* supported_files = tag_settings_.at("dlp").supported_files;
+      const auto* supported_files =
+          tag_settings_.at("dlp").supported_files.get();
       return supported_files->FileExtensionSupported(file_name_) ||
              supported_files->MimeTypeSupported(mime_type);
     }

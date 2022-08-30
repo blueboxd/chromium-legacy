@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -61,6 +62,10 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     function_ = handler;
     arguments_ = arguments;
+    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+    if (tracker && script_state->World().IsMainWorld()) {
+      function_->SetParentTaskId(tracker->RunningTaskId(script_state));
+    }
   } else {
     UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
   }
@@ -77,6 +82,10 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
           To<LocalDOMWindow>(target),
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     code_ = handler;
+    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+    if (tracker && script_state->World().IsMainWorld()) {
+      code_parent_task_id_ = tracker->RunningTaskId(script_state);
+    }
   } else {
     UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
   }
@@ -114,6 +123,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
     return;
   }
+  ScriptState* script_state = script_state_->Get();
 
   {
     // ExecutionContext::CanExecuteScripts() relies on the current context to
@@ -124,7 +134,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     // - InvokeAndReportException() => V8Function::Invoke() =>
     //   IsCallbackFunctionRunnable() and
     // - V8ScriptRunner::CompileAndRunScript().
-    ScriptState::Scope scope(script_state_->Get());
+    ScriptState::Scope scope(script_state);
     if (!context->CanExecuteScripts(kAboutToExecuteScript)) {
       DVLOG(1) << "ScheduledAction::execute " << this
                << ": window can not execute scripts";
@@ -143,6 +153,16 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     // evaluation below.
   }
 
+  // We create a TaskScope, to ensure code strings passed to ScheduledAction
+  // APIs properly track their ancestor as the registering task.
+  std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
+      task_attribution_scope;
+  auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+  if (tracker && script_state->World().IsMainWorld()) {
+    task_attribution_scope =
+        tracker->CreateTaskScope(script_state, code_parent_task_id_);
+  }
+
   // We use |SanitizeScriptErrors::kDoNotSanitize| because muted errors flag is
   // not set in https://html.spec.whatwg.org/C/#timer-initialisation-steps
   // TODO(crbug.com/1133238): Plumb base URL etc. from the initializing script.
@@ -151,7 +171,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
       ClassicScript::Create(code_, KURL(), KURL(), ScriptFetchOptions(),
                             ScriptSourceLocationType::kEvalForScheduledAction,
                             SanitizeScriptErrors::kDoNotSanitize);
-  script->RunScriptOnScriptState(script_state_->Get());
+  script->RunScriptOnScriptState(script_state);
 }
 
 void ScheduledAction::Trace(Visitor* visitor) const {

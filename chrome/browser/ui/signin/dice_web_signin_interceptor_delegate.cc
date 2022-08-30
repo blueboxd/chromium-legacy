@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/cancelable_callback.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,16 +31,11 @@ class ForcedProfileSwitchInterceptionHandle
   explicit ForcedProfileSwitchInterceptionHandle(
       base::OnceCallback<void(SigninInterceptionResult)> callback) {
     DCHECK(callback);
-    cancelable_callback_.Reset(std::move(callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(cancelable_callback_.callback(),
+        FROM_HERE, base::BindOnce(std::move(callback),
                                   SigninInterceptionResult::kAccepted));
   }
   ~ForcedProfileSwitchInterceptionHandle() override = default;
-
- private:
-  base::CancelableOnceCallback<void(SigninInterceptionResult)>
-      cancelable_callback_;
 };
 
 class ForcedEnterpriseSigninInterceptionHandle
@@ -67,7 +61,7 @@ class ForcedEnterpriseSigninInterceptionHandle
         bubble_parameters.profile_highlight_color,
         base::BindOnce(&ForcedEnterpriseSigninInterceptionHandle::
                            OnEnterpriseInterceptionDialogClosed,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~ForcedEnterpriseSigninInterceptionHandle() override {
@@ -102,6 +96,8 @@ class ForcedEnterpriseSigninInterceptionHandle
   const bool profile_creation_required_by_policy_;
   const bool show_link_data_option_;
   base::OnceCallback<void(SigninInterceptionResult)> callback_;
+  base::WeakPtrFactory<ForcedEnterpriseSigninInterceptionHandle>
+      weak_ptr_factory_{this};
 };
 
 }  // namespace

@@ -43,15 +43,15 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
     real_table_model_observer_->OnModelChanged();
     callback_.Run();
   }
-  void OnItemsChanged(int start, int length) override {
+  void OnItemsChanged(size_t start, size_t length) override {
     real_table_model_observer_->OnItemsChanged(start, length);
     callback_.Run();
   }
-  void OnItemsAdded(int start, int length) override {
+  void OnItemsAdded(size_t start, size_t length) override {
     real_table_model_observer_->OnItemsAdded(start, length);
     callback_.Run();
   }
-  void OnItemsRemoved(int start, int length) override {
+  void OnItemsRemoved(size_t start, size_t length) override {
     real_table_model_observer_->OnItemsRemoved(start, length);
     callback_.Run();
   }
@@ -89,11 +89,11 @@ TaskManagerTester::~TaskManagerTester() {
 }
 
 // TaskManagerTester:
-int TaskManagerTester::GetRowCount() {
+size_t TaskManagerTester::GetRowCount() {
   return model_->RowCount();
 }
 
-std::u16string TaskManagerTester::GetRowTitle(int row) {
+std::u16string TaskManagerTester::GetRowTitle(size_t row) {
   return model_->GetText(row, IDS_TASK_MANAGER_TASK_COLUMN);
 }
 
@@ -126,7 +126,7 @@ void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
   model_->ToggleColumnVisibility(column_id);
 }
 
-int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
+int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, size_t row) {
   TaskId task_id = model_->tasks_[row];
   int64_t value = 0;
   int64_t ignored = 0;
@@ -171,25 +171,29 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
   return value;
 }
 
-SessionID TaskManagerTester::GetTabId(int row) {
+SessionID TaskManagerTester::GetTabId(size_t row) {
   TaskId task_id = model_->tasks_[row];
   return task_manager()->GetTabId(task_id);
 }
 
-void TaskManagerTester::Kill(int row) {
+void TaskManagerTester::Kill(size_t row) {
   model_->KillTask(row);
 }
 
-void TaskManagerTester::GetRowsGroupRange(int row,
-                                          int* out_start,
-                                          int* out_length) {
+void TaskManagerTester::Activate(size_t row) {
+  model_->ActivateTask(row);
+}
+
+void TaskManagerTester::GetRowsGroupRange(size_t row,
+                                          size_t* out_start,
+                                          size_t* out_length) {
   return model_->GetRowsGroupRange(row, out_start, out_length);
 }
 
 std::vector<std::u16string> TaskManagerTester::GetWebContentsTaskTitles() {
   std::vector<std::u16string> titles;
   titles.reserve(GetRowCount());
-  for (int row = 0; row < GetRowCount(); row++) {
+  for (size_t row = 0; row < GetRowCount(); row++) {
     // Exclude tasks which are not associated with a WebContents.
     if (GetTabId(row) != SessionID::InvalidValue())
       titles.push_back(GetRowTitle(row));

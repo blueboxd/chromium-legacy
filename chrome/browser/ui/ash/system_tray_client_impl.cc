@@ -42,13 +42,13 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
@@ -58,10 +58,10 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -74,8 +74,6 @@
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
-using chromeos::DBusThreadManager;
-using chromeos::UpdateEngineClient;
 using session_manager::SessionManager;
 using session_manager::SessionState;
 
@@ -507,11 +505,10 @@ void SystemTrayClientImpl::ShowGestureEducationHelp() {
   if (!profile)
     return;
 
-  web_app::SystemAppLaunchParams params;
+  ash::SystemAppLaunchParams params;
   params.url = GURL(chrome::kChromeOSGestureEducationHelpURL);
   params.launch_source = apps::mojom::LaunchSource::kFromOtherApp;
-  web_app::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::HELP,
-                                   params);
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::HELP, params);
 }
 
 void SystemTrayClientImpl::ShowPaletteHelp() {
@@ -746,12 +743,10 @@ void SystemTrayClientImpl::ShowCalendarEvent(
   }
 
   // Launch web app.
-  proxy->LaunchAppWithUrl(
-      web_app::kGoogleCalendarAppId,
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          /*prefer_container=*/true),
-      official_url, apps::mojom::LaunchSource::kFromShelf);
+  proxy->LaunchAppWithUrl(web_app::kGoogleCalendarAppId,
+                          apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                              /*prefer_container=*/true),
+                          official_url, apps::mojom::LaunchSource::kFromShelf);
   opened_pwa = true;
 }
 

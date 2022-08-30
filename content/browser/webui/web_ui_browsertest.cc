@@ -23,12 +23,13 @@
 #include "content/browser/fenced_frame/fenced_frame.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webui/content_web_ui_controller_factory.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/browser/webui_config_map.h"
@@ -83,15 +84,15 @@ const char kLoadDedicatedWorkerScript[] = R"(
 class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
   void RegisterMessages() override {
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "messageRequiringGesture",
         base::BindRepeating(&TestWebUIMessageHandler::OnMessageRequiringGesture,
                             base::Unretained(this)));
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "notifyFinish",
         base::BindRepeating(&TestWebUIMessageHandler::OnNotifyFinish,
                             base::Unretained(this)));
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "sendMessage",
         base::BindRepeating(&TestWebUIMessageHandler::OnSendMessase,
                             base::Unretained(this)));
@@ -110,16 +111,16 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
   }
 
  private:
-  void OnMessageRequiringGesture(const base::ListValue* args) {
+  void OnMessageRequiringGesture(const base::Value::List& args) {
     ++message_requiring_gesture_count_;
   }
 
-  void OnNotifyFinish(const base::ListValue* args) {
+  void OnNotifyFinish(const base::Value::List& args) {
     if (finish_closure_)
       finish_closure_.Run();
   }
 
-  void OnSendMessase(const base::ListValue* args) {
+  void OnSendMessase(const base::Value::List& args) {
     // This message will be invoked when WebContents changes the main RFH
     // and the old main RFH is still alive during navigating from WebUI page
     // to cross-site. WebUI message should be handled with old main RFH.
@@ -174,7 +175,7 @@ class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
 
   WebContents* web_contents() { return shell()->web_contents(); }
-  RenderFrameHost* main_rfh() { return web_contents()->GetMainFrame(); }
+  RenderFrameHost* main_rfh() { return web_contents()->GetPrimaryMainFrame(); }
 
   TestWebUIMessageHandler* test_handler() { return test_handler_; }
 
@@ -182,7 +183,7 @@ class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
   base::SimpleTestTickClock clock_;
 
   // Owned by the WebUI associated with the WebContents.
-  raw_ptr<TestWebUIMessageHandler> test_handler_ = nullptr;
+  raw_ptr<TestWebUIMessageHandler, DanglingUntriaged> test_handler_ = nullptr;
 };
 
 }  // namespace
@@ -195,11 +196,11 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   WebContents* web_contents = shell()->web_contents();
 
   const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
-  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  EXPECT_TRUE(WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url));
   ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -217,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   EXPECT_NE(orig_browsing_instance_id,
             new_site_instance->GetBrowsingInstanceId());
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 }
 
 // Tests that a WebUI page will use a separate SiteInstance when we navigated to
@@ -229,12 +230,12 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
       web_contents->GetSiteInstance());
   // Navigate from the initial blank page to the WebUI URL.
   const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
-  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  EXPECT_TRUE(WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url));
   ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
 
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
   auto* new_site_instance = web_contents->GetSiteInstance();
   EXPECT_NE(orig_site_instance, new_site_instance);
   EXPECT_FALSE(orig_site_instance->IsRelatedSiteInstance(new_site_instance));
@@ -248,12 +249,12 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {
       std::make_unique<ui::TestUntrustedWebUIConfig>("test-host"));
 
   const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
-  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  EXPECT_TRUE(WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url));
 
   ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -269,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {
   EXPECT_NE(orig_browsing_instance_id,
             new_site_instance->GetBrowsingInstanceId());
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 }
 
 // Tests that navigating from chrome-untrusted:// to chrome:// results in
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromUntrustedToChrome) {
   ASSERT_TRUE(NavigateToURL(web_contents,
                             GetChromeUntrustedUIURL("test-host/title1.html")));
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromUntrustedToChrome) {
   // Navigate to a WebUI and ensure that the SiteInstance has changed and the
   // new process has WebUI bindings.
   const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
-  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  EXPECT_TRUE(WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url));
 
   ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromUntrustedToChrome) {
   EXPECT_NE(orig_browsing_instance_id,
             new_site_instance->GetBrowsingInstanceId());
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-      web_contents->GetMainFrame()->GetProcess()->GetID()));
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, SameDocumentNavigationsAndReload) {
@@ -372,8 +373,10 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
   EXPECT_EQ(0, test_handler()->message_requiring_gesture_count());
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
-                       MessageRequiringGestureAllowedWithInteractiveEvent) {
+IN_PROC_BROWSER_TEST_F(
+    WebUIRequiringGestureBrowserTest,
+    // TODO(crbug.com/1342300): Re-enable this test
+    DISABLED_MessageRequiringGestureAllowedWithInteractiveEvent) {
   // Simulate a click at Now.
   content::SimulateMouseClick(web_contents(), 0,
                               blink::WebMouseEvent::Button::kLeft);
@@ -417,24 +420,26 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, DISABLED_NavigateWhileWebUISend) {
   web_contents->GetWebUI()->AddMessageHandler(base::WrapUnique(test_handler));
 
   auto* webui = static_cast<WebUIImpl*>(web_contents->GetWebUI());
-  EXPECT_EQ(web_contents->GetMainFrame(), webui->frame_host());
+  EXPECT_EQ(web_contents->GetPrimaryMainFrame(), webui->frame_host());
 
-  test_handler->set_finish_closure(base::BindLambdaForTesting(
-      [&]() { EXPECT_NE(web_contents->GetMainFrame(), webui->frame_host()); }));
+  test_handler->set_finish_closure(base::BindLambdaForTesting([&]() {
+    EXPECT_NE(web_contents->GetPrimaryMainFrame(), webui->frame_host());
+  }));
 
   bool received_send_message = false;
   test_handler->set_send_message_closure(
       base::BindLambdaForTesting([&]() { received_send_message = true; }));
 
   base::RunLoop run_loop;
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
       u"onunload=function() { chrome.send('sendMessage')}",
       base::BindOnce([](base::OnceClosure callback,
                         base::Value) { std::move(callback).Run(); },
                      run_loop.QuitClosure()));
   run_loop.Run();
 
-  RenderFrameDeletedObserver delete_observer(web_contents->GetMainFrame());
+  RenderFrameDeletedObserver delete_observer(
+      web_contents->GetPrimaryMainFrame());
   EXPECT_TRUE(NavigateToURL(
       web_contents, embedded_test_server()->GetURL("/simple_page.html")));
   delete_observer.WaitUntilDeleted();
@@ -454,9 +459,51 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, CoopCoepPolicies) {
   const GURL isolated_url(GetChromeUntrustedUIURL("isolated/title2.html"));
   ASSERT_TRUE(NavigateToURL(web_contents, isolated_url));
 
-  auto* main_frame = web_contents->GetMainFrame();
+  auto* main_frame = web_contents->GetPrimaryMainFrame();
   EXPECT_EQ(true, EvalJs(main_frame, "window.crossOriginIsolated;",
                          EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
+// Regression test for: https://crbug.com/1308391
+// Check content/ supports its embedders closing WebContent during WebUI
+// destruction, after the RenderFrameHost owning it has unloaded.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
+                       SynchronousWebContentDeletionInUnload) {
+  static std::unique_ptr<WebContents> web_contents;
+  web_contents = WebContents::Create(
+      WebContents::CreateParams(shell()->web_contents()->GetBrowserContext()));
+  // Install a WebUI. When destroyed, it executes a callback releasing the
+  // WebContent.
+  class Config : public WebUIConfig {
+   public:
+    Config() : WebUIConfig(kChromeUIUntrustedScheme, "test-host") {}
+    std::unique_ptr<WebUIController> CreateWebUIController(
+        WebUI* web_ui) final {
+      class Controller : public WebUIController {
+       public:
+        explicit Controller(WebUI* web_ui) : WebUIController(web_ui) {
+          AddUntrustedDataSource(web_contents->GetBrowserContext(),
+                                 "test-host");
+        }
+        ~Controller() override { web_contents.reset(); }
+      };
+      return std::make_unique<Controller>(web_ui);
+    };
+  };
+
+  content::WebUIConfigMap::GetInstance().AddUntrustedWebUIConfig(
+      std::make_unique<Config>());
+  ASSERT_TRUE(NavigateToURL(web_contents.get(),
+                            GetChromeUntrustedUIURL("test-host/title1.html")));
+  RenderFrameHost* main_rfh = web_contents->GetPrimaryMainFrame();
+  RenderFrameDeletedObserver rfh_deleted(web_contents->GetPrimaryMainFrame());
+  RenderFrameDeletedObserver delete_observer(main_rfh);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL dummy_url = embedded_test_server()->GetURL("/simple_page.html");
+  web_contents->GetController().LoadURL(
+      dummy_url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  delete_observer.WaitUntilDeleted();
+  ASSERT_FALSE(web_contents);
 }
 
 class WebUIRequestSchemesTest : public ContentBrowserTest {
@@ -504,14 +551,14 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest, DefaultSchemesCanBeRequested) {
     url = GURL(base::StrCat(
         {requestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
     EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+        web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(), url));
   }
 
   for (const auto& unrequestable_scheme : unrequestable_schemes) {
     url = GURL(base::StrCat(
         {unrequestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
     EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+        web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(), url));
   }
 }
 
@@ -555,14 +602,14 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
     url = GURL(base::StrCat(
         {requestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
     EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+        web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(), url));
   }
 
   for (const auto& unrequestable_scheme : unrequestable_schemes) {
     url = GURL(base::StrCat(
         {unrequestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
     EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+        web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(), url));
   }
 }
 
@@ -678,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
 
   // Navigate to a chrome:// main page.
   EXPECT_TRUE(NavigateToURL(web_contents, web_ui_url));
-  auto* main_frame = web_contents->GetMainFrame();
+  auto* main_frame = web_contents->GetPrimaryMainFrame();
   // Add an iframe in chrome-untrusted://.
   EXPECT_EQ(true,
             EvalJs(main_frame,
@@ -817,7 +864,7 @@ IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
 
   // Navigate to a chrome:// main page.
   EXPECT_TRUE(NavigateToURL(web_contents, web_ui_url));
-  auto* main_frame = web_contents->GetMainFrame();
+  auto* main_frame = web_contents->GetPrimaryMainFrame();
   // Add an iframe in chrome-untrusted://.
   EXPECT_EQ(true,
             EvalJs(main_frame,

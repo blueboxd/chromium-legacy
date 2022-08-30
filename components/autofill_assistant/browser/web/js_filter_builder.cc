@@ -165,6 +165,7 @@ bool JsFilterBuilder::AddFilter(const SelectorProto::Filter& filter) {
 
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kPseudoType:
+    case SelectorProto::Filter::kSemantic:
     case SelectorProto::Filter::FILTER_NOT_SET:
       return false;
   }
@@ -185,8 +186,8 @@ std::string JsFilterBuilder::AddRegexpInstance(const TextFilter& filter) {
 void JsFilterBuilder::AddRegexpFilter(const TextFilter& filter,
                                       const std::string& property) {
   std::string re_var = AddRegexpInstance(filter);
-  AddLine({"elements = elements.filter((e) => ", re_var, ".test(e[",
-           AddArgument(property), "]));"});
+  AddLine({"elements = elements.filter((e) => ", re_var, ".test(e.", property,
+           "));"});
 }
 
 std::string JsFilterBuilder::DeclareVariable() {

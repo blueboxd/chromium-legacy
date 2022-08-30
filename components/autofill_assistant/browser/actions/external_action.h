@@ -8,7 +8,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
-#include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 
 namespace autofill_assistant {
@@ -51,8 +51,14 @@ class ExternalAction : public Action {
       base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback);
   void OnDoneWaitForDom(const ClientStatus& status);
   void OnExternalActionFinished(const external::Result& success);
-  void EndWithExternalResult();
+  void ProcessExternalResult();
   void EndAction(const ClientStatus& status);
+  void SetSelectedProfiles(
+      const google::protobuf::Map<std::string,
+                                  autofill_assistant::external::ProfileProto>&
+          profiles_proto);
+  void SetSelectedCreditCard(
+      const autofill_assistant::external::CreditCardProto& credit_card_proto);
 
   ProcessActionCallback callback_;
 

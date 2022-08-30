@@ -11,14 +11,19 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to enable
-// kSupportForAddPasswordsInSettings flag on iOS.
-extern const char kAddPasswordsInSettingsName[];
-extern const char kAddPasswordsInSettingsDescription[];
+// Title and description for the flag to enable kAdaptiveSuggestionsCount flag
+// on iOS.
+extern const char kAdaptiveSuggestionsCountName[];
+extern const char kAdaptiveSuggestionsCountDescription[];
 
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
+
+// Title and description for the flag to enable the new Card Unmask Prompt View
+// in Autofill.
+extern const char kAutofillEnableNewCardUnmaskPromptViewName[];
+extern const char kAutofillEnableNewCardUnmaskPromptViewDescription[];
 
 // Title and description for the flag to control the new autofill suggestion
 // ranking formula.
@@ -47,6 +52,10 @@ extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
 // Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
+
+// Title and description for the flag to parse IBAN fields in Autofill.
+extern const char kAutofillParseIbanFieldsName[];
+extern const char kAutofillParseIbanFieldsDescription[];
 
 // Title and description for the flag to parse promo code fields in Autofill.
 extern const char kAutofillParseMerchantPromoCodeFieldsName[];
@@ -107,6 +116,11 @@ extern const char kBookmarkStringDescription[];
 // Title and description for the flag to enable experience kit calendar events.
 extern const char kCalendarExperienceKitName[];
 extern const char kCalendarExperienceKitDescription[];
+
+// Title and description for the flag to enable text classifier entity detection
+// in experience kit calendar.
+extern const char kEnableExpKitCalendarTextClassifierName[];
+extern const char kEnableExpKitCalendarTextClassifierDescription[];
 
 // Title and description for the flag that moves the Content Suggestions header
 // to the Discover feed ScrollView.
@@ -254,10 +268,6 @@ extern const char kEnableFREUIModuleIOSDescription[];
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
 
-// Title and description for the flag to enable long message duration.
-extern const char kEnableLongMessageDurationName[];
-extern const char kEnableLongMessageDurationDescription[];
-
 // Title and description for the flag to enable the new download API.
 extern const char kEnableNewDownloadAPIName[];
 extern const char kEnableNewDownloadAPIDescription[];
@@ -337,6 +347,11 @@ extern const char kIOS3PIntentsInIncognitoDescription[];
 extern const char kIOSEnablePasswordManagerBrandingUpdateName[];
 extern const char kIOSEnablePasswordManagerBrandingUpdateDescription[];
 
+// Title and description for the flag to split password settings and password
+// management into two separate UIs.
+extern const char kIOSPasswordUISplitName[];
+extern const char kIOSPasswordUISplitDescription[];
+
 // Title and description for the flag to enable Shared Highlighting color
 // change in iOS.
 extern const char kIOSSharedHighlightingColorChangeName[];
@@ -380,17 +395,17 @@ extern const char kMediaPermissionsControlDescription[];
 extern const char kMetrickitCrashReportName[];
 extern const char kMetrickitCrashReportDescription[];
 
+// Title and description for the flag that controls sending metrickit non-crash
+// reports.
+extern const char kMetrickitNonCrashReportName[];
+extern const char kMetrickitNonCrashReportDescription[];
+
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
 // Title and description for the flag used to test the newly
 // implemented tabstrip.
 extern const char kModernTabStripName[];
 extern const char kModernTabStripDescription[];
-
-// Title and description for the flag to enable muting/unmuting compromised
-// passwords in bulk leak check.
-extern const char kMuteCompromisedPasswordsName[];
-extern const char kMuteCompromisedPasswordsDescription[];
 
 // Title and description for the flag to use the new MICe FRE.
 extern const char kNewMobileIdentityConsistencyFREName[];
@@ -444,15 +459,19 @@ extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
-// Title and description for the flag to control Omnibox Local zero-prefix
-// suggestions.
-extern const char kOmniboxLocalHistoryZeroSuggestName[];
-extern const char kOmniboxLocalHistoryZeroSuggestDescription[];
+// Title and description for the maximum number of URL matches.
+extern const char kOmniboxMaxURLMatchesName[];
+extern const char kOmniboxMaxURLMatchesDescription[];
 
 // Title and description for the flag to swap Omnibox Textfield implementation
 // to a new experimental one.
 extern const char kOmniboxNewImplementationName[];
 extern const char kOmniboxNewImplementationDescription[];
+
+// Title and description for the flag to enable paste button on clipboard
+// suggestion.
+extern const char kOmniboxPasteButtonName[];
+extern const char kOmniboxPasteButtonDescription[];
 
 // Title and description for the flag to enable the SwiftUI omnibox popup
 // implementation.
@@ -526,14 +545,15 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kSingleCellContentSuggestionsName[];
 extern const char kSingleCellContentSuggestionsDescription[];
 
-// Title and description for the flag to use one NTP for all tabs in a Browser.
-extern const char kSingleNtpName[];
-extern const char kSingleNtpDescription[];
-
 // Title and description for the flag to enable smart sorting the new overflow
 // menu.
 extern const char kSmartSortingNewOverflowMenuName[];
 extern const char kSmartSortingNewOverflowMenuDescription[];
+
+// Title and description for the flag to enable the Share Chrome App action
+// in the new overflow menu.
+extern const char kNewOverflowMenuShareChromeActionName[];
+extern const char kNewOverflowMenuShareChromeActionDescription[];
 
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];
@@ -552,6 +572,10 @@ extern const char kSyntheticCrashReportsForUteDescription[];
 // Title and description for the flag to synthesize native restore web states.
 extern const char kSynthesizedRestoreSessionName[];
 extern const char kSynthesizedRestoreSessionDescription[];
+
+// Title and description for the flag to enable the Sync History data type.
+extern const char kSyncEnableHistoryDataTypeName[];
+extern const char kSyncEnableHistoryDataTypeDescription[];
 
 // Title and description for the flag to control if Chrome Sync should support
 // trusted vault RPC.
@@ -594,6 +618,10 @@ extern const char kTFLiteLanguageDetectionDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
+
+// Title and Description for the flag to enable the trending queries module.
+extern const char kTrendingQueriesModuleName[];
+extern const char kTrendingQueriesModuleDescription[];
 
 // Title and description for the flag to enable -[UIView window] observing.
 extern const char kUIViewWindowObservingName[];

@@ -145,6 +145,15 @@ void BuiltInChromeOsApps::LoadIcon(const std::string& app_id,
   std::move(callback).Run(std::make_unique<IconValue>());
 }
 
+void BuiltInChromeOsApps::Launch(const std::string& app_id,
+                                 int32_t event_flags,
+                                 LaunchSource launch_source,
+                                 WindowInfoPtr window_info) {
+  if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
+    ash::ToggleKeyboardShortcutViewer();
+  }
+}
+
 void BuiltInChromeOsApps::LaunchAppWithParams(AppLaunchParams&& params,
                                               LaunchCallback callback) {
   Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
@@ -177,26 +186,6 @@ void BuiltInChromeOsApps::Connect(
   // mojo::RemoteSet<apps::mojom::Subscriber> subscribers_) after this
   // function returns. The list of built-in Chrome OS apps is fixed for the
   // lifetime of the Chrome OS session. There won't be any further updates.
-}
-
-void BuiltInChromeOsApps::LoadIcon(const std::string& app_id,
-                                   apps::mojom::IconKeyPtr icon_key,
-                                   apps::mojom::IconType icon_type,
-                                   int32_t size_hint_in_dip,
-                                   bool allow_placeholder_icon,
-                                   LoadIconCallback callback) {
-  constexpr bool is_placeholder_icon = false;
-  if (icon_key &&
-      (icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId)) {
-    LoadIconFromResource(
-        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
-        icon_key->resource_id, is_placeholder_icon,
-        static_cast<IconEffects>(icon_key->icon_effects),
-        IconValueToMojomIconValueCallback(std::move(callback)));
-    return;
-  }
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
 void BuiltInChromeOsApps::Launch(const std::string& app_id,

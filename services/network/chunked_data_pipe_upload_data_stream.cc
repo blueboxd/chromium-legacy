@@ -15,8 +15,10 @@ namespace network {
 
 ChunkedDataPipeUploadDataStream::ChunkedDataPipeUploadDataStream(
     scoped_refptr<ResourceRequestBody> resource_request_body,
-    mojo::PendingRemote<mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter)
-    : net::UploadDataStream(true /* is_chunked */,
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter,
+    bool has_null_source)
+    : net::UploadDataStream(/*is_chunked=*/true,
+                            /*has_null_source=*/has_null_source,
                             resource_request_body->identifier()),
       resource_request_body_(std::move(resource_request_body)),
       chunked_data_pipe_getter_(std::move(chunked_data_pipe_getter)),
@@ -201,6 +203,7 @@ void ChunkedDataPipeUploadDataStream::OnSizeReceived(int32_t status,
     // Clear |buf_| as well, so it's only non-null while there's a pending read.
     buf_ = nullptr;
     buf_len_ = 0;
+    chunked_data_pipe_getter_.reset();
 
     OnReadCompleted(status_);
 

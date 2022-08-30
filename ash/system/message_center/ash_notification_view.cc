@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
@@ -34,7 +35,7 @@
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/color/color_transform.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -115,11 +116,11 @@ constexpr int kAppIconImageSize = 16;
 constexpr int kTitleCharacterLimit =
     message_center::kNotificationWidth * message_center::kMaxTitleLines /
     message_center::kMinPixelsPerTitleCharacter;
-constexpr int kTitleLabelSize = 14;
+constexpr int kTitleLabelSize = 13;
 constexpr int kTitleLabelExpandedMaxLines = 2;
 constexpr int kTitleLabelCollapsedMaxLines = 1;
 constexpr int kTimestampInCollapsedViewSize = 12;
-constexpr int kMessageLabelSize = 13;
+constexpr int kMessageLabelSize = 12;
 // The size for `icon_view_`, which is the icon within right content (between
 // title/message view and expand button).
 constexpr int kIconViewSize = 48;
@@ -284,6 +285,7 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   title_view_->SetMultiLine(true);
   title_view_->SetAllowCharacterBreak(true);
   title_view_->SetMaxLines(kTitleLabelExpandedMaxLines);
+  title_view_->SetMaximumWidth(kNotificationInMessageCenterWidth);
 
   ConfigureLabelStyle(title_row_divider_, kTimestampInCollapsedViewSize,
                       /*is_color_primary=*/false);
@@ -544,6 +546,8 @@ AshNotificationView::AshNotificationView(
         gfx::RoundedCornersF{kMessagePopupCornerRadius});
     layer()->SetIsFastRoundedCorner(true);
   }
+
+  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
 
   // Create layer in some views for animations.
   message_center_utils::InitLayerForAnimations(header_row());
@@ -1171,10 +1175,6 @@ void AshNotificationView::OnThemeChanged() {
   if (message_label_in_expanded_state_)
     message_label_in_expanded_state_->SetEnabledColor(secondary_text_color);
 
-  views::FocusRing::Get(this)->SetColor(
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kFocusRingColor));
-
   UpdateIconAndButtonsColor(
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
           notification_id()));
@@ -1467,9 +1467,10 @@ SkColor AshNotificationView::CalculateIconAndButtonsColor(
     return default_color;
 
   // TODO(crbug/1294459): re-evaluate contrast, maybe increase or use fixed HSL
-  float minContrastRatio = AshColorProvider::Get()->IsDarkModeEnabled()
-                               ? minContrastRatio = kDarkModeMinContrastRatio
-                               : color_utils::kMinimumReadableContrastRatio;
+  float minContrastRatio =
+      DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
+          ? minContrastRatio = kDarkModeMinContrastRatio
+          : color_utils::kMinimumReadableContrastRatio;
 
   // Actual color is kTransparent80, but BlendForMinContrast requires opaque.
   SkColor bg_color = AshColorProvider::Get()->GetBaseLayerColor(

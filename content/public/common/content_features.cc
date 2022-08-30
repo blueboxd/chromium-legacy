@@ -167,22 +167,16 @@ const base::Feature kBlockInsecurePrivateNetworkRequestsForNavigations{
     base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
+// When kPrivateNetworkAccessPermissionPrompt is enabled, public secure websites
+// are allowed to access private insecure subresources with user's permission.
+const base::Feature kPrivateNetworkAccessPermissionPrompt{
+    "PrivateNetworkRequestPermissionPrompt", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Broker file operations on disk cache in the Network Service.
 // This is no-op if the network service is hosted in the browser process.
 const base::Feature kBrokerFileOperationsOnDiskCacheInNetworkService{
     "BrokerFileOperationsOnDiskCacheInNetworkService",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use ThreadPriority::DISPLAY for browser UI and IO threads.
-const base::Feature kBrowserUseDisplayThreadPriority {
-  "BrowserUseDisplayThreadPriority",
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // When enabled, keyboard user activation will be verified by the browser side.
 const base::Feature kBrowserVerifiedUserActivationKeyboard{
@@ -350,6 +344,10 @@ const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
+// Field trial boolean parameter which indicates that FedCM API is enabled in
+// cross-origin iframes.
+const char kFedCmIframeSupportFieldTrialParamName[] = "IframeSupport";
+
 // Kill switch for FedCm manifest validation.
 const base::Feature kFedCmManifestValidation{"FedCmManifestValidation",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -412,6 +410,11 @@ const base::Feature kNetworkQualityEstimatorWebHoldback{
 // (activated by kUserAgentClientHint)
 const base::Feature kGreaseUACH{"GreaseUACH", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// To-be-disabled feature of payment apps receiving merchant and user identity
+// when a merchant website checks whether the payment app can make payments.
+const base::Feature kIdentityInCanMakePaymentEventFeature{
+    "IdentityInCanMakePaymentEventFeature", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // This is intended as a kill switch for the Idle Detection feature. To enable
 // this feature, the experimental web platform features flag should be set,
 // or the site should obtain an Origin Trial token.
@@ -445,6 +448,13 @@ const base::Feature kInstalledAppProvider{"InstalledAppProvider",
 const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable support for isolated web apps. This will guard features like serving
+// isolated web apps via the isolated-app:// scheme, and other advanced isolated
+// app functionality. See https://github.com/reillyeon/isolated-web-apps for a
+// general overview.
+const base::Feature kIsolatedWebApps{"IsolatedWebApps",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via
 // kIsolateOriginsFieldTrialParamName.
@@ -458,6 +468,15 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 // sandboxes are isolated.
 const base::Feature kIsolateSandboxedIframes{"IsolateSandboxedIframes",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<IsolateSandboxedIframesGrouping>::Option
+    isolated_sandboxed_iframes_grouping_types[] = {
+        {IsolateSandboxedIframesGrouping::kPerSite, "per-site"},
+        {IsolateSandboxedIframesGrouping::kPerOrigin, "per-origin"}};
+const base::FeatureParam<IsolateSandboxedIframesGrouping>
+    kIsolateSandboxedIframesGroupingParam{
+        &kIsolateSandboxedIframes, "grouping",
+        IsolateSandboxedIframesGrouping::kPerSite,
+        &isolated_sandboxed_iframes_grouping_types};
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -542,11 +561,6 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 #endif
 };
 
-// Use a custom backend to store media licenses in lieu of the
-// Plugin Private File System.
-const base::Feature kMediaLicenseBackend{"MediaLicenseBackend",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allow cross-context transfer of MediaStreamTracks.
 const base::Feature kMediaStreamTrackTransfer{
     "MediaStreamTrackTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -615,10 +629,6 @@ const base::Feature kNotificationTriggers{"NotificationTriggers",
 // feature was under development.
 const base::Feature kOriginIsolationHeader{"OriginIsolationHeader",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Origin Policy. See https://crbug.com/751996
-const base::Feature kOriginPolicy{"OriginPolicy",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // History navigation in response to horizontal overscroll (aka gesture-nav).
 const base::Feature kOverscrollHistoryNavigation{
@@ -874,10 +884,8 @@ const base::Feature kWebOTPAssertionFeaturePolicy{
 
 // Enable the web lockscreen API implementation
 // (https://github.com/WICG/lock-screen) in Chrome.
-#if BUILDFLAG(IS_CHROMEOS)
 const base::Feature kWebLockScreenApi{"WebLockScreenApi",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Controls whether to isolate sites of documents that specify an eligible
 // Cross-Origin-Opener-Policy header.  Note that this is only intended to be
@@ -1025,7 +1033,7 @@ const base::Feature kV8VmFuture{"V8VmFuture",
 
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
-    "WebAppWindowControlsOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAppWindowControlsOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly baseline compilation (Liftoff).
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
@@ -1177,15 +1185,15 @@ const base::Feature kCoalesceIndependentBeginFrame{
 const base::Feature kOnDemandAccessibilityEvents{
     "OnDemandAccessibilityEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Request Desktop Site secondary settings for Android; including display
+// setting and peripheral setting.
+const base::Feature kRequestDesktopSiteAdditions{
+    "RequestDesktopSiteAdditions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Request Desktop Site per-site setting for Android.
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 const base::Feature kRequestDesktopSiteExceptions{
     "RequestDesktopSiteExceptions", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Request Desktop Site global setting for Android.
-// Refer to the launch bug (https://crbug.com/1244979) for more information.
-const base::Feature kRequestDesktopSiteGlobal{"RequestDesktopSiteGlobal",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Screen Capture API support for Android
 const base::Feature kUserMediaScreenCapturing{

@@ -175,14 +175,13 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
     content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  web_app::WebAppProvider* web_app_provider =
-      web_app::WebAppProvider::GetForWebApps(profile);
+  WebAppProvider* web_app_provider = WebAppProvider::GetForWebApps(profile);
   if (web_app_provider == nullptr) {
     return nullptr;
   }
 
-  web_app::WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
-  const absl::optional<web_app::AppId> app_id =
+  WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
+  const absl::optional<AppId> app_id =
       web_app_registrar.FindAppWithUrlInScope(url);
   if (!app_id.has_value()) {
     return nullptr;
@@ -191,38 +190,36 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
   auto alternative_error_page_info =
       content::mojom::AlternativeErrorPageOverrideInfo::New();
   // TODO(crbug.com/1285128): Ensure sufficient contrast.
-  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value::Dict dict;
   std::string theme_color = skia::SkColorToHexString(
       web_app_registrar.GetAppThemeColor(*app_id).value_or(SK_ColorBLACK));
   std::string background_color = skia::SkColorToHexString(
       web_app_registrar.GetAppBackgroundColor(*app_id).value_or(SK_ColorWHITE));
-  dict.SetStringKey(default_offline::kThemeColor, theme_color);
-  dict.SetStringKey(default_offline::kBackgroundColor, background_color);
-  dict.SetStringKey(default_offline::kAppShortName,
-                    web_app_registrar.GetAppShortName(*app_id));
-  dict.SetStringKey(
+  dict.Set(default_offline::kThemeColor, theme_color);
+  dict.Set(default_offline::kBackgroundColor, background_color);
+  dict.Set(default_offline::kAppShortName,
+           web_app_registrar.GetAppShortName(*app_id));
+  dict.Set(
       default_offline::kMessage,
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED));
   SkBitmap bitmap = web_app_provider->icon_manager().GetFavicon(*app_id);
   std::string icon_url = EncodeIconAsUrl(bitmap).spec();
-  dict.SetStringKey(default_offline::kIconUrl, icon_url);
+  dict.Set(default_offline::kIconUrl, icon_url);
   absl::optional<SkColor> dark_mode_theme_color =
       web_app_registrar.GetAppDarkModeThemeColor(*app_id);
   if (dark_mode_theme_color) {
-    dict.SetStringKey(default_offline::kDarkModeThemeColor,
-                      skia::SkColorToHexString(dark_mode_theme_color.value()));
+    dict.Set(default_offline::kDarkModeThemeColor,
+             skia::SkColorToHexString(dark_mode_theme_color.value()));
   } else {
-    dict.SetStringKey(default_offline::kDarkModeThemeColor, theme_color);
+    dict.Set(default_offline::kDarkModeThemeColor, theme_color);
   }
   absl::optional<SkColor> dark_mode_background_color =
       web_app_registrar.GetAppDarkModeThemeColor(*app_id);
   if (dark_mode_background_color) {
-    dict.SetStringKey(
-        default_offline::kDarkModeBackgroundColor,
-        skia::SkColorToHexString(dark_mode_background_color.value()));
+    dict.Set(default_offline::kDarkModeBackgroundColor,
+             skia::SkColorToHexString(dark_mode_background_color.value()));
   } else {
-    dict.SetStringKey(default_offline::kDarkModeBackgroundColor,
-                      background_color);
+    dict.Set(default_offline::kDarkModeBackgroundColor, background_color);
   }
   alternative_error_page_info->alternative_error_page_params = std::move(dict);
   alternative_error_page_info->resource_id = IDR_WEBAPP_DEFAULT_OFFLINE_HTML;
@@ -324,17 +321,6 @@ bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
 std::tuple<std::u16string, size_t>
 GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
                                                  const AppId& app_id) {
-  auto extensions =
-      GetFileTypeAssociationsHandledByWebAppForDisplayAsList(profile, app_id);
-  return {base::UTF8ToUTF16(base::JoinString(
-              extensions, l10n_util::GetStringUTF8(
-                              IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR))),
-          extensions.size()};
-}
-
-std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
-    Profile* profile,
-    const AppId& app_id) {
   auto* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return {};
@@ -342,17 +328,26 @@ std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
   const apps::FileHandlers* file_handlers =
       provider->registrar().GetAppFileHandlers(app_id);
 
-  std::set<std::string> extensions_set =
-      apps::GetFileExtensionsFromFileHandlers(*file_handlers);
-  std::vector<std::string> extensions_for_display;
-  extensions_for_display.reserve(extensions_set.size());
+  std::vector<std::u16string> extensions_for_display =
+      TransformFileExtensionsForDisplay(
+          apps::GetFileExtensionsFromFileHandlers(*file_handlers));
 
-  // Convert file types from formats like ".txt" to "TXT".
-  std::transform(extensions_set.begin(), extensions_set.end(),
-                 std::back_inserter(extensions_for_display),
-                 [](const std::string& extension) {
-                   return base::ToUpperASCII(extension.substr(1));
-                 });
+  return {base::JoinString(extensions_for_display,
+                           l10n_util::GetStringUTF16(
+                               IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR)),
+          extensions_for_display.size()};
+}
+
+std::vector<std::u16string> TransformFileExtensionsForDisplay(
+    const std::set<std::string>& extensions) {
+  std::vector<std::u16string> extensions_for_display;
+  extensions_for_display.reserve(extensions.size());
+  std::transform(
+      extensions.begin(), extensions.end(),
+      std::back_inserter(extensions_for_display),
+      [](const std::string& extension) {
+        return base::UTF8ToUTF16(base::ToUpperASCII(extension.substr(1)));
+      });
   return extensions_for_display;
 }
 

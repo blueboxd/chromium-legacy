@@ -20,7 +20,7 @@ AccessibilityExtensionCursorsTest = class extends ChromeVoxNextE2ETest {
     return 'cursor';
   }
 
-  /** Test cursors.Range. @const {string} */
+  /** Test CursorRange. @const {string} */
   get RANGE() {
     return 'range';
   }
@@ -38,6 +38,12 @@ AccessibilityExtensionCursorsTest = class extends ChromeVoxNextE2ETest {
     window.BOUND = cursors.Movement.BOUND;
     window.DIRECTIONAL = cursors.Movement.DIRECTIONAL;
     window.SYNC = cursors.Movement.SYNC;
+  }
+
+  /** @override */
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule('CursorRange', '/common/cursors/range.js');
   }
 
   /**
@@ -62,7 +68,7 @@ AccessibilityExtensionCursorsTest = class extends ChromeVoxNextE2ETest {
 
   /**
    * Performs a series of operations on a range and asserts the result.
-   * @param {cursors.Range} range The starting range.
+   * @param {CursorRange} range The starting range.
    * @param {!Array<Array<
    *         cursors.Unit|
    *         constants.Dir|
@@ -122,7 +128,7 @@ AccessibilityExtensionCursorsTest = class extends ChromeVoxNextE2ETest {
       const cursor = new cursors.Cursor(start, 0);
       this.cursorMoveAndAssert(cursor, moves);
     } else if (opt_testType === this.RANGE) {
-      const range = new cursors.Range(cursor, cursor);
+      const range = new CursorRange(cursor, cursor);
       this.rangeMoveAndAssert(range, moves);
     }
   }
@@ -150,7 +156,7 @@ AccessibilityExtensionCursorsTest = class extends ChromeVoxNextE2ETest {
 };
 
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'CharacterCursor', async function() {
       await this.runCursorMovesOnDocument(this.simpleDoc, [
         [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
@@ -172,7 +178,7 @@ TEST_F(
       ]);
     });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'WordCursor', async function() {
+AX_TEST_F('AccessibilityExtensionCursorsTest', 'WordCursor', async function() {
   await this.runCursorMovesOnDocument(this.simpleDoc, [
     // Word (BOUND).
     [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
@@ -195,7 +201,7 @@ TEST_F('AccessibilityExtensionCursorsTest', 'WordCursor', async function() {
   ]);
 });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'CharacterWordCursor',
     async function() {
       await this.runCursorMovesOnDocument(this.simpleDoc, [
@@ -214,7 +220,7 @@ TEST_F(
       ]);
     });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'LineCursor', async function() {
+AX_TEST_F('AccessibilityExtensionCursorsTest', 'LineCursor', async function() {
   await this.runCursorMovesOnDocument(this.simpleDoc, [
     // Line (BOUND).
     [LINE, BOUND, FORWARD, {value: 'same line'}],
@@ -232,7 +238,7 @@ TEST_F('AccessibilityExtensionCursorsTest', 'LineCursor', async function() {
   ]);
 });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'SyncCursor', async function() {
+AX_TEST_F('AccessibilityExtensionCursorsTest', 'SyncCursor', async function() {
   await this.runCursorMovesOnDocument(this.simpleDoc, [
     [WORD, SYNC, FORWARD, {index: 0, value: 'start '}],
 
@@ -247,69 +253,70 @@ TEST_F('AccessibilityExtensionCursorsTest', 'SyncCursor', async function() {
   ]);
 });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'CharacterRange', async function() {
-  await this.runCursorMovesOnDocument(
-      this.simpleDoc,
-      [
-        [
-          CHARACTER, FORWARD, {value: 'start ', index: 1},
-          {value: 'start ', index: 2}
-        ],
-        [
-          CHARACTER, FORWARD, {value: 'start ', index: 2},
-          {value: 'start ', index: 3}
-        ],
-        [
-          CHARACTER, FORWARD, {value: 'start ', index: 3},
-          {value: 'start ', index: 4}
-        ],
-        [
-          CHARACTER, FORWARD, {value: 'start ', index: 4},
-          {value: 'start ', index: 5}
-        ],
-        [
-          CHARACTER, FORWARD, {value: 'start ', index: 5},
-          {value: 'start ', index: 6}
-        ],
+AX_TEST_F(
+    'AccessibilityExtensionCursorsTest', 'CharacterRange', async function() {
+      await this.runCursorMovesOnDocument(
+          this.simpleDoc,
+          [
+            [
+              CHARACTER, FORWARD, {value: 'start ', index: 1},
+              {value: 'start ', index: 2}
+            ],
+            [
+              CHARACTER, FORWARD, {value: 'start ', index: 2},
+              {value: 'start ', index: 3}
+            ],
+            [
+              CHARACTER, FORWARD, {value: 'start ', index: 3},
+              {value: 'start ', index: 4}
+            ],
+            [
+              CHARACTER, FORWARD, {value: 'start ', index: 4},
+              {value: 'start ', index: 5}
+            ],
+            [
+              CHARACTER, FORWARD, {value: 'start ', index: 5},
+              {value: 'start ', index: 6}
+            ],
 
-        [
-          CHARACTER, FORWARD, {value: 'same line', index: 0},
-          {value: 'same line', index: 1}
-        ],
+            [
+              CHARACTER, FORWARD, {value: 'same line', index: 0},
+              {value: 'same line', index: 1}
+            ],
 
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 5},
-          {value: 'start ', index: 6}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 4},
-          {value: 'start ', index: 5}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 3},
-          {value: 'start ', index: 4}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 2},
-          {value: 'start ', index: 3}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 1},
-          {value: 'start ', index: 2}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: 'start ', index: 0},
-          {value: 'start ', index: 1}
-        ],
-        [
-          CHARACTER, BACKWARD, {value: undefined, index: 0},
-          {value: undefined, index: 1}
-        ],
-      ],
-      this.RANGE);
-});
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 5},
+              {value: 'start ', index: 6}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 4},
+              {value: 'start ', index: 5}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 3},
+              {value: 'start ', index: 4}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 2},
+              {value: 'start ', index: 3}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 1},
+              {value: 'start ', index: 2}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: 'start ', index: 0},
+              {value: 'start ', index: 1}
+            ],
+            [
+              CHARACTER, BACKWARD, {value: undefined, index: 0},
+              {value: undefined, index: 1}
+            ],
+          ],
+          this.RANGE);
+    });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'WordRange', async function() {
+AX_TEST_F('AccessibilityExtensionCursorsTest', 'WordRange', async function() {
   await this.runCursorMovesOnDocument(
       this.simpleDoc,
       [
@@ -347,7 +354,7 @@ TEST_F('AccessibilityExtensionCursorsTest', 'WordRange', async function() {
 });
 
 
-TEST_F('AccessibilityExtensionCursorsTest', 'LineRange', async function() {
+AX_TEST_F('AccessibilityExtensionCursorsTest', 'LineRange', async function() {
   await this.runCursorMovesOnDocument(
       this.simpleDoc,
       [
@@ -369,7 +376,7 @@ TEST_F('AccessibilityExtensionCursorsTest', 'LineRange', async function() {
       this.RANGE);
 });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'DontSplitOnNodeNavigation',
     async function() {
       const root = await this.runWithLoadedTree(this.multiInlineDoc);
@@ -390,7 +397,7 @@ TEST_F(
       assertEquals('line', cursor.node.lastChild.name);
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'WrappingCursors', async function() {
       const root = await this.runWithLoadedTree(this.multiInlineDoc);
       const first = root;
@@ -406,17 +413,18 @@ TEST_F(
       assertEquals(first, cursor.node);
     });
 
-TEST_F('AccessibilityExtensionCursorsTest', 'IsInWebRange', async function() {
-  const root = await this.runWithLoadedTree(this.simpleDoc);
-  const para = root.firstChild;
-  const webRange = cursors.Range.fromNode(para);
-  const auraRange = cursors.Range.fromNode(root.parent);
-  assertFalse(auraRange.isWebRange());
-  assertTrue(webRange.isWebRange());
-});
+AX_TEST_F(
+    'AccessibilityExtensionCursorsTest', 'IsInWebRange', async function() {
+      const root = await this.runWithLoadedTree(this.simpleDoc);
+      const para = root.firstChild;
+      const webRange = CursorRange.fromNode(para);
+      const auraRange = CursorRange.fromNode(root.parent);
+      assertFalse(auraRange.isWebRange());
+      assertTrue(webRange.isWebRange());
+    });
 
 // Disabled due to being flaky on ChromeOS. See https://crbug.com/1227435.
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'DISABLED_SingleDocSelection',
     async function() {
       const root = await this.runWithLoadedTree(`
@@ -432,10 +440,10 @@ TEST_F(
       const p1 = root.find({role: RoleType.PARAGRAPH});
       const p2 = p1.nextSibling;
 
-      const singleSel = new cursors.Range(
+      const singleSel = new CursorRange(
           new cursors.Cursor(link, 0), new cursors.Cursor(link, 1));
 
-      const multiSel = new cursors.Range(
+      const multiSel = new CursorRange(
           new cursors.Cursor(p1.firstChild, 2),
           new cursors.Cursor(p2.firstChild, 4));
 
@@ -459,7 +467,7 @@ TEST_F(
       singleSel.select();
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'InlineElementOffset',
     async function() {
       const root = await this.runWithLoadedTree(`
@@ -497,11 +505,11 @@ TEST_F(
       assertEquals(RoleType.STATIC_TEXT, curIntoO.selectionNode.role);
       assertEquals(1, curIntoO.selectionIndex);
 
-      const oRange = new cursors.Range(cur, curIntoO);
+      const oRange = new CursorRange(cur, curIntoO);
       oRange.select();
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'ContentEquality', async function() {
       const root = await this.runWithLoadedTree(`
     <div role="region" aria-label="test region">this is a test</button>
@@ -513,10 +521,10 @@ TEST_F(
       const inlineTextBox = staticText.firstChild;
       assertEquals(RoleType.INLINE_TEXT_BOX, inlineTextBox.role);
 
-      const rootRange = cursors.Range.fromNode(root);
-      const regionRange = cursors.Range.fromNode(region);
-      const staticTextRange = cursors.Range.fromNode(staticText);
-      const inlineTextBoxRange = cursors.Range.fromNode(inlineTextBox);
+      const rootRange = CursorRange.fromNode(root);
+      const regionRange = CursorRange.fromNode(region);
+      const staticTextRange = CursorRange.fromNode(staticText);
+      const inlineTextBoxRange = CursorRange.fromNode(inlineTextBox);
 
       // Positive cases.
       assertTrue(regionRange.contentEquals(staticTextRange));
@@ -533,7 +541,7 @@ TEST_F(
       assertFalse(inlineTextBoxRange.contentEquals(rootRange));
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'DeepEquivalency', async function() {
       const root = await this.runWithLoadedTree(`
     <p style="word-spacing:100000px">this is a test</p>
@@ -584,7 +592,7 @@ TEST_F(
       assertTrue(text.equals(deep));
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'DeepEquivalencyBeyondLastChild',
     async function() {
       const root = await this.runWithLoadedTree(`
@@ -599,7 +607,7 @@ TEST_F(
       assertEquals(4, deep.index);
     });
 
-TEST_F(
+AX_TEST_F(
     'AccessibilityExtensionCursorsTest', 'MovementByWordThroughNonInlineText',
     async function() {
       await this.runCursorMovesOnDocument(this.buttonAndInlineTextDoc, [
@@ -661,7 +669,7 @@ TEST_F('AccessibilityExtensionCursorsTest', 'CopiedSelection', function() {
     assertEquals('hello', hello.name);
     assertEquals('world', world.name);
 
-    const range = new cursors.Range(
+    const range = new CursorRange(
         cursors.Cursor.fromNode(hello), cursors.Cursor.fromNode(world));
     range.select();
 

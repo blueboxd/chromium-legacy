@@ -21,13 +21,14 @@
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/rmad/fake_rmad_client.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -107,6 +108,7 @@ class FakeShimlessRmaDelegate : public ShimlessRmaDelegate {
 
   void ExitRmaThenRestartChrome() override {}
   void ShowDiagnosticsDialog() override {}
+  void RefreshAccessibilityManagerProfile() override {}
 };
 
 }  // namespace
@@ -121,6 +123,8 @@ class ShimlessRmaServiceTest : public testing::Test {
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kShimlessRMAOsUpdate}, {});
     chromeos::DBusThreadManager::Initialize();
+    // VersionUpdater depends on UpdateEngineClient.
+    UpdateEngineClient::InitializeFake();
 
     SetupFakeNetwork();
     FakeRmadClientForTest::Initialize();
@@ -145,6 +149,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     NetworkHandler::Shutdown();
     cros_network_config_test_helper_.reset();
     chromeos::LoginState::Shutdown();
+    UpdateEngineClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

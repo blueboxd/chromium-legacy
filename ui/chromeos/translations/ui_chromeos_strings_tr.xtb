@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">Programmer Dvorak klavye ile İngilizce (ABD)</translation>
 <translation id="1134697384939541955">Genişletilmiş klavye ile İngilizce (ABD)</translation>
+<translation id="1138691154716715755">Bu ayın başlarında</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> bulundu.
     <ph name="LINE_BREAK1" />
     Yerel depolama alanında yeterli boş alan yok. İlave <ph name="FILE_SIZE" /> boş alan gerek.
@@ -20,7 +21,6 @@
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalanca</translation>
 <translation id="1168100932582989117">Google ad sunucuları</translation>
-<translation id="1171082344678443012">XZ sıkıştırılmış arşivi</translation>
 <translation id="1172970565351728681">Yaklaşık <ph name="REMAINING_TIME" /> kaldı</translation>
 <translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="1173916544412572294">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, %<ph name="BATTERY_STATUS" /> Telefon Pili, Ayrıntılar</translation>
@@ -30,12 +30,10 @@
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1209796539517632982">Otomatik ad sunucuları</translation>
 <translation id="1210831758834677569">Laoca</translation>
-<translation id="1223825810409523901">Chrome uzantısı</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1249250836236328755">Tür</translation>
 <translation id="1254593899333212300">Doğrudan İnternet bağlantısı</translation>
 <translation id="1272293450992660632">PIN değerleri eşleşmiyor.</translation>
-<translation id="127650757582748357">BZIP2 sıkıştırılmış arşivi</translation>
 <translation id="1280820357415527819">Mobil ağlar aranıyor</translation>
 <translation id="1291603679744561561">SIM Kilitlendi</translation>
 <translation id="1293556467332435079">Dosyalar</translation>
@@ -81,7 +79,6 @@
 <translation id="166439687370499867">Paylaşılan ağ yapılandırmalarının değiştirilmesine izin verilmez</translation>
 <translation id="1665611772925418501">Dosya değiştirilemedi.</translation>
 <translation id="1673103856845176271">Güvenlik nedenleriyle dosyaya erişilemedi.</translation>
-<translation id="16762847117768727">ISO resmi</translation>
 <translation id="169515659049020177">ÜstKrktr</translation>
 <translation id="1715848075824334077">Bisiklet</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> öğe sıkıştırılıyor...</translation>
@@ -121,11 +118,9 @@
 <translation id="1942765061641586207">Resim çözünürlüğü</translation>
 <translation id="1972984168337863910">Dosyalar geri bildirim panellerini genişlet</translation>
 <translation id="1995337122023280937">Dosya konumuna git</translation>
-<translation id="1996806196681857869">Z sıkıştırılmış arşivi</translation>
 <translation id="2001796770603320721">Drive'da Yönet</translation>
 <translation id="2009067268969781306">Bir sürücünün biçimlendirilmesi, üzerinde depolanan tüm verileri siler. Bu işlem geri alınamaz.</translation>
 <translation id="2025955442973426285">Tigrinya dili</translation>
-<translation id="2028997212275086731">RAR arşivi</translation>
 <translation id="2037845485764049925">Rusça</translation>
 <translation id="2044023416777079300">Modem kayıtlı değil</translation>
 <translation id="2046702855113914483">Japon eriştesi</translation>
@@ -141,6 +136,7 @@
 <translation id="2141347188420181405">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
 <translation id="2142680004883808240">Fonetik YaZHert klavye ile Rusça</translation>
 <translation id="2143778271340628265">El ile proxy yapılandırması</translation>
+<translation id="2148716181193084225">Bugün</translation>
 <translation id="2163152940313951844">Geçersiz karakter: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">ABD Uluslararası PC klavyesi ile Portekizce</translation>
 <translation id="2198315389084035571">Basitleştirilmiş Çince</translation>
@@ -165,6 +161,7 @@
 <translation id="2377319039870049694">Liste görünümüne geç</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> klasör Linux ile paylaşıldı</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
+<translation id="2387120140441437063">Çöp kutusuna gönderilen dosyalar açılamaz. Açmadan önce lütfen dosyaları geri yükleyin.</translation>
 <translation id="2387458720915042159">Proxy bağlantısı türü</translation>
 <translation id="2389832672041313158">Birmanca/Myanmar</translation>
 <translation id="2392369802118427583">Etkinleştir</translation>
@@ -186,7 +183,6 @@
 <translation id="2541377937973966830">Bu klasörün içindekiler salt okunurdur. Bazı işlemler desteklenmez.</translation>
 <translation id="2542049655219295786">Google tablosu</translation>
 <translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
-<translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> uzantısına ekle</translation>
 <translation id="255937426064304553">ABD uluslararası</translation>
 <translation id="2563185590376525700">Kurbağa</translation>
 <translation id="2578394532502990878">Tamilce Fonetik</translation>
@@ -208,10 +204,8 @@
 <translation id="2771816809568414714">Peynir</translation>
 <translation id="2781645665747935084">Belçika dili</translation>
 <translation id="2782104745158847185">Linux uygulaması yüklenirken hata oluştu</translation>
-<translation id="2788520643285360081">7-Zip arşivi</translation>
 <translation id="2803375539583399270">PIN girin</translation>
 <translation id="2820957248982571256">Taranıyor...</translation>
-<translation id="2822595620066756134">GZIP sıkıştırılmış arşivi</translation>
 <translation id="2830077785865012357">Çince Zhuyin</translation>
 <translation id="2843806747483486897">Varsayılanı değiştir...</translation>
 <translation id="2850124913210091882">Yedekle</translation>
@@ -240,7 +234,6 @@
 <translation id="3047197340186497470">Çince Dayi</translation>
 <translation id="3057861065630527966">Fotoğraflarınızı ve videolarınızı yedekleyin</translation>
 <translation id="3067790092342515856">Windows dosyaları</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ile paylaş</translation>
 <translation id="3083975830683400843">Chromebit'ler</translation>
 <translation id="3085752524577180175">SOCKS Ana Makinesi</translation>
 <translation id="3104793765551262433">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
@@ -303,7 +296,6 @@
 <translation id="357479282490346887">Litvanca</translation>
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="3592251141500063301"><ph name="FILE_NAME" /> dosyası, çevrimdışı kullanılabilir hale getirilemedi</translation>
-<translation id="3593874215226880809">LZIP sıkıştırılmış arşivi</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" />, <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">Kanada Fransızcası</translation>
 <translation id="3606220979431771195">Türkçe-F</translation>
@@ -316,7 +308,6 @@
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> işlemi iptal edilecek.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" /> ağdan <ph name="NETWORK_INDEX" />., <ph name="NETWORK_NAME" />, Etkinleştirilmemiş, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Ayrıntılar</translation>
 <translation id="3691184985318546178">Seylanca</translation>
-<translation id="3703620396751288986">ZIP arşivi</translation>
 <translation id="3726463242007121105">Bu cihaz, dosya sistemi desteklenmediğinden açılamıyor.</translation>
 <translation id="3727148787322499904">Bu ayarı değiştirmek tüm paylaşılan ağları etkiler</translation>
 <translation id="3737576078404241332">Kenar çubuğundan kaldır</translation>
@@ -339,7 +330,6 @@
 <translation id="385051799172605136">Geri</translation>
 <translation id="3855472144336161447">Alman Neo 2</translation>
 <translation id="3858860766373142691">Ad</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" /> uzantısıyla paketle</translation>
 <translation id="3866249974567520381">Açıklama</translation>
 <translation id="3899991606604168269">Fransızca (Kanada), Çok Dilli klavye</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> ağına bağlanılıyor</translation>
@@ -352,6 +342,7 @@
 <translation id="3971140002794351170">Mobil profili indir, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> ağı</translation>
 <translation id="3973925058222872294">İngilizce (BK)</translation>
 <translation id="3975895378829046965">Bengalce Fonetik</translation>
+<translation id="3991446849494482687">Bu seçenek ayrıca cihazdaki SIM Kilidi ayarını devre dışı bırakır.</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4017788180641807848">Workman klavye ile İngilizce (ABD)</translation>
 <translation id="4040753847560036377">Yanlış PUK</translation>
@@ -388,6 +379,7 @@
 <translation id="4380245540200674032">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından Yönetiliyor, Ayrıntılar</translation>
 <translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
 <translation id="4394214039309501350">Harici bağlantı</translation>
+<translation id="4394980935660306080">Bu haftanın başlarında</translation>
 <translation id="4401287888955153199">Tümünü çıkar</translation>
 <translation id="4410695710508688828">Çıkarma işlemi gerçekleştirilemedi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Dosyalarınız için kısayol oluşturun</translation>
@@ -418,7 +410,6 @@
 <translation id="4646813851450205600">Çekçe Qwerty klavye</translation>
 <translation id="4656777537938206294">Dosyaları çevrimdışı kullanıma sunma</translation>
 <translation id="4658782175094886150">Karda bir kişi</translation>
-<translation id="4661996069183330363">TAR arşivi</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" kaynağının üyeleri, bu öğeler kendileriyle paylaşılmadığı sürece erişimi kaybedecektir.</translation>
 <translation id="467809019005607715">Google Slaytlar</translation>
 <translation id="4690246192099372265">İsveççe</translation>
@@ -432,6 +423,7 @@
 <translation id="4712283082407695269">"<ph name="PATH" />" açılıyor</translation>
 <translation id="4720185134442950733">Mobil veri ağı</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> fotoğraf yedeklendi</translation>
+<translation id="4725096204469550614">Bu yılın başlarında</translation>
 <translation id="4725511304875193254">Korgi</translation>
 <translation id="4737050008115666127">İniş</translation>
 <translation id="4747271164117300400">Makedonca</translation>
@@ -481,6 +473,7 @@
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> öğe <ph name="FOLDER_NAME" /> klasörüne taşınıyor</translation>
 <translation id="509429900233858213">Bir hata oluştu.</translation>
 <translation id="5098629044894065541">İbranice</translation>
+<translation id="5102922915594634436">Senkronize edilen klasörleri yönet</translation>
 <translation id="5109254780565519649">Hata oluştu. Bazı öğeler geri yüklenmemiş olabilir.</translation>
 <translation id="5110329002213341433">İngilizce (Kanada)</translation>
 <translation id="5123433949759960244">Basketbol</translation>
@@ -601,7 +594,6 @@
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> ağı, bağlı değil</translation>
 <translation id="6074825444536523002">Google formu</translation>
 <translation id="6079871810119356840">Macarca Qwerty klavye</translation>
-<translation id="6082256976217156453">LZMA sıkıştırılmış arşivi</translation>
 <translation id="6096979789310008754">Arama metni temizlendi, tüm dosya ve klasörler gösteriliyor.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> adlı dosya <ph name="FOLDER_NAME" /> klasörüne taşınıyor</translation>
 <translation id="61118516107968648">CSV metni</translation>
@@ -615,14 +607,12 @@
 <translation id="6165508094623778733">Daha fazla bilgi</translation>
 <translation id="6170470584681422115">Sandviç</translation>
 <translation id="6187719147498869044">Macarca</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> ile aç</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="6199801702437275229">Alan bilgileri bekleniyor...</translation>
 <translation id="6205710420833115353">Bazı işlemler beklenenden daha uzun sürüyor. Bunları iptal etmek istiyor musunuz?</translation>
 <translation id="6220423280121890987">Pencapça</translation>
 <translation id="6224240818060029162">Danca</translation>
 <translation id="6224253798271602650">Biçimlendir: <ph name="DRIVE_NAME" /></translation>
-<translation id="6224665423283788195">Zstandard sıkıştırılmış arşivi</translation>
 <translation id="6227235786875481728">Bu dosya oynatılamadı.</translation>
 <translation id="6241349547798190358">Felemenkçe (Belçika)</translation>
 <translation id="6267547857941397424">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, %<ph name="BATTERY_STATUS" /> Telefon Pili, Bağlan</translation>
@@ -631,6 +621,7 @@
 <translation id="6296410173147755564">Geçersiz PUK</translation>
 <translation id="6312403991423642364">Bilinmeyen ağ hatası</translation>
 <translation id="6317608858038767920">Özel alan adı sunucusu <ph name="INPUT_INDEX" /></translation>
+<translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> arşiv dosyası</translation>
 <translation id="6321303798550928047">El sallayan kız</translation>
 <translation id="6327785803543103246">Web proxy otomatik keşfi</translation>
 <translation id="6339145975392024142">ABD uluslararası (PC)</translation>
@@ -719,6 +710,7 @@
 <translation id="7075931588889865715">TIS 820-2531 klavye ile Tayca</translation>
 <translation id="708278670402572152">Taramayı etkinleştirmek için bağlantıyı kesin</translation>
 <translation id="7086590977277044826">Alfabetik klavye ile Tamilce</translation>
+<translation id="7088615885725309056">Daha eski</translation>
 <translation id="7103992300314999525">Makedonca</translation>
 <translation id="7106346894903675391">Daha fazla depolama alanı satın alın...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;Drive'da ara&lt;/em&gt;</translation>
@@ -760,7 +752,7 @@
 <translation id="7495372004724182530">Malayalam dili Fonetik</translation>
 <translation id="7505167922889582512">Gizli dosyaları göster</translation>
 <translation id="7514365320538308">İndir</translation>
-<translation id="751507702149411736">Belarusça</translation>
+<translation id="751507702149411736">Beyaz Rusça</translation>
 <translation id="7532029025027028521">Farsça Harf Çevirisi</translation>
 <translation id="7544830582642184299">Linux uygulamalarının Google Drive'ınızdaki dosyalara erişmesine izin verin. Değişiklikler, diğer cihazlarınızla senkronize edilecektir.</translation>
 <translation id="7544853251252956727">Karıştır</translation>
@@ -783,6 +775,7 @@
 <translation id="7663224033570512922">Hintçe</translation>
 <translation id="7693909743393669729">Bir sürücünün biçimlendirilmesi sürücüde depolanan tüm verileri siler ve görünür olmayan bölümler de dahil olmak üzere tüm mevcut bölümleri kaldırır. Bu işlem geri alınamaz.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> biçimlendirilemedi</translation>
+<translation id="76959938259365003">Çöp kutusu boşaltılamadı.</translation>
 <translation id="770015031906360009">Yunanca</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> dosyası kopyalandı.</translation>
 <translation id="7711920809702896782">Resim bilgileri</translation>
@@ -793,6 +786,7 @@
 <translation id="7760449188139285140">Çince Wubi</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7774365994322694683">Kuş</translation>
+<translation id="7781829728241885113">Dün</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" dosyasını çevrimdışı olarak kaydetmek için fazladan <ph name="TOTAL_FILE_SIZE" /> alan boşaltmanız gerekiyor:<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />artık çevrimdışı olarak erişmeniz gerekmeyen dosyaların sabitlemesini kaldırın<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />İndirilenler klasörünüzdeki dosyaları silin<ph name="MARKUP_5" /></translation>
@@ -936,7 +930,6 @@
 <translation id="8903931173357132290">Mezun</translation>
 <translation id="8912078710089354287">Kuyruğunu sallayan bir köpek</translation>
 <translation id="8919081441417203123">Danca</translation>
-<translation id="8965273390142984105">LZOP sıkıştırılmış arşivi</translation>
 <translation id="8965697826696209160">Yeterli alan yok.</translation>
 <translation id="8997962250644902079">Çince (Geleneksel) Pinyin</translation>
 <translation id="9003940392834790328">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından yönetiliyor, Ayrıntılar</translation>

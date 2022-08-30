@@ -326,6 +326,22 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetwork) {
                        ModelStateFor(GetStreamType(), store_.get()));
 }
 
+TEST_P(FeedStreamTestForAllStreamTypes, UseFeedQueryOverride) {
+  Config config = GetFeedConfig();
+  config.use_feed_query_requests = true;
+  SetFeedConfigForTesting(config);
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_TRUE(network_.query_request_sent);
+  // There should be no API refresh requests when using use_feed_query_requests.
+  auto api_request_counts = network_.GetApiRequestCounts();
+  api_request_counts.erase(NetworkRequestType::kListWebFeeds);  // ignore
+  EXPECT_EQ((std::map<NetworkRequestType, int>()), api_request_counts);
+  EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+}
+
 TEST_F(FeedApiTest, OnboardingFetchAfterStartup) {
   // Enable WebFeed and WebFeedOnboarding flags.
   base::test::ScopedFeatureList features;
@@ -443,7 +459,7 @@ TEST_F(FeedApiTest, LoadFromNetworkDiscoFeedEnabled) {
 }
 
 TEST_P(FeedNetworkEndpointTest, TestAllNetworkEndpointConfigs) {
-  SetUseFeedQueryRequestsForWebFeeds(GetWebFeedUsesFeedQueryRequests());
+  SetUseFeedQueryRequests(GetUseFeedQueryRequests());
 
   // Enable WebFeed and subscribe to a page, so that we can check if the WebFeed
   // is refreshed by ForceRefreshForDebugging.
@@ -474,10 +490,10 @@ TEST_P(FeedNetworkEndpointTest, TestAllNetworkEndpointConfigs) {
   // Total 2 queries (Web + For You).
   EXPECT_EQ(2, network_.send_query_call_count);
   // API request to DiscoFeed (For You) - if enabled by feature
-  EXPECT_EQ(GetDiscoFeedEnabled() ? 1 : 0,
+  EXPECT_EQ((!GetUseFeedQueryRequests() && GetDiscoFeedEnabled()) ? 1 : 0,
             network_.GetApiRequestCount<QueryInteractiveFeedDiscoverApi>());
   // API request to WebFeedList if FeedQuery not enabled by config.
-  EXPECT_EQ(GetWebFeedUsesFeedQueryRequests() ? 0 : 1,
+  EXPECT_EQ(GetUseFeedQueryRequests() ? 0 : 1,
             network_.GetApiRequestCount<WebFeedListContentsDiscoverApi>());
 }
 
@@ -1866,8 +1882,7 @@ TEST_F(FeedApiTest, LoadMoreDoesNotUpdateLoggingEnabled) {
   for (bool waa_on : {true, false}) {
     for (bool privacy_notice_fulfilled : {true, false}) {
       response_translator_.InjectResponse(MakeTypicalNextPageState(
-          page++, kTestTimeEpoch, kTestTimeEpoch, signed_in, waa_on,
-          privacy_notice_fulfilled));
+          page++, kTestTimeEpoch, signed_in, waa_on, privacy_notice_fulfilled));
       stream_->LoadMore(surface, base::DoNothing());
       WaitForIdleTaskQueue();
       EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
@@ -2683,6 +2698,7 @@ TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOnDpOff) {
     RefreshResponseData response;
     response.model_update_request = MakeTypicalInitialModelState();
     response.web_and_app_activity_enabled = true;
+    response.last_fetch_timestamp = base::Time::Now();
     response_translator_.InjectResponse(std::move(response));
   }
   TestForYouSurface surface(stream_.get());
@@ -2704,6 +2720,7 @@ TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOffDpOn) {
     RefreshResponseData response;
     response.model_update_request = MakeTypicalInitialModelState();
     response.discover_personalization_enabled = true;
+    response.last_fetch_timestamp = base::Time::Now();
     response_translator_.InjectResponse(std::move(response));
   }
   TestForYouSurface surface(stream_.get());
@@ -3065,8 +3082,11 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
   task_environment_.AdvanceClock(base::Seconds(200));
 
   // Load the initial page.
-  response_translator_.InjectResponse(
-      MakeTypicalInitialModelState(0, client_timestamp, server_timestamp));
+  RefreshResponseData response;
+  response.model_update_request = MakeTypicalInitialModelState();
+  response.last_fetch_timestamp = client_timestamp;
+  response.server_response_sent_timestamp = server_timestamp;
+  response_translator_.InjectResponse(std::move(response));
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
@@ -3112,8 +3132,11 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
                                kTestInfoCardType1, 1);
 
   // Refresh the page so that a feed query including the info card tracking
-  // states is sent.
+  // states is sent. Call "CreateStream()" before the refresh to simulate
+  // Chrome restart. This is used to test that info card tracking states are
+  // sent in the initial page load when stream model is not loaded yet.
   response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  CreateStream();
   stream_->ManualRefresh(kForYouStream, base::DoNothing());
   WaitForIdleTaskQueue();
 
@@ -3385,37 +3408,11 @@ TEST_F(FeedApiTest, FeedCloseRefresh_FeedViewed) {
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
 
-  // Only a surface's first view should cause the schedule to be set.
+  // Only the first view should cause the schedule to be set.
   refresh_scheduler_.Clear();
   stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
   // Zero means the scheudle wasn't updated.
   EXPECT_EQ(base::Seconds(0),
-            refresh_scheduler_
-                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
-
-  task_environment_.AdvanceClock(base::Minutes(6));
-
-  // Opening another surface should cause a refresh to be scheduled.
-  refresh_scheduler_.Clear();
-  TestForYouSurface surface2(stream_.get());
-  WaitForIdleTaskQueue();
-  stream_->ReportFeedViewed(kForYouStream, surface2.GetSurfaceId());
-  // The schedule should have been updated.
-  EXPECT_EQ(base::Minutes(30),
-            refresh_scheduler_
-                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
-
-  task_environment_.AdvanceClock(base::Minutes(6));
-
-  // Leaving the surface and returning should schedule a refresh.
-  refresh_scheduler_.Clear();
-  surface.Detach();
-  WaitForIdleTaskQueue();
-  surface.Attach(stream_.get());
-  WaitForIdleTaskQueue();
-  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
-  // The schedule should have been updated.
-  EXPECT_EQ(base::Minutes(30),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
 }

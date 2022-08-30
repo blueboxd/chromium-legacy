@@ -43,7 +43,7 @@
 #include "components/autofill_assistant/browser/fake_script_executor_ui_delegate.h"
 #include "components/autofill_assistant/browser/mock_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/model.pb.h"
-#include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/public/rectf.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor.h"
 #include "components/autofill_assistant/browser/selector.h"
@@ -959,6 +959,73 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
     return result_status;
   }
 
+  ClientStatus RunPromptAfterShowCastAction(
+      const ActionProto& show_cast_action,
+      const ActionProto& prompt_action,
+      MockScriptExecutorDelegate& mock_script_executor_delegate) {
+    ON_CALL(mock_script_executor_delegate, GetWebController)
+        .WillByDefault(Return(web_controller_.get()));
+
+    MockService mock_service;
+    ActionsResponseProto actions_response;
+    *actions_response.add_actions() = show_cast_action;
+    *actions_response.add_actions() = prompt_action;
+    std::string serialized_actions_response;
+    actions_response.SerializeToString(&serialized_actions_response);
+    EXPECT_CALL(mock_service, GetActions)
+        .WillOnce(RunOnceCallback<5>(200, serialized_actions_response,
+                                     ServiceRequestSender::ResponseInfo{}));
+
+    std::vector<ProcessedActionProto> captured_processed_actions;
+    EXPECT_CALL(mock_service, GetNextActions)
+        .WillOnce(WithArgs<3, 6>(
+            [&captured_processed_actions](
+                const std::vector<ProcessedActionProto>& processed_actions,
+                ServiceRequestSender::ResponseCallback callback) {
+              captured_processed_actions = processed_actions;
+              // Send empty response to stop the script executor.
+              std::move(callback).Run(200, std::string(),
+                                      ServiceRequestSender::ResponseInfo{});
+            }));
+
+    TriggerContext trigger_context;
+    ON_CALL(mock_script_executor_delegate, GetTriggerContext())
+        .WillByDefault(Return(&trigger_context));
+    ON_CALL(mock_script_executor_delegate, GetService())
+        .WillByDefault(Return(&mock_service));
+    GURL test_script_url("https://example.com");
+    ON_CALL(mock_script_executor_delegate, GetScriptURL())
+        .WillByDefault(testing::ReturnRef(test_script_url));
+
+    EXPECT_CALL(mock_script_executor_delegate,
+                EnterState(AutofillAssistantState::PROMPT))
+        .Times(2)
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(mock_script_executor_delegate,
+                EnterState(AutofillAssistantState::RUNNING))
+        .WillOnce(Return(true));
+
+    std::vector<std::unique_ptr<Script>> ordered_interrupts;
+    FakeScriptExecutorUiDelegate fake_script_executor_ui_delegate;
+    UserData fake_user_data;
+    ScriptExecutor script_executor(
+        /* script_path= */ std::string(),
+        /* additional_context= */ std::make_unique<TriggerContext>(),
+        /* global_payload= */ std::string(),
+        /* script_payload= */ std::string(),
+        /* listener= */ nullptr, &ordered_interrupts,
+        &mock_script_executor_delegate, &fake_script_executor_ui_delegate);
+    base::RunLoop run_loop;
+    script_executor.Run(
+        &fake_user_data,
+        base::BindOnce(&WebControllerBrowserTest::OnScriptFinished,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    CHECK_EQ(captured_processed_actions.size(), 2u);
+    return ClientStatus(captured_processed_actions[0].status());
+  }
+
  protected:
   std::unique_ptr<WebController> web_controller_;
   UserData user_data_;
@@ -1472,7 +1539,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 
   EXPECT_TRUE(content::ExecJs(shell(),
                               R"(var scrollItem3WasClicked = false;
-           let item = document.querySelector("#scroll_item_3");
+           const item = document.querySelector("#scroll_item_3");
            item.addEventListener("click", function() {
              scrollItem3WasClicked = true;
            });)"));
@@ -1483,7 +1550,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   EXPECT_TRUE(content::EvalJs(shell(), "scrollItem3WasClicked").ExtractBool());
 
   // TODO(b/135909926): Find a reliable way of verifying that the button was
-  // mover roughly to the center.
+  // moved roughly to the center.
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
@@ -2702,7 +2769,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   // This makes the devtools action fail.
   ElementFinderResult element;
   element.SetNodeFrameId("doesnotexist");
-  element.SetRenderFrameHost(web_contents()->GetPrimaryMainFrame());
+  element.SetRenderFrameHostForTest(web_contents()->GetPrimaryMainFrame());
 
   EXPECT_EQ(ELEMENT_POSITION_NOT_FOUND,
             WaitUntilElementIsStable(element, 10, base::Milliseconds(100))
@@ -3031,6 +3098,122 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusAndBlur) {
           .ExtractBool());
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ShowCastActionSetsTouchableAreaForMovingElement) {
+  ActionProto show_cast_action;
+  show_cast_action.mutable_show_cast()
+      ->mutable_element_to_present()
+      ->add_filters()
+      ->set_css_selector("#touch_area_two");
+  show_cast_action.mutable_show_cast()->set_wait_for_stable_element(
+      OptionalStep::REQUIRE_STEP_SUCCESS);
+  show_cast_action.mutable_show_cast()
+      ->mutable_touchable_element_area()
+      ->add_touchable()
+      ->add_elements()
+      ->add_filters()
+      ->set_css_selector("#touch_area_two");
+
+  // Show a prompt with a single option, with auto-select.
+  // Used to test side effects of ShowCastAction.
+  ActionProto prompt_action;
+  prompt_action.mutable_prompt()->set_browse_mode(false);
+  prompt_action.mutable_prompt()->set_message("test prompt message");
+  auto* ok_proto = prompt_action.mutable_prompt()->add_choices();
+  *ok_proto->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("#touch_area_two");
+  auto* chip = ok_proto->mutable_chip();
+  chip->set_text("Ok");
+  chip->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+  ok_proto->set_tag("oktag");
+
+  MockScriptExecutorDelegate mock_script_executor_delegate;
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(mock_script_executor_delegate, SetTouchableElementArea(_))
+        .Times(2)
+        .WillRepeatedly([&](const ElementAreaProto& area) {
+          ASSERT_EQ(1, area.touchable().size());
+          ASSERT_EQ(1, area.touchable(0).elements().size());
+          ASSERT_EQ(1, area.touchable(0).elements(0).filters().size());
+          EXPECT_EQ("#touch_area_two",
+                    area.touchable(0).elements(0).filters(0).css_selector());
+        });
+    EXPECT_CALL(mock_script_executor_delegate, SetTouchableElementArea(_))
+        .Times(1);
+  }
+
+  ClientStatus status = RunPromptAfterShowCastAction(
+      show_cast_action, prompt_action, mock_script_executor_delegate);
+  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+
+  const std::string itemInViewportScript = R"(
+      const item = document.querySelector("#touch_area_two");
+      const itemRect = item.getBoundingClientRect();
+      (itemRect.top >= 0) && (itemRect.bottom <= window.innerHeight)
+    )";
+  EXPECT_TRUE(content::EvalJs(shell(), itemInViewportScript).ExtractBool());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ShowCastActionSetsTouchableArea) {
+  ActionProto show_cast_action;
+  show_cast_action.mutable_show_cast()
+      ->mutable_element_to_present()
+      ->add_filters()
+      ->set_css_selector("#input1");
+  show_cast_action.mutable_show_cast()
+      ->mutable_touchable_element_area()
+      ->add_touchable()
+      ->add_elements()
+      ->add_filters()
+      ->set_css_selector("#input1");
+
+  // Show a prompt with a single option, with auto-select.
+  // Used to test side effects of ShowCastAction.
+  ActionProto prompt_action;
+  prompt_action.mutable_prompt()->set_browse_mode(false);
+  prompt_action.mutable_prompt()->set_message("test prompt message");
+  auto* ok_proto = prompt_action.mutable_prompt()->add_choices();
+  *ok_proto->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("#input1");
+  auto* chip = ok_proto->mutable_chip();
+  chip->set_text("Ok");
+  chip->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+  ok_proto->set_tag("oktag");
+
+  MockScriptExecutorDelegate mock_script_executor_delegate;
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(mock_script_executor_delegate, SetTouchableElementArea(_))
+        .Times(2)
+        .WillRepeatedly([&](const ElementAreaProto& area) {
+          ASSERT_EQ(1, area.touchable().size());
+          ASSERT_EQ(1, area.touchable(0).elements().size());
+          ASSERT_EQ(1, area.touchable(0).elements(0).filters().size());
+          EXPECT_EQ("#input1",
+                    area.touchable(0).elements(0).filters(0).css_selector());
+        });
+    EXPECT_CALL(mock_script_executor_delegate, SetTouchableElementArea(_))
+        .Times(1);
+  }
+
+  ClientStatus status = RunPromptAfterShowCastAction(
+      show_cast_action, prompt_action, mock_script_executor_delegate);
+  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+
+  const std::string itemInViewportScript = R"(
+      const item = document.querySelector("#input1");
+      const itemRect = item.getBoundingClientRect();
+      (itemRect.top >= 0) && (itemRect.bottom <= window.innerHeight)
+    )";
+  const bool itemInViewport =
+      content::EvalJs(shell(), itemInViewportScript).ExtractBool();
+  EXPECT_TRUE(itemInViewport);
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForDomForUniqueElement) {
   ActionProto action_proto;
   auto* wait_for_dom = action_proto.mutable_wait_for_dom();
@@ -3154,7 +3337,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, RunElementFinderFromOOPIF) {
 
   // Create fake element without object id and frame information only.
   ElementFinderResult fake_frame_element;
-  fake_frame_element.SetRenderFrameHost(frame_element.render_frame_host());
+  fake_frame_element.SetRenderFrameHostForTest(
+      frame_element.render_frame_host());
   fake_frame_element.SetNodeFrameId(
       frame_element.render_frame_host()->GetDevToolsFrameToken().ToString());
 
@@ -3436,6 +3620,34 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetFieldValueThroughNative) {
   base::RunLoop run_loop;
   web_controller_->SetNativeValue(
       "native", input,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), run_loop.QuitClosure(),
+                     &fill_status));
+  run_loop.Run();
+
+  EXPECT_EQ(ACTION_APPLIED, fill_status.proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SetElementCheckedThroughNative) {
+  ClientStatus element_status;
+  ElementFinderResult input;
+  FindElement(Selector({"#option1"}), &element_status, &input);
+  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
+
+  int backend_node_id;
+  ASSERT_EQ(ACTION_APPLIED,
+            GetBackendNodeId(input, &backend_node_id).proto_status());
+
+  EXPECT_CALL(autofill_assistant_agent_,
+              SetElementChecked(backend_node_id, true,
+                                /* send_events= */ true, _))
+      .WillOnce(RunOnceCallback<3>(true));
+
+  ClientStatus fill_status;
+  base::RunLoop run_loop;
+  web_controller_->SetNativeChecked(
+      true, input,
       base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                      base::Unretained(this), run_loop.QuitClosure(),
                      &fill_status));

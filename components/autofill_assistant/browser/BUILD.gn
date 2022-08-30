@@ -9,7 +9,7 @@ if (is_android) {
 }
 
 proto_library("proto") {
-  proto_in_dir = "//components/autofill_assistant/"
+  proto_in_dir = "//"
   sources = [
     "action_strategy.proto",
     "action_value.proto",
@@ -27,11 +27,8 @@ proto_library("proto") {
 }
 
 proto_library("test_proto") {
-  sources = [
-    "external_action_extension_test.proto",
-    "parse_jspb_test.proto",
-  ]
-  link_deps = [ "//components/autofill_assistant/browser/public:proto" ]
+  proto_in_dir = "//"
+  sources = [ "parse_jspb_test.proto" ]
 }
 
 static_library("browser") {
@@ -182,6 +179,7 @@ static_library("browser") {
     "display_strings_util.h",
     "element_area.cc",
     "element_area.h",
+    "empty_controller_observer.h",
     "empty_website_login_manager_impl.cc",
     "empty_website_login_manager_impl.h",
     "event_handler.cc",
@@ -198,8 +196,8 @@ static_library("browser") {
     "generic_ui_replace_placeholders.h",
     "headless/client_headless.cc",
     "headless/client_headless.h",
-    "headless/external_script_controller_impl.cc",
-    "headless/external_script_controller_impl.h",
+    "headless/headless_script_controller_impl.cc",
+    "headless/headless_script_controller_impl.h",
     "headless/headless_ui_controller.cc",
     "headless/headless_ui_controller.h",
     "info_box.cc",
@@ -225,8 +223,6 @@ static_library("browser") {
     "protocol_utils.h",
     "radio_button_controller.cc",
     "radio_button_controller.h",
-    "rectf.cc",
-    "rectf.h",
     "retry_timer.cc",
     "retry_timer.h",
     "save_password_leak_detection_delegate.cc",
@@ -379,6 +375,7 @@ static_library("browser") {
     "//components/autofill_assistant/content/browser",
     "//components/autofill_assistant/content/common",
     "//components/autofill_assistant/content/common:mojo_interfaces",
+    "//components/autofill_assistant/core/public:public",
     "//components/client_update_protocol",
     "//components/google/core/common:common",
     "//components/keyed_service/core",
@@ -408,6 +405,8 @@ static_library("unit_test_support") {
     "actions/mock_action_delegate.h",
     "actions/wait_for_dom_test_base.cc",
     "actions/wait_for_dom_test_base.h",
+    "fake_common_dependencies.cc",
+    "fake_common_dependencies.h",
     "fake_script_executor_delegate.cc",
     "fake_script_executor_delegate.h",
     "fake_script_executor_ui_delegate.cc",
@@ -430,6 +429,8 @@ static_library("unit_test_support") {
     "mock_personal_data_manager.h",
     "mock_ui_controller_observer.cc",
     "mock_ui_controller_observer.h",
+    "mock_user_model.cc",
+    "mock_user_model.h",
     "mock_user_model_observer.cc",
     "mock_user_model_observer.h",
     "mock_website_login_manager.cc",
@@ -448,6 +449,7 @@ static_library("unit_test_support") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
+    "//components/autofill_assistant/core/public:public",
     "//components/password_manager/core/browser:browser",
     "//components/version_info",
     "//testing/gmock",
@@ -583,12 +585,8 @@ source_set("unit_tests") {
     "web/element_action_util_unittest.cc",
     "web/element_store_unittest.cc",
     "web/send_keyboard_input_worker_unittest.cc",
+    "website_login_manager_impl_unittest.cc",
   ]
-
-  # TODO(crbug.com/1329148): enable these tests on desktop.
-  if (is_android) {
-    sources += [ "website_login_manager_impl_unittest.cc" ]
-  }
 
   deps = [
     ":browser",
@@ -622,7 +620,7 @@ source_set("unit_tests") {
 
 if (is_android) {
   proto_java_library("proto_java") {
-    proto_path = "//components/autofill_assistant/"
+    proto_path = "//"
     sources = [
       "action_strategy.proto",
       "action_value.proto",

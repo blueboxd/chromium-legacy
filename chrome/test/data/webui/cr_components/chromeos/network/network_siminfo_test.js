@@ -142,6 +142,76 @@ suite('NetworkSiminfoTest', function() {
     verifyExistsAndClickOpensDialog('changePinButton');
   });
 
+  test('Policy controlled SIM lock setting', async () => {
+    const getChangePinButton = () => simInfo.$$('#changePinButton');
+    const getSimLockButton = () => simInfo.$$('#simLockButton');
+    const getSimLockButtonTooltip = () => simInfo.$$('#inActiveSimLockTooltip');
+    const getSimLockPolicyIcon = () => simInfo.$$('#simLockPolicyIcon');
+
+    // No icon if policy does not disable SIM PIN locking.
+    assertFalse(!!getSimLockPolicyIcon());
+
+    simInfo.globalPolicy = {
+      allowCellularSimLock: false,
+    };
+    await flushAsync();
+
+    // Unlocked primary SIM with lock setting enabled. Change button should not
+    // be visible, and toggle should be visible, on, and enabled to allow users
+    // to turn off the SIM Lock setting.
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ true, /*isLocked=*/ false);
+    assertTrue(getChangePinButton().hidden);
+    assertFalse(getSimLockButton().disabled);
+    assertTrue(getSimLockButton().checked);
+    assertFalse(!!getSimLockButtonTooltip());
+    assertTrue(!!getSimLockPolicyIcon());
+
+    // Policy controlled icon should not show if SIM PIN locking is not
+    // restricted.
+    simInfo.globalPolicy = {
+      allowCellularSimLock: true,
+    };
+    await flushAsync();
+    assertFalse(!!getSimLockPolicyIcon());
+
+    simInfo.globalPolicy = {
+      allowCellularSimLock: false,
+    };
+    await flushAsync();
+
+    // Unlocked primary SIM with lock setting disabled. Change button should not
+    // be visible, and toggle should be visible, off, and disabled to prevent
+    // users to turn on the SIM Lock setting.
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ false, /*isLocked=*/ false);
+    assertTrue(getChangePinButton().hidden);
+    assertTrue(getSimLockButton().disabled);
+    assertFalse(getSimLockButton().checked);
+    assertFalse(!!getSimLockButtonTooltip());
+    assertTrue(!!getSimLockPolicyIcon());
+
+    // Non-primary unlocked SIM with lock setting enabled. Change button should
+    // be hidden, and toggle should be visible, off, and disabled.
+    updateDeviceState(
+        /*isPrimary=*/ false, /*lockEnabled=*/ true, /*isLocked=*/ false);
+    assertTrue(getChangePinButton().hidden);
+    assertTrue(getSimLockButton().disabled);
+    assertFalse(getSimLockButton().checked);
+    assertTrue(!!getSimLockButtonTooltip());
+    assertFalse(!!getSimLockPolicyIcon());
+
+    // Non-primary unlocked SIM with lock setting disabled. Change button should
+    // be hidden, and toggle should be visible, off, and disabled.
+    updateDeviceState(
+        /*isPrimary=*/ false, /*lockEnabled=*/ false, /*isLocked=*/ false);
+    assertTrue(getChangePinButton().hidden);
+    assertTrue(getSimLockButton().disabled);
+    assertFalse(getSimLockButton().checked);
+    assertTrue(!!getSimLockButtonTooltip());
+    assertFalse(!!getSimLockPolicyIcon());
+  });
+
   test('Primary vs. non-primary SIM', function() {
     const getChangePinButton = () => simInfo.$$('#changePinButton');
     const getSimLockButton = () => simInfo.$$('#simLockButton');

@@ -176,6 +176,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1391289752476847787">Accións e bonos</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> non enviou datos.</translation>
 <translation id="1405567553485452995">Verde claro</translation>
+<translation id="1406500794671479665">Verificando...</translation>
 <translation id="1407135791313364759">Abrir todo</translation>
 <translation id="1408787208417187241">Tres grampas na parte superior</translation>
 <translation id="1413407968866574823">Xogos de acción e de plataformas</translation>
@@ -258,7 +259,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1583429793053364125">Produciuse un erro ao mostrar esta páxina web.</translation>
 <translation id="1586541204584340881">As extensións que teñas instaladas</translation>
 <translation id="1588438908519853928">Normal</translation>
-<translation id="1589050138437146318">Queres instalar ARCore?</translation>
 <translation id="1592005682883173041">Acceso aos datos locais</translation>
 <translation id="1594030484168838125">Escoller</translation>
 <translation id="1596296697375291157">Películas de intriga, policiais e de suspense</translation>
@@ -334,10 +334,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1757773103848038814">Tipo de letra monoespazado</translation>
 <translation id="1763864636252898013">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o sistema operativo do teu dispositivo non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proba a executar o diagnóstico de rede de Windows<ph name="END_LINK" />.</translation>
-<translation id="1772163372082567643">O servidor que vas visitar, <ph name="ORIGIN" />, definiu un título
-    que require que se aplique unha política de orixe a todas as solicitudes que reciba. Non
-    obstante, o título ten un formato incorrecto, o que impide que o navegador complete
-    a solicitude de <ph name="SITE" />. Os operadores dos sitios poden utilizar as políticas de orixe para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="1774592222195216949"><ph name="BEGIN_LINK" />Máis información sobre o modo de incógnito de Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">As pestanas abertas aparecerán aquí</translation>
@@ -382,7 +378,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1908217026282415406">Uso e movemento da cámara</translation>
 <translation id="191374271204266022">Copiar como JSON</translation>
 <translation id="1914326953223720820">Servizo de descompresión</translation>
-<translation id="1915697529809968049">Queres usar Touch ID en lugar do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar a túa configuración actualizada a este sitio, volve cargar esta páxina</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Obter axuda cando aparece unha mensaxe de erro concreta</translation>
@@ -442,7 +437,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2099652385553570808">Tres grampas na parte esquerda</translation>
 <translation id="2101225219012730419">Versión:</translation>
 <translation id="2102134110707549001">Suxerir contrasinal seguro…</translation>
-<translation id="2102495993840063010">Aplicacións para Android</translation>
+<translation id="2102495993840063010">Aplicacións de Android</translation>
 <translation id="2107021941795971877">Soportes de impresión</translation>
 <translation id="2108755909498034140">Reinicia o ordenador</translation>
 <translation id="2111166930115883695">Pulsa Espazo para xogar</translation>
@@ -834,6 +829,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3226387218769101247">Miniaturas</translation>
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="3229041911291329567">Información sobre a versión do dispositivo e do navegador</translation>
+<translation id="3229277193950731405">Copiar cadea da versión</translation>
 <translation id="323107829343500871">Introduce o código CVC da tarxeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Detectar sempre contido importante neste sitio</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />. Para personalizar o aspecto do navegador, preme Tabulador e, a continuación, Introducir</translation>
@@ -1109,8 +1105,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Compensación mediante empurro</translation>
 <translation id="3992684624889376114">Acerca desta páxina</translation>
-<translation id="3996311196211510766">O sitio <ph name="ORIGIN" /> solicitou que se aplicase unha política de orixe
-    a todas as solicitudes que reciba, pero actualmente non se pode aplicar esta política.</translation>
 <translation id="4006465311664329701">Métodos de pago, ofertas e enderezos que usan Google Pay</translation>
 <translation id="4009243425692662128">O contido das páxinas que imprimas envíaselle a Google Cloud ou a terceiros para que o analicen. Por exemplo, poderíase comprobar se contén datos confidenciais.</translation>
 <translation id="4010758435855888356">Queres permitir o acceso ao almacenamento?</translation>
@@ -1128,7 +1122,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4072486802667267160">Produciuse un erro ao procesar a túa solicitude. Téntao de novo.</translation>
 <translation id="4073797364926776829">Ver tarxeta</translation>
 <translation id="4075732493274867456">O cliente e o servidor non admiten unha versión do protocolo SSL ou o paquete de cifraxe comúns.</translation>
-<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">A configuración do proxy está establecida para utilizar un URL de script .pac, non servidores proxy fixos.</translation>
 <translation id="4082393374666368382">Configuración - Xestión</translation>
 <translation id="4087296516249690906">Botón Crear evento. Preme Introducir para crear rapidamente un evento novo en Google Calendar</translation>
@@ -1175,11 +1168,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4202554117186904723">Quinto rolo</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar a configuración do firewall e do antivirus<ph name="END_LINK" /></translation>
 <translation id="4209092469652827314">Grande</translation>
-<translation id="4209166701302774460">O servidor que vas visitar, <ph name="ORIGIN" />, solicitou que se aplicase
-    unha política de orixe a todas as solicitudes que reciba. Non obstante, agora non se emitiu
-     ningunha política, o que impide que o navegador complete a solicitude
-    de <ph name="SITE" />. Os operadores dos sitios poden utilizar as políticas de orixe
-    para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="4210602799576081649">O código de verificación está caducado. Solicita un novo</translation>
 <translation id="421066178035138955">Utilizar datos e dispositivos de realidade virtual</translation>
 <translation id="4213305257324635756">Películas de animación</translation>
@@ -1207,7 +1195,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
     &lt;p&gt;Se aínda ves este erro, contacta co propietario do sitio web.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proba a executar o diagnóstico de rede<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">Pode pedirche permiso para usar e mover a cámara</translation>
-<translation id="4234495348042597185"><ph name="BEGIN_LINK" />Ir a <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Válido</translation>
 <translation id="4250431568374086873">A túa conexión a este sitio non é completamente segura</translation>
 <translation id="4250680216510889253">Non</translation>
@@ -1306,7 +1293,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4506176782989081258">Erro de validación: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Poñerte en contacto co administrador do sistema</translation>
 <translation id="450710068430902550">Compartindo co administrador</translation>
-<translation id="4508814173490746936">Non se puido utilizar Touch ID</translation>
 <translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Preme Tab e, a continuación, Intro para traducir esta páxina co Tradutor de Google</translation>
 <translation id="4510487217173779431">Chou4 (sobre)</translation>
 <translation id="4514308731478712184">Desactivar Percorridos</translation>
@@ -1411,7 +1397,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4796594887379589189">Código da conta para o traballo</translation>
 <translation id="4798078619018708837">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /> para actualizar os datos. Unha vez confirmados, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="4800132727771399293">Comproba a túa data de caducidade e o CVC e téntao de novo</translation>
-<translation id="480334179571489655">Produciuse un erro relacionado coa política de orixe</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4809079943450490359">Instrucións do administrador do teu dispositivo:</translation>
 <translation id="4812751092864334025">Tecnoloxía poñible</translation>
@@ -1806,7 +1791,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5903264686717710770">Título:</translation>
 <translation id="5904360430676679685">Familia e relacións</translation>
-<translation id="5905445707201418379">Bloqueouse debido á política de orixe de <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="59174027418879706">Activado</translation>
 <translation id="5919090499915321845">B10</translation>
@@ -1973,14 +1957,15 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6391700400718590966">A folla da credencial de pagos seguros correspondente ás credenciais non coincidentes está pechada</translation>
 <translation id="6393956493820063117">A política do administrador bloqueou a función de pegar contido nesta localización desde <ph name="ORIGIN_NAME" /></translation>
+<translation id="6394852772105848029">Este sitio quere abrir a aplicación <ph name="APP_NAME" /></translation>
 <translation id="6398277657359595425">Choro desconsolado</translation>
 <translation id="6398765197997659313">Saír do modo de pantalla completa</translation>
 <translation id="6401136357288658127">Esta política quedou obsoleta. Debes utilizar a política <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
+<translation id="6405181733356710802">Queres ir á aplicación <ph name="APP_NAME" />?</translation>
 <translation id="6406765186087300643">C0 (sobre)</translation>
 <translation id="6410264514553301377">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium pode axudarche a protexer a túa Conta de Google e a cambiar o teu contrasinal.</translation>
-<translation id="6423385022588644828">A partir de agora, confirma as tarxetas máis rápido con Touch ID</translation>
 <translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Dobrez en ventá</translation>
 <translation id="6428450836711225518">Verificar o teu número de teléfono</translation>
@@ -2672,7 +2657,6 @@ Detalles adicionais:
 <translation id="830498451218851433">Dobrez á metade</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Aplicacións instaladas e frecuencia de uso</translation>
-<translation id="8317207217658302555">Queres actualizar ARCore?</translation>
 <translation id="831997045666694187">Serán</translation>
 <translation id="8321476692217554900">notificacións</translation>
 <translation id="8332188693563227489">Denegouse o acceso a <ph name="HOST_NAME" /></translation>
@@ -2749,7 +2733,6 @@ Detalles adicionais:
 <translation id="8559762987265718583">Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
 <translation id="8564182942834072828">Documentos independentes/copias non intercaladas</translation>
 <translation id="8564985650692024650">Chromium recoméndache que restablezas o contrasinal de <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> se o reutilizaches noutros sitios.</translation>
-<translation id="8574899947864779331">Usar Touch ID para confirmar as tarxetas máis rápido</translation>
 <translation id="8576310925653847813">Sistemas de cine domésticos</translation>
 <translation id="8577348305244205642">A tarxeta virtual non está dispoñible</translation>
 <translation id="858637041960032120">Engadir número de teléfono</translation>
@@ -2905,7 +2888,6 @@ Detalles adicionais:
 <translation id="9039213469156557790">Ademais, esta páxina inclúe outros recursos que non son seguros. Outros usuarios poden ver estes recursos mentres se desprazan e un atacante pode modificalos para cambiar o comportamento da páxina.</translation>
 <translation id="9040464167025094690">Botón da función Localizar o meu dispositivo. Para acceder á función da Conta de Google Localizar o meu dispositivo, preme Introducir</translation>
 <translation id="9042617223719777575">Gran capacidade</translation>
-<translation id="9044359186343685026">Usar Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />: <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Intentaches acceder a <ph name="DOMAIN" />, pero o servidor presentou un certificado non válido.</translation>
 <translation id="9050666287014529139">Frase de acceso</translation>

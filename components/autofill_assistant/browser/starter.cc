@@ -65,19 +65,6 @@ const char kTriggeredSyntheticTrial[] = "AutofillAssistantTriggered";
 const char kEnabledGroupName[] = "Enabled";
 const char kExperimentsSyntheticTrial[] = "AutofillAssistantExperimentsTrial";
 
-// Creates a service request sender that serves the pre-specified response.
-// Creation may fail (return null) if the parameter fails to decode.
-std::unique_ptr<ServiceRequestSender> CreateBase64TriggerScriptRequestSender(
-    const std::string& base64_trigger_script) {
-  std::string response;
-  if (!base::Base64UrlDecode(base64_trigger_script,
-                             base::Base64UrlDecodePolicy::IGNORE_PADDING,
-                             &response)) {
-    return nullptr;
-  }
-  return std::make_unique<ServiceRequestSenderLocalImpl>(response);
-}
-
 // Creates a service request sender that communicates with a remote endpoint.
 std::unique_ptr<ServiceRequestSender> CreateRpcTriggerScriptRequestSender(
     content::BrowserContext* browser_context,
@@ -90,12 +77,11 @@ std::unique_ptr<ServiceRequestSender> CreateRpcTriggerScriptRequestSender(
       ApiKeyFetcher().GetAPIKey(delegate->GetChannel()));
 }
 
-// Returns whether |trigger_context| contains either the REQUEST_TRIGGER_SCRIPT
-// or the TRIGGER_SCRIPTS_BASE64 script parameter.
+// Returns whether |trigger_context| contains the REQUEST_TRIGGER_SCRIPT
 bool IsTriggerScriptContext(const TriggerContext& trigger_context) {
-  const auto& script_parameters = trigger_context.GetScriptParameters();
-  return script_parameters.GetRequestsTriggerScript() ||
-         script_parameters.GetBase64TriggerScriptsResponseProto();
+  return trigger_context.GetScriptParameters()
+      .GetRequestsTriggerScript()
+      .value_or(false);
 }
 
 // The heuristic is shared across all instances and initialized on first use. As
@@ -317,12 +303,15 @@ void Starter::OnHeuristicMatch(const GURL& url,
 
   Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(script_parameters),
-      TriggerContext::Options{/* experiment_ids = */ std::string(),
-                              /* is_cct = */ is_custom_tab_,
-                              /* onboarding_shown = */ false,
-                              /* is_direct_action = */ false,
-                              /* initial_url = */ std::string(),
-                              /* is_in_chrome_triggered = */ true}));
+      TriggerContext::Options{
+          /* experiment_ids = */ std::string(),
+          /* is_cct = */ is_custom_tab_,
+          /* onboarding_shown = */ false,
+          /* is_direct_action = */ false,
+          /* initial_url = */ std::string(),
+          /* is_in_chrome_triggered = */ true,
+          /* is_externally_triggered = */ false,
+      }));
 }
 
 bool Starter::IsStartupPending() const {
@@ -406,7 +395,6 @@ void Starter::Init() {
     switch (startup_mode) {
       case StartupMode::START_REGULAR:
         return;
-      case StartupMode::START_BASE64_TRIGGER_SCRIPT:
       case StartupMode::START_RPC_TRIGGER_SCRIPT:
         if (!switched_from_cct_to_tab) {
           return;
@@ -535,7 +523,6 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
     case StartupMode::NO_INITIAL_URL:
       OnStartDone(/* start_script = */ false);
       return;
-    case StartupMode::START_BASE64_TRIGGER_SCRIPT:
     case StartupMode::START_RPC_TRIGGER_SCRIPT:
     case StartupMode::START_REGULAR:
       MaybeInstallFeatureModule(startup_mode);
@@ -598,7 +585,6 @@ void Starter::OnFeatureModuleInstalled(
     case StartupMode::START_REGULAR:
       MaybeShowOnboarding();
       return;
-    case StartupMode::START_BASE64_TRIGGER_SCRIPT:
     case StartupMode::START_RPC_TRIGGER_SCRIPT:
       StartTriggerScript();
       return;
@@ -621,20 +607,7 @@ void Starter::StartTriggerScript() {
   std::unique_ptr<ServiceRequestSender> service_request_sender =
       platform_delegate_->GetTriggerScriptRequestSenderToInject();
   if (!service_request_sender) {
-    if (script_parameters.GetBase64TriggerScriptsResponseProto().has_value()) {
-      service_request_sender = CreateBase64TriggerScriptRequestSender(
-          script_parameters.GetBase64TriggerScriptsResponseProto().value());
-      if (!service_request_sender) {
-        Metrics::RecordTriggerScriptFinished(
-            ukm_recorder_, current_ukm_source_id_,
-            TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
-            Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR);
-        OnTriggerScriptFinished(
-            Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR,
-            std::move(pending_trigger_context_), absl::nullopt);
-        return;
-      }
-    } else if (script_parameters.GetRequestsTriggerScript().value_or(false)) {
+    if (script_parameters.GetRequestsTriggerScript().value_or(false)) {
       service_request_sender = CreateRpcTriggerScriptRequestSender(
           web_contents()->GetBrowserContext(), platform_delegate_);
     } else {
@@ -733,6 +706,16 @@ void Starter::OnTriggerScriptFinished(
 
 void Starter::MaybeShowOnboarding(
     absl::optional<TriggerScriptProto> trigger_script) {
+  // The onboarding is handled externally for external runs.
+  if (pending_trigger_context_ &&
+      pending_trigger_context_->GetIsExternallyTriggered()) {
+    Metrics::RecordRegularScriptOnboarding(ukm_recorder_,
+                                           current_ukm_source_id_,
+                                           Metrics::Onboarding::OB_EXTERNAL);
+    OnStartDone(/* start_script = */ true, trigger_script);
+    return;
+  }
+
   if (platform_delegate_->GetOnboardingAccepted()) {
     OnOnboardingFinished(trigger_script, /* shown = */ false,
                          OnboardingResult::ACCEPTED);

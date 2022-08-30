@@ -41,7 +41,7 @@
 #include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
-#include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/public/rectf.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -2022,14 +2022,6 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
       ui_delegate_->GetEventHandler(), execution_delegate_->GetUserModel(),
       ui_delegate_->GetBasicInteractions());
 }
-
-void UiControllerAndroid::OnError(const std::string& error_message,
-                                  Metrics::DropOutReason reason) {}
-void UiControllerAndroid::OnExecuteScript(const std::string& start_message) {}
-void UiControllerAndroid::OnStart(const TriggerContext& trigger_context) {}
-void UiControllerAndroid::OnStop() {}
-void UiControllerAndroid::OnResetState() {}
-void UiControllerAndroid::OnUiShownChanged(bool shown) {}
 
 base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetGenericUiModel() {

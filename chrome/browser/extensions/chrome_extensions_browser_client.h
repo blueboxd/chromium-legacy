@@ -190,6 +190,12 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                   base::OnceCallback<
                       void(scoped_refptr<base::RefCountedMemory> bitmap_data)>
                       callback) const override;
+  std::vector<content::BrowserContext*> GetRelatedContextsForExtension(
+      content::BrowserContext* browser_context,
+      const Extension& extension) const override;
+  std::unique_ptr<const PermissionSet> AddAdditionalAllowedHosts(
+      const PermissionSet& desired_permissions,
+      const PermissionSet& granted_permissions) const override;
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChromeExtensionsBrowserClient>;

@@ -574,7 +574,7 @@ bool DhcpPacFileFetcherWin::GetCandidateAdapterNames(
 }
 
 DhcpPacFileFetcherWin::AdapterQuery::AdapterQuery()
-    : logging_info_(new DhcpAdapterNamesLoggingInfo()) {}
+    : logging_info_(std::make_unique<DhcpAdapterNamesLoggingInfo>()) {}
 
 void DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
   logging_info_->error = ERROR_NO_DATA;
@@ -598,6 +598,6 @@ bool DhcpPacFileFetcherWin::AdapterQuery::ImplGetCandidateAdapterNames(
                                                          info);
 }
 
-DhcpPacFileFetcherWin::AdapterQuery::~AdapterQuery() {}
+DhcpPacFileFetcherWin::AdapterQuery::~AdapterQuery() = default;
 
 }  // namespace net

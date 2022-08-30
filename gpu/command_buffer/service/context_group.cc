@@ -76,7 +76,6 @@ ContextGroup::ContextGroup(
     FramebufferCompletenessCache* framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
     bool bind_generates_resource,
-    ImageManager* image_manager,
     gpu::ImageFactory* image_factory,
     gl::ProgressReporter* progress_reporter,
     const GpuFeatureInfo& gpu_feature_info,
@@ -119,7 +118,6 @@ ContextGroup::ContextGroup(
       uniform_buffer_offset_alignment_(1u),
       program_cache_(nullptr),
       feature_info_(feature_info),
-      image_manager_(image_manager),
       image_factory_(image_factory),
       use_passthrough_cmd_decoder_(false),
       passthrough_resources_(new PassthroughResources),
@@ -376,15 +374,17 @@ gpu::ContextResult ContextGroup::Initialize(
                     : gpu::ContextResult::kFatalFailure;
   }
 
-  if (feature_info_->workarounds().client_max_texture_size) {
-    max_texture_size = std::min(
-        max_texture_size, feature_info_->workarounds().client_max_texture_size);
+  if (feature_info_->workarounds().webgl_or_caps_max_texture_size &&
+      feature_info_->IsWebGLContext()) {
+    max_texture_size =
+        std::min(max_texture_size,
+                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
     max_rectangle_texture_size =
         std::min(max_rectangle_texture_size,
-                 feature_info_->workarounds().client_max_texture_size);
+                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
     max_cube_map_texture_size =
         std::min(max_cube_map_texture_size,
-                 feature_info_->workarounds().client_max_texture_size);
+                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
   }
 
   if (feature_info_->workarounds().max_3d_array_texture_size) {

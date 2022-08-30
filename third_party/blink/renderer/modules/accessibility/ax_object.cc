@@ -32,10 +32,12 @@
 #include <ostream>
 
 #include "base/auto_reset.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
@@ -50,6 +52,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -77,6 +80,7 @@
 #include "third_party/blink/renderer/core/html/html_title_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -101,6 +105,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -113,6 +118,8 @@
 #include "ui/accessibility/ax_enums.mojom-blink-forward.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/transform.h"
 
 namespace blink {
@@ -520,6 +527,35 @@ void AddIntListAttributeFromOffsetVector(
     node_data->AddIntListAttribute(attr, offset_values);
 }
 
+blink::KeyboardEvent* CreateKeyboardEvent(
+    blink::LocalDOMWindow* local_dom_window,
+    blink::WebInputEvent::Type type,
+    ax::mojom::blink::Action action) {
+  blink::WebKeyboardEvent key(type,
+                              blink::WebInputEvent::Modifiers::kNoModifiers,
+                              base::TimeTicks::Now());
+  switch (action) {
+    case ax::mojom::blink::Action::kShowContextMenu:
+      key.dom_key = ui::DomKey::CONTEXT_MENU;
+      key.dom_code = static_cast<int>(ui::DomCode::CONTEXT_MENU);
+      key.native_key_code = key.windows_key_code = blink::VKEY_APPS;
+      break;
+    case ax::mojom::blink::Action::kScrollUp:
+      key.dom_key = ui::DomKey::PAGE_UP;
+      key.dom_code = static_cast<int>(ui::DomCode::PAGE_UP);
+      key.native_key_code = key.windows_key_code = blink::VKEY_PRIOR;
+      break;
+    case ax::mojom::blink::Action::kScrollDown:
+      key.dom_key = ui::DomKey::PAGE_DOWN;
+      key.dom_code = static_cast<int>(ui::DomCode::PAGE_DOWN);
+      key.native_key_code = key.windows_key_code = blink::VKEY_NEXT;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return blink::KeyboardEvent::Create(key, local_dom_window, true);
+}
+
 }  // namespace
 
 int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type) {
@@ -642,33 +678,6 @@ void AXObject::Init(AXObject* parent) {
     AXObjectCache().MaybeNewRelationTarget(*GetNode(), this);
 
   UpdateCachedAttributeValuesIfNeeded(false);
-
-#if defined(AX_FAIL_FAST_BUILD)
-  if (parent_ && parent_->RoleValue() == ax::mojom::blink::Role::kIframe &&
-      RoleValue() != ax::mojom::blink::Role::kDocument) {
-    // A frame/iframe can only have a document child.
-    // Make an exception for ShadowDOM based fenced frames. While they have
-    // the same role as a regular IFrame, they will have an inner iframe
-    // be the child of the outer iframe, rather than a document. This
-    // behavior is expected and the exception is carved out here.
-    if (!blink::features::IsFencedFramesEnabled() ||
-        !blink::features::IsFencedFramesShadowDOMBased() ||
-        !IsA<HTMLFencedFrameElement>(parent_->GetNode())) {
-      NOTREACHED() << "An iframe can only have a document child."
-                   << "\n* Child = " << ToString(true, true)
-                   << "\n* Parent =  " << parent_->ToString(true, true);
-    }
-  }
-
-  if (blink::features::IsFencedFramesEnabled() &&
-      blink::features::IsFencedFramesShadowDOMBased() && parent_ &&
-      IsA<HTMLFencedFrameElement>(parent_->GetNode()) &&
-      RoleValue() != ax::mojom::blink::Role::kIframe) {
-    NOTREACHED() << "A ShadowDOM fenced frame must have an iframe child."
-                 << "\n* Child = " << ToString(true, true)
-                 << "\n* Parent =  " << parent_->ToString(true, true);
-  }
-#endif
 }
 
 void AXObject::Detach() {
@@ -1276,23 +1285,51 @@ void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
     node_data->AddAction(ax::mojom::blink::Action::kDecrement);
     node_data->AddAction(ax::mojom::blink::Action::kIncrement);
   }
+  if (IsUserScrollable()) {
+    node_data->AddAction(ax::mojom::blink::Action::kScrollUp);
+    node_data->AddAction(ax::mojom::blink::Action::kScrollDown);
+    node_data->AddAction(ax::mojom::blink::Action::kScrollLeft);
+    node_data->AddAction(ax::mojom::blink::Action::kScrollRight);
+    node_data->AddAction(ax::mojom::blink::Action::kScrollForward);
+    node_data->AddAction(ax::mojom::blink::Action::kScrollBackward);
+  }
 }
 
 void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
   // If this is an HTMLFrameOwnerElement (such as an iframe), we may need
   // to embed the ID of the child frame.
-  if (auto* html_frame_owner_element =
-          DynamicTo<HTMLFrameOwnerElement>(GetElement())) {
-    if (Frame* child_frame = html_frame_owner_element->ContentFrame()) {
-      absl::optional<base::UnguessableToken> child_token =
-          child_frame->GetEmbeddingToken();
-      if (child_token && !(IsDetached() || ChildCountIncludingIgnored())) {
-        ui::AXTreeID child_tree_id =
-            ui::AXTreeID::FromToken(child_token.value());
-        node_data->AddChildTreeId(child_tree_id);
-      }
-    }
+  if (!ui::IsChildTreeOwner(RoleValue())) {
+    // TODO(crbug.com/1342603) Determine why these are firing in the wild and,
+    // once fixed, turn into a DCHECK.
+    SANITIZER_CHECK(!IsFrame(GetNode()))
+        << "If this is an iframe, it should also be a child tree owner: "
+        << ToString(true, true);
+    return;
   }
+
+  auto* html_frame_owner_element = To<HTMLFrameOwnerElement>(GetElement());
+
+  Frame* child_frame = html_frame_owner_element->ContentFrame();
+  if (!child_frame) {
+    // TODO(crbug.com/1342603) Determine why these are firing in the wild and,
+    // once fixed, turn into a DCHECK.
+    SANITIZER_CHECK(IsDisabled()) << ToString(true, true);
+    return;
+  }
+
+  absl::optional<base::UnguessableToken> child_token =
+      child_frame->GetEmbeddingToken();
+  if (!child_token)
+    return;  // No child token means that the connection isn't ready yet.
+
+  DCHECK_EQ(ChildCountIncludingIgnored(), 0)
+      << "Children won't exist until the trees are stitched together in the "
+         "browser process. A failure means that a child node was incorrectly "
+         "considered relevant by AXObjectCacheImpl. Element src = "
+      << GetAttribute(html_names::kSrcAttr);
+
+  ui::AXTreeID child_tree_id = ui::AXTreeID::FromToken(child_token.value());
+  node_data->AddChildTreeId(child_tree_id);
 }
 
 void AXObject::SerializeChooserPopupAttributes(ui::AXNodeData* node_data) {
@@ -4172,6 +4209,12 @@ const AtomicString& AXObject::LiveRegionRelevant() const {
 }
 
 bool AXObject::IsDisabled() const {
+  // <embed> or <object> with unsupported plugin, or more iframes than allowed.
+  if (ui::IsChildTreeOwner(RoleValue())) {
+    auto* html_frame_owner_element = To<HTMLFrameOwnerElement>(GetElement());
+    return !html_frame_owner_element->ContentFrame();
+  }
+
   // Check for HTML form control with the disabled attribute.
   if (GetElement() && GetElement()->IsDisabledFormControl())
     return true;
@@ -4312,7 +4355,7 @@ bool AXObject::IsEditable() const {
       << GetDocument()->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  if (HasEditableStyle(*node))
+  if (blink::IsEditable(*node))
     return true;
 
   // For the purposes of accessibility, atomic text fields  i.e. input and
@@ -5137,6 +5180,82 @@ void AXObject::SetScrollOffset(const gfx::Point& offset) const {
                         mojom::blink::ScrollType::kProgrammatic);
 }
 
+void AXObject::Scroll(ax::mojom::blink::Action scroll_action) const {
+  AXObject* offset_container = nullptr;
+  gfx::RectF bounds;
+  gfx::Transform container_transform;
+  GetRelativeBounds(&offset_container, bounds, container_transform);
+  if (bounds.IsEmpty())
+    return;
+
+  gfx::Point initial = GetScrollOffset();
+  gfx::Point min = MinimumScrollOffset();
+  gfx::Point max = MaximumScrollOffset();
+
+  // TODO(anastasi): This 4/5ths came from the Android implementation, revisit
+  // to find the appropriate modifier to keep enough context onscreen after
+  // scrolling.
+  int page_x = std::max(base::ClampRound<int>(bounds.width() * 4 / 5), 1);
+  int page_y = std::max(base::ClampRound<int>(bounds.height() * 4 / 5), 1);
+
+  // Forward/backward defaults to down/up unless it can only be scrolled
+  // horizontally.
+  if (scroll_action == ax::mojom::blink::Action::kScrollForward) {
+    scroll_action = max.y() > min.y() ? ax::mojom::blink::Action::kScrollDown
+                                      : ax::mojom::blink::Action::kScrollRight;
+  } else if (scroll_action == ax::mojom::blink::Action::kScrollBackward) {
+    scroll_action = max.y() > min.y() ? ax::mojom::blink::Action::kScrollUp
+                                      : ax::mojom::blink::Action::kScrollLeft;
+  }
+
+  int x = initial.x();
+  int y = initial.y();
+  switch (scroll_action) {
+    case ax::mojom::blink::Action::kScrollUp:
+      if (initial.y() == min.y())
+        return;
+      y = std::max(initial.y() - page_y, min.y());
+      break;
+    case ax::mojom::blink::Action::kScrollDown:
+      if (initial.y() == max.y())
+        return;
+      y = std::min(initial.y() + page_y, max.y());
+      break;
+    case ax::mojom::blink::Action::kScrollLeft:
+      if (initial.x() == min.x())
+        return;
+      x = std::max(initial.x() - page_x, min.x());
+      break;
+    case ax::mojom::blink::Action::kScrollRight:
+      if (initial.x() == max.x())
+        return;
+      x = std::min(initial.x() + page_x, max.x());
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  SetScrollOffset(gfx::Point(x, y));
+
+  if (!RuntimeEnabledFeatures::
+          SynthesizedKeyboardEventsForAccessibilityActionsEnabled())
+    return;
+
+  // There are no keys that produce scroll left/right, so we shouldn't
+  // synthesize any keyboard events for these actions.
+  if (scroll_action == ax::mojom::blink::Action::kScrollLeft ||
+      scroll_action == ax::mojom::blink::Action::kScrollRight)
+    return;
+
+  LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
+  KeyboardEvent* keydown = CreateKeyboardEvent(
+      local_dom_window, WebInputEvent::Type::kRawKeyDown, scroll_action);
+  GetNode()->DispatchEvent(*keydown);
+  KeyboardEvent* keyup = CreateKeyboardEvent(
+      local_dom_window, WebInputEvent::Type::kKeyUp, scroll_action);
+  GetNode()->DispatchEvent(*keyup);
+}
+
 bool AXObject::IsTableLikeRole() const {
   return ui::IsTableLike(RoleValue()) ||
          RoleValue() == ax::mojom::blink::Role::kLayoutTable;
@@ -5539,6 +5658,15 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kShowContextMenu:
       return RequestShowContextMenuAction();
 
+    case ax::mojom::blink::Action::kScrollBackward:
+    case ax::mojom::blink::Action::kScrollDown:
+    case ax::mojom::blink::Action::kScrollForward:
+    case ax::mojom::blink::Action::kScrollLeft:
+    case ax::mojom::blink::Action::kScrollRight:
+    case ax::mojom::blink::Action::kScrollUp:
+      Scroll(action_data.action);
+      return true;
+
     case ax::mojom::blink::Action::kAnnotatePageImages:
     case ax::mojom::blink::Action::kCollapse:
     case ax::mojom::blink::Action::kCustomAction:
@@ -5551,13 +5679,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kLoadInlineTextBoxes:
     case ax::mojom::blink::Action::kNone:
     case ax::mojom::blink::Action::kReplaceSelectedText:
-    case ax::mojom::blink::Action::kScrollBackward:
-    case ax::mojom::blink::Action::kScrollDown:
-    case ax::mojom::blink::Action::kScrollForward:
-    case ax::mojom::blink::Action::kScrollLeft:
-    case ax::mojom::blink::Action::kScrollRight:
     case ax::mojom::blink::Action::kScrollToMakeVisible:
-    case ax::mojom::blink::Action::kScrollUp:
     case ax::mojom::blink::Action::kSetSelection:
     case ax::mojom::blink::Action::kShowTooltip:
     case ax::mojom::blink::Action::kSignalEndOfTest:
@@ -5814,9 +5936,36 @@ bool AXObject::OnNativeShowContextMenuAction() {
   if (!document || !document->GetFrame())
     return false;
 
+  LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
+  if (RuntimeEnabledFeatures::
+          SynthesizedKeyboardEventsForAccessibilityActionsEnabled()) {
+    // To make less evident that the events are synthesized, we have to emit
+    // them in this order: 1) keydown. 2) contextmenu. 3) keyup.
+    KeyboardEvent* keydown =
+        CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
+                            ax::mojom::blink::Action::kShowContextMenu);
+    GetNode()->DispatchEvent(*keydown);
+  }
+
   ContextMenuAllowedScope scope;
-  document->GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(
-      element, kMenuSourceKeyboard);
+  WebInputEventResult result =
+      document->GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(
+          element, kMenuSourceKeyboard);
+
+  // The node may have ceased to exist due to the event handler actions, so we
+  // check its detached state. We also check the result of the contextMenu
+  // event: if it was consumed by the system, executing the default action, we
+  // don't synthesize the keyup event because it would not be produced normally;
+  // the system context menu captures it and never reaches the DOM.
+  if (!IsDetached() && result != WebInputEventResult::kHandledSystem &&
+      RuntimeEnabledFeatures::
+          SynthesizedKeyboardEventsForAccessibilityActionsEnabled()) {
+    KeyboardEvent* keyup =
+        CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp,
+                            ax::mojom::blink::Action::kShowContextMenu);
+    GetNode()->DispatchEvent(*keyup);
+  }
+
   return true;
 }
 
@@ -5851,8 +6000,11 @@ bool AXObject::IsFrame(const Node* node) {
   switch (frame_owner->OwnerType()) {
     case FrameOwnerElementType::kIframe:
     case FrameOwnerElementType::kFrame:
-    case FrameOwnerElementType::kFencedframe:
       return true;
+    case FrameOwnerElementType::kFencedframe:
+      // Shadow DOM <fencedframe>s have an <iframe> child, which will be the
+      // child tree owner.
+      return !blink::features::IsFencedFramesShadowDOMBased();
     case FrameOwnerElementType::kObject:
     case FrameOwnerElementType::kEmbed:
     case FrameOwnerElementType::kPortal:
@@ -6146,11 +6298,15 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
               IsUserScrollable()) {
             return true;
           }
+          if (!GetElement() || !GetDocument())
+            return false;
+          int tab_index = GetElement()->tabIndex();
+          bool is_focused = GetElement() == GetDocument()->FocusedElement();
+          bool is_in_tab_order_or_focused = tab_index >= 0 || is_focused;
           // Don't repair name from contents to focusable elements unless
-          // tabbable, because providing a repaired accessible name often
-          // leads to redundant verbalizations.
-          return GetElement() && GetElement()->tabIndex() >= 0 &&
-                 CanSetFocusAttribute();
+          // tabbable or focused, because providing a repaired accessible name
+          // often leads to redundant verbalizations.
+          return is_in_tab_order_or_focused && CanSetFocusAttribute();
         }
       }
       break;

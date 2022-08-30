@@ -20,6 +20,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -237,7 +238,8 @@ const char kProxyGSettingsSchema[] = "org.gnome.system.proxy";
 class SettingGetterImplGSettings
     : public ProxyConfigServiceLinux::SettingGetter {
  public:
-  SettingGetterImplGSettings() : debounce_timer_(new base::OneShotTimer()) {}
+  SettingGetterImplGSettings()
+      : debounce_timer_(std::make_unique<base::OneShotTimer>()) {}
 
   SettingGetterImplGSettings(const SettingGetterImplGSettings&) = delete;
   SettingGetterImplGSettings& operator=(const SettingGetterImplGSettings&) =
@@ -314,15 +316,15 @@ class SettingGetterImplGSettings
     // We could watch for the change-event signal instead of changed, but
     // since we have to watch more than one object, we'd still have to
     // debounce change notifications. This is conceptually simpler.
-    g_signal_connect(G_OBJECT(client_), "changed",
+    g_signal_connect(G_OBJECT(client_.get()), "changed",
                      G_CALLBACK(OnGSettingsChangeNotification), this);
-    g_signal_connect(G_OBJECT(http_client_), "changed",
+    g_signal_connect(G_OBJECT(http_client_.get()), "changed",
                      G_CALLBACK(OnGSettingsChangeNotification), this);
-    g_signal_connect(G_OBJECT(https_client_), "changed",
+    g_signal_connect(G_OBJECT(https_client_.get()), "changed",
                      G_CALLBACK(OnGSettingsChangeNotification), this);
-    g_signal_connect(G_OBJECT(ftp_client_), "changed",
+    g_signal_connect(G_OBJECT(ftp_client_.get()), "changed",
                      G_CALLBACK(OnGSettingsChangeNotification), this);
-    g_signal_connect(G_OBJECT(socks_client_), "changed",
+    g_signal_connect(G_OBJECT(socks_client_.get()), "changed",
                      G_CALLBACK(OnGSettingsChangeNotification), this);
     // Simulate a change to avoid possibly losing updates before this point.
     OnChangeNotification();
@@ -465,12 +467,12 @@ class SettingGetterImplGSettings
     setting_getter->OnChangeNotification();
   }
 
-  GSettings* client_ = nullptr;
-  GSettings* http_client_ = nullptr;
-  GSettings* https_client_ = nullptr;
-  GSettings* ftp_client_ = nullptr;
-  GSettings* socks_client_ = nullptr;
-  ProxyConfigServiceLinux::Delegate* notify_delegate_ = nullptr;
+  raw_ptr<GSettings> client_ = nullptr;
+  raw_ptr<GSettings> http_client_ = nullptr;
+  raw_ptr<GSettings> https_client_ = nullptr;
+  raw_ptr<GSettings> ftp_client_ = nullptr;
+  raw_ptr<GSettings> socks_client_ = nullptr;
+  raw_ptr<ProxyConfigServiceLinux::Delegate> notify_delegate_ = nullptr;
   std::unique_ptr<base::OneShotTimer> debounce_timer_;
 
   // Task runner for the thread that we make gsettings calls on. It should
@@ -515,7 +517,7 @@ int StringToIntOrDefault(base::StringPiece value, int default_value) {
 class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
  public:
   explicit SettingGetterImplKDE(base::Environment* env_var_getter)
-      : debounce_timer_(new base::OneShotTimer()),
+      : debounce_timer_(std::make_unique<base::OneShotTimer>()),
         env_var_getter_(env_var_getter) {
     // This has to be called on the UI thread (http://crbug.com/69057).
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -1009,7 +1011,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
 
   int inotify_fd_ = -1;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> inotify_watcher_;
-  ProxyConfigServiceLinux::Delegate* notify_delegate_ = nullptr;
+  raw_ptr<ProxyConfigServiceLinux::Delegate> notify_delegate_ = nullptr;
   std::unique_ptr<base::OneShotTimer> debounce_timer_;
   std::vector<base::FilePath> kde_config_dirs_;
   bool indirect_manual_ = false;
@@ -1018,7 +1020,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
   // We don't own |env_var_getter_|.  It's safe to hold a pointer to it, since
   // both it and us are owned by ProxyConfigServiceLinux::Delegate, and have the
   // same lifetime.
-  base::Environment* env_var_getter_;
+  raw_ptr<base::Environment> env_var_getter_;
 
   // We cache these settings whenever we re-read the kioslaverc file.
   string_map_type string_table_;
@@ -1233,8 +1235,7 @@ ProxyConfigServiceLinux::Delegate::Delegate(
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
 #if defined(USE_GIO)
       {
-      std::unique_ptr<SettingGetterImplGSettings> gs_getter(
-          new SettingGetterImplGSettings());
+      auto gs_getter = std::make_unique<SettingGetterImplGSettings>();
       // We have to load symbols and check the GNOME version in use to decide
       // if we should use the gsettings getter. See CheckVersion().
       if (gs_getter->CheckVersion(env_var_getter_.get()))
@@ -1437,9 +1438,9 @@ void ProxyConfigServiceLinux::Delegate::OnDestroy() {
 }
 
 ProxyConfigServiceLinux::ProxyConfigServiceLinux()
-    : delegate_(new Delegate(base::Environment::Create(),
-                             absl::nullopt,
-                             absl::nullopt)) {}
+    : delegate_(base::MakeRefCounted<Delegate>(base::Environment::Create(),
+                                               absl::nullopt,
+                                               absl::nullopt)) {}
 
 ProxyConfigServiceLinux::~ProxyConfigServiceLinux() {
   delegate_->PostDestroyTask();
@@ -1448,17 +1449,17 @@ ProxyConfigServiceLinux::~ProxyConfigServiceLinux() {
 ProxyConfigServiceLinux::ProxyConfigServiceLinux(
     std::unique_ptr<base::Environment> env_var_getter,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : delegate_(new Delegate(std::move(env_var_getter),
-                             absl::nullopt,
-                             traffic_annotation)) {}
+    : delegate_(base::MakeRefCounted<Delegate>(std::move(env_var_getter),
+                                               absl::nullopt,
+                                               traffic_annotation)) {}
 
 ProxyConfigServiceLinux::ProxyConfigServiceLinux(
     std::unique_ptr<base::Environment> env_var_getter,
     SettingGetter* setting_getter,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : delegate_(new Delegate(std::move(env_var_getter),
-                             base::WrapUnique(setting_getter),
-                             traffic_annotation)) {}
+    : delegate_(base::MakeRefCounted<Delegate>(std::move(env_var_getter),
+                                               base::WrapUnique(setting_getter),
+                                               traffic_annotation)) {}
 
 void ProxyConfigServiceLinux::AddObserver(Observer* observer) {
   delegate_->AddObserver(observer);

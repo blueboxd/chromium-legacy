@@ -94,8 +94,7 @@
 using ::testing::ElementsAre;
 using ::testing::Key;
 
-namespace net {
-namespace test {
+namespace net::test {
 
 namespace {
 
@@ -233,7 +232,7 @@ class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
   TestSocketPerformanceWatcher& operator=(const TestSocketPerformanceWatcher&) =
       delete;
 
-  ~TestSocketPerformanceWatcher() override {}
+  ~TestSocketPerformanceWatcher() override = default;
 
   bool ShouldNotifyUpdatedRTT() const override {
     return *should_notify_updated_rtt_;
@@ -260,7 +259,7 @@ class TestSocketPerformanceWatcherFactory
   TestSocketPerformanceWatcherFactory& operator=(
       const TestSocketPerformanceWatcherFactory&) = delete;
 
-  ~TestSocketPerformanceWatcherFactory() override {}
+  ~TestSocketPerformanceWatcherFactory() override = default;
 
   // SocketPerformanceWatcherFactory implementation:
   std::unique_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
@@ -270,9 +269,8 @@ class TestSocketPerformanceWatcherFactory
       return nullptr;
     }
     ++watcher_count_;
-    return std::unique_ptr<SocketPerformanceWatcher>(
-        new TestSocketPerformanceWatcher(&should_notify_updated_rtt_,
-                                         &rtt_notification_received_));
+    return std::make_unique<TestSocketPerformanceWatcher>(
+        &should_notify_updated_rtt_, &rtt_notification_received_);
   }
 
   size_t watcher_count() const { return watcher_count_; }
@@ -299,7 +297,7 @@ class QuicNetworkTransactionTest
         client_headers_include_h2_stream_dependency_(
             GetParam().client_headers_include_h2_stream_dependency),
         supported_versions_(quic::test::SupportedVersions(version_)),
-        client_maker_(new QuicTestPacketMaker(
+        client_maker_(std::make_unique<QuicTestPacketMaker>(
             version_,
             quic::QuicUtils::CreateRandomConnectionId(
                 context_.random_generator()),
@@ -314,8 +312,9 @@ class QuicNetworkTransactionTest
                       kDefaultServerHostName,
                       quic::Perspective::IS_SERVER,
                       false),
-        quic_task_runner_(new TestTaskRunner(context_.mock_clock())),
-        ssl_config_service_(new SSLConfigServiceDefaults),
+        quic_task_runner_(
+            base::MakeRefCounted<TestTaskRunner>(context_.mock_clock())),
+        ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()),
         proxy_resolution_service_(
             ConfiguredProxyResolutionService::CreateDirect()),
         auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
@@ -6253,8 +6252,8 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
 
   request_.upload_data_stream = &upload_data;
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                        session_.get());
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -7022,7 +7021,7 @@ class QuicNetworkTransactionWithDestinationTest
             GetParam().client_headers_include_h2_stream_dependency),
         supported_versions_(quic::test::SupportedVersions(version_)),
         destination_type_(GetParam().destination_type),
-        ssl_config_service_(new SSLConfigServiceDefaults),
+        ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()),
         proxy_resolution_service_(
             ConfiguredProxyResolutionService::CreateDirect()),
         auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
@@ -7157,8 +7156,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   void AddRefusedSocketData() {
-    std::unique_ptr<StaticSocketDataProvider> refused_data(
-        new StaticSocketDataProvider());
+    auto refused_data = std::make_unique<StaticSocketDataProvider>();
     MockConnect refused_connect(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
     refused_data->set_connect_data(refused_connect);
     socket_factory_.AddSocketDataProvider(refused_data.get());
@@ -7166,8 +7164,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   void AddHangingSocketData() {
-    std::unique_ptr<StaticSocketDataProvider> hanging_data(
-        new StaticSocketDataProvider());
+    auto hanging_data = std::make_unique<StaticSocketDataProvider>();
     MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
     hanging_data->set_connect_data(hanging_connect);
     socket_factory_.AddSocketDataProvider(hanging_data.get());
@@ -7377,8 +7374,8 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
   AddHangingSocketData();
   AddHangingSocketData();
 
-  scoped_refptr<TestTaskRunner> quic_task_runner(
-      new TestTaskRunner(context_.mock_clock()));
+  auto quic_task_runner =
+      base::MakeRefCounted<TestTaskRunner>(context_.mock_clock());
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner.get(),
@@ -9775,5 +9772,4 @@ TEST_P(QuicNetworkTransactionTest, RetryOnHttp3GoAway) {
 
 // TODO(yoichio):  Add the TCP job reuse case. See crrev.com/c/2174099.
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

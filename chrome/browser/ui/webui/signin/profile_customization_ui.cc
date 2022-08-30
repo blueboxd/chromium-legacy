@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -43,6 +44,8 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_APP_HTML_JS},
       {"profile_customization_browser_proxy.js",
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_BROWSER_PROXY_JS},
+      {"images/profile_customization_illustration.svg",
+       IDR_SIGNIN_PROFILE_CUSTOMIZATION_IMAGES_PROFILE_CUSTOMIZATION_ILLUSTRATION_SVG},
       {"signin_shared.css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
       {"signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
   };
@@ -89,9 +92,11 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
 
 ProfileCustomizationUI::~ProfileCustomizationUI() = default;
 
-void ProfileCustomizationUI::Initialize(base::OnceClosure done_closure) {
-  web_ui()->AddMessageHandler(
-      std::make_unique<ProfileCustomizationHandler>(std::move(done_closure)));
+void ProfileCustomizationUI::Initialize(
+    base::OnceCallback<void(ProfileCustomizationHandler::CustomizationResult)>
+        completion_callback) {
+  web_ui()->AddMessageHandler(std::make_unique<ProfileCustomizationHandler>(
+      std::move(completion_callback)));
 }
 
 void ProfileCustomizationUI::BindInterface(

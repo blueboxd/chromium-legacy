@@ -477,7 +477,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, Enroll) {
 
     payments_client_->set_update_virtual_card_enrollment_result(
         AutofillClient::PaymentsRpcResult::kSuccess);
-    virtual_card_enrollment_manager_->Enroll();
+    virtual_card_enrollment_manager_->Enroll(
+        /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
 
     payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails
         request_details =
@@ -518,7 +519,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, Enroll) {
     // Starts another request and makes sure it fails.
     payments_client_->set_update_virtual_card_enrollment_result(
         AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure);
-    virtual_card_enrollment_manager_->Enroll();
+    virtual_card_enrollment_manager_->Enroll(
+        /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
 
     // Verifies the logging.
     histogram_tester.ExpectUniqueSample(
@@ -538,7 +540,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, Unenroll) {
       AutofillClient::PaymentsRpcResult::kNone);
 
   virtual_card_enrollment_manager_->Unenroll(
-      /*instrument_id=*/9223372036854775807);
+      /*instrument_id=*/9223372036854775807,
+      /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
 
   payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails
       request_details =
@@ -567,7 +570,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, Unenroll) {
   payments_client_->set_update_virtual_card_enrollment_result(
       AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure);
   virtual_card_enrollment_manager_->Unenroll(
-      /*instrument_id=*/9223372036854775807);
+      /*instrument_id=*/9223372036854775807,
+      /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
 
   // Verifies the logging.
   histogram_tester.ExpectUniqueSample(
@@ -703,7 +707,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleAccepted) {
       1);
 
   // Ensure a strike has been removed after enrollment accepted.
-  virtual_card_enrollment_manager_->Enroll();
+  virtual_card_enrollment_manager_->Enroll(
+      /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
   EXPECT_EQ(
       virtual_card_enrollment_manager_->GetVirtualCardEnrollmentStrikeDatabase()
           ->GetStrikes(

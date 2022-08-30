@@ -69,6 +69,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   const WebApp* GetAppByStartUrl(const GURL& start_url) const;
   std::vector<AppId> GetAppsFromSyncAndPendingInstallation() const;
 
+  bool AppsExistWithExternalConfigData() const;
+
   void Start();
   void Shutdown();
 
@@ -87,8 +89,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns whether the app is currently being uninstalled. This will be true
   // after uninstall has begun but before the OS integration hooks for uninstall
   // have completed. It will return false after uninstallation has completed.
-  // Note that the underlying field this checks is not yet persisted to the
-  // database; see https://crbug.com/1162477
   bool IsUninstalling(const AppId& app_id) const;
 
   // Returns whether the app with |app_id| is currently fully locally installed.
@@ -185,9 +185,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   absl::optional<std::string> GetAppManifestId(const AppId& app_id) const;
   const std::string* GetAppLaunchQueryParams(const AppId& app_id) const;
   const apps::ShareTarget* GetAppShareTarget(const AppId& app_id) const;
-  blink::mojom::HandleLinks GetAppHandleLinks(const AppId& app_id) const;
   const apps::FileHandlers* GetAppFileHandlers(const AppId& app_id) const;
-  bool IsAppFileHandlerPermissionBlocked(const web_app::AppId& app_id) const;
+  bool IsAppFileHandlerPermissionBlocked(const AppId& app_id) const;
   bool IsIsolated(const AppId& app_id) const;
 
   // Returns the state of the File Handling API for the given app.

@@ -114,7 +114,7 @@ struct BeginNavigationParams {
   // initiator information in DevTools protocol format. See
   // https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
   // for details.
-  mojo_base.mojom.DeprecatedDictionaryValue? devtools_initiator;
+  mojo_base.mojom.DictionaryValue? devtools_initiator;
 
   // Specifies whether, and how, the navigation should execute a Trust Tokens
   // operation (https://github.com/wicg/trust-token-api) and attach headers
@@ -282,15 +282,6 @@ struct CommitNavigationParams {
   // `storage_key`. The final storage key is computed by the document loader
   // taking into account the origin computed by the renderer.
   blink.mojom.StorageKey storage_key;
-
-  // The sandbox flags to apply to the new document. This is the union of:
-  // - the frame's current sandbox, taken when the navigation started.
-  // - the navigation response's CSP sandbox flags.
-  // - the result of CSP embedded enforcement required CSP sandbox flags.
-  // - Various edge cases: MHTML document, error pages, ...
-  // See content/browser/renderer_host/sandbox_flags.md
-  network.mojom.WebSandboxFlags sandbox_flags =
-    network.mojom.WebSandboxFlags.kAll;
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent = false;
@@ -483,9 +474,6 @@ struct CommitNavigationParams {
 
   // The time the commit was sent from the browser.
   mojo_base.mojom.TimeTicks commit_sent;
-
-  // Whether or not this navigation will commit in an anonymous frame.
-  bool anonymous = false;
 
   // When URL is about:srcdoc, this carries the srcdoc attribute's value.
   string srcdoc_value;

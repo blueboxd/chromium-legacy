@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
-#include "base/containers/fixed_flat_map.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
@@ -15,7 +14,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
@@ -27,35 +25,30 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/window_properties.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "ui/base/base_window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/color/color_provider_utils.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace crostini {
@@ -87,15 +80,6 @@ constexpr char kDefaultBackgroundColor[] = "#202124";
 
 constexpr char kSettingPassCtrlW[] = "/hterm/profiles/default/pass-ctrl-w";
 constexpr bool kDefaultPassCtrlW = false;
-
-base::flat_map<std::string, std::string> ExtrasFromShortcutId(
-    const base::Value& shortcut) {
-  base::flat_map<std::string, std::string> extras;
-  for (const auto it : shortcut.DictItems()) {
-    extras[it.first] = it.second.GetString();
-  }
-  return extras;
-}
 
 std::string GetSettingsKey(const std::string& prefix,
                            const std::string& profile,
@@ -129,8 +113,8 @@ void LaunchTerminalImpl(Profile* profile,
 
   // Launch without a pinned home tab (settings page).
   if (params.disposition == WindowOpenDisposition::NEW_POPUP) {
-    web_app::LaunchSystemWebAppImpl(profile, ash::SystemWebAppType::TERMINAL,
-                                    url, params);
+    ash::LaunchSystemWebAppImpl(profile, ash::SystemWebAppType::TERMINAL, url,
+                                params);
     return;
   }
 
@@ -138,7 +122,7 @@ void LaunchTerminalImpl(Profile* profile,
   // If opening a new tab, first pin home tab.
   full_restore::FullRestoreSaveHandler::GetInstance();
   GURL home(GetTerminalHomeUrl());
-  Browser* browser = web_app::LaunchSystemWebAppImpl(
+  Browser* browser = ash::LaunchSystemWebAppImpl(
       profile, ash::SystemWebAppType::TERMINAL, home, params);
   if (!browser) {
     return;
@@ -170,7 +154,7 @@ const std::string& GetTerminalHomeUrl() {
 
 GURL GenerateTerminalURL(Profile* profile,
                          const std::string& settings_profile,
-                         const ContainerId& container_id,
+                         const guest_os::GuestId& container_id,
                          const std::string& cwd,
                          const std::vector<std::string>& terminal_args) {
   auto escape = [](std::string param) {
@@ -210,7 +194,7 @@ GURL GenerateTerminalURL(Profile* profile,
 
 void LaunchTerminal(Profile* profile,
                     int64_t display_id,
-                    const ContainerId& container_id,
+                    const guest_os::GuestId& container_id,
                     const std::string& cwd,
                     const std::vector<std::string>& terminal_args) {
   GURL url = GenerateTerminalURL(profile, /*settings_profile=*/std::string(),
@@ -232,7 +216,7 @@ void LaunchTerminalWithUrl(Profile* profile,
 
   crostini::RecordAppLaunchHistogram(
       crostini::CrostiniAppLaunchAppType::kTerminal);
-  auto params = web_app::CreateSystemWebAppLaunchParams(
+  auto params = ash::CreateSystemWebAppLaunchParams(
       profile, ash::SystemWebAppType::TERMINAL, display_id);
   if (!params.has_value()) {
     LOG(WARNING) << "Empty launch params for terminal";
@@ -260,8 +244,8 @@ void LaunchTerminalWithIntent(Profile* profile,
     return std::move(callback).Run(false, "Crostini not installed");
   }
 
-  // Look for vm_name, container_name, and settings_profile in intent->extras.
-  ContainerId container_id = ContainerId::GetDefault();
+  // Look for vm_name and container_name in intent->extras.
+  guest_os::GuestId container_id = DefaultContainerId();
   std::string settings_profile;
   if (intent && intent->extras.has_value()) {
     for (const auto& extra : intent->extras.value()) {
@@ -317,7 +301,7 @@ void LaunchTerminalWithIntent(Profile* profile,
 }
 
 void LaunchTerminalSettings(Profile* profile, int64_t display_id) {
-  auto params = web_app::CreateSystemWebAppLaunchParams(
+  auto params = ash::CreateSystemWebAppLaunchParams(
       profile, ash::SystemWebAppType::TERMINAL, display_id);
   if (!params.has_value()) {
     LOG(WARNING) << "Empty launch params for terminal";
@@ -481,7 +465,7 @@ std::string ShortcutIdForSSH(const std::string& profileId) {
 }
 
 std::string ShortcutIdFromContainerId(Profile* profile,
-                                      const crostini::ContainerId& id) {
+                                      const guest_os::GuestId& id) {
   base::Value::Dict dict = id.ToDictValue();
   dict.Set(kShortcutKey, base::Value(kShortcutValueTerminal));
 
@@ -512,6 +496,17 @@ std::string ShortcutIdFromContainerId(Profile* profile,
   std::string shortcut_id;
   base::JSONWriter::Write(dict, &shortcut_id);
   return shortcut_id;
+}
+
+base::flat_map<std::string, std::string> ExtrasFromShortcutId(
+    const base::Value& shortcut) {
+  base::flat_map<std::string, std::string> extras;
+  for (const auto it : shortcut.DictItems()) {
+    if (it.second.is_string()) {
+      extras[it.first] = it.second.GetString();
+    }
+  }
+  return extras;
 }
 
 std::vector<std::pair<std::string, std::string>> GetSSHConnections(
@@ -565,23 +560,18 @@ void AddTerminalMenuShortcuts(
   gfx::ImageSkia crostini_mascot_icon = icon(kCrostiniMascotIcon);
   std::vector<std::pair<std::string, std::string>> connections =
       GetSSHConnections(profile);
-  std::vector<ContainerId> containers;
-  if (CrostiniFeatures::Get()->IsEnabled(profile)) {
-    containers = GetContainers(profile);
-  }
-  if (connections.size() > 0 || containers.size() > 0) {
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile)
+                       ->TerminalProviderRegistry();
+  if (connections.size() > 0 || registry->List().size() > 0) {
     apps::AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
   }
 
-  for (const auto& container : containers) {
-    // Use <container_name> for termina, else <vm_name>:<container_name>.
-    std::string label = container.container_name;
-    if (container.vm_name != kCrostiniDefaultVmName) {
-      label = base::StrCat({container.vm_name, ":", container.container_name});
-    }
-    apps::AddShortcutCommandItem(next_command_id++,
-                                 ShortcutIdFromContainerId(profile, container),
-                                 label, crostini_mascot_icon, &menu_items);
+  for (auto id : registry->List()) {
+    auto* provider = registry->Get(id);
+    apps::AddShortcutCommandItem(
+        next_command_id++,
+        ShortcutIdFromContainerId(profile, *provider->CrostiniContainerId()),
+        provider->Label(), crostini_mascot_icon, &menu_items);
   }
 
   for (const auto& connection : connections) {

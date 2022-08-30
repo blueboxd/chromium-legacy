@@ -83,16 +83,19 @@ MessageView::MessageView(DisplayOverlayController* controller,
           gfx::CreateVectorIcon(gfx::IconDescription(
               vector_icons::kErrorOutlineIcon, kIconSize, kErrorIconColor)));
       break;
+    case MessageType::kInfoLabelFocus:
+      SetImage(views::Button::STATE_NORMAL,
+               gfx::CreateVectorIcon(gfx::IconDescription(
+                   vector_icons::kKeyboardIcon, kIconSize, kInfoIconColor)));
+      break;
     default:
       NOTREACHED();
       break;
   }
 
-  auto preferred_size = CalculatePreferredSize();
-  preferred_size.SetSize(
-      std::min(preferred_size.width() + kIconSize + kImageLabelSpace,
-               kMaxTextWidth + kIconSize + kImageLabelSpace + 2 * kSideInset),
-      kMinHeight);
+  auto preferred_size =
+      gfx::Size(kMaxTextWidth + kIconSize + kImageLabelSpace + 2 * kSideInset,
+                kMinHeight);
   preferred_size.SetToMin(parent_size);
   SetSize(preferred_size);
   SetPosition(gfx::Point(

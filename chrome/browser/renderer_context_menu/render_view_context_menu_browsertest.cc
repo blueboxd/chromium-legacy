@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_user_data.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -66,6 +68,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -98,6 +101,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
@@ -367,11 +371,21 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  struct PdfInfo {
+    // The selected text in the PDF when context menu is created.
+    std::u16string selection_text;
+
+    // Whether the PDF has copy permission.
+    bool can_copy;
+  };
+
   guest_view::TestGuestViewManager* test_guest_view_manager() const {
     return test_guest_view_manager_;
   }
 
-  std::unique_ptr<TestRenderViewContextMenu> SetupAndCreateMenu() {
+  // Creates a context menu with the given `info`:
+  std::unique_ptr<TestRenderViewContextMenu> SetupAndCreateMenuWithPdfInfo(
+      const PdfInfo& info) {
     // Load a pdf page.
     GURL page_url = ui_test_utils::GetTestUrl(
         base::FilePath(FILE_PATH_LITERAL("pdf")),
@@ -398,10 +412,20 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     params.frame_url = extension_frame_->GetLastCommittedURL();
     params.media_type = blink::mojom::ContextMenuDataMediaType::kPlugin;
     params.media_flags |= blink::ContextMenuData::kMediaCanRotate;
+    params.selection_text = info.selection_text;
+    // Mimic how `edit_flag` is set in ContextMenuController::ShowContextMenu().
+    if (info.can_copy)
+      params.edit_flags |= blink::ContextMenuDataEditFlags::kCanCopy;
+
     auto menu =
         std::make_unique<TestRenderViewContextMenu>(*extension_frame_, params);
     menu->Init();
     return menu;
+  }
+
+  std::unique_ptr<TestRenderViewContextMenu> SetupAndCreateMenu() {
+    return SetupAndCreateMenuWithPdfInfo(
+        {/*selection_text=*/u"", /*can_copy=*/true});
   }
 
   // Helper function for testing context menu of a pdf plugin inside a web page.
@@ -1064,46 +1088,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
       tab, "window.domAutomationController.send(window.document.referrer);",
       &page_referrer));
   ASSERT_EQ(kEmptyReferrer, page_referrer);
-}
-
-// Verify that "Open link in [App Name]" opens a new App window.
-// TODO(crbug.com/1180790): Test is flaky on Linux and Windows.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-#define MAYBE_OpenLinkInWebApp DISABLED_OpenLinkInWebApp
-#else
-#define MAYBE_OpenLinkInWebApp OpenLinkInWebApp
-#endif
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInWebApp) {
-  InstallTestWebApp(GURL(kAppUrl1));
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  size_t num_browsers = chrome::GetBrowserCount(browser()->profile());
-  int num_tabs = browser()->tab_strip_model()->count();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  const GURL initial_url = initial_tab->GetLastCommittedURL();
-
-  const GURL start_url(kAppUrl1);
-  ui_test_utils::UrlLoadObserver url_observer(
-      start_url, content::NotificationService::AllSources());
-  content::ContextMenuParams params;
-  params.page_url = GURL("https://www.example.com/");
-  params.link_url = start_url;
-  TestRenderViewContextMenu menu(*initial_tab->GetPrimaryMainFrame(), params);
-  menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
-                      0 /* event_flags */);
-  url_observer.Wait();
-
-  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
-  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(browser()->profile()));
-  Browser* app_browser = chrome::FindLastActive();
-  EXPECT_NE(browser(), app_browser);
-  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
-  EXPECT_EQ(start_url, app_browser->tab_strip_model()
-                           ->GetActiveWebContents()
-                           ->GetLastCommittedURL());
 }
 
 // Check filename on clicking "Save Link As" via a "real" context menu.
@@ -1981,6 +1965,78 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionWithSidePanelBrowserTest,
   AttemptLensRegionSearchWithSidePanel();
   loop.Run();
 }
+
+class SearchByRegionWithUnifiedSidePanelBrowserTest
+    : public SearchByRegionBrowserTest {
+ protected:
+  void SetUp() override {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeaturesAndParameters(
+        {{lens::features::kLensStandalone,
+          {{lens::features::kEnableSidePanelForLens.name, "true"}}},
+         {features::kUnifiedSidePanel, {{}}}},
+        {});
+
+    // This does not use SearchByRegionBrowserTest::SetUp because that function
+    // does its own conflicting initialization of a FeatureList.
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SimulateDragAndVerifyLensUrl() {
+    SearchByRegionBrowserTest::SimulateDrag();
+
+    // We need to verify the contents after the drag is finished.
+    content::WebContents* contents =
+        lens::GetLensUnifiedSidePanelWebContentsForTesting(browser());
+    EXPECT_TRUE(contents);
+
+    // Wait for the drag to commence a navigation upon the side panel web
+    // contents.
+    content::TestNavigationObserver nav_observer(contents);
+    nav_observer.Wait();
+
+    std::string expected_content = GetLensRegionSearchURL().GetContent();
+    std::string side_panel_content =
+        contents->GetLastCommittedURL().GetContent();
+
+    // Match strings up to the query.
+    std::size_t query_start_pos = side_panel_content.find("?");
+    // Match the query parameters, without the value of start_time.
+    EXPECT_THAT(
+        side_panel_content,
+        testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
+                              ".*ep=crs&s=csp&st=\\d+"));
+    quit_closure_.Run();
+  }
+
+  void AttemptLensRegionSearchWithSidePanel() {
+    // |menu_observer_| will cause the search lens for image menu item to be
+    // clicked. Sets a callback to simulate dragging a region on the screen once
+    // the region search UI has been set up.
+    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
+        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
+        base::BindOnce(&SearchByRegionWithUnifiedSidePanelBrowserTest::
+                           SimulateDragAndVerifyLensUrl,
+                       base::Unretained(this)));
+    RightClickToOpenContextMenu();
+  }
+
+  base::RepeatingClosure quit_closure_;
+};
+
+IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
+                       LensRegionSearchWithValidRegionUnifiedSidePanel) {
+  lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
+  SetupAndLoadPage("/empty.html");
+  // We need a base::RunLoop to ensure that our test does not finish until the
+  // side panel has opened and we have verified the URL.
+  base::RunLoop loop;
+  quit_closure_ = base::BindRepeating(loop.QuitClosure());
+  // The browser should open a draggable UI for a region search.
+  AttemptLensRegionSearchWithSidePanel();
+  loop.Run();
+}
+
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Maintains image search test state. In particular, note that |menu_observer_|
@@ -1993,6 +2049,16 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
         std::map<std::string, std::string>{
             {lens::features::kEnableSidePanelForLens.name, "false"}});
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetupAndLoadValidImagePage() {
+    constexpr char kValidImage[] = "/image_search/valid.png";
+    SetupAndLoadImagePage(kValidImage);
+  }
+
+  void SetupAndLoadCorruptImagePage() {
+    constexpr char kCorruptImage[] = "/image_search/corrupt.png";
+    SetupAndLoadImagePage(kCorruptImage);
   }
 
   void SetupAndLoadImagePage(const std::string& image_path) {
@@ -2075,8 +2141,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
-  static const char kValidImage[] = "/image_search/valid.png";
-  SetupAndLoadImagePage(kValidImage);
+  SetupAndLoadValidImagePage();
 
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
   AttemptImageSearch();
@@ -2088,8 +2153,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
-  static const char kCorruptImage[] = "/image_search/corrupt.png";
-  SetupAndLoadImagePage(kCorruptImage);
+  SetupAndLoadCorruptImagePage();
 
   // Open and close a context menu.
   ContextMenuWaiter waiter;
@@ -2133,8 +2197,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
 #endif
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
                        MAYBE_LensImageSearchWithValidImage) {
-  static const char kValidImage[] = "/image_search/valid.png";
-  SetupAndLoadImagePage(kValidImage);
+  SetupAndLoadValidImagePage();
 
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
   AttemptLensImageSearch();
@@ -2145,6 +2208,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
 
   std::string expected_content = GetLensImageSearchURL().GetContent();
   std::string new_tab_content = new_tab->GetLastCommittedURL().GetContent();
+
   // Match strings up to the query.
   std::size_t query_start_pos = new_tab_content.find("?");
   EXPECT_EQ(expected_content.substr(0, query_start_pos),
@@ -2179,6 +2243,34 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
 
   ASSERT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_ROTATECW));
   ASSERT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_ROTATECCW));
+}
+
+IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest, CopyWithoutText) {
+  std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+
+  // Test that 'Copy' doesn't exist.
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
+}
+
+IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest, CopyText) {
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      SetupAndCreateMenuWithPdfInfo(
+          {/*selection_text=*/u"text", /*can_copy=*/true});
+
+  // Test that 'Copy' exists and it is enabled.
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
+  ASSERT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPY));
+}
+
+IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
+                       CopyTextWithRestriction) {
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      SetupAndCreateMenuWithPdfInfo(
+          {/*selection_text=*/u"text", /*can_copy=*/false});
+
+  // Test that 'Copy' exists and it is disabled.
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
+  ASSERT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPY));
 }
 
 IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
@@ -2220,6 +2312,50 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest, Rotate) {
     run_loop.Run();
   }
 }
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
+                                     public ::testing::WithParamInterface<int> {
+ public:
+  PdfOcrContextMenuBrowserTest() {
+    if (IsPdfOcrEnabled())
+      scoped_feature_list_.InitAndEnableFeature(features::kPdfOcr);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kPdfOcr);
+    accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(
+        IsScreenReaderEnabled());
+  }
+
+  PdfOcrContextMenuBrowserTest(const PdfOcrContextMenuBrowserTest&) = delete;
+  PdfOcrContextMenuBrowserTest& operator=(const PdfOcrContextMenuBrowserTest&) =
+      delete;
+
+  ~PdfOcrContextMenuBrowserTest() override = default;
+
+  bool IsScreenReaderEnabled() { return GetParam() & 1; }
+
+  bool IsPdfOcrEnabled() { return GetParam() & 2; }
+
+  void SetUpOnMainThread() override {
+    PdfPluginContextMenuBrowserTest::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, PdfOcr) {
+  std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_RUN_PDF_OCR),
+            IsPdfOcrEnabled() && IsScreenReaderEnabled());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PdfOcrContextMenuBrowserTest,
+                         ::testing::Range(0, 4));
+
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 class LoadImageRequestObserver : public content::WebContentsObserver {

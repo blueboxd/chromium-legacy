@@ -47,8 +47,7 @@ class ExternallyManagedAppManagerImplBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
     // Allow different origins to be handled by the embedded_test_server.
     host_resolver()->AddRule("*", "127.0.0.1");
-    web_app::test::WaitUntilReady(
-        web_app::WebAppProvider::GetForTest(profile()));
+    test::WaitUntilReady(WebAppProvider::GetForTest(profile()));
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -549,17 +548,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
       .AwaitNextRegistration(url, RegistrationResultCode::kTimeout);
 }
 
-// crbug.com/1334849: All/ExternallyManagedBrowserTestWithPrefMigrationRead.
-// ReinstallPolicyAppWithLocallyInstalledApp/1 is failing on Mac builders.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_ReinstallPolicyAppWithLocallyInstalledApp \
-  DISABLED_ReinstallPolicyAppWithLocallyInstalledApp
-#else
-#define MAYBE_ReinstallPolicyAppWithLocallyInstalledApp \
-  ReinstallPolicyAppWithLocallyInstalledApp
-#endif
 IN_PROC_BROWSER_TEST_P(ExternallyManagedBrowserTestWithPrefMigrationRead,
-                       MAYBE_ReinstallPolicyAppWithLocallyInstalledApp) {
+                       ReinstallPolicyAppWithLocallyInstalledApp) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 

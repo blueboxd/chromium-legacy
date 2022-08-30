@@ -63,7 +63,7 @@ perf_test::PerfResultReporter SetUpCookieMonsterReporter(
 
 class CookieMonsterTest : public testing::Test {
  public:
-  CookieMonsterTest() {}
+  CookieMonsterTest() = default;
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_{
@@ -220,7 +220,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
   std::string cookie(kCookieLine);
   std::vector<GURL> gurls;  // just wanna have ffffuunnn
   for (int i = 0; i < kNumCookies; ++i) {
-    gurls.push_back(GURL(base::StringPrintf("https://a%04d.izzle", i)));
+    gurls.emplace_back(base::StringPrintf("https://a%04d.izzle", i));
   }
 
   SetCookieCallback setCookieCallback;
@@ -356,7 +356,7 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
 }
 
 TEST_F(CookieMonsterTest, TestImport) {
-  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  auto store = base::MakeRefCounted<MockPersistentCookieStore>();
   std::vector<std::unique_ptr<CanonicalCookie>> initial_cookies;
   GetCookieListCallback getCookieListCallback;
 
@@ -377,8 +377,8 @@ TEST_F(CookieMonsterTest, TestImport) {
 
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), nullptr, kFirstPartySetsEnabled));
+  auto cm = std::make_unique<CookieMonster>(store.get(), nullptr,
+                                            kFirstPartySetsEnabled);
 
   // Import will happen on first access.
   GURL gurl("www.foo.com");
@@ -394,8 +394,8 @@ TEST_F(CookieMonsterTest, TestImport) {
 }
 
 TEST_F(CookieMonsterTest, TestGetKey) {
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, nullptr, kFirstPartySetsEnabled));
+  auto cm =
+      std::make_unique<CookieMonster>(nullptr, nullptr, kFirstPartySetsEnabled);
   auto reporter = SetUpCookieMonsterReporter("baseline_story");
   base::ElapsedTimer get_key_timer;
   for (int i = 0; i < kNumCookies; i++)

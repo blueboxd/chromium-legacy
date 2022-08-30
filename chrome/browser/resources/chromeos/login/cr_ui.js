@@ -119,13 +119,6 @@ cr.define('cr.ui', function() {
     }
 
     /**
-     * Skip to login screen for telemetry.
-     */
-    static skipToLoginForTesting() {
-      chrome.send('OobeTestApi.skipToLoginForTesting');
-    }
-
-    /**
      * Login for telemetry.
      * @param {string} username Login username.
      * @param {string} password Login password.
@@ -169,34 +162,11 @@ cr.define('cr.ui', function() {
     }  // loginForTesting
 
     /**
-     * Guest login for telemetry.
-     */
-    static guestLoginForTesting() {
-      this.skipToLoginForTesting();
-      chrome.send('launchIncognito');
-    }
-
-    /**
-     * Gaia login screen for telemetry.
-     */
-    static addUserForTesting() {
-      this.skipToLoginForTesting();
-      chrome.send('addUser');
-    }
-
-    /**
      * Shows the add user dialog. Used in browser tests.
      */
     static showAddUserForTesting() {
       // TODO(crbug.com/1100910): migrate logic to dedicated test api.
       chrome.send('OobeTestApi.showGaiaDialog');
-    }
-
-    /**
-     * Hotrod requisition for telemetry.
-     */
-    static remoraRequisitionForTesting() {
-      chrome.send('WelcomeScreen.setDeviceRequisition', ['remora']);
     }
 
     /**

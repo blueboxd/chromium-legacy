@@ -821,7 +821,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "Flaky - https://crbug.com/1313206")
     public void testPopupsNotBlocked() throws TimeoutException {
         new TwoStatePermissionTestCase(
                 "Popups", SiteSettingsCategory.Type.POPUPS, ContentSettingsType.POPUPS, true)
@@ -971,8 +970,8 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesFederatedIdentityAPI() {
-        testExpectedPreferences(
-                SiteSettingsCategory.Type.FEDERATED_IDENTITY_API, BINARY_TOGGLE, BINARY_TOGGLE);
+        testExpectedPreferences(SiteSettingsCategory.Type.FEDERATED_IDENTITY_API,
+                BINARY_TOGGLE_WITH_EXCEPTION, BINARY_TOGGLE_WITH_EXCEPTION);
     }
 
     @Test
@@ -1443,6 +1442,7 @@ public class SiteSettingsTest {
         new TwoStatePermissionTestCase("FederatedIdentityApi",
                 SiteSettingsCategory.Type.FEDERATED_IDENTITY_API,
                 ContentSettingsType.FEDERATED_IDENTITY_API, true)
+                .withExpectedPrefKeys(SingleCategorySettings.ADD_EXCEPTION_KEY)
                 .run();
     }
 
@@ -1453,6 +1453,7 @@ public class SiteSettingsTest {
         new TwoStatePermissionTestCase("FederatedIdentityApi",
                 SiteSettingsCategory.Type.FEDERATED_IDENTITY_API,
                 ContentSettingsType.FEDERATED_IDENTITY_API, false)
+                .withExpectedPrefKeys(SingleCategorySettings.ADD_EXCEPTION_KEY)
                 .run();
     }
 

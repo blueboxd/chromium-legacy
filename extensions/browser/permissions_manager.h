@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension_id.h"
@@ -147,13 +148,30 @@ class PermissionsManager : public KeyedService {
   std::unique_ptr<const PermissionSet> GetRuntimePermissionsFromPrefs(
       const Extension& extension) const;
 
+  // Returns the set of permissions that the `extension` wants to have active at
+  // this time. This does *not* take into account user-granted or runtime-
+  // withheld permissions.
+  // TODO(https://crbug.com/1268198): This should be a private method once we
+  // refactor a bit more and have PermissionsManager handle more of permission
+  // initialization.
+  std::unique_ptr<const PermissionSet> GetExtensionDesiredPermissionsFromPrefs(
+      const Extension& extension) const;
+
+  // Returns the set of permissions that should be granted to the given
+  // `extension` according to the runtime-granted permissions and current
+  // preferences, omitting host permissions if the extension supports it and
+  // the user has withheld permissions.
+  std::unique_ptr<const PermissionSet> GetEffectivePermissionsToGrant(
+      const Extension& extension,
+      const PermissionSet& desired_permissions) const;
+
   // Adds or removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  private:
   // Called whenever `user_permissions_` have changed.
-  void OnUserPermissionsSettingsChanged() const;
+  void OnUserPermissionsSettingsChanged();
 
   // Removes `origin` from the list of sites the user has allowed all
   // extensions to run on and saves the change to `extension_prefs_`. Returns if
@@ -165,6 +183,17 @@ class PermissionsManager : public KeyedService {
   // Returns if the site has been removed.
   bool RemoveRestrictedSiteAndUpdatePrefs(const url::Origin& origin);
 
+  // Updates the given `extension` with the new `user_permitted_set` of sites
+  // all extensions are allowed to run on. Note that this only updates the
+  // permissions in the browser; updates must then be sent separately to the
+  // renderer and network service.
+  void UpdatePermissionsWithUserSettings(
+      const Extension& extension,
+      const PermissionSet& user_permitted_set);
+
+  // Notifies observers of a permissions change.
+  void NotifyObserversOfChange();
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   // The associated browser context.
@@ -172,6 +201,8 @@ class PermissionsManager : public KeyedService {
 
   const raw_ptr<ExtensionPrefs> extension_prefs_;
   UserPermissionsSettings user_permissions_;
+
+  base::WeakPtrFactory<PermissionsManager> weak_factory_{this};
 };
 
 }  // namespace extensions

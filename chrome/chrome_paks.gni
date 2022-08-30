@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 import("//ash/ambient/resources/resources.gni")
+import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//ui/base/ui_features.gni")
@@ -246,14 +246,17 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
         "$root_gen_dir/chrome/common/chromeos/extensions/chromeos_system_extensions_resources.pak",
         "$root_gen_dir/chrome/emoji_picker_resources.pak",
+        "$root_gen_dir/chrome/gaia_action_buttons_resources.pak",
         "$root_gen_dir/chrome/internet_config_dialog_resources.pak",
         "$root_gen_dir/chrome/internet_detail_dialog_resources.pak",
         "$root_gen_dir/chrome/launcher_internals_resources.pak",
+        "$root_gen_dir/chrome/manage_mirrorsync_resources.pak",
         "$root_gen_dir/chrome/multidevice_internals_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chrome/nearby_internals_resources.pak",
         "$root_gen_dir/chrome/nearby_share_dialog_resources.pak",
         "$root_gen_dir/chrome/network_ui_resources.pak",
+        "$root_gen_dir/chrome/notification_tester_resources.pak",
         "$root_gen_dir/chrome/oobe_conditional_resources.pak",
         "$root_gen_dir/chrome/oobe_unconditional_resources.pak",
         "$root_gen_dir/chrome/os_settings_resources.pak",
@@ -305,11 +308,14 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos/assistant_optin:resources",
         "//chrome/browser/resources/chromeos/audio:resources",
         "//chrome/browser/resources/chromeos/emoji_picker:resources",
+        "//chrome/browser/resources/chromeos/gaia_action_buttons:resources",
         "//chrome/browser/resources/chromeos/launcher_internals:resources",
         "//chrome/browser/resources/chromeos/login:conditional_resources",
         "//chrome/browser/resources/chromeos/login:unconditional_resources",
+        "//chrome/browser/resources/chromeos/manage_mirrorsync:resources",
         "//chrome/browser/resources/chromeos/multidevice_internals:resources",
         "//chrome/browser/resources/chromeos/network_ui:resources",
+        "//chrome/browser/resources/chromeos/notification_tester:resources",
         "//chrome/browser/resources/nearby_internals:resources",
         "//chrome/browser/resources/nearby_share:resources",
         "//chrome/browser/resources/settings/chromeos:resources",
@@ -345,15 +351,18 @@ template("chrome_extra_paks") {
     }
     if (!is_android && !is_chromeos_ash) {
       sources += [
-        "$root_gen_dir/chrome/apps_resources.pak",
         "$root_gen_dir/chrome/profile_picker_resources.pak",
         "$root_gen_dir/chrome/welcome_resources.pak",
       ]
       deps += [
-        "//chrome/browser/resources/ntp4:apps_resources",
         "//chrome/browser/resources/signin/profile_picker:resources",
         "//chrome/browser/resources/welcome:resources",
       ]
+    }
+
+    if (is_win || is_mac || is_linux || is_fuchsia) {
+      sources += [ "$root_gen_dir/chrome/apps_resources.pak" ]
+      deps += [ "//chrome/browser/resources/ntp4:apps_resources" ]
     }
 
     if (is_win || is_mac || is_linux) {

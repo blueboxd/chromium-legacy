@@ -4,17 +4,34 @@
 
 #include "components/services/screen_ai/screen_ai_service_impl.h"
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "components/services/screen_ai/proto/proto_convertor.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
+#include "sandbox/policy/switches.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace screen_ai {
 
+namespace {
+
+base::FilePath GetLibraryFilePath() {
+  base::FilePath library_path = GetPreloadedLibraryFilePath();
+  if (library_path.empty() && base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  sandbox::policy::switches::kNoSandbox)) {
+    library_path = GetLatestLibraryFilePath();
+    SetPreloadedLibraryFilePath(library_path);
+  }
+  return library_path;
+}
+
+}  // namespace
+
 ScreenAIService::ScreenAIService(
     mojo::PendingReceiver<mojom::ScreenAIService> receiver)
-    : library_(GetPreloadedLibraryFilePath()),
+    : library_(GetLibraryFilePath()),
       init_function_(
           reinterpret_cast<InitFunction>(library_.GetFunctionPointer("Init"))),
       annotate_function_(reinterpret_cast<AnnotateFunction>(
@@ -25,10 +42,14 @@ ScreenAIService::ScreenAIService(
       receiver_(this, std::move(receiver)) {
   DCHECK(init_function_ && annotate_function_ &&
          extract_main_content_function_);
-  if (!init_function_(features::IsScreenAIVisualAnnotationsEnabled(),
-                      features::IsReadAnythingWithScreen2xEnabled(),
-                      features::IsScreenAIDebugModeEnabled(),
-                      GetPreloadedLibraryFilePath().DirName().MaybeAsASCII())) {
+  if (!init_function_(
+          /*init_visual_annotations = */ features::
+                  IsScreenAIVisualAnnotationsEnabled() ||
+              features::IsPdfOcrEnabled(),
+          /*init_main_content_extraction = */
+          features::IsReadAnythingWithScreen2xEnabled(),
+          /*debug_mode = */ features::IsScreenAIDebugModeEnabled(),
+          /*models_path = */ GetLibraryFilePath().DirName().MaybeAsASCII())) {
     // TODO(https://crbug.com/1278249): Add UMA metrics to monitor failures.
     VLOG(0) << "Screen AI library initialization failed.";
     base::Process::TerminateCurrentProcessImmediately(-1);

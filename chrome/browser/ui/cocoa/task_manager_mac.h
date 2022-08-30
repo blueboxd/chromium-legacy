@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TASK_MANAGER_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_TASK_MANAGER_MAC_H_
 
+#include "base/memory/raw_ptr.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include <vector>
@@ -30,15 +32,15 @@ class TaskManagerMac;
  @private
   NSTableView* _tableView;
   NSButton* _endProcessButton;
-  task_manager::TaskManagerMac* _taskManagerMac;     // weak
-  task_manager::TaskManagerTableModel* _tableModel;  // weak
+  raw_ptr<task_manager::TaskManagerMac> _taskManagerMac;     // weak
+  raw_ptr<task_manager::TaskManagerTableModel> _tableModel;  // weak
 
   base::scoped_nsobject<WindowSizeAutosaver> _size_saver;
 
   // These contain a permutation of [0..|tableModel_->RowCount() - 1|]. Used to
   // implement sorting.
-  std::vector<int> _viewToModelMap;
-  std::vector<int> _modelToViewMap;
+  std::vector<size_t> _viewToModelMap;
+  std::vector<size_t> _modelToViewMap;
 
   // Descriptor of the current sort column.
   task_manager::TableSortDescriptor _currentSortDescriptor;
@@ -112,9 +114,9 @@ class TaskManagerMac : public ui::TableModelObserver, public TableViewDelegate {
 
   // ui::TableModelObserver:
   void OnModelChanged() override;
-  void OnItemsChanged(int start, int length) override;
-  void OnItemsAdded(int start, int length) override;
-  void OnItemsRemoved(int start, int length) override;
+  void OnItemsChanged(size_t start, size_t length) override;
+  void OnItemsAdded(size_t start, size_t length) override;
+  void OnItemsRemoved(size_t start, size_t length) override;
 
   // TableViewDelegate:
   bool IsColumnVisible(int column_id) const override;

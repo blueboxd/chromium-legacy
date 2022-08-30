@@ -156,7 +156,6 @@ TEST_F(FrameLoaderTest, PolicyContainerIsStoredOnCommitNavigation) {
       WebPolicyContainerPolicies{
           network::mojom::CrossOriginEmbedderPolicyValue::kNone,
           network::mojom::ReferrerPolicy::kAlways,
-          network::mojom::IPAddressSpace::kPublic,
           WebVector<WebContentSecurityPolicy>(),
       },
       mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
@@ -167,8 +166,8 @@ TEST_F(FrameLoaderTest, PolicyContainerIsStoredOnCommitNavigation) {
   EXPECT_EQ(*mojom::blink::PolicyContainerPolicies::New(
                 network::mojom::CrossOriginEmbedderPolicyValue::kNone,
                 network::mojom::ReferrerPolicy::kAlways,
-                network::mojom::IPAddressSpace::kPublic,
-                Vector<network::mojom::blink::ContentSecurityPolicyPtr>()),
+                Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
+                /*anonymous=*/false, network::mojom::WebSandboxFlags::kNone),
             local_frame->DomWindow()->GetPolicyContainer()->GetPolicies());
 }
 

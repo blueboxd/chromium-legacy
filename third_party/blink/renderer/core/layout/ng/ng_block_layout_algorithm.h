@@ -68,9 +68,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
  private:
   NOINLINE const NGLayoutResult* LayoutWithInlineChildLayoutContext(
       const NGLayoutInputNode& first_child);
-  NOINLINE const NGLayoutResult* LayoutWithItemsBuilder(
-      const NGInlineNode& first_child,
-      NGInlineChildLayoutContext* context);
 
   NOINLINE const NGLayoutResult* RelayoutIgnoringLineClamp();
 
@@ -211,9 +208,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGPreviousInflowPosition*,
       NGInlineChildLayoutContext*,
       const NGInlineBreakToken** previous_inline_break_token);
-
-  // Performs any final adjustments for table-cells.
-  void FinalizeForTableCell(LayoutUnit unconstrained_intrinsic_block_size);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.

@@ -8,11 +8,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.os.Build;
 import android.view.DragAndDropPermissions;
 import android.view.DragEvent;
@@ -29,10 +36,13 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.TabViewAndroidDelegate.DragAndDropBrowserDelegateImpl;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -71,12 +81,18 @@ public class TabViewAndroidDelegateTest {
     @Mock
     private Activity mActivity;
 
+    @Mock
+    private ActivityInfo mActivityInfo;
+
+    @Mock
+    private PackageManager mPackageManager;
+
     private ApplicationViewportInsetSupplier mApplicationInsetSupplier;
     private ObservableSupplierImpl<Integer> mFeatureInsetSupplier;
     private TabViewAndroidDelegate mViewAndroidDelegate;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NameNotFoundException {
         MockitoAnnotations.initMocks(this);
 
         mFeatureInsetSupplier = new ObservableSupplierImpl<>();
@@ -93,6 +109,11 @@ public class TabViewAndroidDelegateTest {
                 .thenReturn(ApplicationProvider.getApplicationContext());
         when(mActivity.requestDragAndDropPermissions(mDragEvent))
                 .thenReturn(mDragAndDropPermissions);
+
+        Context mApplicationContext = Mockito.spy(ContextUtils.getApplicationContext());
+        when(mApplicationContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mPackageManager.getActivityInfo(any(), anyInt())).thenReturn(mActivityInfo);
+        ContextUtils.initApplicationContextForTests(mApplicationContext);
 
         FeatureList.TestValues testValues = new TestValues();
         testValues.addFeatureFlagOverride(ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU, false);
@@ -146,6 +167,23 @@ public class TabViewAndroidDelegateTest {
             DragAndDropPermissions permissions = delegate.getDragAndDropPermissions(mDragEvent);
             assertNotNull("DragAndDropPermissions should not be null.", permissions);
         }
+    }
+
+    @Test
+    @Config(sdk = 30)
+    public void testDragAndDropBrowserDelegate_createLinkIntent_PostR() {
+        DragAndDropBrowserDelegate delegate = new DragAndDropBrowserDelegateImpl(mTab, true);
+        mActivityInfo.launchMode = ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK;
+        Intent intent = delegate.createLinkIntent(JUnitTestGURLs.EXAMPLE_URL);
+        assertEquals("The intent flags should match.",
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK,
+                intent.getFlags());
+        assertEquals("The intent class should be ChromeTabbedActivity.",
+                ChromeTabbedActivity.class.getName(), intent.getComponent().getClassName());
+        assertTrue("preferNew extra should be true.",
+                intent.getBooleanExtra(IntentHandler.EXTRA_PREFER_NEW, false));
+        assertEquals("The intent should contain Uri data.", Uri.parse(JUnitTestGURLs.EXAMPLE_URL),
+                intent.getData());
     }
 
     @Test

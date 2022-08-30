@@ -109,7 +109,7 @@ std::string FindStringKeyOrEmpty(const base::Value& value, std::string key) {
 }  // namespace
 
 // Value chosen based on SuggestionGroupIds::INVALID in suggestion_config.proto.
-const int SearchSuggestionParser::kNoSuggestionGroupId = -1;
+const int SearchSuggestionParser::kInvalidSuggestionGroupId = -1;
 
 // SearchSuggestionParser::Result ----------------------------------------------
 
@@ -676,7 +676,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
       absl::optional<int> suggestion_group_id;
 
       if (suggestion_details &&
-          suggestion_details->GetListDeprecated()[index].is_dict()) {
+          suggestion_details->GetListDeprecated()[index].is_dict() &&
+          !suggestion_details->GetListDeprecated()[index].DictEmpty()) {
         const base::Value& suggestion_detail =
             suggestion_details->GetListDeprecated()[index];
         match_contents =

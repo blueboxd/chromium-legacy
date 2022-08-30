@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> thread, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Fitur baru tersedia, gunakan tombol Panah atas untuk mempelajari lebih lanjut.</translation>
 <translation id="1059913517121127803">Tidak dapat memulai pemindaian</translation>
+<translation id="1062407476771304334">Ganti</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Firewall terdeteksi</translation>
 <translation id="1075811647922107217">Ukuran halaman</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Jendela update firmware untuk perangkat eksternal terbuka. <ph name="NUM_UPDATES" /> update tersedia.</translation>
+<translation id="1145516343487477149">Temukan artikel bantuan dan jawaban atas pertanyaan umum tentang Chromebook</translation>
+<translation id="1165039591588034296">Kesalahan</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Standar (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Hapus</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> akan mengelola perangkat ini dan mungkin dapat memantau aktivitas Anda.</translation>
 <translation id="147809995039451286">Tidak dapat mendownload update</translation>
 <translation id="1478594628797167447">Pemindai</translation>
+<translation id="1483493594462132177">Kirim</translation>
 <translation id="1491076385728777984">Mengupdate firmware di <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> akan mengelola pengguna ini serta mungkin dapat mengelola setelan dan memantau aktivitas pengguna dari jarak jauh.</translation>
 <translation id="150962533380566081">PUK tidak valid.</translation>
@@ -93,13 +97,14 @@
 <translation id="1676557873873341166">Merekam video</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Keberadaan DNS Resolver</translation>
-<translation id="1715359911173058521">Terjadi error saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
+<translation id="1715359911173058521">Terjadi masalah saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
 <translation id="1717874160321062422">Dikelola oleh <ph name="FIRST_MANAGER" /> dan <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Nama server</translation>
 <translation id="1731082422893354635">Touchpad Bluetooth</translation>
 <translation id="1745577949879301685">Tidak dapat memuat foto. Periksa koneksi jaringan Anda atau coba muat foto lagi.</translation>
 <translation id="1751249301761991853">Pribadi</translation>
 <translation id="1753496554272155572">Keluar dari pratinjau wallpaper</translation>
+<translation id="1755556344721611131">Aplikasi Diagnostik</translation>
 <translation id="175763766237925754">Baik (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Nonaktifkan tema gelap</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Nonaktifkan mode gelap</translation>
+<translation id="1881188606372070653">Buka <ph name="BEGIN_LINK1" />halaman Bantuan Hukum<ph name="END_LINK1" /> untuk meminta perubahan konten atas alasan hukum. Beberapa informasi akun dan sistem dapat dikirimkan ke Google. Kami akan menggunakan informasi yang Anda berikan untuk membantu mengatasi masalah teknis dan meningkatkan layanan kami, sesuai dengan <ph name="BEGIN_LINK2" />Kebijakan Privasi<ph name="END_LINK2" /> dan <ph name="BEGIN_LINK3" />Persyaratan Layanan<ph name="END_LINK3" /> kami.</translation>
 <translation id="1887850431809612466">Revisi hardware</translation>
+<translation id="1904932688895783618">Berikut beberapa referensi berguna lainnya:</translation>
 <translation id="1905710495812624430">Melebihi batas percobaan maksimum yang diizinkan.</translation>
 <translation id="1908234395526491708">Kegagalan permintaan UDP</translation>
 <translation id="1932611479324127242">Penonaktifan baterai internal</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Coba langkah-langkah pemecahan masalah</translation>
 <translation id="2016848882344942759">--tanpa white-label--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Hubungkan ke jaringan dan muat ulang halaman untuk melihat screensaver.</translation>
 <translation id="2080070583977670716">Setelan lain</translation>
 <translation id="2085089206770112532">Kurangi kecerahan layar</translation>
 <translation id="2105810540595158374">Perangkat adalah pengontrol game.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Aktifkan mode gelap</translation>
 <translation id="2177831236093724629">Ditemukan <ph name="LINK_BEGIN" />komponen yang tidak memenuhi syarat<ph name="LINK_END" />. Untuk memastikan semua komponen yang memenuhi syarat teridentifikasi, update Chrome OS ke versi terbaru.</translation>
 <translation id="2180197493692062006">Terjadi error. Coba buka aplikasi kembali.</translation>
+<translation id="2182088270354640012">Terima kasih atas masukan Anda. Masukan Anda membantu meningkatkan Chrome OS dan akan ditinjau oleh tim Chrome OS. Karena banyaknya laporan yang dikirim, Anda tidak akan menerima balasan langsung.</translation>
 <translation id="2209788852729124853">Reset Penghitung Traffic</translation>
 <translation id="2212733584906323460">Resolusi Nama</translation>
 <translation id="2217935453350629363">Kecepatan saat ini</translation>
@@ -207,7 +216,7 @@
 <translation id="2727250716596204208">Tidak dapat menemukan image firmware. Masukkan penyimpanan eksternal, seperti drive USB atau kartu SD, yang berisi image Utilitas Pemulihan Chromebook yang telah didownload.</translation>
 <translation id="2740531572673183784">Oke</translation>
 <translation id="2751739896257479635">Autentikasi tahap 2 EAP</translation>
-<translation id="2756652381241102009">Jalankan Diagnostik</translation>
+<translation id="2756652381241102009">Jalankan Diagnosis</translation>
 <translation id="2783010256799387990">LULUS</translation>
 <translation id="2789486458103222910">Oke</translation>
 <translation id="2805756323405976993">Apl</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Diagnostik Konektivitas</translation>
 <translation id="3084958266922136097">Nonaktifkan screen saver</translation>
 <translation id="3091839911843451378">Gagal - Berhenti</translation>
+<translation id="3096753366938912951">Letakkan penutup di permukaan yang rata</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Perangkat terhubung.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Mencari pemindai</translation>
 <translation id="3246869037381808805">Tugas pencetakan yang sudah lebih dari 1 hari akan dihapus</translation>
 <translation id="3268178239013324452">Gagal - Tutup terbuka</translation>
+<translation id="3275729367986477355">Gambar avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Edit file}other{Edit file}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Arah kunci</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Ubah wallpaper</translation>
 <translation id="360565022852130722">Jaringan Wi-Fi diamankan dengan protokol WEP 802.1x yang lemah</translation>
 <translation id="3606583719724308068">Latensi tinggi untuk situs HTTPS</translation>
+<translation id="361575905210396100">Terima kasih atas masukan Anda</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3632579075709132555">Beralih layar privasi</translation>
+<translation id="3643198267586205643">Update OS</translation>
 <translation id="3643810137582748570">Lewati kalibrasi</translation>
 <translation id="3651050199673793219">Pilih satuan suhu</translation>
 <translation id="3678765385266369662">Pilih cara Anda ingin menonaktifkan Write Protect</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Kunci</translation>
 <translation id="38114475217616659">Hapus semua histori</translation>
 <translation id="3820172043799983114">PIN tidak valid.</translation>
+<translation id="3824259034819781947">Lampirkan file</translation>
 <translation id="3838338534323494292">Sandi baru</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3856304145690230735">Papan Giroskop</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Kekuatan Sinyal</translation>
 <translation id="4731797938093519117">Akses orang tua</translation>
 <translation id="473775607612524610">Perbarui</translation>
+<translation id="4740255236714854844">Letakkan bagian dasar di permukaan yang rata</translation>
 <translation id="4744944742468440486">Info terkait pilihan Anda</translation>
 <translation id="4751272708893364980">Lihat log RMA</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Untuk mendapatkan bantuan lebih lanjut, buka <ph name="BEGIN_LINK" />Pusat Bantuan<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritme kompresi</translation>
 <translation id="4794140124556169553">Menjalankan pengujian CPU dapat memengaruhi performa sistem Anda</translation>
+<translation id="4800589996161293643">Komunitas Chromebook</translation>
 <translation id="4804818685124855865">Putuskan koneksi</translation>
 <translation id="4808449224298348341">Tugas pencetakan <ph name="DOCUMENT_TITLE" /> dibatalkan</translation>
 <translation id="4809927044794281115">Tema terang</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Jika layar tidak ada aktivitas, akan ditampilkan foto, waktu, cuaca, dan info media.</translation>
 <translation id="5039804452771397117">Izinkan</translation>
+<translation id="5044978354634658544">Colokkan USB</translation>
 <translation id="5049856988445523908">SIM Dikunci (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nama grup</translation>
 <translation id="5051044138948155788">Ini adalah satu-satunya halaman. Anda akan diarahkan ke layar awal pemindaian.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Kesehatan baterai</translation>
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
 <translation id="5179530508336824319">Aktifkan proteksi tulis untuk melanjutkan ke layar berikutnya. Buka halaman dukungan produsen perangkat untuk mendapatkan petunjuk.</translation>
+<translation id="5181140330217080051">Mendownload</translation>
 <translation id="5190187232518914472">Hidupkan kembali memori favorit Anda. Untuk menambahkan atau mengedit album, buka <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Di layar tidak ada apa pun yang membutuhkan bantuan saya.
 Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logout</translation>
+<translation id="522307662484862935">Jangan sertakan alamat email</translation>
 <translation id="5227902338748591677">Jadwal tema gelap</translation>
 <translation id="5234764350956374838">Tutup</translation>
 <translation id="5252456968953390977">Jelajah</translation>
@@ -526,6 +545,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5620281292257375798">Khusus internal</translation>
 <translation id="5649768706273821470">Dengar</translation>
 <translation id="5655283760733841251">Tingkatkan kecerahan keyboard</translation>
+<translation id="5659593005791499971">Email</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Keluarga</translation>
@@ -538,6 +558,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="57838592816432529">Bisukan</translation>
 <translation id="5784136236926853061">Latensi HTTP tinggi</translation>
 <translation id="578753362485952307">Jika Anda sedang mengerjakan ulang mainboard untuk digunakan di perangkat lain, buka <ph name="LINK_BEGIN" />alur pengerjaan ulang<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Berhasil</translation>
 <translation id="5832805196449965646">Tambahkan Pengguna</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -599,6 +620,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6284632978374966585">Aktifkan tema gelap</translation>
 <translation id="6295178529664209245">Lanjutkan perbaikan?</translation>
 <translation id="6302401976930124515">Pengujian <ph name="TEST_NAME" /> telah dibatalkan</translation>
+<translation id="631063167932043783">Aplikasi Jelajahi</translation>
 <translation id="6319207335391420837">Update firmware di <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Nyalakan screen saver</translation>
 <translation id="6325525973963619867">Gagal</translation>
@@ -610,6 +632,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6379086450106841622">Layar sentuh</translation>
 <translation id="6381741036071372448">Uji keyboard Anda</translation>
 <translation id="6388847657025262518">Pengumpan dokumen pemindai macet. Periksa pengumpan, lalu coba lagi.</translation>
+<translation id="6394634179843537518">Tambahkan file</translation>
 <translation id="6410257289063177456">File Gambar</translation>
 <translation id="641081527798843608">Kecocokan subjek</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6516990319416533844">Untuk menguji kecepatan pengisian daya baterai, biarkan daya baterai terkuras dalam waktu singkat</translation>
 <translation id="6517239166834772319">Jelajahi</translation>
 <translation id="6527081081771465939">Protokol keamanan Wi-Fi tidak dikenal</translation>
+<translation id="6535178685492749208">Anda sedang offline. Masukan akan dikirim nanti.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Gagal - Printer tidak dapat dijangkau</translation>
 <translation id="6566314079205407217">Pemindaian multi-halaman</translation>
@@ -643,6 +667,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6692996468359469499">Dapatkan info terkait pilihan Anda</translation>
 <translation id="6704062477274546131">Resolusi DNS</translation>
+<translation id="6721744718589119342">Kami mungkin mengirimi Anda email untuk meminta informasi lebih lanjut atau memberikan informasi terbaru</translation>
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6723847290197874913">Lampu latar keyboard</translation>
 <translation id="672609503628871915">Lihat apa saja yang baru</translation>
@@ -703,10 +728,12 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7297226631177386107">Tidak dapat terhubung melewati firewall ke situs HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Tanya pakar di forum bantuan Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tekan tombol Penelusuran dan Spasi untuk melihat hasil di Google Penelusuran.</translation>
 <translation id="7343649194310845056">Perangkat Jaringan</translation>
 <translation id="7359657277149375382">Jenis file</translation>
+<translation id="73631062356239394">Bagikan data diagnostik</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">Nonaktifkan tema terang</translation>
@@ -737,15 +764,18 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7657530360897961171">Terjadi error saat perbaikan <ph name="DEVICE_TYPE" /></translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665800271478495366">Ubah avatar</translation>
+<translation id="7682274994254393134">Perbaikan dimulai</translation>
 <translation id="7690294790491645610">Konfirmasi sandi baru</translation>
 <translation id="7701040980221191251">Tidak ada</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Jumlah siklus</translation>
 <translation id="7747039790905080783">Kunci yang dibagikan sebelumnya</translation>
 <translation id="7762130827864645708">Perubahan sandi Anda berhasil. Gunakan sandi baru mulai sekarang.</translation>
+<translation id="7762839321248874531">Kirim <ph name="BEGIN_LINK1" />info aplikasi dan sistem<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Kecocokan suffix domain</translation>
 <translation id="7769672763586021400">ID Model</translation>
 <translation id="7784116172884276937">Tidak ada server DNS yang disiapkan</translation>
+<translation id="779591286616261875">Kirim laporan baru</translation>
 <translation id="7799817062559422778">Mode terang</translation>
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -812,6 +842,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8382302752385457774">White-label</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> ini dikelola perusahaan</translation>
 <translation id="8398927464629426868">Kecepatan pengisian atau pemakaian daya perangkat saat ini</translation>
+<translation id="8420955526972171689">Jalankan pengujian dan pemecahan masalah untuk masalah hardware</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Keyboard internal</translation>
 <translation id="8431300646573772016">Yang baru di ChromeOS</translation>
@@ -897,6 +928,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="9082718469794970195">Gunakan video ini</translation>
 <translation id="9087578468327036362">Laporkan kueri ini</translation>
 <translation id="9088306295921699330">Penggunaan saat ini</translation>
+<translation id="9092255287806472980">Masukan Anda membantu meningkatkan Chrome OS dan akan ditinjau oleh tim kami. Karena banyaknya jumlah laporan, kami tidak dapat mengirim balasan.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Anda harus membongkar perangkat</translation>
 <translation id="9098156406873149060">Pertahankan data pengguna</translation>
@@ -911,6 +943,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="9149391708638971077">Jalankan pengujian Memori</translation>
 <translation id="9173638680043580060">Kurang dari satu menit lagi</translation>
 <translation id="917720651393141712">Uji</translation>
+<translation id="9188992814426075118">Keyboard dapat otomatis menyesuaikan dengan wallpaper Anda</translation>
 <translation id="9204237731135241582">Tidak dapat terhubung ke gateway dari aplikasi Android</translation>
 <translation id="9211490828691860325">Semua desktop</translation>
 <translation id="922179502584117429">Versi <ph name="VERSION_NUMBER" /> saat ini perlu diupdate</translation>

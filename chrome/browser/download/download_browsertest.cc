@@ -4990,8 +4990,7 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
           false /* allow_metered */, false /* opened */, current_time,
           false /* transient */,
           std::vector<download::DownloadItem::ReceivedSlice>(),
-          download::DownloadItemRerouteInfo(),
-          absl::nullopt /*download_schedule*/, download::kInvalidRange,
+          download::DownloadItemRerouteInfo(), download::kInvalidRange,
           download::kInvalidRange, nullptr /* download_entry */));
 
   download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
@@ -5586,7 +5585,8 @@ IN_PROC_BROWSER_TEST_F(DownloadShelfTest, PerWindowShelf) {
 
   // Go to the first tab.
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // The shelf should now be closed.

@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -15,6 +16,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -28,6 +30,7 @@
 namespace network {
 
 class URLLoaderFactory;
+class NetworkServiceMemoryCache;
 
 namespace cors {
 
@@ -65,7 +68,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       NonWildcardRequestHeadersSupport non_wildcard_request_headers_support,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
-      const mojom::ClientSecurityState* factory_client_security_state);
+      const mojom::ClientSecurityState* factory_client_security_state,
+      NetworkServiceMemoryCache* memory_cache,
+      const CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
 
   CorsURLLoader(const CorsURLLoader&) = delete;
   CorsURLLoader& operator=(const CorsURLLoader&) = delete;
@@ -202,6 +207,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // For the actual request.
   mojo::Remote<mojom::URLLoader> network_loader_;
+  base::TimeTicks network_loader_start_time_;
   // `sync_client_receiver_factory_` should be invalidated if this is ever
   // reset.
   mojo::Receiver<mojom::URLLoaderClient> network_client_receiver_{this};
@@ -268,6 +274,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // initializes this member explicitly.
   raw_ptr<const mojom::ClientSecurityState> factory_client_security_state_ =
       nullptr;
+
+  // Outlives `this`, or nullptr when the in-memory cache is disabled.
+  const raw_ptr<NetworkServiceMemoryCache> memory_cache_;
+  // True when `network_loader_` is bound to a URLLoader that serves response
+  // from `memory_cache_`.
+  bool memory_cache_was_used_ = false;
+
+  const CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   bool has_authorization_covered_by_wildcard_ = false;
 

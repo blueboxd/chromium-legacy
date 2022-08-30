@@ -100,7 +100,6 @@
 <translation id="1687475363370981210">Означи ги сите како прочитани</translation>
 <translation id="1689333818294560261">Прекар</translation>
 <translation id="1690731385917361335">Нема ставки</translation>
-<translation id="1692118695553449118">Синхронизацијата е вклучена</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> избрани</translation>
 <translation id="1740468249224277719">Двоен допир за инсталирање.</translation>
 <translation id="1752547299766512813">Зачувај лозинки</translation>
@@ -174,7 +173,6 @@
 <translation id="2469960372084740698">Да се исклучи „Безбедно прелистување“?</translation>
 <translation id="2473876017985765807">Веќе зачувавте лозинка за <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не е избрано</translation>
-<translation id="2497852260688568942">Администраторот ја оневозможил синхронизацијата</translation>
 <translation id="2500374554657206846">Опции за зачувување лозинка</translation>
 <translation id="2523363575747517183">Веб-сајтов постојано се обидува да отвори друга апликација.</translation>
 <translation id="2529021024822217800">Отвори ги сите</translation>
@@ -326,6 +324,7 @@
 <translation id="369349502275246497">Понудувај зачувување лозинки</translation>
 <translation id="3709582977625132201">Обележи како непрочитано</translation>
 <translation id="371230970611282515">Предвидува опасни настани и ве предупредува пред да се случат.</translation>
+<translation id="37207012422556617">Пребарувања во тренд</translation>
 <translation id="3740397331642243698">Ги отвора внесените URL-адреси во Google Chrome во „Инкогнито“.</translation>
 <translation id="3762232513783804601">Создаден за вашиот iPad</translation>
 <translation id="3771033907050503522">Инкогнито картички</translation>
@@ -489,7 +488,6 @@
 <translation id="509789154667432072">Додај обележувач</translation>
 <translation id="5118713593561876160">Интереси</translation>
 <translation id="5118764316110575523">Исклучено</translation>
-<translation id="5127805178023152808">Синхронизацијата е исклучена</translation>
 <translation id="5132942445612118989">Синхронизирајте ги лозинките, историјата и друго на сите уреди</translation>
 <translation id="5140288047769711648">Chrome ќе ја запомни оваа лозинка за вас. Нема потреба и вие да ја помните.</translation>
 <translation id="5150492518600715772">Испратете до вашиот уред</translation>
@@ -533,6 +531,7 @@
 Handoff мора да биде овозможен и во Општиот дел на Поставки, а на уредите мора да ја користите истата сметка на iCloud.</translation>
 <translation id="5551897871312988470">Понудувај превод</translation>
 <translation id="5556459405103347317">Повторно вчитај</translation>
+<translation id="556042886152191864">Копче</translation>
 <translation id="5580834567471114021">Да се додаде во „Списокот за читање“ за подоцна?</translation>
 <translation id="560322036295180549">Исклучено од вашата организација</translation>
 <translation id="5614553682702429503">Дали да се зачува лозинката?</translation>
@@ -600,7 +599,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="60829778314739003">Прифати и продолжи</translation>
 <translation id="6084848228346514841">Изберете картички</translation>
 <translation id="6103540626693881831">Шифрирање на уредот</translation>
-<translation id="6108923351542677676">Поставувањето е во тек…</translation>
 <translation id="6119050551270742952">Веб-страницата е во режим инкогнито</translation>
 <translation id="6122191549521593678">Онлајн</translation>
 <translation id="6127379762771434464">Ставката е отстранета</translation>
@@ -776,7 +774,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> непрочитани статии.</translation>
 <translation id="7412027924265291969">Продолжи</translation>
-<translation id="7419565702166471774">Секогаш користи безбедни врски</translation>
 <translation id="7425346204213733349">Промените во обележувачите, историјата, лозинките и другите поставки нема веќе да се синхронизираат со вашата сметка на Google. Како и да е, постоечките податоци ќе останат зачувани на сметката на Google.</translation>
 <translation id="7431991332293347422">Контролирајте како вашата историја на прелистување се користи за персонализирање на „Пребарувањето“ и друго</translation>
 <translation id="7435356471928173109">Исклучено од администраторот</translation>
@@ -816,6 +813,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7781069478569868053">Страница во нова картичка</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете пребарување во нова картичка на Chrome.</translation>
+<translation id="7790892308048519147">Пробајте да користите безбедни врски</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="7807060072011926525">Обезбедено од Google</translation>
 <translation id="7839985698273989086">Офлајн страница</translation>
@@ -913,7 +911,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8591976964826315682">Блокирајте колачиња од трети страни во „Инкогнито“</translation>
 <translation id="8605219856220328675">Затвори ја картичката.</translation>
 <translation id="8620640915598389714">Измени</translation>
-<translation id="8620785403235741379">Изберете опција</translation>
 <translation id="8626393685701737946">Можете да го промените стандардниот приказ на сајт да биде приказ наменет за компјутер во „Поставки &gt; Поставки за содржини“</translation>
 <translation id="863090005774946393">Вашата организација управува со прелистувачот. Некои функции можеби се оневозможени.</translation>
 <translation id="8636825310635137004">За да ги добиете картичките од другите уреди, вклучете ја синхронизацијата.</translation>

@@ -9,6 +9,9 @@
 namespace gpu {
 
 std::string CreateLabelForSharedImageUsage(uint32_t usage) {
+  if (!usage)
+    return "";
+
   std::string label;
 
   if (usage & SHARED_IMAGE_USAGE_GLES2) {
@@ -55,6 +58,15 @@ std::string CreateLabelForSharedImageUsage(uint32_t usage) {
   }
   if (usage & SHARED_IMAGE_USAGE_MIPMAP) {
     label += "|Mipmap";
+  }
+  if (usage & SHARED_IMAGE_USAGE_CPU_WRITE) {
+    label += "|CpuWrite";
+  }
+  if (usage & SHARED_IMAGE_USAGE_RAW_DRAW) {
+    label += "|RawDraw";
+  }
+  if (usage & SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING) {
+    label += "|RasterDelegatedCompositing";
   }
 
   DCHECK(!label.empty());

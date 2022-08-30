@@ -39,13 +39,7 @@ try_.builder(
         "ci/win-asan",
     ],
     goma_jobs = goma.jobs.J150,
-    execution_timeout = 5 * time.hour,
-)
-
-try_.builder(
-    name = "win10-clang-tidy-rel",
-    executable = "recipe:tricium_clang_tidy_wrapper",
-    goma_jobs = goma.jobs.J150,
+    execution_timeout = 6 * time.hour,
 )
 
 try_.builder(
@@ -88,7 +82,11 @@ try_.builder(
     ),
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
-    tryjob = try_.job(),
+    tryjob = try_.job(
+        # TODO(crbug.com/1335555) Remove once cancelling doesn't wipe
+        # out builder cache
+        cancel_stale = False,
+    ),
     builderless = False,
     cores = 16,
     ssd = True,
@@ -164,7 +162,6 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "win10_chromium_x64_rel_ng",
-    check_for_flakiness = True,
     compilator = "win10_chromium_x64_rel_ng-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     mirrors = [
@@ -185,11 +182,11 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "win10_chromium_x64_rel_ng-compilator",
-    check_for_flakiness = True,
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     # TODO (crbug.com/1245171): Revert when root issue is fixed

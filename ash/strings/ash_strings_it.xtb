@@ -102,6 +102,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, premi Invio per aprire la visualizzazione di Google Calendar</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> è stato scambiato con <ph name="SECOND_ITEM_TITLE" /></translation>
+<translation id="1500926532737552529">Mostra tutti i suggerimenti</translation>
 <translation id="1503394326855300303">Questo account proprietario deve essere il primo account registrato in una sessione con accesso simultaneo.</translation>
 <translation id="1510238584712386396">Avvio app</translation>
 <translation id="1516740043221086139">La modalità Non disturbare è attiva.</translation>
@@ -536,6 +537,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="4115378294792113321">Magenta</translation>
 <translation id="412298498316631026">finestra</translation>
 <translation id="4123259114412175274">Per sbloccare Chromebook, assicurati che il Bluetooth del telefono sia attivo</translation>
+<translation id="4125970834901680537">Impossibile riprodurre app in streaming in modalità tablet. Riprova in modalità laptop.</translation>
 <translation id="4129129681837227511">Se vuoi vedere le notifiche nella schermata di blocco, sblocca il dispositivo per cambiare l'impostazione</translation>
 <translation id="4136724716305260864">Funzionalità attiva fino all'alba</translation>
 <translation id="4146833061457621061">Fammi ascoltare musica</translation>
@@ -553,6 +555,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="4215497585250573029">Impostazioni VPN</translation>
 <translation id="4217571870635786043">Dettatura</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, app installata, messa in pausa</translation>
+<translation id="423685346499232137">Al momento non è possibile copiare o incollare contenuti</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -610,6 +613,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4518404433291145981">Per sbloccare Chromebook, sblocca prima il telefono</translation>
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
+<translation id="4533343294786968049">Prolunga la durata della batteria. La batteria si ricaricherà completamente entro le ore <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
 <translation id="4538824937723742295">Acquisisci screenshot a schermo intero</translation>
 <translation id="4544483149666270818">Seleziona una finestra da registrare</translation>
@@ -885,7 +889,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="6154006699632741460">Periferica non supportata</translation>
 <translation id="6156262341071374681">Espandi per vedere tutte le app</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
-<translation id="6165508094623778733">Scopri di più</translation>
+<translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6166852626429024716">Cerca sul dispositivo, nelle app, nelle impostazioni e sul Web.</translation>
 <translation id="6179832488876878285">Puoi bloccare qui i tuoi file importanti. Apri l'app File per iniziare.</translation>
 <translation id="6182592640011875895">Apri scrivania</translation>
@@ -1231,7 +1235,6 @@ Nuova installazione</translation>
 <translation id="826107067893790409">Premi INVIO per sbloccare per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8270450402312105425">{0,plural, =1{Ripristina la versione precedente del dispositivo entro un'ora}other{Ripristina la versione precedente del dispositivo entro # ore}}</translation>
-<translation id="8271580342040932214">La batteria è momentaneamente all'80%, anche se il dispositivo è collegato alla corrente, per prolungarne la durata. La batteria verrà ricaricata completamente entro le ore <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="8284362522226889623">Scorri verso sinistra con quattro dita per passare alla scrivania precedente</translation>
 <translation id="828708037801473432">Off</translation>
 <translation id="8297006494302853456">Debole</translation>
@@ -1262,7 +1265,7 @@ Nuova installazione</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella barra delle app è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8443879455002739353">"Copia"</translation>
 <translation id="8444246603146515890">Scrivania <ph name="DESK_TITILE" /> attivata</translation>
-<translation id="8446884382197647889">Scopri di più</translation>
+<translation id="8446884382197647889">Ulteriori informazioni</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" /> + V</translation>
 <translation id="8462305545768648477">Chiudi Seleziona per ascoltare</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>

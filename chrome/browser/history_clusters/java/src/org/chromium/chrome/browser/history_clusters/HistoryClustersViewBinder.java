@@ -19,6 +19,11 @@ class HistoryClustersViewBinder {
         if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
             OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
             itemView.setOnClickListener(clickListener);
+        } else if (key == HistoryClustersItemProperties.CLUSTER_VISIT) {
+            itemView.setItem(model.get(HistoryClustersItemProperties.CLUSTER_VISIT));
+        } else if (key == HistoryClustersItemProperties.END_BUTTON_CLICK_HANDLER) {
+            itemView.setEndButtonClickHandler(
+                    model.get(HistoryClustersItemProperties.END_BUTTON_CLICK_HANDLER));
         } else if (key == HistoryClustersItemProperties.ICON_DRAWABLE) {
             itemView.setIconDrawable(model.get(HistoryClustersItemProperties.ICON_DRAWABLE));
         } else if (key == HistoryClustersItemProperties.TITLE) {
@@ -58,7 +63,9 @@ class HistoryClustersViewBinder {
     public static void bindClusterView(PropertyModel model, View view, PropertyKey key) {
         HistoryClusterView clusterView = (HistoryClusterView) view;
         if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
-            clusterView.setOnClickListener(model.get(HistoryClustersItemProperties.CLICK_HANDLER));
+            OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
+            clusterView.setOnClickListener(clickListener);
+            clusterView.setEndButtonClickListener(clickListener);
         } else if (key == HistoryClustersItemProperties.END_BUTTON_DRAWABLE) {
             clusterView.setEndButtonDrawable(
                     model.get(HistoryClustersItemProperties.END_BUTTON_DRAWABLE));
@@ -87,9 +94,9 @@ class HistoryClustersViewBinder {
         }
     }
 
-    public static void bindToggleView(
+    public static void noopBindView(
             PropertyModel propertyModel, View view, PropertyKey propertyKey) {
-        // The toggle view's appearance and behavior are dictated by our parent component, so we
+        // This view's appearance and behavior are dictated by our parent component, so we
         // don't manipulate it here.
     }
 }

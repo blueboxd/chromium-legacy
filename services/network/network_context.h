@@ -46,7 +46,7 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
-#include "services/network/origin_policy/origin_policy_manager.h"
+#include "services/network/network_service_memory_cache.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/transferable_directory.h"
@@ -55,7 +55,6 @@
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -290,8 +289,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearDomainReliability(mojom::ClearDataFilterPtr filter,
                               DomainReliabilityClearMode mode,
                               ClearDomainReliabilityCallback callback) override;
-  void GetDomainReliabilityJSON(
-      GetDomainReliabilityJSONCallback callback) override;
   void CloseAllConnections(CloseAllConnectionsCallback callback) override;
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override;
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
@@ -491,8 +488,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& realm,
       LookupProxyAuthCredentialsCallback callback) override;
 #endif
-  void GetOriginPolicyManager(
-      mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -544,10 +539,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::URLLoaderFactory>
           url_loader_factory_pending_receiver);
 
-  mojom::OriginPolicyManager* origin_policy_manager() const {
-    return origin_policy_manager_.get();
-  }
-
   domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor() {
     return domain_reliability_monitor_.get();
   }
@@ -581,6 +572,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   bool are_trust_tokens_blocked() const { return block_trust_tokens_; }
 
   WebBundleManager& GetWebBundleManager() { return web_bundle_manager_; }
+
+  // May return null if the in-memory cache is disabled.
+  NetworkServiceMemoryCache* GetMemoryCache();
 
   // Returns the current same-origin-policy exceptions.  For more details see
   // network::mojom::NetworkContextParams::cors_origin_access_list and
@@ -817,7 +811,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if BUILDFLAG(IS_CHROMEOS)
-  CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
+  raw_ptr<CertVerifierWithTrustAnchors> cert_verifier_with_trust_anchors_ =
+      nullptr;
 #endif
 
 #if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
@@ -879,8 +874,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
 
-  std::unique_ptr<OriginPolicyManager> origin_policy_manager_;
-
   // Each network context holds its own HttpAuthPreferences.
   // The dynamic preferences of |NetworkService| and the static
   // preferences from |NetworkContext| would be merged to
@@ -891,6 +884,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Each network context holds its own WebBundleManager, which
   // manages the lifetiem of a WebBundleURLLoaderFactory object.
   WebBundleManager web_bundle_manager_;
+
+  NetworkServiceMemoryCache memory_cache_;
 
   // Whether all external consumers are expected to provide a non-empty
   // NetworkIsolationKey with all requests. When set, enabled a variety of

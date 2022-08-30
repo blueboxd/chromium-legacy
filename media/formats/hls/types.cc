@@ -8,8 +8,11 @@
 #include <cmath>
 #include <limits>
 
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -25,6 +28,10 @@ re2::StringPiece to_re2(SourceString str) {
   return to_re2(str.Str());
 }
 
+bool IsOneOf(char c, base::StringPiece set) {
+  return base::Contains(set, c);
+}
+
 // Returns the substring matching a valid AttributeName, advancing `source_str`
 // to the following character. If no such substring exists, returns
 // `absl::nullopt` and leaves `source_str` untouched. This is like matching the
@@ -34,17 +41,7 @@ absl::optional<SourceString> ExtractAttributeName(SourceString* source_str) {
 
   // Returns whether the given char is permitted in an AttributeName
   const auto is_char_valid = [](char c) -> bool {
-    if (c >= 'A' && c <= 'Z') {
-      return true;
-    }
-    if (c >= '0' && c <= '9') {
-      return true;
-    }
-    if (c == '-') {
-      return true;
-    }
-
-    return false;
+    return base::IsAsciiUpper(c) || base::IsAsciiDigit(c) || c == '-';
   };
 
   // Extract the substring where `is_char_valid` succeeds
@@ -98,20 +95,7 @@ absl::optional<SourceString> ExtractAttributeValue(SourceString* source_str) {
   // This returns whether a given char is permitted in an unquoted attribute
   // value.
   const auto is_char_valid = [](char c) -> bool {
-    if (c >= 'a' && c <= 'z') {
-      return true;
-    }
-    if (c >= 'A' && c <= 'Z') {
-      return true;
-    }
-    if (c >= '0' && c <= '9') {
-      return true;
-    }
-    if (c == '-' || c == '_' || c == '.') {
-      return true;
-    }
-
-    return false;
+    return base::IsAsciiAlphaNumeric(c) || IsOneOf(c, "-_.");
   };
 
   const char* end =
@@ -139,7 +123,8 @@ struct AttributeMapComparator {
 
 }  // namespace
 
-ParseStatus::Or<DecimalInteger> ParseDecimalInteger(SourceString source_str) {
+ParseStatus::Or<DecimalInteger> ParseDecimalInteger(
+    ResolvedSourceString source_str) {
   static const base::NoDestructor<re2::RE2> decimal_integer_regex("\\d{1,20}");
 
   const auto str = source_str.Str();
@@ -161,7 +146,7 @@ ParseStatus::Or<DecimalInteger> ParseDecimalInteger(SourceString source_str) {
 }
 
 ParseStatus::Or<DecimalFloatingPoint> ParseDecimalFloatingPoint(
-    SourceString source_str) {
+    ResolvedSourceString source_str) {
   // Utilize signed parsing function
   auto result = ParseSignedDecimalFloatingPoint(source_str);
   if (result.has_error()) {
@@ -178,7 +163,7 @@ ParseStatus::Or<DecimalFloatingPoint> ParseDecimalFloatingPoint(
 }
 
 ParseStatus::Or<SignedDecimalFloatingPoint> ParseSignedDecimalFloatingPoint(
-    SourceString source_str) {
+    ResolvedSourceString source_str) {
   // Accept no decimal point, decimal point with leading digits, trailing
   // digits, or both
   static const base::NoDestructor<re2::RE2> decimal_floating_point_regex(
@@ -202,7 +187,7 @@ ParseStatus::Or<SignedDecimalFloatingPoint> ParseSignedDecimalFloatingPoint(
 }
 
 ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
-    SourceString source_str) {
+    ResolvedSourceString source_str) {
   // decimal-resolution values are in the format: DecimalInteger 'x'
   // DecimalInteger
   const auto x_index = source_str.Str().find_first_of('x');
@@ -229,7 +214,7 @@ ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
 }
 
 ParseStatus::Or<ByteRangeExpression> ByteRangeExpression::Parse(
-    SourceString source_str) {
+    ResolvedSourceString source_str) {
   // If this ByteRange has an offset, it will be separated from the length by
   // '@'.
   const auto at_index = source_str.Str().find_first_of('@');
@@ -271,18 +256,28 @@ absl::optional<ByteRange> ByteRange::Validate(DecimalInteger length,
   return ByteRange(length, offset);
 }
 
-ParseStatus::Or<base::StringPiece> ParseQuotedString(
+ParseStatus::Or<ResolvedSourceString> ParseQuotedString(
     SourceString source_str,
     const VariableDictionary& variable_dict,
-    VariableDictionary::SubstitutionBuffer& sub_buffer) {
-  return ParseQuotedStringWithoutSubstitution(source_str)
+    VariableDictionary::SubstitutionBuffer& sub_buffer,
+    bool allow_empty) {
+  return ParseQuotedStringWithoutSubstitution(source_str, allow_empty)
       .MapValue([&variable_dict, &sub_buffer](auto str) {
         return variable_dict.Resolve(str, sub_buffer);
-      });
+      })
+      .MapValue(
+          [allow_empty](auto str) -> ParseStatus::Or<ResolvedSourceString> {
+            if (!allow_empty && str.Empty()) {
+              return ParseStatusCode::kFailedToParseQuotedString;
+            } else {
+              return str;
+            }
+          });
 }
 
 ParseStatus::Or<SourceString> ParseQuotedStringWithoutSubstitution(
-    SourceString source_str) {
+    SourceString source_str,
+    bool allow_empty) {
   if (source_str.Size() < 2) {
     return ParseStatusCode::kFailedToParseQuotedString;
   }
@@ -293,7 +288,12 @@ ParseStatus::Or<SourceString> ParseQuotedStringWithoutSubstitution(
     return ParseStatusCode::kFailedToParseQuotedString;
   }
 
-  return source_str.Substr(1, source_str.Size() - 2);
+  auto str = source_str.Substr(1, source_str.Size() - 2);
+  if (!allow_empty && str.Empty()) {
+    return ParseStatusCode::kFailedToParseQuotedString;
+  }
+
+  return str;
 }
 
 AttributeListIterator::AttributeListIterator(SourceString content)
@@ -409,7 +409,51 @@ ParseStatus::Or<VariableName> VariableName::Parse(SourceString source_str) {
     return ParseStatusCode::kMalformedVariableName;
   }
 
-  return VariableName{source_str.Str()};
+  return VariableName(source_str.Str());
+}
+
+ParseStatus::Or<StableId> StableId::Parse(ResolvedSourceString str) {
+  const auto is_char_valid = [](char c) -> bool {
+    return base::IsAsciiAlphaNumeric(c) || IsOneOf(c, "+/=.-_");
+  };
+
+  if (str.Empty() || !base::ranges::all_of(str.Str(), is_char_valid)) {
+    return ParseStatusCode::kFailedToParseStableId;
+  }
+
+  return StableId(std::string{str.Str()});
+}
+
+ParseStatus::Or<InstreamId> InstreamId::Parse(ResolvedSourceString str) {
+  constexpr base::StringPiece kCcStr = "CC";
+  constexpr base::StringPiece kServiceStr = "SERVICE";
+
+  // Parse the type (one of 'CC' or 'SERVICE')
+  Type type;
+  uint8_t max;
+  if (base::StartsWith(str.Str(), kCcStr)) {
+    type = Type::kCc;
+    max = 4;
+    str.Consume(kCcStr.size());
+  } else if (base::StartsWith(str.Str(), kServiceStr)) {
+    type = Type::kService;
+    max = 63;
+    str.Consume(kServiceStr.size());
+  } else {
+    return ParseStatusCode::kFailedToParseInstreamId;
+  }
+
+  // Parse the number, max allowed value depends on the type
+  auto number_result = ParseDecimalInteger(str);
+  if (number_result.has_error()) {
+    return ParseStatusCode::kFailedToParseInstreamId;
+  }
+  auto number = std::move(number_result).value();
+  if (number < 1 || number > max) {
+    return ParseStatusCode::kFailedToParseInstreamId;
+  }
+
+  return InstreamId(type, static_cast<uint8_t>(number));
 }
 
 }  // namespace media::hls::types

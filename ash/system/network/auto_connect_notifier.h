@@ -9,8 +9,8 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "chromeos/network/auto_connect_handler.h"
-#include "chromeos/network/network_connection_observer.h"
+#include "chromeos/ash/components/network/auto_connect_handler.h"
+#include "chromeos/ash/components/network/network_connection_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace base {

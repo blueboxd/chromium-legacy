@@ -17,6 +17,7 @@ module.exports = {
     'brace-style': ['error', '1tbs'],
     'curly': ['error', 'multi-line', 'consistent'],
     'new-parens': 'error',
+    'no-array-constructor': 'error',
     'no-console': ['error', {allow: ['info', 'warn', 'error', 'assert']}],
     'no-extra-boolean-cast': 'error',
     'no-extra-semi': 'error',
@@ -73,6 +74,11 @@ module.exports = {
       'semi': 'off',
       '@typescript-eslint/semi': ['error'],
 
+      // https://google.github.io/styleguide/tsguide.html#arrayt-type
+      '@typescript-eslint/array-type': ['error', {
+        default: 'array-simple',
+      }],
+
       // https://google.github.io/styleguide/jsguide.html#naming
       '@typescript-eslint/naming-convention': [
         'error',
@@ -87,17 +93,33 @@ module.exports = {
         {
           selector: 'classMethod',
           format: ['camelCase'],
-          leadingUnderscore: 'allow',
+          modifiers: ['public'],
+        },
+        {
+          selector: 'classMethod',
+          format: ['camelCase'],
+          modifiers: ['private'],
           trailingUnderscore: 'allow',
         },
         {
           selector: 'classProperty',
           format: ['UPPER_CASE'],
-          modifiers: ['static', 'readonly'],
+          modifiers: ['private', 'static', 'readonly'],
+        },
+        {
+          selector: 'classProperty',
+          format: ['UPPER_CASE'],
+          modifiers: ['public', 'static', 'readonly'],
         },
         {
           selector: 'classProperty',
           format: ['camelCase'],
+          modifiers: ['public'],
+        },
+        {
+          selector: 'classProperty',
+          format: ['camelCase'],
+          modifiers: ['private'],
           trailingUnderscore: 'allow',
         },
         {

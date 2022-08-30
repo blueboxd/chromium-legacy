@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
+import {EditingUtil} from '/accessibility_common/dictation/editing_util.js';
 
-/**
- * InputController handles interaction with input fields for Dictation.
- */
+const EventType = chrome.automation.EventType;
+
+/** InputController handles interaction with input fields for Dictation. */
 export class InputController {
   constructor(stopDictationCallback, focusHandler) {
     /** @private {number} */
@@ -27,6 +27,9 @@ export class InputController {
 
     /** @private {?function():void} */
     this.onConnectCallback_ = null;
+
+    /** @private {?string} */
+    this.locale_ = null;
 
     this.initialize_();
   }
@@ -98,7 +101,19 @@ export class InputController {
       return;
     }
 
-    text = this.adjustCommitText_(text);
+    const language = this.locale_.split('-')[0];
+    const useSmartSpacingAndCapitalization =
+        InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_.includes(
+            language);
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (editableNode && useSmartSpacingAndCapitalization &&
+        editableNode.textSelStart === editableNode.textSelEnd) {
+      const value = editableNode.value;
+      const caretIndex = editableNode.textSelStart;
+      text = EditingUtil.smartCapitalization(value, caretIndex, text);
+      text = EditingUtil.smartSpacing(value, caretIndex, text);
+    }
+
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
   }
 
@@ -133,36 +148,6 @@ export class InputController {
   }
 
   /**
-   * @param {string} text
-   * @return {string}
-   */
-  adjustCommitText_(text) {
-    // There is currently a bug in SODA (b/213934503) where final speech results
-    // do not start with a space. This results in a Dictation bug
-    // (crbug.com/1294050), where final speech results are not separated by a
-    // space when committed to a text field. This is a temporary workaround
-    // until the blocking SODA bug can be fixed. Note, a similar strategy
-    // already exists in Dictation::OnSpeechResult().
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode ||
-        InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(text)) {
-      return text;
-    }
-
-    const value = editableNode.value;
-    const selStart = editableNode.textSelStart;
-    const selEnd = editableNode.textSelEnd;
-    // Prepend a space to `text` if there is text directly left of the cursor.
-    if (!selStart || selStart !== selEnd || !value ||
-        InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(
-            value[selStart - 1])) {
-      return text;
-    }
-
-    return ' ' + text;
-  }
-
-  /**
    * Deletes the sentence to the left of the text caret. If the caret is in the
    * middle of a sentence, it will delete a portion of the sentence it
    * intersects.
@@ -176,41 +161,9 @@ export class InputController {
 
     const value = editableNode.value;
     const caretIndex = editableNode.textSelStart;
-    const prevSentenceStart =
-        this.findPrevSentenceStartIndex_(value, caretIndex);
+    const prevSentenceStart = EditingUtil.navPrevSent(value, caretIndex);
     const length = caretIndex - prevSentenceStart;
     this.deleteSurroundingText_(length, -length);
-  }
-
-  /**
-   * Returns the start index of the sentence to the left of the caret. Indices
-   * are relative to `text`. Assumes that sentences are separated by punctuation
-   * specified in `InputController.END_OF_SENTENCE_REGEX_`.
-   * @param {string} text
-   * @param {number} caretIndex The index of the text caret.
-   */
-  findPrevSentenceStartIndex_(text, caretIndex) {
-    let encounteredText = false;
-    if (caretIndex === text.length) {
-      --caretIndex;
-    }
-
-    while (caretIndex >= 0) {
-      const valueAtCaret = text[caretIndex];
-      if (encounteredText &&
-          InputController.END_OF_SENTENCE_REGEX_.test(valueAtCaret)) {
-        // Adjust if there is another sentence after this one.
-        return text[caretIndex + 1] === ' ' ? caretIndex + 2 : caretIndex;
-      }
-
-      if (!InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(valueAtCaret) &&
-          !InputController.PUNCTUATION_REGEX_.test(valueAtCaret)) {
-        encounteredText = true;
-      }
-      --caretIndex;
-    }
-
-    return 0;
   }
 
   /**
@@ -233,8 +186,8 @@ export class InputController {
    * `phrase` are present, it deletes the one closest to the text caret.
    * @param {string} phrase The phrase to be deleted.
    */
-  smartDeletePhrase(phrase) {
-    this.smartReplacePhrase(phrase, '');
+  deletePhrase(phrase) {
+    this.replacePhrase(phrase, '');
   }
 
   /**
@@ -244,7 +197,7 @@ export class InputController {
    * @param {string} deletePhrase The phrase to be deleted.
    * @param {string} insertPhrase The phrase to be inserted.
    */
-  smartReplacePhrase(deletePhrase, insertPhrase) {
+  replacePhrase(deletePhrase, insertPhrase) {
     const editableNode = this.focusHandler_.getEditableNode();
     if (!editableNode || !editableNode.value ||
         editableNode.textSelStart !== editableNode.textSelEnd) {
@@ -253,32 +206,122 @@ export class InputController {
 
     const value = editableNode.value;
     const caretIndex = editableNode.textSelStart;
-    const leftOfCaret = value.substring(0, caretIndex);
-    const rightOfCaret = value.substring(caretIndex);
-    const performingDelete = insertPhrase === '';
-    deletePhrase = deletePhrase.trim();
-    insertPhrase = insertPhrase.trim();
+    const data = EditingUtil.replacePhrase(
+        value, caretIndex, deletePhrase, insertPhrase);
+    const newValue = data.value;
+    const newIndex = data.index;
 
-    // Find the right-most occurrence of `deletePhrase`. Require `deletePhrase`
-    // to be separated by word boundaries. If we're deleting text, prefer
-    // the RegExps that include a leading/trailing space to preserve spacing.
-    const re = new RegExp(`(\\b${deletePhrase}\\b)(?!.*\\b\\1\\b)`, 'i');
-    const reWithLeadingSpace =
-        new RegExp(`(\\b ${deletePhrase}\\b)(?!.*\\b\\1\\b)`, 'i');
-    const reWithTrailingSpace =
-        new RegExp(`(\\b${deletePhrase} \\b)(?!.*\\b\\1\\b)`, 'i');
+    this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
+  }
 
-    let newLeft;
-    if (performingDelete && reWithLeadingSpace.test(leftOfCaret)) {
-      newLeft = leftOfCaret.replace(reWithLeadingSpace, insertPhrase);
-    } else if (performingDelete && reWithTrailingSpace.test(leftOfCaret)) {
-      newLeft = leftOfCaret.replace(reWithTrailingSpace, insertPhrase);
-    } else {
-      newLeft = leftOfCaret.replace(re, insertPhrase);
+  /**
+   * Inserts `insertPhrase` directly before `beforePhrase` (and separates them
+   * with a space). This function operates on the text to the left of the caret.
+   * If multiple instances of `beforePhrase` are present, this function will
+   * use the one closest to the text caret.
+   * @param {string} insertPhrase
+   * @param {string} beforePhrase
+   */
+  insertBefore(insertPhrase, beforePhrase) {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
     }
 
-    const newValue = newLeft + rightOfCaret;
-    editableNode.setValue(newValue);
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const data =
+        EditingUtil.insertBefore(value, caretIndex, insertPhrase, beforePhrase);
+    const newValue = data.value;
+    const newIndex = data.index;
+
+    this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
+  }
+
+  /**
+   * Sets selection starting at `startPhrase` and ending at `endPhrase`
+   * (inclusive). The function operates on the text to the left of the text
+   * caret. If multiple instances of `startPhrase` or `endPhrase` are present,
+   * the function will use the ones closest to the text caret.
+   * @param {string} startPhrase
+   * @param {string} endPhrase
+   */
+  selectBetween(startPhrase, endPhrase) {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
+    }
+
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const selection =
+        EditingUtil.selectBetween(value, caretIndex, startPhrase, endPhrase);
+    if (!selection) {
+      return;
+    }
+
+    editableNode.setSelection(selection.start, selection.end);
+  }
+
+  /** Moves the text caret to the next sentence. */
+  navNextSent() {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
+    }
+
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const newCaretIndex = EditingUtil.navNextSent(value, caretIndex);
+    editableNode.setSelection(newCaretIndex, newCaretIndex);
+  }
+
+  /** Moves the text caret to the previous sentence. */
+  navPrevSent() {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
+    }
+
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const newCaretIndex = EditingUtil.navPrevSent(value, caretIndex);
+    editableNode.setSelection(newCaretIndex, newCaretIndex);
+  }
+
+  /** @param {string} locale */
+  setLocale(locale) {
+    this.locale_ = locale;
+  }
+
+  /**
+   * @param {string} value
+   * @param {number} index
+   * @private
+   */
+  setEditableValueAndUpdateCaretPosition_(value, index) {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode) {
+      return;
+    }
+
+    // Set the value first, then update the caret position.
+    let handled = false;
+    const setSelection = () => {
+      if (!handled) {
+        // Ensure this listener only runs once.
+        editableNode.removeEventListener(setSelection);
+        editableNode.setSelection(index, index);
+        handled = true;
+      }
+    };
+
+    editableNode.addEventListener(EventType.VALUE_CHANGED, setSelection);
+    editableNode.setValue(value);
   }
 }
 
@@ -295,21 +338,11 @@ InputController.IME_ENGINE_ID =
  */
 InputController.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
 
-/**
- * @private {!RegExp}
- * @const
- */
-InputController.BEGINS_WITH_WHITESPACE_REGEX_ = /^\s/;
 
 /**
- * @private {!RegExp}
+ * The languages that are supported by smart spacing and capitalization.
+ * @private {!Array<string>}
  * @const
  */
-InputController.PUNCTUATION_REGEX_ =
-    /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]/g;
-
-/**
- * @private {!RegExp}
- * @const
- */
-InputController.END_OF_SENTENCE_REGEX_ = /[;!.?]/g;
+InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_ =
+    ['en', 'fr', 'it', 'de', 'es'];

@@ -120,6 +120,7 @@ void EnterTestMode(const GURL& url) {
                   .SetInitialDelay(0.1)
                   .SetServerKeepAliveSeconds(1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
+                  .SetOverinstallTimeout(base::Seconds(11))
                   .Modify());
 }
 
@@ -266,7 +267,7 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
   Launchd::Type launchd_type = LaunchdType(scope);
 
   absl::optional<base::FilePath> versioned_folder_path =
-      GetVersionedUpdaterFolderPath(scope);
+      GetVersionedInstallDirectory(scope);
   EXPECT_TRUE(versioned_folder_path);
   if (versioned_folder_path)
     EXPECT_FALSE(base::PathExists(*versioned_folder_path));
@@ -336,11 +337,9 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
   base::FilePath old_updater_path = exe_path.Append("old_updater");
 #if BUILDFLAG(CHROMIUM_BRANDING)
 #if defined(ARCH_CPU_ARM64)
-  old_updater_path =
-      old_updater_path.Append("chromium_mac_arm64").Append("updater");
+  old_updater_path = old_updater_path.Append("chromium_mac_arm64");
 #elif defined(ARCH_CPU_X86_64)
-  old_updater_path =
-      old_updater_path.Append("chromium_mac_amd64").Append("updater");
+  old_updater_path = old_updater_path.Append("chromium_mac_amd64");
 #endif
 #elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   old_updater_path = old_updater_path.Append("chrome_mac_universal");

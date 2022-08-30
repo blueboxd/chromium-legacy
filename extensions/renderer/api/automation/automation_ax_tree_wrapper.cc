@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/api/automation/automation_ax_tree_wrapper.h"
 
-#include "automation_ax_tree_wrapper.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/no_destructor.h"
@@ -590,10 +589,6 @@ ui::AXNode* AutomationAXTreeWrapper::GetParentNodeFromParentTreeAsAXNode()
   return owner_->GetParent(tree_.root(), &wrapper,
                            /* should_use_app_id = */ true,
                            /* requires_unignored = */ false);
-}
-
-std::string AutomationAXTreeWrapper::ToString() const {
-  return "<AutomationAXTreeWrapper>";
 }
 
 }  // namespace extensions

@@ -241,6 +241,8 @@ class IntegrationTest : public ::testing::Test {
 
   void UpdateAll() { test_commands_->UpdateAll(); }
 
+  void DeleteUpdaterDirectory() { test_commands_->DeleteUpdaterDirectory(); }
+
   base::FilePath GetDifferentUserPath() {
     return test_commands_->GetDifferentUserPath();
   }
@@ -335,6 +337,42 @@ TEST_F(IntegrationTest, InstallUninstall) {
   // library separation for the public, private, and legacy interfaces.
   ExpectInterfacesRegistered();
 #endif  // BUILDFLAG(IS_WIN)
+  Uninstall();
+}
+
+#if BUILDFLAG(IS_MAC)
+TEST_F(IntegrationTest, OverinstallWorking) {
+#else
+TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
+#endif
+  SetupRealUpdaterLowerVersion();
+  WaitForUpdaterExit();
+  ExpectVersionNotActive(kUpdaterVersion);
+
+  // A new version hands off installation to the old version, and doesn't
+  // change the active version of the updater.
+  Install();
+  WaitForUpdaterExit();
+  ExpectVersionNotActive(kUpdaterVersion);
+
+  Uninstall();
+}
+
+#if BUILDFLAG(IS_MAC)
+TEST_F(IntegrationTest, OverinstallBroken) {
+#else
+TEST_F(IntegrationTest, DISABLED_OverinstallBroken) {
+#endif
+  SetupRealUpdaterLowerVersion();
+  WaitForUpdaterExit();
+  DeleteUpdaterDirectory();
+
+  // Since the old version is not working, the new version should install and
+  // become active.
+  Install();
+  WaitForUpdaterExit();
+  ExpectVersionActive(kUpdaterVersion);
+
   Uninstall();
 }
 
@@ -634,17 +672,13 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// TODO(crbug.com/1268555): Even on Windows, component builds do not work.
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1340482) - disable the test on branches because it is flaky.
+#if BUILDFLAG(IS_MAC)
+TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
+#else
 TEST_F(IntegrationTest, DISABLED_SelfUpdateFromOldReal) {
+#endif
   ScopedServer test_server(test_commands_);
-
-  // TODO(crbug.com/1308856): Current versions of the updater do not send an
-  // eventtype=2 event for their own registration, but the old version of the
-  // updater does. When the old version is rolled to a more current version,
-  // this test may start to fail and this expectation can be safely removed.
-  ExpectInstallEvent(&test_server, kUpdaterAppId);
 
   SetupRealUpdaterLowerVersion();
   ExpectVersionNotActive(kUpdaterVersion);
@@ -669,7 +703,14 @@ TEST_F(IntegrationTest, DISABLED_SelfUpdateFromOldReal) {
 #endif
 #endif
 
-TEST_F(IntegrationTest, UpdateServiceStress) {
+// TODO(crbug.com/1336591) - enable test after investigating crbug.com/1336591
+// or open a new crbug for debugging this test if it is the culprit.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_UpdateServiceStress DISABLED_UpdateServiceStress
+#else
+#define MAYBE_UpdateServiceStress UpdateServiceStress
+#endif
+TEST_F(IntegrationTest, MAYBE_UpdateServiceStress) {
   Install();
   ExpectInstalled();
   StressUpdateService();

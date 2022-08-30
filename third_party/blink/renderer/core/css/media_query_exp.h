@@ -43,7 +43,6 @@ namespace blink {
 
 class CSSParserContext;
 class CSSParserTokenRange;
-class ExecutionContext;
 
 class CORE_EXPORT MediaQueryExpValue {
   DISALLOW_NEW();
@@ -57,7 +56,7 @@ class CORE_EXPORT MediaQueryExpValue {
       : type_(Type::kNumeric), numeric_({value, unit}) {}
   MediaQueryExpValue(unsigned numerator, unsigned denominator)
       : type_(Type::kRatio), ratio_({numerator, denominator}) {}
-  explicit MediaQueryExpValue(const CSSPrimitiveValue& value)
+  explicit MediaQueryExpValue(const CSSValue& value)
       : type_(Type::kCSSValue), css_value_(&value) {}
   void Trace(Visitor* visitor) const { visitor->Trace(css_value_); }
 
@@ -92,20 +91,24 @@ class CORE_EXPORT MediaQueryExpValue {
     return ratio_.denominator;
   }
 
-  const CSSPrimitiveValue& GetCSSValue() const {
+  const CSSValue& GetCSSValue() const {
     DCHECK(IsCSSValue());
     DCHECK(css_value_);
     return *css_value_;
   }
 
   enum UnitFlags {
-    kNone = 0x0,
-    kFontRelative = 0x1,
-    kRootFontRelative = 0x2,
-    kDynamicViewport = 0x4,
+    kNone = 0,
+    kFontRelative = 1 << 0,
+    kRootFontRelative = 1 << 1,
+    kDynamicViewport = 1 << 2,
+    kStaticViewport = 1 << 3,
+    kContainer = 1 << 4,
   };
 
-  UnitFlags GetUnitFlags() const;
+  static const int kUnitFlagsBits = 5;
+
+  unsigned GetUnitFlags() const;
 
   String CssText() const;
   bool operator==(const MediaQueryExpValue& other) const {
@@ -137,8 +140,7 @@ class CORE_EXPORT MediaQueryExpValue {
   static absl::optional<MediaQueryExpValue> Consume(
       const String& lower_media_feature,
       CSSParserTokenRange&,
-      const CSSParserContext&,
-      const ExecutionContext*);
+      const CSSParserContext&);
 
  private:
   enum class Type { kInvalid, kId, kNumeric, kRatio, kCSSValue };
@@ -158,8 +160,8 @@ class CORE_EXPORT MediaQueryExpValue {
   };
 
   // Used when the value can't be represented by the above union (e.g. math
-  // functions).
-  Member<const CSSPrimitiveValue> css_value_;
+  // functions). Also used for style features in style container queries.
+  Member<const CSSValue> css_value_;
 };
 
 // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
@@ -254,8 +256,7 @@ class CORE_EXPORT MediaQueryExp {
   // Returns an invalid MediaQueryExp if the arguments are invalid.
   static MediaQueryExp Create(const String& media_feature,
                               CSSParserTokenRange&,
-                              const CSSParserContext&,
-                              const ExecutionContext*);
+                              const CSSParserContext&);
   static MediaQueryExp Create(const String& media_feature,
                               const MediaQueryExpBounds&);
   static MediaQueryExp Invalid() {

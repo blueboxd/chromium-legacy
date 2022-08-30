@@ -11,7 +11,10 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
@@ -35,7 +38,7 @@ class UpdateRequiredScreen : public BaseScreen,
  public:
   using TView = UpdateRequiredView;
 
-  UpdateRequiredScreen(UpdateRequiredView* view,
+  UpdateRequiredScreen(base::WeakPtr<UpdateRequiredView> view,
                        ErrorScreen* error_screen,
                        base::RepeatingClosure exit_callback);
 
@@ -43,10 +46,6 @@ class UpdateRequiredScreen : public BaseScreen,
   UpdateRequiredScreen& operator=(const UpdateRequiredScreen&) = delete;
 
   ~UpdateRequiredScreen() override;
-
-  // Called when the being destroyed. This should call Unbind() on the
-  // associated View if this class is destroyed before it.
-  void OnViewDestroyed(UpdateRequiredView* view);
 
   // VersionUpdater::Delegate:
   void OnWaitForRebootTimeElapsed() override;
@@ -75,7 +74,7 @@ class UpdateRequiredScreen : public BaseScreen,
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserActionDeprecated(const std::string& action_id) override;
+  void OnUserAction(const base::Value::List& args) override;
 
   void EnsureScreenIsShown();
 
@@ -106,7 +105,7 @@ class UpdateRequiredScreen : public BaseScreen,
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
 
-  void OnGetEolInfo(const chromeos::UpdateEngineClient::EolInfo& info);
+  void OnGetEolInfo(const UpdateEngineClient::EolInfo& info);
 
   void OnErrorScreenHidden();
 
@@ -117,10 +116,14 @@ class UpdateRequiredScreen : public BaseScreen,
   // the default network.
   bool is_first_portal_notification_ = true;
 
-  UpdateRequiredView* view_ = nullptr;
+  base::WeakPtr<UpdateRequiredView> view_;
   ErrorScreen* error_screen_;
   base::RepeatingClosure exit_callback_;
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
 
   // Whether the screen is shown.
   bool is_shown_ = false;

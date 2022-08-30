@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/policy_service.h"
@@ -22,8 +21,7 @@ OsAndPoliciesUpdateChecker::OsAndPoliciesUpdateChecker(
           update_checker_internal::
               kMaxOsAndPoliciesUpdateCheckerRetryIterations,
           update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime),
-      update_engine_client_(
-          chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()) {}
+      update_engine_client_(ash::UpdateEngineClient::Get()) {}
 
 OsAndPoliciesUpdateChecker::~OsAndPoliciesUpdateChecker() {
   // Called to remove any observers.
@@ -56,7 +54,7 @@ void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb,
         FROM_HERE, update_checker_internal::kWaitForNetworkTimeout,
         base::BindOnce(&OsAndPoliciesUpdateChecker::OnNetworkWaitTimeout,
                        base::Unretained(this)));
-    network_state_handler_->AddObserver(this, FROM_HERE);
+    network_state_handler_observer_.Observe(network_state_handler_);
     return;
   }
 
@@ -81,7 +79,7 @@ void OsAndPoliciesUpdateChecker::DefaultNetworkChanged(
     return;
 
   wait_for_network_timer_.Stop();
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  network_state_handler_observer_.Reset();
   ScheduleUpdateCheck();
 }
 
@@ -193,17 +191,17 @@ void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
 }
 
 void OsAndPoliciesUpdateChecker::OnUpdateCheckStarted(
-    chromeos::UpdateEngineClient::UpdateCheckResult result) {
+    ash::UpdateEngineClient::UpdateCheckResult result) {
   switch (result) {
-    case chromeos::UpdateEngineClient::UPDATE_RESULT_SUCCESS:
+    case ash::UpdateEngineClient::UPDATE_RESULT_SUCCESS:
       // Nothing to do if the update check started successfully.
       break;
-    case chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED:
+    case ash::UpdateEngineClient::UPDATE_RESULT_FAILED:
       update_check_task_executor_.ScheduleRetry(
           base::BindOnce(&OsAndPoliciesUpdateChecker::StartUpdateCheck,
                          base::Unretained(this)));
       break;
-    case chromeos::UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED:
+    case ash::UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED:
       // No point retrying if the operation is not implemented. Refresh policies
       // since the update check is done.
       LOG(ERROR) << "Update check failed: Operation not implemented";
@@ -226,7 +224,7 @@ void OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion(
 void OsAndPoliciesUpdateChecker::ResetState() {
   weak_factory_.InvalidateWeakPtrs();
   update_engine_client_->RemoveObserver(this);
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  network_state_handler_observer_.Reset();
   update_check_task_executor_.Stop();
   ignore_idle_status_ = true;
   is_running_ = false;

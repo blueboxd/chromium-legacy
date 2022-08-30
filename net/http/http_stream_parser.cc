@@ -57,11 +57,11 @@ std::string GetResponseHeaderLines(const HttpResponseHeaders& headers) {
 base::Value NetLogSendRequestBodyParams(uint64_t length,
                                         bool is_chunked,
                                         bool did_merge) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("length", static_cast<int>(length));
-  dict.SetBoolKey("is_chunked", is_chunked);
-  dict.SetBoolKey("did_merge", did_merge);
-  return dict;
+  base::Value::Dict dict;
+  dict.Set("length", static_cast<int>(length));
+  dict.Set("is_chunked", is_chunked);
+  dict.Set("did_merge", did_merge);
+  return base::Value(std::move(dict));
 }
 
 void NetLogSendRequestBody(const NetLogWithSource& net_log,
@@ -1007,7 +1007,8 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
       }
     }
 
-    headers = new HttpResponseHeaders(std::string("HTTP/0.9 200 OK"));
+    headers = base::MakeRefCounted<HttpResponseHeaders>(
+        std::string("HTTP/0.9 200 OK"));
   }
 
   // Check for multiple Content-Length headers when the response is not
@@ -1035,7 +1036,6 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
   } else if (headers->GetHttpVersion() == HttpVersion(1, 1)) {
     response_->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
   }
-  response_->vary_data.Init(*request_, *response_->headers);
   DVLOG(1) << __func__ << "() content_length = \""
            << response_->headers->GetContentLength() << "\n\""
            << " headers = \"" << GetResponseHeaderLines(*response_->headers)

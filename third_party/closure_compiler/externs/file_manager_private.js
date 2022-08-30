@@ -319,10 +319,31 @@ chrome.fileManagerPrivate.IOTaskState = {
 chrome.fileManagerPrivate.IOTaskType = {
   COPY: 'copy',
   DELETE: 'delete',
+  EMPTY_TRASH: 'empty_trash',
   EXTRACT: 'extract',
   MOVE: 'move',
+  RESTORE: 'restore',
   TRASH: 'trash',
   ZIP: 'zip',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.RecentDateBucket = {
+  TODAY: 'today',
+  YESTERDAY: 'yesterday',
+  EARLIER_THIS_WEEK: 'earlier_this_week',
+  EARLIER_THIS_MONTH: 'earlier_this_month',
+  EARLIER_THIS_YEAR: 'earlier_this_year',
+  OLDER: 'older',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.VmType = {
+  TERMINA: 'termina',
+  PLUGIN_VM: 'plugin_vm',
+  BOREALIS: 'borealis',
+  BRUSCHETTA: 'bruschetta',
+  ARCVM: 'arcvm',
 };
 
 /**
@@ -598,6 +619,7 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
  * @typedef {{
  * id: number,
  * displayName: string,
+ * vmType: !chrome.fileManagerPrivate.VmType,
  * }}
  */
 chrome.fileManagerPrivate.MountableGuest;
@@ -686,6 +708,7 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
  * @typedef {{
  *   destinationFolder: (DirectoryEntry|undefined),
  *   password: (string|undefined),
+ *   restorePaths: (Array<string>|undefined),
  * }}
  */
 chrome.fileManagerPrivate.IOTaskParams;
@@ -703,9 +726,18 @@ chrome.fileManagerPrivate.IOTaskParams;
  *   taskId: number,
  *   remainingSeconds: number,
  *   errorName: string,
+ *   outputs: (Array<Entry>|undefined),
  * }}
  */
 chrome.fileManagerPrivate.ProgressStatus;
+
+/**
+ * @typedef {{
+ *   sourceUrl: string,
+ *   isDlpRestricted: boolean,
+ * }}
+ */
+chrome.fileManagerPrivate.DlpMetadata;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -925,10 +957,11 @@ chrome.fileManagerPrivate.getDisallowedTransfers = function(
  * Returns a list of files that are restricted by any Data Leak Prevention
  * (DLP) rule. |entries| list of source entries to be checked.
  * @param {!Array<!Entry>} entries
- * @param {!Array<!Entry>} callback Entries of files that are restricted
- * by at least one DLP rule.
+ * @param {function((!Array<!chrome.fileManagerPrivate.DlpMetadata>|undefined))}
+ * callback Callback with the list of chrome.fileManagerPrivate.DlpMetadata
+ * containing DLP information about the entries.
  */
-chrome.fileManagerPrivate.getFilesRestrictedByDlp = function(entries, callback) {};
+chrome.fileManagerPrivate.getDlpMetadata = function(entries, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
@@ -1433,6 +1466,11 @@ chrome.fileManagerPrivate.cancelIOTask = function (taskId) { };
  * Tells DriveFS to update its cached pin states of hosted files (once).
  */
 chrome.fileManagerPrivate.pollDriveHostedFilePinStates = function() {};
+
+/**
+ * Opens the page to manage currently syncing folders.
+ */
+chrome.fileManagerPrivate.openManageSyncSettings = function() {};
 
 /**
  * Returns color via `callback` for Files app foreground window frame.

@@ -7,6 +7,7 @@
 
 #include <regstr.h>
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -14,7 +15,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -49,6 +49,7 @@
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_tests_impl.h"
+#include "chrome/updater/unittest_util_win.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -332,7 +333,7 @@ void CheckInstallation(UpdaterScope scope,
 // Returns true is any updater process is found running in any session in the
 // system, regardless of its path.
 bool IsUpdaterRunning() {
-  return IsProcessRunning(kUpdaterProcessName);
+  return IsProcessRunning(GetExecutableRelativePath().value().c_str());
 }
 
 void SleepFor(int seconds) {
@@ -345,39 +346,12 @@ void SetupAppCommand(UpdaterScope scope,
                      const std::wstring& app_id,
                      const std::wstring& command_id,
                      base::ScopedTempDir& temp_dir) {
-  base::FilePath system_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &system_path));
-
-  const wchar_t kCmdExe[] = L"cmd.exe";
-  const base::FilePath from_test_process = system_path.Append(kCmdExe);
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-
-  if (scope == UpdaterScope::kUser) {
-    command_line = base::CommandLine(from_test_process);
-  } else {
-    base::FilePath programfiles_path;
-    ASSERT_TRUE(
-        base::PathService::Get(base::DIR_PROGRAM_FILES, &programfiles_path));
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDirUnderPath(programfiles_path));
-    base::FilePath test_process_path = temp_dir.GetPath().Append(kCmdExe);
-
-    ASSERT_TRUE(base::CopyFile(from_test_process, test_process_path));
-    command_line = base::CommandLine(test_process_path);
-  }
-
-  base::win::RegKey command_key;
-  ASSERT_EQ(command_key.Create(UpdaterScopeToHKeyRoot(scope),
-                               base::StrCat({CLIENTS_KEY, app_id, L"\\",
-                                             kRegKeyCommands, command_id})
-                                   .c_str(),
-                               Wow6432(KEY_WRITE)),
-            ERROR_SUCCESS);
-  ASSERT_EQ(
-      command_key.WriteValue(kRegValueCommandLine,
-                             base::StrCat({command_line.GetCommandLineString(),
-                                           L" /c \"exit %1\""})
-                                 .c_str()),
-      ERROR_SUCCESS);
+  base::CommandLine cmd_exe_command_line(base::CommandLine::NO_PROGRAM);
+  SetupCmdExe(scope, cmd_exe_command_line, temp_dir);
+  CreateAppCommandRegistry(
+      scope, app_id, command_id,
+      base::StrCat(
+          {cmd_exe_command_line.GetCommandLineString(), L" /c \"exit %1\""}));
 }
 
 class WindowEnumerator {
@@ -437,6 +411,56 @@ class WindowEnumerator {
   base::RepeatingCallback<void(HWND hwnd)> action_;
 };
 
+DISPID GetDispId(Microsoft::WRL::ComPtr<IDispatch> dispatch,
+                 std::wstring name) {
+  DISPID id = 0;
+  LPOLESTR name_ptr = &name[0];
+  EXPECT_HRESULT_SUCCEEDED(dispatch->GetIDsOfNames(IID_NULL, &name_ptr, 1,
+                                                   LOCALE_USER_DEFAULT, &id));
+  VLOG(2) << __func__ << ": " << name << ": " << id;
+  return id;
+}
+
+void CallDispatchMethod(
+    Microsoft::WRL::ComPtr<IDispatch> dispatch,
+    const std::wstring& method_name,
+    const std::vector<base::win::ScopedVariant>& variant_params) {
+  std::vector<VARIANT> params;
+  params.reserve(variant_params.size());
+
+  // IDispatch::Invoke() expects the parameters in reverse order.
+  std::transform(variant_params.rbegin(), variant_params.rend(),
+                 std::back_inserter(params),
+                 [](const auto& param) { return param.Copy(); });
+
+  DISPPARAMS dp = {};
+  if (!params.empty()) {
+    dp.rgvarg = &params[0];
+    dp.cArgs = params.size();
+  }
+
+  EXPECT_HRESULT_SUCCEEDED(dispatch->Invoke(
+      GetDispId(dispatch, method_name), IID_NULL, LOCALE_USER_DEFAULT,
+      DISPATCH_METHOD, &dp, nullptr, nullptr, nullptr));
+
+  std::for_each(params.begin(), params.end(),
+                [&](auto& param) { ::VariantClear(&param); });
+  return;
+}
+
+base::win::ScopedVariant GetDispatchProperty(
+    Microsoft::WRL::ComPtr<IDispatch> dispatch,
+    const std::wstring& property_name) {
+  DISPPARAMS dp = {};
+  base::win::ScopedVariant result;
+
+  EXPECT_HRESULT_SUCCEEDED(dispatch->Invoke(
+      GetDispId(dispatch, property_name), IID_NULL, LOCALE_USER_DEFAULT,
+      DISPATCH_PROPERTYGET, &dp, result.Receive(), nullptr, nullptr));
+
+  return result;
+}
+
 }  // namespace
 
 base::FilePath GetSetupExecutablePath() {
@@ -450,7 +474,7 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   absl::optional<base::FilePath> path = GetProductVersionPath(scope);
   if (!path)
     return absl::nullopt;
-  return path->AppendASCII("updater.exe");
+  return path->Append(GetExecutableRelativePath());
 }
 
 absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
@@ -534,6 +558,7 @@ void EnterTestMode(const GURL& url) {
                   .SetUseCUP(false)
                   .SetInitialDelay(0.1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
+                  .SetOverinstallTimeout(base::Seconds(11))
                   .Modify());
 }
 
@@ -558,12 +583,12 @@ void ExpectActiveUpdater(UpdaterScope scope) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  // Note: updater_test.exe --uninstall is run from the build dir, not the
-  // install dir, because it is useful for tests to be able to run it to clean
-  // the system even if installation has failed or the installed binaries have
+  // Note: "updater.exe --uninstall" is run from the build dir, not the install
+  // dir, because it is useful for tests to be able to run it to clean the
+  // system even if installation has failed or the installed binaries have
   // already been removed.
   base::FilePath path =
-      GetSetupExecutablePath().DirName().AppendASCII("updater_test.exe");
+      GetSetupExecutablePath().DirName().Append(GetExecutableRelativePath());
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitch("uninstall");
@@ -957,6 +982,26 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
   DWORD exit_code = 0;
   EXPECT_HRESULT_SUCCEEDED(app_command_web->get_exitCode(&exit_code));
   EXPECT_EQ(exit_code, static_cast<DWORD>(expected_exit_code));
+
+  // Now also run the AppCommand using the IDispatch methods.
+  command_dispatch.Reset();
+  ASSERT_HRESULT_SUCCEEDED(app->get_command(
+      base::win::ScopedBstr(commandid).Get(), &command_dispatch));
+
+  CallDispatchMethod(command_dispatch, L"execute", variant_params);
+
+  EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
+    base::win::ScopedVariant status =
+        GetDispatchProperty(command_dispatch, L"status");
+    return V_UINT(status.ptr()) == COMMAND_STATUS_COMPLETE;
+  })));
+
+  base::win::ScopedVariant command_exit_code =
+      GetDispatchProperty(command_dispatch, L"exitCode");
+  EXPECT_EQ(V_UI4(command_exit_code.ptr()),
+            static_cast<DWORD>(expected_exit_code));
+
+  DeleteAppClientKey(scope, appid);
 }
 
 int RunVPythonCommand(const base::CommandLine& command_line) {
@@ -984,12 +1029,10 @@ void RunTestServiceCommand(const std::string& sub_command) {
   EXPECT_EQ(RunVPythonCommand(command), 0);
 }
 
-void InvokeTestServiceFunction(
-    const std::string& function_name,
-    const base::flat_map<std::string, base::Value>& arguments) {
+void InvokeTestServiceFunction(const std::string& function_name,
+                               const base::Value::Dict& arguments) {
   std::string arguments_json_string;
-  EXPECT_TRUE(
-      base::JSONWriter::Write(base::Value(arguments), &arguments_json_string));
+  EXPECT_TRUE(base::JSONWriter::Write(arguments, &arguments_json_string));
 
   base::FilePath path(base::CommandLine::ForCurrentProcess()->GetProgram());
   path = path.DirName();

@@ -16,7 +16,7 @@
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/test/task_environment.h"
-#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +40,7 @@ class WebEngineIntegrationTestBase : public testing::Test {
   }
 
   // Returns a TestNavigationListener bound to the current |frame_|.
-  cr_fuchsia::TestNavigationListener* navigation_listener() const {
+  TestNavigationListener* navigation_listener() const {
     CHECK(navigation_listener_);
     return navigation_listener_.get();
   }
@@ -119,7 +119,7 @@ class WebEngineIntegrationTestBase : public testing::Test {
  private:
   void CreateNavigationListener();
 
-  std::unique_ptr<cr_fuchsia::TestNavigationListener> navigation_listener_;
+  std::unique_ptr<TestNavigationListener> navigation_listener_;
   std::unique_ptr<fidl::Binding<fuchsia::web::NavigationEventListener>>
       navigation_listener_binding_;
 

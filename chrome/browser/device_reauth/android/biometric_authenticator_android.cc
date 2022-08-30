@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/device_reauth/android/biometric_authenticator_bridge_impl.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -27,7 +28,6 @@
 #include "ui/android/view_android.h"
 
 using content::WebContents;
-using device_reauth::BiometricAuthFinalResult;
 using device_reauth::BiometricAuthUIResult;
 using device_reauth::BiometricsAvailability;
 using password_manager::UiCredential;
@@ -108,16 +108,17 @@ BiometricAuthenticatorAndroid::BiometricAuthenticatorAndroid(
 
 BiometricAuthenticatorAndroid::~BiometricAuthenticatorAndroid() {}
 
-BiometricsAvailability BiometricAuthenticatorAndroid::CanAuthenticate(
+bool BiometricAuthenticatorAndroid::CanAuthenticate(
     device_reauth::BiometricAuthRequester requester) {
   BiometricsAvailability availability = bridge_->CanAuthenticate();
   LogCanAuthenticate(requester, availability);
-  return availability;
+  return availability == BiometricsAvailability::kAvailable;
 }
 
 void BiometricAuthenticatorAndroid::Authenticate(
     device_reauth::BiometricAuthRequester requester,
-    AuthenticateCallback callback) {
+    AuthenticateCallback callback,
+    bool use_last_valid_auth) {
   // Previous authentication is not yet completed, so return.
   if (callback_ || requester_.has_value())
     return;
@@ -127,7 +128,7 @@ void BiometricAuthenticatorAndroid::Authenticate(
 
   LogAuthRequester(requester);
 
-  if (last_good_auth_timestamp_.has_value() &&
+  if (use_last_valid_auth && last_good_auth_timestamp_.has_value() &&
       base::TimeTicks::Now() - last_good_auth_timestamp_.value() <
           base::Seconds(kAuthValidSeconds)) {
     LogAuthResult(requester, BiometricAuthFinalResult::kAuthStillValid);
@@ -139,6 +140,13 @@ void BiometricAuthenticatorAndroid::Authenticate(
   bridge_->Authenticate(
       base::BindOnce(&BiometricAuthenticatorAndroid::OnAuthenticationCompleted,
                      base::Unretained(this)));
+}
+
+void BiometricAuthenticatorAndroid::AuthenticateWithMessage(
+    device_reauth::BiometricAuthRequester requester,
+    const std::u16string message,
+    AuthenticateCallback callback) {
+  NOTIMPLEMENTED();
 }
 
 void BiometricAuthenticatorAndroid::Cancel(

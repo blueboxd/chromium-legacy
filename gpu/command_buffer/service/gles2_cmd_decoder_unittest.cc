@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -317,7 +316,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   // Attach an image and see if it works.
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   abstract_texture->BindImage(image.get(), true);
-  EXPECT_EQ(abstract_texture->GetImage(), image.get());
+  EXPECT_EQ(abstract_texture->GetImageForTesting(), image.get());
   // Binding an image should make the texture renderable.
   EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
@@ -325,7 +324,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   // Unbinding should make it not renderable.
   abstract_texture->BindImage(nullptr, false);
   EXPECT_EQ(texture->SafeToRenderFrom(), false);
-  EXPECT_EQ(abstract_texture->GetImage(), nullptr);
+  EXPECT_EQ(abstract_texture->GetImageForTesting(), nullptr);
 
   // Attach a stream image, and verify that the image changes and the service_id
   // matches the one we provide.

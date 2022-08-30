@@ -208,7 +208,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                           base::OnceClosure callback) override;
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
-                 const GURL& storage_origin,
+                 const blink::StorageKey& storage_key,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -236,6 +236,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void SetNetworkContextForTesting(
       mojo::PendingRemote<network::mojom::NetworkContext>
           network_context_remote) override;
+  void ResetAttributionManagerForTesting(
+      base::OnceCallback<void(bool)> callback) override;
 
   base::WeakPtr<StoragePartition> GetWeakPtr();
   BackgroundFetchContext* GetBackgroundFetchContext();
@@ -283,6 +285,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OnFileUploadRequested(int32_t process_id,
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
+                             const GURL& destination_url,
                              OnFileUploadRequestedCallback callback) override;
   void OnCanSendReportingReports(
       const std::vector<url::Origin>& origins,
@@ -384,10 +387,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   void set_is_guest() { is_guest_ = true; }
   bool is_guest() const { return is_guest_; }
 
-  // Use the network context to retrieve the origin policy manager.
-  network::mojom::OriginPolicyManager*
-  GetOriginPolicyManagerForBrowserProcess();
-
   // We have to plumb `is_service_worker`, `process_id` and `routing_id` because
   // they are plumbed to WebView via WillCreateRestrictedCookieManager, which
   // makes some decision based on that.
@@ -401,12 +400,6 @@ class CONTENT_EXPORT StoragePartitionImpl
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
       mojo::PendingRemote<network::mojom::CookieAccessObserver>
           cookie_observer);
-
-  // Override the origin policy manager for testing use only.
-  void SetOriginPolicyManagerForBrowserProcessForTesting(
-      mojo::PendingRemote<network::mojom::OriginPolicyManager>
-          test_origin_policy_manager);
-  void ResetOriginPolicyManagerForBrowserProcessForTesting();
 
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserverForServiceWorker();
@@ -563,11 +556,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   // state.
   void OnStorageServiceDisconnected();
 
-  // We will never have both remove_origin be populated and a cookie_matcher.
+  // Clears the data specified by the `storage_key` or `origin_matcher`.
+  // We will never have both `storage_key` be populated and a `origin_matcher`.
   void ClearDataImpl(
       uint32_t remove_mask,
       uint32_t quota_storage_remove_mask,
-      const GURL& remove_origin,
+      const blink::StorageKey& storage_key,
       OriginMatcherFunction origin_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
       bool perform_storage_cleanup,
@@ -713,8 +707,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   bool is_test_url_loader_factory_for_browser_process_with_corb_ = false;
   mojo::Remote<network::mojom::CookieManager>
       cookie_manager_for_browser_process_;
-  mojo::Remote<network::mojom::OriginPolicyManager>
-      origin_policy_manager_for_browser_process_;
 
   // The list of cors exempt headers that are set on `network_context_`.
   // Initialized in InitNetworkContext() and never updated after then.

@@ -80,7 +80,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -522,7 +522,7 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
         web_app::startup::FinalizeWebAppLaunch(
             LaunchMode::kAsWebAppInWindowByUrl, command_line, is_first_run,
             chrome::FindBrowserWithWebContents(web_contents),
-            apps::mojom::LaunchContainer::kLaunchContainerWindow);
+            apps::LaunchContainer::kLaunchContainerWindow);
         return true;
       }
     }
@@ -671,6 +671,7 @@ void StartupBrowserCreator::LaunchBrowser(
       // launch. This `StartupBrowserCreator` will get destroyed when the method
       // returns so the relevant data is copied over and passed to the callback.
       fre_service->OpenFirstRunIfNeeded(
+          LacrosFirstRunService::EntryPoint::kProcessStartup,
           base::BindOnce(&OpenNewWindowForFirstRun, command_line, profile,
                          cur_dir, first_run_tabs_, process_startup,
                          is_first_run, std::move(launch_mode_recorder)));

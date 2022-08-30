@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.privacy_sandbox;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -27,22 +28,6 @@ public class PrivacySandboxBridge {
 
     public static void setPrivacySandboxEnabled(boolean enabled) {
         PrivacySandboxBridgeJni.get().setPrivacySandboxEnabled(enabled);
-    }
-
-    public static boolean isFlocEnabled() {
-        return PrivacySandboxBridgeJni.get().isFlocEnabled();
-    }
-
-    public static void setFlocEnabled(boolean enabled) {
-        PrivacySandboxBridgeJni.get().setFlocEnabled(enabled);
-    }
-
-    public static boolean isFlocIdResettable() {
-        return PrivacySandboxBridgeJni.get().isFlocIdResettable();
-    }
-
-    public static void resetFlocId() {
-        PrivacySandboxBridgeJni.get().resetFlocId();
     }
 
     public static String getFlocStatusString() {
@@ -88,6 +73,21 @@ public class PrivacySandboxBridge {
         return topics;
     }
 
+    public static void getFledgeJoiningEtldPlusOneForDisplay(Callback<List<String>> callback) {
+        Callback<String[]> arrayCallback =
+                (String[] domains) -> callback.onResult(Arrays.asList(domains));
+        PrivacySandboxBridgeJni.get().getFledgeJoiningEtldPlusOneForDisplay(arrayCallback);
+    }
+
+    public static List<String> getBlockedFledgeJoiningTopFramesForDisplay() {
+        return Arrays.asList(
+                PrivacySandboxBridgeJni.get().getBlockedFledgeJoiningTopFramesForDisplay());
+    }
+
+    public static void setFledgeJoiningAllowed(String topFrameEtldPlus1, boolean allowed) {
+        PrivacySandboxBridgeJni.get().setFledgeJoiningAllowed(topFrameEtldPlus1, allowed);
+    }
+
     public static @PromptType int getRequiredPromptType() {
         return PrivacySandboxBridgeJni.get().getRequiredPromptType();
     }
@@ -102,10 +102,6 @@ public class PrivacySandboxBridge {
         boolean isPrivacySandboxManaged();
         boolean isPrivacySandboxRestricted();
         void setPrivacySandboxEnabled(boolean enabled);
-        boolean isFlocEnabled();
-        void setFlocEnabled(boolean enabled);
-        boolean isFlocIdResettable();
-        void resetFlocId();
         String getFlocStatusString();
         String getFlocGroupString();
         String getFlocUpdateString();
@@ -114,6 +110,9 @@ public class PrivacySandboxBridge {
         Topic[] getCurrentTopTopics();
         Topic[] getBlockedTopics();
         void setTopicAllowed(int topicId, int taxonomyVersion, boolean allowed);
+        void getFledgeJoiningEtldPlusOneForDisplay(Callback<String[]> callback);
+        String[] getBlockedFledgeJoiningTopFramesForDisplay();
+        void setFledgeJoiningAllowed(String topFrameEtldPlus1, boolean allowed);
         int getRequiredPromptType();
         void promptActionOccurred(int action);
     }

@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> drade, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Nuwe kenmerk is beskikbaar. Gebruik oppylsleutel om meer te wete te kom.</translation>
 <translation id="1059913517121127803">Kon nie skandering begin nie</translation>
+<translation id="1062407476771304334">Vervang</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Brandmuur is bespeur</translation>
 <translation id="1075811647922107217">Bladsygrootte</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Gebruiker</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">"Dateer fermware op vir eksterne toestelle"-venster is oop. <ph name="NUM_UPDATES" /> opdaterings beskikbaar.</translation>
+<translation id="1145516343487477149">Soek hulpartkels en antwoorde op algemene Chromebook-vrae</translation>
+<translation id="1165039591588034296">Fout</translation>
 <translation id="1175697296044146566">Hierdie <ph name="DEVICE_TYPE" /> word bestuur deur <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Gemiddeld (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Verwyder</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> bestuur hierdie toestel en sal dalk jou aktiwiteit kan monitor.</translation>
 <translation id="147809995039451286">Kon nie die opdatering aflaai nie</translation>
 <translation id="1478594628797167447">Skandeerder</translation>
+<translation id="1483493594462132177">Stuur</translation>
 <translation id="1491076385728777984">Dateer fermware op <ph name="DEVICE_NAME" /> op</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> bestuur hierdie gebruiker en kan oor 'n afstand instellings bestuur en gebruikeraktiwiteit monitor.</translation>
 <translation id="150962533380566081">Ongeldige PUK.</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Kon nie prente laai nie. Gaan jou netwerkverbinding na of probeer weer om die prente te laai.</translation>
 <translation id="1751249301761991853">Persoonlik</translation>
 <translation id="1753496554272155572">Verlaat muurpapiervoorskou</translation>
+<translation id="1755556344721611131">Diagnostiekprogram</translation>
 <translation id="175763766237925754">Goed (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Skakel donkertema af</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Skakel donkermodus af</translation>
+<translation id="1881188606372070653">Gaan na die <ph name="BEGIN_LINK1" />Regshulp-bladsy<ph name="END_LINK1" /> om veranderinge om wetlike redes te versoek. Sekere rekening- en stelselinligting sal dalk na Google toe gestuur word. Ons sal die inligting wat jy vir ons gee, gebruik om te help om aan tegniese kwessies aandag te gee en om ons dienste te verbeter, onderworpe aan ons <ph name="BEGIN_LINK2" />privaatheidsbeleid<ph name="END_LINK2" /> en <ph name="BEGIN_LINK3" />diensbepalings<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Hardewarehersiening</translation>
+<translation id="1904932688895783618">Hier is nog ’n paar nuttige hulpbronne:</translation>
 <translation id="1905710495812624430">Maksimum toegelate pogings is oorskry.</translation>
 <translation id="1908234395526491708">Mislukte UDP-versoeke</translation>
 <translation id="1932611479324127242">Battery-afsluiting</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Probeer foutsporingstappe</translation>
 <translation id="2016848882344942759">--geen wit etiket nie--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Koppel asseblief aan ’n netwerk en herlaai die bladsy om sluimerskerm te bekyk.</translation>
 <translation id="2080070583977670716">Nog instellings</translation>
 <translation id="2085089206770112532">Verlaag skermhelderheid</translation>
 <translation id="2105810540595158374">Toestel is 'n speletjiebeheerder.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Skakel donkermodus aan</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Komponente wat nie kwalifiseer nie<ph name="LINK_END" /> is gevind. Dateer jou Chrome OS na die jongste weergawe op om seker te maak dat alle komponente wat kwalifiseer, geïdentifiseer word.</translation>
 <translation id="2180197493692062006">Iets was fout. Probeer om die program weer oop te maak.</translation>
+<translation id="2182088270354640012">Dankie vir die terugvoer. Jou terugvoer help om ChromeOS te verbeter en sal deur die ChromeOS-span nagegaan word. Weens die groot aantal verslae wat ingedien is, sal jy nie ’n direkte antwoord kry nie.</translation>
 <translation id="2209788852729124853">Stel verkeertellers terug</translation>
 <translation id="2212733584906323460">Naamresolusie</translation>
 <translation id="2217935453350629363">Huidige spoed</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Konnektiwiteitdiagnostiek</translation>
 <translation id="3084958266922136097">Deaktiveer sluimerskerm</translation>
 <translation id="3091839911843451378">Misluk – Gestop</translation>
+<translation id="3096753366938912951">Plaas deksel op plat oppervlak</translation>
 <translation id="3102119246920354026">Kas</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Toestel is gekoppel.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Soek skandeerders</translation>
 <translation id="3246869037381808805">Druktake ouer as 1 dag sal verwyder word</translation>
 <translation id="3268178239013324452">Misluk – Deur is oop</translation>
+<translation id="3275729367986477355">Avatar-prent</translation>
 <translation id="3283504360622356314">{0,plural, =1{Wysig lêer}other{Wysig lêers}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Sleutelrigting</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Verander muurpapier</translation>
 <translation id="360565022852130722">Wi-Fi-netwerk is met swak protokol WEP 802.1x beveilig</translation>
 <translation id="3606583719724308068">Hoë traagheid na HTTPS-webwerwe</translation>
+<translation id="361575905210396100">Dankie vir jou terugvoer</translation>
 <translation id="3616113530831147358">Oudio</translation>
 <translation id="3621202678540785336">Invoer</translation>
 <translation id="3632579075709132555">Privaatheidskermwisselaar</translation>
+<translation id="3643198267586205643">Dateer bedryfstelsel op</translation>
 <translation id="3643810137582748570">Slaan kalibrering oor</translation>
 <translation id="3651050199673793219">Kies ’n temperatuureenheid</translation>
 <translation id="3678765385266369662">Kies hoe jy Skryf-beskerming wil afskakel</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Sluit</translation>
 <translation id="38114475217616659">Vee alle geskiedenis uit</translation>
 <translation id="3820172043799983114">Ongeldige PIN.</translation>
+<translation id="3824259034819781947">Heg lêers aan</translation>
 <translation id="3838338534323494292">Nuwe wagwoord</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3856304145690230735">Basisgiroskoop</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Seinsterkte</translation>
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="473775607612524610">Dateer op</translation>
+<translation id="4740255236714854844">Plaas basis op plat oppervlak</translation>
 <translation id="4744944742468440486">Inligting wat met jou keuse verband hou</translation>
 <translation id="4751272708893364980">Sien RMA-loglêers</translation>
 <translation id="4773299976671772492">Gestop</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Gaan na die <ph name="BEGIN_LINK" />Hulpsentrum<ph name="END_LINK" /> vir meer hulp.</translation>
 <translation id="4793756956024303490">Saampersingalgoritme</translation>
 <translation id="4794140124556169553">As jy 'n CPU-toets doen, kan dit jou stelselwerkverrigting affekteer</translation>
+<translation id="4800589996161293643">Chromebook-gemeenskap</translation>
 <translation id="4804818685124855865">Ontkoppel</translation>
 <translation id="4808449224298348341">Gekanselleerde druktaak <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Ligtema</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Wys foto's, die tyd, die weer, en media-inligting wanneer jou skerm onaktief is.</translation>
 <translation id="5039804452771397117">Laat toe</translation>
+<translation id="5044978354634658544">Sit USB in</translation>
 <translation id="5049856988445523908">SIM is gesluit (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Groepnaam</translation>
 <translation id="5051044138948155788">Dit is die enigste bladsy Dit sal jou na die skandering se beginskerm toe neem.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Batterygesondheid</translation>
 <translation id="5170568018924773124">Wys in vouer</translation>
 <translation id="5179530508336824319">Aktiveer skryfbeskerming om na die volgende skerm voort te gaan. Gaan na die toestelvervaardiger se steundienstebladsy vir instruksies.</translation>
+<translation id="5181140330217080051">Laai tans af</translation>
 <translation id="5190187232518914472">Herleef jou gunstelingherinneringe. Gaan na <ph name="LINK_BEGIN" />Google Foto's<ph name="LINK_END" /> toe om albums by te voeg of te wysig.</translation>
 <translation id="5212543919916444558">Ek kry niks op jou skerm waarmee ek kan help nie.
 Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="5212593641110061691">Ponieformaat</translation>
 <translation id="5222676887888702881">Meld af</translation>
+<translation id="522307662484862935">Moenie e-posadres insluit nie</translation>
 <translation id="5227902338748591677">Donkertema-skedule</translation>
 <translation id="5234764350956374838">Verwerp</translation>
 <translation id="5252456968953390977">Swerf tans</translation>
@@ -526,6 +545,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="5620281292257375798">Slegs intern</translation>
 <translation id="5649768706273821470">Luister</translation>
 <translation id="5655283760733841251">Verhoog sleutelbordhelderheid</translation>
+<translation id="5659593005791499971">E-pos</translation>
 <translation id="5669267381087807207">Aktiveer tans</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familie</translation>
@@ -538,6 +558,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="57838592816432529">Demp</translation>
 <translation id="5784136236926853061">Hoë HTTP-traagheid</translation>
 <translation id="578753362485952307">Gaan na die <ph name="LINK_BEGIN" />oordoenvloei<ph name="LINK_END" /> as jy besig is om ’n hoofbord oor te doen om in ’n ander toestel te gebruik.</translation>
+<translation id="5790085346892983794">Suksesvol</translation>
 <translation id="5832805196449965646">Voeg persoon by</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -599,6 +620,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6284632978374966585">Skakel donkertema aan</translation>
 <translation id="6295178529664209245">Gaan voort met herstelproses?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />-toets is gekanselleer</translation>
+<translation id="631063167932043783">Verken program</translation>
 <translation id="6319207335391420837">Dateer fermware op <ph name="DEVICE_NAME" /> op</translation>
 <translation id="6321407676395378991">Skakel sluimerskerm aan</translation>
 <translation id="6325525973963619867">Misluk</translation>
@@ -610,6 +632,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6379086450106841622">Raakskerm</translation>
 <translation id="6381741036071372448">Toets jou sleutelbord</translation>
 <translation id="6388847657025262518">Die skandeerder se dokumentvoerder is geblokkeer. Gaan die dokumentvoerder na en probeer weer.</translation>
+<translation id="6394634179843537518">Voeg lêer by</translation>
 <translation id="6410257289063177456">Prentlêers</translation>
 <translation id="641081527798843608">Voorwerppassing</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6516990319416533844">Laat jou battery 'n rukkie afloop om die batterylaaikoers te toets</translation>
 <translation id="6517239166834772319">Verken</translation>
 <translation id="6527081081771465939">Onbekende wi-fi-sekuriteitprotokol</translation>
+<translation id="6535178685492749208">Jy is vanlyn. Terugvoer sal later gestuur word.</translation>
 <translation id="65587193855025101">Plat oppervlak</translation>
 <translation id="6564646048574748301">Misluk – Kon nie drukker bereik nie</translation>
 <translation id="6566314079205407217">Skandering van veelvuldige bladsye</translation>
@@ -643,6 +667,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6659594942844771486">Oortjie</translation>
 <translation id="6692996468359469499">Kry inligting wat met jou keuse verband hou</translation>
 <translation id="6704062477274546131">DNS-ontbinding</translation>
+<translation id="6721744718589119342">Ons sal dalk vir jou ’n e-pos stuur vir meer inligting of opdaterings</translation>
 <translation id="6723839937902243910">Intensiteit</translation>
 <translation id="6723847290197874913">Sleutelbordagterlig</translation>
 <translation id="672609503628871915">Sien wat nuut is</translation>
@@ -703,10 +728,12 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="7297226631177386107">Kan nie deur brandmuur aan HTTPS-webwerwe koppel nie</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Vra die kundiges in die Chromebook-hulpforum</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Druk Search plus spasiebalk om resultaat in Google Search te sien.</translation>
 <translation id="7343649194310845056">Netwerktoestelle</translation>
 <translation id="7359657277149375382">Lêertipe</translation>
+<translation id="73631062356239394">Deel diagnostiese data</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">Skakel ligtema af</translation>
@@ -737,15 +764,18 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="7657530360897961171"><ph name="DEVICE_TYPE" />-herstelfout</translation>
 <translation id="7658239707568436148">Kanselleer</translation>
 <translation id="7665800271478495366">Verander avatar</translation>
+<translation id="7682274994254393134">Begin met herstelwerk</translation>
 <translation id="7690294790491645610">Bevestig nuwe wagwoord</translation>
 <translation id="7701040980221191251">Geen</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Siklustelling</translation>
 <translation id="7747039790905080783">Voorafgedeelde sleutel</translation>
 <translation id="7762130827864645708">Jou wagwoord is suksesvol verander. Gebruik asseblief van nou af die nuwe wagwoord.</translation>
+<translation id="7762839321248874531">Stuur <ph name="BEGIN_LINK1" />stelsel- en programinligting<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />maatstawwe<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Passing vir domein-agtervoegsel</translation>
 <translation id="7769672763586021400">Model-ID</translation>
 <translation id="7784116172884276937">Geen DNS-bedieners is opgestel nie</translation>
+<translation id="779591286616261875">Stuur nuwe verslag</translation>
 <translation id="7799817062559422778">Ligmodus</translation>
 <translation id="780301667611848630">Nee, dankie</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -812,6 +842,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="8382302752385457774">Wit etiket</translation>
 <translation id="8395584934117017006">Hierdie <ph name="DEVICE_TYPE" /> word deur 'n onderneming bestuur</translation>
 <translation id="8398927464629426868">Die koers waarteen die toestel tans laai of ontlaai</translation>
+<translation id="8420955526972171689">Doen toetse en foutsporing vir hardewarekwessies</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interne sleutelbord</translation>
 <translation id="8431300646573772016">Wat's nuut in ChromeOS</translation>
@@ -897,6 +928,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="9082718469794970195">Gebruik hierdie video</translation>
 <translation id="9087578468327036362">Gee hierdie navraag aan</translation>
 <translation id="9088306295921699330">Huidige gebruik</translation>
+<translation id="9092255287806472980">Jou terugvoer help om Chrome OS te verbeter en sal deur ons span nagegaan word. Weens die groot aantal verslae sal ons nie ’n antwoord kan stuur nie.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Jy sal die toestel uitmekaar moet haal</translation>
 <translation id="9098156406873149060">Hou gebruikerdata</translation>
@@ -911,6 +943,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="9149391708638971077">Laat loop geheuetoets</translation>
 <translation id="9173638680043580060">Minder as 'n minuut oor</translation>
 <translation id="917720651393141712">Toets</translation>
+<translation id="9188992814426075118">Jou sleutelbord kan outomaties by jou muurpapier pas</translation>
 <translation id="9204237731135241582">Kan nie die deurgang van Android-programme af kontak nie</translation>
 <translation id="9211490828691860325">Alle lessenaars</translation>
 <translation id="922179502584117429">Huidige weergawe <ph name="VERSION_NUMBER" /> is verouderd</translation>

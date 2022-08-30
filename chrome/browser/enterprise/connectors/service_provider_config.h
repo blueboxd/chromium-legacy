@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/containers/fixed_flat_map.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/values.h"
 
 namespace enterprise_connectors {
@@ -32,8 +34,12 @@ struct SupportedTag {
 };
 
 struct AnalysisConfig {
+  // Only 1 of `url` and `local_path` should be populated to differentiate
+  // between cloud analysis providers and local analysis providers.
   const char* url = nullptr;
-  std::array<SupportedTag, 2> supported_tags;
+  const char* local_path = nullptr;
+
+  const base::span<const SupportedTag> supported_tags;
 };
 
 struct ReportingConfig {
@@ -53,13 +59,15 @@ struct FileSystemConfig {
 
 struct ServiceProvider {
   const char* display_name;
-  const AnalysisConfig* analysis = nullptr;
-  const ReportingConfig* reporting = nullptr;
-  const FileSystemConfig* file_system = nullptr;
+  // The fields below are not a raw_ptr<...> because they are initialized with
+  // a non-nullptr value in constexpr.
+  RAW_PTR_EXCLUSION const AnalysisConfig* analysis = nullptr;
+  RAW_PTR_EXCLUSION const ReportingConfig* reporting = nullptr;
+  RAW_PTR_EXCLUSION const FileSystemConfig* file_system = nullptr;
 };
 
 using ServiceProviderConfig =
-    base::fixed_flat_map<base::StringPiece, ServiceProvider, 2>;
+    base::fixed_flat_map<base::StringPiece, ServiceProvider, 3>;
 
 // Returns the global service provider configuration, containing every service
 // provider and each of their supported Connector configs.

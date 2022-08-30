@@ -128,10 +128,10 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -563,6 +563,12 @@ UserSessionManager::UserSessionManager()
   content::GetNetworkConnectionTrackerFromUIThread(
       base::BindOnce(&UserSessionManager::SetNetworkConnectionTracker,
                      weak_factory_.GetWeakPtr()));
+  // TODO(crbug/1341307): Remove the log after the feature settles in Stable.
+  LOG(WARNING) << "UseAuthsessionAuthentication experiment is "
+               << (base::FeatureList::IsEnabled(
+                       ash::features::kUseAuthsessionAuthentication)
+                       ? "enabled"
+                       : "disabled");
 }
 
 UserSessionManager::~UserSessionManager() {

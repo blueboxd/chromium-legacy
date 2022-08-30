@@ -21,7 +21,6 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -44,7 +43,7 @@ const int kTestIdpBrandIconIdealSize = 32;
 
 const char kTestIdpUrl[] = "https://idp.test";
 const char kTestRpUrl[] = "https://rp.test";
-const char kTestManifestListUrl[] = "https://idp.test/.well-known/fedcm.json";
+const char kTestManifestListUrl[] = "https://idp.test/.well-known/web-identity";
 const char kTestManifestUrl[] = "https://idp.test/fedcm.json";
 const char kTestAccountsEndpoint[] = "https://idp.test/accounts_endpoint";
 const char kTestTokenEndpoint[] = "https://idp.test/token_endpoint";
@@ -134,7 +133,7 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
       const char* account,
       const char* request,
       net::HttpStatusCode http_status = net::HTTP_OK) {
-    const char response[] = R"({"id_token": "token"})";
+    const char response[] = R"({"token": "token"})";
     GURL token_endpoint(kTestTokenEndpoint);
     test_url_loader_factory().AddResponse(token_endpoint.spec(), response,
                                           http_status);
@@ -422,12 +421,12 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountMalformed) {
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ComputeManifestListUrl) {
-  EXPECT_EQ("https://localhost:8000/.well-known/fedcm.json",
+  EXPECT_EQ("https://localhost:8000/.well-known/web-identity",
             IdpNetworkRequestManager::ComputeManifestListUrl(
                 GURL("https://localhost:8000/test/"))
                 ->spec());
 
-  EXPECT_EQ("https://google.com/.well-known/fedcm.json",
+  EXPECT_EQ("https://google.com/.well-known/web-identity",
             IdpNetworkRequestManager::ComputeManifestListUrl(
                 GURL("https://www.google.com:8000/test/"))
                 ->spec());
@@ -469,32 +468,32 @@ TEST_F(IdpNetworkRequestManagerTest, ParseManifestList) {
   std::set<GURL> urls;
 
   std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
-  "provider_urls": ["https://idp.test/"]
+  "provider_urls": ["https://idp.test/fedcm.json"]
   })");
   EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
-  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/")}, urls);
+  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/fedcm.json")}, urls);
 
   std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
-  "provider_urls": ["https://idp.test/path"]
+  "provider_urls": ["https://idp.test/path/fedcm.json"]
   })");
   EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
-  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/path/")}, urls);
+  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/path/fedcm.json")}, urls);
 
   // Value not a list
   std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
-  "provider_urls": "https://idp.test/"
+  "provider_urls": "https://idp.test/fedcm.json"
   })");
   EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
 
   // Toplevel not a dictionary
   std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"(
-  ["https://idp.test/"]
+  ["https://idp.test/fedcm.json"]
   )");
   EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
 
   // Incorrect key
   std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
-  "providers": ["https://idp.test/"]
+  "providers": ["https://idp.test/fedcm.json"]
   })");
   EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
 
@@ -577,10 +576,6 @@ TEST_F(IdpNetworkRequestManagerTest,
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingSelectBestSize) {
-  // Selected icon depends on OS supported scale factors.
-  ui::test::ScopedSetSupportedResourceScaleFactors
-      scoped_supported_scale_factors({ui::k100Percent});
-
   const char test_json[] = R"({
   "branding" : {
     "icons": [
@@ -593,23 +588,22 @@ TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingSelectBestSize) {
         "size": 16
       },
       {
-        "url": "https://example.com/39.png",
-        "size": 39
+        "url": "https://example.com/31.png",
+        "size": 31
       },
       {
-        "url": "https://example.com/40.png",
-        "size": 40
+        "url": "https://example.com/32.png",
+        "size": 32
       },
       {
-        "url": "https://example.com/41.png",
-        "size": 41
+        "url": "https://example.com/33.png",
+        "size": 33
       }
     ]
   }
   })";
 
   ASSERT_EQ(32, kTestIdpBrandIconIdealSize);
-  // 32 / kMaskableWebIconSafeZoneRatio = 40
 
   FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
@@ -617,7 +611,56 @@ TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingSelectBestSize) {
       SendManifestRequestAndWaitForResponse(test_json);
 
   EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
-  EXPECT_EQ("https://example.com/40.png", idp_metadata.brand_icon_url.spec());
+  EXPECT_EQ("https://example.com/32.png", idp_metadata.brand_icon_url.spec());
+}
+
+// Test that the icon is rejected if there is an explicit brand icon size in the
+// manifest and it is smaller than the `idp_brand_icon_minimum_size` parameter
+// passed to IdpNetworkRequestManager::FetchManifest().
+TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingMinSize) {
+  ASSERT_EQ(16, kTestIdpBrandIconMinimumSize);
+
+  {
+    const char test_json[] = R"({
+    "branding" : {
+      "icons": [
+        {
+          "url": "https://example.com/15.png",
+          "size": 15
+        }
+      ]
+    }
+    })";
+
+    FetchStatus fetch_status;
+    IdentityProviderMetadata idp_metadata;
+    std::tie(fetch_status, idp_metadata) =
+        SendManifestRequestAndWaitForResponse(test_json);
+
+    EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
+    EXPECT_EQ(GURL(), idp_metadata.brand_icon_url);
+  }
+
+  {
+    const char test_json[] = R"({
+    "branding" : {
+      "icons": [
+        {
+          "url": "https://example.com/16.png",
+          "size": 16
+        }
+      ]
+    }
+    })";
+
+    FetchStatus fetch_status;
+    IdentityProviderMetadata idp_metadata;
+    std::tie(fetch_status, idp_metadata) =
+        SendManifestRequestAndWaitForResponse(test_json);
+
+    EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
+    EXPECT_EQ("https://example.com/16.png", idp_metadata.brand_icon_url.spec());
+  }
 }
 
 // Tests that we send the correct referrer for account requests.

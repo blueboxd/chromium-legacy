@@ -20,10 +20,10 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -42,6 +42,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/common/channel_info.h"
 #include "components/chrome_cleaner/public/constants/buildflags.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -49,9 +50,10 @@
 #include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -269,10 +271,17 @@ void ReportOnDemandUpdateSucceededHistogram(bool value) {
 }  // namespace
 
 SwReporterInstallerPolicy::SwReporterInstallerPolicy(
+    PrefService* prefs,
     OnComponentReadyCallback on_component_ready_callback)
-    : on_component_ready_callback_(on_component_ready_callback) {}
+    : prefs_(prefs),
+      on_component_ready_callback_(on_component_ready_callback) {}
 
 SwReporterInstallerPolicy::~SwReporterInstallerPolicy() = default;
+
+void SwReporterInstallerPolicy::SetRandomReporterCohortForTesting(
+    const std::string& cohort_name) {
+  random_cohort_for_testing_ = cohort_name;
+}
 
 bool SwReporterInstallerPolicy::VerifyInstallation(
     const base::Value& manifest,
@@ -326,29 +335,63 @@ std::string SwReporterInstallerPolicy::GetName() const {
 update_client::InstallerAttributes
 SwReporterInstallerPolicy::GetInstallerAttributes() const {
   update_client::InstallerAttributes attributes;
-  if (base::FeatureList::IsEnabled(
-          safe_browsing::kChromeCleanupDistributionFeature)) {
-    // Pass the tag parameter to the installer as the "tag" attribute; it will
-    // be used to choose which binary is downloaded.
-    constexpr char kTagParamName[] = "reporter_omaha_tag";
-    const std::string tag = variations::GetVariationParamValueByFeature(
-        safe_browsing::kChromeCleanupDistributionFeature, kTagParamName);
+  // Pass the tag parameter to the installer as the "tag" attribute; it will be
+  // used to choose which binary is downloaded.
+  attributes["tag"] = GetReporterCohortTag(prefs_);
+  return attributes;
+}
 
+// Returns the reporter cohort tag by checking the feature list, then `prefs`,
+// then assigning the tag randomly if it's not found in either.
+std::string SwReporterInstallerPolicy::GetReporterCohortTag(
+    PrefService* prefs) const {
+  const std::string feature_tag =
+      safe_browsing::kReporterDistributionTagParam.Get();
+  if (!feature_tag.empty()) {
     // If the tag is not a valid attribute (see the regexp in
     // ComponentInstallerPolicy::InstallerAttributes), set it to a valid but
     // unrecognized value so that nothing will be downloaded.
     constexpr size_t kMaxAttributeLength = 256;
     constexpr char kExtraAttributeChars[] = "-.,;+_=";
-    constexpr char kTagParam[] = "tag";
-    if (tag.empty() ||
-        !ValidateString(tag, kExtraAttributeChars, kMaxAttributeLength)) {
+    if (!ValidateString(feature_tag, kExtraAttributeChars,
+                        kMaxAttributeLength)) {
       ReportConfigurationError(kBadTag);
-      attributes[kTagParam] = "missing_tag";
-    } else {
-      attributes[kTagParam] = tag;
+      return "missing_tag";
+    }
+
+    // Any tag that doesn't contain invalid characters is valid, so that the
+    // feature can be used to experiment with new versions.
+    return feature_tag;
+  }
+
+  // Use the tag from preferences. Only "canary" and "stable" are valid, so
+  // that bad values in local prefs don't block access to the reporter. Note
+  // there's no need to clear invalid tags since they'll be overwritten by the
+  // new cohort values.
+  const std::string prefs_tag = prefs->GetString(prefs::kSwReporterCohort);
+  if (prefs_tag == "canary" || prefs_tag == "stable") {
+    // Re-randomize unless the cohort was assigned less than a month ago. Also
+    // ignore invalid selection times that are too far in the future.
+    const base::Time last_selection_time =
+        prefs->GetTime(prefs::kSwReporterCohortSelectionTime);
+    const base::Time now = base::Time::Now();
+    if (now - base::Days(30) < last_selection_time &&
+        last_selection_time < now + base::Days(1)) {
+      return prefs_tag;
     }
   }
-  return attributes;
+  // Chrome Stable users have a 95% chance to get the stable reporter, 5% chance
+  // to get the canary reporter. All other Chrome channels are assigned 50/50.
+  const double stable_reporter_probability =
+      (chrome::GetChannel() == version_info::Channel::STABLE) ? 0.95 : 0.5;
+  const std::string selected_tag =
+      !random_cohort_for_testing_.empty()
+          ? random_cohort_for_testing_
+          : ((base::RandDouble() < stable_reporter_probability) ? "stable"
+                                                                : "canary");
+  prefs->SetString(prefs::kSwReporterCohort, selected_tag);
+  prefs->SetTime(prefs::kSwReporterCohortSelectionTime, base::Time::Now());
+  return selected_tag;
 }
 
 SwReporterOnDemandFetcher::SwReporterOnDemandFetcher(
@@ -380,7 +423,8 @@ void SwReporterOnDemandFetcher::OnEvent(Events event, const std::string& id) {
   }
 }
 
-void RegisterSwReporterComponent(ComponentUpdateService* cus) {
+void RegisterSwReporterComponent(ComponentUpdateService* cus,
+                                 PrefService* prefs) {
   base::ScopedClosureRunner runner(std::move(GetRegistrationCBForTesting()));
 
   // Don't install the component if not allowed by policy.  This prevents
@@ -409,7 +453,8 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 
   // Install the component.
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<SwReporterInstallerPolicy>(std::move(ready_callback)));
+      std::make_unique<SwReporterInstallerPolicy>(prefs,
+                                                  std::move(ready_callback)));
 
   installer->Register(cus, runner.Release());
 }
@@ -421,10 +466,16 @@ void SetRegisterSwReporterComponentCallbackForTesting(
 }
 
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
+  // The two "LastTime" prefs are Int64 instead of Time for legacy reasons.
+  // Changing the format would need an upgrade path, which is more complicated
+  // than it's worth.
   registry->RegisterInt64Pref(prefs::kSwReporterLastTimeTriggered, 0);
   registry->RegisterIntegerPref(prefs::kSwReporterLastExitCode, -1);
   registry->RegisterInt64Pref(prefs::kSwReporterLastTimeSentReport, 0);
   registry->RegisterBooleanPref(prefs::kSwReporterEnabled, true);
+  registry->RegisterStringPref(prefs::kSwReporterCohort, "");
+  registry->RegisterTimePref(prefs::kSwReporterCohortSelectionTime,
+                             base::Time());
 }
 
 void RegisterProfilePrefsForSwReporter(

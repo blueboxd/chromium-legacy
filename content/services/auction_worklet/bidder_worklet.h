@@ -290,7 +290,8 @@ class BidderWorklet : public mojom::BidderWorklet {
                           absl::optional<std::string> error_msg);
   void OnWasmDownloaded(WorkletWasmLoader::Result worklet_script,
                         absl::optional<std::string> error_msg);
-  void RunReadyTasks();
+  void RunReadyGenerateBidTasks();
+  void RunReportWinTasks();
 
   void OnTrustedBiddingSignalsDownloaded(
       GenerateBidTaskList::iterator task,

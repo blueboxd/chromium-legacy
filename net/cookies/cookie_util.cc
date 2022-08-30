@@ -35,8 +35,7 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-namespace net {
-namespace cookie_util {
+namespace net::cookie_util {
 
 namespace {
 
@@ -614,12 +613,12 @@ void ParseRequestCookieLine(const std::string& header_value,
 std::string SerializeRequestCookieLine(
     const ParsedRequestCookies& parsed_cookies) {
   std::string buffer;
-  for (auto i = parsed_cookies.begin(); i != parsed_cookies.end(); ++i) {
+  for (const auto& parsed_cookie : parsed_cookies) {
     if (!buffer.empty())
       buffer.append("; ");
-    buffer.append(i->first.begin(), i->first.end());
+    buffer.append(parsed_cookie.first.begin(), parsed_cookie.first.end());
     buffer.push_back('=');
-    buffer.append(i->second.begin(), i->second.end());
+    buffer.append(parsed_cookie.second.begin(), parsed_cookie.second.end());
   }
   return buffer;
 }
@@ -891,5 +890,4 @@ NET_EXPORT void DCheckIncludedAndExcludedCookieLists(
       base::ranges::is_sorted(included_cookies, CookieWithAccessResultSorter));
 }
 
-}  // namespace cookie_util
-}  // namespace net
+}  // namespace net::cookie_util

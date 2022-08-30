@@ -170,6 +170,11 @@ int ChromeOmniboxClient::GetHttpsPortForTesting() const {
   return TypedNavigationUpgradeThrottle::GetHttpsPortForTesting();
 }
 
+bool ChromeOmniboxClient::IsUsingFakeHttpsForHttpsUpgradeTesting() const {
+  // Tests on desktop/Android always use a real HTTPS server.
+  return false;
+}
+
 gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   TemplateURLService* service =
@@ -417,6 +422,15 @@ void ChromeOmniboxClient::OpenUpdateChromeDialog() {
 void ChromeOmniboxClient::FocusWebContents() {
   if (controller_->GetWebContents())
     controller_->GetWebContents()->Focus();
+}
+
+void ChromeOmniboxClient::OnSelectedMatchChanged(
+    size_t index,
+    const AutocompleteMatch& match) {
+  if (SearchPrefetchService* search_prefetch_service =
+          SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+    search_prefetch_service->MaybePrefetchLikelyMatch(index, match);
+  }
 }
 
 void ChromeOmniboxClient::DoPrerender(const AutocompleteMatch& match) {

@@ -51,7 +51,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -177,6 +177,11 @@ void InitializeAudioTrackControls(UserMediaRequest* user_media_request,
     track_controls->requested = true;
     track_controls->stream_type = MediaStreamType::DISPLAY_AUDIO_CAPTURE;
     return;
+  } else if (user_media_request->MediaRequestType() ==
+             UserMediaRequest::MediaType::kDisplayMediaSet) {
+    track_controls->requested = false;
+    track_controls->stream_type = MediaStreamType::NO_SERVICE;
+    return;
   }
 
   DCHECK_EQ(UserMediaRequest::MediaType::kUserMedia,
@@ -213,6 +218,12 @@ void InitializeVideoTrackControls(UserMediaRequest* user_media_request,
         user_media_request->should_prefer_current_tab()
             ? MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB
             : MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+    return;
+  } else if (user_media_request->MediaRequestType() ==
+             UserMediaRequest::MediaType::kDisplayMediaSet) {
+    DCHECK(!user_media_request->should_prefer_current_tab());
+    track_controls->requested = true;
+    track_controls->stream_type = MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET;
     return;
   }
 
@@ -637,22 +648,23 @@ void UserMediaProcessor::SetupAudioInput() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->request()->Audio());
-  SendLogMessage(
-      base::StringPrintf("SetupAudioInput({request_id=%d}, {constraints=%s})",
-                         current_request_info_->request_id(),
-                         current_request_info_->request()
-                             ->AudioConstraints()
-                             .ToString()
-                             .Utf8()
-                             .c_str()));
 
-  auto& audio_controls = current_request_info_->stream_controls()->audio;
-  InitializeAudioTrackControls(current_request_info_->request(),
-                               &audio_controls);
+  UserMediaRequest* const request = current_request_info_->request();
+
+  SendLogMessage(base::StringPrintf(
+      "SetupAudioInput({request_id=%d}, {constraints=%s})",
+      current_request_info_->request_id(),
+      request->AudioConstraints().ToString().Utf8().c_str()));
+
+  StreamControls* const stream_controls =
+      current_request_info_->stream_controls();
+  stream_controls->exclude_system_audio = request->exclude_system_audio();
+
+  TrackControls& audio_controls = stream_controls->audio;
+  InitializeAudioTrackControls(request, &audio_controls);
 
   if (audio_controls.stream_type == MediaStreamType::DISPLAY_AUDIO_CAPTURE) {
-    SelectAudioSettings(current_request_info_->request(),
-                        {blink::AudioDeviceCaptureCapability()});
+    SelectAudioSettings(request, {blink::AudioDeviceCaptureCapability()});
     return;
   }
 
@@ -663,22 +675,17 @@ void UserMediaProcessor::SetupAudioInput() {
                            current_request_info_->request_id()));
     GetMediaDevicesDispatcher()->GetAudioInputCapabilities(
         WTF::Bind(&UserMediaProcessor::SelectAudioDeviceSettings,
-                  WrapWeakPersistent(this),
-                  WrapPersistent(current_request_info_->request())));
+                  WrapWeakPersistent(this), WrapPersistent(request)));
   } else {
     if (!blink::IsAudioInputMediaType(audio_controls.stream_type)) {
-      String failed_constraint_name =
-          String(current_request_info_->request()
-                     ->AudioConstraints()
-                     .Basic()
-                     .media_stream_source.GetName());
+      String failed_constraint_name = String(
+          request->AudioConstraints().Basic().media_stream_source.GetName());
       MediaStreamRequestResult result =
           MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED;
       GetUserMediaRequestFailed(result, failed_constraint_name);
       return;
     }
-    SelectAudioSettings(current_request_info_->request(),
-                        {blink::AudioDeviceCaptureCapability()});
+    SelectAudioSettings(request, {blink::AudioDeviceCaptureCapability()});
   }
 }
 
@@ -952,7 +959,8 @@ void UserMediaProcessor::SelectVideoContentSettings() {
   const MediaStreamType stream_type =
       current_request_info_->stream_controls()->video.stream_type;
   if (stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE &&
-      stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB) {
+      stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB &&
+      stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET) {
     current_request_info_->stream_controls()->video.device_id =
         settings.device_id();
   }
@@ -1646,7 +1654,7 @@ MediaStreamComponent* UserMediaProcessor::CreateAudioTrack(
   MediaStreamSource* source =
       InitializeAudioSourceObject(overriden_audio_device, &is_pending);
   Member<MediaStreamComponent> component =
-      MakeGarbageCollected<MediaStreamComponent>(
+      MakeGarbageCollected<MediaStreamComponentImpl>(
           source,
           std::make_unique<MediaStreamAudioTrack>(true /* is_local_track */));
   current_request_info_->StartAudioTrack(component, is_pending);

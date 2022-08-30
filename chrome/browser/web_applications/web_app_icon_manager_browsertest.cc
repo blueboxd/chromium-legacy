@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -50,7 +51,7 @@ class WebAppIconManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     Profile* profile = browser()->profile();
     app_service_test_.SetUp(profile);
-    web_app::test::WaitUntilReady(web_app::WebAppProvider::GetForTest(profile));
+    web_app::test::WaitUntilReady(WebAppProvider::GetForTest(profile));
   }
 
   // InProcessBrowserTest:
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
     auto* provider = WebAppProvider::GetForTest(browser()->profile());
     provider->command_manager().ScheduleCommand(
-        std::make_unique<web_app::InstallFromInfoCommand>(
+        std::make_unique<InstallFromInfoCommand>(
             std::move(install_info), &provider->install_finalizer(),
             /*overwrite_existing_manifest_fields=*/false,
             webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
@@ -115,10 +116,10 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   WebAppBrowserController* controller;
   {
-    apps::AppLaunchParams params(
-        app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-        WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::LaunchSource::kFromTest);
+    apps::AppLaunchParams params(app_id,
+                                 apps::LaunchContainer::kLaunchContainerWindow,
+                                 WindowOpenDisposition::NEW_WINDOW,
+                                 apps::mojom::LaunchSource::kFromTest);
     content::WebContents* contents =
         apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
             ->BrowserAppLauncher()

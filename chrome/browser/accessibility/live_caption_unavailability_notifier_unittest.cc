@@ -33,7 +33,7 @@ class LiveCaptionUnavailabilityNotifierTest
   void OnMediaFoundationRendererErrorDoNotShowAgainCheckboxClicked(
       bool checked) {
     notifier_->OnMediaFoundationRendererErrorDoNotShowAgainCheckboxClicked(
-        CaptionBubbleErrorType::MEDIA_FOUNDATION_RENDERER_UNSUPPORTED, checked);
+        CaptionBubbleErrorType::kMediaFoundationRendererUnsupported, checked);
   }
 
  protected:
@@ -51,7 +51,7 @@ class LiveCaptionUnavailabilityNotifierTest
     // The LiveCaptionUnavailabilityNotifier is self-owned and is reset upon the
     // destruction of the mojo connection.
     notifier_ =
-        new LiveCaptionUnavailabilityNotifier(main_rfh(), std::move(receiver));
+        new LiveCaptionUnavailabilityNotifier(*main_rfh(), std::move(receiver));
   }
 
  private:

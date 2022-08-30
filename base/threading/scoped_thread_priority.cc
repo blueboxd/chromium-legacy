@@ -10,6 +10,27 @@
 #include "build/build_config.h"
 
 namespace base {
+
+ScopedBoostPriority::ScopedBoostPriority(ThreadType target_thread_type) {
+  DCHECK_LT(target_thread_type, ThreadType::kRealtimeAudio);
+  const ThreadType original_thread_type =
+      PlatformThread::GetCurrentThreadType();
+  const bool should_boost = original_thread_type < target_thread_type &&
+                            PlatformThread::CanChangeThreadType(
+                                original_thread_type, target_thread_type) &&
+                            PlatformThread::CanChangeThreadType(
+                                target_thread_type, original_thread_type);
+  if (should_boost) {
+    original_thread_type_.emplace(original_thread_type);
+    PlatformThread::SetCurrentThreadType(target_thread_type);
+  }
+}
+
+ScopedBoostPriority::~ScopedBoostPriority() {
+  if (original_thread_type_.has_value())
+    PlatformThread::SetCurrentThreadType(original_thread_type_.value());
+}
+
 namespace internal {
 
 ScopedMayLoadLibraryAtBackgroundPriority::
@@ -30,11 +51,10 @@ ScopedMayLoadLibraryAtBackgroundPriority::
   if (already_loaded_ && already_loaded_->load(std::memory_order_relaxed))
     return;
 
-  const base::ThreadPriority priority =
-      PlatformThread::GetCurrentThreadPriority();
-  if (priority == base::ThreadPriority::BACKGROUND) {
-    original_thread_priority_ = priority;
-    PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::NORMAL);
+  const base::ThreadType thread_type = PlatformThread::GetCurrentThreadType();
+  if (thread_type == base::ThreadType::kBackground) {
+    original_thread_type_ = thread_type;
+    PlatformThread::SetCurrentThreadType(base::ThreadType::kDefault);
 
     TRACE_EVENT_BEGIN0(
         "base",
@@ -48,11 +68,11 @@ ScopedMayLoadLibraryAtBackgroundPriority::
   // Trace events must be closed in reverse order of opening so that they nest
   // correctly.
 #if BUILDFLAG(IS_WIN)
-  if (original_thread_priority_) {
+  if (original_thread_type_) {
     TRACE_EVENT_END0(
         "base",
         "ScopedMayLoadLibraryAtBackgroundPriority : Priority Increased");
-    PlatformThread::SetCurrentThreadPriority(original_thread_priority_.value());
+    PlatformThread::SetCurrentThreadType(original_thread_type_.value());
   }
 
   if (already_loaded_)

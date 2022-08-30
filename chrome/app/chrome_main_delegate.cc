@@ -54,6 +54,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/profiler/process_type.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -83,6 +84,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -92,14 +94,12 @@
 
 #include <algorithm>
 
-#include "base/debug/handle_hooks_win.h"
 #include "base/files/important_file_writer_cleaner.h"
 #include "base/threading/platform_thread_win.h"
 #include "base/win/atl.h"
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/protobuf_init.h"
 #include "chrome/common/win/delay_load_failure_hook.h"
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/extended_crash_reporting.h"
@@ -109,6 +109,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/foundation_util.h"
+#include "base/message_loop/message_pump_mac.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/relauncher.h"
@@ -582,7 +583,9 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 
 void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
   DCHECK(base::ThreadPoolInstance::Get());
-  if (invoked_in == InvokedIn::kChildProcess) {
+  const auto* invoked_in_browser =
+      absl::get_if<InvokedInBrowserProcess>(&invoked_in);
+  if (!invoked_in_browser) {
     CommonEarlyInitialization();
     return;
   }
@@ -594,7 +597,7 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
 
   // For now, do not enable delay load failure hooks for browser process except
   // in tests, where failures really shouldn't happen.
-  if (invoked_in != InvokedIn::kBrowserProcessUnderTest)
+  if (invoked_in_browser->is_running_test)
     chrome::DisableDelayLoadFailureHooksForCurrentModule();
 #endif
 
@@ -660,9 +663,8 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
   CommonEarlyInitialization();
 
   // Initializes the resource bundle and determines the locale.
-  std::string actual_locale =
-      LoadLocalState(chrome_feature_list_creator,
-                     invoked_in == InvokedIn::kBrowserProcessUnderTest);
+  std::string actual_locale = LoadLocalState(
+      chrome_feature_list_creator, invoked_in_browser->is_running_test);
   chrome_feature_list_creator->SetApplicationLocale(actual_locale);
   chrome_feature_list_creator->OverrideCachedUIStrings();
 
@@ -697,16 +699,12 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
 #if BUILDFLAG(IS_MAC)
   chrome::CacheChannelInfo();
 #endif
-
-#if BUILDFLAG(IS_WIN)
-  chrome::InitializeProtobuf();
-#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
   // In the browser process Chrome creates the FeatureList, so content should
   // not.
-  return invoked_in == InvokedIn::kChildProcess;
+  return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
 }
 
 void ChromeMainDelegate::CommonEarlyInitialization() {
@@ -750,11 +748,12 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
 
   // Start heap profiling as early as possible so it can start recording
   // memory allocations.
-  if (is_browser_process) {
-    heap_profiler_controller_ =
-        std::make_unique<HeapProfilerController>(channel);
-    heap_profiler_controller_->Start();
+  heap_profiler_controller_ = std::make_unique<HeapProfilerController>(
+      channel,
+      GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
+  heap_profiler_controller_->StartIfEnabled();
 
+  if (is_browser_process) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::ConfigureSwap();
     ash::InitializeKstaled();
@@ -793,6 +792,7 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
   base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
 #if BUILDFLAG(IS_MAC)
   base::PlatformThread::InitializeOptimizedRealtimeThreadingFeature();
+  base::MessagePumpCFRunLoopBase::InitializeFeatures();
 #endif
 }
 
@@ -893,24 +893,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // HandleVerifier detects and reports incorrect handle manipulations. It
   // tracks handle operations on builds that support DCHECK only.
-#if DCHECK_IS_ON()
-  // This portion of the hook setup is just for child processes. Browser part is
-  // in ChromeBrowserMainPartsWin::PostProfileInit.
-  if (!is_browser) {
-    // Performing EAT interception first is safer in the presence of other
-    // threads attempting to call CloseHandle.
-#if defined(ARCH_CPU_32_BITS)
-    // Patching EAT of kernel32.dll is only supported on 32-bit because RVA can
-    // only hold 32-bit values.
-    base::debug::HandleHooks::AddEATPatch();
-#endif
-    // Patch once. Cannot monitor for further modules in a child process as
-    // monitoring needs ModuleWatcher, but likely no more should really load in
-    // a child process from this point on. If we miss any then we will lose some
-    // detection but still generate no false positive crashes.
-    base::debug::HandleHooks::PatchLoadedModules();
-  }
-#else
+#if !DCHECK_IS_ON()
   base::win::DisableHandleVerifier();
 #endif
 

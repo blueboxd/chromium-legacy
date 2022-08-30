@@ -1115,151 +1115,6 @@ TEST_F(AutocompleteResultTest, SortAndCullWithPreserveDefaultMatch) {
   AssertResultMatches(current_result, result, std::size(result));
 }
 
-// Verify metrics logged for result updates.
-TEST_F(AutocompleteResultTest, LogUpdateMetrics) {
-  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
-                          TestSchemeClassifier());
-
-  // Convert `TestData` to `AutocompleteResult`.
-  auto create_result = [&](std::vector<TestData> data,
-                           AutocompleteResult* result) {
-    for (auto& cur_data : data) {
-      AutocompleteMatch match;
-      PopulateAutocompleteMatch(cur_data, &match);
-      match.ComputeStrippedDestinationURL(input, template_url_service_.get());
-      result->AppendMatches({match});
-    }
-  };
-
-  AutocompleteResult first_result;
-  create_result(
-      {
-          {0, 1, 600, true},
-          {1, 1, 500, true},
-          {2, 1, 400, true},
-          {3, 1, 300, true},
-          {4, 1, 200, true},
-      },
-      &first_result);
-  const auto first_comparators = first_result.GetMatchDedupComparators();
-
-  // Same as `first_result`, but with these changes:
-  //  - Last two matches removed.
-  //  - Default match updated to a new URL.
-  //  - Third match updated to a new URL.
-  AutocompleteResult second_result;
-  create_result(
-      {
-          {10, 1, 400, true},
-          {1, 1, 300, true},
-          {11, 1, 200, true},
-      },
-      &second_result);
-  const auto second_comparators = second_result.GetMatchDedupComparators();
-
-  // Same as `second_result`, but with these changes:
-  //  - 2 new matches appended to the bottom.
-  AutocompleteResult third_result;
-  create_result(
-      {
-          {10, 1, 400, true},
-          {1, 1, 300, true},
-          {11, 1, 200, true},
-          {10, 1, 400, true},
-          {2, 1, 200, true},
-      },
-      &third_result);
-
-  // Verify logging to the Async* histograms.
-  {
-    // Constructor takes the snapshot of the current histogram state.
-    base::HistogramTester histograms;
-
-    // Do the logging.
-    AutocompleteResult::LogUpdateMetrics(first_comparators, second_result,
-                                         false);
-
-    // Expect the default match, third match, and last two matches to be logged
-    // as changed, and nothing else.
-    EXPECT_THAT(
-        histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange2"),
-        testing::ElementsAre(base::Bucket(0, 1), base::Bucket(2, 1),
-                             base::Bucket(3, 1), base::Bucket(4, 1)));
-
-    // Expect that we log that at least one of the matches has changed.
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition"),
-                testing::ElementsAre(base::Bucket(1, 1)));
-
-    // Expect that we don't log async updates to the sync histograms.
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.CrossInputMatchStability.MatchChange"),
-                testing::ElementsAre());
-    EXPECT_THAT(
-        histograms.GetAllSamples(
-            "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition"),
-        testing::ElementsAre());
-  }
-
-  // Verify logging to the CrossInput* histograms.
-  {
-    // Constructor takes the snapshot of the current histogram state.
-    base::HistogramTester histograms;
-
-    // Do the logging.
-    AutocompleteResult::LogUpdateMetrics(first_comparators, second_result,
-                                         true);
-
-    // Expect the default match, third match, and last two matches to be logged
-    // as changed, and nothing else.
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.CrossInputMatchStability.MatchChange"),
-                testing::ElementsAre(base::Bucket(0, 1), base::Bucket(2, 1),
-                                     base::Bucket(3, 1), base::Bucket(4, 1)));
-
-    // Expect that we log that at least one of the matches has changed.
-    EXPECT_THAT(
-        histograms.GetAllSamples(
-            "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition"),
-        testing::ElementsAre(base::Bucket(1, 1)));
-
-    // Expect that we don't log sync updates to the async histograms.
-    EXPECT_THAT(
-        histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange2"),
-        testing::ElementsAre());
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition"),
-                testing::ElementsAre());
-  }
-
-  // Verify no logging when appending matches.
-  {
-    // Constructor takes the snapshot of the current histogram state.
-    base::HistogramTester histograms;
-
-    // Do the logging.
-    AutocompleteResult::LogUpdateMetrics(second_comparators, third_result,
-                                         false);
-    AutocompleteResult::LogUpdateMetrics(second_comparators, third_result,
-                                         true);
-
-    // Expect no changes logged; expect 1 false logged to
-    // *MatchChangedInAnyPosition.
-    EXPECT_THAT(
-        histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange2"),
-        testing::ElementsAre());
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition"),
-                testing::ElementsAre(base::Bucket(0, 1)));
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "Omnibox.CrossInputMatchStability.MatchChange"),
-                testing::ElementsAre());
-    EXPECT_THAT(
-        histograms.GetAllSamples(
-            "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition"),
-        testing::ElementsAre(base::Bucket(0, 1)));
-  }
-}
 TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   // clang-format off
   TestData data[] = {
@@ -1564,6 +1419,104 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntities) {
   EXPECT_EQ(u"oo", result.match_at(1)->inline_autocompletion);
 }
 
+TEST_F(AutocompleteResultTest,
+       SortAndCullPreferNonEntitiesForDefaultSuggestion) {
+  // When the top scoring allowed_to_be_default suggestion is a search entity,
+  // and there is a duplicate non-entity search suggest that is also
+  // allowed_to_be_default, prefer the latter.
+
+  std::vector<EntityTestData> test_cases = {
+      {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, GetProvider(1),
+       "http://search/?q=foo", 1000, true},
+      {AutocompleteMatchType::SEARCH_SUGGEST, GetProvider(1),
+       "http://search/?q=foo2", 1200},
+      // A duplicate search suggestion should be preferred to a search entity
+      // suggestion, even if the former is scored lower.
+      {AutocompleteMatchType::SEARCH_SUGGEST, GetProvider(1),
+       "http://search/?q=foo", 900, true},
+  };
+  ACMatches matches;
+  PopulateEntityTestCases(test_cases, &matches);
+
+  // Simulate the search provider pre-grouping duplicate suggestions. We want
+  // to make sure `stripped_destination_url` is correctly appended to pre-duped
+  // suggestions.
+  matches[0].duplicate_matches.push_back(matches.back());
+  matches.pop_back();
+
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  ASSERT_EQ(result.size(), 3u);
+
+  auto* match = result.match_at(0);
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST);
+  // Should not inherit the search entity suggestion's relevance; only the
+  // non-dup suggestion inherits from the dup suggestions; not vice versa.
+  EXPECT_EQ(match->relevance, 900);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+  EXPECT_EQ(match->stripped_destination_url.spec(), "http://search/?q=foo");
+
+  match = result.match_at(1);
+  // The search entity suggestion should be ranked higher than the higher
+  // scoring 'foo2' search suggestion. When demoting default entity suggestions,
+  // they are moved to position 2 rather than re-ranked according to their
+  // relevance.
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+  EXPECT_EQ(match->relevance, 1000);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+  EXPECT_EQ(match->stripped_destination_url.spec(), "http://search/?q=foo");
+
+  match = result.match_at(2);
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST);
+  EXPECT_EQ(match->relevance, 1200);
+  EXPECT_FALSE(match->allowed_to_be_default_match);
+  EXPECT_EQ(match->stripped_destination_url.spec(), "http://search/?q=foo2");
+}
+
+TEST_F(AutocompleteResultTest,
+       SortAndCullDontPreferNonEntityNonDefaultForDefaultSuggestion) {
+  // When the top scoring allowed_to_be_default suggestion is a search entity,
+  // and there are no duplicate allowed_to_be_default suggestions, keep the
+  // search entity suggestion default.
+
+  std::vector<EntityTestData> test_cases = {
+      {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, GetProvider(1),
+       "http://search/?q=foo", 1000, true},
+      // A duplicate non-allowed_to_be_default search suggestion should not be
+      // preferred to a lower ranked search entity suggestion.
+      {AutocompleteMatchType::SEARCH_SUGGEST, GetProvider(1),
+       "http://search/?q=foo", 1300},
+      // A non-duplicate allowed_to_be_default search suggestion should not be
+      // preferred to a higher ranked search entity suggestion.
+      {AutocompleteMatchType::SEARCH_SUGGEST, GetProvider(1),
+       "http://search/?q=foo2", 900, true},
+  };
+  ACMatches matches;
+  PopulateEntityTestCases(test_cases, &matches);
+
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  ASSERT_EQ(result.size(), 2u);
+
+  auto* match = result.match_at(0);
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+  EXPECT_EQ(match->relevance, 1300);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+
+  match = result.match_at(1);
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST);
+  EXPECT_EQ(match->relevance, 900);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+}
+
 TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
   // clang-format off
   std::vector<EntityTestData> test_cases = {
@@ -1642,6 +1595,65 @@ TEST_F(AutocompleteResultTest,
   EXPECT_EQ(1001, result.match_at(1)->relevance);
   EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
   EXPECT_EQ(u"oo", result.match_at(1)->inline_autocompletion);
+}
+
+TEST_F(
+    AutocompleteResultTest,
+    SortAndCullPreferNonEntitySpecializedSearchSuggestionForDefaultSuggestion) {
+  // When selecting among multiple duplicate non-entity suggestions, prefer
+  // promoting the one that is a SEARCH_SUGGEST or other "specialized" search
+  // suggestion.
+
+  std::vector<EntityTestData> test_cases = {
+      // Entity search suggestion.
+      {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, GetProvider(1),
+       "http://search/?q=foo", 1200, true},
+      // Duplicate non-entity SEARCH_SUGGEST suggestion should be preferred
+      // above the other options (even when scoring lower).
+      {AutocompleteMatchType::SEARCH_SUGGEST, GetProvider(1),
+       "http://search/?q=foo", 1000, true},
+      // Duplicate non-entity match which is neither a SEARCH_SUGGEST nor a
+      // "specialized" search suggestion.
+      {AutocompleteMatchType::SEARCH_HISTORY, GetProvider(1),
+       "http://search/?q=foo", 1100, true},
+  };
+  ACMatches matches;
+  PopulateEntityTestCases(test_cases, &matches);
+
+  // Simulate the search provider pre-grouping duplicate suggestions.
+  matches[0].duplicate_matches.push_back(matches.back());
+  matches.pop_back();
+
+  matches[0].duplicate_matches.push_back(matches.back());
+  matches.pop_back();
+
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  ASSERT_EQ(result.size(), 2u);
+
+  auto* match = result.match_at(0);
+  // The non-entity SEARCH_SUGGEST suggestion should be promoted as the top
+  // match.
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+
+  match = result.match_at(1);
+  // The entity search suggestion should have been demoted.
+  EXPECT_EQ(match->type, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+  EXPECT_TRUE(match->allowed_to_be_default_match);
+
+  EXPECT_EQ(match->duplicate_matches.size(), 1u);
+
+  // The non-entity match which is neither a SEARCH_SUGGEST nor a "specialized"
+  // search suggestion should remain in |duplicate_matches| (i.e. it's not
+  // promoted as the top match).
+  EXPECT_EQ(match->duplicate_matches.at(0).type,
+            AutocompleteMatchType::SEARCH_HISTORY);
+  EXPECT_TRUE(match->duplicate_matches.at(0).allowed_to_be_default_match);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {

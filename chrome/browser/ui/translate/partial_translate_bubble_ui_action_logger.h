@@ -7,9 +7,14 @@
 
 namespace translate {
 
+// Histogram for recording the UI events related to the Partial Translate
+// bubble.
+constexpr char kPartialTranslateBubbleUiEventHistogramName[] =
+    "Translate.PartialTranslateBubbleUiEvent";
+
 enum class PartialTranslateBubbleUiEvent {
   // Update PartialTranslateBubbleUiEvent in enums.xml when making changes.
-  // The partial translate bubble was shown to the user.
+  // The Partial Translate bubble was shown to the user.
   BUBBLE_SHOWN = 0,
 
   // The user clicked the target language tab to start a translation.

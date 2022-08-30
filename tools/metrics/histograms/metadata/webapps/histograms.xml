@@ -121,7 +121,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.HomeScreenSource" enum="LaunchFromHomeScreenSource"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>dominickn@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -147,7 +147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.WebAppDisplayMode" enum="WebAppDisplayMode"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>peter@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -167,7 +167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AddToHomescreenMediator.AppTypeToMenuEntry"
-    enum="AppTypeToMenuEntry" expires_after="2022-10-09">
+    enum="AppTypeToMenuEntry" expires_after="2022-12-11">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -252,7 +252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.CheckServiceWorker.Time" units="ms"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -276,7 +276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="WebApp.Engagement"
-    enum="SiteEngagementServiceEngagementType" expires_after="2022-10-16">
+    enum="SiteEngagementServiceEngagementType" expires_after="2022-12-18">
   <owner>calamity@chromium.org</owner>
   <owner>mgiuca@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
@@ -286,6 +286,92 @@ chromium-metrics-reviews@google.com.
     collected for a subset of SiteEngagementService.EngagementType, which is
     triggered for all browsing contexts. Recorded at the time of engagement
     accumulation (e.g., when mouse is clicked).
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.InstallURLMigrationState"
+    enum="InstallURLMigrationState" expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the install_urls have been migrated or not because the data
+    is in sync in between the externally installed prefs and the web_app DB.
+    This is always measured on startup before the WebAppProvider subsystems
+    initialize.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.PlaceholderMigrationState"
+    enum="PlaceholderMigrationState" expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the is_placeholder field has been migrated or not because
+    the data is in sync in between the externally installed prefs and the
+    web_app DB. This is always measured on startup before the WebAppProvider
+    subsystems initialize.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.PrefDataAbsentDBDataAbsent" units="bool"
+    expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the data from external apps is absent both in the external
+    prefs and the web_app DB. This is recorded on startup just before the
+    WebAppProvider system initializes, when no externally installed apps are
+    found on the system.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.PrefDataAbsentDBDataPresent" units="bool"
+    expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the data from external apps is absent in the external prefs
+    but exists in the web_app DB. This is recorded on startup just before the
+    WebAppProvider system initializes. This should not happen, because then
+    somewhere the data is out of sync and not being written properly.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.PrefDataPresentDBDataAbsent" units="bool"
+    expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the data from external apps is present in the external prefs
+    but is absent in the web_app DB. This is recorded on startup just before the
+    WebAppProvider system initializes. This usually means a system where
+    migration does not happen, and should stop increasing at a point after all
+    systems have been migrated, or should increase slowly.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ExternalPrefs.PrefDataPresentDBDataPresent"
+    units="bool" expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the data from external apps is present both in the external
+    prefs and the web_app DB. This is recorded on startup just before the
+    WebAppProvider system initializes. This should always be increasing, and
+    denotes the best case where migration has happened.
+  </summary>
+</histogram>
+
+<histogram
+    name="WebApp.ExternalPrefs.UserUninstalledPreinstalledAppMigrationState"
+    enum="UserUninstalledPreinstalledAppMigrationState"
+    expires_after="2023-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records whether the user uninstalled preinstalled web app data is migrated
+    from the external prefs to the user uninstalled preinstalled prefs. This is
+    always measured on startup before the WebAppProvider subsystems initialize.
   </summary>
 </histogram>
 
@@ -406,7 +492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Install.InstallBounce" enum="WebappInstallSource"
-    expires_after="2022-10-09">
+    expires_after="2022-12-11">
   <owner>alancutter@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -506,16 +592,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebApp.Launcher.UpdateResult"
-    enum="WebAppLauncherUpdateResult" expires_after="2022-07-01">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>jessemckenna@google.com</owner>
-  <summary>
-    The result of updating a single Progressive Web App (PWA) launcher with the
-    latest version of chrome_pwa_launcher.exe. Windows-only.
-  </summary>
-</histogram>
-
 <histogram name="WebApp.Mover.Result" enum="WebAppMoverResult"
     expires_after="2022-04-24">
   <owner>dmurph@chromium.org</owner>
@@ -570,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppToReplaceStillInstalledCount"
-    units="apps" expires_after="2022-10-23">
+    units="apps" expires_after="2022-12-25">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -587,7 +663,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppToReplaceStillInstalledInShelfCount"
-    units="apps" expires_after="2022-10-23">
+    units="apps" expires_after="2022-12-25">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -603,7 +679,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.ConfigErrorCount" units="apps"
-    expires_after="2022-10-09">
+    expires_after="2022-12-11">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -614,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.DisabledCount" units="apps"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -689,13 +765,25 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.UninstallAndReplaceCount" units="apps"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
     Records how many preinstalled web app installations uninstalled and replaced
     an old default app (web app or Chrome app). This corresponds to the
     &quot;uninstall_and_replace&quot; field in preinstalled web app configs.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.RunOnOsLogin.CommandCompletionState"
+    enum="RunOnOSLoginCommandCompletionState" expires_after="2025-07-15">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the completion state for Run On OS Login commands being scheduled.
+    The command can be scheduled when the user changes the Run on OS login
+    setting and/or when a policy is applied, and the completion state is
+    recorded after the command either executes succesfully or fails prematurely.
   </summary>
 </histogram>
 

@@ -265,10 +265,9 @@ AutoEnrollmentTypeChecker::DetermineAutoEnrollmentCheckType(
       // Fall to the initial state determination check.
       break;
     case FRERequirement::kExplicitlyNotRequired:
-      // Force initial determination check even if explicitly not required.
-      // TODO(igorcov): b/238592446 Return CheckType::kNone when that gets
-      // fixed.
-      break;
+      // Skip FRE check and initial determination check if the device is
+      // explicitly marked as consumer owned.
+      return CheckType::kNone;
     case FRERequirement::kExplicitlyRequired:
       LOG(WARNING) << "Proceeding with FRE check.";
       return CheckType::kForcedReEnrollmentExplicitlyRequired;

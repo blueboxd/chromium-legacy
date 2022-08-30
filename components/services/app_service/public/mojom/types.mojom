@@ -118,6 +118,7 @@ enum PermissionType {
   kContacts        = 5,
   kStorage         = 6,
   kPrinting        = 7,
+  kFileHandling    = 8,
 };
 
 // The types of apps available in the registry.
@@ -249,18 +250,13 @@ enum IconType {
   kStandard,
 };
 
-struct IconValue {
-  IconType icon_type;
-  gfx.mojom.ImageSkia? uncompressed;
-  array<uint8>? compressed;
-  bool is_placeholder_icon;
-};
-
 // Enumeration of possible app launch sources.
 // This should be kept in sync with metadata/apps/histograms.xml, and
 // LaunchSource in enums.xml.
 // Note the enumeration is used in UMA histogram so entries should not be
 // re-ordered or removed. New entries should be added at the bottom.
+// DEPRECATED. When adding new fields, please use the App struct in
+// components/services/app_service/public/cpp/app_launch_util.h.
 enum LaunchSource {
   kUnknown = 0,
   kFromAppListGrid = 1,               // Grid of apps, not the search box.
@@ -493,6 +489,9 @@ struct FilePaths {
 
 // Don't remove items or change the order of this enum.  It's used in
 // histograms and preferences.
+//
+// This is DEPRECATED. When adding new fields, please use the App
+// struct in components/services/app_service/public/cpp/app_launch_util.h.
 enum LaunchContainer {
   kLaunchContainerWindow = 0,
   kLaunchContainerPanelDeprecated = 1,
@@ -528,6 +527,8 @@ struct Rect {
 };
 
 // The window information to launch an app.
+// DEPRECATED. Please use the WindowInfo struct in
+// components/services/app_service/public/cpp/app_launch_util.h.
 struct WindowInfo {
   int32 window_id = -1;
   int32 state = 0;

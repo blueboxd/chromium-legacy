@@ -6,12 +6,12 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
@@ -38,9 +38,8 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 namespace {
-
 using SearchKeyToPredicateMap =
-    std::unordered_map<std::u16string, AccessibilityMatchPredicate>;
+    base::flat_map<std::u16string, AccessibilityMatchPredicate>;
 base::LazyInstance<SearchKeyToPredicateMap>::Leaky
     g_search_key_to_predicate_map = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::u16string>::Leaky g_all_search_keys =
@@ -387,6 +386,16 @@ void WebContentsAccessibilityAndroid::HandleCheckStateChanged(
                                                             unique_id);
 }
 
+void WebContentsAccessibilityAndroid::HandleStateDescriptionChanged(
+    int32_t unique_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsAccessibilityImpl_handleStateDescriptionChanged(env, obj,
+                                                                  unique_id);
+}
+
 void WebContentsAccessibilityAndroid::HandleClicked(int32_t unique_id) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -438,6 +447,16 @@ void WebContentsAccessibilityAndroid::AnnounceLiveRegionText(
 
   Java_WebContentsAccessibilityImpl_announceLiveRegionText(
       env, obj, base::android::ConvertUTF16ToJavaString(env, text));
+}
+
+void WebContentsAccessibilityAndroid::HandleTextContentChanged(
+    int32_t unique_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsAccessibilityImpl_handleTextContentChanged(env, obj,
+                                                             unique_id);
 }
 
 void WebContentsAccessibilityAndroid::HandleTextSelectionChanged(
@@ -531,12 +550,12 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
   if (!GetRootBrowserAccessibilityManager()->touch_passthrough_enabled())
     return true;
 
-  if (!web_contents_ || !web_contents_->GetMainFrame())
+  if (!web_contents_ || !web_contents_->GetPrimaryMainFrame())
     return true;
 
   if (!touch_passthrough_manager_) {
     touch_passthrough_manager_ = std::make_unique<TouchPassthroughManager>(
-        web_contents_->GetMainFrame());
+        web_contents_->GetPrimaryMainFrame());
   }
 
   switch (event.GetAction()) {

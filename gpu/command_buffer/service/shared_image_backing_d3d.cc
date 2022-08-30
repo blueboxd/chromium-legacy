@@ -399,8 +399,9 @@ SharedImageBackingD3D::~SharedImageBackingD3D() {
   dxgi_shared_handle_state_.reset();
   swap_chain_.Reset();
   d3d11_texture_.Reset();
+
 #if BUILDFLAG(USE_DAWN)
-  dawn_external_images_.clear();
+  external_image_ = nullptr;
 #endif  // BUILDFLAG(USE_DAWN)
 }
 
@@ -438,6 +439,10 @@ ID3D11Texture2D* SharedImageBackingD3D::GetOrCreateStagingTexture() {
                                      kStagingTextureLabel);
   }
   return staging_texture_.Get();
+}
+
+SharedImageBackingType SharedImageBackingD3D::GetType() const {
+  return SharedImageBackingType::kD3D;
 }
 
 void SharedImageBackingD3D::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -644,14 +649,8 @@ SharedImageBackingD3D::ProduceDawn(SharedImageManager* manager,
   texture_descriptor.nextInChain =
       reinterpret_cast<WGPUChainedStruct*>(&internalDesc);
 
-  // Evict invalid external images e.g. due to their device being destroyed.
-  base::EraseIf(dawn_external_images_,
-                [](const auto& kv) { return !kv.second->IsValid(); });
-
   // Persistently open the shared handle by caching it on this backing.
-  auto it = dawn_external_images_.find(device);
-  dawn::native::d3d12::ExternalImageDXGI* external_image_ptr = nullptr;
-  if (it == dawn_external_images_.end()) {
+  if (!external_image_) {
     DCHECK(dxgi_shared_handle_state_);
     const HANDLE shared_handle = dxgi_shared_handle_state_->GetSharedHandle();
     DCHECK(base::win::HandleTraits::IsHandleValid(shared_handle));
@@ -661,22 +660,17 @@ SharedImageBackingD3D::ProduceDawn(SharedImageManager* manager,
     externalImageDesc.cTextureDescriptor = &texture_descriptor;
     externalImageDesc.sharedHandle = shared_handle;
 
-    std::unique_ptr<dawn::native::d3d12::ExternalImageDXGI> external_image =
-        dawn::native::d3d12::ExternalImageDXGI::Create(device,
-                                                       &externalImageDesc);
-    if (!external_image) {
+    external_image_ = dawn::native::d3d12::ExternalImageDXGI::Create(
+        device, &externalImageDesc);
+
+    if (!external_image_) {
       LOG(ERROR) << "Failed to create external image";
       return nullptr;
     }
-    external_image_ptr = external_image.get();
-    dawn_external_images_.emplace(device, std::move(external_image));
-  } else {
-    external_image_ptr = it->second.get();
   }
-  DCHECK(external_image_ptr);
-  DCHECK(external_image_ptr->IsValid());
+
   return std::make_unique<SharedImageRepresentationDawnD3D>(
-      manager, this, tracker, device, external_image_ptr);
+      manager, this, tracker, device, external_image_.get());
 #else
   return nullptr;
 #endif  // BUILDFLAG(USE_DAWN)

@@ -9,20 +9,17 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/emoji_picker.mojom-forward.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "media/gpu/buildflags.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-
-#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-namespace media {
-class StableVideoDecoderFactoryService;
-}  // namespace media
-#endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+#include "printing/buildflags/buildflags.h"
 
 namespace apps {
 class DigitalGoodsFactoryAsh;
@@ -31,12 +28,14 @@ class DigitalGoodsFactoryAsh;
 namespace crosapi {
 
 class ArcAsh;
+class AudioServiceAsh;
 class AuthenticationAsh;
 class AutomationAsh;
 class BrowserServiceHostAsh;
 class BrowserVersionServiceAsh;
 class CertDatabaseAsh;
 class ChromeAppKioskServiceAsh;
+class CertProvisioningAsh;
 class ChromeAppWindowTrackerAsh;
 class ClipboardAsh;
 class ClipboardHistoryAsh;
@@ -50,6 +49,7 @@ class DocumentScanAsh;
 class DownloadControllerAsh;
 class DriveIntegrationServiceAsh;
 class EchoPrivateAsh;
+class EmojiPickerAsh;
 class ExtensionInfoPrivateAsh;
 class FeedbackAsh;
 class FieldTrialServiceAsh;
@@ -74,6 +74,7 @@ class NetworkingPrivateAsh;
 class PolicyServiceAsh;
 class PowerAsh;
 class PrefsAsh;
+class PrintingMetricsAsh;
 class RemotingAsh;
 class ResourceManagerAsh;
 class ScreenManagerAsh;
@@ -117,6 +118,8 @@ class CrosapiAsh : public mojom::Crosapi {
 
   // crosapi::mojom::Crosapi:
   void BindArc(mojo::PendingReceiver<mojom::Arc> receiver) override;
+  void BindAudioService(
+      mojo::PendingReceiver<mojom::AudioService> receiver) override;
   void BindAuthentication(
       mojo::PendingReceiver<mojom::Authentication> receiver) override;
   void BindAutomationDeprecated(
@@ -137,6 +140,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::BrowserVersionService> receiver) override;
   void BindCertDatabase(
       mojo::PendingReceiver<mojom::CertDatabase> receiver) override;
+  void BindCertProvisioning(
+      mojo::PendingReceiver<mojom::CertProvisioning> receiver) override;
   void BindChromeAppPublisher(
       mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
   void BindChromeAppWindowTracker(
@@ -165,6 +170,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::DriveIntegrationService> receiver) override;
   void BindEchoPrivate(
       mojo::PendingReceiver<mojom::EchoPrivate> receiver) override;
+  void BindEmojiPicker(
+      mojo::PendingReceiver<mojom::EmojiPicker> receiver) override;
   void BindExtensionInfoPrivate(
       mojo::PendingReceiver<mojom::ExtensionInfoPrivate> receiver) override;
   void BindExtensionPublisher(
@@ -213,6 +220,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::PolicyService> receiver) override;
   void BindPower(mojo::PendingReceiver<mojom::Power> receiver) override;
   void BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) override;
+  void BindPrintingMetrics(
+      mojo::PendingReceiver<mojom::PrintingMetrics> receiver) override;
   void BindRemoteAppsLacrosBridge(
       mojo::PendingReceiver<
           chromeos::remote_apps::mojom::RemoteAppsLacrosBridge> receiver)
@@ -303,6 +312,7 @@ class CrosapiAsh : public mojom::Crosapi {
   }
 
   EchoPrivateAsh* echo_private_ash() { return echo_private_ash_.get(); }
+  EmojiPickerAsh* emoji_picker_ash() { return emoji_picker_ash_.get(); }
 
   ExtensionInfoPrivateAsh* extension_info_private_ash() {
     return extension_info_private_ash_.get();
@@ -319,6 +329,12 @@ class CrosapiAsh : public mojom::Crosapi {
   ChromeAppKioskServiceAsh* chrome_app_kiosk_service() {
     return chrome_app_kiosk_service_ash_.get();
   }
+
+#if defined(USE_CUPS)
+  PrintingMetricsAsh* printing_metrics_ash() {
+    return printing_metrics_ash_.get();
+  }
+#endif  // defined(USE_CUPS)
 
   SearchProviderAsh* search_provider_ash() {
     return search_provider_ash_.get();
@@ -358,6 +374,10 @@ class CrosapiAsh : public mojom::Crosapi {
     return file_system_provider_service_ash_.get();
   }
 
+  CertProvisioningAsh* cert_provisioning_ash() {
+    return cert_provisioning_ash_.get();
+  }
+
   LoginAsh* login_ash() { return login_ash_.get(); }
 
   LoginScreenStorageAsh* login_screen_storage_ash() {
@@ -387,11 +407,13 @@ class CrosapiAsh : public mojom::Crosapi {
   void OnDisconnected();
 
   std::unique_ptr<ArcAsh> arc_ash_;
+  std::unique_ptr<AudioServiceAsh> audio_service_ash_;
   std::unique_ptr<AuthenticationAsh> authentication_ash_;
   std::unique_ptr<AutomationAsh> automation_ash_;
   std::unique_ptr<BrowserServiceHostAsh> browser_service_host_ash_;
   std::unique_ptr<BrowserVersionServiceAsh> browser_version_service_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
+  std::unique_ptr<CertProvisioningAsh> cert_provisioning_ash_;
   std::unique_ptr<ChromeAppWindowTrackerAsh> chrome_app_window_tracker_ash_;
   std::unique_ptr<ClipboardAsh> clipboard_ash_;
   std::unique_ptr<ClipboardHistoryAsh> clipboard_history_ash_;
@@ -405,6 +427,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<DownloadControllerAsh> download_controller_ash_;
   std::unique_ptr<DriveIntegrationServiceAsh> drive_integration_service_ash_;
   std::unique_ptr<EchoPrivateAsh> echo_private_ash_;
+  std::unique_ptr<EmojiPickerAsh> emoji_picker_ash_;
   std::unique_ptr<ExtensionInfoPrivateAsh> extension_info_private_ash_;
   std::unique_ptr<FeedbackAsh> feedback_ash_;
   std::unique_ptr<FieldTrialServiceAsh> field_trial_service_ash_;
@@ -432,6 +455,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<PolicyServiceAsh> policy_service_ash_;
   std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
+#if defined(USE_CUPS)
+  std::unique_ptr<PrintingMetricsAsh> printing_metrics_ash_;
+#endif  // defined(USE_CUPS)
   std::unique_ptr<RemotingAsh> remoting_ash_;
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
@@ -439,10 +465,6 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<SelectFileAsh> select_file_ash_;
   std::unique_ptr<SharesheetAsh> sharesheet_ash_;
   std::unique_ptr<SpeechRecognitionAsh> speech_recognition_ash_;
-#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-  std::unique_ptr<media::StableVideoDecoderFactoryService>
-      stable_video_decoder_factory_ash_;
-#endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
   std::unique_ptr<StructuredMetricsServiceAsh> structured_metrics_service_ash_;
   std::unique_ptr<SystemDisplayAsh> system_display_ash_;
   std::unique_ptr<TaskManagerAsh> task_manager_ash_;
@@ -459,7 +481,7 @@ class CrosapiAsh : public mojom::Crosapi {
 
   // Only set in the test ash chrome binary. In production ash this is always
   // nullptr.
-  TestControllerReceiver* test_controller_ = nullptr;
+  raw_ptr<TestControllerReceiver> test_controller_ = nullptr;
 
   mojo::ReceiverSet<mojom::Crosapi, CrosapiId> receiver_set_;
   std::map<mojo::ReceiverId, base::OnceClosure> disconnect_handler_map_;

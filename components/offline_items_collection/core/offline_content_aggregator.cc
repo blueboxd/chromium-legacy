@@ -233,16 +233,6 @@ void OfflineContentAggregator::RenameItem(const ContentId& id,
   it->second->RenameItem(id, name, std::move(callback));
 }
 
-void OfflineContentAggregator::ChangeSchedule(
-    const ContentId& id,
-    absl::optional<OfflineItemSchedule> schedule) {
-  auto it = providers_.find(id.name_space);
-  if (it == providers_.end())
-    return;
-
-  it->second->ChangeSchedule(id, std::move(schedule));
-}
-
 void OfflineContentAggregator::OnItemsAdded(const OfflineItemList& items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyItemsAdded(items);
@@ -254,8 +244,7 @@ void OfflineContentAggregator::OnItemRemoved(const ContentId& id) {
   if (!pending_providers_.empty()) {
     auto item = std::find_if(aggregated_items_.begin(), aggregated_items_.end(),
                              [id](const OfflineItem& p) { return p.id == id; });
-    if (item != aggregated_items_.end())
-      aggregated_items_.erase(item);
+    aggregated_items_.erase(item);
   }
   NotifyItemRemoved(id);
 }

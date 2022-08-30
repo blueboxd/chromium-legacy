@@ -7,12 +7,14 @@
 
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/component_export.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/lru_cache.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 
@@ -62,15 +64,8 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     virtual void AddColorMixers(ColorProvider* provider,
                                 const Key& key) const = 0;
 
-    base::WeakPtr<InitializerSupplier> get_weak_ref() {
-      return weak_factory_.GetWeakPtr();
-    }
-
    protected:
     virtual ~InitializerSupplier();
-
-   private:
-    base::WeakPtrFactory<InitializerSupplier> weak_factory_{this};
   };
 
   // Threadsafe not because ColorProviderManager requires it but because a
@@ -110,7 +105,8 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
         ContrastMode contrast_mode,
         SystemTheme system_theme,
         FrameType frame_type,
-        scoped_refptr<ThemeInitializerSupplier> custom_theme);
+        absl::optional<SkColor> user_color = absl::nullopt,
+        scoped_refptr<ThemeInitializerSupplier> custom_theme = nullptr);
     Key(const Key&);
     Key& operator=(const Key&);
     ~Key();
@@ -119,17 +115,22 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     ElevationMode elevation_mode;
     SystemTheme system_theme;
     FrameType frame_type;
+    absl::optional<SkColor> user_color;
     scoped_refptr<ThemeInitializerSupplier> custom_theme;
-    base::WeakPtr<InitializerSupplier> app_controller;
+    // Only dereferenced when populating the ColorMixer. After that, used to
+    // compare addresses during lookup.
+    raw_ptr<InitializerSupplier> app_controller = nullptr;  // unowned
 
     bool operator<(const Key& other) const {
       auto* lhs_app_controller = app_controller.get();
       auto* rhs_app_controller = other.app_controller.get();
       return std::tie(color_mode, contrast_mode, elevation_mode, system_theme,
-                      frame_type, custom_theme, lhs_app_controller) <
+                      frame_type, user_color, custom_theme,
+                      lhs_app_controller) <
              std::tie(other.color_mode, other.contrast_mode,
                       other.elevation_mode, other.system_theme,
-                      other.frame_type, other.custom_theme, rhs_app_controller);
+                      other.frame_type, other.user_color, other.custom_theme,
+                      rhs_app_controller);
     }
   };
 
@@ -140,7 +141,7 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   ColorProviderManager& operator=(const ColorProviderManager&) = delete;
 
   static ColorProviderManager& Get();
-  static ColorProviderManager& GetForTesting();
+  static ColorProviderManager& GetForTesting(size_t cache_size = 1);
   static void ResetForTesting();
 
   // Resets the current `initializer_list_`.
@@ -157,7 +158,9 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   ColorProvider* GetColorProviderFor(Key key);
 
  protected:
-  ColorProviderManager();
+  // Creates a ColorProviderManager that stores at most |cache_size|
+  // ColorProviders.
+  explicit ColorProviderManager(size_t cache_size);
   virtual ~ColorProviderManager();
 
  private:
@@ -167,7 +170,7 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   // Holds the subscriptions for initializers in the `initializer_list_`.
   std::vector<base::CallbackListSubscription> initializer_subscriptions_;
 
-  base::flat_map<Key, std::unique_ptr<ColorProvider>> color_providers_;
+  base::LRUCache<Key, std::unique_ptr<ColorProvider>> color_providers_;
 };
 
 }  // namespace ui

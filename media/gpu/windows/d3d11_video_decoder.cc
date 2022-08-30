@@ -14,6 +14,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -253,7 +254,7 @@ D3D11Status::Or<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
       is_hdr_supported_ ? TextureSelector::HDRMode::kSDROrHDR
                         : TextureSelector::HDRMode::kSDROnly,
       &format_checker, video_device_, device_context_, media_log_.get(),
-      use_shared_handle);
+      config_.color_space_info().ToGfxColorSpace(), use_shared_handle);
   if (!texture_selector_)
     return D3D11Status::Codes::kCreateTextureSelectorFailed;
 
@@ -734,15 +735,20 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
 
   ComD3D11Texture2D in_texture;
 
+  // In addition to what the decoder needs, add one picture buffer
+  // for overlay weirdness, just to be safe. We may need to track
+  // actual used buffers for all use cases and decide an optimal
+  // number of picture buffers.
+  size_t pic_buffers_required =
+      accelerated_video_decoder_->GetRequiredNumOfPictures() + 1;
+
   // Create each picture buffer.
-  for (size_t i = 0; i < D3D11DecoderConfigurator::BUFFER_COUNT; i++) {
+  for (size_t i = 0; i < pic_buffers_required; i++) {
     // Create an input texture / texture array if we haven't already.
     if (!in_texture) {
       auto result = decoder_configurator_->CreateOutputTexture(
           device_, size,
-          use_single_video_decoder_texture_
-              ? 1
-              : D3D11DecoderConfigurator::BUFFER_COUNT,
+          use_single_video_decoder_texture_ ? 1 : pic_buffers_required,
           texture_selector_->DoesDecoderOutputUseSharedHandle());
       if (result.has_value()) {
         in_texture = std::move(result).value();

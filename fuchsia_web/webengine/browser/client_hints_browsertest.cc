@@ -10,8 +10,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/frame_impl.h"
 #include "fuchsia_web/webengine/browser/frame_impl_browser_test_base.h"
@@ -50,8 +50,8 @@ class ClientHintsTest : public FrameImplTestBaseWithServer {
 
   void SetUpOnMainThread() override {
     FrameImplTestBaseWithServer::SetUpOnMainThread();
-    frame_for_test_ = cr_fuchsia::FrameForTest::Create(
-        context(), fuchsia::web::CreateFrameParams());
+    frame_for_test_ =
+        FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
   }
 
  protected:
@@ -61,8 +61,8 @@ class ClientHintsTest : public FrameImplTestBaseWithServer {
   void SetClientHintsForTestServerToRequest(const std::string& hint_types) {
     GURL url = embedded_test_server()->GetURL(
         std::string("/set-header?Accept-CH: ") + hint_types);
-    cr_fuchsia::LoadUrlAndExpectResponse(
-        frame_for_test_.GetNavigationController(), {}, url.spec());
+    LoadUrlAndExpectResponse(frame_for_test_.GetNavigationController(), {},
+                             url.spec());
     frame_for_test_.navigation_listener().RunUntilUrlEquals(url);
   }
 
@@ -74,12 +74,12 @@ class ClientHintsTest : public FrameImplTestBaseWithServer {
   std::string GetNavRequestHeaderValue(const std::string& header) {
     GURL url =
         embedded_test_server()->GetURL(std::string("/echoheader?") + header);
-    cr_fuchsia::LoadUrlAndExpectResponse(
-        frame_for_test_.GetNavigationController(), {}, url.spec());
+    LoadUrlAndExpectResponse(frame_for_test_.GetNavigationController(), {},
+                             url.spec());
     frame_for_test_.navigation_listener().RunUntilUrlEquals(url);
 
-    absl::optional<base::Value> value = cr_fuchsia::ExecuteJavaScript(
-        frame_for_test_.get(), "document.body.innerText;");
+    absl::optional<base::Value> value =
+        ExecuteJavaScript(frame_for_test_.get(), "document.body.innerText;");
     return value->GetString();
   }
 
@@ -119,7 +119,7 @@ class ClientHintsTest : public FrameImplTestBaseWithServer {
     verify_callback.Run(result);
   }
 
-  cr_fuchsia::FrameForTest frame_for_test_;
+  FrameForTest frame_for_test_;
 };
 
 IN_PROC_BROWSER_TEST_F(ClientHintsTest, NumericalClientHints) {

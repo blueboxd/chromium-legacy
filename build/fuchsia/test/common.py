@@ -4,18 +4,17 @@
 """Common methods and variables used by Cr-Fuchsia testing infrastructure."""
 
 import json
-import logging
 import os
 import platform
 import re
 import subprocess
 
 from argparse import ArgumentParser
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 DIR_SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
-REPO_ALIAS = 'chromium-test-package-server'
+REPO_ALIAS = 'fuchsia.com'
 SDK_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
 
 
@@ -31,6 +30,7 @@ def get_host_arch() -> str:
 
 
 SDK_TOOLS_DIR = os.path.join(SDK_ROOT, 'tools', get_host_arch())
+_FFX_TOOL = os.path.join(SDK_TOOLS_DIR, 'ffx')
 
 
 def _run_repair_command(output):
@@ -53,9 +53,10 @@ def _run_repair_command(output):
     return True  # Repair succeeded.
 
 
-def run_ffx_command(cmd: List[str],
-                    check=True,
-                    suppress_repair=False,
+def run_ffx_command(cmd: Iterable[str],
+                    target_id: Optional[str] = None,
+                    check: bool = True,
+                    suppress_repair: bool = False,
                     **kwargs) -> subprocess.CompletedProcess:
     """Runs `ffx` with the given arguments, waiting for it to exit.
 
@@ -67,6 +68,8 @@ def run_ffx_command(cmd: List[str],
 
     Args:
         cmd: A sequence of arguments to ffx.
+        target_id: Whether to execute the command for a specific target. The
+            target_id could be in the form of a nodename or an address.
         check: If True, CalledProcessError is raised if ffx returns a non-zero
             exit code.
         suppress_repair: If True, do not attempt to find and run a repair
@@ -76,32 +79,31 @@ def run_ffx_command(cmd: List[str],
     Raises:
         CalledProcessError if |check| is true.
     """
-    _ffx_tool = os.path.join(SDK_TOOLS_DIR, 'ffx')
+
+    ffx_cmd = [_FFX_TOOL]
+    if target_id:
+        ffx_cmd.extend(('--target', target_id))
+    ffx_cmd.extend(cmd)
     try:
-        proc = subprocess.run([_ffx_tool] + cmd, check=check, **kwargs)
-        if check and proc.returncode != 0:
-            raise subprocess.CalledProcessError(proc.returncode, cmd,
-                                                proc.stdout)
-        return proc
+        return subprocess.run(ffx_cmd, check=check, encoding='utf-8', **kwargs)
     except subprocess.CalledProcessError as cpe:
         if suppress_repair or not _run_repair_command(cpe.output):
             raise
-        repair_succeeded = True
-        return run_ffx_command(cmd, suppress_repair=True, **kwargs)
 
     # If the original command failed but a repair command was found and
     # succeeded, try one more time with the original command.
-    if repair_succeeded:
-        return run_ffx_command(cmd, check, suppress_repair=True)
+    return run_ffx_command(cmd, target_id, check, True, **kwargs)
 
 
-def run_ffx_target_command(cmd: List[str], target: Optional[str] = None
-                           ) -> subprocess.CompletedProcess:
-    """Runs an ffx target command, optionally specifying the target to use."""
-    prefix = []
-    if target:
-        prefix.extend(['--target', target])
-    return run_ffx_command(prefix + ['target'] + cmd)
+def run_continuous_ffx_command(cmd: Iterable[str],
+                               target_id: Optional[str] = None,
+                               **kwargs) -> subprocess.Popen:
+    """Runs an ffx command asynchronously."""
+    ffx_cmd = [_FFX_TOOL]
+    if target_id:
+        ffx_cmd.extend(('--target', target_id))
+    ffx_cmd.extend(cmd)
+    return subprocess.Popen(ffx_cmd, encoding='utf-8', **kwargs)
 
 
 def read_package_paths(out_dir: str, pkg_name: str) -> List[str]:
@@ -109,8 +111,9 @@ def read_package_paths(out_dir: str, pkg_name: str) -> List[str]:
     Returns:
         A list of the absolute path to all FAR files the package depends on.
     """
-    with open(os.path.join(DIR_SRC_ROOT, out_dir, 'gen',
-                           f'{pkg_name}.meta')) as meta_file:
+    with open(
+            os.path.join(DIR_SRC_ROOT, out_dir, 'gen', 'package_metadata',
+                         f'{pkg_name}.meta')) as meta_file:
         data = json.load(meta_file)
     packages = []
     for package in data['packages']:
@@ -125,24 +128,48 @@ def register_common_args(parser: ArgumentParser) -> None:
         '--out-dir',
         '-C',
         type=os.path.realpath,
-        help=('Path to the directory in which build files are located. '
-              'Defaults to current directory.'))
+        help='Path to the directory in which build files are located. ')
 
 
-def resolve_packages(packages: List[str]) -> None:
+def register_device_args(parser: ArgumentParser) -> None:
+    """Register device arguments."""
+    device_args = parser.add_argument_group('device', 'device arguments')
+    device_args.add_argument('--target-id',
+                             help=('Specify the target device. This could be '
+                                   'a node-name (e.g. fuchsia-emulator) or an '
+                                   'an ip address along with an optional port '
+                                   '(e.g. [fe80::e1c4:fd22:5ee5:878e]:22222, '
+                                   '1.2.3.4, 1.2.3.4:33333). If unspecified, '
+                                   'the default target in ffx will be used.'))
+
+
+def register_log_args(parser: ArgumentParser) -> None:
+    """Register commonly used arguments."""
+
+    log_args = parser.add_argument_group('logging', 'logging arguments')
+    log_args.add_argument('--logs-dir',
+                          type=os.path.realpath,
+                          help=('Directory to write logs to.'))
+
+
+def get_component_uri(package: str) -> str:
+    """Retrieve the uri for a package."""
+    return f'fuchsia-pkg://{REPO_ALIAS}/{package}#meta/{package}.cm'
+
+
+def resolve_packages(packages: List[str], target_id: Optional[str]) -> None:
     """Ensure that all |packages| are installed on a device."""
     for package in packages:
         # Try destroying the component to force an update.
-        try:
-            run_ffx_command(
-                ['component', 'destroy', f'/core/ffx-laboratory:{package}'],
-                check=False)
-        except subprocess.CalledProcessError:
-            logging.warning('Creating new component')
+        run_ffx_command(
+            ['component', 'destroy', f'/core/ffx-laboratory:{package}'],
+            target_id,
+            check=False)
 
         run_ffx_command([
             'component', 'create', f'/core/ffx-laboratory:{package}',
             f'fuchsia-pkg://{REPO_ALIAS}/{package}#meta/{package}.cm'
-        ])
+        ], target_id)
         run_ffx_command(
-            ['component', 'resolve', f'/core/ffx-laboratory:{package}'])
+            ['component', 'resolve', f'/core/ffx-laboratory:{package}'],
+            target_id)

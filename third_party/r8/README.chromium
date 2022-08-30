@@ -22,6 +22,7 @@ R8 is a proguard-like optimizer that also has the ability to dex.
 Local Modifications:
 * Refer to commit descriptions within "3pp/patches" directory.
 * Added "playground" directory for quick "how does this optimize" tests.
+* Added "dump_inputs.py" script.
 * desugar_jdk_libs.json:
   * Removed references to ConcurrentHashMap to avoid bloat
   * Removed references to TimeZone#getTimeZone to avoid desugaring of
@@ -69,10 +70,8 @@ cp out/Debug/obj/third_party/r8/custom_d8_java.javac.jar third_party/r8/custom_d
 * If patching fails:
 git clone https://r8.googlesource.com/r8
 cd r8
-  * Find latest tag:
-git fetch origin --tags
-git tag -l  # Often unnecessary as output from the fetch includes recent tags.
-git checkout $TAG  # e.g. 3.0.25-dev, whichever tag failed patching.
+  * Pull the latest code:
+git pull
   * Apply patches:
 git checkout -b my_branch
 git am $CHROMIUM_SRC/third_party/r8/3pp/patches/*.patch
@@ -112,6 +111,7 @@ unzip -p third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_config
 How to file bugs against R8:
 * Copy & paste the failing ninja command (starts with proguard.py), and add --dump-inputs.
   * This also works for dex.py, it produces d8inputs.zip
+  * As a shortcut: third_party/r8/dump_inputs.py out/Release/apks/ChromePublic.apk.mapping
 * File bug at go/r8bug
 * Things to include (use discretion if some are not relevant):
   * src revision bug reproduces at

@@ -901,9 +901,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EarlyEventDispatch) {
   // Build "test.onMessage" event for dispatch.
   auto event = std::make_unique<Event>(
       events::FOR_TEST, extensions::api::test::OnMessage::kEventName,
-      base::JSONReader::Read(R"([{"data": "hello", "lastMessage": true}])")
-          .value()
-          .TakeListDeprecated(),
+      std::move(
+          base::JSONReader::Read(R"([{"data": "hello", "lastMessage": true}])")
+              .value()
+              .GetList()),
       profile());
 
   EarlyWorkerMessageSender sender(profile(), kId, std::move(event));
@@ -2853,8 +2854,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
   class ConsoleMessageObserver : public content::ServiceWorkerContextObserver {
    public:
     ConsoleMessageObserver(content::BrowserContext* browser_context,
-                           const std::string& expected_message)
-        : expected_message_(base::UTF8ToUTF16(expected_message)) {
+                           std::u16string expected_message)
+        : expected_message_(std::move(expected_message)) {
       scoped_observation_.Observe(GetServiceWorkerContext(browser_context));
     }
 
@@ -2910,10 +2911,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
 
   // The observer for the built-in blink console.
-  ConsoleMessageObserver default_console_observer(profile(), "test message");
+  ConsoleMessageObserver default_console_observer(profile(), u"test message");
   // The observer for our custom extensions bindings console.
   ConsoleMessageObserver custom_console_observer(profile(),
-                                                 "[SUCCESS] justATest");
+                                                 u"[SUCCESS] justATest");
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);

@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -318,6 +319,8 @@ void WebPluginContainerImpl::ReportFindInPageMatchCount(int identifier,
       WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
   if (!frame)
     return;
+
+  final_find_update_ = final_update;
   frame->GetFindInPage()->ReportFindInPageMatchCount(identifier, total,
                                                      final_update);
 }
@@ -329,7 +332,7 @@ void WebPluginContainerImpl::ReportFindInPageSelection(int identifier,
   if (!frame)
     return;
   frame->GetFindInPage()->ReportFindInPageSelection(
-      identifier, index, gfx::Rect(), false /* final_update */);
+      identifier, index, gfx::Rect(), final_find_update_);
 }
 
 float WebPluginContainerImpl::PageScaleFactor() {
@@ -748,10 +751,7 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
     : EmbeddedContentView(gfx::Rect()),
       element_(element),
-      web_plugin_(web_plugin),
-      layer_(nullptr),
-      touch_event_request_type_(kTouchEventRequestTypeNone),
-      wants_wheel_events_(false) {}
+      web_plugin_(web_plugin) {}
 
 WebPluginContainerImpl::~WebPluginContainerImpl() {
   // The plugin container must have been disposed of by now.
@@ -781,6 +781,8 @@ void WebPluginContainerImpl::Dispose() {
   }
 
   if (web_plugin_) {
+    // Plugins may execute script on being detached during the lifecycle update.
+    ScriptForbiddenScope::AllowUserAgentScript allow_script;
     CHECK(web_plugin_->Container() == this);
     web_plugin_->Destroy();
     web_plugin_ = nullptr;

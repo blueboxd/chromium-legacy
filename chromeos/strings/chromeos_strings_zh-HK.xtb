@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> 個執行緒；<ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">推出咗新功能，請用向上箭咀掣了解詳情。</translation>
 <translation id="1059913517121127803">無法開始掃瞄</translation>
+<translation id="1062407476771304334">取代</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">偵測到防火牆</translation>
 <translation id="1075811647922107217">頁面大小</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">開咗更新外部裝置韌體嘅視窗。有 <ph name="NUM_UPDATES" /> 項可用嘅更新。</translation>
+<translation id="1145516343487477149">尋找說明文章，並回答 Chromebook 常見問題</translation>
+<translation id="1165039591588034296">錯誤</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> 會管理此裝置，並可能監察您的活動。</translation>
 <translation id="147809995039451286">無法下載更新內容</translation>
 <translation id="1478594628797167447">掃瞄器</translation>
+<translation id="1483493594462132177">傳送</translation>
 <translation id="1491076385728777984">正在更新 <ph name="DEVICE_NAME" />的韌體</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> 管理此使用者，並可能會遠端管理設定並監察使用者活動。</translation>
 <translation id="150962533380566081">PUK 無效。</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">無法載入圖片。請檢查網絡連線，或者嘗試再次載入圖片。</translation>
 <translation id="1751249301761991853">個人化</translation>
 <translation id="1753496554272155572">結束桌布預覽</translation>
+<translation id="1755556344721611131">診斷應用程式</translation>
 <translation id="175763766237925754">好 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">關閉深色主題背景</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">關閉暗光模式</translation>
+<translation id="1881188606372070653">如因法律理由而需要變更內容，請於<ph name="BEGIN_LINK1" />「法律說明」頁面<ph name="END_LINK1" />提出要求。部分帳戶及系統資料可能會傳送予 Google。我們會根據《<ph name="BEGIN_LINK2" />私隱權政策<ph name="END_LINK2" />》及《<ph name="BEGIN_LINK3" />服務條款<ph name="END_LINK3" />》，利用您提供的資料以解決技術問題和改善服務。</translation>
 <translation id="1887850431809612466">硬件版本</translation>
+<translation id="1904932688895783618">其他實用資源如下：</translation>
 <translation id="1905710495812624430">允許的嘗試次數超過上限。</translation>
 <translation id="1908234395526491708">UDP 要求失敗</translation>
 <translation id="1932611479324127242">切斷電池供電</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">請嘗試解決疑難步驟</translation>
 <translation id="2016848882344942759">--沒有白色標籤--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">如要查看螢幕保護程式，請連上網路並重新載入頁面。</translation>
 <translation id="2080070583977670716">顯示更多設定</translation>
 <translation id="2085089206770112532">顯示屏校暗亮度</translation>
 <translation id="2105810540595158374">裝置類型係遊戲控制器。</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">開啟暗光模式</translation>
 <translation id="2177831236093724629">已偵測到<ph name="LINK_BEGIN" />不兼容的組件<ph name="LINK_END" />。為確保系統可偵測到所有兼容的組件，請將 Chrome OS 更新至最新版本。</translation>
 <translation id="2180197493692062006">發生錯誤，請嘗試重新開啟應用程式。</translation>
+<translation id="2182088270354640012">感謝您提供意見！您的意見能協助我們改善 Chrome OS，而提交的內容將由 Google 團隊審核。由於報告數量眾多，我們將不會直接回覆您。</translation>
 <translation id="2209788852729124853">重設流量計數器</translation>
 <translation id="2212733584906323460">名稱解析</translation>
 <translation id="2217935453350629363">目前速度</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">連接性診斷</translation>
 <translation id="3084958266922136097">停用螢幕保護程式</translation>
 <translation id="3091839911843451378">失敗 - 已停止</translation>
+<translation id="3096753366938912951">將上蓋放在平坦的表面上</translation>
 <translation id="3102119246920354026">快取</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">連接咗裝置。</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">正在尋找掃瞄器</translation>
 <translation id="3246869037381808805">超過 1 天前的列印工作將被移除</translation>
 <translation id="3268178239013324452">失敗 - 機蓋未關</translation>
+<translation id="3275729367986477355">顯示圖片</translation>
 <translation id="3283504360622356314">{0,plural, =1{編輯檔案}other{編輯檔案}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">金鑰方向</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">變更桌布</translation>
 <translation id="360565022852130722">已使用防護力較弱的通訊協定 WEP 802.1x 保護 Wi-Fi 網絡</translation>
 <translation id="3606583719724308068">連線至 HTTPS 網站延遲時間過長</translation>
+<translation id="361575905210396100">多謝您的意見</translation>
 <translation id="3616113530831147358">音效檔案</translation>
 <translation id="3621202678540785336">輸入</translation>
 <translation id="3632579075709132555">私隱保護畫面切換</translation>
+<translation id="3643198267586205643">更新 OS</translation>
 <translation id="3643810137582748570">略過校正</translation>
 <translation id="3651050199673793219">揀溫度單位</translation>
 <translation id="3678765385266369662">選取您想用來關閉「寫入保護」的方式</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">鎖定</translation>
 <translation id="38114475217616659">清除所有記錄</translation>
 <translation id="3820172043799983114">PIN 無效。</translation>
+<translation id="3824259034819781947">附加檔案</translation>
 <translation id="3838338534323494292">新密碼</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3856304145690230735">底座陀螺儀</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">訊號強度</translation>
 <translation id="4731797938093519117">家長存取</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4740255236714854844">將底座放在平坦的表面上</translation>
 <translation id="4744944742468440486">所揀內容嘅相關資料</translation>
 <translation id="4751272708893364980">查看退貨授權記錄</translation>
 <translation id="4773299976671772492">已停止</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">如需更多協助，請前往「<ph name="BEGIN_LINK" />說明中心<ph name="END_LINK" />」。</translation>
 <translation id="4793756956024303490">壓縮演算法</translation>
 <translation id="4794140124556169553">執行 CPU 測試可能會影響系統效能</translation>
+<translation id="4800589996161293643">Chromebook 社群</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4808449224298348341">取消咗列印工作 <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">淺色主題背景</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">在螢幕閒置時，顯示相片、時間、天氣和媒體資訊。</translation>
 <translation id="5039804452771397117">允許</translation>
+<translation id="5044978354634658544">插入 USB</translation>
 <translation id="5049856988445523908">SIM 卡已鎖定 (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">群組名稱</translation>
 <translation id="5051044138948155788">這是唯一的頁面。系統將導向掃瞄開始頁面。</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">電池狀態</translation>
 <translation id="5170568018924773124">在資料夾中顯示</translation>
 <translation id="5179530508336824319">啟用「寫入保護」功能即可繼續前往下一個畫面。請前往裝置製造商的支援網頁取得相關指示。</translation>
+<translation id="5181140330217080051">下載中</translation>
 <translation id="5190187232518914472">重溫美好回憶。如要新增或編輯相簿，請前往「<ph name="LINK_BEGIN" />Google 相片<ph name="LINK_END" />」。</translation>
 <translation id="5212543919916444558">系統在您的畫面上找不到任何可提供協助的內容。
 請嘗試輕按麥克風並發問。</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">登出</translation>
+<translation id="522307662484862935">請勿輸入電郵地址</translation>
 <translation id="5227902338748591677">深色主題背景時間表</translation>
 <translation id="5234764350956374838">關閉</translation>
 <translation id="5252456968953390977">漫遊中</translation>
@@ -526,6 +545,7 @@
 <translation id="5620281292257375798">只供內部使用</translation>
 <translation id="5649768706273821470">收聽</translation>
 <translation id="5655283760733841251">鍵盤校光亮度</translation>
+<translation id="5659593005791499971">電郵</translation>
 <translation id="5669267381087807207">啟用</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">家庭</translation>
@@ -538,6 +558,7 @@
 <translation id="57838592816432529">静音</translation>
 <translation id="5784136236926853061">HTTP 延遲時間過長</translation>
 <translation id="578753362485952307">如果您正在重新整理主機板以便在其他裝置上使用，請前往<ph name="LINK_BEGIN" />重新操作流程<ph name="LINK_END" />。</translation>
+<translation id="5790085346892983794">成功</translation>
 <translation id="5832805196449965646">新增使用者</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5843706793424741864">華氏</translation>
@@ -599,6 +620,7 @@
 <translation id="6284632978374966585">開啟深色主題背景</translation>
 <translation id="6295178529664209245">要繼續維修嗎？</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />測試已取消</translation>
+<translation id="631063167932043783">探索應用程式</translation>
 <translation id="6319207335391420837">更新「<ph name="DEVICE_NAME" />」的韌體</translation>
 <translation id="6321407676395378991">開啟螢幕保護程式</translation>
 <translation id="6325525973963619867">失敗</translation>
@@ -610,6 +632,7 @@
 <translation id="6379086450106841622">觸控螢幕</translation>
 <translation id="6381741036071372448">測試鍵盤</translation>
 <translation id="6388847657025262518">掃瞄器的文件送紙器卡住了。請檢查送紙器，然後再試一次。</translation>
+<translation id="6394634179843537518">新增檔案</translation>
 <translation id="6410257289063177456">圖片檔</translation>
 <translation id="641081527798843608">主題比對</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@
 <translation id="6516990319416533844">如要測試充電速率，請讓電池耗電一小段時間</translation>
 <translation id="6517239166834772319">探索</translation>
 <translation id="6527081081771465939">未知的 Wi-Fi 安全通訊協定</translation>
+<translation id="6535178685492749208">您已離線。意見將會在稍後傳送。</translation>
 <translation id="65587193855025101">平台式</translation>
 <translation id="6564646048574748301">失敗 - 無法連接打印機</translation>
 <translation id="6566314079205407217">多頁掃瞄</translation>
@@ -643,6 +667,7 @@
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6692996468359469499">取得您選取項目相關資料</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
+<translation id="6721744718589119342">我們可能會透過電郵提供更新資訊，或要求您提供更多資訊</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6723847290197874913">鍵盤背光</translation>
 <translation id="672609503628871915">查看最新內容</translation>
@@ -703,10 +728,12 @@
 <translation id="7297226631177386107">無法透過防火牆連線至 HTTPS 網站</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">在 Chromebook 說明論壇中詢問專家</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />；<ph name="RESULT_TEXT" />；㩒搜尋鍵加空白鍵就可以睇到 Google 搜尋入面嘅結果。</translation>
 <translation id="7343649194310845056">網絡裝置</translation>
 <translation id="7359657277149375382">檔案類型</translation>
+<translation id="73631062356239394">分享診斷資料</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">關閉淺色主題背景</translation>
@@ -737,15 +764,18 @@
 <translation id="7657530360897961171"><ph name="DEVICE_TYPE" /> 維修程序發生錯誤</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665800271478495366">改顯示圖片</translation>
+<translation id="7682274994254393134">維修開始</translation>
 <translation id="7690294790491645610">確認新密碼</translation>
 <translation id="7701040980221191251">沒有</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">週期數</translation>
 <translation id="7747039790905080783">預先共用密鑰</translation>
 <translation id="7762130827864645708">已成功變更您的密碼。請從現在開始改用新的密碼。</translation>
+<translation id="7762839321248874531">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" />，以及<ph name="BEGIN_LINK2" />數據<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">域名尾碼相符</translation>
 <translation id="7769672763586021400">型號識別碼</translation>
 <translation id="7784116172884276937">沒有設定 DNS 伺服器</translation>
+<translation id="779591286616261875">傳送新的回報內容</translation>
 <translation id="7799817062559422778">明亮模式</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
@@ -812,6 +842,7 @@
 <translation id="8382302752385457774">白色標籤</translation>
 <translation id="8395584934117017006">此 <ph name="DEVICE_TYPE" /> 由企業管理</translation>
 <translation id="8398927464629426868">裝置目前的充電或放電率</translation>
+<translation id="8420955526972171689">為硬件問題執行測試和解決疑難</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">內置鍵盤</translation>
 <translation id="8431300646573772016">Chrome OS 的新功能</translation>
@@ -897,6 +928,7 @@
 <translation id="9082718469794970195">使用這段影片</translation>
 <translation id="9087578468327036362">報告此查詢</translation>
 <translation id="9088306295921699330">目前使用量</translation>
+<translation id="9092255287806472980">你的寶貴意見有助於改善 Chrome OS，且提交的內容將由 Google 團隊進行審查。由於回報數量眾多，我們將不會逐一回覆。</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">您需要拆解裝置</translation>
 <translation id="9098156406873149060">保留使用者資料</translation>
@@ -911,6 +943,7 @@
 <translation id="9149391708638971077">執行記憶體測試</translation>
 <translation id="9173638680043580060">尚餘不到 1 分鐘</translation>
 <translation id="917720651393141712">測試</translation>
+<translation id="9188992814426075118">鍵盤可自動與桌布配搭</translation>
 <translation id="9204237731135241582">無法從 Android 應用程式連線至閘道</translation>
 <translation id="9211490828691860325">所有桌面</translation>
 <translation id="922179502584117429">目前的版本 <ph name="VERSION_NUMBER" /> 過舊</translation>

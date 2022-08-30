@@ -44,6 +44,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
@@ -183,6 +184,11 @@ std::string GenerateVolumeId(const Volume& volume) {
   // flat for the same volume type.
   return (VolumeTypeToString(volume.type()) + ":" +
           volume.mount_path().BaseName().AsUTF8Unsafe());
+}
+
+std::string FuseBoxMTPSubdir(const std::string& storage_info_location) {
+  auto suffix = base::TrimString(storage_info_location, "/", base::TRIM_ALL);
+  return std::string(kMtpVolumeIdPrefix).append(std::string(suffix));
 }
 
 std::string GetMountPointNameForMediaStorage(
@@ -600,7 +606,6 @@ VolumeManager::VolumeManager(
       disk_mount_manager_(disk_mount_manager),
       file_system_provider_service_(file_system_provider_service),
       get_mtp_storage_info_callback_(get_mtp_storage_info_callback),
-      fusebox_mounter_(FuseBoxMounter::Create()),
       snapshot_manager_(new SnapshotManager(profile_)),
       documents_provider_root_manager_(
           std::make_unique<DocumentsProviderRootManager>(
@@ -624,6 +629,10 @@ void VolumeManager::Initialize() {
     return;
   }
 
+  if (!fusebox_mounter_.get())
+    fusebox_mounter_.reset(FuseBoxMounter::Create());
+  // The fusebox_mounter_ is enabled by a chrome flag: Create() will return
+  // nullptr if the flag is disabled. Check it before attempting to Mount.
   if (fusebox_mounter_.get())
     fusebox_mounter_->Mount(disk_mount_manager_);
 
@@ -799,7 +808,7 @@ void VolumeManager::AddSshfsCrostiniVolume(
   // Listen for crostini container shutdown and remove volume.
   crostini::CrostiniManager::GetForProfile(profile_)
       ->AddShutdownContainerCallback(
-          crostini::ContainerId::GetDefault(),
+          crostini::DefaultContainerId(),
           base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
                          weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path,
                          base::BindOnce([](bool result) {
@@ -829,7 +838,7 @@ void VolumeManager::RemoveSshfsCrostiniVolume(
   disk_mount_manager_->UnmountPath(
       sshfs_mount_path.value(),
       base::BindOnce(&VolumeManager::OnSshfsCrostiniUnmountCallback,
-                     weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path,
+                     base::Unretained(this), sshfs_mount_path,
                      std::move(callback)));
 }
 
@@ -840,7 +849,7 @@ void VolumeManager::RemoveSftpGuestOsVolume(
   disk_mount_manager_->UnmountPath(
       sftp_mount_path.value(),
       base::BindOnce(&VolumeManager::OnSftpGuestOsUnmountCallback,
-                     weak_ptr_factory_.GetWeakPtr(), sftp_mount_path,
+                     base::Unretained(this), sftp_mount_path,
                      std::move(callback)));
 }
 
@@ -1428,13 +1437,16 @@ void VolumeManager::DoAttachMtpStorage(
   DCHECK(mtp_file_system_url.is_valid());
 
   // Attach the MTP storage device to the fusebox daemon.
+  std::string subdir = FuseBoxMTPSubdir(info.location());
   fusebox_mounter_->AttachStorage(
-      "mtp", url, read_only,
+      subdir, url, read_only,
       base::BindOnce(&VolumeManager::OnFuseboxAttachStorageMTP,
-                     weak_ptr_factory_.GetWeakPtr(), fsid, label, read_only));
+                     weak_ptr_factory_.GetWeakPtr(), subdir, fsid, label,
+                     read_only));
 }
 
-void VolumeManager::OnFuseboxAttachStorageMTP(const std::string& fsid,
+void VolumeManager::OnFuseboxAttachStorageMTP(const std::string& subdir,
+                                              const std::string& fsid,
                                               const std::string& label,
                                               bool read_only,
                                               int error) {
@@ -1443,7 +1455,7 @@ void VolumeManager::OnFuseboxAttachStorageMTP(const std::string& fsid,
     return;
 
   // Create a Volume for the fusebox MTP storage device.
-  const base::FilePath mount_path = base::FilePath::FromUTF8Unsafe("mtp");
+  const base::FilePath mount_path = base::FilePath(subdir);
   std::unique_ptr<Volume> volume =
       Volume::CreateForFuseBoxMTP(mount_path, label, read_only);
 
@@ -1496,7 +1508,8 @@ void VolumeManager::OnRemovableStorageDetached(
     mount_points->RevokeFileSystem(util::kFuseBox + fsid);
 
     // Detach the fusebox MTP storage device from the fusebox daemon.
-    fusebox_mounter_->DetachStorage("mtp", base::DoNothing());
+    std::string subdir = FuseBoxMTPSubdir(info.location());
+    fusebox_mounter_->DetachStorage(subdir, base::DoNothing());
     return;
   }
 }
@@ -1708,12 +1721,12 @@ void VolumeManager::OnSftpGuestOsUnmountCallback(
     // consistent, which means the mount path needs to be the same.
     // display_name, remote_mount_path and vm_type aren't needed and we don't
     // know them at unmount so leave them blank.
-    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
-                   // TODO(b/230667118): Once http://crrev/3627129 makes it into
-                   // Chrome change the type to unknown.
-                   *Volume::CreateForSftpGuestOs(
-                       "", sftp_mount_path, base::FilePath(),
-                       guest_os::VmType::ApplicationList_VmType_TERMINA));
+    DoUnmountEvent(
+        chromeos::MOUNT_ERROR_NONE,
+        // TODO(b/230667118): Once http://crrev/3627129 makes it into
+        // Chrome change the type to unknown.
+        *Volume::CreateForSftpGuestOs("", sftp_mount_path, base::FilePath(),
+                                      guest_os::VmType::TERMINA));
     if (callback)
       std::move(callback).Run(true);
     return;

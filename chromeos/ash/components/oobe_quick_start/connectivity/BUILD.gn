@@ -12,10 +12,14 @@ source_set("connectivity") {
     "//device/bluetooth",
   ]
   sources = [
-    "target_device_bootstrap_controller.cc",
-    "target_device_bootstrap_controller.h",
-    "target_device_bootstrap_controller_impl.cc",
-    "target_device_bootstrap_controller_impl.h",
+    "fast_pair_advertiser.cc",
+    "fast_pair_advertiser.h",
+    "target_device_connection_broker.cc",
+    "target_device_connection_broker.h",
+    "target_device_connection_broker_factory.cc",
+    "target_device_connection_broker_factory.h",
+    "target_device_connection_broker_impl.cc",
+    "target_device_connection_broker_impl.h",
   ]
 }
 
@@ -24,7 +28,8 @@ source_set("test_support") {
   public_deps = [ ":connectivity" ]
   deps = [ "//base" ]
   sources = [
-    # Add fakes/mocks here.
+    "fake_target_device_connection_broker.cc",
+    "fake_target_device_connection_broker.h",
   ]
 }
 
@@ -36,5 +41,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//device/bluetooth:mocks",
   ]
-  sources = [ "target_device_bootstrap_controller_impl_unittest.cc" ]
+  sources = [
+    "fast_pair_advertiser_unittest.cc",
+    "target_device_connection_broker_impl_unittest.cc",
+  ]
 }

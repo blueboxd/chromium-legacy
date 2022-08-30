@@ -22,7 +22,8 @@ bool IsVideoInputMediaType(mojom::MediaStreamType type) {
           type == mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE ||
           type == mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
           type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
-          type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB);
+          type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
+          type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET);
 }
 
 bool IsScreenCaptureMediaType(mojom::MediaStreamType type) {
@@ -42,7 +43,8 @@ bool IsDesktopCaptureMediaType(mojom::MediaStreamType type) {
 bool IsVideoDesktopCaptureMediaType(mojom::MediaStreamType type) {
   return (type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
           type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
-          type == mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE);
+          type == mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+          type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET);
 }
 
 bool IsTabCaptureMediaType(mojom::MediaStreamType type) {
@@ -142,18 +144,6 @@ bool MediaStreamDevice::IsSameDevice(
          input.sample_rate() == other_device.input.sample_rate() &&
          input.channel_layout() == other_device.input.channel_layout() &&
          session_id_ == other_device.session_id_;
-}
-
-BLINK_COMMON_EXPORT MediaStreamDevices
-ToMediaStreamDevicesList(const mojom::StreamDevices& stream_devices) {
-  blink::MediaStreamDevices devices;
-  if (stream_devices.audio_device.has_value()) {
-    devices.push_back(stream_devices.audio_device.value());
-  }
-  if (stream_devices.video_device.has_value()) {
-    devices.push_back(stream_devices.video_device.value());
-  }
-  return devices;
 }
 
 blink::MediaStreamDevices ToMediaStreamDevicesList(

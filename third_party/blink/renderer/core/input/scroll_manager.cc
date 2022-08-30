@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/base/features.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -414,8 +415,6 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
   return false;
 }
 
-// TODO(bokan): This should be merged with logicalScroll assuming
-// defaultSpaceEventHandler's chaining scroll can be done crossing frames.
 bool ScrollManager::BubblingScroll(mojom::blink::ScrollDirection direction,
                                    ui::ScrollGranularity granularity,
                                    Node* starting_node,
@@ -424,16 +423,10 @@ bool ScrollManager::BubblingScroll(mojom::blink::ScrollDirection direction,
   // here because of an onLoad event, in which case the final layout hasn't been
   // performed yet.
   frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
-  // FIXME: enable scroll customization in this case. See crbug.com/410974.
   if (LogicalScroll(direction, granularity, starting_node, mouse_press_node))
     return true;
 
-  Frame* parent_frame = frame_->Tree().Parent();
-  if (!parent_frame)
-    return false;
-
-  return parent_frame->BubbleLogicalScrollFromChildFrame(direction, granularity,
-                                                         frame_);
+  return frame_->BubbleLogicalScrollInParentFrame(direction, granularity);
 }
 
 void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
@@ -495,8 +488,8 @@ void ScrollManager::RecordScrollRelatedMetrics(WebGestureDevice device) const {
 WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollBegin");
-  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
-  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  DCHECK(!base::FeatureList::IsEnabled(::features::kScrollUnification));
+  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
     return WebInputEventResult::kNotHandled;
   }
 
@@ -584,8 +577,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollUpdate");
   DCHECK_EQ(gesture_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
 
-  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
-  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  DCHECK(!base::FeatureList::IsEnabled(::features::kScrollUnification));
+  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
     return WebInputEventResult::kNotHandled;
   }
 
@@ -751,8 +744,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
 
-  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
-  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  DCHECK(!base::FeatureList::IsEnabled(::features::kScrollUnification));
+  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
     return WebInputEventResult::kNotHandled;
   }
 
@@ -807,7 +800,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
           }
 
           Node* scroll_end_target = scroll_manager->GetScrollEventTarget();
-          if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled() &&
+          if (RuntimeEnabledFeatures::ScrollEndEventsEnabled() &&
               scroll_end_target) {
             scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
                 scroll_end_target);
@@ -929,7 +922,7 @@ gfx::PointF ScrollManager::ScrollByForSnapFling(const gfx::Vector2dF& delta) {
 }
 
 void ScrollManager::ScrollEndForSnapFling(bool did_finish) {
-  if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
+  if (RuntimeEnabledFeatures::ScrollEndEventsEnabled()) {
     if (Node* scroll_end_target = GetScrollEventTarget()) {
       scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
           scroll_end_target);
@@ -1077,19 +1070,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
   if (event_target) {
     if (HandleScrollGestureOnResizer(event_target, gesture_event))
       return WebInputEventResult::kHandledSuppressed;
-
-    GestureEvent* gesture_dom_event = GestureEvent::Create(
-        event_target->GetDocument().domWindow(), gesture_event);
-    if (gesture_dom_event) {
-      DispatchEventResult gesture_dom_event_result =
-          event_target->DispatchEvent(*gesture_dom_event);
-      if (gesture_dom_event_result != DispatchEventResult::kNotCanceled) {
-        DCHECK(gesture_dom_event_result !=
-               DispatchEventResult::kCanceledByEventHandler);
-        return event_handling_util::ToWebInputEventResult(
-            gesture_dom_event_result);
-      }
-    }
   }
 
   if (snap_fling_controller_) {

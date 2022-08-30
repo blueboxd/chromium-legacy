@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
 
@@ -60,13 +61,8 @@ class TestResult {
 class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
  public:
   explicit LinuxInputMethodContextForTesting(
-      LinuxInputMethodContextDelegate* delegate,
-      bool is_simple)
-      : delegate_(delegate),
-        is_simple_(is_simple),
-        is_sync_mode_(false),
-        eat_key_(false),
-        focused_(false) {}
+      LinuxInputMethodContextDelegate* delegate)
+      : delegate_(delegate), is_sync_mode_(false), eat_key_(false) {}
 
   LinuxInputMethodContextForTesting(const LinuxInputMethodContextForTesting&) =
       delete;
@@ -134,11 +130,10 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     // For the purposes of tests if kPropertyKeyboardImeFlag is not
     // explicitly set assume the event is not a key event.
     if (!properties)
-      return false;
+      return true;
     auto it = properties->find(kPropertyKeyboardImeFlag);
-    if (it == properties->end()) {
-      return false;
-    }
+    if (it == properties->end())
+      return true;
     return !(it->second[0] & kPropertyKeyboardImeIgnoredFlag);
   }
 
@@ -146,13 +141,7 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
 
   void UpdateFocus(bool has_client,
                    TextInputType old_type,
-                   TextInputType new_type) override {
-    if (is_simple_) {
-      focused_ = has_client;
-    } else {
-      focused_ = new_type != TEXT_INPUT_TYPE_NONE;
-    }
-  }
+                   TextInputType new_type) override {}
 
   void SetCursorLocation(const gfx::Rect& rect) override {
     cursor_position_ = rect;
@@ -180,14 +169,15 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     should_do_learning_ = should_do_learning;
   }
 
+  void SetGrammarFragmentAtCursor(
+      const ui::GrammarFragment& fragment) override {}
+
  private:
-  LinuxInputMethodContextDelegate* delegate_;
+  raw_ptr<LinuxInputMethodContextDelegate> delegate_;
   VirtualKeyboardControllerStub virtual_keyboard_controller_;
-  const bool is_simple_;
   std::vector<std::u16string> actions_;
   bool is_sync_mode_;
   bool eat_key_;
-  bool focused_;
   gfx::Rect cursor_position_;
   TextInputType input_type_;
   TextInputMode input_mode_;
@@ -206,10 +196,8 @@ class LinuxInputMethodContextFactoryForTesting
       const LinuxInputMethodContextFactoryForTesting&) = delete;
 
   std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
-      LinuxInputMethodContextDelegate* delegate,
-      bool is_simple) const override {
-    return std::make_unique<LinuxInputMethodContextForTesting>(delegate,
-                                                               is_simple);
+      LinuxInputMethodContextDelegate* delegate) const override {
+    return std::make_unique<LinuxInputMethodContextForTesting>(delegate);
   }
 };
 
@@ -327,8 +315,7 @@ class InputMethodAuraLinuxTest : public testing::Test {
       : factory_(nullptr),
         input_method_auralinux_(nullptr),
         delegate_(nullptr),
-        context_(nullptr),
-        context_simple_(nullptr) {
+        context_(nullptr) {
     factory_ = new LinuxInputMethodContextFactoryForTesting();
     LinuxInputMethodContextFactory::SetInstance(factory_);
     test_result_ = TestResult::GetInstance();
@@ -344,20 +331,13 @@ class InputMethodAuraLinuxTest : public testing::Test {
     input_method_auralinux_ = new InputMethodAuraLinux(delegate_);
     input_method_auralinux_->OnFocus();
     context_ = static_cast<LinuxInputMethodContextForTesting*>(
-        input_method_auralinux_->GetContextForTesting(false));
-    context_simple_ = static_cast<LinuxInputMethodContextForTesting*>(
-        input_method_auralinux_->GetContextForTesting(true));
+        input_method_auralinux_->GetContextForTesting());
   }
 
   void TearDown() override {
     context_->SetSyncMode(false);
     context_->SetEatKey(false);
-
-    context_simple_->SetSyncMode(false);
-    context_simple_->SetEatKey(false);
-
     context_ = nullptr;
-    context_simple_ = nullptr;
 
     delete input_method_auralinux_;
     input_method_auralinux_ = nullptr;
@@ -365,12 +345,11 @@ class InputMethodAuraLinuxTest : public testing::Test {
     delegate_ = nullptr;
   }
 
-  LinuxInputMethodContextFactoryForTesting* factory_;
-  InputMethodAuraLinux* input_method_auralinux_;
-  InputMethodDelegateForTesting* delegate_;
-  LinuxInputMethodContextForTesting* context_;
-  LinuxInputMethodContextForTesting* context_simple_;
-  TestResult* test_result_;
+  raw_ptr<LinuxInputMethodContextFactoryForTesting> factory_;
+  raw_ptr<InputMethodAuraLinux> input_method_auralinux_;
+  raw_ptr<InputMethodDelegateForTesting> delegate_;
+  raw_ptr<LinuxInputMethodContextForTesting> context_;
+  raw_ptr<TestResult> test_result_;
 };
 
 TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
@@ -396,8 +375,7 @@ TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
   input_method_auralinux_->DetachTextInputClient(client.get());
   client =
       std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_PASSWORD);
-  context_simple_->SetSyncMode(true);
-  context_simple_->SetEatKey(false);
+  context_->SetEatKey(false);
 
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -438,8 +416,7 @@ TEST_F(InputMethodAuraLinuxTest, BasicAsyncModeTest) {
   input_method_auralinux_->DetachTextInputClient(client.get());
   client =
       std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_PASSWORD);
-  context_simple_->SetSyncMode(false);
-  context_simple_->SetEatKey(false);
+  context_->SetEatKey(false);
 
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -619,8 +596,8 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
               test_result_);
 }
 
-TEST_F(InputMethodAuraLinuxTest, DeadKeySimpleContextTest) {
-  DeadKeyTest(TEXT_INPUT_TYPE_NONE, input_method_auralinux_, context_simple_,
+TEST_F(InputMethodAuraLinuxTest, DeadKeyTestTypeNone) {
+  DeadKeyTest(TEXT_INPUT_TYPE_NONE, input_method_auralinux_, context_,
               test_result_);
 }
 
@@ -628,15 +605,15 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeySimpleContextTest) {
 // consumed by IME. In that case, the peek key should not be dispatched.
 TEST_F(InputMethodAuraLinuxTest, MockWaylandEventsTest) {
   KeyEvent peek_key(ET_KEY_PRESSED, VKEY_TAB, 0);
-  ui::Event::Properties properties;
-  properties[ui::kPropertyKeyboardImeFlag] =
-      std::vector<uint8_t>(ui::kPropertyKeyboardImeIgnoredFlag);
-  peek_key.SetProperties(properties);
   input_method_auralinux_->DispatchKeyEvent(&peek_key);
   // No expected action for peek key events.
   test_result_->Verify();
 
   KeyEvent key(ET_KEY_PRESSED, VKEY_TAB, 0);
+  ui::Event::Properties properties;
+  properties[ui::kPropertyKeyboardImeFlag] =
+      std::vector<uint8_t>({ui::kPropertyKeyboardImeIgnoredFlag});
+  key.SetProperties(properties);
   input_method_auralinux_->DispatchKeyEvent(&key);
   test_result_->ExpectAction("keydown:9");
   test_result_->Verify();
@@ -948,6 +925,18 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   test_result_->Verify();
 }
 
+TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest_PeekKey) {
+  context_->SetSyncMode(true);
+  context_->SetEatKey(true);
+
+  KeyEvent key(ET_KEY_RELEASED, VKEY_A, 0);
+  key.set_character(L'A');
+  input_method_auralinux_->DispatchKeyEvent(&key);
+
+  test_result_->ExpectAction("keyup:65");
+  test_result_->Verify();
+}
+
 TEST_F(InputMethodAuraLinuxTest, SurroundingText_NoSelectionTest) {
   std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
@@ -999,6 +988,62 @@ TEST_F(InputMethodAuraLinuxTest, SurroundingText_PartialText) {
   test_result_->ExpectAction("surroundingtext:fghij");
   test_result_->ExpectAction("selectionrangestart:7");
   test_result_->ExpectAction("selectionrangeend:9");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SetPreeditRegionSingleCharTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  client->surrounding_text = u"a";
+  client->text_range = gfx::Range(0, 1);
+  client->selection_range = gfx::Range(1, 1);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+  input_method_auralinux_->OnSetPreeditRegion(client->text_range,
+                                              std::vector<ImeTextSpan>());
+
+  test_result_->ExpectAction("surroundingtext:a");
+  test_result_->ExpectAction("selectionrangestart:1");
+  test_result_->ExpectAction("selectionrangeend:1");
+
+  input_method_auralinux_->OnCommit(u"a");
+
+  // Verifies single char commit under composition mode will call InsertText
+  // instead of InsertChar.
+  test_result_->ExpectAction("textinput:a");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SetPreeditRegionCompositionEndTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  input_method_auralinux_->OnCommit(u"a");
+
+  test_result_->ExpectAction("keypress:97");
+
+  client->surrounding_text = u"a";
+  client->text_range = gfx::Range(0, 1);
+  client->selection_range = gfx::Range(1, 1);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+  input_method_auralinux_->OnSetPreeditRegion(client->text_range,
+                                              std::vector<ImeTextSpan>());
+
+  test_result_->ExpectAction("surroundingtext:a");
+  test_result_->ExpectAction("selectionrangestart:1");
+  test_result_->ExpectAction("selectionrangeend:1");
+
+  CompositionText comp;
+  comp.text = u"";
+  input_method_auralinux_->OnPreeditChanged(comp);
+
+  test_result_->ExpectAction("compositionend");
   test_result_->Verify();
 }
 

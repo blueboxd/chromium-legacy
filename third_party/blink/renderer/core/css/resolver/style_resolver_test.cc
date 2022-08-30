@@ -33,7 +33,9 @@
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -1307,7 +1309,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotNone2) {
       WebFeature::kTextShadowNotNoneInHighlightPseudo));
 }
 
-TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
+TEST_F(StyleResolverTestCQ, DependsOnSizeContainerQueries) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: red; }
@@ -1338,14 +1340,14 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
   ASSERT_TRUE(d);
   ASSERT_TRUE(e);
 
-  EXPECT_FALSE(a->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_TRUE(b->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_TRUE(c->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_TRUE(d->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_FALSE(e->ComputedStyleRef().DependsOnContainerQueries());
+  EXPECT_FALSE(a->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_TRUE(b->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_TRUE(c->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_TRUE(d->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_FALSE(e->ComputedStyleRef().DependsOnSizeContainerQueries());
 }
 
-TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
+TEST_F(StyleResolverTestCQ, DependsOnSizeContainerQueriesPseudo) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       main { container-type: size; width: 100px; }
@@ -1369,14 +1371,14 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
   ASSERT_TRUE(before);
   ASSERT_TRUE(after);
 
-  EXPECT_TRUE(a->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_FALSE(before->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_TRUE(after->ComputedStyleRef().DependsOnContainerQueries());
+  EXPECT_TRUE(a->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_FALSE(before->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_TRUE(after->ComputedStyleRef().DependsOnSizeContainerQueries());
 }
 
-// Verify that the ComputedStyle::DependsOnContainerQuery flag does
+// Verify that the ComputedStyle::DependsOnSizeContainerQuery flag does
 // not end up in the MatchedPropertiesCache (MPC).
-TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
+TEST_F(StyleResolverTestCQ, DependsOnSizeContainerQueriesMPC) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       @container (min-width: 9999999px) {
@@ -1391,9 +1393,9 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
   // rules (i.e. whatever is provided by UA style). The selector inside
   // the @container rule does ultimately _not_ match <div id=a> (because the
   // container query evaluates to 'false'), however, it _does_ cause the
-  // ComputedStyle::DependsOnContainerQuery flag to be set on #a.
+  // ComputedStyle::DependsOnSizeContainerQuery flag to be set on #a.
   //
-  // We must ensure that we don't add the DependsOnContainerQuery-flagged
+  // We must ensure that we don't add the DependsOnSizeContainerQuery-flagged
   // style to the MPC, otherwise the subsequent cache hit for #b would result
   // in the flag being (incorrectly) set for that element.
 
@@ -1405,8 +1407,8 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_TRUE(a->ComputedStyleRef().DependsOnContainerQueries());
-  EXPECT_FALSE(b->ComputedStyleRef().DependsOnContainerQueries());
+  EXPECT_TRUE(a->ComputedStyleRef().DependsOnSizeContainerQueries());
+  EXPECT_FALSE(b->ComputedStyleRef().DependsOnSizeContainerQueries());
 }
 
 TEST_F(StyleResolverTest, NoCascadeLayers) {
@@ -2511,6 +2513,391 @@ TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Last_Style) {
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
       << "Counted when -webkit-border-image is last and there's no "
          "border-width";
+}
+
+TEST_F(StyleResolverTest, PositionFallbackStylesBasic) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --fallback {
+        @try { left: 100px; }
+        @try { top: 100px; }
+        @try { inset: 50px; }
+      }
+      #target {
+        position: absolute;
+        position-fallback: --fallback;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  const ComputedStyle* base_style = target->GetComputedStyle();
+  ASSERT_TRUE(base_style);
+  EXPECT_EQ(Length::Auto(), base_style->Top());
+  EXPECT_EQ(Length::Auto(), base_style->Left());
+
+  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  ASSERT_TRUE(try1);
+  EXPECT_EQ(Length::Auto(), try1->Top());
+  EXPECT_EQ(Length::Fixed(100), try1->Left());
+
+  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  ASSERT_TRUE(try2);
+  EXPECT_EQ(Length::Fixed(100), try2->Top());
+  EXPECT_EQ(Length::Auto(), try2->Left());
+
+  // Shorthand should also work
+  const ComputedStyle* try3 = target->StyleForPositionFallback(2);
+  ASSERT_TRUE(try3);
+  EXPECT_EQ(Length::Fixed(50), try3->Top());
+  EXPECT_EQ(Length::Fixed(50), try3->Left());
+  EXPECT_EQ(Length::Fixed(50), try3->Bottom());
+  EXPECT_EQ(Length::Fixed(50), try3->Right());
+
+  // Returns nullptr when index is out of bound.
+  EXPECT_FALSE(target->StyleForPositionFallback(3));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackNameInvalid) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        position: absolute;
+        position-fallback: --invalid;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  EXPECT_FALSE(target->StyleForPositionFallback(0));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackStylesResolveLogicalProperties) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --fallback {
+        @try { inset-inline-start: 100px; }
+        @try { inset-block: 100px 90px; }
+      }
+      #target {
+        position: absolute;
+        writing-mode: vertical-rl;
+        direction: rtl;
+        inset: 50px;
+        position-fallback: --fallback;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  const ComputedStyle* base_style = target->GetComputedStyle();
+  ASSERT_TRUE(base_style);
+  EXPECT_EQ(Length::Fixed(50), base_style->Top());
+  EXPECT_EQ(Length::Fixed(50), base_style->Left());
+  EXPECT_EQ(Length::Fixed(50), base_style->Bottom());
+  EXPECT_EQ(Length::Fixed(50), base_style->Right());
+
+  // 'inset-inline-start' should resolve to 'bottom'
+  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  ASSERT_TRUE(try1);
+  EXPECT_EQ(Length::Fixed(50), try1->Top());
+  EXPECT_EQ(Length::Fixed(50), try1->Left());
+  EXPECT_EQ(Length::Fixed(100), try1->Bottom());
+  EXPECT_EQ(Length::Fixed(50), try1->Right());
+
+  // 'inset-block' with two parameters should set 'right' and then 'left'
+  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  ASSERT_TRUE(try2);
+  EXPECT_EQ(Length::Fixed(50), try2->Top());
+  EXPECT_EQ(Length::Fixed(90), try2->Left());
+  EXPECT_EQ(Length::Fixed(50), try2->Bottom());
+  EXPECT_EQ(Length::Fixed(100), try2->Right());
+
+  EXPECT_FALSE(target->StyleForPositionFallback(2));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackStylesResolveRelativeLengthUnits) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --fallback {
+        @try { top: 2em; }
+      }
+      #target {
+        position: absolute;
+        font-size: 20px;
+        position-fallback: --fallback;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  const ComputedStyle* base_style = target->GetComputedStyle();
+  ASSERT_TRUE(base_style);
+  EXPECT_EQ(Length::Auto(), base_style->Top());
+
+  // '2em' should resolve to '40px'
+  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  ASSERT_TRUE(try1);
+  EXPECT_EQ(Length::Fixed(40), try1->Top());
+
+  EXPECT_FALSE(target->StyleForPositionFallback(1));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackStylesInBeforePseudoElement) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --fallback {
+        @try { top: 50px; }
+      }
+      #target::before {
+        display: block;
+        content: 'before';
+        position: absolute;
+        position-fallback: --fallback;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  Element* before = target->GetPseudoElement(kPseudoIdBefore);
+  ASSERT_TRUE(before);
+
+  const ComputedStyle* base_style = before->GetComputedStyle();
+  ASSERT_TRUE(base_style);
+  EXPECT_EQ(Length::Auto(), base_style->Top());
+
+  // 'position-fallback' applies to ::before pseudo-element.
+  const ComputedStyle* try1 = before->StyleForPositionFallback(0);
+  ASSERT_TRUE(try1);
+  EXPECT_EQ(Length::Fixed(50), try1->Top());
+
+  EXPECT_FALSE(before->StyleForPositionFallback(1));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackStylesCSSWideKeywords) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --fallback {
+        @try { top: initial }
+        @try { left: inherit }
+        @try { right: unset }
+        /* 'revert' and 'revert-layer' are already rejected by parser */
+      }
+      #target {
+        position: absolute;
+        inset: 50px;
+        position-fallback: --fallback;
+      }
+      #container {
+        position: absolute;
+        inset: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="target"></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+  const ComputedStyle* base_style = target->GetComputedStyle();
+  ASSERT_TRUE(base_style);
+  EXPECT_EQ(Length::Fixed(50), base_style->Top());
+  EXPECT_EQ(Length::Fixed(50), base_style->Left());
+  EXPECT_EQ(Length::Fixed(50), base_style->Bottom());
+  EXPECT_EQ(Length::Fixed(50), base_style->Right());
+
+  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  ASSERT_TRUE(try1);
+  EXPECT_EQ(Length::Auto(), try1->Top());
+  EXPECT_EQ(Length::Fixed(50), try1->Left());
+  EXPECT_EQ(Length::Fixed(50), try1->Bottom());
+  EXPECT_EQ(Length::Fixed(50), try1->Right());
+
+  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  ASSERT_TRUE(try2);
+  EXPECT_EQ(Length::Fixed(50), try2->Top());
+  EXPECT_EQ(Length::Fixed(100), try2->Left());
+  EXPECT_EQ(Length::Fixed(50), try2->Bottom());
+  EXPECT_EQ(Length::Fixed(50), try2->Right());
+
+  const ComputedStyle* try3 = target->StyleForPositionFallback(2);
+  ASSERT_TRUE(try3);
+  EXPECT_EQ(Length::Fixed(50), try3->Top());
+  EXPECT_EQ(Length::Fixed(50), try3->Left());
+  EXPECT_EQ(Length::Fixed(50), try3->Bottom());
+  EXPECT_EQ(Length::Auto(), try3->Right());
+
+  EXPECT_FALSE(target->StyleForPositionFallback(3));
+}
+
+TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @position-fallback --foo {
+        @try { top: 100px }
+      }
+      @position-fallback --bar {
+        @try { left: 100px }
+      }
+      #target {
+        position: absolute;
+        position-fallback: --foo;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetElementById("target");
+
+  {
+    const ComputedStyle* base_style = target->GetComputedStyle();
+    ASSERT_TRUE(base_style);
+    EXPECT_EQ(Length::Auto(), base_style->Top());
+    EXPECT_EQ(Length::Auto(), base_style->Left());
+
+    const ComputedStyle* fallback = target->StyleForPositionFallback(0);
+    ASSERT_TRUE(fallback);
+    EXPECT_EQ(Length::Fixed(100), fallback->Top());
+    EXPECT_EQ(Length::Auto(), fallback->Left());
+
+    EXPECT_FALSE(target->StyleForPositionFallback(1));
+  }
+
+  target->SetInlineStyleProperty(CSSPropertyID::kPositionFallback, "--bar");
+  UpdateAllLifecyclePhasesForTest();
+
+  {
+    const ComputedStyle* base_style = target->GetComputedStyle();
+    ASSERT_TRUE(base_style);
+    EXPECT_EQ(Length::Auto(), base_style->Top());
+    EXPECT_EQ(Length::Auto(), base_style->Left());
+
+    const ComputedStyle* fallback = target->StyleForPositionFallback(0);
+    ASSERT_TRUE(fallback);
+    ASSERT_TRUE(fallback);
+    EXPECT_EQ(Length::Auto(), fallback->Top());
+    EXPECT_EQ(Length::Fixed(100), fallback->Left());
+
+    EXPECT_FALSE(target->StyleForPositionFallback(1));
+  }
+}
+
+TEST_F(StyleResolverTest,
+       PseudoElementWithAnimationAndOriginatingElementStyleChange) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          width:100px;
+          height:100px;
+          background:red;
+        }
+        div:before {
+          content:"blahblahblah";
+          background:blue;
+          transition:all 1s;
+        }
+        .content:before {
+          content:"blahblah";
+        }
+        .color:before {
+          background:red;
+        }
+      </style>
+      <div class="content color" id="target"></div>
+    )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* element = GetDocument().getElementById("target");
+  ASSERT_TRUE(element);
+  auto* before = element->GetPseudoElement(kPseudoIdBefore);
+  ASSERT_TRUE(before);
+
+  // Remove the color class to start an animation.
+  NonThrowableExceptionState exception_state;
+  element->classList().remove({"color"}, exception_state);
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(before->GetElementAnimations());
+
+  // Trigger a style invalidation for the transition animation and remove the
+  // class from the originating element. The latter should reset the animation
+  // bit.
+  before->SetNeedsAnimationStyleRecalc();
+  EXPECT_TRUE(before->GetElementAnimations()->IsAnimationStyleChange());
+  element->classList().remove({"content"}, exception_state);
+  EXPECT_TRUE(element->NeedsStyleRecalc());
+
+  // Element::RecalcOwnStyle should detect that the style change on the
+  // "target" ancestor node requires re-computing the base style for the
+  // pseudo element and skip the optimization for animation style change.
+  UpdateAllLifecyclePhasesForTest();
+}
+
+TEST_F(StyleResolverTestCQ, ContainerUnitContext) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #container, #div { container-type:size; }
+      #container {
+        width: 200px;
+        height: 200px;
+      }
+      #div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="div"></div>
+    </div>
+  )HTML");
+
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+
+  scoped_refptr<ComputedStyle> style =
+      ComputedStyle::Clone(div->ComputedStyleRef());
+
+  // Don't provide a StyleRecalcContext here.
+  StyleResolverState state(GetDocument(), *div);
+
+  // To make UpdateLengthConversionData happen.
+  state.SetStyle(style);
+
+  EXPECT_DOUBLE_EQ(200.0, state.CssToLengthConversionData().ContainerWidth());
+  EXPECT_DOUBLE_EQ(200.0, state.CssToLengthConversionData().ContainerHeight());
 }
 
 }  // namespace blink

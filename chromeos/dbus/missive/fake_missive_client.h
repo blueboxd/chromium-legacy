@@ -5,10 +5,16 @@
 #ifndef CHROMEOS_DBUS_MISSIVE_FAKE_MISSIVE_CLIENT_H_
 #define CHROMEOS_DBUS_MISSIVE_FAKE_MISSIVE_CLIENT_H_
 
+#include <vector>
+
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/missive/missive_client.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 
 namespace chromeos {
 
@@ -23,7 +29,7 @@ class COMPONENT_EXPORT(MISSIVE) FakeMissiveClient
   FakeMissiveClient(const FakeMissiveClient& other) = delete;
   FakeMissiveClient& operator=(const FakeMissiveClient& other) = delete;
 
-  void Init() override;
+  void Init();
 
   // MissiveClient implementation:
   void EnqueueRecord(
@@ -39,6 +45,17 @@ class COMPONENT_EXPORT(MISSIVE) FakeMissiveClient
                      bool force_confirm) override;
   TestInterface* GetTestInterface() override;
   base::WeakPtr<MissiveClient> GetWeakPtr() override;
+
+  // |MissiveClient::TestInterface| implementation:
+  const std::vector<::reporting::Record>& GetEnqueuedRecords(
+      ::reporting::Priority priority) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+ private:
+  base::flat_map<::reporting::Priority, std::vector<::reporting::Record>>
+      enqueued_records_;
+  base::ObserverList<Observer> observer_list_;
 
   // Weak pointer factory - must be last member of the class.
   base::WeakPtrFactory<FakeMissiveClient> weak_ptr_factory_{this};

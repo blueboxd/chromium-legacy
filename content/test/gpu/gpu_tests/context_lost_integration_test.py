@@ -160,6 +160,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'webgl_with_select_element.html'),
              ('ContextLost_WebGLContextLostInHiddenTab',
               'webgl.html?query=kill_after_notification'),
+             ('ContextLost_WebGLContextLostOverlyLargeUniform',
+              'webgl-overly-large-uniform.html'),
              ('ContextLost_WebGLBlockedAfterJSNavigation',
               'webgl-domain-blocking-page1.html'),
              ('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
@@ -171,6 +173,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('ContextLost_WorkerRAFAfterGPUCrash',
               'worker-raf-after-gpu-crash.html'),
              ('ContextLost_WebGL2Blocked', 'webgl2-context-blocked.html'),
+             ('ContextLost_WebGL2UnpackImageHeight',
+              'webgl2-unpack-image-height.html'),
              ('ContextLost_MacWebGLMultisamplingHighPowerSwitchLosesContext',
               'webgl2-multisampling-high-power-switch-loses-context.html'),
              ('ContextLost_MacWebGLMultisamplingHighPowerSwitchDoesNotCrash',
@@ -403,6 +407,16 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tab.Activate()
     self._WaitForTabAndCheckCompletion()
 
+  def _ContextLost_WebGLContextLostOverlyLargeUniform(self,
+                                                      test_path: str) -> None:
+    self.RestartBrowserIfNecessaryWithArgs([
+        cba.DISABLE_DOMAIN_BLOCKING_FOR_3D_APIS,
+        '--enable-features=DisableArrayBufferSizeLimitsForTesting'
+    ])
+    self._NavigateAndWaitForLoad(test_path)
+    # No reason to wait more than 10 seconds for this test to complete.
+    self._WaitForTabAndCheckCompletion(timeout=10)
+
   def _ContextLost_WebGLBlockedAfterJSNavigation(self, test_path: str) -> None:
     self.RestartBrowserIfNecessaryWithArgs([])
     self._NavigateAndWaitForLoad(test_path)
@@ -497,6 +511,15 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Attempting to create a WebGL 2.0 context when ES 3.0 is
     # blocklisted should not cause the GPU process to crash.
     self._CheckCrashCount(tab, 0)
+
+  def _ContextLost_WebGL2UnpackImageHeight(self, test_path: str) -> None:
+    self.RestartBrowserIfNecessaryWithArgs([
+        cba.DISABLE_DOMAIN_BLOCKING_FOR_3D_APIS,
+        '--enable-features=DisableArrayBufferSizeLimitsForTesting'
+    ])
+    self._NavigateAndWaitForLoad(test_path)
+    # No reason to wait more than 10 seconds for this test to complete.
+    self._WaitForTabAndCheckCompletion(timeout=10)
 
   def _ContextLost_MacWebGLMultisamplingHighPowerSwitchLosesContext(
       self, test_path: str) -> None:

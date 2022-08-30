@@ -102,6 +102,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />. Druk op Enter om de Agenda-weergave te openen.</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is verwisseld met <ph name="SECOND_ITEM_TITLE" /></translation>
+<translation id="1500926532737552529">Alle suggesties tonen</translation>
 <translation id="1503394326855300303">Dit eigenaarsaccount is het eerste account waarop moet worden ingelogd wanneer meerdere inlogsessies worden uitgevoerd.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1516740043221086139">Niet storen staat aan.</translation>
@@ -151,6 +152,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1771761307086386028">Naar rechts scrollen</translation>
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, momenteel is <ph name="DATE" /> geselecteerd.</translation>
 <translation id="1787955149152357925">Uit</translation>
+<translation id="1797271123677381264">Wachtwoord vergeten</translation>
 <translation id="181103072419391116">Signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>
 <translation id="1812997170047690955">Wat wordt er op mijn scherm getoond?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -535,6 +537,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4115378294792113321">Magenta</translation>
 <translation id="412298498316631026">venster</translation>
 <translation id="4123259114412175274">Zorg dat bluetooth aanstaat op je telefoon om je Chromebook te ontgrendelen</translation>
+<translation id="4125970834901680537">Kan apps niet streamen in de tabletmodus. Probeer het opnieuw in de laptopmodus.</translation>
 <translation id="4129129681837227511">Als je meldingen op je vergrendelscherm wilt zien, ontgrendel je het scherm om de instellingen te wijzigen</translation>
 <translation id="4136724716305260864">Aan tot zonsopgang</translation>
 <translation id="4146833061457621061">Speel muziek</translation>
@@ -552,6 +555,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4215497585250573029">VPN-instellingen</translation>
 <translation id="4217571870635786043">Dicteren</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, geïnstalleerde app, onderbroken</translation>
+<translation id="423685346499232137">Kan momenteel geen content kopiëren of plakken</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -606,9 +610,11 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Ontkoppelde apparaten</translation>
 <translation id="4505050298327493054">Actief bureaublad.</translation>
+<translation id="450584155212756404">Dev-kanaal</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4518404433291145981">Ontgrendel eerst je telefoon om je Chromebook te ontgrendelen</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen.</translation>
+<translation id="4533343294786968049">De batterijduur wordt verlengd. De batterij is om <ph name="FULLY_CHARGE_TIME" /> volledig opgeladen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot volledig opgeladen</translation>
 <translation id="4538824937723742295">Screenshot van volledig scherm maken</translation>
 <translation id="4544483149666270818">Selecteer een venster om op te nemen</translation>
@@ -872,6 +878,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="6062360702481658777">Je wordt automatisch uitgelogd over <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064463340679478396">Klaar met gebruik van het bestand</translation>
 <translation id="6073451960410192870">Opname stoppen</translation>
+<translation id="6074087755403037157">Bètakanaal</translation>
 <translation id="6099678161144790572">In de afgelopen maand bewerkt</translation>
 <translation id="6103838137565245112">systeem</translation>
 <translation id="6114505516289286752">Spraakbestanden in het <ph name="LANGUAGE" /> gedownload</translation>
@@ -1002,7 +1009,7 @@ Nieuwe installatie</translation>
 <translation id="6886172995547742638">Je <ph name="DEVICE_TYPE" /> kan slechtere prestaties leveren. Gebruik een gecertificeerde USB-C-voedingsadapter van <ph name="PREFERRED_MINIMUM_POWER" /> W of hoger.</translation>
 <translation id="688631446150864480">Druk op de pijl-omlaag om tussen vensters te schakelen</translation>
 <translation id="6891721121089053234">Recente foto's, media en apps van je telefoon bekijken op je <ph name="DEVICE_TYPE" /></translation>
-<translation id="6896758677409633944">Kopiëren</translation>
+<translation id="6896758677409633944">Kopieer</translation>
 <translation id="6901883536534621389">Gebaren gebruiken om te navigeren</translation>
 <translation id="6919251195245069855">Je smartkaart wordt niet herkend. Probeer het opnieuw.</translation>
 <translation id="6921188888306725546">Sneltoetsen zijn verbeterd</translation>
@@ -1219,6 +1226,7 @@ Nieuwe installatie</translation>
 <translation id="8200772114523450471">Doorgaan</translation>
 <translation id="8203795194971602413">Klik met rechtermuisknop</translation>
 <translation id="8209010265547628927">Resetten</translation>
+<translation id="8214996719228530800">Canary-kanaal</translation>
 <translation id="8219451629189078428">Je Chromebook moet ondertussen aan blijven en zijn aangesloten op een stopcontact. Zorg dat de kabels van de oplader of adapter goed zijn aangesloten, zowel op je Chromebook als op het stopcontact. Zet je Chromebook niet uit.</translation>
 <translation id="8236042855478648955">Tijd voor een pauze</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />, telefoonbatterij <ph name="BATTERY_STATUS" /></translation>
@@ -1227,7 +1235,6 @@ Nieuwe installatie</translation>
 <translation id="826107067893790409">Druk op Enter om te ontgrendelen voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8270450402312105425">{0,plural, =1{Zet het apparaat binnen een uur terug naar een oudere versie}other{Zet het apparaat binnen # uur terug naar een oudere versie}}</translation>
-<translation id="8271580342040932214">Je batterij is tijdelijk opgeladen tot 80% terwijl deze is aangesloten om de batterijduur te verlengen. De batterij wordt vóór <ph name="FULLY_CHARGE_TIME" /> volledig opgeladen.</translation>
 <translation id="8284362522226889623">Swipe met 4 vingers naar links om naar het vorige bureau te schakelen</translation>
 <translation id="828708037801473432">Uit</translation>
 <translation id="8297006494302853456">Zwak</translation>

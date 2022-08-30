@@ -400,24 +400,20 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
       gfx::Rect geometry_rect = iter.geometry_rect();
       geometry_rect.Offset(quad_offset);
       gfx::Rect visible_geometry_rect = geometry_rect;
-      // TODO(crbug/1308932): Remove  toSkColor  and make all SkColor4f.
       debug_border_quad->SetNew(shared_quad_state, geometry_rect,
-                                visible_geometry_rect, color.toSkColor(),
-                                width);
+                                visible_geometry_rect, color, width);
     }
   }
 
   if (layer_tree_impl()->debug_state().highlight_non_lcd_text_layers) {
-    // TODO(crbug/1308932): Remove all instances of toSkColor below and make all
-    // SkColor4f.
     SkColor4f color =
         DebugColors::NonLCDTextHighlightColor(lcd_text_disallowed_reason());
     if (color != SkColors::kTransparent &&
         GetRasterSource()->GetDisplayItemList()->AreaOfDrawText(
             gfx::Rect(bounds()))) {
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>()->SetNew(
-          shared_quad_state, debug_border_rect, debug_border_rect,
-          color.toSkColor(), append_quads_data);
+          shared_quad_state, debug_border_rect, debug_border_rect, color,
+          append_quads_data);
     }
   }
 
@@ -499,9 +495,11 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
           if (alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+            // TODO(crbug.com/1308932): draw_info.solid_color to SkColor4f
             quad->SetNew(
                 shared_quad_state, offset_geometry_rect,
-                offset_visible_geometry_rect, draw_info.solid_color(),
+                offset_visible_geometry_rect,
+                SkColor4f::FromColor(draw_info.solid_color()),
                 !layer_tree_impl()->settings().enable_edge_anti_aliasing);
             ValidateQuadResources(quad);
           }
@@ -522,9 +520,8 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
       }
       auto* quad =
           render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
       quad->SetNew(shared_quad_state, offset_geometry_rect,
-                   offset_visible_geometry_rect, color.toSkColor(), false);
+                   offset_visible_geometry_rect, color, false);
       ValidateQuadResources(quad);
 
       if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
@@ -546,6 +543,14 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
           checkerboarded_has_recording_area;
       append_quads_data->checkerboarded_no_recording_content_area +=
           visible_geometry_area - checkerboarded_has_recording_area;
+
+      // Report data on any missing images that might be the largest
+      // contentful image.
+      if (*iter) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "Compositing.DecodeLCPCandidateImage.MissedDeadline",
+            iter->HasMissingLCPCandidateImages());
+      }
 
       continue;
     }
@@ -1249,6 +1254,10 @@ bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTransform(
   // will be deleted.
   if (layer_tree_impl()->IsSyncTree() && layer_tree_impl()->IsReadyToActivate())
     return false;
+  // To reduce memory usage, don't recreate highres tiling during scroll
+  if (ScrollInteractionInProgress())
+    return false;
+
   return true;
 }
 

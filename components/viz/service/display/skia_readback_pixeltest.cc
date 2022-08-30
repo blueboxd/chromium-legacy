@@ -402,9 +402,7 @@ class SkiaReadbackPixelTestRGBA : public SkiaReadbackPixelTest,
   }
 };
 
-// Test that SkiaRenderer readback works correctly. This test will use the
-// default readback implementation for the platform, which is either the legacy
-// GLRendererCopier or the new Skia readback API.
+// Test that SkiaRenderer RGBA readback works correctly.
 TEST_P(SkiaReadbackPixelTestRGBA, ExecutesCopyRequest) {
   // Generates a RenderPass which contains one quad that spans the full output.
   // The quad has our source image, so the framebuffer should contain the source
@@ -469,9 +467,7 @@ class SkiaReadbackPixelTestNV12
   }
 };
 
-// Test that SkiaRenderer readback works correctly. This test will use the
-// default readback implementation for the platform, which is either the legacy
-// GLRendererCopier or the new Skia readback API.
+// Test that SkiaRenderer NV12 readback works correctly.
 TEST_P(SkiaReadbackPixelTestNV12, ExecutesCopyRequest) {
   // Generates a RenderPass which contains one quad that spans the full output.
   // The quad has our source image, so the framebuffer should contain the source
@@ -599,9 +595,7 @@ class SkiaReadbackPixelTestNV12WithBlit
   bool populates_gpu_memory_buffer() const { return std::get<2>(GetParam()); }
 };
 
-// Test that SkiaRenderer readback works correctly. This test will use the
-// default readback implementation for the platform, which is either the legacy
-// GLRendererCopier or the new Skia readback API.
+// Test that SkiaRenderer NV12 readback works correctly using existing textures.
 TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
   const gfx::Rect result_selection = GetRequestArea();
 
@@ -637,13 +631,13 @@ TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
       << " The test case expects the blit region's origin to be even for NV12 "
          "blit requests";
 
-  const SkColor yuv_red = GLScalerTestUtil::ConvertRGBAColorToYUV(SK_ColorRED);
+  const SkColor4f yuv_red = {0.245331, 0.399356, 0.939216, 1.0};
 
   const std::vector<uint8_t> luma_pattern = {
-      static_cast<uint8_t>(SkColorGetR(yuv_red))};
+      static_cast<uint8_t>(yuv_red.fR * 255.0f)};
   const std::vector<uint8_t> chromas_pattern = {
-      static_cast<uint8_t>(SkColorGetG(yuv_red)),
-      static_cast<uint8_t>(SkColorGetB(yuv_red))};
+      static_cast<uint8_t>(yuv_red.fG * 255.0f),
+      static_cast<uint8_t>(yuv_red.fB * 255.0f)};
 
   std::array<gpu::MailboxHolder, CopyOutputResult::kMaxPlanes> mailboxes;
   for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {

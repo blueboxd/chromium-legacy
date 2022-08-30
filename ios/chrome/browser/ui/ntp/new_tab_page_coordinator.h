@@ -25,6 +25,16 @@ class WebState;
     : ChromeCoordinator <LogoAnimationControllerOwnerOwner,
                          NewTabPageConfiguring>
 
+// Initializes this Coordinator with its `browser` and a nil base view
+// controller.
+- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
+
+// The base view controller for this coordinator
+@property(weak, nonatomic, readwrite) UIViewController* baseViewController;
+
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
@@ -34,7 +44,7 @@ class WebState;
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 
-// Returns |YES| if the coordinator is started.
+// Returns `YES` if the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 
 // The pan gesture handler for the view controller.
@@ -83,7 +93,7 @@ class WebState;
 // feed.
 - (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent;
 
-// Called when the given |feedType| has completed updates.
+// Called when the given `feedType` has completed updates.
 - (void)handleFeedModelDidEndUpdates:(FeedType)feedType;
 
 @end

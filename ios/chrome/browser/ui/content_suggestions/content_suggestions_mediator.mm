@@ -28,8 +28,9 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
@@ -44,7 +45,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/ntp/discover_feed_delegate.h"
+#import "ios/chrome/browser/ui/ntp/feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -335,12 +336,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   } else {
-    [self.collectionConsumer
-        addSection:self.returnToRecentTabSectionInfo
-         withItems:items
-        completion:^{
-          [self.discoverFeedDelegate returnToRecentTabWasAdded];
-        }];
+    [self.collectionConsumer addSection:self.returnToRecentTabSectionInfo
+                              withItems:items
+                             completion:^{
+                               [self.feedDelegate returnToRecentTabWasAdded];
+                             }];
   }
 }
 
@@ -367,7 +367,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
     [self.consumer hideWhatsNewView];
   } else {
-    // By reloading data, checking |notificationPromo| will remove the promo
+    // By reloading data, checking `notificationPromo` will remove the promo
     // view.
     [self reloadAllData];
   }
@@ -573,12 +573,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.freshMostVisitedItems addObject:item];
   }
 
-  if (!IsSingleNtpEnabled() && [self.mostVisitedItems count] > 0) {
-    // If some content is already displayed to the user, do not update without a
-    // user action.
-    return;
-  }
-
   [self useFreshMostVisited];
 
   if (mostVisited.size() && !self.recordedPageImpression) {
@@ -629,7 +623,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     // is enabled.
     [self reloadAllData];
   }
-  [self.discoverFeedDelegate contentSuggestionsWasUpdated];
+
+  [self.feedDelegate contentSuggestionsWasUpdated];
 }
 
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
@@ -709,7 +704,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return convertedSuggestions;
 }
 
-// Opens the |URL| in a new tab |incognito| or not. |originPoint| is the origin
+// Opens the `URL` in a new tab `incognito` or not. `originPoint` is the origin
 // of the new tab animation if the tab is opened in background, in window
 // coordinates.
 - (void)openNewTabWithURL:(const GURL&)URL
@@ -737,7 +732,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
-// with a |URL|.
+// with a `URL`.
 - (void)showMostVisitedUndoForURL:(GURL)URL {
   GURL copiedURL = URL;
 

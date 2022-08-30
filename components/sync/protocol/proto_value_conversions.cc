@@ -33,6 +33,7 @@
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/printer_specifics.pb.h"
+#include "components/sync/protocol/printers_authorization_server_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_visitors.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
@@ -317,10 +318,13 @@ IMPLEMENT_PROTO_TO_VALUE(OsPreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(OsPriorityPreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PasswordSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PasswordSpecificsData)
+IMPLEMENT_PROTO_TO_VALUE(PasswordSpecificsData_Notes)
+IMPLEMENT_PROTO_TO_VALUE(PasswordSpecificsData_Notes_Note)
 IMPLEMENT_PROTO_TO_VALUE(PaymentsCustomerData)
 IMPLEMENT_PROTO_TO_VALUE(PreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PrinterPPDReference)
 IMPLEMENT_PROTO_TO_VALUE(PrinterSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(PrintersAuthorizationServerSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PriorityPreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ReadingListSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SearchEngineSpecifics)

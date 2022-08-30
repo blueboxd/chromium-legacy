@@ -153,9 +153,9 @@ void RecentAppsInteractionHandlerImpl::
     LoadRecentAppMetadataListFromPrefIfNeed() {
   if (!has_loaded_prefs_) {
     PA_LOG(INFO) << "LoadRecentAppMetadataListFromPref";
-    const base::Value* recent_apps_history_pref =
-        pref_service_->GetList(prefs::kRecentAppsHistory);
-    for (const auto& value : recent_apps_history_pref->GetListDeprecated()) {
+    const base::Value::List& recent_apps_history_pref =
+        pref_service_->GetValueList(prefs::kRecentAppsHistory);
+    for (const auto& value : recent_apps_history_pref) {
       DCHECK(value.is_dict());
       recent_app_metadata_list_.emplace_back(
           Notification::AppMetadata::FromValue(value),
@@ -169,13 +169,13 @@ void RecentAppsInteractionHandlerImpl::SaveRecentAppMetadataListToPref() {
   PA_LOG(INFO) << "SaveRecentAppMetadataListToPref";
   size_t num_recent_apps_to_save =
       std::min(recent_app_metadata_list_.size(), kMaxSavedRecentApps);
-  std::vector<base::Value> app_metadata_value_list;
+  base::Value::List app_metadata_value_list;
   for (size_t i = 0; i < num_recent_apps_to_save; ++i) {
-    app_metadata_value_list.push_back(
+    app_metadata_value_list.Append(
         recent_app_metadata_list_[i].first.ToValue());
   }
-  pref_service_->Set(prefs::kRecentAppsHistory,
-                     base::Value(std::move(app_metadata_value_list)));
+  pref_service_->SetList(prefs::kRecentAppsHistory,
+                         std::move(app_metadata_value_list));
 }
 
 void RecentAppsInteractionHandlerImpl::OnFeatureStatesChanged(

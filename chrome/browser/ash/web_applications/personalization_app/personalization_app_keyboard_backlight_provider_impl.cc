@@ -15,14 +15,14 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_analysis.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 KeyboardBacklightColorController* GetKeyboardBacklightColorController() {
@@ -41,17 +41,14 @@ PersonalizationAppKeyboardBacklightProviderImpl::
     ~PersonalizationAppKeyboardBacklightProviderImpl() = default;
 
 void PersonalizationAppKeyboardBacklightProviderImpl::BindInterface(
-    mojo::PendingReceiver<
-        ash::personalization_app::mojom::KeyboardBacklightProvider> receiver) {
+    mojo::PendingReceiver<mojom::KeyboardBacklightProvider> receiver) {
   keyboard_backlight_receiver_.reset();
   keyboard_backlight_receiver_.Bind(std::move(receiver));
 }
 
 void PersonalizationAppKeyboardBacklightProviderImpl::
     SetKeyboardBacklightObserver(
-        mojo::PendingRemote<
-            ash::personalization_app::mojom::KeyboardBacklightObserver>
-            observer) {
+        mojo::PendingRemote<mojom::KeyboardBacklightObserver> observer) {
   // May already be bound if user refreshes page.
   keyboard_backlight_observer_remote_.reset();
   keyboard_backlight_observer_remote_.Bind(std::move(observer));
@@ -75,12 +72,23 @@ void PersonalizationAppKeyboardBacklightProviderImpl::SetBacklightColor(
     return;
   }
   DVLOG(4) << __func__ << " backlight_color=" << backlight_color;
+  LogKeyboardBacklightColor(backlight_color);
   GetKeyboardBacklightColorController()->SetBacklightColor(backlight_color);
   GetKeyboardBacklightColorController()
       ->keyboard_backlight_color_nudge_controller()
       ->SetUserPerformedAction();
 
   NotifyBacklightColorChanged();
+}
+
+void PersonalizationAppKeyboardBacklightProviderImpl::ShouldShowNudge(
+    ShouldShowNudgeCallback callback) {
+  std::move(callback).Run(
+      KeyboardBacklightColorNudgeController::ShouldShowWallpaperColorNudge());
+}
+
+void PersonalizationAppKeyboardBacklightProviderImpl::HandleNudgeShown() {
+  KeyboardBacklightColorNudgeController::HandleWallpaperColorNudgeShown();
 }
 
 void PersonalizationAppKeyboardBacklightProviderImpl::
@@ -98,5 +106,4 @@ void PersonalizationAppKeyboardBacklightProviderImpl::
       GetKeyboardBacklightColorController()->GetBacklightColor());
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

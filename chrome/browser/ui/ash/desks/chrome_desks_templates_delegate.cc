@@ -6,8 +6,8 @@
 
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/desk_template.h"
-#include "ash/public/cpp/system/toast_catalog.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -27,11 +27,11 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/desks/chrome_desks_util.h"
 #include "chrome/browser/ui/ash/desks/desks_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/app_constants/constants.h"
@@ -40,11 +40,13 @@
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
+#include "components/app_restore/tab_group_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
@@ -251,9 +253,8 @@ void ChromeDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
     app_launch_info->container = app_restore_data->container;
     app_launch_info->disposition = app_restore_data->disposition;
     app_launch_info->file_paths = app_restore_data->file_paths;
-    if (app_restore_data->intent.has_value() &&
-        app_restore_data->intent.value()) {
-      app_launch_info->intent = app_restore_data->intent.value()->Clone();
+    if (app_restore_data->intent) {
+      app_launch_info->intent = app_restore_data->intent->Clone();
     }
   }
 
@@ -279,11 +280,17 @@ void ChromeDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
   if (tab_strip_model) {
     app_launch_info->urls = GetURLsIfApplicable(tab_strip_model);
     app_launch_info->active_tab_index = tab_strip_model->active_index();
+    if (tab_strip_model->SupportsTabGroups()) {
+      app_launch_info->tab_group_infos =
+          chrome_desks_util::ConvertTabGroupsToTabGroupInfos(
+              tab_strip_model->group_model());
+    }
     std::move(callback).Run(std::move(app_launch_info));
     return;
   }
 
   if (app_id == app_constants::kLacrosAppId) {
+    // TODO(avynn): Add lacros support for tab groups.
     const std::string* lacros_window_id =
         window->GetProperty(app_restore::kLacrosWindowId);
     DCHECK(lacros_window_id);
@@ -360,20 +367,11 @@ void ChromeDesksTemplatesDelegate::GetIconForAppId(
     return;
   }
 
-  auto app_type = app_service_proxy->AppRegistryCache().GetAppType(app_id);
-  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    app_service_proxy->LoadIcon(app_type, app_id, apps::IconType::kStandard,
-                                desired_icon_size,
-                                /*allow_placeholder_icon=*/false,
-                                AppIconResultToImageSkia(std::move(callback)));
-  } else {
-    app_service_proxy->LoadIcon(
-        apps::ConvertAppTypeToMojomAppType(app_type), app_id,
-        apps::mojom::IconType::kStandard, desired_icon_size,
-        /*allow_placeholder_icon=*/false,
-        apps::MojomIconValueToIconValueCallback(
-            AppIconResultToImageSkia(std::move(callback))));
-  }
+  app_service_proxy->LoadIcon(
+      app_service_proxy->AppRegistryCache().GetAppType(app_id), app_id,
+      apps::IconType::kStandard, desired_icon_size,
+      /*allow_placeholder_icon=*/false,
+      AppIconResultToImageSkia(std::move(callback)));
 }
 
 bool ChromeDesksTemplatesDelegate::IsAppAvailable(

@@ -4,6 +4,7 @@
 
 #include "components/user_notes/storage/user_note_database.h"
 
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -27,6 +28,47 @@ class UserNoteDatabaseTest : public testing::Test {
 
   base::FilePath db_file_path() {
     return temp_directory_.GetPath().Append(kDatabaseName);
+  }
+
+  void check_is_removed_from_db(UserNoteDatabase* user_note_db,
+                                const base::UnguessableToken& id) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db->sequence_checker_);
+
+    sql::Statement statement_notes_body(user_note_db->db_.GetCachedStatement(
+        SQL_FROM_HERE, "SELECT note_id FROM notes_body WHERE note_id = ?"));
+    EXPECT_TRUE(statement_notes_body.is_valid());
+    statement_notes_body.BindString(0, id.ToString());
+    EXPECT_FALSE(statement_notes_body.Step());
+
+    sql::Statement statement_notes(user_note_db->db_.GetCachedStatement(
+        SQL_FROM_HERE, "SELECT id FROM notes WHERE id = ?"));
+    EXPECT_TRUE(statement_notes.is_valid());
+    statement_notes.BindString(0, id.ToString());
+    EXPECT_FALSE(statement_notes.Step());
+
+    sql::Statement statement_notes_text_target(
+        user_note_db->db_.GetCachedStatement(
+            SQL_FROM_HERE,
+            "SELECT note_id FROM notes_text_target WHERE note_id = ?"));
+    EXPECT_TRUE(statement_notes_text_target.is_valid());
+    statement_notes_text_target.BindString(0, id.ToString());
+    EXPECT_FALSE(statement_notes_text_target.Step());
+  }
+
+  void check_notes_body_from_db(UserNoteDatabase* user_note_db,
+                                const base::UnguessableToken& id,
+                                const std::string& text) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db->sequence_checker_);
+
+    sql::Statement statement(user_note_db->db_.GetCachedStatement(
+        SQL_FROM_HERE, "SELECT plain_text FROM notes_body WHERE note_id = ?"));
+
+    EXPECT_TRUE(statement.is_valid());
+    statement.BindString(0, id.ToString());
+    EXPECT_TRUE(statement.Step());
+
+    EXPECT_EQ(1, statement.ColumnCount());
+    EXPECT_EQ(text, statement.ColumnString(0));
   }
 
  private:
@@ -113,85 +155,211 @@ TEST_F(UserNoteDatabaseTest, DatabaseHasSchemaNoMeta) {
 TEST_F(UserNoteDatabaseTest, CreateNote) {
   UserNoteDatabase user_note_db(db_dir());
   EXPECT_TRUE(user_note_db.Init());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db.sequence_checker_);
 
   base::UnguessableToken note_id = base::UnguessableToken::Create();
   UserNote* user_note =
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
+  bool create_note =
+      user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
+  EXPECT_TRUE(create_note);
 
-  sql::Statement statement(user_note_db.db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT plain_text FROM notes_body WHERE note_id = ?"));
-
-  EXPECT_TRUE(statement.is_valid());
-  statement.BindString(0, note_id.ToString());
-  EXPECT_TRUE(statement.Step());
-
-  EXPECT_EQ(1, statement.ColumnCount());
-  EXPECT_EQ("new test note", statement.ColumnString(0));
+  check_notes_body_from_db(&user_note_db, note_id, "new test note");
   delete user_note;
 }
 
 TEST_F(UserNoteDatabaseTest, UpdateNote) {
   UserNoteDatabase user_note_db(db_dir());
   EXPECT_TRUE(user_note_db.Init());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db.sequence_checker_);
 
   base::UnguessableToken note_id = base::UnguessableToken::Create();
   UserNote* user_note =
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
-  user_note_db.UpdateNote(user_note, "edit test note", false);
+  bool create_note =
+      user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
+  bool update_note =
+      user_note_db.UpdateNote(user_note, "edit test note", false);
+  EXPECT_TRUE(create_note);
+  EXPECT_TRUE(update_note);
 
-  sql::Statement statement(user_note_db.db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT plain_text FROM notes_body WHERE note_id = ?"));
-
-  EXPECT_TRUE(statement.is_valid());
-  statement.BindString(0, note_id.ToString());
-  EXPECT_TRUE(statement.Step());
-
-  EXPECT_EQ(1, statement.ColumnCount());
-  EXPECT_EQ("edit test note", statement.ColumnString(0));
+  check_notes_body_from_db(&user_note_db, note_id, "edit test note");
   delete user_note;
 }
 
 TEST_F(UserNoteDatabaseTest, DeleteNote) {
   UserNoteDatabase user_note_db(db_dir());
   EXPECT_TRUE(user_note_db.Init());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db.sequence_checker_);
 
   base::UnguessableToken note_id = base::UnguessableToken::Create();
   UserNote* user_note =
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
-  user_note_db.DeleteNote(note_id);
+  bool create_note =
+      user_note_db.UpdateNote(user_note, "new test note", /*is_creation=*/true);
+  EXPECT_TRUE(create_note);
+  bool delete_note = user_note_db.DeleteNote(note_id);
+  EXPECT_TRUE(delete_note);
 
-  sql::Statement statement_notes_body(user_note_db.db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT note_id FROM notes_body WHERE note_id = ?"));
-  EXPECT_TRUE(statement_notes_body.is_valid());
-  statement_notes_body.BindString(0, note_id.ToString());
-  EXPECT_FALSE(statement_notes_body.Step());
-
-  sql::Statement statement_notes(user_note_db.db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT id FROM notes WHERE id = ?"));
-  EXPECT_TRUE(statement_notes.is_valid());
-  statement_notes.BindString(0, note_id.ToString());
-  EXPECT_FALSE(statement_notes.Step());
-
-  sql::Statement statement_notes_text_target(
-      user_note_db.db_.GetCachedStatement(
-          SQL_FROM_HERE,
-          "SELECT note_id FROM notes_text_target WHERE note_id = ?"));
-  EXPECT_TRUE(statement_notes_text_target.is_valid());
-  statement_notes_text_target.BindString(0, note_id.ToString());
-  EXPECT_FALSE(statement_notes_text_target.Step());
+  check_is_removed_from_db(&user_note_db, note_id);
   delete user_note;
+}
+
+TEST_F(UserNoteDatabaseTest, GetNotesById) {
+  UserNoteDatabase user_note_db(db_dir());
+  EXPECT_TRUE(user_note_db.Init());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db.sequence_checker_);
+
+  std::vector<base::UnguessableToken> ids;
+  for (int i = 0; i < 3; i++) {
+    base::UnguessableToken note_id = base::UnguessableToken::Create();
+    ids.emplace_back(note_id);
+    std::string original_text = "original text " + base::NumberToString(i);
+    std::string selector = "selector " + base::NumberToString(i);
+    std::string body = "new test note " + base::NumberToString(i);
+    GURL url = GURL("https://www.test.com/");
+    auto test_target = std::make_unique<UserNoteTarget>(
+        UserNoteTarget::TargetType::kPageText, original_text, url, selector);
+    UserNote* user_note =
+        new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
+                     std::move(test_target));
+    bool create_note =
+        user_note_db.UpdateNote(user_note, body, /*is_creation=*/true);
+    EXPECT_TRUE(create_note);
+    delete user_note;
+  }
+
+  std::vector<std::unique_ptr<UserNote>> notes = user_note_db.GetNotesById(ids);
+  EXPECT_EQ(3u, notes.size());
+
+  int i = 0;
+  for (std::unique_ptr<UserNote>& note : notes) {
+    EXPECT_EQ(ids[i].ToString(), note->id().ToString());
+    EXPECT_EQ("https://www.test.com/", note->target().target_page().spec());
+    EXPECT_EQ("original text " + base::NumberToString(i),
+              note->target().original_text());
+    EXPECT_EQ("selector " + base::NumberToString(i), note->target().selector());
+    EXPECT_EQ("new test note " + base::NumberToString(i),
+              note->body().plain_text_value());
+    EXPECT_EQ(UserNoteTarget::TargetType::kPageText, note->target().type());
+    i++;
+  }
+}
+
+TEST_F(UserNoteDatabaseTest, DeleteAllNotes) {
+  UserNoteDatabase user_note_db(db_dir());
+  EXPECT_TRUE(user_note_db.Init());
+
+  std::vector<base::UnguessableToken> ids;
+  for (int i = 0; i < 3; i++) {
+    base::UnguessableToken note_id = base::UnguessableToken::Create();
+    ids.emplace_back(note_id);
+    UserNote* user_note =
+        new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
+                     GetTestUserNotePageTarget());
+    bool create_note = user_note_db.UpdateNote(user_note, "new test note",
+                                               /*is_creation=*/true);
+    EXPECT_TRUE(create_note);
+    delete user_note;
+  }
+  bool delete_notes = user_note_db.DeleteAllNotes();
+  EXPECT_TRUE(delete_notes);
+
+  for (const base::UnguessableToken& id : ids) {
+    check_is_removed_from_db(&user_note_db, id);
+  }
+}
+
+TEST_F(UserNoteDatabaseTest, DeleteAllForOrigin) {
+  UserNoteDatabase user_note_db(db_dir());
+  EXPECT_TRUE(user_note_db.Init());
+
+  std::vector<base::UnguessableToken> ids;
+  for (int i = 0; i < 3; i++) {
+    base::UnguessableToken note_id = base::UnguessableToken::Create();
+    ids.emplace_back(note_id);
+    UserNote* user_note =
+        new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
+                     GetTestUserNotePageTarget("https://www.test.com"));
+    bool create_note = user_note_db.UpdateNote(user_note, "new test note",
+                                               /*is_creation=*/true);
+    EXPECT_TRUE(create_note);
+    delete user_note;
+  }
+
+  bool delete_notes = user_note_db.DeleteAllForOrigin(
+      url::Origin::Create(GURL("https://www.test.com")));
+  EXPECT_TRUE(delete_notes);
+
+  for (const base::UnguessableToken& id : ids) {
+    check_is_removed_from_db(&user_note_db, id);
+  }
+}
+
+TEST_F(UserNoteDatabaseTest, DeleteAllForUrl) {
+  UserNoteDatabase user_note_db(db_dir());
+  EXPECT_TRUE(user_note_db.Init());
+
+  std::vector<base::UnguessableToken> ids;
+  for (int i = 0; i < 3; i++) {
+    base::UnguessableToken note_id = base::UnguessableToken::Create();
+    ids.emplace_back(note_id);
+    UserNote* user_note =
+        new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
+                     GetTestUserNotePageTarget("https://www.test.com"));
+    bool create_note = user_note_db.UpdateNote(user_note, "new test note",
+                                               /*is_creation=*/true);
+    EXPECT_TRUE(create_note);
+    delete user_note;
+  }
+  bool delete_notes =
+      user_note_db.DeleteAllForUrl(GURL("https://www.test.com"));
+  EXPECT_TRUE(delete_notes);
+
+  for (const base::UnguessableToken& id : ids) {
+    check_is_removed_from_db(&user_note_db, id);
+  }
+}
+
+TEST_F(UserNoteDatabaseTest, GetNoteMetadataForUrls) {
+  UserNoteDatabase user_note_db(db_dir());
+  EXPECT_TRUE(user_note_db.Init());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_note_db.sequence_checker_);
+
+  std::set<base::UnguessableToken> ids;
+  base::Time time = base::Time::FromDoubleT(1600000000);
+  int note_version = 1;
+  for (int i = 0; i < 3; i++) {
+    base::UnguessableToken note_id = base::UnguessableToken::Create();
+    ids.emplace(note_id);
+    auto note_metadata =
+        std::make_unique<UserNoteMetadata>(time, time, note_version);
+    UserNote* user_note =
+        new UserNote(note_id, std::move(note_metadata), GetTestUserNoteBody(),
+                     GetTestUserNotePageTarget("https://www.test.com"));
+    bool create_note = user_note_db.UpdateNote(user_note, "new test note",
+                                               /*is_creation=*/true);
+    EXPECT_TRUE(create_note);
+    delete user_note;
+  }
+
+  GURL url = GURL("https://www.test.com");
+  std::vector<GURL> urls{url};
+  UserNoteMetadataSnapshot metadata_snapshot =
+      user_note_db.GetNoteMetadataForUrls(urls);
+  const UserNoteMetadataSnapshot::IdToMetadataMap* metadata_map =
+      metadata_snapshot.GetMapForUrl(url);
+  EXPECT_EQ(3u, metadata_map->size());
+
+  for (const auto& metadata_it : *metadata_map) {
+    EXPECT_TRUE(base::Contains(ids, metadata_it.first));
+    EXPECT_EQ(time, metadata_it.second->creation_date());
+    EXPECT_EQ(time, metadata_it.second->modification_date());
+    EXPECT_EQ(note_version, metadata_it.second->min_note_version());
+  }
 }
 
 }  // namespace user_notes

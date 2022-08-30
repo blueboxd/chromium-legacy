@@ -32,9 +32,9 @@ async function webGpuInit(canvasWidth, canvasHeight) {
 const wgslShaders = {
   vertex: `
 struct VertexOutput {
-  @builtin(position) Position : vec4<f32>;
-  @location(0) fragUV : vec2<f32>;
-};
+  @builtin(position) Position : vec4<f32>,
+  @location(0) fragUV : vec2<f32>,
+}
 
 @vertex fn main(
   @location(0) position : vec2<f32>,
@@ -127,7 +127,7 @@ function createVertexBufferForIcons(device, videos, videoRows, videoColumns) {
 }
 
 function createVertexBufferForAnimation(
-            device, videos, videoRows, videoColumns) {
+    device, videos, videoRows, videoColumns) {
   const rectVerts = getArrayForAnimationVertexBuffer(videos, videoRows,
     videoColumns);
   const verticesBuffer = device.createBuffer({
@@ -156,8 +156,9 @@ function createVertexBufferForFPS(device) {
   return verticesBuffer;
 }
 
-function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
-                               addUI, addFPS, useImportTextureApi) {
+function webGpuDrawVideoFrames(
+    gpuSetting, videos, videoRows, videoColumns, addUI, addFPS,
+    useImportTextureApi, capUIFPS, enableBackPressureWorkaround) {
   initializeFPSPanels();
 
   const {adapter, device, context, canvas} = gpuSetting;
@@ -165,12 +166,13 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
   const vertexBufferForVideos = createVertexBufferForVideos(device, videos,
     videoRows, videoColumns);
 
-  const swapChainFormat = context.getPreferredFormat(adapter);
+  const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
 
   const swapChain = context.configure({
     device,
     format: swapChainFormat,
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    alphaMode: "opaque"
   });
 
   let fragmentShaderModule;
@@ -186,6 +188,7 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
 
 
   const pipelineForVideos = device.createRenderPipeline({
+    layout: "auto",
     vertex: {
       module: device.createShaderModule({
         code: wgslShaders.vertex,
@@ -225,7 +228,8 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
     colorAttachments: [
       {
         view: undefined, // Assigned later
-        loadValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
+        clearValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
+        loadOp: 'clear',
         storeOp: 'store',
       },
     ],
@@ -278,6 +282,7 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
     createVertexBufferForIcons(device, videos, videoRows, videoColumns);
 
   const renderPipelineDescriptorForIcon = {
+    layout: "auto",
     vertex: {
       module: device.createShaderModule({
         code: wgslShaders.vertex_icons,
@@ -312,8 +317,7 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
 
   // For rendering the voice bar animation
   const vertexBufferForAnimation =
-          createVertexBufferForAnimation(
-            device, videos, videoRows, videoColumns);
+      createVertexBufferForAnimation(device, videos, videoRows, videoColumns);
 
   renderPipelineDescriptorForIcon.fragment.module = device.createShaderModule({
     code: wgslShaders.fragment_output_white,
@@ -331,6 +335,7 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
 
   const vertexBufferForFPS = createVertexBufferForFPS(device);
   const pipelineForFPS = device.createRenderPipeline({
+    layout: "auto",
     vertex: {
       module: device.createShaderModule({
         code: wgslShaders.vertex,
@@ -424,25 +429,25 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
     passEncoder.draw(/*vertexCount=*/ 8, 1, /*firstVertex=*/ 60);
   }
 
- function addFPSCommands(device, passEncoder) {
+  function addFPSCommands(device, passEncoder) {
     // FPS Panels
-   passEncoder.setPipeline(pipelineForFPS);
-   passEncoder.setVertexBuffer(0, vertexBufferForFPS);
-   for (let i = 0; i < fpsPanels.length; ++i) {
-     device.queue.copyExternalImageToTexture(
-       { source: fpsPanels[i].dom, origin: { x: 0, y: 0 }},
-       { texture: fpsTextures[i] },
-       {
-         width: fpsPanels[i].dom.width,
-         height: fpsPanels[i].dom.height,
-         depthOrArrayLayers: 1
-       },
-     );
-     const firstVertex = i * 6;
-     passEncoder.setBindGroup(0, fpsBindGroups[i]);
-     passEncoder.draw(6, 1, firstVertex, 0);
-   }
- }
+    passEncoder.setPipeline(pipelineForFPS);
+    passEncoder.setVertexBuffer(0, vertexBufferForFPS);
+    for (let i = 0; i < fpsPanels.length; ++i) {
+      device.queue.copyExternalImageToTexture(
+          {source: fpsPanels[i].dom, origin: {x: 0, y: 0}},
+          {texture: fpsTextures[i]},
+          {
+            width: fpsPanels[i].dom.width,
+            height: fpsPanels[i].dom.height,
+            depthOrArrayLayers: 1
+          },
+      );
+      const firstVertex = i * 6;
+      passEncoder.setBindGroup(0, fpsBindGroups[i]);
+      passEncoder.draw(6, 1, firstVertex, 0);
+    }
+  }
 
   // videos #0-#3 : 30 fps.
   // videos #3-#15: 15 fps.
@@ -467,13 +472,15 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
   let lastTimestamp = performance.now();
 
   const oneFrame = () => {
-    const timestamp = performance.now();
-    const elapsed = timestamp - lastTimestamp;
-    if (elapsed < kFrameTime30Fps) {
-      window.requestAnimationFrame(oneFrame);
-      return;
+    if (capUIFPS) {
+      const timestamp = performance.now();
+      const elapsed = timestamp - lastTimestamp;
+      if (elapsed < kFrameTime30Fps) {
+        window.requestAnimationFrame(oneFrame);
+        return;
+      }
+      lastTimestamp = timestamp;
     }
-    lastTimestamp = timestamp;
 
     uiFrames++;
 
@@ -527,31 +534,36 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
 
         // TODO(crbug.com/1289482): Workaround for backpressure mechanism
         // not working properly.
-        device.queue.onSubmittedWorkDone().then(() => {
+        if (enableBackPressureWorkaround) {
+          device.queue.onSubmittedWorkDone().then(() => {
+            window.requestAnimationFrame(oneFrame);
+          });
+        } else {
           window.requestAnimationFrame(oneFrame);
-        });
+        }
       });
   };
 
   const oneFrameWithImportTextureApi = () => {
-    // Target frame rate: 30 fps. rAF might run at 60 fps.
+    // Target frame rate: 30 fps when capUIFPS is true. rAF might run at 60 fps.
     const timestamp = performance.now();
-    const elapsed = timestamp - lastTimestamp;
-    if (elapsed < kFrameTime30Fps) {
-      window.requestAnimationFrame(oneFrameWithImportTextureApi);
-      return;
+    if (capUIFPS) {
+      const elapsed = timestamp - lastTimestamp;
+      if (elapsed < kFrameTime30Fps) {
+        window.requestAnimationFrame(oneFrameWithImportTextureApi);
+        return;
+      }
+      lastTimestamp = timestamp;
     }
-    lastTimestamp = timestamp;
 
     uiFrames++;
 
-    // Always import all videos. The video textures are destroyed before the
-    // next frame.
-    // TODO(crbugs.com/1310172): Only import expired video frames.
     for (let i = 0; i < videos.length; ++i) {
-      videoTextures[i] =
-        device.importExternalTexture(externalTextureDescriptor[i]);
-      totalVideoFrames++;
+      if (!videoTextures[i] || videoTextures[i].expired) {
+        videoTextures[i] =
+          device.importExternalTexture(externalTextureDescriptor[i]);
+        totalVideoFrames++;
+      }
     }
 
     const swapChainTexture = context.getCurrentTexture();
@@ -605,9 +617,13 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
 
     // TODO(crbug.com/1289482): Workaround for backpressure mechanism
     // not working properly.
-    device.queue.onSubmittedWorkDone().then(() => {
+    if (enableBackPressureWorkaround) {
+      device.queue.onSubmittedWorkDone().then(() => {
+        window.requestAnimationFrame(oneFrameWithImportTextureApi);
+      });
+    } else {
       window.requestAnimationFrame(oneFrameWithImportTextureApi);
-    });
+    }
   };
 
   if (useImportTextureApi) {

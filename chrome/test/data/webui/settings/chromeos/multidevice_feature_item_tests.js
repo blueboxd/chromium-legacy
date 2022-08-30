@@ -37,19 +37,6 @@ suite('Multidevice', function() {
   }
 
   /**
-   * Override the cr-toggle's state. Because cr-toggle handles clicks
-   * differently depending on its state (e.g., turns off PointerEvents when it's
-   * disabled), we use this to check that the toggle can't enter a state where
-   * clicking on it causes the page to nagivate away.
-   * @param {boolean} checked
-   * @param {boolean} disabled
-   */
-  function setCrToggle(checked, disabled) {
-    crToggle.checked = checked;
-    crToggle.disabled = disabled;
-  }
-
-  /**
    * Clicks an element, asserts whether the click navigated the page away to a
    * new route, then navigates back to initialRoute.
    * @param {HTMLElement} element. Target of click.
@@ -76,7 +63,8 @@ suite('Multidevice', function() {
     document.body.appendChild(featureItem);
     flush();
 
-    featureToggle = featureItem.$$('settings-multidevice-feature-toggle');
+    featureToggle = featureItem.shadowRoot.querySelector(
+        'settings-multidevice-feature-toggle');
     featureToggle.getFeatureState = () => featureState;
 
     crToggle = featureToggle.$.toggle;
@@ -95,14 +83,17 @@ suite('Multidevice', function() {
   });
 
   test('generic click navigates to subpage', function() {
-    checkWhetherClickRoutesAway(featureItem.$$('#item-text-container'), true);
-    checkWhetherClickRoutesAway(featureItem.$$('iron-icon'), true);
-    checkWhetherClickRoutesAway(featureItem.$$('#featureSecondary'), true);
+    checkWhetherClickRoutesAway(
+        featureItem.shadowRoot.querySelector('#item-text-container'), true);
+    checkWhetherClickRoutesAway(
+        featureItem.shadowRoot.querySelector('iron-icon'), true);
+    checkWhetherClickRoutesAway(
+        featureItem.shadowRoot.querySelector('#featureSecondary'), true);
   });
 
   test('link click does not navigate to subpage', function() {
-    const link =
-        featureItem.$$('#featureSecondary').$.container.querySelector('a');
+    const link = featureItem.shadowRoot.querySelector('#featureSecondary')
+                     .$.container.querySelector('a');
     assertTrue(!!link);
     checkWhetherClickRoutesAway(link, false);
   });
@@ -115,27 +106,19 @@ suite('Multidevice', function() {
 
     const expectedEvent =
         eventToPromise('feature-toggle-clicked', featureToggle);
-    featureItem.$$('#linkWrapper').click();
+    featureItem.shadowRoot.querySelector('#linkWrapper').click();
     await expectedEvent;
   });
 
   test('toggle click does not navigate to subpage in any state', function() {
     checkWhetherClickRoutesAway(featureToggle, false);
 
-    // Checked and enabled
-    setCrToggle(true, false);
+    crToggle.checked = true;
+    assertFalse(crToggle.disabled);
     checkWhetherClickRoutesAway(crToggle, false);
 
-    // Checked and disabled
-    setCrToggle(true, true);
-    checkWhetherClickRoutesAway(crToggle, false);
-
-    // Unchecked and enabled
-    setCrToggle(false, false);
-    checkWhetherClickRoutesAway(crToggle, false);
-
-    // Unchecked and disabled
-    setCrToggle(false, true);
+    crToggle.checked = false;
+    assertFalse(crToggle.disabled);
     checkWhetherClickRoutesAway(crToggle, false);
   });
 });

@@ -9,6 +9,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {startIOTask} from '../../common/js/api.js';
 import {DialogType} from '../../common/js/dialog_type.js';
 import {strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
@@ -173,7 +174,7 @@ export class TaskController {
     this.taskHistory_.addEventListener(
         TaskHistory.EventType.UPDATE, this.updateTasks_.bind(this));
     chrome.fileManagerPrivate.onAppsUpdated.addListener(
-        this.updateTasks_.bind(this));
+        this.clearCacheAndUpdateTasks_.bind(this));
   }
 
   /**
@@ -368,10 +369,29 @@ export class TaskController {
   }
 
   /**
+   * Explicitly removes the cached tasks first and and re-calculates the current
+   * tasks.
+   * @private
+   */
+  clearCacheAndUpdateTasks_() {
+    this.tasks_ = null;
+    this.updateTasks_();
+  }
+
+  /**
    * Updates available tasks opened from context menu or the open button.
    * @private
    */
   updateTasks_() {
+    // The list of available tasks should not be available to trashed items.
+    if (this.directoryModel_.getCurrentRootType() ==
+        VolumeManagerCommon.RootType.TRASH) {
+      this.ui_.taskMenuButton.hidden = true;
+      if (window.IN_TEST) {
+        this.ui_.taskMenuButton.toggleAttribute('get-tasks-completed', true);
+      }
+      return;
+    }
     const selection = this.selectionHandler_.selection;
     if (this.dialogType_ === DialogType.FULL_PAGE &&
         (selection.directoryCount > 0 || selection.fileCount > 0)) {

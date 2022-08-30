@@ -6,17 +6,18 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "reclient", "sheriff_rotations")
-load("//lib/ci.star", "ci")
+load("//lib/builders.star", "goma", "sheriff_rotations")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
+load("//lib/structs.star", "structs")
 
 ci.defaults.set(
     builder_group = "chromium.gpu",
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     pool = ci.gpu.POOL,
-    reclient_jobs = reclient.jobs.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
     tree_closing = True,
@@ -131,6 +132,24 @@ ci.gpu.mac_builder(
 )
 
 ci.gpu.mac_builder(
+    name = "GPU Mac Builder (reclient shadow)",
+    builder_spec = builder_config.copy_from(
+        "ci/GPU Mac Builder",
+        lambda spec: structs.evolve(
+            spec,
+            build_gs_bucket = None,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac",
+        short_name = "rec",
+    ),
+    goma_backend = None,
+    tree_closing = False,
+    sheriff_rotations = args.ignore_default(None),
+)
+
+ci.gpu.mac_builder(
     name = "GPU Mac Builder (dbg)",
     console_view_entry = consoles.console_view_entry(
         category = "Mac",
@@ -166,7 +185,7 @@ ci.gpu.windows_builder(
         category = "Windows",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -176,7 +195,7 @@ ci.gpu.windows_builder(
     ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.thin_tester(

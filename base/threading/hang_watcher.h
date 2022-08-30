@@ -68,12 +68,12 @@ class BASE_EXPORT WatchHangsInScope {
   // A good default value needs to be large enough to represent a significant
   // hang and avoid noise while being small enough to not exclude too many
   // hangs. The nature of the work that gets executed on the thread is also
-  // important. We can be much stricter when monitoring a UI thread compared tp
+  // important. We can be much stricter when monitoring a UI thread compared to
   // a ThreadPool thread for example.
-  static const base::TimeDelta kDefaultHangWatchTime;
+  static constexpr base::TimeDelta kDefaultHangWatchTime = base::Seconds(10);
 
   // Constructing/destructing thread must be the same thread.
-  explicit WatchHangsInScope(TimeDelta timeout);
+  explicit WatchHangsInScope(TimeDelta timeout = kDefaultHangWatchTime);
   ~WatchHangsInScope();
 
   WatchHangsInScope(const WatchHangsInScope&) = delete;
@@ -625,7 +625,7 @@ class BASE_EXPORT HangWatchState {
   WatchHangsInScope* GetCurrentWatchHangsInScope();
 #endif
 
-  uint64_t GetThreadID() const;
+  PlatformThreadId GetThreadID() const;
 
   // Retrieve the current hang watch deadline directly. For testing only.
   HangWatchDeadline* GetHangWatchDeadlineForTesting();
@@ -652,9 +652,8 @@ class BASE_EXPORT HangWatchState {
   HangWatchDeadline deadline_;
 
   // A unique ID of the thread under watch. Used for logging in crash reports
-  // only. Unsigned type is used as it provides a correct behavior for all
-  // platforms for positive thread ids. Any valid thread id should be positive.
-  uint64_t thread_id_;
+  // only.
+  PlatformThreadId thread_id_;
 
   // Number of active HangWatchScopeEnables on this thread.
   int nesting_level_ = 0;

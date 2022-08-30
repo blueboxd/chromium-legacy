@@ -179,9 +179,9 @@ const MockTransaction* FindMockTransaction(const GURL& url) {
     return it->second;
 
   // look for builtins:
-  for (size_t i = 0; i < std::size(kBuiltinMockTransactions); ++i) {
-    if (url == GURL(kBuiltinMockTransactions[i]->url))
-      return kBuiltinMockTransactions[i];
+  for (const auto* transaction : kBuiltinMockTransactions) {
+    if (url == GURL(transaction->url))
+      return transaction;
   }
   return nullptr;
 }
@@ -204,7 +204,7 @@ MockHttpRequest::MockHttpRequest(const MockTransaction& t) {
 }
 
 std::string MockHttpRequest::CacheKey() {
-  return HttpCache::GenerateCacheKeyForTest(this);
+  return HttpCache::GenerateCacheKeyForRequest(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -506,8 +506,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (!t->response_time.is_null())
     response_.response_time = t->response_time;
 
-  response_.headers = new HttpResponseHeaders(header_data);
-  response_.vary_data.Init(*request, *response_.headers.get());
+  response_.headers = base::MakeRefCounted<HttpResponseHeaders>(header_data);
   response_.ssl_info.cert = t->cert;
   response_.ssl_info.cert_status = t->cert_status;
   response_.ssl_info.connection_status = t->ssl_connection_status;
@@ -608,8 +607,8 @@ int MockNetworkLayer::CreateTransaction(
     std::unique_ptr<HttpTransaction>* trans) {
   transaction_count_++;
   last_create_transaction_priority_ = priority;
-  std::unique_ptr<MockNetworkTransaction> mock_transaction(
-      new MockNetworkTransaction(priority, this));
+  auto mock_transaction =
+      std::make_unique<MockNetworkTransaction>(priority, this);
   last_transaction_ = mock_transaction->AsWeakPtr();
   *trans = std::move(mock_transaction);
   return OK;

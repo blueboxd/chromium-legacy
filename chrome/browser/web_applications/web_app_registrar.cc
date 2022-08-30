@@ -85,13 +85,14 @@ bool WebAppRegistrar::IsPlaceholderApp(
   if (!web_app)
     return false;
 
-  if (!base::Contains(web_app->management_to_external_config_map(),
-                      source_type)) {
+  const WebApp::ExternalConfigMap& config_map =
+      web_app->management_to_external_config_map();
+  auto it = config_map.find(source_type);
+
+  if (it == config_map.end()) {
     return false;
   }
-
-  return web_app->management_to_external_config_map()[source_type]
-      .is_placeholder;
+  return it->second.is_placeholder;
 }
 
 absl::optional<AppId> WebAppRegistrar::LookupPlaceholderAppId(
@@ -216,14 +217,12 @@ WebAppRegistrar::GetExternallyInstalledApps(
   WebAppManagement::Type management_source =
       ConvertExternalInstallSourceToSource(install_source);
   for (const WebApp& web_app : GetApps()) {
-    if (base::Contains(web_app.management_to_external_config_map(),
-                       management_source)) {
-      installed_apps[web_app.app_id()] =
-          web_app.management_to_external_config_map()[management_source]
-              .install_urls;
-    }
+    const WebApp::ExternalConfigMap& config_map =
+        web_app.management_to_external_config_map();
+    auto it = config_map.find(management_source);
+    if (it != config_map.end() && !it->second.install_urls.empty())
+      installed_apps[web_app.app_id()] = it->second.install_urls;
   }
-
   return installed_apps;
 }
 
@@ -513,6 +512,14 @@ std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation()
   return app_ids;
 }
 
+bool WebAppRegistrar::AppsExistWithExternalConfigData() const {
+  for (const WebApp& web_app : GetApps()) {
+    if (web_app.management_to_external_config_map().size() > 0)
+      return true;
+  }
+  return false;
+}
+
 void WebAppRegistrar::Start() {
   // Profile manager can be null in unit tests.
   if (g_browser_process->profile_manager())
@@ -567,8 +574,8 @@ bool WebAppRegistrar::IsActivelyInstalled(const AppId& app_id) const {
 
   auto* web_app = GetAppById(app_id);
   DCHECK(web_app);
-  return !web_app->HasOnlySource(web_app::WebAppManagement::kDefault) ||
-         GetAppEffectiveDisplayMode(app_id) != web_app::DisplayMode::kBrowser;
+  return !web_app->HasOnlySource(WebAppManagement::kDefault) ||
+         GetAppEffectiveDisplayMode(app_id) != DisplayMode::kBrowser;
 }
 
 bool WebAppRegistrar::IsIsolated(const AppId& app_id) const {
@@ -738,13 +745,6 @@ const apps::ShareTarget* WebAppRegistrar::GetAppShareTarget(
              : nullptr;
 }
 
-blink::mojom::HandleLinks WebAppRegistrar::GetAppHandleLinks(
-    const AppId& app_id) const {
-  auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->handle_links()
-                 : blink::mojom::HandleLinks::kUndefined;
-}
-
 const apps::FileHandlers* WebAppRegistrar::GetAppFileHandlers(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
@@ -752,7 +752,7 @@ const apps::FileHandlers* WebAppRegistrar::GetAppFileHandlers(
 }
 
 bool WebAppRegistrar::IsAppFileHandlerPermissionBlocked(
-    const web_app::AppId& app_id) const {
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (!web_app)
     return false;

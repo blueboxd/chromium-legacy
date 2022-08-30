@@ -13,13 +13,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
-#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything.mojom.h"
+#include "chrome/common/accessibility/read_anything.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/accessibility/ax_node_id_forward.h"
+#include "ui/accessibility/ax_tree_update_forward.h"
 
-using read_anything::mojom::ContentNodePtr;
 using read_anything::mojom::Page;
 using read_anything::mojom::PageHandler;
 
@@ -46,13 +47,12 @@ class ReadAnythingPageHandler : public PageHandler,
   ReadAnythingPageHandler& operator=(const ReadAnythingPageHandler&) = delete;
   ~ReadAnythingPageHandler() override;
 
-  // PageHandler:
-  void OnUIReady() override;
-
   // ReadAnythingModel::Observer:
   void OnFontNameUpdated(const std::string& new_font_name) override;
-  void OnContentUpdated(
-      const std::vector<ContentNodePtr>& content_nodes) override;
+  void OnAXTreeDistilled(
+      const ui::AXTreeUpdate& snapshot,
+      const std::vector<ui::AXNodeID>& content_node_ids) override;
+  void OnFontSizeChanged(const float new_font_size) override;
 
   // ReadAnythingCoordinator::Observer:
   void OnCoordinatorDestroyed() override;

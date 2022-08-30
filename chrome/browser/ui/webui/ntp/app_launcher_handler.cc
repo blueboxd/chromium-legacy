@@ -81,6 +81,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
@@ -302,8 +303,7 @@ base::Value::Dict AppLauncherHandler::CreateWebAppInfo(
                : kRunOnOsLoginModeWindowed);
 
   // Show settings instead of App info for locally installed web apps.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWebAppSettingsPage) &&
-      is_locally_installed) {
+  if (is_locally_installed) {
     dict.Set("settingsMenuItemOverrideText",
              l10n_util::GetStringUTF16(IDS_WEB_APP_SETTINGS_LINK));
   }
@@ -667,14 +667,15 @@ void AppLauncherHandler::FillAppDictionary(base::Value::Dict* dictionary) {
         l10n_util::GetPluralStringFUTF16(IDS_DEPRECATED_APPS_DELETION_LINK,
                                          deprecated_app_ids_.size()));
 
-  const base::Value* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
-  if (!app_page_names || !app_page_names->GetListDeprecated().size()) {
+  const base::Value::List& app_page_names =
+      prefs->GetValueList(prefs::kNtpAppPageNames);
+  if (!app_page_names.size()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     base::Value* list = update.Get();
     list->Append(l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME));
     dictionary->Set("appPageNames", list->Clone());
   } else {
-    dictionary->Set("appPageNames", app_page_names->Clone());
+    dictionary->Set("appPageNames", app_page_names.Clone());
   }
 }
 
@@ -831,7 +832,7 @@ void AppLauncherHandler::LaunchApp(
 
   extensions::Manifest::Type type;
   GURL full_launch_url;
-  apps::mojom::LaunchContainer launch_container;
+  apps::LaunchContainer launch_container;
 
   web_app::WebAppRegistrar& registrar = web_app_provider_->registrar();
   if (registrar.IsInstalled(extension_id) &&
@@ -875,8 +876,8 @@ void AppLauncherHandler::LaunchApp(
     apps::AppLaunchParams params(
         extension_id,
         disposition == WindowOpenDisposition::NEW_WINDOW
-            ? apps::mojom::LaunchContainer::kLaunchContainerWindow
-            : apps::mojom::LaunchContainer::kLaunchContainerTab,
+            ? apps::LaunchContainer::kLaunchContainerWindow
+            : apps::LaunchContainer::kLaunchContainerTab,
         disposition, apps::mojom::LaunchSource::kFromNewTabPage);
     params.override_url = override_url;
     apps::AppServiceProxyFactory::GetForProfile(profile)
@@ -1101,18 +1102,11 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
 
   if (web_app_provider_->registrar().IsInstalled(extension_id) &&
       !IsYoutubeExtension(extension_id)) {
-    if (base::FeatureList::IsEnabled(
-            features::kDesktopPWAsWebAppSettingsPage)) {
-      // This assumes the AppLauncherHandler is only used by chrome://apps page.
-      // It needs to be updated if it's also used by other surfaces.
-      chrome::ShowWebAppSettings(
-          chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
-          extension_id, web_app::AppSettingsPageEntryPoint::kChromeAppsPage);
-      return;
-    }
-    chrome::ShowSiteSettings(
+    // This assumes the AppLauncherHandler is only used by chrome://apps page.
+    // It needs to be updated if it's also used by other surfaces.
+    chrome::ShowWebAppSettings(
         chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
-        web_app_provider_->registrar().GetAppStartUrl(extension_id));
+        extension_id, web_app::AppSettingsPageEntryPoint::kChromeAppsPage);
     return;
   }
 

@@ -602,7 +602,7 @@ class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
     download_file_ = nullptr;
   }
 
-  raw_ptr<ErrorInjectionDownloadFile> download_file_;
+  raw_ptr<ErrorInjectionDownloadFile, DanglingUntriaged> download_file_;
   int64_t injected_error_offset_ = -1;
   int64_t injected_error_length_ = 0;
   base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_{
@@ -4121,14 +4121,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   mouse_event.click_count = 1;
   shell()
       ->web_contents()
-      ->GetMainFrame()
+      ->GetPrimaryMainFrame()
       ->GetRenderViewHost()
       ->GetWidget()
       ->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   shell()
       ->web_contents()
-      ->GetMainFrame()
+      ->GetPrimaryMainFrame()
       ->GetRenderViewHost()
       ->GetWidget()
       ->ForwardMouseEvent(mouse_event);
@@ -4734,8 +4734,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MiddleSliceDelayedError) {
 // initiates a download in an iframe and expects it to succeed.
 // See https://crbug.com/717971.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadIgnoresXFO) {
-  GURL main_url(
-      embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(b)"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(b.test)"));
   GURL download_url(
       embedded_test_server()->GetURL("/download/download-with-xfo-deny.html"));
   WebContentsImpl* web_contents =
@@ -4946,7 +4946,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, SaveImageAt) {
 
   // Ask the frame to save a data-URL image at the given coordinates.
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  shell()->web_contents()->GetMainFrame()->SaveImageAt(100, 100);
+  shell()->web_contents()->GetPrimaryMainFrame()->SaveImageAt(100, 100);
   observer->WaitForFinished();
   EXPECT_EQ(
       1u, observer->NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
@@ -5213,7 +5213,7 @@ IN_PROC_BROWSER_TEST_P(DownloadFencedFrameTest, DiscardNonNavigationDownload) {
   // Create fenced frame
   EXPECT_TRUE(NavigateToURL(shell(), kInitialUrl));
   RenderFrameHost* fenced_frame_host = CreateFencedFrame(
-      shell()->web_contents()->GetMainFrame(), kFencedFrameUrl);
+      shell()->web_contents()->GetPrimaryMainFrame(), kFencedFrameUrl);
 
   // Do a download without navigation from the fenced frame render frame host.
   // The download will be dropped.

@@ -100,7 +100,6 @@ Il tuo motore di ricerca è <ph name="DSE_NAME" />. Consulta le relative istruzi
 <translation id="1687475363370981210">Segna tutti come già letti</translation>
 <translation id="1689333818294560261">Nickname</translation>
 <translation id="1690731385917361335">Nessun elemento</translation>
-<translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selezionati</translation>
 <translation id="1740468249224277719">Tocca due volte per installare.</translation>
 <translation id="1752547299766512813">Salva password</translation>
@@ -174,7 +173,6 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="2469960372084740698">Vuoi disattivare Navigazione sicura?</translation>
 <translation id="2473876017985765807">Hai già salvato una password per <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Non selezionata</translation>
-<translation id="2497852260688568942">La sincronizzazione è stata disattivata dall'amministratore</translation>
 <translation id="2500374554657206846">Opzioni per salvare la password</translation>
 <translation id="2523363575747517183">Questo sito web sta cercando ripetutamente di aprire un'altra applicazione.</translation>
 <translation id="2529021024822217800">Apri tutto</translation>
@@ -326,6 +324,7 @@ Svolgi i passaggi che seguono:</translation>
 <translation id="369349502275246497">Chiedi di salvare password</translation>
 <translation id="3709582977625132201">Contrassegna come da leggere</translation>
 <translation id="371230970611282515">Prevede e ti avvisa quando stanno per verificarsi eventi pericolosi.</translation>
+<translation id="37207012422556617">Ricerche di tendenza</translation>
 <translation id="3740397331642243698">Consente di aprire gli URL inseriti in Google Chrome nella modalità in incognito.</translation>
 <translation id="3762232513783804601">Realizzato per il tuo iPad</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
@@ -489,7 +488,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="509789154667432072">Aggiungi un preferito</translation>
 <translation id="5118713593561876160">Interessi</translation>
 <translation id="5118764316110575523">Off</translation>
-<translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
 <translation id="5140288047769711648">Chrome memorizzerà la password. Non è necessario ricordarla.</translation>
 <translation id="5150492518600715772">Invia al tuo dispositivo</translation>
@@ -533,6 +531,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 La funzione Handoff deve anche essere attivata nella sezione Generali di Impostazioni e sui dispositivi deve essere in uso lo stesso account iCloud.</translation>
 <translation id="5551897871312988470">Proponi di tradurre</translation>
 <translation id="5556459405103347317">Ricarica</translation>
+<translation id="556042886152191864">Pulsante</translation>
 <translation id="5580834567471114021">Aggiungere all'elenco di lettura per consultare la pagina in un secondo momento?</translation>
 <translation id="560322036295180549">Opzione disattivata dall'organizzazione</translation>
 <translation id="5614553682702429503">Salvare la password?</translation>
@@ -600,7 +599,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="60829778314739003">Accetta e continua</translation>
 <translation id="6084848228346514841">Seleziona schede</translation>
 <translation id="6103540626693881831">Crittografia on-device</translation>
-<translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6119050551270742952">Pagina web corrente in incognito</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
@@ -776,7 +774,6 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> articoli da leggere.</translation>
 <translation id="7412027924265291969">Continua</translation>
-<translation id="7419565702166471774">Utilizza sempre connessioni sicure</translation>
 <translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo Account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
 <translation id="7431991332293347422">Controlla la modalità di utilizzo della cronologia di navigazione per personalizzare la Ricerca e non solo</translation>
 <translation id="7435356471928173109">Disattivata dall'amministratore</translation>
@@ -816,6 +813,7 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="778855399387580014">Avvia una ricerca in una nuova scheda di Chrome.</translation>
+<translation id="7790892308048519147">Prova a usare connessioni sicure</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="7807060072011926525">Fornito da Google</translation>
 <translation id="7839985698273989086">Pagina offline</translation>
@@ -891,7 +889,7 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8428045167754449968">Città/località</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8428634594422941299">OK</translation>
-<translation id="8446884382197647889">Scopri di più</translation>
+<translation id="8446884382197647889">Ulteriori informazioni</translation>
 <translation id="8458397775385147834">1 elemento eliminato</translation>
 <translation id="8459333855531264009">Non sicuro</translation>
 <translation id="8487667956631253959">Attiva</translation>
@@ -913,7 +911,6 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8591976964826315682">Blocca cookie di terze parti in modalità di navigazione in incognito</translation>
 <translation id="8605219856220328675">Chiudi la scheda.</translation>
 <translation id="8620640915598389714">Modifica</translation>
-<translation id="8620785403235741379">Seleziona un'opzione</translation>
 <translation id="8626393685701737946">Puoi cambiare la visualizzazione predefinita del sito in Desktop in Impostazioni &gt; Impostazioni contenuti</translation>
 <translation id="863090005774946393">Il tuo browser è gestito dalla tua organizzazione. Alcune funzionalità potrebbero essere disattivate.</translation>
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>

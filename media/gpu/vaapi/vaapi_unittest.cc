@@ -41,6 +41,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/linux/gbm_defines.h"
 
+#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+// GN doesn't understand conditional includes, so we need nogncheck here.
+// See crbug.com/1125897.
+#include "ui/ozone/public/ozone_platform.h"  // nogncheck
+#endif
+
 namespace media {
 namespace {
 
@@ -57,6 +63,7 @@ absl::optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
     {AV1PROFILE_PROFILE_MAIN, VAProfileAV1Profile0},
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
     {HEVCPROFILE_MAIN, VAProfileHEVCMain},
+    {HEVCPROFILE_MAIN_STILL_PICTURE, VAProfileHEVCMain},
     {HEVCPROFILE_MAIN10, VAProfileHEVCMain10},
 #endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   };
@@ -264,7 +271,7 @@ std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
   return info;
 }
 
-std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
+std::string GetVaInfo(std::vector<std::string> argv) {
   int fds[2];
   PCHECK(pipe(fds) == 0);
   base::File read_pipe(fds[0]);
@@ -272,16 +279,21 @@ std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
 
   base::LaunchOptions options;
   options.fds_to_remap.emplace_back(write_pipe_fd.get(), STDOUT_FILENO);
-  std::vector<std::string> argv = {"vainfo"};
   EXPECT_TRUE(LaunchProcess(argv, options).IsValid());
   write_pipe_fd.reset();
 
-  char buf[4096] = {};
+  char buf[262144] = {};
   int n = read_pipe.ReadAtCurrentPos(buf, sizeof(buf));
   PCHECK(n >= 0);
-  EXPECT_LT(n, 4096);
+  EXPECT_LT(n, 262144);
   std::string output(buf, n);
   DVLOG(4) << output;
+  return output;
+}
+
+std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
+  std::vector<std::string> argv = {"vainfo"};
+  std::string output = GetVaInfo(argv);
   return ParseVainfo(output);
 }
 
@@ -332,6 +344,56 @@ TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
                 base::Contains(va_info.at(*va_profile), VAEntrypointEncSliceLP))
         << " profile: " << GetProfileName(profile.profile)
         << ", va profile: " << vaProfileStr(*va_profile);
+  }
+}
+
+// Verifies that the resolutions of profiles for VBR and CBR are the same.
+TEST_F(VaapiTest, VbrAndCbrResolutionsMatch) {
+  struct ResolutionInfo {
+    VaapiWrapper::CodecMode mode;
+    gfx::Size min;
+    gfx::Size max;
+  };
+  std::map<VAProfile, std::vector<ResolutionInfo>> supported_resolutions;
+  for (const VaapiWrapper::CodecMode codec_mode :
+       {VaapiWrapper::kEncodeConstantBitrate,
+        VaapiWrapper::kEncodeConstantQuantizationParameter,
+        VaapiWrapper::kEncodeVariableBitrate}) {
+    const std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+            codec_mode);
+    for (const auto& configuration : configurations) {
+      const VAProfile va_profile = configuration.first;
+      ResolutionInfo res_info{.mode = codec_mode};
+      ASSERT_TRUE(VaapiWrapper::GetSupportedResolutions(
+          va_profile, codec_mode, res_info.min, res_info.max))
+          << " Failed get resolutions: "
+          << "profile=" << va_profile << ", mode=" << codec_mode;
+
+      supported_resolutions[va_profile].push_back(res_info);
+    }
+  }
+
+  for (const auto& r : supported_resolutions) {
+    const VAProfile va_profile = r.first;
+    const auto& resolution_info = r.second;
+
+    for (size_t i = 0; i < resolution_info.size(); ++i) {
+      for (size_t j = i + 1; j < resolution_info.size(); ++j) {
+        EXPECT_EQ(resolution_info[i].min, resolution_info[j].min)
+            << " Minimum supported resolution mismatch for profile="
+            << VAProfileToString(va_profile) << ": " << resolution_info[i].mode
+            << " (" << resolution_info[i].min.ToString() << ") and "
+            << resolution_info[j].mode << " ("
+            << resolution_info[j].min.ToString() << ")";
+        EXPECT_EQ(resolution_info[i].max, resolution_info[j].max)
+            << " Maximum supported resolution mismatch for profile="
+            << VAProfileToString(va_profile) << ": " << resolution_info[i].mode
+            << " (" << resolution_info[i].max.ToString() << ") and "
+            << resolution_info[j].mode << " ("
+            << resolution_info[j].max.ToString() << ")";
+      }
+    }
   }
 }
 
@@ -428,7 +490,7 @@ TEST_F(VaapiTest, LowQualityEncodingSetting) {
       VAConfigAttrib attrib{};
       attrib.type = VAConfigAttribEncQualityRange;
       {
-        base::AutoLockMaybe auto_lock(wrapper->va_lock_);
+        base::AutoLockMaybe auto_lock(wrapper->va_lock_.get());
         VAStatus va_res = vaGetConfigAttributes(
             wrapper->va_display_, va_profile, entrypoint, &attrib, 1);
         ASSERT_EQ(va_res, VA_STATUS_SUCCESS);
@@ -448,7 +510,7 @@ TEST_F(VaapiTest, LowQualityEncodingSetting) {
       ASSERT_TRUE(wrapper->CreateContext(gfx::Size(640, 368)));
       ASSERT_EQ(wrapper->pending_va_buffers_.size(), 1u);
       {
-        base::AutoLockMaybe auto_lock(wrapper->va_lock_);
+        base::AutoLockMaybe auto_lock(wrapper->va_lock_.get());
         ScopedVABufferMapping mapping(wrapper->va_lock_, wrapper->va_display_,
                                       wrapper->pending_va_buffers_.front());
         ASSERT_TRUE(mapping.IsValid());
@@ -669,12 +731,10 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
   }
 
   gfx::Size minimum_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetDecodeMinResolution(va_profile,
-                                                   &minimum_supported_size));
   gfx::Size maximum_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetDecodeMaxResolution(va_profile,
-                                                   &maximum_supported_size));
-
+  ASSERT_TRUE(VaapiWrapper::GetSupportedResolutions(
+      va_profile, VaapiWrapper::CodecMode::kDecode, minimum_supported_size,
+      maximum_supported_size));
   if (resolution.width() < minimum_supported_size.width() ||
       resolution.height() < minimum_supported_size.height() ||
       resolution.width() > maximum_supported_size.width() ||
@@ -704,7 +764,7 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
   // Request the underlying DRM metadata for |scoped_va_surface|.
   VADRMPRIMESurfaceDescriptor va_descriptor{};
   {
-    base::AutoLockMaybe auto_lock(wrapper->va_lock_);
+    base::AutoLockMaybe auto_lock(wrapper->va_lock_.get());
     VAStatus va_res =
         vaSyncSurface(wrapper->va_display_, scoped_va_surface->id());
     ASSERT_EQ(va_res, VA_STATUS_SUCCESS);
@@ -738,8 +798,19 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
     EXPECT_GE(va_descriptor.objects[1].size,
               base::checked_cast<uint32_t>(2 * uv_width * uv_height));
   }
-  const auto expected_drm_modifier =
-      backend == VAImplementation::kIntelIHD ? I915_FORMAT_MOD_Y_TILED : 0x0;
+
+  base::AutoLockMaybe auto_lock(wrapper->va_lock_.get());
+  const std::string va_vendor_string
+         = vaQueryVendorString(wrapper->va_display_);
+  uint64_t expected_drm_modifier = DRM_FORMAT_MOD_LINEAR;
+
+  if (backend == VAImplementation::kIntelIHD) {
+    expected_drm_modifier = I915_FORMAT_MOD_Y_TILED;
+  } else if (backend == VAImplementation::kMesaGallium) {
+    if (va_vendor_string.find("STONEY") != std::string::npos) {
+      expected_drm_modifier = DRM_FORMAT_MOD_INVALID;
+    }
+  }
   EXPECT_EQ(va_descriptor.objects[0].drm_format_modifier,
             expected_drm_modifier);
   // TODO(mcasas): |num_layers| actually depends on |va_descriptor.va_fourcc|.
@@ -866,6 +937,18 @@ int main(int argc, char** argv) {
     // creates a ScopedFeatureList and multiple concurrent ScopedFeatureLists
     // are not allowed.
     auto scoped_feature_list = media::CreateScopedFeatureList();
+
+#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+    // Initialize Ozone so that the VADisplayState can decide if we're running
+    // on top of a platform that can deal with VA-API buffers.
+    // TODO(b/230370976): we may no longer need to initialize Ozone since we
+    // don't use it for buffer allocation.
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForUI(params);
+    ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
     // PreSandboxInitialization() loads and opens the driver, queries its
     // capabilities and fills in the VASupportedProfiles.
     media::VaapiWrapper::PreSandboxInitialization();

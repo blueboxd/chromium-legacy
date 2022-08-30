@@ -293,8 +293,8 @@ void MacUpdateServiceProxyTest::SetUp() {
   run_loop_ = std::make_unique<base::RunLoop>();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([this]() {
-        service_ =
-            base::MakeRefCounted<UpdateServiceProxy>(UpdaterScope::kUser);
+        service_ = base::MakeRefCounted<UpdateServiceProxy>(
+            UpdaterScope::kUser, base::TimeDelta::Max());
       }));
 }
 
@@ -522,7 +522,7 @@ TEST_F(MacUpdateServiceProxyTest, SimpleProductUpdate) {
   auto* update_state_observer_capturer_ptr = &update_state_observer_capturer;
   auto* state_change_engine_ptr = &state_change_engine;
   OCMExpect([mock_remote_object
-                checkForUpdateWithAppID:base::SysUTF8ToNSString(test_app_id)
+                checkForUpdateWithAppId:base::SysUTF8ToNSString(test_app_id)
                        installDataIndex:base::SysUTF8ToNSString(
                                             test_install_data_index)
                                priority:wrapped_priority.get()

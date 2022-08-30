@@ -325,16 +325,15 @@ std::vector<CapturedSiteParams> GetCapturedSites(
   // Parse json text content to json value node.
   base::Value root_node;
   {
-    JSONReader::ValueWithError value_with_error =
-        JSONReader::ReadAndReturnValueWithError(
-            json_text, JSONParserOptions::JSON_PARSE_RFC);
-    if (!value_with_error.value) {
+    auto value_with_error = JSONReader::ReadAndReturnValueWithError(
+        json_text, JSONParserOptions::JSON_PARSE_RFC);
+    if (!value_with_error.has_value()) {
       LOG(WARNING) << "Could not load test config from json file: "
                    << "`testcases.json` because: "
-                   << value_with_error.error_message;
+                   << value_with_error.error().message;
       return sites;
     }
-    root_node = std::move(value_with_error.value.value());
+    root_node = std::move(*value_with_error);
   }
   base::Value* list_node = root_node.FindListKey("tests");
   if (!list_node) {
@@ -834,11 +833,6 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
       network::switches::kIgnoreCertificateErrorsSPKIList,
       kWebPageReplayCertSPKI);
   command_line->AppendSwitch(switches::kStartMaximized);
-  // Tests are not expecting default field trials config, disable them by adding
-  // a fake field trial.
-  // TOOD(crbug/1212552) Remove this switch and either do this directly via gn
-  // args or not at all and update test expectations.
-  command_line->AppendSwitchASCII(::switches::kForceFieldTrials, "Foo/Bar");
 }
 
 void TestRecipeReplayer::Setup() {

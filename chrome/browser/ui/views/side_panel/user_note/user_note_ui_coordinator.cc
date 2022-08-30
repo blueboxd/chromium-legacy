@@ -22,6 +22,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace {
 
@@ -90,25 +91,34 @@ void UserNoteUICoordinator::OnNoteUpdated(const base::UnguessableToken& id,
                                           const std::string& note_content) {
   auto* service =
       user_notes::UserNoteServiceFactory::GetForContext(browser_->profile());
-  service->OnNoteUpdated(id, note_content);
+  service->OnNoteEdited(id, note_content);
 }
 
-void UserNoteUICoordinator::FocusNote(const std::string& guid) {
-  // TODO(cheickcisse): Implement FocusNote, which will be called by
-  // UserNoteService to inform, inform the user note side panel to scroll the
-  // corresponding note into view in the side panel.
+void UserNoteUICoordinator::FocusNote(const base::UnguessableToken& guid) {
+  Show();
+
+  auto* scroll_contents_view = scroll_view_->contents();
+  for (views::View* child_view : scroll_contents_view->children()) {
+    UserNoteView* user_note_view = views::AsViewClass<UserNoteView>(child_view);
+    if (user_note_view->user_note_id() == guid) {
+      scroll_to_note_id_ = user_note_view->user_note_id();
+      ScrollToNote();
+      return;
+    }
+  }
 }
 
 void UserNoteUICoordinator::StartNoteCreation(
     user_notes::UserNoteInstance* instance) {
-  scoped_view_observer_.Observe(scroll_view_);
+  Show();
 
   auto* scroll_contents_view = scroll_view_->contents();
+  scoped_view_observer_.Observe(scroll_contents_view);
   scroll_to_note_id_ = instance->model().id();
 
   int index = 0;
   for (views::View* child_view : scroll_contents_view->children()) {
-    UserNoteView* user_note_view = static_cast<UserNoteView*>(child_view);
+    UserNoteView* user_note_view = views::AsViewClass<UserNoteView>(child_view);
     if (user_note_view->user_note_rect() < instance->rect()) {
       index++;
       continue;
@@ -120,6 +130,8 @@ void UserNoteUICoordinator::StartNoteCreation(
       std::make_unique<UserNoteView>(this, instance,
                                      UserNoteView::State::kCreating),
       index);
+
+  scroll_view_->Layout();
 }
 
 void UserNoteUICoordinator::OnViewBoundsChanged(views::View* observed_view) {
@@ -136,8 +148,8 @@ void UserNoteUICoordinator::ScrollToNote() {
 
   for (views::View* child_content_view : scroll_view_->contents()->children()) {
     UserNoteView* user_note_view =
-        static_cast<UserNoteView*>(child_content_view);
-    if (user_note_view->UserNoteId() == scroll_to_note_id_) {
+        views::AsViewClass<UserNoteView>(child_content_view);
+    if (user_note_view->user_note_id() == scroll_to_note_id_) {
       child_content_view->ScrollViewToVisible();
       break;
     }
@@ -201,17 +213,17 @@ void UserNoteUICoordinator::Invalidate() {
       continue;
     }
 
-    UserNoteView* user_note_view = static_cast<UserNoteView*>(
+    UserNoteView* user_note_view = views::AsViewClass<UserNoteView>(
         scroll_contents_view->children().at(views_index));
 
-    if (user_note_view->UserNoteId() == base::UnguessableToken::Null()) {
+    if (user_note_view->user_note_id() == base::UnguessableToken::Null()) {
       // Remove the current UserNoteView from scroll_contents_view if its Id is
       // null.
       scroll_contents_view->RemoveChildView(user_note_view);
       continue;
     }
 
-    if (user_note_view->UserNoteId() == user_note_instance->model().id()) {
+    if (user_note_view->user_note_id() == user_note_instance->model().id()) {
       instances_index++;
       views_index++;
     } else if (user_note_view->user_note_rect() < user_note_instance->rect()) {
@@ -234,15 +246,25 @@ void UserNoteUICoordinator::Invalidate() {
 void UserNoteUICoordinator::Show() {
   auto* side_panel_coordinator =
       BrowserView::GetBrowserViewForBrowser(browser_)->side_panel_coordinator();
-  side_panel_coordinator->Show(SidePanelEntry::Id::kUserNote);
+
+  if (side_panel_coordinator->GetCurrentEntryId() ==
+      SidePanelEntry::Id::kUserNote) {
+    return;
+  }
+
+  side_panel_coordinator->Show(
+      SidePanelEntry::Id::kUserNote,
+      SidePanelUtil::SidePanelOpenTrigger::kNotesInPageContextMenu);
 }
 
 void UserNoteUICoordinator::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  // TODO(cheickcisse): Call invalidate on active tab changed. It seems to
-  // fail when the tab is deleted.
+  if (!selection.active_tab_changed() || tab_strip_model->closing_all())
+    return;
+
+  Invalidate();
 }
 
 std::unique_ptr<views::View> UserNoteUICoordinator::CreateUserNotesView() {

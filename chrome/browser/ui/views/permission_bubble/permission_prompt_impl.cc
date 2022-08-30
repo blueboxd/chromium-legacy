@@ -255,7 +255,7 @@ views::Widget* PermissionPromptImpl::GetPromptBubbleWidgetForTesting() {
 
   LocationBarView* lbv = GetLocationBarView();
 
-  return lbv->chip()
+  return lbv->IsChipActive() && lbv->chip()->IsBubbleShowing()
              ? lbv->chip()->GetPromptBubbleWidgetForTesting()  // IN-TEST
              : nullptr;
 }
@@ -315,9 +315,8 @@ void PermissionPromptImpl::ShowQuietIcon() {
 
 void PermissionPromptImpl::ShowBubble() {
   prompt_style_ = PermissionPromptStyle::kBubbleOnly;
-  prompt_bubble_ =
-      new PermissionPromptBubbleView(browser_, delegate_->GetWeakPtr(),
-                                     permission_requested_time_, prompt_style_);
+  prompt_bubble_ = new PermissionPromptBubbleView(
+      browser_, delegate_, permission_requested_time_, prompt_style_);
   prompt_bubble_->Show();
   prompt_bubble_->GetWidget()->AddObserver(this);
 }

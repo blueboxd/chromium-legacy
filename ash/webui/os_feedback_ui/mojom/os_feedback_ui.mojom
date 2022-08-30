@@ -74,6 +74,13 @@ struct FeedbackContext {
   string? email;
   // The URL of the page that this issue was being experienced on.
   url.mojom.Url?  page_url;
+  // Extra diagnostics information provided by source CrOS application by
+  // setting the extra_diagnostics query parameter when opening the CrOS
+  // Feedback app. Content of extra_diagnostics is added to
+  // a collection of key-value pairs, and eventually is serialized to a text
+  // file, zipped, and then attached to the report.
+  // Example value: "Failed to connect to wifi network.".
+  string? extra_diagnostics;
 };
 
 // Status of the sending of a feedback report.
@@ -113,6 +120,9 @@ struct Report {
   // Whether or not to include the screenshot with this report. The screenshot
   // data should have been cached in C++ side.
   bool include_screenshot;
+  // Whether or not consent has been granted to Google for to contact user in
+  // reference to report. See (go/feedback-user-consent-faq).
+  bool contact_user_consent_granted;
 };
 
 // Provides services needed by the feedback UI to display data and send reports.
@@ -128,5 +138,7 @@ interface FeedbackServiceProvider {
   // Sends a feedback report and returns its status.
   SendReport(Report report) => (SendReportStatus status);
   // Open Diagnostics app.
-  OpenDiagnosticsApp() => ();
+  OpenDiagnosticsApp();
+  // Open Explore app.
+  OpenExploreApp();
 };

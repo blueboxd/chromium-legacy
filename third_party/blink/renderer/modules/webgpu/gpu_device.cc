@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_error_filter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_external_texture_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_feature_name.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_query_set_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_validation_error.h"
+#include "third_party/blink/renderer/modules/webgpu/string_utils.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
@@ -125,7 +127,8 @@ void GPUDevice::AddConsoleWarning(const char* message) {
   if (execution_context && allowed_console_warnings_remaining_ > 0) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kRendering,
-        mojom::blink::ConsoleMessageLevel::kWarning, message);
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        StringFromASCIIAndUTF8(message));
     execution_context->AddConsoleMessage(console_message);
 
     allowed_console_warnings_remaining_--;
@@ -209,6 +212,10 @@ bool GPUDevice::ValidateTextureFormatUsage(V8GPUTextureFormat format,
       requiredFeature = "texture-compression-astc";
       break;
 
+    case V8GPUTextureFormat::Enum::kDepth32FloatStencil8:
+      requiredFeature = "depth32float-stencil8";
+      break;
+
     default:
       return true;
   }
@@ -219,14 +226,18 @@ bool GPUDevice::ValidateTextureFormatUsage(V8GPUTextureFormat format,
     return true;
   }
 
-  std::string deviceLabel =
-      label().IsEmpty() ? "" : " \"" + label().Utf8() + "\"";
-
-  exception_state.ThrowTypeError(
-      String::Format("Use of the '%s' texture format requires the '%s' feature "
-                     "to be enabled on [Device%s].",
-                     format.AsCStr(), requiredFeature, deviceLabel.c_str()));
+  exception_state.ThrowTypeError(String::Format(
+      "Use of the '%s' texture format requires the '%s' feature "
+      "to be enabled on %s.",
+      format.AsCStr(), requiredFeature, formattedLabel().c_str()));
   return false;
+}
+
+std::string GPUDevice::formattedLabel() const {
+  std::string deviceLabel =
+      label().IsEmpty() ? "[Device]" : "[Device \"" + label().Utf8() + "\"]";
+
+  return deviceLabel;
 }
 
 void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
@@ -243,9 +254,11 @@ void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
 
   GPUUncapturedErrorEventInit* init = GPUUncapturedErrorEventInit::Create();
   if (errorType == WGPUErrorType_Validation) {
-    init->setError(MakeGarbageCollected<GPUValidationError>(message));
+    init->setError(MakeGarbageCollected<GPUValidationError>(
+        StringFromASCIIAndUTF8(message)));
   } else if (errorType == WGPUErrorType_OutOfMemory) {
-    init->setError(MakeGarbageCollected<GPUOutOfMemoryError>(message));
+    init->setError(MakeGarbageCollected<GPUOutOfMemoryError>(
+        StringFromASCIIAndUTF8(message)));
   } else {
     return;
   }
@@ -281,7 +294,8 @@ void GPUDevice::OnLogging(WGPULoggingType loggingType, const char* message) {
   ExecutionContext* execution_context = GetExecutionContext();
   if (execution_context) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kRendering, level, message);
+        mojom::blink::ConsoleMessageSource::kRendering, level,
+        StringFromASCIIAndUTF8(message));
     execution_context->AddConsoleMessage(console_message);
   }
 }
@@ -293,8 +307,8 @@ void GPUDevice::OnDeviceLostError(WGPUDeviceLostReason reason,
   AddConsoleWarning(message);
 
   if (lost_property_->GetState() == LostProperty::kPending) {
-    auto* device_lost_info =
-        MakeGarbageCollected<GPUDeviceLostInfo>(reason, message);
+    auto* device_lost_info = MakeGarbageCollected<GPUDeviceLostInfo>(
+        reason, StringFromASCIIAndUTF8(message));
     lost_property_->Resolve(device_lost_info);
   }
 }
@@ -316,7 +330,7 @@ void GPUDevice::OnCreateRenderPipelineAsyncCallback(
     case WGPUCreatePipelineAsyncStatus_DeviceDestroyed:
     case WGPUCreatePipelineAsyncStatus_Unknown: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError, message));
+          DOMExceptionCode::kOperationError, StringFromASCIIAndUTF8(message)));
       break;
     }
 
@@ -343,7 +357,7 @@ void GPUDevice::OnCreateComputePipelineAsyncCallback(
     case WGPUCreatePipelineAsyncStatus_DeviceDestroyed:
     case WGPUCreatePipelineAsyncStatus_Unknown: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError, message));
+          DOMExceptionCode::kOperationError, StringFromASCIIAndUTF8(message)));
       break;
     }
 
@@ -507,8 +521,15 @@ GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
   return GPURenderBundleEncoder::Create(this, descriptor, exception_state);
 }
 
-GPUQuerySet* GPUDevice::createQuerySet(
-    const GPUQuerySetDescriptor* descriptor) {
+GPUQuerySet* GPUDevice::createQuerySet(const GPUQuerySetDescriptor* descriptor,
+                                       ExceptionState& exception_state) {
+  if (descriptor->type() == "timestamp" && !features_->has("timestamp-query")) {
+    exception_state.ThrowTypeError(String::Format(
+        "Use of 'timestamp' queries requires the 'timestamp-query' feature to "
+        "be enabled on %s.",
+        formattedLabel().c_str()));
+    return nullptr;
+  }
   return GPUQuerySet::Create(this, descriptor);
 }
 
@@ -543,10 +564,12 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve(v8::Null(isolate));
       break;
     case WGPUErrorType_OutOfMemory:
-      resolver->Resolve(MakeGarbageCollected<GPUOutOfMemoryError>(message));
+      resolver->Resolve(MakeGarbageCollected<GPUOutOfMemoryError>(
+          StringFromASCIIAndUTF8(message)));
       break;
     case WGPUErrorType_Validation:
-      resolver->Resolve(MakeGarbageCollected<GPUValidationError>(message));
+      resolver->Resolve(MakeGarbageCollected<GPUValidationError>(
+          StringFromASCIIAndUTF8(message)));
       break;
     case WGPUErrorType_Unknown:
     case WGPUErrorType_DeviceLost:
@@ -573,35 +596,8 @@ void GPUDevice::Trace(Visitor* visitor) const {
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);
   visitor->Trace(active_external_textures_);
-  visitor->Trace(external_textures_pending_destroy_);
   ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-}
-
-void GPUDevice::EnsureExternalTextureDestroyed(
-    GPUExternalTexture* externalTexture) {
-  DCHECK(externalTexture);
-  external_textures_pending_destroy_.push_back(externalTexture);
-
-  if (has_destroy_external_texture_microtask_)
-    return;
-
-  Microtask::EnqueueMicrotask(WTF::Bind(
-      &GPUDevice::DestroyExternalTexturesMicrotask, WrapWeakPersistent(this)));
-  has_destroy_external_texture_microtask_ = true;
-}
-
-void GPUDevice::DestroyExternalTexturesMicrotask() {
-  // GPUDevice.destroy() call has destroyed all pending external textures.
-  if (!has_destroy_external_texture_microtask_)
-    return;
-
-  has_destroy_external_texture_microtask_ = false;
-
-  auto externalTextures = std::move(external_textures_pending_destroy_);
-  for (Member<GPUExternalTexture> externalTexture : externalTextures) {
-    externalTexture->Destroy();
-  }
 }
 
 void GPUDevice::Dispose() {
@@ -611,21 +607,10 @@ void GPUDevice::Dispose() {
 }
 
 void GPUDevice::DestroyAllExternalTextures() {
-  has_destroy_external_texture_microtask_ = false;
-
-  // TODO(crbug.com/1318345): u-nit: fix casing issues in all GPUExternalTexture
-  // related codes. Using a_b instead of aB.
-  for (auto& externalTexture : active_external_textures_) {
-    externalTexture->Destroy();
+  for (auto& external_texture : active_external_textures_) {
+    external_texture->Destroy();
   }
   active_external_textures_.clear();
-
-  auto externalTexturesPendingDestroy =
-      std::move(external_textures_pending_destroy_);
-  for (Member<GPUExternalTexture> externalTexture :
-       externalTexturesPendingDestroy) {
-    externalTexture->Destroy();
-  }
 }
 
 void GPUDevice::AddActiveExternalTexture(GPUExternalTexture* external_texture) {

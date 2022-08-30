@@ -119,7 +119,7 @@ suite('PrivacyPageTests', function() {
 
   setup(async () => {
     browserProxy = new TestPeripheralDataAccessBrowserProxy();
-    PeripheralDataAccessBrowserProxyImpl.setInstance(browserProxy);
+    PeripheralDataAccessBrowserProxyImpl.setInstanceForTesting(browserProxy);
     PolymerTest.clearBody();
     privacyPage = document.createElement('os-settings-privacy-page');
     document.body.appendChild(privacyPage);
@@ -334,6 +334,14 @@ suite('PrivacyPageTests', function() {
     assertTrue(privacyPage.showPasswordPromptDialog_);
   });
 
+  test('Refresh token when authentication token invalid', async () => {
+    privacyPage.setProperties({setModes_: () => {}});
+    flush();
+
+    privacyPage.dispatchEvent(new CustomEvent('auth-token-invalid'));
+
+    assertEquals(privacyPage.setModes_, undefined);
+  });
 
   test('Smart privacy hidden when both features disabled', async () => {
     loadTimeData.overrideValues({
@@ -415,10 +423,11 @@ suite('PrivacePageTest_OfficialBuild', async () => {
 
   setup(async () => {
     browserProxy = new TestPeripheralDataAccessBrowserProxy();
-    PeripheralDataAccessBrowserProxyImpl.setInstance(browserProxy);
+    PeripheralDataAccessBrowserProxyImpl.setInstanceForTesting(browserProxy);
 
     metricsConsentBrowserProxy = new TestMetricsConsentBrowserProxy();
-    MetricsConsentBrowserProxyImpl.setInstance(metricsConsentBrowserProxy);
+    MetricsConsentBrowserProxyImpl.setInstanceForTesting(
+        metricsConsentBrowserProxy);
 
     privacyPage = document.createElement('os-settings-privacy-page');
     PolymerTest.clearBody();
@@ -540,7 +549,7 @@ suite('PeripheralDataAccessTest', function() {
 
   setup(async () => {
     browserProxy = new TestPeripheralDataAccessBrowserProxy();
-    PeripheralDataAccessBrowserProxyImpl.setInstance(browserProxy);
+    PeripheralDataAccessBrowserProxyImpl.setInstanceForTesting(browserProxy);
     PolymerTest.clearBody();
   });
 

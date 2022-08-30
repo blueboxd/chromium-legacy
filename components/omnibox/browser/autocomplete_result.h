@@ -168,8 +168,8 @@ class AutocompleteResult {
 
   // If the top match is a Search Entity, and it was deduplicated with a
   // non-entity match, split off the non-entity match from the list of
-  // duplicates and promote it to the top.
-  static void DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
+  // duplicates, promote it to the top, and return true.
+  static bool DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
 
   // Just a helper function to encapsulate the logic of deciding how many
   // matches to keep, with respect to configured maximums, URL limits,
@@ -231,26 +231,23 @@ class AutocompleteResult {
 
   // Gets the header string associated with |suggestion_group_id|. Returns an
   // empty string if no header is found.
-  std::u16string GetHeaderForGroupId(int suggestion_group_id) const;
+  std::u16string GetHeaderForSuggestionGroup(int suggestion_group_id) const;
 
   // Returns whether or not |suggestion_group_id| should be collapsed in the UI.
   // This method takes into account both the user's stored |prefs| as well as
   // the server-provided visibility hint for |suggestion_group_id|.
-  bool IsSuggestionGroupIdHidden(PrefService* prefs,
-                                 int suggestion_group_id) const;
+  bool IsSuggestionGroupHidden(PrefService* prefs,
+                               int suggestion_group_id) const;
 
   void MergeHeadersMap(const SearchSuggestionParser::HeadersMap& headers_map);
 
   void MergeHiddenGroupIds(const std::vector<int>& hidden_group_ids);
 
-  // Logs metrics for when `new_result` replaces `old_result`. `old_result` is a
-  // list of the comparators for the old matches. `in_start` specifies whether
-  // this is during the synchronous initial autocomplete pass of an input or the
-  // subsequent asynchronous passes.
-  static void LogUpdateMetrics(
-      const std::vector<MatchDedupComparator>& old_result,
-      const AutocompleteResult& new_result,
-      bool in_start);
+  // This method implements a stateful stable partition. Matches which are
+  // search types, and their submatches regardless of type, are shifted
+  // earlier in the range, while non-search types and their submatches
+  // are shifted later.
+  static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
 
   // This value should be comfortably larger than any max-autocomplete-matches
   // under consideration.
@@ -317,12 +314,6 @@ class AutocompleteResult {
       size_t max_matches,
       size_t max_url_count,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
-
-  // This method implements a stateful stable partition. Matches which are
-  // search types, and their submatches regardless of type, are shifted
-  // earlier in the range, while non-search types and their submatches
-  // are shifted later.
-  static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
 
   // If we have SearchProvider search suggestions, demote OnDeviceProvider
   // search suggestions, since, which in general have lower quality than

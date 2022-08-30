@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
@@ -147,12 +148,25 @@ base::Value::Dict ExternalConstantsOverrider::GroupPolicies() const {
   return group_policies_value->GetDict().Clone();
 }
 
+base::TimeDelta ExternalConstantsOverrider::OverinstallTimeout() const {
+  if (!override_values_.contains(kDevOverrideKeyOverinstallTimeout)) {
+    return next_provider_->OverinstallTimeout();
+  }
+
+  const base::Value* value =
+      override_values_.Find(kDevOverrideKeyOverinstallTimeout);
+  CHECK(value->is_int()) << "Unexpected type of override["
+                         << kDevOverrideKeyOverinstallTimeout
+                         << "]: " << base::Value::GetTypeName(value->type());
+  return base::Seconds(value->GetInt());
+}
+
 // static
 scoped_refptr<ExternalConstantsOverrider>
 ExternalConstantsOverrider::FromDefaultJSONFile(
     scoped_refptr<ExternalConstants> next_provider) {
   const absl::optional<base::FilePath> data_dir_path =
-      GetBaseDirectory(GetUpdaterScope());
+      GetBaseDataDirectory(GetUpdaterScope());
   if (!data_dir_path) {
     LOG(ERROR) << "Cannot find app data path.";
     return nullptr;
@@ -167,8 +181,8 @@ ExternalConstantsOverrider::FromDefaultJSONFile(
   std::unique_ptr<base::Value> parsed_value(
       parser.Deserialize(&error_code, &error_message));
   if (error_code || !parsed_value) {
-    LOG(ERROR) << "Could not parse " << override_file_path << ": error "
-               << error_code << ": " << error_message;
+    VLOG(2) << "Could not parse " << override_file_path << ": error "
+            << error_code << ": " << error_message;
     return nullptr;
   }
 

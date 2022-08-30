@@ -207,6 +207,7 @@ source_set("common") {
     "//third_party/libyuv",
     "//ui/base:features",
     "//ui/gfx:memory_buffer",
+    "//ui/gfx/linux:drm",
     "//ui/gl",
   ]
   if (use_ozone) {
@@ -353,6 +354,10 @@ test("vaapi_unittest") {
       ":jpeg_decoder_unit_test",
       ":webp_decoder_unit_test",
     ]
+  }
+
+  if (use_ozone && is_linux) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

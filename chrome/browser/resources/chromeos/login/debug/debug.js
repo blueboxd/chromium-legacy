@@ -682,14 +682,14 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'default',
           trigger: (screen) => {
-            screen.loadParams({});
+            screen.onBeforeShow({});
           },
         },
         {
           // kAccountsPrefLoginScreenDomainAutoComplete value is set
           id: 'offline-gaia-domain',
           trigger: (screen) => {
-            screen.loadParams({
+            screen.onBeforeShow({
               emailDomain: 'somedomain.com',
             });
           },
@@ -698,7 +698,7 @@ cr.define('cr.ui.login.debug', function() {
           // Device is enterprise-managed.
           id: 'offline-gaia-enterprise',
           trigger: (screen) => {
-            screen.loadParams({
+            screen.onBeforeShow({
               enterpriseDomainManager: 'example.com',
             });
           },
@@ -1274,6 +1274,7 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      // TODO(https://crbug.com/1261902): update debug overlay
       id: 'recommend-apps',
       kind: ScreenKind.NORMAL,
       handledSteps: 'list',
@@ -1284,7 +1285,7 @@ cr.define('cr.ui.login.debug', function() {
           id: '2-apps',
           trigger: (screen) => {
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -1302,7 +1303,7 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             const apps = [];
             for (let i = 1; i <= 21; i++) {
               apps.push({
@@ -1496,6 +1497,7 @@ cr.define('cr.ui.login.debug', function() {
             optInVisibility: true,
             optInDefaultState: true,
             legalFooterVisibility: false,
+            cloudGamingDevice: false,
           },
           trigger: (screen) => {
             screen.setUIStep('overview');
@@ -1508,6 +1510,7 @@ cr.define('cr.ui.login.debug', function() {
             optInVisibility: false,
             optInDefaultState: false,
             legalFooterVisibility: false,
+            cloudGamingDevice: false,
           },
           trigger: (screen) => {
             screen.setUIStep('overview');
@@ -1520,6 +1523,7 @@ cr.define('cr.ui.login.debug', function() {
             optInVisibility: true,
             optInDefaultState: true,
             legalFooterVisibility: true,
+            cloudGamingDevice: false,
           },
           trigger: (screen) => {
             screen.setUIStep('overview');
@@ -1532,6 +1536,7 @@ cr.define('cr.ui.login.debug', function() {
             optInVisibility: true,
             optInDefaultState: true,
             legalFooterVisibility: true,
+            cloudGamingDevice: false,
           },
           trigger: (screen) => {
             screen.setUIStep('overview');
@@ -1812,6 +1817,20 @@ cr.define('cr.ui.login.debug', function() {
       });
     }
 
+    toggleGameMode() {
+      KNOWN_SCREENS.forEach((screen, index) => {
+        if (screen.id == 'marketing-opt-in') {
+          for (const state of screen.states) {
+            if (state.data) {
+              state.data.cloudGamingDevice = !state.data.cloudGamingDevice;
+            }
+          }
+        }
+      });
+
+      this.triggerScreenState(this.currentScreenId_, this.lastScreenState_);
+    }
+
     createLanguagePanel(parent) {
       const langPanel = new ToolPanel(
           this.debuggerOverlay_, 'Language', 'DebuggerPanelLanguage');
@@ -1845,6 +1864,10 @@ cr.define('cr.ui.login.debug', function() {
       new DebugButton(panel.content, 'Toggle color mode', function() {
         chrome.send('debug.toggleColorMode');
       });
+      var button = new DebugButton(
+          panel.content, 'Toggle gaming mode', this.toggleGameMode.bind(this));
+
+      button.element.classList.add('gametoggle-button');
     }
 
     createScreensPanel(parent) {
@@ -1989,6 +2012,14 @@ cr.define('cr.ui.login.debug', function() {
         if (state.id == this.lastScreenState_) {
           button.element.classList.add('debug-button-selected');
         }
+      }
+
+      if (this.currentScreenId_ == 'marketing-opt-in') {
+        document.getElementsByClassName('gametoggle-button')[0].removeAttribute(
+            'hidden');
+      } else {
+        document.getElementsByClassName('gametoggle-button')[0].setAttribute(
+            'hidden', true);
       }
 
       this.statesPanel.show();

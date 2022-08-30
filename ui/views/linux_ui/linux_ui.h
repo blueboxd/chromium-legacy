@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "build/buildflag.h"
 #include "build/chromecast_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor_theme_manager.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -27,6 +28,10 @@
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "printing/printing_context_linux.h"  // nogncheck
+#endif
+
 // The main entrypoint into Linux toolkit specific code. GTK/QT code should only
 // be executed behind this interface.
 
@@ -36,10 +41,6 @@ class Window;
 
 namespace base {
 class TimeDelta;
-}
-
-namespace color_utils {
-struct HSL;
 }
 
 namespace gfx {
@@ -58,6 +59,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::SkiaFontDelegate,
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
                              public ui::ShellDialogLinux,
+#endif
+#if BUILDFLAG(ENABLE_PRINTING)
+                             public printing::PrintingContextLinuxDelegate,
 #endif
                              public ui::TextEditKeyBindingsDelegateAuraLinux,
                              public ui::CursorThemeManager,
@@ -128,7 +132,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Returns true on success.  If false is returned, this instance shouldn't
   // be used and the behavior of all functions is undefined.
   [[nodiscard]] virtual bool Initialize() = 0;
-  virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id,
                         SkColor* color,
                         bool use_custom_frame) const = 0;
@@ -185,8 +188,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
  protected:
   struct CmdLineArgs {
     CmdLineArgs();
-    CmdLineArgs(const CmdLineArgs&);
-    CmdLineArgs& operator=(const CmdLineArgs&);
+    CmdLineArgs(CmdLineArgs&&);
+    CmdLineArgs& operator=(CmdLineArgs&&);
     ~CmdLineArgs();
 
     // `argc` is modified by toolkits, so store it explicitly.

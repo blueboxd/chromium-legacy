@@ -136,7 +136,7 @@ TEST(HttpAuthHandlerFactoryTest, RegistryFactory) {
 }
 
 TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
-  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
+  auto host_resolver = std::make_unique<MockHostResolver>();
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
@@ -220,7 +220,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
 }
 
 TEST(HttpAuthHandlerFactoryTest, HttpAuthUrlFilter) {
-  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
+  auto host_resolver = std::make_unique<MockHostResolver>();
 
   MockAllowHttpAuthPreferences http_auth_preferences;
   // Set the Preference that blocks Basic Auth over HTTP on all of the
@@ -273,7 +273,7 @@ TEST(HttpAuthHandlerFactoryTest, HttpAuthUrlFilter) {
 }
 
 TEST(HttpAuthHandlerFactoryTest, BasicFactoryRespectsHTTPEnabledPref) {
-  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
+  auto host_resolver = std::make_unique<MockHostResolver>();
   std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
 
@@ -330,7 +330,7 @@ TEST(HttpAuthHandlerFactoryTest, BasicFactoryRespectsHTTPEnabledPref) {
 }
 
 TEST(HttpAuthHandlerFactoryTest, LogCreateAuthHandlerResults) {
-  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
+  auto host_resolver = std::make_unique<MockHostResolver>();
   std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
   url::SchemeHostPort scheme_host_port(GURL("http://www.example.com"));
@@ -378,10 +378,12 @@ TEST(HttpAuthHandlerFactoryTest, LogCreateAuthHandlerResults) {
       auto entries = net_log_observer.GetEntriesWithType(
           NetLogEventType::AUTH_HANDLER_CREATE_RESULT);
       ASSERT_EQ(1u, entries.size());
-      const std::string* scheme = entries[0].params.FindStringKey("scheme");
+      const std::string* scheme =
+          entries[0].params.GetDict().FindString("scheme");
       ASSERT_NE(nullptr, scheme);
       EXPECT_STRCASEEQ(test_case.expected_scheme, scheme->data());
-      absl::optional<int> net_error = entries[0].params.FindIntKey("net_error");
+      absl::optional<int> net_error =
+          entries[0].params.GetDict().FindInt("net_error");
       if (test_case.expected_net_error) {
         ASSERT_TRUE(net_error.has_value());
         EXPECT_EQ(test_case.expected_net_error, net_error.value());
@@ -391,7 +393,7 @@ TEST(HttpAuthHandlerFactoryTest, LogCreateAuthHandlerResults) {
 
       // The challenge should be logged only when sensitive logging is enabled.
       const std::string* challenge =
-          entries[0].params.FindStringKey("challenge");
+          entries[0].params.GetDict().FindString("challenge");
       if (capture_mode == NetLogCaptureMode::kDefault) {
         ASSERT_EQ(nullptr, challenge);
       } else {

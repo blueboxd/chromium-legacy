@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -17,8 +18,9 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/egl_mock.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_egl_api_implementation.h"
-#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_utils.h"
 
 #if BUILDFLAG(IS_POSIX)
 #include <unistd.h>
@@ -73,11 +75,13 @@ class GpuFenceManagerTest : public GpuServiceTest {
 
     gl::ClearBindingsEGL();
     gl::InitializeStaticGLBindingsEGL();
-    display_ = gl::GLSurfaceEGL::InitializeOneOffForTesting();
+    display_ = gl::GetDefaultDisplayEGL();
+    display_->InitializeForTesting();
   }
 
   void TeardownMockEGL() {
-    gl::GLSurfaceEGL::ShutdownOneOff(display_);
+    if (display_)
+      display_->Shutdown();
     egl_.reset();
   }
 
@@ -94,7 +98,7 @@ class GpuFenceManagerTest : public GpuServiceTest {
   std::unique_ptr<GpuFenceManager> manager_;
   std::unique_ptr<MockErrorState> error_state_;
   std::unique_ptr<::testing::NiceMock<::gl::MockEGLInterface>> egl_;
-  gl::GLDisplayEGL* display_ = nullptr;
+  raw_ptr<gl::GLDisplayEGL> display_ = nullptr;
 };
 
 TEST_F(GpuFenceManagerTest, Basic) {

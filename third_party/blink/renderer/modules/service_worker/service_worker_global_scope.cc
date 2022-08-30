@@ -51,7 +51,6 @@
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-blink.h"
-#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
@@ -1505,10 +1504,7 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
   ScriptState* script_state = ScriptController()->GetScriptState();
   FetchEvent* fetch_event = MakeGarbageCollected<FetchEvent>(
       script_state, event_type_names::kFetch, event_init, respond_with_observer,
-      wait_until_observer,
-      mojo::PendingRemote<mojom::blink::WorkerTimingContainer>(
-          std::move(params->worker_timing_remote)),
-      navigation_preload_sent);
+      wait_until_observer, navigation_preload_sent);
   respond_with_observer->SetEvent(fetch_event);
 
   if (navigation_preload_sent) {
@@ -1592,7 +1588,8 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
     mojom::blink::FetchHandlerExistence fetch_hander_existence,
     mojo::PendingReceiver<mojom::blink::ReportingObserver>
-        reporting_observer_receiver) {
+        reporting_observer_receiver,
+    mojom::blink::AncestorFrameType ancestor_frame_type) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
 
@@ -1618,6 +1615,8 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
       GetExecutionContext(), std::move(service_worker_info));
 
   SetFetchHandlerExistence(fetch_hander_existence);
+
+  ancestor_frame_type_ = ancestor_frame_type;
 
   if (reporting_observer_receiver) {
     ReportingContext::From(this)->Bind(std::move(reporting_observer_receiver));
@@ -2567,6 +2566,11 @@ void ServiceWorkerGlobalScope::NoteRespondedToFetchEvent(
 void ServiceWorkerGlobalScope::RecordQueuingTime(base::TimeTicks created_time) {
   base::UmaHistogramMediumTimes("ServiceWorker.FetchEvent.QueuingTime",
                                 base::TimeTicks::Now() - created_time);
+}
+
+bool ServiceWorkerGlobalScope::IsInFencedFrame() const {
+  return GetAncestorFrameType() ==
+         mojom::blink::AncestorFrameType::kFencedFrame;
 }
 
 }  // namespace blink

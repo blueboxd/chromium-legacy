@@ -81,8 +81,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD2(BindTexture, void(GLenum target, GLuint texture));
   MOCK_METHOD1(ActiveTexture, void(GLenum texture));
   MOCK_METHOD1(GenerateMipmap, void(GLenum target));
-  MOCK_METHOD2(SetColorSpaceMetadataCHROMIUM,
-               void(GLuint texture_id, GLcolorSpace color_space));
   MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
 
   // Mailboxes.
@@ -126,12 +124,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
                void(GLenum target,
                     GLsizei levels,
                     GLenum internalFormat,
-                    GLsizei width,
-                    GLsizei height));
-  MOCK_METHOD5(TexStorage2DImageCHROMIUM,
-               void(GLenum target,
-                    GLenum internalFormat,
-                    GLenum bufferUsage,
                     GLsizei width,
                     GLsizei height));
 

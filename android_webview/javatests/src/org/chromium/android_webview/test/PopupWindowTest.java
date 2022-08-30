@@ -577,6 +577,13 @@ public class PopupWindowTest {
         Assert.assertNotNull("mainFrameReplyProxy should not be null.", mainFrameReplyProxy);
         Assert.assertNotNull("iframeReplyProxy should not be null.", iframeReplyProxy);
 
+        // Wait for the page to finish rendering entirely before
+        // attempting to click the iframe_link
+        // We need this because we're using the DOMUtils
+        // Long term we plan to switch to JSUtils to avoid this
+        // https://crbug.com/1334843
+        mParentContentsClient.getOnPageCommitVisibleHelper().waitForFirst();
+
         // Step 4. Click iframe_link to give user gesture.
         DOMUtils.clickRect(mParentContents.getWebContents(), rect);
 

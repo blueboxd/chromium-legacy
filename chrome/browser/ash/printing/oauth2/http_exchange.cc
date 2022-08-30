@@ -5,12 +5,14 @@
 #include "chrome/browser/ash/printing/oauth2/http_exchange.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
 #include "base/strings/escape.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -42,13 +44,12 @@ std::string ToString(ContentFormat format) {
 
 HttpExchange::HttpExchange(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory),
-      content_(base::Value::Type::DICTIONARY) {}
+    : url_loader_factory_(url_loader_factory) {}
 
 HttpExchange::~HttpExchange() {}
 
 void HttpExchange::Clear() {
-  content_ = base::Value(base::Value::Type::DICTIONARY);
+  content_.clear();
   error_msg_.clear();
   url_loader_.reset();
 }
@@ -56,17 +57,17 @@ void HttpExchange::Clear() {
 void HttpExchange::AddParamString(const std::string& name,
                                   const std::string& value) {
   DCHECK(!name.empty());
-  content_.SetStringKey(name, value);
+  content_.Set(name, value);
 }
 
 void HttpExchange::AddParamArrayString(const std::string& name,
                                        const std::vector<std::string>& value) {
   DCHECK(!name.empty());
-  base::Value* list_node =
-      content_.SetKey(name, base::Value(base::Value::Type::LIST));
-  for (auto& value_element : value) {
-    list_node->Append(value_element);
+  base::Value::List list_node;
+  for (const auto& value_element : value) {
+    list_node.Append(value_element);
   }
+  content_.Set(name, std::move(list_node));
 }
 
 void HttpExchange::Exchange(
@@ -86,7 +87,7 @@ void HttpExchange::Exchange(
       return;
     }
   } else if (request_format == ContentFormat::kXWwwFormUrlencoded) {
-    for (const auto kv : content_.DictItems()) {
+    for (const auto kv : content_) {
       if (!data.empty()) {
         data += "&";
       }
@@ -221,7 +222,7 @@ void HttpExchange::OnURLLoaderCompleted(
     std::move(callback).Run(StatusCode::kInvalidResponse);
     return;
   }
-  content_ = std::move(parsed.value());
+  content_ = std::move(parsed->GetDict());
 
   // Exits if success.
   if (http_status == success_http_status) {
@@ -243,10 +244,10 @@ void HttpExchange::OnURLLoaderCompleted(
   // Handles the error response.
   error_msg_ = "error=" + error;
   if (!error_description.empty()) {
-    error_msg_ += "; description=" + error_description;
+    error_msg_ += base::StrCat({"; description=", error_description});
   }
   if (!error_uri.empty()) {
-    error_msg_ += "; uri=" + error_uri;
+    error_msg_ += base::StrCat({"; uri=", error_uri});
   }
   if (error == "invalid_grant") {
     std::move(callback).Run(StatusCode::kInvalidAccessToken);
@@ -271,7 +272,7 @@ bool HttpExchange::ParamArrayStringContains(const std::string& name,
     return !required;
   }
   if (!node->is_list()) {
-    error_msg_ = "Field " + name + " must be an array.";
+    error_msg_ = base::StrCat({"Field ", name, " must be an array."});
     return false;
   }
   const auto& node_as_list = node->GetList();
@@ -281,7 +282,8 @@ bool HttpExchange::ParamArrayStringContains(const std::string& name,
       return true;
     }
   }
-  error_msg_ = "Field " + name + " must contain the value '" + value + "'";
+  error_msg_ =
+      base::StrCat({"Field ", name, " must contain the value '", value, "'"});
   return false;
 }
 
@@ -294,7 +296,7 @@ bool HttpExchange::ParamArrayStringEquals(
     return !required;
   }
   if (!node->is_list()) {
-    error_msg_ = "Field " + name + " must be an array";
+    error_msg_ = base::StrCat({"Field ", name, " must be an array"});
     return false;
   }
   const base::Value::List& node_as_list = node->GetList();
@@ -313,9 +315,9 @@ bool HttpExchange::ParamArrayStringEquals(
     }
   }
   // Vectors are different, builds an error message.
-  error_msg_ = "Field " + name + " must contain the value [";
+  error_msg_ = base::StrCat({"Field ", name, " must contain the value ["});
   for (auto& element : value) {
-    error_msg_ += "'" + element + "',";
+    error_msg_ += base::StrCat({"'", element, "',"});
   }
   // Removes the last comma and add a closing bracket.
   if (!value.empty()) {
@@ -333,7 +335,7 @@ bool HttpExchange::ParamStringGet(const std::string& name,
     return !required;
   }
   if (!node->is_string()) {
-    error_msg_ = "Field " + name + " must be a string";
+    error_msg_ = base::StrCat({"Field ", name, " must be a string"});
     return false;
   }
   if (value) {
@@ -350,11 +352,11 @@ bool HttpExchange::ParamStringEquals(const std::string& name,
     return !required;
   }
   if (!node->is_string()) {
-    error_msg_ = "Field " + name + " must be a string";
+    error_msg_ = base::StrCat({"Field ", name, " must be a string"});
     return false;
   }
   if (value != node->GetString()) {
-    error_msg_ = "Field " + name + " must be equal '" + value + "'";
+    error_msg_ = base::StrCat({"Field ", name, " must be equal '", value, "'"});
     return false;
   }
   return true;
@@ -368,7 +370,7 @@ bool HttpExchange::ParamURLGet(const std::string& name,
     return !required;
   }
   if (!node->is_string()) {
-    error_msg_ = "Field " + name + " must be an URL";
+    error_msg_ = base::StrCat({"Field ", name, " must be an URL"});
     return false;
   }
   GURL gurl(node->GetString());
@@ -379,7 +381,8 @@ bool HttpExchange::ParamURLGet(const std::string& name,
     }
     return true;
   }
-  error_msg_ = "Field " + name + " must be a valid URL of type 'https://'";
+  error_msg_ =
+      base::StrCat({"Field ", name, " must be a valid URL of type 'https://'"});
   return false;
 }
 
@@ -391,11 +394,12 @@ bool HttpExchange::ParamURLEquals(const std::string& name,
     return !required;
   }
   if (!node->is_string()) {
-    error_msg_ = "Field " + name + " must be an URL";
+    error_msg_ = base::StrCat({"Field ", name, " must be an URL"});
     return false;
   }
   if (value != GURL(node->GetString())) {
-    error_msg_ = "Field " + name + " must be equal '" + value.spec() + "'";
+    error_msg_ =
+        base::StrCat({"Field ", name, " must be equal '", value.spec(), "'"});
     return false;
   }
   return true;
@@ -406,9 +410,9 @@ const std::string& HttpExchange::GetErrorMessage() const {
 }
 
 base::Value* HttpExchange::FindNode(const std::string& name, bool required) {
-  base::Value* value = content_.FindKey(name);
+  base::Value* value = content_.Find(name);
   if (required && !value) {
-    error_msg_ = "Field " + name + " is missing";
+    error_msg_ = base::StrCat({"Field ", name, " is missing"});
   }
   return value;
 }

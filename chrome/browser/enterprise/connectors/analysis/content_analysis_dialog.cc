@@ -243,6 +243,21 @@ ContentAnalysisDialog::ContentAnalysisDialog(
 
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 
+  // We need to UpdateDialog() right away if the dialog already has a result,
+  // because the dialog can only call UpdateDialog() after the dialog widget
+  // has been initialized by ShowWebModalDialogViews().
+  // We can't move it any earlier or it will crash when we try to get the
+  // color from the widget. (see b/232104687)
+  // if (!is_pending())
+  //  UpdateDialog();
+
+  // TODO(crbug.com/1337078): Remove if this doesn't fix the CQ
+  if (is_warning() && bypass_requires_justification()) {
+    bypass_justification_text_length_->SetEnabledColor(
+        bypass_justification_text_length_->GetColorProvider()->GetColor(
+            ui::kColorAlertHighSeverity));
+  }
+
   if (observer_for_testing)
     observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
 }
@@ -366,13 +381,9 @@ views::View* ContentAnalysisDialog::GetContentsView() {
     message_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
     message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    // Add the Learn More link but hide it so it can only be displayed when
-    // required.
-
-    // If the dialog was started in a state other than pending, setup the views
-    // accordingly.
+    // TODO(crbug.com/1337078): Remove if this doesn't fix the CQ
     if (!is_pending())
-      UpdateViews();
+      UpdateDialog();
   }
 
   return contents_view_;
@@ -495,7 +506,7 @@ void ContentAnalysisDialog::UpdateDialog() {
   // lines after changing.
   auto height_after = contents_view_->GetPreferredSize().height();
   int height_to_add = std::max(height_after - height_before, 0);
-  if (height_to_add > 0)
+  if (height_to_add > 0 && GetWidget())
     Resize(height_to_add);
 
   // Update the dialog.
@@ -866,12 +877,13 @@ void ContentAnalysisDialog::AddJustificationTextLengthToDialog() {
       base::NumberToString16(0),
       base::NumberToString16(kMaxBypassJustificationLength)));
 
-  // Set the color to red initially because a 0 length message is invalid, but
-  // the label doesn't have a Color Provider yet when it's created.
-  // TODO(b/232104687): Re-enable once the bug is fixed
-  // bypass_justification_text_length_->SetEnabledColor(
-  //     bypass_justification_text_length_->GetColorProvider()->GetColor(
-  //         ui::kColorAlertHighSeverity));
+  // Set the color to red initially because a 0 length message is invalid. Skip
+  // this if the color provider is unavailable.
+  if (bypass_justification_text_length_->GetColorProvider()) {
+    bypass_justification_text_length_->SetEnabledColor(
+        bypass_justification_text_length_->GetColorProvider()->GetColor(
+            ui::kColorAlertHighSeverity));
+  }
 }
 
 bool ContentAnalysisDialog::ShouldUseDarkTopImage() const {

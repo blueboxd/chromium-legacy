@@ -64,6 +64,9 @@ class HistoryClustersHandler : public mojom::PageHandler,
           side_panel_embedder);
 
   // mojom::PageHandler:
+  void OpenHistoryCluster(
+      const GURL& url,
+      ui::mojom::ClickModifiersPtr click_modifiers) override;
   void SetPage(mojo::PendingRemote<mojom::Page> pending_page) override;
   void ShowSidePanelUI() override;
   void ToggleVisibility(bool visible,
@@ -81,6 +84,7 @@ class HistoryClustersHandler : public mojom::PageHandler,
   void RecordClusterAction(mojom::ClusterAction cluster_action,
                            uint32_t cluster_index) override;
   void RecordToggledVisibility(bool visible) override;
+  void ShowContextMenuForURL(const GURL& url, const gfx::Point& point) override;
 
   // HistoryClustersService::Observer:
   void OnDebugMessage(const std::string& message) override;
@@ -95,6 +99,9 @@ class HistoryClustersHandler : public mojom::PageHandler,
   // Called with the result of querying clusters. Subsequently, `query_result`
   // is sent to the JS to update the UI.
   void OnClustersQueryResult(mojom::QueryResultPtr query_result);
+
+  // Launches the Journeys survey, if user is eligible.
+  void LaunchJourneysSurvey();
 
   base::WeakPtr<ui::MojoBubbleWebUIController::Embedder>
       history_clusters_side_panel_embedder_;
@@ -123,6 +130,11 @@ class HistoryClustersHandler : public mojom::PageHandler,
   // handle one deletion request at a time.
   std::vector<mojom::URLVisitPtr> pending_remove_visits_;
   RemoveVisitsCallback pending_remove_visits_callback_;
+
+  // Flag used to launch survey once (at most) for each WebUI instance. The
+  // survey service itself has a limiter, but we also want to skip all the work
+  // to enqueue the request, so we have a separate flag here too.
+  bool survey_launch_attempted_ = false;
 
   base::WeakPtrFactory<HistoryClustersHandler> weak_ptr_factory_{this};
 };

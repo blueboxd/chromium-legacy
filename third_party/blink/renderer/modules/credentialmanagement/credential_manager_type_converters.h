@@ -19,7 +19,7 @@ class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class CableRegistrationData;
 class Credential;
-class FederatedCredentialLogoutRpsRequest;
+class IdentityCredentialLogoutRpsRequest;
 class PublicKeyCredentialCreationOptions;
 class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialParameters;
@@ -91,18 +91,18 @@ struct TypeConverter<
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::AttestationConveyancePreference,
-                     String> {
-  static blink::mojom::blink::AttestationConveyancePreference Convert(
-      const String&);
+struct TypeConverter<
+    absl::optional<blink::mojom::blink::AttestationConveyancePreference>,
+    String> {
+  static absl::optional<blink::mojom::blink::AttestationConveyancePreference>
+  Convert(const String&);
 };
 
-// TODO(crbug.com/1092328): Second template parameter should be
-// absl::optional<blink::V8AuthenticatorAttachment>.
 template <>
-struct TypeConverter<blink::mojom::blink::AuthenticatorAttachment,
-                     absl::optional<String>> {
-  static blink::mojom::blink::AuthenticatorAttachment Convert(
+struct TypeConverter<
+    absl::optional<blink::mojom::blink::AuthenticatorAttachment>,
+    absl::optional<String>> {
+  static absl::optional<blink::mojom::blink::AuthenticatorAttachment> Convert(
       const absl::optional<String>&);
 };
 
@@ -122,9 +122,9 @@ struct TypeConverter<blink::mojom::blink::AuthenticatorSelectionCriteriaPtr,
 
 template <>
 struct TypeConverter<blink::mojom::blink::LogoutRpsRequestPtr,
-                     blink::FederatedCredentialLogoutRpsRequest> {
+                     blink::IdentityCredentialLogoutRpsRequest> {
   static blink::mojom::blink::LogoutRpsRequestPtr Convert(
-      const blink::FederatedCredentialLogoutRpsRequest&);
+      const blink::IdentityCredentialLogoutRpsRequest&);
 };
 
 template <>

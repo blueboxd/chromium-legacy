@@ -29,6 +29,8 @@
 
 #include <memory>
 
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "media/mojo/mojom/media_player.mojom-blink.h"
@@ -58,9 +60,8 @@
 #include "third_party/blink/renderer/platform/timer.h"
 
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/webrtc_overrides/webrtc_timer.h"
+#include "third_party/webrtc_overrides/low_precision_timer.h"
 
 namespace cc {
 class Layer;
@@ -712,13 +713,11 @@ class CORE_EXPORT HTMLMediaElement
   HeapTaskRunnerTimer<HTMLMediaElement> load_timer_;
   HeapTaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
   HeapTaskRunnerTimer<HTMLMediaElement> removed_from_document_timer_;
-  // Timers used to schedule repeating tasks. For this a lower precision timer,
-  // WebRtcTimer, is used. This may reduce Idle Wake Ups when WebRTC is used.
-  // TODO(https://crbug.com/1267874): When there exists a low resolution timer
-  // in base/ that does not have a dependency on WebRTC, use such a timer
-  // instead.
-  WebRtcTimer progress_event_timer_;
-  WebRtcTimer playback_progress_timer_;
+  // Use a low precision timer for repeating tasks to avoid excessive Idle Wake
+  // Up frequency, especially when WebRTC is used and the page contains many
+  // HTMLMediaElements.
+  LowPrecisionTimer progress_event_timer_;
+  LowPrecisionTimer playback_progress_timer_;
 
   Member<TimeRanges> played_time_ranges_;
   Member<EventQueue> async_event_queue_;
@@ -891,9 +890,10 @@ class CORE_EXPORT HTMLMediaElement
     void Trace(Visitor*) const;
 
    private:
-    scoped_refptr<WebAudioSourceProviderImpl> web_audio_source_provider_;
+    base::Lock provide_input_lock;
+    scoped_refptr<WebAudioSourceProviderImpl> web_audio_source_provider_
+        GUARDED_BY(provide_input_lock);
     Member<AudioClientImpl> client_;
-    Mutex provide_input_lock;
   };
 
   AudioSourceProviderImpl audio_source_provider_;

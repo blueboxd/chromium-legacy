@@ -55,16 +55,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.ChromeDllPrefetchResult" enum="FilePrefetchResult"
-    expires_after="2022-06-26">
-  <owner>brucedawson@chromium.org</owner>
-  <owner>jessemckenna@google.com</owner>
-  <summary>
-    The result of prefetching chrome.dll on Windows, including whether a
-    fallback to slow prefetch took place, and why if so.
-  </summary>
-</histogram>
-
 <histogram name="Windows.CreateOrUpdateShortcuts.Result"
     enum="CreateOrUpdateShortcutsResult" expires_after="2022-11-26">
   <owner>davidbienvenu@chromium.org</owner>
@@ -77,8 +67,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Windows.DragEventsAfterPress" units="events"
+    expires_after="2023-01-01">
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>jessemckenna@google.com</owner>
+  <summary>
+    The number of drag events after a press event before we got a mouse move to
+    0, 0 that is more than 200 pixels away from the current cursor position.
+    This will be used to change the detection of spurious 0,0 move move events
+    to a much smaller value (e.g., 20 pixels) but with the addition of a check
+    that we've only received a few mouse move events, once we've determined the
+    distribution of the number of drag events we receive before the 0,0 mouse
+    move events. Recorded in HWNDMessageHandler::HandleMouseEventInternal when
+    we see a mouse drag to 0,0 that is more than 200 pixels from the cursor
+    position.
+  </summary>
+</histogram>
+
 <histogram name="Windows.FileDeleteRetryCount" units="attempts"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>grt@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>
@@ -99,7 +106,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -241,6 +248,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Windows.ParallelDllLoadingEnabled" enum="BooleanEnabled"
+    expires_after="never">
+<!-- expires-never: Needed to measure third party incompatibilities on Windows which could happen at any time. -->
+
+  <owner>forshaw@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Records whether or not parallel DLL loading is enabled for the browser
+    process executable. This is recorded once per browser session, on startup.
+  </summary>
+</histogram>
+
 <histogram name="Windows.ParentProcessNameHash" enum="ProcessNameHash"
     expires_after="never">
 <!-- expires-never: Needed to measure third party incompatibilities on Windows which could happen at any time. -->
@@ -312,7 +331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.ProcessorVirtualizationFirmwareEnabled"
-    enum="BooleanEnabled" expires_after="2022-08-28">
+    enum="BooleanEnabled" expires_after="2022-12-25">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>

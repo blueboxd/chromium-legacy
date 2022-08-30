@@ -20,8 +20,11 @@ class Tracker;
 }
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol BrowserCoordinatorCommands;
 class BrowserPolicyConnectorIOS;
 class OverlayPresenter;
+@protocol PageInfoCommands;
+@protocol PopupMenuCommands;
 class PrefService;
 @protocol FindInPageCommands;
 @protocol TextZoomCommands;
@@ -42,20 +45,15 @@ class WebStateList;
 @property(nonatomic, assign) WebStateList* webStateList;
 
 // Dispatcher.
-// TODO(crbug.com/906662): This class uses BrowserCoordinatorCommands via their
-// includion in BrowserCommands. That dependency should be explicit, and instead
-// of a single parameter for all command protocols, separate handler properties
-// should be used for each necessary protocol (see ToolbarButtonActionsHandler
-// for an example of this).
-// TODO(crbug.com/1323758): This uses PageInfoCommands via inclusion in
-// BrowserCommands, and should instead use a dedicated handler.
-// TODO(crbug.com/1323764): This uses PopupMenuCommands via inclusion in
-// BrowserCommands, and should instead use a dedicated handler.
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
+                              BrowserCoordinatorCommands,
                               FindInPageCommands,
                               TextZoomCommands>
     dispatcher;
+
+@property(nonatomic, weak) id<PopupMenuCommands> popupMenuCommandsHandler;
+@property(nonatomic, weak) id<PageInfoCommands> pageInfoCommandsHandler;
 
 // Navigation agent for reloading pages.
 @property(nonatomic, assign) WebNavigationBrowserAgent* navigationAgent;

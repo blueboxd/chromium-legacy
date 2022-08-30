@@ -17,7 +17,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "components/fuchsia_component_support/inspect.h"
-#include "fuchsia/base/init_logging.h"
+#include "fuchsia_web/common/init_logging.h"
 #include "fuchsia_web/webengine/context_provider_impl.h"
 
 namespace {
@@ -36,12 +36,11 @@ int ContextProviderMain() {
   fuchsia_component_support::RegisterProductDataForCrashReporting(
       kComponentUrl, kCrashProductName);
 
-  if (!cr_fuchsia::InitLoggingFromCommandLine(
-          *base::CommandLine::ForCurrentProcess())) {
+  if (!InitLoggingFromCommandLine(*base::CommandLine::ForCurrentProcess())) {
     return 1;
   }
 
-  cr_fuchsia::LogComponentStartWithVersion("WebEngine context_provider");
+  LogComponentStartWithVersion("WebEngine context_provider");
 
   ContextProviderImpl context_provider;
 

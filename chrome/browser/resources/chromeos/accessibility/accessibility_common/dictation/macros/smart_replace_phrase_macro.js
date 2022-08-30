@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Macro} from '/accessibility_common/dictation/macros/macro.js';
+import {Macro, MacroError} from '/accessibility_common/dictation/macros/macro.js';
 import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
 
 /**
@@ -35,8 +35,7 @@ export class SmartReplacePhraseMacro extends Macro {
       return this.createRunMacroResult_(
           /*isSuccess=*/ false, MacroError.FAILED_ACTUATION);
     }
-    this.inputController_.smartReplacePhrase(
-        this.deletePhrase_, this.insertPhrase_);
+    this.inputController_.replacePhrase(this.deletePhrase_, this.insertPhrase_);
     return this.createRunMacroResult_(/*isSuccess=*/ true);
   }
 }

@@ -11,8 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/frame_impl.h"
 #include "fuchsia_web/webengine/test/frame_for_test.h"
@@ -26,12 +26,10 @@ namespace {
 constexpr char kCssDark[] = "dark";
 constexpr char kCssLight[] = "light";
 
-class ThemeManagerTest : public cr_fuchsia::WebEngineBrowserTest,
+class ThemeManagerTest : public WebEngineBrowserTest,
                          public fuchsia::settings::testing::Display_TestBase {
  public:
-  ThemeManagerTest() {
-    set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
-  }
+  ThemeManagerTest() { set_test_server_root(base::FilePath(kTestServerRoot)); }
   ~ThemeManagerTest() override = default;
 
   ThemeManagerTest(const ThemeManagerTest&) = delete;
@@ -44,18 +42,16 @@ class ThemeManagerTest : public cr_fuchsia::WebEngineBrowserTest,
     display_binding_.emplace(component_context_->additional_services(), this);
 
     ASSERT_TRUE(embedded_test_server()->Start());
-    cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
+    WebEngineBrowserTest::SetUpOnMainThread();
 
-    frame_ = cr_fuchsia::FrameForTest::Create(
-        context(), fuchsia::web::CreateFrameParams());
+    frame_ = FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
     base::RunLoop().RunUntilIdle();
 
     const std::string kPageTitle = "title 1";
     const GURL kPageUrl = embedded_test_server()->GetURL("/title1.html");
 
-    cr_fuchsia::LoadUrlAndExpectResponse(frame_.GetNavigationController(),
-                                         fuchsia::web::LoadUrlParams(),
-                                         kPageUrl.spec());
+    LoadUrlAndExpectResponse(frame_.GetNavigationController(),
+                             fuchsia::web::LoadUrlParams(), kPageUrl.spec());
 
     fuchsia::web::NavigationState state;
     state.set_is_main_document_loaded(true);
@@ -131,7 +127,7 @@ class ThemeManagerTest : public cr_fuchsia::WebEngineBrowserTest,
   absl::optional<base::TestComponentContextForProcess> component_context_;
   absl::optional<base::ScopedServiceBinding<fuchsia::settings::Display>>
       display_binding_;
-  cr_fuchsia::FrameForTest frame_;
+  FrameForTest frame_;
 
   base::OnceClosure on_watch_closure_;
   absl::optional<WatchCallback> watch_callback_;

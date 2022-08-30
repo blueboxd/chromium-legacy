@@ -61,14 +61,16 @@ suite('Multidevice', () => {
   setup(() => {
     PolymerTest.clearBody();
     browserProxy = new TestMultideviceBrowserProxy();
-    MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
+    MultiDeviceBrowserProxyImpl.setInstanceForTesting(browserProxy);
 
     permissionsSetupDialog =
         document.createElement('settings-multidevice-permissions-setup-dialog');
     document.body.appendChild(permissionsSetupDialog);
     flush();
-    dialogBody = assert(permissionsSetupDialog.$$('#dialogBody'));
-    buttonContainer = assert(permissionsSetupDialog.$$('#buttonContainer'));
+    dialogBody =
+        assert(permissionsSetupDialog.shadowRoot.querySelector('#dialogBody'));
+    buttonContainer = assert(
+        permissionsSetupDialog.shadowRoot.querySelector('#buttonContainer'));
   });
 
   test('Test notification setup success flow', async () => {
@@ -119,6 +121,14 @@ suite('Multidevice', () => {
     assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
 
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: false,
+      showAppStreaming: false,
+      combinedSetupSupported: false
+    });
+    flush();
     simulateNotificationStatusChanged(
         PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
     assertFalse(!!dialogBody.querySelector('#start-setup-description'));
@@ -133,9 +143,10 @@ suite('Multidevice', () => {
     // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 1);
 
-    assertTrue(permissionsSetupDialog.$$('#dialog').open);
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
     buttonContainer.querySelector('#doneButton').click();
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test notification setup cancel during connecting flow', async () => {
@@ -166,7 +177,8 @@ suite('Multidevice', () => {
     buttonContainer.querySelector('#cancelButton').click();
     assertEquals(browserProxy.getCallCount('cancelNotificationSetup'), 1);
 
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test notification setup failure during connecting flow', async () => {
@@ -216,7 +228,8 @@ suite('Multidevice', () => {
     buttonContainer.querySelector('#cancelButton').click();
     assertEquals(browserProxy.getCallCount('cancelNotificationSetup'), 1);
 
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test notification access prohibited', async () => {
@@ -249,7 +262,8 @@ suite('Multidevice', () => {
 
     buttonContainer.querySelector('#closeButton').click();
 
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test apps setup success flow', async () => {
@@ -298,6 +312,15 @@ suite('Multidevice', () => {
     assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
 
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: false,
+      showAppStreaming: false,
+      combinedSetupSupported: false
+    });
+    flush();
+
     simulateAppsStatusChanged(PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
     assertFalse(!!dialogBody.querySelector('#start-setup-description'));
     assertFalse(!!buttonContainer.querySelector('#learnMore'));
@@ -311,9 +334,10 @@ suite('Multidevice', () => {
     // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 1);
 
-    assertTrue(permissionsSetupDialog.$$('#dialog').open);
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
     buttonContainer.querySelector('#doneButton').click();
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test apps setup cancel during connecting flow', async () => {
@@ -343,7 +367,8 @@ suite('Multidevice', () => {
     buttonContainer.querySelector('#cancelButton').click();
     assertEquals(browserProxy.getCallCount('cancelAppsSetup'), 1);
 
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test apps setup failure during connecting flow', async () => {
@@ -390,7 +415,8 @@ suite('Multidevice', () => {
     buttonContainer.querySelector('#cancelButton').click();
     assertEquals(browserProxy.getCallCount('cancelAppsSetup'), 1);
 
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test notification and apps setup success flow', async () => {
@@ -424,6 +450,15 @@ suite('Multidevice', () => {
     assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
 
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: false,
+      showAppStreaming: true,
+      combinedSetupSupported: true
+    });
+    flush();
+
     simulateNotificationStatusChanged(
         PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
     assertFalse(!!dialogBody.querySelector('#start-setup-description'));
@@ -439,6 +474,14 @@ suite('Multidevice', () => {
     assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 1);
     assertTrue(isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_APPS));
 
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: false,
+      showAppStreaming: false,
+      combinedSetupSupported: true
+    });
+    flush();
+
     simulateAppsStatusChanged(PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
     assertFalse(!!dialogBody.querySelector('#start-setup-description'));
     assertFalse(!!buttonContainer.querySelector('#learnMore'));
@@ -452,9 +495,10 @@ suite('Multidevice', () => {
     // becomes PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 2);
 
-    assertTrue(permissionsSetupDialog.$$('#dialog').open);
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
     buttonContainer.querySelector('#doneButton').click();
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('Test phone enabled but ChromeOS disabled screen lock', async () => {
@@ -517,8 +561,8 @@ suite('Multidevice', () => {
     });
     flush();
 
-    const screenLockSubpage =
-        permissionsSetupDialog.$$('settings-multidevice-screen-lock-subpage');
+    const screenLockSubpage = permissionsSetupDialog.shadowRoot.querySelector(
+        'settings-multidevice-screen-lock-subpage');
     screenLockSubpage.dispatchEvent(new CustomEvent(
         'pin-number-selected', {detail: {isPinNumberSelected: true}}));
     loadTimeData.overrideValues({isEcheAppEnabled: true});
@@ -688,8 +732,16 @@ suite('Multidevice', () => {
     assertTrue(!!buttonContainer.querySelector('#doneButton'));
     assertTrue(buttonContainer.querySelector('#doneButton').disabled);
     assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
-
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: false,
+      showAppStreaming: false,
+      combinedSetupSupported: true
+    });
+    flush();
+
     simulateCombinedStatusChanged(
         PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
     assertFalse(!!dialogBody.querySelector('#start-setup-description'));
@@ -704,9 +756,10 @@ suite('Multidevice', () => {
     // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
     assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 1);
 
-    assertTrue(permissionsSetupDialog.$$('#dialog').open);
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
     buttonContainer.querySelector('#doneButton').click();
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test(
@@ -762,8 +815,16 @@ suite('Multidevice', () => {
         assertTrue(!!buttonContainer.querySelector('#doneButton'));
         assertTrue(buttonContainer.querySelector('#doneButton').disabled);
         assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
-
         assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: false,
+          combinedSetupSupported: true
+        });
+        flush();
+
         simulateCombinedStatusChanged(
             PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
         assertFalse(!!dialogBody.querySelector('#start-setup-description'));
@@ -778,8 +839,404 @@ suite('Multidevice', () => {
         // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
         assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 2);
 
-        assertTrue(permissionsSetupDialog.$$('#dialog').open);
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
         buttonContainer.querySelector('#doneButton').click();
-        assertFalse(permissionsSetupDialog.$$('#dialog').open);
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+      });
+
+  test(
+      'Test Camera Roll, Notifications and apps setup success flow',
+      async () => {
+        // Simulate all features are granted by the user
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        buttonContainer.querySelector('#getStartedButton').click();
+        assertEquals(
+            browserProxy.getCallCount('attemptCombinedFeatureSetup'), 1);
+        assertArrayEquals(
+            [true, true],
+            browserProxy.getArgs('attemptCombinedFeatureSetup')[0]);
+        assertTrue(
+            isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_COMBINED));
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus
+                .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertTrue(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // The camera roll and notifications features become enabled when the
+        // status becomes PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 2);
+
+        assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 1);
+        assertTrue(isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_APPS));
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: false,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateAppsStatusChanged(
+            PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertFalse(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // The apps feature become enabled when the status becomes
+        // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 3);
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+        buttonContainer.querySelector('#doneButton').click();
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+      });
+
+
+
+  test(
+      'Test Camera Roll, Notifications and Apps setup flow, all user rejected.',
+      async () => {
+        // Simulate all features are rejected by the user
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        buttonContainer.querySelector('#getStartedButton').click();
+        assertEquals(
+            browserProxy.getCallCount('attemptCombinedFeatureSetup'), 1);
+        assertArrayEquals(
+            [true, true],
+            browserProxy.getArgs('attemptCombinedFeatureSetup')[0]);
+        assertTrue(
+            isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_COMBINED));
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus
+                .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertTrue(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        // Because user rejected, Camera Roll and Notification permissions not
+        // granted.
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus.COMPLETED_USER_REJECTED);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // Should not enabled phone hub camera roll and notification feature
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 1);
+        assertTrue(isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_APPS));
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateAppsStatusChanged(
+            PermissionsSetupStatus.COMPLETED_USER_REJECTED);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertFalse(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // Should not enabled phone hub apps feature
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+        buttonContainer.querySelector('#doneButton').click();
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+      });
+
+  test(
+      'Test all setup flow, user rejected but grant app permission',
+      async () => {
+        // Simulate user grants app permission only
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        buttonContainer.querySelector('#getStartedButton').click();
+        assertEquals(
+            browserProxy.getCallCount('attemptCombinedFeatureSetup'), 1);
+        assertArrayEquals(
+            [true, true],
+            browserProxy.getArgs('attemptCombinedFeatureSetup')[0]);
+        assertTrue(
+            isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_COMBINED));
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus
+                .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertTrue(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        // Because user rejected, Camera Roll and Notification permissions not
+        // granted.
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateCombinedStatusChanged(
+            PermissionsSetupStatus.COMPLETED_USER_REJECTED);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // Should not enabled phone hub camera roll and notification feature
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+        assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 1);
+        assertTrue(isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_APPS));
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: false,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        simulateAppsStatusChanged(
+            PermissionsSetupStatus.COMPLETED_SUCCESSFULLY);
+        assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+        assertFalse(!!buttonContainer.querySelector('#learnMore'));
+        assertFalse(!!buttonContainer.querySelector('#cancelButton'));
+        assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+        assertTrue(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(buttonContainer.querySelector('#doneButton').disabled);
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        // The apps feature become enabled when the status becomes
+        // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
+        assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 1);
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+        buttonContainer.querySelector('#doneButton').click();
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+      });
+
+  test('Test all setup flow, operation failed or cancelled', async () => {
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: true,
+      showNotifications: true,
+      showAppStreaming: true,
+      combinedSetupSupported: true
+    });
+    flush();
+
+    assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+    assertTrue(!!buttonContainer.querySelector('#learnMore'));
+    assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+    assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+    assertFalse(!!buttonContainer.querySelector('#doneButton'));
+    assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+    buttonContainer.querySelector('#getStartedButton').click();
+    assertEquals(browserProxy.getCallCount('attemptCombinedFeatureSetup'), 1);
+    assertArrayEquals(
+        [true, true], browserProxy.getArgs('attemptCombinedFeatureSetup')[0]);
+    assertTrue(isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_COMBINED));
+
+    simulateCombinedStatusChanged(
+        PermissionsSetupStatus.SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE);
+    assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+    assertTrue(!!buttonContainer.querySelector('#learnMore'));
+    assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+    assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+    assertTrue(!!buttonContainer.querySelector('#doneButton'));
+    assertTrue(buttonContainer.querySelector('#doneButton').disabled);
+    assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+    assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    // Because user rejected, Camera Roll and Notification permissions not
+    // granted.
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: true,
+      showNotifications: true,
+      showAppStreaming: true,
+      combinedSetupSupported: true
+    });
+    flush();
+
+    simulateCombinedStatusChanged(PermissionsSetupStatus.FAILED_OR_CANCELLED);
+    assertFalse(!!dialogBody.querySelector('#start-setup-description'));
+    assertFalse(!!buttonContainer.querySelector('#learnMore'));
+    assertFalse(!!buttonContainer.querySelector('#cancelButton'));
+    assertFalse(!!buttonContainer.querySelector('#getStartedButton'));
+    assertTrue(!!buttonContainer.querySelector('#doneButton'));
+    assertFalse(buttonContainer.querySelector('#doneButton').disabled);
+    assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+    // Should not enabled phone hub camera roll and notification feature
+    assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
+
+    // Should not continue setup apps
+    assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 0);
+
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+    buttonContainer.querySelector('#doneButton').click();
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+  });
+
+  test(
+      'Test dailog is closed when all permissions are graned on phone.',
+      async () => {
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: false,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
       });
 });

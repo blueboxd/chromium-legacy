@@ -32,6 +32,7 @@
 
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -214,6 +215,15 @@ int FindInPage::FindMatchMarkersVersion() const {
   return 0;
 }
 
+void FindInPage::SetClient(
+    mojo::PendingRemote<mojom::blink::FindInPageClient> remote) {
+  // TODO(crbug.com/984878): Having to call reset() to try to bind a remote that
+  // might be bound is questionable behavior and suggests code may be buggy.
+  client_.reset();
+  client_.Bind(std::move(remote));
+}
+
+#if BUILDFLAG(IS_ANDROID)
 gfx::RectF FindInPage::ActiveFindMatchRect() {
   if (GetTextFinder())
     return GetTextFinder()->ActiveFindMatchRect();
@@ -236,14 +246,6 @@ void FindInPage::ActivateNearestFindResult(int request_id,
                             true /* final_update */);
 }
 
-void FindInPage::SetClient(
-    mojo::PendingRemote<mojom::blink::FindInPageClient> remote) {
-  // TODO(crbug.com/984878): Having to call reset() to try to bind a remote that
-  // might be bound is questionable behavior and suggests code may be buggy.
-  client_.reset();
-  client_.Bind(std::move(remote));
-}
-
 void FindInPage::GetNearestFindResult(const gfx::PointF& point,
                                       GetNearestFindResultCallback callback) {
   float distance;
@@ -259,6 +261,7 @@ void FindInPage::FindMatchRects(int current_version,
     rects = EnsureTextFinder().FindMatchRects();
   std::move(callback).Run(rects_version, rects, ActiveFindMatchRect());
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void FindInPage::ClearActiveFindMatch() {
   // TODO(rakina): Do collapse selection as this currently does nothing.
@@ -273,7 +276,8 @@ void WebLocalFrameImpl::SetTickmarks(const WebElement& target,
 
 void FindInPage::SetTickmarks(const WebElement& target,
                               const WebVector<gfx::Rect>& tickmarks) {
-  Vector<gfx::Rect> tickmarks_converted(SafeCast<wtf_size_t>(tickmarks.size()));
+  Vector<gfx::Rect> tickmarks_converted(
+      base::checked_cast<wtf_size_t>(tickmarks.size()));
   for (wtf_size_t i = 0; i < tickmarks.size(); ++i)
     tickmarks_converted[i] = tickmarks[i];
 

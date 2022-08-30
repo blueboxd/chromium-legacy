@@ -12,9 +12,9 @@
 #include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_streaming/browser/test/cast_streaming_test_sender.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/test/fit_adapter.h"
-#include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia_web/common/test/fit_adapter.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/frame_impl.h"
 #include "fuchsia_web/webengine/test/frame_for_test.h"
@@ -49,10 +49,10 @@ media::VideoDecoderConfig GetDefaultVideoConfig() {
 }  // namespace
 
 // Base test fixture for Cast Streaming tests.
-class CastStreamingBaseTest : public cr_fuchsia::WebEngineBrowserTest {
+class CastStreamingBaseTest : public WebEngineBrowserTest {
  public:
   CastStreamingBaseTest() {
-    set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
+    set_test_server_root(base::FilePath(kTestServerRoot));
   }
   ~CastStreamingBaseTest() override = default;
 
@@ -100,11 +100,11 @@ IN_PROC_BROWSER_TEST_F(CastStreamingDisabledTest, LoadFailure) {
   const GURL page_url(
       embedded_test_server()->GetURL(kCastStreamingReceiverPath));
 
-  auto frame = cr_fuchsia::FrameForTest::Create(
-      context(), fuchsia::web::CreateFrameParams());
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
+  auto frame =
+      FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
+  EXPECT_TRUE(LoadUrlAndExpectResponse(frame.GetNavigationController(),
+                                       fuchsia::web::LoadUrlParams(),
+                                       page_url.spec()));
   frame.navigation_listener().RunUntilTitleEquals("error");
 }
 
@@ -129,24 +129,23 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, LoadSuccess) {
 
   // Start the Sender
   cast_streaming::CastStreamingTestSender sender;
-  EXPECT_TRUE(sender.Start(std::move(sender_message_port),
-                           net::IPAddress::IPv6Localhost(),
-                           GetDefaultAudioConfig(), GetDefaultVideoConfig()));
+  sender.Start(std::move(sender_message_port), net::IPAddress::IPv6Localhost(),
+               GetDefaultAudioConfig(), GetDefaultVideoConfig());
 
   // Create a Frame and set the Receiver MessagePort on it.
-  auto frame = cr_fuchsia::FrameForTest::Create(
-      context(), fuchsia::web::CreateFrameParams());
+  auto frame =
+      FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
   base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
   frame->PostMessage(
       "cast-streaming:receiver",
-      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-          std::move(message_port_request), std::move(ignored_message_string)),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
+      CreateWebMessageWithMessagePortRequest(std::move(message_port_request),
+                                             std::move(ignored_message_string)),
+      CallbackToFitFunction(post_result.GetCallback()));
+  EXPECT_TRUE(LoadUrlAndExpectResponse(frame.GetNavigationController(),
+                                       fuchsia::web::LoadUrlParams(),
+                                       page_url.spec()));
 
-  sender.RunUntilStarted();
+  ASSERT_TRUE(sender.RunUntilActive());
   frame.navigation_listener().RunUntilTitleEquals("canplay");
 
   EXPECT_TRUE(post_result.Wait());
@@ -174,25 +173,24 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, VideoOnlyReceiver) {
 
   // Start the Sender
   cast_streaming::CastStreamingTestSender sender;
-  EXPECT_TRUE(sender.Start(std::move(sender_message_port),
-                           net::IPAddress::IPv6Localhost(),
-                           GetDefaultAudioConfig(), GetDefaultVideoConfig()));
+  sender.Start(std::move(sender_message_port), net::IPAddress::IPv6Localhost(),
+               GetDefaultAudioConfig(), GetDefaultVideoConfig());
 
   // Create a Frame and set the Receiver MessagePort on it.
-  auto frame = cr_fuchsia::FrameForTest::Create(
-      context(), fuchsia::web::CreateFrameParams());
+  auto frame =
+      FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
   base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
   frame->PostMessage(
       "cast-streaming:video-only-receiver",
-      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-          std::move(message_port_request), std::move(ignored_message_string)),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
+      CreateWebMessageWithMessagePortRequest(std::move(message_port_request),
+                                             std::move(ignored_message_string)),
+      CallbackToFitFunction(post_result.GetCallback()));
 
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      kPageUrl.spec()));
+  EXPECT_TRUE(LoadUrlAndExpectResponse(frame.GetNavigationController(),
+                                       fuchsia::web::LoadUrlParams(),
+                                       kPageUrl.spec()));
 
-  sender.RunUntilStarted();
+  ASSERT_TRUE(sender.RunUntilActive());
   frame.navigation_listener().RunUntilTitleEquals("canplay");
 
   EXPECT_TRUE(post_result.Wait());

@@ -100,7 +100,6 @@
 <translation id="1687475363370981210">Адзначыць усе як прачытаныя</translation>
 <translation id="1689333818294560261">Псеўданім</translation>
 <translation id="1690731385917361335">Няма элементаў</translation>
-<translation id="1692118695553449118">Сінхранізацыя ўключана</translation>
 <translation id="1700629756560807968">Выбрана: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Каб усталяваць, націсніце двойчы.</translation>
 <translation id="1752547299766512813">Захоўваць паролі</translation>
@@ -174,7 +173,6 @@
 <translation id="2469960372084740698">Выключыць Бяспечны прагляд?</translation>
 <translation id="2473876017985765807">Вы ўжо захавалі пароль для вэб-сайта <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не выбрана</translation>
-<translation id="2497852260688568942">Сінхранізацыя выключана вашым адміністратарам</translation>
 <translation id="2500374554657206846">Варыянты захавання пароля</translation>
 <translation id="2523363575747517183">Гэты сайт сістэматычна спрабуе адкрыць іншую праграму.</translation>
 <translation id="2529021024822217800">Адкрыць усе</translation>
@@ -326,6 +324,7 @@
 <translation id="369349502275246497">Паказваць прапанову захаваць паролі</translation>
 <translation id="3709582977625132201">Пазначыць як непрачытанае</translation>
 <translation id="371230970611282515">Прадказвае небяспечныя падзеі і папярэджвае пра іх да таго, як яны здараюцца.</translation>
+<translation id="37207012422556617">Папулярныя пошукавыя запыты</translation>
 <translation id="3740397331642243698">Адкрывае ўведзеныя URL-адрасы ў Google Chrome у рэжыме інкогніта.</translation>
 <translation id="3762232513783804601">Распрацавана для iPad</translation>
 <translation id="3771033907050503522">Укладкі інкогніта</translation>
@@ -489,7 +488,6 @@
 <translation id="509789154667432072">Дадаць закладку</translation>
 <translation id="5118713593561876160">Інтарэсы</translation>
 <translation id="5118764316110575523">Выключана</translation>
-<translation id="5127805178023152808">Сінхранізацыя выключана</translation>
 <translation id="5132942445612118989">Сінхранізуйце паролі, гісторыю і іншыя даныя на ўсіх прыладах</translation>
 <translation id="5140288047769711648">Chrome запомніць гэты пароль для вас – вам не абавязкова яго помніць.</translation>
 <translation id="5150492518600715772">Адправіць на прыладу</translation>
@@ -533,6 +531,7 @@
 Гэту функцыю таксама трэба ўключыць у раздзеле налад "Агульныя", і прылады павінны выкарыстоўваць аднолькавы ўліковы запіс iCloud.</translation>
 <translation id="5551897871312988470">Прапаноўваць перакласці з мовы</translation>
 <translation id="5556459405103347317">Перазагрузіць</translation>
+<translation id="556042886152191864">Кнопка</translation>
 <translation id="5580834567471114021">Дадаць старонку ў спіс на прагляд?</translation>
 <translation id="560322036295180549">Ваша арганізацыя выключыла гэты параметр</translation>
 <translation id="5614553682702429503">Захаваць пароль?</translation>
@@ -600,7 +599,6 @@
 <translation id="60829778314739003">Прыняць і працягнуць</translation>
 <translation id="6084848228346514841">Выбраць укладкі</translation>
 <translation id="6103540626693881831">Шыфраванне на прыладзе</translation>
-<translation id="6108923351542677676">Ідзе наладка…</translation>
 <translation id="6119050551270742952">Вэб-старонка адкрыта ў рэжыме інкогніта</translation>
 <translation id="6122191549521593678">У інтэрнэце</translation>
 <translation id="6127379762771434464">Элемент выдалены</translation>
@@ -776,7 +774,6 @@
 <translation id="7400418766976504921">URL-адрас</translation>
 <translation id="7409985198648820906">Непрачытаных артыкулаў: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7412027924265291969">Працягнуць</translation>
-<translation id="7419565702166471774">Заўсёды выкарыстоўваць бяспечнае падключэнне</translation>
 <translation id="7425346204213733349">Змены ў закладках, гісторыі, паролях і іншых наладах больш не будуць сінхранізавацца з Уліковым запісам Google. Але існуючыя даныя застануцца ва Уліковым запісе Google.</translation>
 <translation id="7431991332293347422">Кіраванне тым, як ваша гісторыя прагляду сайтаў выкарыстоўваецца для персаналізацыі пошуку і ў іншых мэтах</translation>
 <translation id="7435356471928173109">Выключаны адміністратарам</translation>
@@ -816,6 +813,7 @@
 <translation id="7781069478569868053">Старонка новай укладкі</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пачаць пошук у новай укладцы Chrome.</translation>
+<translation id="7790892308048519147">Намагацца карыстацца бяспечнымі тыпамі падключэння</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="7807060072011926525">Ад кампаніі Google</translation>
 <translation id="7839985698273989086">Пазасеткавая старонка</translation>
@@ -913,7 +911,6 @@
 <translation id="8591976964826315682">Блакіраваць староннія файлы cookie у рэжыме інкогніта</translation>
 <translation id="8605219856220328675">Закрыць укладку.</translation>
 <translation id="8620640915598389714">Змяніць</translation>
-<translation id="8620785403235741379">Выберыце адзін з варыянтаў</translation>
 <translation id="8626393685701737946">Зрабіць рэжым для ПК стандартным рэжымам паказу сайтаў можна праз меню "Налады &gt; Налады змесціва"</translation>
 <translation id="863090005774946393">Вашым браўзерам кіруе арганізацыя. Некаторыя функцыі могуць быць адключаны.</translation>
 <translation id="8636825310635137004">Каб глядзець укладкі са сваіх іншых прылад, уключыце сінхранізацыю.</translation>

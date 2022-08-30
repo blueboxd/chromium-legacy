@@ -334,8 +334,8 @@ void RunTestThreads(NetLog* net_log) {
 TEST(NetLogTest, NetLogEventThreads) {
   // Attach some observers.  They'll safely detach themselves on destruction.
   CountingObserver observers[3];
-  for (size_t i = 0; i < std::size(observers); ++i) {
-    NetLog::Get()->AddObserver(&observers[i], NetLogCaptureMode::kEverything);
+  for (auto& observer : observers) {
+    NetLog::Get()->AddObserver(&observer, NetLogCaptureMode::kEverything);
   }
 
   // Run a bunch of threads to completion, each of which will emit events to
@@ -344,8 +344,8 @@ TEST(NetLogTest, NetLogEventThreads) {
 
   // Check that each observer saw the emitted events.
   const int kTotalEvents = kThreads * kEvents;
-  for (size_t i = 0; i < std::size(observers); ++i)
-    EXPECT_EQ(kTotalEvents, observers[i].count());
+  for (const auto& observer : observers)
+    EXPECT_EQ(kTotalEvents, observer.count());
 }
 
 // Test adding and removing a single observer.
@@ -354,7 +354,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
 
   AddEvent(NetLog::Get());
   EXPECT_EQ(0, observer.count());
-  EXPECT_EQ(NULL, observer.net_log());
+  EXPECT_EQ(nullptr, observer.net_log());
   EXPECT_FALSE(NetLog::Get()->IsCapturing());
 
   // Add the observer and add an event.
@@ -372,7 +372,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
 
   // Remove observer and add an event.
   NetLog::Get()->RemoveObserver(&observer);
-  EXPECT_EQ(NULL, observer.net_log());
+  EXPECT_EQ(nullptr, observer.net_log());
   EXPECT_FALSE(NetLog::Get()->IsCapturing());
 
   AddEvent(NetLog::Get());
@@ -397,7 +397,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   NetLog::Get()->AddObserver(&observer[0],
                              NetLogCaptureMode::kIncludeSensitive);
   EXPECT_EQ(NetLog::Get(), observer[0].net_log());
-  EXPECT_EQ(NULL, observer[1].net_log());
+  EXPECT_EQ(nullptr, observer[1].net_log());
   EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer[0].capture_mode());
   EXPECT_TRUE(NetLog::Get()->IsCapturing());
 
@@ -425,7 +425,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   // Remove second observer.
   NetLog::Get()->RemoveObserver(&observer[1]);
   EXPECT_EQ(NetLog::Get(), observer[0].net_log());
-  EXPECT_EQ(NULL, observer[1].net_log());
+  EXPECT_EQ(nullptr, observer[1].net_log());
   EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer[0].capture_mode());
   EXPECT_TRUE(NetLog::Get()->IsCapturing());
 
@@ -436,8 +436,8 @@ TEST(NetLogTest, NetLogTwoObservers) {
 
   // Remove first observer.
   NetLog::Get()->RemoveObserver(&observer[0]);
-  EXPECT_EQ(NULL, observer[0].net_log());
-  EXPECT_EQ(NULL, observer[1].net_log());
+  EXPECT_EQ(nullptr, observer[0].net_log());
+  EXPECT_EQ(nullptr, observer[1].net_log());
   EXPECT_FALSE(NetLog::Get()->IsCapturing());
 
   // Add event and make sure neither observer gets it.

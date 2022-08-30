@@ -25,6 +25,16 @@ export const FeedbackFlowState = {
 };
 
 /**
+ * Enum for reserved query parameters used by feedback source to provide
+ * addition context to final report.
+ * @enum {string}
+ */
+export const AdditionalContextQueryParam = {
+  DESCRIPTION_TEMPLATE: 'description_template',
+  EXTRA_DIAGNOSTICS: 'extra_diagnostics',
+};
+
+/**
  * @fileoverview
  * 'feedback-flow' manages the navigation among the steps to be taken.
  */
@@ -72,6 +82,14 @@ export class FeedbackFlowElement extends PolymerElement {
     this.description_;
 
     /**
+     * The description template provided source application to help user write
+     * feedback.
+     * @type {string}
+     * @protected
+     */
+    this.descriptionTemplate_;
+
+    /**
      * The status of sending report.
      * @type {?SendReportStatus}
      * @private
@@ -84,6 +102,7 @@ export class FeedbackFlowElement extends PolymerElement {
 
     this.feedbackServiceProvider_.getFeedbackContext().then((response) => {
       this.feedbackContext_ = response.feedbackContext;
+      this.setAdditionalContextFromQueryParams_();
     });
   }
 
@@ -103,6 +122,25 @@ export class FeedbackFlowElement extends PolymerElement {
         }
       });
     }
+  }
+
+  /**
+   * Sets additional context passed from RequestFeedbackFlow as part of the URL.
+   * See `AdditionalContextQueryParam` for valid query parameters.
+   * @private
+   */
+  setAdditionalContextFromQueryParams_() {
+    const params = new URLSearchParams(window.location.search);
+    const extraDiagnostics =
+        params.get(AdditionalContextQueryParam.EXTRA_DIAGNOSTICS);
+    this.feedbackContext_.extraDiagnostics =
+        extraDiagnostics ? decodeURIComponent(extraDiagnostics) : '';
+    const descriptionTemplate =
+        params.get(AdditionalContextQueryParam.DESCRIPTION_TEMPLATE);
+    this.descriptionTemplate_ =
+        descriptionTemplate && descriptionTemplate.length > 0 ?
+        decodeURIComponent(descriptionTemplate) :
+        '';
   }
 
   /**
@@ -140,7 +178,7 @@ export class FeedbackFlowElement extends PolymerElement {
   handleGoBackClick_(event) {
     switch (event.detail.currentState) {
       case FeedbackFlowState.SHARE_DATA:
-        this.currentState_ = FeedbackFlowState.SEARCH;
+        this.navigateToSearchPage_();
         break;
       case FeedbackFlowState.CONFIRMATION:
         // Remove the text from previous search.
@@ -151,11 +189,17 @@ export class FeedbackFlowElement extends PolymerElement {
         const shareDataPage = this.shadowRoot.querySelector('share-data-page');
         shareDataPage.reEnableSendReportButton();
 
-        this.currentState_ = FeedbackFlowState.SEARCH;
+        this.navigateToSearchPage_();
         break;
       default:
         console.warn('unexpected state: ', event.detail.currentState);
     }
+  }
+
+  /** @private */
+  navigateToSearchPage_() {
+    this.currentState_ = FeedbackFlowState.SEARCH;
+    this.shadowRoot.querySelector('search-page').focusInputElement();
   }
 
   /**

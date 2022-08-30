@@ -37,7 +37,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/sync_utils.h"
-#include "components/autofill/core/browser/touch_to_fill_delegate.h"
+#include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
@@ -281,6 +281,12 @@ class BrowserAutofillManager : public AutofillManager,
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
 
+  void SetProfileFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) override;
+
+  void SetCreditCardFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) override;
+
   // Returns the last form the autofill manager considered in this frame.
   virtual const FormData& last_query_form() const;
 
@@ -300,21 +306,14 @@ class BrowserAutofillManager : public AutofillManager,
   //   2. there is no form and WebOTP is not used
   void ReportAutofillWebOTPMetrics(bool used_web_otp) override;
 
-  // Handles the logic for when the user selects to see promo code offer
-  // details. It opens a new tab and navigates to the offer details page, and
-  // then logs that the promo code suggestions footer was selected.
-  void OnSeePromoCodeOfferDetailsSelected(const GURL& offer_details_url,
-                                          const std::u16string& value,
-                                          int frontend_id);
-
 #if defined(UNIT_TEST)
   void SetExternalDelegateForTest(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
     external_delegate_ = std::move(external_delegate);
   }
 
-  void SetTouchToFillDelegateForTest(
-      std::unique_ptr<TouchToFillDelegate> touch_to_fill_delegate) {
+  void SetTouchToFillDelegateImplForTest(
+      std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate) {
     touch_to_fill_delegate_ = std::move(touch_to_fill_delegate);
   }
 
@@ -662,7 +661,7 @@ class BrowserAutofillManager : public AutofillManager,
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
-  std::unique_ptr<TouchToFillDelegate> touch_to_fill_delegate_;
+  std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
 
   std::string app_locale_;
 

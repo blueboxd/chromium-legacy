@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/test/bind.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
@@ -55,10 +56,8 @@ class ExtensionDownloaderTest : public ExtensionsTest {
     fetch->AddExtension(kTestExtensionId, "1.0", &zero_days, "", "",
                         mojom::ManifestLocation::kInternal,
                         DownloadFetchPriority::kBackground);
-    fetch->AddAssociatedTask(ExtensionDownloaderTask(
-        kTestExtensionId, kUpdateUrl, mojom::ManifestLocation::kInternal,
-        false /* is_corrupt_reinstall */, 0 /* request_id */,
-        DownloadFetchPriority::kBackground));
+    fetch->AddAssociatedTask(
+        CreateDownloaderTask(kTestExtensionId, kUpdateUrl));
     return fetch;
   }
 
@@ -76,20 +75,31 @@ class ExtensionDownloaderTest : public ExtensionsTest {
     return helper->downloader().pending_tasks_;
   }
 
+  // Creates an update manifest for several extensions. Provided values should
+  // be tuples of (extension id, version, URL to the CRX file).
+  std::string CreateUpdateManifest(
+      const std::vector<std::tuple<ExtensionId, std::string, std::string>>&
+          extensions) {
+    std::string content =
+        "<?xml version='1.0' encoding='UTF-8'?>"
+        "<gupdate xmlns='http://www.google.com/update2/response'"
+        "                protocol='2.0'>";
+    for (const auto& [id, version, codebase] : extensions) {
+      content += base::StringPrintf(
+          " <app appid='%s'>"
+          "  <updatecheck codebase='%s' version='%s' prodversionmin='1.1' />"
+          " </app>",
+          id.c_str(), codebase.c_str(), version.c_str());
+    }
+    content += "</gupdate>";
+    return content;
+  }
+
   std::string CreateUpdateManifest(const std::string& extension_id,
                                    const std::string& extension_version) {
-    return "<?xml version='1.0' encoding='UTF-8'?>"
-           "<gupdate xmlns='http://www.google.com/update2/response'"
-           "                protocol='2.0'>"
-           " <app appid='" +
-           extension_id +
-           "'>"
-           "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-           "               version='" +
-           extension_version +
-           "' prodversionmin='1.1' />"
-           " </app>"
-           "</gupdate>";
+    return CreateUpdateManifest(
+        {std::make_tuple(extension_id, extension_version,
+                         "http://example.com/extension_1.2.3.4.crx")});
   }
 
   void SetHelperHandlers(ExtensionDownloaderTestHelper* helper,
@@ -430,22 +440,16 @@ TEST_F(ExtensionDownloaderTest, TestURLStats) {
   GURL kUpdateUrl("http://localhost/manifest1");
   const URLStats& stats = GetDownloaderURLStats(&helper);
 
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl(),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl()));
   EXPECT_EQ(1, stats.google_url_count);
 
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId2, GURL() /* update_url */,
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId2, GURL()));
   EXPECT_EQ(1, stats.no_url_count);
 
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId3, kUpdateUrl, mojom::ManifestLocation::kInternal,
-      false /* is_corrupt_reinstall */, 0 /* request_id */,
-      DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId3, kUpdateUrl));
   EXPECT_EQ(1, stats.other_url_count);
 }
 
@@ -458,19 +462,16 @@ TEST_F(ExtensionDownloaderTest, TestUpdateURLHandle) {
   // Clear pending queue to check it.
   helper.downloader().StartAllPending(nullptr);
   // Invalid update URL, shouldn't be added at all.
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL("http://?invalid=url"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId, GURL("http://?invalid=url")));
   EXPECT_EQ(0u, tasks.size());
 
   // Clear pending queue to check it.
   helper.downloader().StartAllPending(nullptr);
   // HTTP Webstore URL, should be replaced with HTTPS.
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL("http://clients2.google.com/service/update2/crx"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(CreateDownloaderTask(
+      kTestExtensionId,
+      GURL("http://clients2.google.com/service/update2/crx")));
   ASSERT_EQ(1u, tasks.size());
   EXPECT_EQ(GURL("https://clients2.google.com/service/update2/crx"),
             tasks.rbegin()->update_url);
@@ -478,20 +479,16 @@ TEST_F(ExtensionDownloaderTest, TestUpdateURLHandle) {
   // Clear pending queue to check it.
   helper.downloader().StartAllPending(nullptr);
   // Just a custom URL, should be kept as is.
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL("https://example.com"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId, GURL("https://example.com")));
   ASSERT_EQ(1u, tasks.size());
   EXPECT_EQ(GURL("https://example.com"), tasks.rbegin()->update_url);
 
   // Clear pending queue to check it.
   helper.downloader().StartAllPending(nullptr);
   // Empty URL, should be replaced with Webstore one.
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL(""), mojom::ManifestLocation::kInternal,
-      false /* is_corrupt_reinstall */, 0 /* request_id */,
-      DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId, GURL("")));
   ASSERT_EQ(1u, tasks.size());
   EXPECT_EQ(GURL("https://clients2.google.com/service/update2/crx"),
             tasks.rbegin()->update_url);
@@ -503,26 +500,18 @@ TEST_F(ExtensionDownloaderTest, TestMultipleUpdates) {
 
   // Add two extensions with different update URLs (to have at least two items
   // in manifest requests queue).
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL("http://example1.com/"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId2, GURL("http://example2.com/"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId, GURL("http://example1.com/")));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId2, GURL("http://example2.com/")));
 
   helper.downloader().StartAllPending(nullptr);
 
   // Add the same two extensions again.
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, GURL("http://example1.com/"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId2, GURL("http://example2.com/"),
-      mojom::ManifestLocation::kInternal, false /* is_corrupt_reinstall */,
-      0 /* request_id */, DownloadFetchPriority::kBackground));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId, GURL("http://example1.com/")));
+  helper.downloader().AddPendingExtension(
+      CreateDownloaderTask(kTestExtensionId2, GURL("http://example2.com/")));
 
   helper.downloader().StartAllPending(nullptr);
 
@@ -546,11 +535,10 @@ TEST_F(ExtensionDownloaderTest, TestNoNetworkRetryAfterCacheMiss) {
 
   helper.downloader().SetBackoffPolicyForTesting(&kZeroBackoffPolicy);
 
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl(),
-      mojom::ManifestLocation::kExternalPolicyDownload,
-      false /* is_corrupt_reinstall */, 0 /* request_id */,
-      DownloadFetchPriority::kBackground));
+  ExtensionDownloaderTask task = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task.install_location = mojom::ManifestLocation::kExternalPolicyDownload,
+  helper.downloader().AddPendingExtension(std::move(task));
   auto test_extension_cache = std::make_unique<ExtensionCacheFake>();
   helper.downloader().StartAllPending(test_extension_cache.get());
 
@@ -574,11 +562,10 @@ TEST_F(ExtensionDownloaderTest, TestManifestFetchFailureAfterCacheMiss) {
 
   helper.downloader().SetBackoffPolicyForTesting(&kZeroBackoffPolicy);
 
-  helper.downloader().AddPendingExtension(ExtensionDownloaderTask(
-      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl(),
-      mojom::ManifestLocation::kExternalPolicyDownload,
-      false /* is_corrupt_reinstall */, 0 /* request_id */,
-      DownloadFetchPriority::kBackground));
+  ExtensionDownloaderTask task = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task.install_location = mojom::ManifestLocation::kExternalPolicyDownload;
+  helper.downloader().AddPendingExtension(std::move(task));
 
   EXPECT_CALL(
       helper.delegate(),
@@ -597,6 +584,123 @@ TEST_F(ExtensionDownloaderTest, TestManifestFetchFailureAfterCacheMiss) {
   content::RunAllTasksUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(&helper.delegate());
+}
+
+// Tests that multiple requests (with different `request_id`) are handled
+// correctly.
+TEST_F(ExtensionDownloaderTest, TestMultipleRequests) {
+  ExtensionDownloaderTestHelper helper;
+
+  ExtensionDownloaderTask task1 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task1.request_id = 0;
+  ExtensionDownloaderTask task2 = CreateDownloaderTask(
+      kTestExtensionId2, extension_urls::GetWebstoreUpdateUrl());
+  task2.request_id = 1;
+
+  helper.test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        std::vector<std::tuple<ExtensionId, std::string, std::string>>
+            extensions;
+        if (request.url.spec().find(std::string("%3D") + kTestExtensionId +
+                                    "%26") != std::string::npos) {
+          extensions.emplace_back(kTestExtensionId, "1.0",
+                                  "https://example.com/extension1.crx");
+        }
+        if (request.url.spec().find(std::string("%3D") + kTestExtensionId2 +
+                                    "%26") != std::string::npos) {
+          extensions.emplace_back(kTestExtensionId2, "1.0",
+                                  "https://example.com/extension2.crx");
+        }
+        helper.test_url_loader_factory().AddResponse(
+            request.url.spec(), CreateUpdateManifest(extensions), net::HTTP_OK);
+      }));
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId2))
+      .WillOnce(Return(true));
+  std::map<ExtensionId, std::set<int>> results;
+  EXPECT_CALL(delegate, OnExtensionDownloadFinished_(_, _, _, _, _, _))
+      .WillRepeatedly(
+          [&](const CRXFileInfo& file, bool file_ownership_passed,
+              const GURL& download_url,
+              const ExtensionDownloaderDelegate::PingResult& ping_result,
+              const std::set<int>& request_ids,
+              ExtensionDownloaderDelegate::InstallCallback& callback) {
+            ASSERT_EQ(results.count(file.extension_id), 0u);
+            results[file.extension_id] = request_ids;
+          });
+
+  helper.downloader().AddPendingExtension(std::move(task1));
+  helper.downloader().AddPendingExtension(std::move(task2));
+  helper.downloader().StartAllPending(nullptr);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(results.size(), 2u);
+  EXPECT_EQ(results[kTestExtensionId], std::set<int>({0}));
+  EXPECT_EQ(results[kTestExtensionId2], std::set<int>({1}));
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Tests that multiple requests (with different `request_id`) are handled
+// correctly when they are used to fetch the same extension.
+TEST_F(ExtensionDownloaderTest, TestMultipleRequestsSameExtension) {
+  ExtensionDownloaderTestHelper helper;
+
+  ExtensionDownloaderTask task1 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task1.request_id = 0;
+  ExtensionDownloaderTask task2 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task2.request_id = 1;
+
+  helper.test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        if (request.url.spec() == "https://example.com/extension1.crx") {
+          helper.test_url_loader_factory().AddResponse(request.url.spec(), "",
+                                                       net::HTTP_OK);
+          return;
+        }
+        ASSERT_NE(request.url.spec().find(std::string("%3D") +
+                                          kTestExtensionId + "%26"),
+                  std::string::npos);
+        std::vector<std::tuple<ExtensionId, std::string, std::string>>
+            extensions;
+        extensions.emplace_back(kTestExtensionId, "1.0",
+                                "https://example.com/extension1.crx");
+        helper.test_url_loader_factory().AddResponse(
+            request.url.spec(), CreateUpdateManifest(extensions), net::HTTP_OK);
+      }));
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillRepeatedly(Return(true));
+  std::map<ExtensionId, std::set<int>> results;
+  EXPECT_CALL(delegate, OnExtensionDownloadFinished_(_, _, _, _, _, _))
+      .WillRepeatedly(
+          [&](const CRXFileInfo& file, bool file_ownership_passed,
+              const GURL& download_url,
+              const ExtensionDownloaderDelegate::PingResult& ping_result,
+              const std::set<int>& request_ids,
+              ExtensionDownloaderDelegate::InstallCallback& callback) {
+            DCHECK(results.count(file.extension_id) == 0);
+            results[file.extension_id] = request_ids;
+          });
+
+  helper.downloader().AddPendingExtension(std::move(task1));
+  helper.downloader().AddPendingExtension(std::move(task2));
+  helper.downloader().StartAllPending(nullptr);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(results.size(), 1u);
+  EXPECT_EQ(results[kTestExtensionId], std::set<int>({0, 1}));
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
 }
 
 }  // namespace extensions

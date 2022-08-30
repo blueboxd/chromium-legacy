@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
@@ -67,7 +68,10 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -100,6 +104,23 @@ public class TabUiTestHelper {
         for (int i = 0; i < (isIncognito ? tabsCount : tabsCount - 1); i++) {
             ChromeTabUtils.newTabFromMenu(
                     InstrumentationRegistry.getInstrumentation(), cta, isIncognito, true);
+        }
+    }
+
+    /**
+     * Open additional tabs for the provided activity. The added tabs will be opened to
+     * "about:blank" and will not wait for the page to finish loading.
+     * @param cta The activity to add the tabs to.
+     * @param incognito Whether the tabs should be incognito.
+     * @param count The number of tabs to create.
+     */
+    public static void addBlankTabs(ChromeTabbedActivity cta, boolean incognito, int count) {
+        for (int i = 0; i < count; i++) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                cta.getTabCreator(incognito).createNewTab(
+                        new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL),
+                        TabLaunchType.FROM_CHROME_UI, null);
+            });
         }
     }
 
@@ -141,7 +162,7 @@ public class TabUiTestHelper {
      * @param index The index of the target card.
      */
     public static void clickNthCardFromTabSwitcher(ChromeTabbedActivity cta, int index) {
-        clickTabSwitcherCardWithParent(cta, index, org.chromium.chrome.R.id.compositor_view_holder);
+        clickTabSwitcherCardWithParent(cta, index, getTabSwitcherParentId(cta));
     }
 
     private static void clickTabSwitcherCardWithParent(
@@ -149,18 +170,6 @@ public class TabUiTestHelper {
         assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         onView(allOf(withParent(withId(parentId)), withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(index, click()));
-    }
-
-    /**
-     * Click the Nth card in grid tab switcher. When group is enabled and the Nth card is a
-     * group, this will open up the dialog; otherwise this will open up the tab page.
-     * @param cta  The current running activity.
-     * @param index The index of the target card.
-     */
-    public static void clickNthCardFromTabletTabSwitcherPolish(
-            ChromeTabbedActivity cta, int index) {
-        clickTabSwitcherCardWithParent(
-                cta, index, org.chromium.chrome.R.id.grid_tab_switcher_view_holder);
     }
 
     /**
@@ -364,9 +373,23 @@ public class TabUiTestHelper {
      */
     public static void verifyTabSwitcherCardCount(ChromeTabbedActivity cta, int count) {
         assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
-        onView(allOf(withParent(withId(org.chromium.chrome.R.id.compositor_view_holder)),
-                       withId(R.id.tab_list_view)))
+        int viewHolder = getTabSwitcherParentId(cta);
+        onView(allOf(withParent(withId(viewHolder)), withId(R.id.tab_list_view)))
                 .check(ChildrenCountAssertion.havingTabCount(count));
+    }
+
+    /**
+     * Returns parentId of GridTabSwitcher based on form factor and feature enabled.
+     * @param cta Activity running.
+     * @return View Id of GTS parent view.
+     */
+    public static int getTabSwitcherParentId(ChromeTabbedActivity cta) {
+        int viewHolder = org.chromium.chrome.R.id.compositor_view_holder;
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(cta)
+                && TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(cta)) {
+            viewHolder = R.id.grid_tab_switcher_view_holder;
+        }
+        return viewHolder;
     }
 
     /**

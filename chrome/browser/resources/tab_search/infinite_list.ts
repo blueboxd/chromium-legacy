@@ -68,7 +68,7 @@ export class InfiniteList extends PolymerElement {
   }
 
   maxHeight: number;
-  items: Array<Object>;
+  items: Object[];
   private instanceConstructors_:
       Map<string,
           new(args: {item: Object, index?: number}) =>
@@ -170,7 +170,7 @@ export class InfiniteList extends PolymerElement {
     }
   }
 
-  ensureTemplatized_() {
+  private ensureTemplatized_() {
     // The user provided light-dom template(s) to use when stamping DOM items.
     const templates = this.querySelectorAll('template');
     assert(templates.length > 0, 'At least one template must be provided');
@@ -366,7 +366,7 @@ export class InfiniteList extends PolymerElement {
    * needed to fill the current scroll position view are added to the DOM, thus
    * improving rendering performance.
    */
-  private onItemsChanged_(newItems: Array<any>, oldItems: Array<any>) {
+  private onItemsChanged_(newItems: any[], oldItems: any[]) {
     if (this.instanceConstructors_.size === 0) {
       return;
     }
@@ -439,7 +439,7 @@ export class InfiniteList extends PolymerElement {
     }
   }
 
-  private updateDomItems_(newItems: Array<any>, oldItems: Array<any>) {
+  private updateDomItems_(newItems: any[], oldItems: any[]) {
     // Identify the differences between the original and new list of items.
     // These are represented as splice objects containing removed and added
     // item information at a given index. We leverage these splices to change

@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <set>
-#include "build/build_config.h"
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -12,12 +11,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
@@ -129,6 +130,7 @@ class FakeBinaryUploadService : public CloudBinaryUploadService {
           break;
         case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
         case AnalysisConnector::FILE_DOWNLOADED:
+        case AnalysisConnector::FILE_TRANSFER:
           NOTREACHED();
       }
     }
@@ -275,11 +277,11 @@ class ContentAnalysisDelegateBrowserTestBase
         machine_scope_ ? kBrowserDMToken : kProfileDMToken);
 #endif
     if (machine_scope_) {
-      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
+      enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
           browser()->profile())
           ->SetBrowserCloudPolicyClientForTesting(client_.get());
     } else {
-      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
+      enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
           browser()->profile())
 #if BUILDFLAG(IS_CHROMEOS_ASH)
           ->SetBrowserCloudPolicyClientForTesting(client_.get());

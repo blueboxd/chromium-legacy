@@ -109,14 +109,6 @@ void InProcessCommandBuffer::SharedImageInterfaceHelper::WrapTaskWithGpuCheck(
   command_buffer_->RunTaskOnGpuThread(std::move(task));
 }
 
-bool InProcessCommandBuffer::SharedImageInterfaceHelper::EnableWrappedSkImage()
-    const {
-  // We need WrappedSkImage to support creating a SharedImage with pixel data
-  // when GL is unavailable. This is used in various unit tests.
-  return command_buffer_->context_state_ &&
-         !command_buffer_->context_state_->GrContextIsGL();
-}
-
 InProcessCommandBuffer::InProcessCommandBuffer(
     CommandBufferTaskExecutor* task_executor,
     const GURL& active_url)
@@ -266,9 +258,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       task_executor_->mailbox_manager(), std::move(memory_tracker),
       task_executor_->shader_translator_cache(),
       task_executor_->framebuffer_completeness_cache(), feature_info,
-      params.attribs.bind_generates_resource, task_executor_->image_manager(),
-      params.image_factory, nullptr /* progress_reporter */,
-      task_executor_->gpu_feature_info(), task_executor_->discardable_manager(),
+      params.attribs.bind_generates_resource, params.image_factory,
+      nullptr /* progress_reporter */, task_executor_->gpu_feature_info(),
+      task_executor_->discardable_manager(),
       task_executor_->passthrough_discardable_manager(),
       task_executor_->shared_image_manager());
 
@@ -790,6 +782,21 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
   ScheduleGpuTask(
       base::BindOnce(&InProcessCommandBuffer::DestroyTransferBufferOnGpuThread,
                      gpu_thread_weak_ptr_factory_.GetWeakPtr(), id));
+}
+
+void InProcessCommandBuffer::ForceLostContext(error::ContextLostReason reason) {
+  ScheduleGpuTask(
+      base::BindOnce(&InProcessCommandBuffer::ForceLostContextOnGpuThread,
+                     gpu_thread_weak_ptr_factory_.GetWeakPtr(), reason));
+}
+
+void InProcessCommandBuffer::ForceLostContextOnGpuThread(
+    error::ContextLostReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  // Similar implementation to CommandBufferDirect.
+  command_buffer_->SetContextLostReason(reason);
+  command_buffer_->SetParseError(error::kLostContext);
 }
 
 void InProcessCommandBuffer::DestroyTransferBufferOnGpuThread(int32_t id) {

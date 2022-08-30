@@ -30,7 +30,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -281,6 +281,14 @@ void LockScreenStartReauthDialog::UpdateState(
     return;
 
   const NetworkStateInformer::State state = network_state_informer_->state();
+
+  // If frame didn't load but we believe that we are online then we want to show
+  // the network screen (mimicking behaviour of `ErrorScreen` on signin screen).
+  if (reason == NetworkError::ERROR_REASON_FRAME_ERROR &&
+      state == NetworkStateInformer::ONLINE) {
+    ShowLockScreenNetworkDialog();
+    return;
+  }
 
   if (state == NetworkStateInformer::OFFLINE) {
     ShowLockScreenNetworkDialog();

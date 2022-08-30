@@ -40,8 +40,10 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -290,7 +292,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     [self updateModel];
     _webState->AddObserver(_webStateObserver.get());
 
-    // Observe the language::IOSLanguageDetectionTabHelper for |_webState|.
+    // Observe the language::IOSLanguageDetectionTabHelper for `_webState`.
     _iOSLanguageDetectionTabHelperObserverBridge =
         std::make_unique<language::IOSLanguageDetectionTabHelperObserverBridge>(
             language::IOSLanguageDetectionTabHelper::FromWebState(_webState),
@@ -450,7 +452,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
       [self createOverflowMenuDestination:passwordTitleID
                               destination:overflow_menu::Destination::Passwords
                                 imageName:passwordIconImageName
-                          accessibilityID:@""
+                          accessibilityID:kToolsMenuPasswordsId
                                   handler:^{
                                     [weakSelf openPasswords];
                                   }];
@@ -624,7 +626,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                                    });
     self.settingsAction =
         CreateOverflowMenuAction(IDS_IOS_TOOLS_MENU_SETTINGS, kGearShapeSymbol,
-                                 YES, kToolsMenuSettingsId, ^{
+                                 YES, kToolsMenuSettingsActionId, ^{
                                    [weakSelf openSettingsFromAction];
                                  });
 
@@ -747,7 +749,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
     self.settingsAction = CreateOverflowMenuAction(
         IDS_IOS_TOOLS_MENU_SETTINGS, @"overflow_menu_action_settings",
-        kToolsMenuSettingsId, ^{
+        kToolsMenuSettingsActionId, ^{
           [weakSelf openSettingsFromAction];
         });
 
@@ -765,14 +767,14 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   }
 
   // The app actions vary based on page state, so they are set in
-  // |-updateModel|.
+  // `-updateModel`.
   self.appActionsGroup =
       [[OverflowMenuActionGroup alloc] initWithGroupName:@"app_actions"
                                                  actions:@[]
                                                   footer:nil];
 
   // The page actions vary based on page state, so they are set in
-  // |-updateModel|.
+  // `-updateModel`.
   self.pageActionsGroup =
       [[OverflowMenuActionGroup alloc] initWithGroupName:@"page_actions"
                                                  actions:@[]
@@ -987,7 +989,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
           feature_engagement::kIPHBadgedReadingListFeature);
 }
 
-// Returns whether the page can be manually translated. If |forceMenuLogging| is
+// Returns whether the page can be manually translated. If `forceMenuLogging` is
 // true the translate client will log this result.
 - (BOOL)canManuallyTranslate:(BOOL)forceMenuLogging {
   if (!self.webState) {
@@ -1273,36 +1275,28 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and reloads the current page.
 - (void)reload {
   RecordAction(UserMetricsAction("MobileMenuReload"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   self.navigationAgent->Reload();
 }
 
 // Dismisses the menu and stops the current page load.
 - (void)stopLoading {
   RecordAction(UserMetricsAction("MobileMenuStop"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   self.navigationAgent->StopLoading();
 }
 
 // Dismisses the menu and opens a new tab.
 - (void)openTab {
   RecordAction(UserMetricsAction("MobileMenuNewTab"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher openURLInNewTab:[OpenNewTabCommand commandWithIncognito:NO]];
 }
 
 // Dismisses the menu and opens a new incognito tab.
 - (void)openIncognitoTab {
   RecordAction(UserMetricsAction("MobileMenuNewIncognitoTab"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       openURLInNewTab:[OpenNewTabCommand commandWithIncognito:YES]];
 }
@@ -1310,9 +1304,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and opens a new window.
 - (void)openNewWindow {
   RecordAction(UserMetricsAction("MobileMenuNewWindow"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       openNewWindowWithActivity:ActivityToLoadURL(WindowActivityToolsOrigin,
                                                   GURL(kChromeUINewTabURL))];
@@ -1321,26 +1313,24 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and opens the Clear Browsing Data screen.
 - (void)openClearBrowsingData {
   RecordAction(UserMetricsAction("MobileMenuClearBrowsingData"));
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showClearBrowsingDataSettings];
 }
 
-// Updates the follow status of the website corresponding to |webPageURLs|
-// with |followStatus|, and dismisses the menu.
+// Updates the follow status of the website corresponding to `webPageURLs`
+// with `followStatus`, and dismisses the menu.
 - (void)updateFollowStatus:(BOOL)followStatus
      withFollowWebPageURLs:(FollowWebPageURLs*)webPageURLs {
   ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
       webPageURLs, followStatus);
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
 }
 
 // Dismisses the menu and adds the current page as a bookmark or opens the
 // bookmark edit screen if the current page is bookmarked.
 - (void)addOrEditBookmark {
   RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
   [self.dispatcher bookmarkCurrentPage];
 }
@@ -1352,9 +1342,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   // Dismissing the menu disconnects the mediator, so save anything cleaned up
   // there.
   web::WebState* webState = self.webState;
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
 
   if (!webState) {
     return;
@@ -1380,18 +1368,14 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and starts translating the current page.
 - (void)translatePage {
   base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showTranslate];
 }
 
 // Dismisses the menu and requests the desktop version of the current page
 - (void)requestDesktopSite {
   RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   self.navigationAgent->RequestDesktopSite();
   [self.dispatcher showDefaultSiteViewIPH];
 }
@@ -1399,36 +1383,28 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and requests the mobile version of the current page
 - (void)requestMobileSite {
   RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   self.navigationAgent->RequestMobileSite();
 }
 
 // Dismisses the menu and opens Find In Page
 - (void)openFindInPage {
   RecordAction(UserMetricsAction("MobileMenuFindInPage"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher openFindInPage];
 }
 
 // Dismisses the menu and opens Text Zoom
 - (void)openTextZoom {
   RecordAction(UserMetricsAction("MobileMenuTextZoom"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher openTextZoom];
 }
 
 // Dismisses the menu and opens the Report an Issue screen.
 - (void)reportAnIssue {
   RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       showReportAnIssueFromViewController:self.baseViewController
                                    sender:UserFeedbackSender::ToolsMenu];
@@ -1437,9 +1413,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and opens the help screen.
 - (void)openHelp {
   RecordAction(UserMetricsAction("MobileMenuHelp"));
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showHelpPage];
 }
 
@@ -1447,26 +1421,20 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens bookmarks.
 - (void)openBookmarks {
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
   [self.dispatcher showBookmarksManager];
 }
 
 // Dismisses the menu and opens history.
 - (void)openHistory {
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showHistory];
 }
 
 // Dismisses the menu and opens reading list.
 - (void)openReadingList {
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   // TODO(crbug.com/906662): This will need to be called on the
   // BrowserCoordinatorCommands handler.
   [self.dispatcher showReadingList];
@@ -1474,9 +1442,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens password list.
 - (void)openPasswords {
-  // TODO(crbug.com/1323764): This will need to be called on the
-  // PopupMenuCommands handler.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       showSavedPasswordsSettingsFromViewController:self.baseViewController
                                   showCancelButton:NO];
@@ -1484,7 +1450,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens downloads.
 - (void)openDownloads {
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   profile_metrics::BrowserProfileType type =
       self.isIncognito ? profile_metrics::BrowserProfileType::kIncognito
                        : profile_metrics::BrowserProfileType::kRegular;
@@ -1497,7 +1463,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens recent tabs.
 - (void)openRecentTabs {
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   // TODO(crbug.com/906662): This will need to be called on the
   // BrowserCoordinatorCommands handler.
   [self.dispatcher showRecentTabs];
@@ -1505,10 +1471,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and shows page information.
 - (void)openSiteInformation {
-  [self.dispatcher dismissPopupMenuAnimated:YES];
-  // TODO(crbug.com/1323758): This will need to be called on the
-  // PageInfoCommands handler.
-  [self.dispatcher showPageInfo];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
+  [self.pageInfoCommandsHandler showPageInfo];
 }
 
 // Dismisses the menu and opens settings, firing metrics for the settings
@@ -1520,7 +1484,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens settings.
 - (void)openSettings {
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   profile_metrics::BrowserProfileType type =
       self.isIncognito ? profile_metrics::BrowserProfileType::kIncognito
                        : profile_metrics::BrowserProfileType::kRegular;
@@ -1529,7 +1493,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 }
 
 - (void)enterpriseLearnMore {
-  [self.dispatcher dismissPopupMenuAnimated:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:
                                              GURL(kChromeUIManagementURL)]];

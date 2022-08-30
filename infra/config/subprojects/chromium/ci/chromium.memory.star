@@ -6,8 +6,8 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os", "reclient", "sheriff_rotations", "xcode")
-load("//lib/ci.star", "ci")
+load("//lib/builders.star", "goma", "os", "sheriff_rotations", "xcode")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -18,8 +18,8 @@ ci.defaults.set(
     os = os.LINUX_DEFAULT,
     main_console_view = "main",
     pool = ci.DEFAULT_POOL,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     tree_closing = True,
@@ -346,7 +346,7 @@ linux_memory_builder(
         category = "linux|msan",
         short_name = "tst",
     ),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
     triggered_by = ["Linux MSan Builder"],
 )
 
@@ -439,7 +439,7 @@ linux_memory_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     triggered_by = ["ci/Linux TSan Builder"],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -584,7 +584,7 @@ ci.builder(
     builderless = 1,
     cores = 32,
     tree_closing = False,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -613,7 +613,7 @@ ci.builder(
     execution_timeout = 5 * time.hour,
     builderless = True,
     os = os.WINDOWS_DEFAULT,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -648,4 +648,61 @@ ci.builder(
     cores = None,
     os = os.MAC_12,
     xcode = xcode.x13main,
+)
+
+# TODO(crbug.com/1340327): Remove after experiment is over.
+linux_memory_builder(
+    name = "Linux ASan LSan Low Symbols FYI Builder",
+    branch_selector = branches.MAIN,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_asan",
+            apply_configs = [
+                "lsan",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "linux|asan lsan fyi",
+        short_name = "bld",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    tree_closing = False,
+    os = os.LINUX_BIONIC,
+    ssd = True,
+)
+
+linux_memory_builder(
+    name = "Linux ASan LSan Low Symbols FYI Tests (1)",
+    branch_selector = branches.MAIN,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux|asan lsan fyi",
+        short_name = "tst",
+    ),
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_asan",
+            apply_configs = [
+                "lsan",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    tree_closing = False,
+    triggered_by = ["ci/Linux ASan LSan Low Symbols FYI Builder"],
+    os = os.LINUX_BIONIC,
+    reclient_instance = None,
 )

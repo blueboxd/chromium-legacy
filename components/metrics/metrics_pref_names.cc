@@ -136,11 +136,6 @@ const char kLastClonedResetTimestamp[] = "cloned_install.last_timestamp";
 const char kStabilityBrowserLastLiveTimeStamp[] =
     "user_experience_metrics.stability.browser_last_live_timestamp";
 
-// Number of times the application exited uncleanly since the last report.
-// On Android this does not count the ones due to Gms Core updates (below).
-const char kStabilityCrashCount[] =
-    "user_experience_metrics.stability.crash_count";
-
 // Number of times the application exited uncleanly since the last report
 // due to a gms core update.
 const char kStabilityCrashCountDueToGmsCoreUpdate[] =
@@ -149,10 +144,6 @@ const char kStabilityCrashCountDueToGmsCoreUpdate[] =
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =
     "user_experience_metrics.stability.exited_cleanly";
-
-// Number of times an extension renderer process crashed since the last report.
-const char kStabilityExtensionRendererCrashCount[] =
-    "user_experience_metrics.stability.extension_renderer_crash_count";
 
 // The total number of samples that will be lost if ASSOCIATE_INTERNAL_PROFILE
 // isn't enabled since the previous stability recorded, this is different than
@@ -169,16 +160,15 @@ const char kStabilityFileMetricsUnsentFilesCount[] =
 const char kStabilityGmsCoreVersion[] =
     "user_experience_metrics.stability.gms_core_version";
 
-// Number of times a gpu process crashed since the last report. Currently only
-// recorded on Android.
-const char kStabilityGpuCrashCount[] =
-    "user_experience_metrics.stability.gpu_crash_count";
-
 #if BUILDFLAG(IS_ANDROID)
 // Number of times the application was launched since last report. Used on
 // Android platforms as WebView may still be interested in this metric.
 const char kStabilityLaunchCount[] =
     "user_experience_metrics.stability.launch_count";
+
+// Number of times a page load event occurred since the last report.
+const char kStabilityPageLoadCount[] =
+    "user_experience_metrics.stability.page_load_count";
 
 // Number of times a renderer process successfully launched since the last
 // report. Used on Android platforms as WebView may still be interested in this
@@ -186,14 +176,6 @@ const char kStabilityLaunchCount[] =
 const char kStabilityRendererLaunchCount[] =
     "user_experience_metrics.stability.renderer_launch_count";
 #endif
-
-// Number of times a page load event occurred since the last report.
-const char kStabilityPageLoadCount[] =
-    "user_experience_metrics.stability.page_load_count";
-
-// Number of times a renderer process crashed since the last report.
-const char kStabilityRendererCrashCount[] =
-    "user_experience_metrics.stability.renderer_crash_count";
 
 // Base64 encoded serialized UMA system profile proto from the previous session.
 const char kStabilitySavedSystemProfile[] =

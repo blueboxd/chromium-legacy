@@ -335,8 +335,7 @@ bool ContainsString(const std::string& haystack, const char* needle) {
 }
 
 std::unique_ptr<UploadDataStream> CreateSimpleUploadData(const char* data) {
-  std::unique_ptr<UploadElementReader> reader(
-      new UploadBytesElementReader(data, strlen(data)));
+  auto reader = std::make_unique<UploadBytesElementReader>(data, strlen(data));
   return ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
 }
 
@@ -3732,12 +3731,11 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
     absl::optional<GURL>* preserve_fragment_on_redirect_url) {
-  HttpResponseHeaders* new_response_headers =
-      new HttpResponseHeaders(original_response_headers->raw_headers());
+  *override_response_headers = base::MakeRefCounted<HttpResponseHeaders>(
+      original_response_headers->raw_headers());
 
-  new_response_headers->SetHeader("Date", fixed_date_);
+  (*override_response_headers)->SetHeader("Date", fixed_date_);
 
-  *override_response_headers = new_response_headers;
   return TestNetworkDelegate::OnHeadersReceived(
       request, std::move(callback), original_response_headers,
       override_response_headers, endpoint, preserve_fragment_on_redirect_url);
@@ -4044,8 +4042,7 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
     return nullptr;
   }
 
-  std::unique_ptr<test_server::BasicHttpResponse> http_response(
-      new test_server::BasicHttpResponse);
+  auto http_response = std::make_unique<test_server::BasicHttpResponse>();
   http_response->set_code(HTTP_FOUND);
   http_response->AddCustomHeader("Location",
                                  "http://www.destination.com/foo.js");
@@ -4134,7 +4131,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateBlockAsynchronously) {
       BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
       BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
       BlockingNetworkDelegate::ON_HEADERS_RECEIVED};
-  static const size_t blocking_stages_length = std::size(blocking_stages);
 
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -4155,10 +4151,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateBlockAsynchronously) {
         TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
-    for (size_t i = 0; i < blocking_stages_length; ++i) {
+    for (auto stage : blocking_stages) {
       network_delegate.RunUntilBlocked();
-      EXPECT_EQ(blocking_stages[i],
-                network_delegate.stage_blocked_for_callback());
+      EXPECT_EQ(stage, network_delegate.stage_blocked_for_callback());
       network_delegate.DoCallback(OK);
     }
     d.RunUntilComplete();
@@ -4678,12 +4673,11 @@ std::unique_ptr<test_server::HttpResponse> HandleServerAuthConnect(
     return nullptr;
   }
 
-  std::unique_ptr<test_server::BasicHttpResponse> http_response(
-      new test_server::BasicHttpResponse);
+  auto http_response = std::make_unique<test_server::BasicHttpResponse>();
   http_response->set_code(HTTP_UNAUTHORIZED);
   http_response->AddCustomHeader("WWW-Authenticate",
                                  "Basic realm=\"WallyWorld\"");
-  return std::move(http_response);
+  return http_response;
 }
 
 }  // namespace
@@ -5921,7 +5915,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     ASSERT_EQ(true, base::GetFileSize(path, &size64));
     ASSERT_LE(size64, std::numeric_limits<int>::max());
     int size = static_cast<int>(size64);
-    std::unique_ptr<char[]> buf(new char[size]);
+    auto buf = std::make_unique<char[]>(size);
 
     ASSERT_EQ(size, base::ReadFile(path, buf.get(), size));
 
@@ -6006,8 +6000,7 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataBeforeStart) {
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    std::unique_ptr<ChunkedUploadDataStream> upload_data_stream(
-        new ChunkedUploadDataStream(0));
+    auto upload_data_stream = std::make_unique<ChunkedUploadDataStream>(0);
     std::unique_ptr<ChunkedUploadDataStream::Writer> writer =
         upload_data_stream->CreateWriter();
     r->set_upload(std::move(upload_data_stream));
@@ -6030,8 +6023,7 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataJustAfterStart) {
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    std::unique_ptr<ChunkedUploadDataStream> upload_data_stream(
-        new ChunkedUploadDataStream(0));
+    auto upload_data_stream = std::make_unique<ChunkedUploadDataStream>(0);
     std::unique_ptr<ChunkedUploadDataStream::Writer> writer =
         upload_data_stream->CreateWriter();
     r->set_upload(std::move(upload_data_stream));
@@ -6053,8 +6045,7 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataAfterStart) {
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    std::unique_ptr<ChunkedUploadDataStream> upload_data_stream(
-        new ChunkedUploadDataStream(0));
+    auto upload_data_stream = std::make_unique<ChunkedUploadDataStream>(0);
     std::unique_ptr<ChunkedUploadDataStream::Writer> writer =
         upload_data_stream->CreateWriter();
     r->set_upload(std::move(upload_data_stream));
@@ -9006,15 +8997,15 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
                {"/echoheader?Accept-Charset", "None"},
                {"/echoheader?User-Agent", ""}};
 
-  for (size_t i = 0; i < std::size(tests); i++) {
+  for (const auto& test : tests) {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(context->CreateRequest(
-        http_test_server()->GetURL(tests[i].request), DEFAULT_PRIORITY, &d,
+        http_test_server()->GetURL(test.request), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
     d.RunUntilComplete();
-    EXPECT_EQ(tests[i].expected_response, d.data_received())
-        << " Request = \"" << tests[i].request << "\"";
+    EXPECT_EQ(test.expected_response, d.data_received())
+        << " Request = \"" << test.request << "\"";
   }
 }
 
@@ -12395,7 +12386,7 @@ class ZeroRTTResponse : public test_server::BasicHttpResponse {
   ZeroRTTResponse(const ZeroRTTResponse&) = delete;
   ZeroRTTResponse& operator=(const ZeroRTTResponse&) = delete;
 
-  ~ZeroRTTResponse() override {}
+  ~ZeroRTTResponse() override = default;
 
   void SendResponse(
       base::WeakPtr<test_server::HttpResponseDelegate> delegate) override {

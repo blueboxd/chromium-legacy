@@ -296,9 +296,9 @@
       name: "BlinkRuntimeCallStats",
     },
     {
-      // "blocking" attribute on scripts and link resources
+      // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#blocking-attributes
       name: "BlockingAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "BlockingFocusWithoutUserActivation",
@@ -361,6 +361,10 @@
     },
     {
       name: "CaptureTimeInCsrc",
+      status: "stable",
+    },
+    {
+      name: "checkVisibility",
       status: "stable",
     },
     {
@@ -536,9 +540,12 @@
       status:  "experimental",
     },
     {
+      // Flag for supporting size and inline-size container-types along with the
+      // @container rules for size queries. Also implies support for container
+      // relative units and inline-size containment.
       // https://drafts.csswg.org/css-contain-3/#container-queries
       name: "CSSContainerQueries",
-      status: "experimental"
+      status: "stable"
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-lengths
@@ -592,12 +599,6 @@
       status: "test",
     },
     {
-      // @font-face descriptor size-adjust.
-      // https://drafts.csswg.org/css-fonts-5/#descdef-font-face-size-adjust
-      name: "CSSFontFaceSizeAdjust",
-      status: "stable",
-    },
-    {
       name: "CSSFontFamilyMath",
       status: "experimental",
       implied_by: ["MathMLCore"],
@@ -605,6 +606,11 @@
     {
       name: "CSSFontSizeAdjust",
       status: "test",
+    },
+    {
+      name: "CSSGridTemplatePropertyInterpolation",
+      depends_on: ["LayoutNGGridFragmentation"],
+      status: "experimental",
     },
     {
       // This needs to be kept as a runtime flag as long as we need to forcibly
@@ -685,6 +691,10 @@
       status: "experimental",
     },
     {
+      name: "CSSOverflowForReplacedElements",
+      status: "test",
+    },
+    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
     },
@@ -709,12 +719,7 @@
     },
     {
       name: "CSSPseudoHas",
-      status: "experimental",
-    },
-    {
-      name: "CSSPseudoHasInSnapshotProfile",
-      status: "experimental",
-      implied_by: ["CSSPseudoHas"],
+      status: "stable",
     },
     {
       // When an audio, video, or similar resource is "playing"
@@ -762,11 +767,10 @@
       name: "CSSSpellingGrammarErrors",
       status: "test",
     },
-    // Make system color keywords compute to themselves.
-    // https://github.com/w3c/csswg-drafts/issues/3847
     {
-      name: "CSSSystemColorComputeToSelf",
-      status: "experimental",
+      // https://drafts.csswg.org/css-contain-3/#style-container
+      name: "CSSStyleQueries",
+      status: "test"
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
@@ -843,6 +847,10 @@
       origin_trial_feature_name: "DeviceAttributes",
       origin_trial_os: ["chromeos"],
       origin_trial_allows_third_party: true,
+      status: "experimental",
+    },
+    {
+      name: "DeviceOrientationRequestPermission",
       status: "experimental",
     },
     {
@@ -965,11 +973,6 @@
       status: "stable",
     },
     {
-      // Making MouseEvent#layerX, layerY interoperable
-      name: "EventLayerInterop",
-      status: "stable"
-    },
-    {
       // Non-standard API Event.path. Should be replaced by Event.composedPath.
       // TODO(1277431): This flag should be eventually disabled.
       name: "EventPath",
@@ -1047,6 +1050,10 @@
       status: "test",
     },
     {
+      name: "FedCmIframeSupport",
+      status: "test",
+    },
+    {
       name: "FencedFrames",
       // This helps enable and expose the <fencedframe> element, but note that
       // blink::features::kFencedFrames must be enabled as well, similar to
@@ -1098,7 +1105,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "test",
+      status: "stable",
     },
     {
       name: "Fledge",
@@ -1153,6 +1160,10 @@
     {
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS_Ash": "stable", "ChromeOS_Lacros": "stable"},
+    },
+    {
+      name: "FormRelAttribute",
+      status: "stable",
     },
     {
       name: "FractionalScrollOffsets",
@@ -1250,6 +1261,10 @@
       status:"experimental",
     },
     {
+      name: "IdentityInCanMakePaymentEventFeature",
+      status: "stable",
+    },
+    {
       name: "IdleDetection",
       status: "stable",
     },
@@ -1279,10 +1294,6 @@
     {
       name: "InteractionId",
       status: "stable",
-    },
-    {
-      name: "isVisible",
-      status: "experimental",
     },
     {
       name: "KeyboardAccessibleTooltip",
@@ -1326,7 +1337,8 @@
     {
       // crbug.com/989916
       name: "LayoutNGForeignObject",
-      status: "test",
+      depends_on: ["LayoutNG"],
+      status: "stable",
     },
     {
       // Block fragmentation support in the grid layout algorithm.
@@ -1352,6 +1364,11 @@
     {
       name: "LayoutNGView",
       implied_by: ["LayoutNGPrinting"],
+    },
+    {
+      // crbug.com/1335309
+      name: "LayoutNGVTTCue",
+      depends_on: ["LayoutNG"],
     },
     {
       name: "LazyFrameLoading",
@@ -1537,10 +1554,6 @@
       name: "MobileLayoutTheme",
     },
     {
-      name: "ModuleServiceWorker",
-      status: "stable",
-    },
-    {
       name: "MojoJS",
       status: "test",
     },
@@ -1685,6 +1698,13 @@
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
     {
+      name: "OriginTrialsSampleAPIExpiryGracePeriodThirdParty",
+      origin_trial_feature_name: "FrobulateExpiryGracePeriodThirdParty",
+      origin_trial_allows_third_party: true,
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
       name: "OriginTrialsSampleAPIImplied",
       origin_trial_feature_name: "FrobulateImplied",
       implied_by: ["OriginTrialsSampleAPI", "OriginTrialsSampleAPIInvalidOS"],
@@ -1701,6 +1721,12 @@
     {
       name: "OriginTrialsSampleAPINavigation",
       origin_trial_feature_name: "FrobulateNavigation",
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIPersistentFeature",
+      origin_trial_feature_name: "FrobulatePersistent",
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
@@ -1800,7 +1826,9 @@
       status: "stable",
     },
     {
-      name: "PendingBeaconAPI"
+      name: "PendingBeaconAPI",
+      origin_trial_feature_name: "PendingBeaconAPI",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "PercentBasedScrolling",
@@ -1834,10 +1862,9 @@
       name: "PictureInPicture",
       settable_from_internals: true,
     },
-    // Picture-in-Picture API is disabled by default on Android.
     {
       name: "PictureInPictureAPI",
-      status: {"Android": "", "default": "stable"},
+      status: "stable"
     },
     {
       name: "PictureInPictureV2",
@@ -1945,12 +1972,19 @@
       status: "experimental",
     },
     {
+      name: "PrivateNetworkAccessPermissionPrompt",
+      status: "test",
+    },
+    {
       name: "PushMessaging",
       status: "stable",
     },
     {
       name: "PushMessagingSubscriptionChange",
       status: "experimental",
+    },
+    {
+      name: "QuickIntensiveWakeUpThrottlingAfterLoading",
     },
     {
       name: "QuotaChange",
@@ -1974,6 +2008,10 @@
     {
       name: "RemoveMobileViewportDoubleTap",
       status: "stable"
+    },
+    {
+      name: "RenderBlockingStatus",
+      status: "experimental"
     },
     {
       // The renderpriority attribute feature.
@@ -2087,6 +2125,11 @@
       name: "ScrollCustomization",
     },
     {
+      name: "ScrollEndEvents",
+      settable_from_internals: true,
+      status: "experimental",
+    },
+    {
       name: "ScrollSnapAfterLayout",
       status: "stable",
     },
@@ -2100,9 +2143,6 @@
     {
       name: "ScrollTopLeftInterop",
       status: "stable",
-    },
-    {
-      name: "ScrollUnification",
     },
     {
       name: "SecureContextFixForSharedWorkers",
@@ -2158,10 +2198,6 @@
     },
     {
       name: "ServiceWorkerClientLifecycleState",
-      status: "experimental",
-    },
-    {
-      name: "ServiceWorkerFetchEventWorkerTiming",
       status: "experimental",
     },
     {
@@ -2268,8 +2304,6 @@
     },
     {
       name: "SubresourceWebBundles",
-      origin_trial_feature_name: "SubresourceWebBundles",
-      origin_trial_allows_third_party: true,
       status: "experimental"
     },
     {
@@ -2280,6 +2314,15 @@
     {
       name: "SynthesizedKeyboardEventsForAccessibilityActions",
       status: "experimental",
+    },
+    {
+      // When a Web application calls getDisplayMedia() and asks for audio,
+      // allow a hint to be provided as to whether the Web application is
+      // interested in system-audio being among the options offered to the user.
+      //
+      // https://github.com/w3c/mediacapture-screen-share/pull/222/files
+      name: "SystemAudioConstraint",
+      status: "stable",
     },
     {
       name: "SystemWakeLock",
@@ -2302,6 +2345,7 @@
     {
       // crbug.com/1008951
       name: "TextDecoratingBox",
+      status: "stable",
     },
     {
       name: "TextDetector",
@@ -2454,6 +2498,9 @@
       name: "V8IdleTasks",
     },
     {
+      name: "VariableCOLRV1",
+    },
+    {
       // Whether a video element should automatically play fullscreen unless
       // 'playsinline' is set.
       name: "VideoAutoFullscreen",
@@ -2528,10 +2575,6 @@
       status: "experimental",
     },
     {
-      name: "WebAppHandleLinks",
-      status: "experimental",
-    },
-    {
       name: "WebAppLaunchHandler",
       origin_trial_feature_name: "Launch Handler",
       status: "experimental",
@@ -2575,7 +2618,7 @@
       name: "WebAppWindowControlsOverlay",
       origin_trial_feature_name: "WebAppWindowControlsOverlay",
       origin_trial_os: ["win", "mac", "linux", "chromeos"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebAssemblyCSP",
@@ -2640,6 +2683,10 @@
       origin_trial_feature_name: "WebCodecs"
     },
     {
+      name: "WebCodecsDequeueEvent",
+      status: "experimental",
+    },
+    {
       name: "WebGLColorManagement",
       status: "stable",
     },
@@ -2665,6 +2712,11 @@
       origin_trial_feature_name: "WebGPU",
     },
     {
+      // WebGPU developer features are deliberately not enabled by experimental
+      // web platform features.
+      name: "WebGPUDeveloperFeatures",
+    },
+    {
       // Requires both WebGPU and --enable-experimental-web-platform-features
       name: "WebGPUImportTexture",
       status: "experimental",
@@ -2676,6 +2728,11 @@
     {
       name: "WebHIDExclusionFiltersOption",
       status: "stable",
+    },
+    {
+      // It is only enabled in extension environment for now.
+      name: "WebHIDOnServiceWorkers",
+      depends_on: ["WebHID"],
     },
     {
       name: "WebNFC",
@@ -2797,6 +2854,10 @@
       depends_on: ["WebXRARModule"],
       status: "stable",
     },
+    {
+      name: "WGIGamepadTriggerRumble",
+      status: "test",
+    },
     // New behavior for window.open's interpretation of the windowFeatures parameter.
     {
       name: "WindowOpenNewPopupBehavior",
@@ -2812,6 +2873,7 @@
     // with window-placement permission.
     {
       name: "WindowPlacementEnhancedScreenLabels",
+      status: "experimental",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

@@ -359,11 +359,24 @@ enum IOTaskState {
 enum IOTaskType {
   copy,
   delete,
+  empty_trash,
   extract,
   move,
+  restore,
   trash,
   zip
 };
+
+enum RecentDateBucket {
+  today,
+  yesterday,
+  earlier_this_week,
+  earlier_this_month,
+  earlier_this_year,
+  older
+};
+
+enum VmType { termina, plugin_vm, borealis, bruschetta, arcvm };
 
 // These three fields together uniquely identify a task.
 dictionary FileTaskDescriptor {
@@ -409,6 +422,9 @@ dictionary EntryProperties {
 
   // Timestamp of entry update time by me, in milliseconds past the epoch.
   double? modificationByMeTime;
+
+  // Date bucket calculated by |modificationTime| or |modificationByMeTime|.
+  RecentDateBucket? recentDateBucket;
 
   // URL to the Drive thumbnail image for this file.
   DOMString? thumbnailUrl;
@@ -605,6 +621,9 @@ dictionary VolumeMetadata {
 
   // Flag that specifies whether the volume is hidden from the user.
   boolean hidden;
+
+  // Type of the VM which owns this volume.
+  VmType? vmType;
 };
 
 // Payload data for mount event.
@@ -944,6 +963,9 @@ dictionary IOTaskParams {
 
   // Password used for unpacking encrypted archives.
   DOMString? password;
+
+  // List of paths to restore trashed files to.
+  DOMString[]? restorePaths;
 };
 
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
@@ -982,6 +1004,17 @@ dictionary ProgressStatus {
 
   // The name of the last error that happened.
   DOMString errorName;
+
+  // The files affected by the IOTask. Currently only returned for TrashIOTask.
+  [instanceOf=Entry] object[]? outputs;
+};
+
+dictionary DlpMetadata {
+  // The source URL of the file, if it's been downloaded.
+  DOMString sourceUrl;
+
+  // True if there is any DLP policy on the file, false otherwise.
+  boolean isDlpRestricted;
 };
 
 // A Guest OS that supports guest->host file sharing. This definition should
@@ -992,6 +1025,9 @@ dictionary MountableGuest {
 
   // The localised display name of this guest as e.g. shown in the sidebar.
   DOMString displayName;
+
+  // The type of the VM backing this guest.
+  VmType vmType;
 };
 
 // Callback that does not take arguments.
@@ -1043,9 +1079,10 @@ callback GetVolumeMetadataListCallback =
 callback GetDisallowedTransfersCallback =
     void([instanceOf=Entry] object[] disallowedEntries);
 
-// |restrictedFiles| A list of files with any Data Leak Prevention restriction.
-callback GetFilesRestrictedByDlpCallback =
-    void([instanceOf=Entry] object[] restrictedFiles);
+// |dlpMetadata| A list of DlpMetadata containing DLP information about
+// the entries.
+callback GetDlpMetadataCallback =
+    void(DlpMetadata[] dlpMetadata);
 
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
@@ -1328,13 +1365,14 @@ interface Functions {
       [instanceOf=DirectoryEntry] object destinationEntry,
       GetDisallowedTransfersCallback callback);
 
-  // Returns the list of files that have any Data Leak Prevention restriction rule set.
+  // Returns the list of DlpMetadata containing DLP information
+  // about the entries.
   // |entries| List of the source entries to be checked.
   // |callback| Result callback.
   [nocompile]
-  static void getFilesRestrictedByDlp(
+  static void getDlpMetadata(
       [instanceOf=Entry] object[] entries,
-      GetFilesRestrictedByDlpCallback callback);
+      GetDlpMetadataCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1686,6 +1724,9 @@ interface Functions {
 
   // Tells DriveFS to update its cached pin states of hosted files (once).
   static void pollDriveHostedFilePinStates();
+
+  // Opens the dialog to manage the currently syncing folders.
+  static void openManageSyncSettings();
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.

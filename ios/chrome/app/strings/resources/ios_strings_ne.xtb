@@ -100,7 +100,6 @@
 <translation id="1687475363370981210">सबै पढिसकिएको भनी चिन्ह लगाउनुहोस्</translation>
 <translation id="1689333818294560261">उपनाम</translation>
 <translation id="1690731385917361335">कुनै वस्तुहरू छैन</translation>
-<translation id="1692118695553449118">सिंक खुला छ</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> चयन गरियो</translation>
 <translation id="1740468249224277719">स्थापना गर्न डबल ट्याप गर्नुहोस्।</translation>
 <translation id="1752547299766512813">पासवर्डहरू सेभ गर्नुहोस्</translation>
@@ -174,7 +173,6 @@
 <translation id="2469960372084740698">Safe Browsing अफ गर्ने हो?</translation>
 <translation id="2473876017985765807">तपाईंले <ph name="WEBSITE" /> को पासवर्ड सेभ गरिसक्नुभएको छ</translation>
 <translation id="2476359652512522418">चयन गरिएको छैन</translation>
-<translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
 <translation id="2500374554657206846">पासवर्ड सुरक्षित गर्ने विकल्पहरू</translation>
 <translation id="2523363575747517183">यो वेबसाइटले बारम्बार अर्को एप खोल्ने प्रयास गर्दैछ।</translation>
 <translation id="2529021024822217800">सबै खोल्नुहोस्</translation>
@@ -326,6 +324,7 @@
 <translation id="369349502275246497">पासवर्ड सेभ गर्ने वा नगर्ने भनी सोधियोस्</translation>
 <translation id="3709582977625132201">'नपढिएको' सामग्रीका रूपमा चिन्ह लगाउनुहोस्</translation>
 <translation id="371230970611282515">खतरनाक घटनाहरू घट्नुअघि नै तिनको पूर्वानुमान गर्छ र तपाईंलाई सोबारे चेतावनी दिन्छ।</translation>
+<translation id="37207012422556617">ट्रेन्डिङमा रहेका खोज</translation>
 <translation id="3740397331642243698">प्रविष्टि गरिएका URL हरू Google Chrome को इन्कोग्निटो मोडमा खोलिन्छ।</translation>
 <translation id="3762232513783804601">तपाईंको iPad का लागि बनाइएको</translation>
 <translation id="3771033907050503522">इन्कग्निटो ट्याबहरू</translation>
@@ -489,7 +488,6 @@
 <translation id="509789154667432072">बुकमार्क हाल्नुहोस्</translation>
 <translation id="5118713593561876160">रूचिहरू</translation>
 <translation id="5118764316110575523">निष्क्रिय छ</translation>
-<translation id="5127805178023152808">सिंक अफ छ</translation>
 <translation id="5132942445612118989">सबै यन्त्रहरूमा आफ्ना पासवर्ड, इतिहास र थप कुरा सिंक गर्नुहोस्</translation>
 <translation id="5140288047769711648">Chrome ले तपाईंका लागि यो पासवर्ड याद राख्ने छ। तपाईंले आफ्नो पासवर्ड सम्झिराख्नु पर्दैन।</translation>
 <translation id="5150492518600715772">आफ्ना यन्त्रमा पठाउनुहोस्</translation>
@@ -533,6 +531,7 @@
 ह्यान्डअफलाई सेटिङहरूको सामान्य सेक्सनमा सक्रिय गर्नुपर्छ र तपाईंको यन्त्रहरूले समान iCloud खाता प्रयोग गर्नुपर्छ।</translation>
 <translation id="5551897871312988470">अनुवाद गर्ने प्रस्ताव गर्नुहोस्</translation>
 <translation id="5556459405103347317">पुन: लोड गर्नुहोस्</translation>
+<translation id="556042886152191864">बटन</translation>
 <translation id="5580834567471114021">पछि पढ्न सेभ गरिएका वेबपेजको सूचीमा हाल्ने हो?</translation>
 <translation id="560322036295180549">तपाईंको सङ्गठनले यो विकल्प अफ गरेको छ</translation>
 <translation id="5614553682702429503">पासवर्ड सेभ गर्नुहोस्</translation>
@@ -600,7 +599,6 @@
 <translation id="60829778314739003">स्वीकार गर्नुहोस् र जारी राख्नुहोस्</translation>
 <translation id="6084848228346514841">ट्याबहरू चयन गर्नुहोस्</translation>
 <translation id="6103540626693881831">डिभाइसमै चल्ने इन्क्रिप्सन</translation>
-<translation id="6108923351542677676">सेटअप प्रगतिमा छ...</translation>
 <translation id="6119050551270742952">हालको वेबपृष्ठ इन्कोग्निटो मोडमा छ</translation>
 <translation id="6122191549521593678">अनलाइन</translation>
 <translation id="6127379762771434464">वस्तुलाई हटाइयो</translation>
@@ -776,7 +774,6 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> वटा नपढिएका लेखहरू।</translation>
 <translation id="7412027924265291969">जारी राख्नुहोस्</translation>
-<translation id="7419565702166471774">सधैँ सुरक्षित कनेक्सन प्रयोग गरियोस्</translation>
 <translation id="7425346204213733349">तपाईँका पुस्तक चिन्ह, इतिहास, पासवर्ड र अन्य सेटिङहरूका परिवर्तनहरू अब उप्रान्त तपाईँको Google खातामा सिंक हुने छैनन्। तैपनि तपाईँको विद्यमान डेटा तपाईँको Google खातामा भण्डारण गरिएको अवस्थामा रहिरहनेछ।</translation>
 <translation id="7431991332293347422">खोज र थप कुराहरू वैयक्तीकृत गर्ने प्रयोजनका लागि तपाईंको ब्राउजिङ इतिहासको प्रयोग गरिने तरिका नियन्त्रण गर्नुहोस्</translation>
 <translation id="7435356471928173109">तपाईंका एड्मिनले अफ गर्नुभएको</translation>
@@ -816,6 +813,7 @@
 <translation id="7781069478569868053">नयाँ ट्याब पृष्ठ</translation>
 <translation id="7781829728241885113">हिजो</translation>
 <translation id="778855399387580014">Chrome को नयाँ ट्याबमा खोज सुरु गर्नुहोस्।</translation>
+<translation id="7790892308048519147">सुरक्षित कनेक्सन प्रयोग गर्ने प्रयास गरियोस्</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="7807060072011926525">Google ले प्रदान गरेको</translation>
 <translation id="7839985698273989086">अफलाइन पृष्ठ</translation>
@@ -913,7 +911,6 @@
 <translation id="8591976964826315682">इन्कोग्निटो मोडमा तेस्रो पक्षीय कुकीलाई रोक लगाइयोस्</translation>
 <translation id="8605219856220328675">ट्याब बन्द गर्नुहोस्।</translation>
 <translation id="8620640915598389714">सम्पादन गर्नुहोस्</translation>
-<translation id="8620785403235741379">विकल्प चयन गर्नुहोस्</translation>
 <translation id="8626393685701737946">तपाईं "सेटिङ &gt; सामग्रीसम्बन्धी सेटिङ" मा गई डिफल्ट साइट भ्यू बदलेर डेस्कटप बनाउन सक्नुहुन्छ</translation>
 <translation id="863090005774946393">तपाईंको सङ्गठनले तपाईंको ब्राउजर व्यवस्थापन गर्छ। केही सुविधाहरू अफ गरिएका हुन सक्छन्।</translation>
 <translation id="8636825310635137004">आफ्ना अन्य यन्त्रहरूबाट आफ्ना ट्याबहरू प्राप्त गर्न सिंकलाई अन गर्नुहोस्।</translation>

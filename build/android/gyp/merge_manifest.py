@@ -17,18 +17,6 @@ from util import build_utils
 from util import manifest_utils
 
 _MANIFEST_MERGER_MAIN_CLASS = 'com.android.manifmerger.Merger'
-_MANIFEST_MERGER_JARS = [
-    os.path.join('build-system', 'manifest-merger.jar'),
-    os.path.join('common', 'common.jar'),
-    os.path.join('sdk-common', 'sdk-common.jar'),
-    os.path.join('sdklib', 'sdklib.jar'),
-    os.path.join('external', 'com', 'google', 'guava', 'guava', '30.1-jre',
-                 'guava-30.1-jre.jar'),
-    os.path.join('external', 'kotlin-plugin-ij', 'Kotlin', 'kotlinc', 'lib',
-                 'kotlin-stdlib.jar'),
-    os.path.join('external', 'com', 'google', 'code', 'gson', 'gson', '2.8.6',
-                 'gson-2.8.6.jar'),
-]
 
 
 @contextlib.contextmanager
@@ -45,7 +33,7 @@ def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
   manifest_utils.AssertPackage(manifest, manifest_package)
   if manifest_package:
     manifest.set('package', manifest_package)
-  tmp_prefix = os.path.basename(manifest_path)
+  tmp_prefix = manifest_path.replace(os.path.sep, '-')
   with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as patched_manifest:
     manifest_utils.SaveManifest(doc, patched_manifest.name)
     yield patched_manifest.name, manifest_utils.GetPackage(manifest)
@@ -61,27 +49,19 @@ def _SetTargetApi(manifest_path, target_sdk_version):
   """
   doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
   manifest_utils.SetTargetApiIfUnset(manifest, target_sdk_version)
-  tmp_prefix = os.path.basename(manifest_path)
+  tmp_prefix = manifest_path.replace(os.path.sep, '-')
   with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as patched_manifest:
     manifest_utils.SaveManifest(doc, patched_manifest.name)
     yield patched_manifest.name
-
-
-def _BuildManifestMergerClasspath(android_sdk_cmdline_tools):
-  return ':'.join([
-      os.path.join(android_sdk_cmdline_tools, 'lib', jar)
-      for jar in _MANIFEST_MERGER_JARS
-  ])
 
 
 def main(argv):
   argv = build_utils.ExpandFileArgs(argv)
   parser = argparse.ArgumentParser(description=__doc__)
   build_utils.AddDepfileOption(parser)
-  parser.add_argument(
-      '--android-sdk-cmdline-tools',
-      help='Path to SDK\'s cmdline-tools folder.',
-      required=True)
+  parser.add_argument('--manifest-merger-jar',
+                      help='Path to SDK\'s manifest merger jar.',
+                      required=True)
   parser.add_argument('--root-manifest',
                       help='Root manifest which to merge into',
                       required=True)
@@ -106,12 +86,10 @@ def main(argv):
                       help='Treat all warnings as errors.')
   args = parser.parse_args(argv)
 
-  classpath = _BuildManifestMergerClasspath(args.android_sdk_cmdline_tools)
-
   with build_utils.AtomicOutput(args.output) as output:
     cmd = build_utils.JavaCmd(args.warnings_as_errors) + [
         '-cp',
-        classpath,
+        args.manifest_merger_jar,
         _MANIFEST_MERGER_MAIN_CLASS,
         '--out',
         output.name,
@@ -162,8 +140,7 @@ def main(argv):
     manifest_utils.AssertPackage(manifest, package)
 
   if args.depfile:
-    inputs = extras + classpath.split(':')
-    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs)
+    build_utils.WriteDepfile(args.depfile, args.output, inputs=extras)
 
 
 if __name__ == '__main__':

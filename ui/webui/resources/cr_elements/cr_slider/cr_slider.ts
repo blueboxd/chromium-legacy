@@ -194,7 +194,7 @@ export class CrSliderElement extends CrSliderElementBase {
   min: number;
   noKeybindings: boolean;
   snaps: boolean;
-  ticks: Array<SliderTick>|Array<number>;
+  ticks: SliderTick[]|number[];
   value: number;
 
   private disabled_: boolean;
@@ -461,6 +461,8 @@ export class CrSliderElement extends CrSliderElementBase {
     }
   }
 
+  // Overridden from PaperRippleBehavior
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
   override _createRipple() {
     this._rippleContainer = this.$.knob;
     const ripple = super._createRipple();

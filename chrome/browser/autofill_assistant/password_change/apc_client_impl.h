@@ -13,7 +13,8 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_side_panel_coordinator.h"
-#include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
+#include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -35,22 +36,32 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   ApcClientImpl& operator=(const ApcClientImpl&) = delete;
 
   // ApcClient:
-  bool Start(const GURL& url,
+  void Start(const GURL& url,
              const std::string& username,
-             bool skip_login) override;
-  void Stop() override;
+             bool skip_login,
+             ResultCallback callback) override;
+  void Stop(bool success) override;
   bool IsRunning() const override;
 
  protected:
-  // Creates an onboarding coordinator. Protected to allow for overrides
-  // by test classes.
+  // The following protected methods are factory functions that may be
+  // overridden in tests.
+
+  // Creates an onboarding coordinator.
   virtual std::unique_ptr<ApcOnboardingCoordinator>
   CreateOnboardingCoordinator();
 
-  // Creates an external script controller. Protected to allow for overrides
-  // by test classes.
-  virtual std::unique_ptr<autofill_assistant::ExternalScriptController>
-  CreateExternalScriptController();
+  // Creates a side panel coordinator.
+  virtual std::unique_ptr<AssistantSidePanelCoordinator> CreateSidePanel();
+
+  // Creates an external script controller.
+  virtual std::unique_ptr<autofill_assistant::HeadlessScriptController>
+  CreateHeadlessScriptController();
+
+  // Gets the RunTimeManager used to disable dialogs and prompts, such as
+  // password manager, translation dialogs and permissions. Protected to allow
+  // for overrides by test classes.
+  virtual autofill_assistant::RuntimeManager* GetRuntimeManager();
 
   explicit ApcClientImpl(content::WebContents* web_contents);
 
@@ -63,7 +74,7 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
 
   // Registers when a run is complete. Used in callbacks.
   void OnRunComplete(
-      autofill_assistant::ExternalScriptController::ScriptResult result);
+      autofill_assistant::HeadlessScriptController::ScriptResult result);
 
   // AssistantSidePanelCoordinator::Observer:
   void OnHidden() override;
@@ -75,7 +86,7 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   // Controls a script run triggered by the headless API. This class is
   // responsible for handling the forwarding of action to
   // `apc_external_action_delegate_` and managing the run lifetime.
-  std::unique_ptr<autofill_assistant::ExternalScriptController>
+  std::unique_ptr<autofill_assistant::HeadlessScriptController>
       external_script_controller_;
 
   // The username for which `Start()` was triggered.
@@ -91,6 +102,9 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   // The state of the `ApcClient` to avoid that a run is started while
   // another is already ongoing in the tab.
   bool is_running_ = false;
+
+  // The callback that signals the end of the run.
+  ResultCallback result_callback_;
 
   // Orchestrates prompting the user for consent if it has not been given
   // previously.

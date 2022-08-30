@@ -28,7 +28,7 @@ class BrokenAlternativeServicesTest
       public ::testing::Test {
  public:
   BrokenAlternativeServicesTest()
-      : test_task_runner_(new base::TestMockTimeTaskRunner()),
+      : test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
         test_task_runner_context_(test_task_runner_),
         broken_services_clock_(test_task_runner_->GetMockTickClock()),
         broken_services_(50, this, broken_services_clock_) {
@@ -42,9 +42,9 @@ class BrokenAlternativeServicesTest
   void OnExpireBrokenAlternativeService(
       const AlternativeService& expired_alternative_service,
       const NetworkIsolationKey& network_isolation_key) override {
-    expired_alt_svcs_.push_back(BrokenAlternativeService(
-        expired_alternative_service, network_isolation_key,
-        true /* use_network_isolation_key */));
+    expired_alt_svcs_.emplace_back(expired_alternative_service,
+                                   network_isolation_key,
+                                   true /* use_network_isolation_key */);
   }
 
   void TestExponentialBackoff(base::TimeDelta initial_delay,

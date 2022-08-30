@@ -4,6 +4,7 @@
 
 #include "fuchsia_web/runners/cast/cast_runner.h"
 
+#include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fit/function.h>
@@ -27,7 +28,6 @@
 #include "base/values.h"
 #include "components/cast/common/constants.h"
 #include "components/fuchsia_component_support/config_reader.h"
-#include "fuchsia/base/agent_manager.h"
 #include "fuchsia_web/runners/cast/cast_streaming.h"
 #include "fuchsia_web/runners/cast/pending_cast_component.h"
 #include "fuchsia_web/runners/common/web_content_runner.h"
@@ -50,6 +50,7 @@ static constexpr const char* kServices[] = {
     // "fuchsia.camera3.DeviceWatcher" is redirected to the agent.
     "fuchsia.device.NameProvider",
     "fuchsia.fonts.Provider",
+    "fuchsia.hwinfo.Product",
     "fuchsia.input.virtualkeyboard.ControllerCreator",
     "fuchsia.intl.PropertyProvider",
     // "fuchsia.legacymetrics.MetricsRecorder" is redirected to the agent.
@@ -258,62 +259,47 @@ class FrameHostComponent final : public fuchsia::sys::ComponentController {
 
 // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
 // used to route chromium.cast.DataReset capabilities cleanly.
-class DataResetComponent final : public fuchsia::sys::ComponentController,
-                                 public chromium::cast::DataReset {
+class DataResetComponent final : public fuchsia::sys::ComponentController {
  public:
   // Creates a DataResetComponent with lifetime managed by |controller_request|.
-  static void Start(base::OnceCallback<bool()> delete_persistent_data,
+  static void Start(chromium::cast::DataReset* data_reset_impl,
                     std::unique_ptr<base::StartupContext> startup_context,
                     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                         controller_request) {
-    new DataResetComponent(std::move(delete_persistent_data),
-                           std::move(startup_context),
+    new DataResetComponent(data_reset_impl, std::move(startup_context),
                            std::move(controller_request));
   }
 
  private:
-  DataResetComponent(base::OnceCallback<bool()> delete_persistent_data,
+  DataResetComponent(chromium::cast::DataReset* data_reset_impl,
                      std::unique_ptr<base::StartupContext> startup_context,
                      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                          controller_request)
-      : delete_persistent_data_(std::move(delete_persistent_data)),
-        startup_context_(std::move(startup_context)),
-        data_reset_handler_binding_(startup_context_->outgoing(), this) {
-    DCHECK(delete_persistent_data_);
+      : startup_context_(std::move(startup_context)),
+        data_reset_handler_binding_(startup_context_->outgoing(),
+                                    data_reset_impl) {
     startup_context_->ServeOutgoingDirectory();
-    binding_.Bind(std::move(controller_request));
-    binding_.set_error_handler([this](zx_status_t) { Kill(); });
+    controller_binding_.Bind(std::move(controller_request));
+    controller_binding_.set_error_handler([this](zx_status_t) { Kill(); });
   }
   ~DataResetComponent() override = default;
 
   // fuchsia::sys::ComponentController interface.
   void Kill() override { delete this; }
   void Detach() override {
-    binding_.Close(ZX_ERR_NOT_SUPPORTED);
+    controller_binding_.Close(ZX_ERR_NOT_SUPPORTED);
     delete this;
   }
 
-  // chromium::cast::DataReset interface.
-  void DeletePersistentData(DeletePersistentDataCallback callback) override {
-    if (!delete_persistent_data_) {
-      // Repeated requests to DeletePersistentData are not supported.
-      binding_.Close(ZX_ERR_NOT_SUPPORTED);
-      return;
-    }
-    callback(std::move(delete_persistent_data_).Run());
-  }
-
-  base::OnceCallback<bool()> delete_persistent_data_;
   std::unique_ptr<base::StartupContext> startup_context_;
   const base::ScopedServiceBinding<chromium::cast::DataReset>
       data_reset_handler_binding_;
-  fidl::Binding<fuchsia::sys::ComponentController> binding_{this};
+  fidl::Binding<fuchsia::sys::ComponentController> controller_binding_{this};
 };
 
 }  // namespace
 
-CastRunner::CastRunner(cr_fuchsia::WebInstanceHost* web_instance_host,
-                       bool is_headless)
+CastRunner::CastRunner(WebInstanceHost* web_instance_host, bool is_headless)
     : web_instance_host_(web_instance_host),
       is_headless_(is_headless),
       main_services_(std::make_unique<base::FilteredServiceDirectory>(
@@ -430,45 +416,16 @@ void CastRunner::StartComponent(
       std::move(startup_context), std::move(controller_request)));
 }
 
-bool CastRunner::DeletePersistentData() {
-  // Set data reset flag so that new components are not being started.
-  data_reset_in_progress_ = true;
-
-  // Create the staging directory.
-  base::FilePath staged_for_deletion_directory =
-      GetStagedForDeletionDirectoryPath();
-  base::File::Error file_error;
-  bool result = base::CreateDirectoryAndGetError(staged_for_deletion_directory,
-                                                 &file_error);
-  if (!result) {
-    LOG(ERROR) << "Failed to create the staging directory, error: "
-               << file_error;
-    return false;
+void CastRunner::DeletePersistentData(DeletePersistentDataCallback callback) {
+  if (data_reset_in_progress_) {
+    // Repeated requests to DeletePersistentData are not supported.
+    // It is expected that the Runner be requested to terminate shortly after
+    // data-reset is received, in any case.
+    callback(false);
+    return;
   }
 
-  // Stage everything under `/cache` for deletion.
-  const base::FilePath cache_directory(base::kPersistedCacheDirectoryPath);
-  base::FileEnumerator enumerator(
-      cache_directory, /*recursive=*/false,
-      base::FileEnumerator::FileType::FILES |
-          base::FileEnumerator::FileType::DIRECTORIES);
-  for (base::FilePath current = enumerator.Next(); !current.empty();
-       current = enumerator.Next()) {
-    // Skip the staging directory itself.
-    if (current == staged_for_deletion_directory) {
-      continue;
-    }
-
-    base::FilePath destination =
-        staged_for_deletion_directory.Append(current.BaseName());
-    result = base::Move(current, destination);
-    if (!result) {
-      LOG(ERROR) << "Failed to move " << current << " to " << destination;
-      return false;
-    }
-  }
-
-  return true;
+  callback(DeletePersistentDataInternal());
 }
 
 void CastRunner::LaunchPendingComponent(PendingCastComponent* pending_component,
@@ -796,9 +753,11 @@ void CastRunner::StartComponentInternal(
   // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
   // used to route chromium.cast.DataReset capabilities cleanly.
   if (url.spec() == kDataResetComponentName) {
-    DataResetComponent::Start(base::BindOnce(&CastRunner::DeletePersistentData,
-                                             base::Unretained(this)),
-                              std::move(startup_context),
+    // DataResetComponents are self-owned, so may outlive |this|. However,
+    // |this| is only touched when processing DataReset protocol requests.
+    // Since |this| is only deleted during component shutdown, no protocol
+    // requests will be processed after deletion.
+    DataResetComponent::Start(this, std::move(startup_context),
                               std::move(controller_request));
     return;
   }
@@ -811,6 +770,47 @@ void CastRunner::StartComponentInternal(
 static base::FilePath SentinelFilePath() {
   return base::FilePath(base::kPersistedCacheDirectoryPath)
       .Append(kSentinelFileName);
+}
+
+bool CastRunner::DeletePersistentDataInternal() {
+  // Set data reset flag so that new components are not being started.
+  data_reset_in_progress_ = true;
+
+  // Create the staging directory.
+  base::FilePath staged_for_deletion_directory =
+      GetStagedForDeletionDirectoryPath();
+  base::File::Error file_error;
+  bool result = base::CreateDirectoryAndGetError(staged_for_deletion_directory,
+                                                 &file_error);
+  if (!result) {
+    LOG(ERROR) << "Failed to create the staging directory, error: "
+               << file_error;
+    return false;
+  }
+
+  // Stage everything under `/cache` for deletion.
+  const base::FilePath cache_directory(base::kPersistedCacheDirectoryPath);
+  base::FileEnumerator enumerator(
+      cache_directory, /*recursive=*/false,
+      base::FileEnumerator::FileType::FILES |
+          base::FileEnumerator::FileType::DIRECTORIES);
+  for (base::FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    // Skip the staging directory itself.
+    if (current == staged_for_deletion_directory) {
+      continue;
+    }
+
+    base::FilePath destination =
+        staged_for_deletion_directory.Append(current.BaseName());
+    result = base::Move(current, destination);
+    if (!result) {
+      LOG(ERROR) << "Failed to move " << current << " to " << destination;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void CastRunner::CreatePersistedCacheSentinel() {

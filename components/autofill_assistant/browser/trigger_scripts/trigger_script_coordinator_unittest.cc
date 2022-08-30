@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/autofill_assistant/browser/fake_common_dependencies.h"
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
@@ -27,6 +28,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -196,9 +198,13 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
         expected_client_context.mutable_chrome()->set_chrome_version(
             version_info::GetProductNameAndVersionForUserAgent());
         expected_client_context.set_is_in_chrome_triggered(true);
+        expected_client_context.set_locale("fr-CH");
+        expected_client_context.set_country("CH");
         EXPECT_THAT(request.client_context(), Eq(expected_client_context));
       });
 
+  fake_platform_delegate_.fake_common_dependencies_.locale_.assign("fr-CH");
+  fake_platform_delegate_.fake_common_dependencies_.country_code_.assign("CH");
   coordinator_->Start(GURL(kFakeDeepLink),
                       std::make_unique<TriggerContext>(
                           /* params = */ std::make_unique<ScriptParameters>(
@@ -208,7 +214,8 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
                           /* onboarding_shown = */ true,
                           /* is_direct_action = */ true,
                           /* initial_url = */ "https://www.example.com",
-                          /* is_in_chrome_triggered = */ true),
+                          /* is_in_chrome_triggered = */ true,
+                          /* is_externally_triggered = */ false),
                       mock_callback_.Get());
 }
 
@@ -1643,6 +1650,9 @@ class TriggerScriptCoordinatorPrerenderTest
 };
 
 TEST_F(TriggerScriptCoordinatorPrerenderTest, DoNotRecordIfPrerenderingFailed) {
+  content::test::ScopedPrerenderWebContentsDelegate web_contents_delegate(
+      *web_contents());
+
   GetTriggerScriptsResponseProto response;
   response.add_trigger_scripts();
   std::string serialized_response;

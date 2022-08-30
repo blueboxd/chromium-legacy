@@ -172,8 +172,8 @@ class FlagsState {
   void GetFlagFeatureEntries(
       FlagsStorage* flags_storage,
       FlagAccess access,
-      base::Value::ListStorage& supported_entries,
-      base::Value::ListStorage& unsupported_entries,
+      base::Value::List& supported_entries,
+      base::Value::List& unsupported_entries,
       base::RepeatingCallback<bool(const FeatureEntry&)> skip_feature_entry);
 
   // Returns the value for the current platform. This is one of the values
@@ -223,6 +223,12 @@ class FlagsState {
       const std::map<std::string, bool>& feature_switches,
       const char* switch_name,
       bool feature_state,
+      base::CommandLine* command_line);
+
+  // Updates |command_line| by merging the value of the --force-variation-ids
+  // list with corresponding entries in |variation_ids|.
+  void MergeVariationIdsCommandLineSwitch(
+      const std::vector<std::string>& variation_ids,
       base::CommandLine* command_line);
 
   // Sanitizes |enabled_entries| to only contain entries that are defined in the

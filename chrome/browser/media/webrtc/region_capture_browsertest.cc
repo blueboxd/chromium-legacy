@@ -114,7 +114,7 @@ struct TabInfo {
   void SetUpMailman(const GURL& url) {
     std::string script_result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents->GetMainFrame(),
+        web_contents->GetPrimaryMainFrame(),
         base::StringPrintf("setUpMailman('%s');", url.spec().c_str()),
         &script_result));
     EXPECT_EQ(script_result, "mailman-ready");
@@ -198,7 +198,7 @@ struct TabInfo {
   bool CloneTrack() {
     std::string script_result = "error-not-modified";
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents->GetMainFrame(), "clone();", &script_result));
+        web_contents->GetPrimaryMainFrame(), "clone();", &script_result));
     DCHECK(script_result == "clone-track-success" ||
            script_result == "clone-track-failure");
     return script_result == "clone-track-success";
@@ -207,12 +207,23 @@ struct TabInfo {
   bool Deallocate(Track track) {
     std::string script_result = "error-not-modified";
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents->GetMainFrame(),
+        web_contents->GetPrimaryMainFrame(),
         base::StringPrintf("deallocate('%s');", ToString(track)),
         &script_result));
     DCHECK(script_result == "deallocate-failure" ||
            script_result == "deallocate-success");
     return script_result == "deallocate-success";
+  }
+
+  bool HideElement(const std::string& element_id) {
+    std::string script_result = "error-not-modified";
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        web_contents->GetPrimaryMainFrame(),
+        base::StringPrintf("hideElement('%s');", element_id.c_str()),
+        &script_result));
+    DCHECK(script_result == "hide-element-failure" ||
+           script_result == "hide-element-success");
+    return script_result == "hide-element-success";
   }
 
   std::string CreateNewDivElement(Frame frame, const std::string& div_id) {
@@ -416,8 +427,6 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest, CropToAllowedToUncrop) {
             "top-level-crop-success");
 }
 
-// TODO(crbug.com/1333319): Align implementation and specification.
-// This is discussed in: https://github.com/w3c/mediacapture-region/issues/60
 IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
                        CropToForUncroppingAllowedOnUncroppedTracks) {
   SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
@@ -430,6 +439,24 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
   // Instead, the test immediately calls CropTo(undefined) on a still-uncropped
   // track, attempting to stop cropping when no cropping was ever specified.
   EXPECT_EQ(tab.CropTo("undefined", Frame::kTopLevelDocument),
+            "top-level-crop-success");
+}
+
+// The Promise resolves when it's guaranteed that no additional frames will
+// be issued with an earlier crop version. That an actual frame be issued
+// at all, let alone with the new crop version, is not actually required,
+// or else these promises could languish unfulfilled indefinitely.
+IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
+                       CropToOfInvisibleElementResolvesInTimelyFashion) {
+  SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
+  TabInfo& tab = tabs_[kMainTab];
+
+  ASSERT_TRUE(tab.HideElement("div"));
+
+  const std::string crop_target =
+      tab.CropTargetFromElement(Frame::kTopLevelDocument, "div");
+  ASSERT_THAT(crop_target, IsExpectedCropTarget("0"));
+  EXPECT_EQ(tab.CropTo(crop_target, Frame::kTopLevelDocument),
             "top-level-crop-success");
 }
 

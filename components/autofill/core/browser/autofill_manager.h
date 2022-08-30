@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/version_info/channel.h"
 
@@ -167,6 +168,16 @@ class AutofillManager
                                const FormData& form,
                                const FormFieldData& field) = 0;
 
+  // Profile Autofill was triggered by assistant's |intent|. This only affects
+  // metrics logging.
+  virtual void SetProfileFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) = 0;
+
+  // Credit Card Autofill was triggered by assistant's |intent|. This only
+  // affects metrics logging.
+  virtual void SetCreditCardFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) = 0;
+
   // Invoked when changes of the forms have been detected: the forms in
   // |updated_forms| are either new or have changed, and the forms in
   // |removed_forms| have been removed from the DOM (but may be re-added to the
@@ -220,8 +231,8 @@ class AutofillManager
       translate::TranslateDriver* translate_driver) override;
   // Invoked when the language has been detected by the Translate component.
   // As this usually happens after Autofill has parsed the forms for the first
-  // time, the heuristics need to be re-run by this function in order to run
-  // use language-specific patterns.
+  // time, the heuristics need to be re-run by this function in order to use
+  // language-specific patterns.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
 

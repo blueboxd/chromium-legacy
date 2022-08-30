@@ -204,6 +204,17 @@ void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
   autofill_section_ = section;
 }
 
+bool HTMLFormControlElement::IsAutocompleteEmailUrlOrPassword() const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, values,
+                      ({"username", "new-password", "current-password", "url",
+                        "email", "impp"}));
+  const AtomicString& autocomplete =
+      FastGetAttribute(html_names::kAutocompleteAttr);
+  if (autocomplete.IsNull())
+    return false;
+  return values.Contains(autocomplete.LowerASCII());
+}
+
 const AtomicString& HTMLFormControlElement::autocapitalize() const {
   if (!FastGetAttribute(html_names::kAutocapitalizeAttr).IsEmpty())
     return HTMLElement::autocapitalize();
@@ -386,8 +397,9 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
           event.type() == event_type_names::kDOMActivate &&
           (!Form() || !IsSuccessfulSubmitButton())) {
         if (can_hide) {
-          popup.element->hidePopupInternal(
-              HidePopupFocusBehavior::kFocusPreviousElement);
+          popup.element->HidePopUpInternal(
+              HidePopupFocusBehavior::kFocusPreviousElement,
+              HidePopupForcingLevel::kHideAfterAnimations);
         } else if (can_show) {
           popup.element->InvokePopup(this);
         }

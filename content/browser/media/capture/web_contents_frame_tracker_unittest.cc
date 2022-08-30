@@ -81,7 +81,6 @@ class SimpleContext : public WebContentsFrameTracker::Context {
 class MockCaptureDevice : public WebContentsVideoCaptureDevice,
                           public base::SupportsWeakPtr<MockCaptureDevice> {
  public:
-  using WebContentsVideoCaptureDevice::AsWeakPtr;
   MOCK_METHOD2(OnTargetChanged,
                void(const absl::optional<viz::VideoCaptureTarget>&, uint32_t));
   MOCK_METHOD0(OnTargetPermanentlyLost, void());
@@ -98,6 +97,12 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
+    // The tests assume that they are running on the main thread (which is
+    // equivalent to the browser's UI thread) so that they can make calls on the
+    // tracker object synchronously.
+    ASSERT_TRUE(
+        content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
     // Views in the web context are incredibly fragile and prone to
     // non-deterministic test failures, so we use TestWebContents here.
     web_contents_ = TestWebContents::Create(browser_context(), nullptr);
@@ -106,19 +111,24 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
     // All tests should call target changed as part of initialization.
     EXPECT_CALL(*device_, OnTargetChanged(_, _)).Times(1);
 
-    tracker_ = std::make_unique<WebContentsFrameTracker>(device_->AsWeakPtr(),
-                                                         controller());
-
+    // This PostTask technically isn't necessary since we're already on the main
+    // thread which is equivalent to the browser's UI thread, but it's a bit
+    // cleaner to do so in case we want to switch to a different threading model
+    // for the tests in the future.
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&WebContentsFrameTrackerTest::SetUpOnUIThread,
-                                  base::Unretained(this)));
+                                  base::Unretained(this),
+                                  base::ThreadTaskRunnerHandle::Get()));
     RunAllTasksUntilIdle();
   }
 
-  void SetUpOnUIThread() {
+  void SetUpOnUIThread(
+      const scoped_refptr<base::SequencedTaskRunner> device_task_runner) {
     auto context = std::make_unique<SimpleContext>();
     raw_context_ = context.get();
     SetScreenSize(kSize1080p);
+    tracker_ = std::make_unique<WebContentsFrameTracker>(
+        device_task_runner, device_->AsWeakPtr(), controller());
     tracker_->SetWebContentsAndContextForTesting(web_contents_.get(),
                                                  std::move(context));
   }
@@ -147,17 +157,21 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
   }
 
   void StartTrackerOnUIThread(const gfx::Size& capture_size) {
+    // Using base::Unretained for the tracker is presumed safe due to using
+    // RunAllTasksUntilIdle in TearDown.
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&WebContentsFrameTracker::WillStartCapturingWebContents,
-                       tracker_->AsWeakPtr(), capture_size));
+                       base::Unretained(tracker_.get()), capture_size));
   }
 
   void StopTrackerOnUIThread() {
+    // Using base::Unretained for the tracker is presumed safe due to using
+    // RunAllTasksUntilIdle in TearDown.
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&WebContentsFrameTracker::DidStopCapturingWebContents,
-                       tracker_->AsWeakPtr()));
+                       base::Unretained(tracker_.get())));
   }
 
   // The controller is ignored on Android, and must be initialized on all
@@ -394,10 +408,26 @@ TEST_F(WebContentsFrameTrackerTest, SetsScaleOverride) {
   tracker()->SetCapturedContentSize(gfx::Size(1920, 1080));
   EXPECT_DOUBLE_EQ(context()->scale_override(), 2.0f);
 
-  // If a frame ends up being larger than the capture_size, we should
-  // end up using the maximum scale override of 2.0.
-  tracker()->SetCapturedContentSize(gfx::Size(2304, 1080));
-  EXPECT_DOUBLE_EQ(context()->scale_override(), 2.0f);
+  // If a frame ends up being larger than the capture_size, the scale
+  // should get adjusted downwards so that the post-scaling size matches
+  // the capture size. This assumes a current scale override of 2.0f.
+  tracker()->SetCapturedContentSize(gfx::Size(2560, 1440));
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5f);
+
+  // The scaled size should now match the capture size with a scale
+  // override of 1.5.
+  tracker()->SetCapturedContentSize(gfx::Size(1920, 1080));
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5f);
+
+  // The scaling calculation is based on fitting a scaled copy of the
+  // source rectangle within the capture region, preserving aspect ratio.
+  // If the content size changes in a way that doesn't affect the scale
+  // factor (i.e. letterboxing or pillarboxing), the scale override remains
+  // unchanged.
+  tracker()->SetCapturedContentSize(gfx::Size(1080, 1080));
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5f);
+  tracker()->SetCapturedContentSize(gfx::Size(1920, 540));
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5f);
 
   // When we stop the tracker, the web contents issues a preferred size change
   // of the "old" size--so it shouldn't change.
@@ -423,6 +453,87 @@ TEST_F(WebContentsFrameTrackerTest, SettingScaleFactorMaintainsStableCapture) {
   // scale override factor should be unaffected.
   tracker()->SetCapturedContentSize(kSize1080p);
   EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5);
+}
+
+TEST_F(WebContentsFrameTrackerTest, HighDpiIsRoundedIfBetweenBounds) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kWebContentsCaptureHiDpi);
+
+  StartTrackerOnUIThread(kSize1080p);
+  RunAllTasksUntilIdle();
+
+  // Both factors should be 1.4f, which should be between bounds and rounded
+  // up.
+  tracker()->SetCapturedContentSize(gfx::Size{1370, 771});
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5);
+}
+
+TEST_F(WebContentsFrameTrackerTest, HighDpiIsRoundedIfBetweenDifferentBounds) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kWebContentsCaptureHiDpi);
+
+  StartTrackerOnUIThread(kSize1080p);
+  RunAllTasksUntilIdle();
+
+  // Both factors should be 1.6f, which should be between bounds and rounded
+  // down.
+  tracker()->SetCapturedContentSize(gfx::Size{1200, 675});
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.5f);
+}
+
+TEST_F(WebContentsFrameTrackerTest, HighDpiIsRoundedToMinimum) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kWebContentsCaptureHiDpi);
+
+  StartTrackerOnUIThread(kSize1080p);
+  RunAllTasksUntilIdle();
+
+  // Both factors should be 1.3f, which should be between bounds and rounded
+  // down.
+  tracker()->SetCapturedContentSize(gfx::Size{1477, 831});
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.25f);
+}
+
+TEST_F(WebContentsFrameTrackerTest, HighDpiIsRoundedToMaximum) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kWebContentsCaptureHiDpi);
+
+  StartTrackerOnUIThread(kSize1080p);
+  RunAllTasksUntilIdle();
+
+  // Both factors should be well over the maximum of 2.0f.
+  tracker()->SetCapturedContentSize(gfx::Size{320, 240});
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 2.0f);
+}
+
+TEST_F(WebContentsFrameTrackerTest, HighDpiScalingIsStable) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kWebContentsCaptureHiDpi);
+
+  StartTrackerOnUIThread(kSize1080p);
+  RunAllTasksUntilIdle();
+
+  // Both factors should be 1.25f, which should be exactly a scaling factor.
+  static constexpr gfx::Size kContentSize(1536, 864);
+  tracker()->SetCapturedContentSize(kContentSize);
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.25f);
+
+  // Now that its applied, it should stay the same.
+  static const gfx::Size kScaledContentSize =
+      gfx::ScaleToRoundedSize(kContentSize, 1.25f);
+  tracker()->SetCapturedContentSize(kScaledContentSize);
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.25f);
+
+  // If it varies slightly that shouldn't result in any changes.
+  static const gfx::Size kScaledLargerContentSize =
+      gfx::ScaleToRoundedSize(kContentSize, 1.27f);
+  tracker()->SetCapturedContentSize(kScaledLargerContentSize);
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.25f);
+
+  static const gfx::Size kScaledSmallerContentSize =
+      gfx::ScaleToRoundedSize(kContentSize, 1.23f);
+  tracker()->SetCapturedContentSize(kScaledSmallerContentSize);
+  EXPECT_DOUBLE_EQ(context()->scale_override(), 1.25f);
 }
 
 }  // namespace

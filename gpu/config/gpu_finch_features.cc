@@ -146,6 +146,10 @@ const base::Feature kDefaultEnableGpuRasterization{
 const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of MSAA in skia on Ice Lake and later intel architectures.
+const base::Feature kEnableMSAAOnNewIntelGPUs{
+    "EnableMSAAOnNewIntelGPUs", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of ANGLE validation for non-WebGL contexts.
 const base::Feature kDefaultEnableANGLEValidation{
     "DefaultEnableANGLEValidation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -159,17 +163,12 @@ const base::Feature kCanvasContextLostInBackground{
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{
     "GpuProcessHighPriorityWin", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
-// Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
-const base::Feature kGpuUseDisplayThreadPriority{
-  "GpuUseDisplayThreadPriority",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
+// Disable overlay promotion for clear video quads when their MPO quad would
+// move.
+const base::Feature kDisableVideoOverlayIfMoving{
+    "DisableVideoOverlayIfMoving", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-};
 
 #if BUILDFLAG(IS_MAC)
 // Enable use of Metal for OOP rasterization.

@@ -88,28 +88,11 @@ bool ExtensionActionViewController::AnyActionHasCurrentSiteAccess(
     content::WebContents* web_contents) {
   for (const auto& action : actions) {
     if (action->GetSiteInteraction(web_contents) ==
-        extensions::SitePermissionsHelper::SiteInteraction::kActive) {
+        extensions::SitePermissionsHelper::SiteInteraction::kGranted) {
       return true;
     }
   }
   return false;
-}
-
-// static
-bool ExtensionActionViewController::AnyActionRequiresPageRefreshToRun(
-    const std::vector<ToolbarActionViewController*>& actions,
-    content::WebContents* web_contents) {
-  ExtensionActionRunner* action_runner =
-      ExtensionActionRunner::GetForWebContents(web_contents);
-
-  return std::any_of(
-      actions.begin(), actions.end(),
-      [action_runner](ToolbarActionViewController* action) {
-        auto blocked_actions =
-            action_runner->GetBlockedActions(action->GetId());
-        return blocked_actions &
-               ExtensionActionRunner::kRefreshRequiredActionsMask;
-      });
 }
 
 ExtensionActionViewController::ExtensionActionViewController(
@@ -192,11 +175,11 @@ std::u16string ExtensionActionViewController::GetAccessibleName(
     case extensions::SitePermissionsHelper::SiteInteraction::kNone:
       // No string for neither having nor wanting access.
       break;
-    case extensions::SitePermissionsHelper::SiteInteraction::kPending:
+    case extensions::SitePermissionsHelper::SiteInteraction::kWithheld:
     case extensions::SitePermissionsHelper::SiteInteraction::kActiveTab:
       site_interaction_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
       break;
-    case extensions::SitePermissionsHelper::SiteInteraction::kActive:
+    case extensions::SitePermissionsHelper::SiteInteraction::kGranted:
       site_interaction_description_id = IDS_EXTENSIONS_HAS_ACCESS_TO_SITE;
       break;
   }
@@ -226,7 +209,7 @@ bool ExtensionActionViewController::IsEnabled(
   return extension_action_->GetIsVisible(
              sessions::SessionTabHelper::IdForTab(web_contents).id()) ||
          site_interaction ==
-             extensions::SitePermissionsHelper::SiteInteraction::kPending ||
+             extensions::SitePermissionsHelper::SiteInteraction::kWithheld ||
          site_interaction ==
              extensions::SitePermissionsHelper::SiteInteraction::kActiveTab;
 }
@@ -238,7 +221,7 @@ bool ExtensionActionViewController::IsShowingPopup() const {
 bool ExtensionActionViewController::IsRequestingSiteAccess(
     content::WebContents* web_contents) const {
   return GetSiteInteraction(web_contents) ==
-         extensions::SitePermissionsHelper::SiteInteraction::kPending;
+         extensions::SitePermissionsHelper::SiteInteraction::kWithheld;
 }
 
 void ExtensionActionViewController::HidePopup() {

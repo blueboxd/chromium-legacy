@@ -681,7 +681,7 @@ void VideoResourceUpdater::AppendQuads(
       texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                            needs_blending, frame_resources_[0].id,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
-                           SK_ColorTRANSPARENT, opacity, flipped,
+                           SkColors::kTransparent, opacity, flipped,
                            nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       texture_quad->is_video_frame = true;
@@ -887,9 +887,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 << VideoPixelFormatToString(video_frame->format());
     return external_resources;
   }
-  if (external_resources.type == VideoFrameResourceType::RGB ||
-      external_resources.type == VideoFrameResourceType::RGBA ||
-      external_resources.type == VideoFrameResourceType::RGBA_PREMULTIPLIED) {
+  if ((external_resources.type == VideoFrameResourceType::RGB ||
+       external_resources.type == VideoFrameResourceType::RGBA ||
+       external_resources.type == VideoFrameResourceType::RGBA_PREMULTIPLIED) &&
+      IsRGB(video_frame->format())) {
     resource_color_space = resource_color_space.GetAsFullRangeRGB();
   }
 

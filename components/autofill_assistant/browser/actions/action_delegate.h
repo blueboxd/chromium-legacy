@@ -13,10 +13,11 @@
 #include "base/callback_helpers.h"
 #include "components/autofill_assistant/browser/js_flow_devtools_wrapper.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
-#include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/tts_button_state.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -418,6 +419,9 @@ class ActionDelegate {
   // Gets the user data.
   virtual const UserData* GetUserData() const = 0;
 
+  // Gets the user data (mutable).
+  virtual UserData* GetMutableUserData() const = 0;
+
   // Access to the user model.
   virtual UserModel* GetUserModel() const = 0;
 
@@ -495,6 +499,12 @@ class ActionDelegate {
   // because they act as a script executor.
   virtual void MaybeSetPreviousAction(
       const ProcessedActionProto& processed_action) = 0;
+
+  // Returns the Autofill Assistant intent for the current flow.
+  virtual absl::optional<std::string> GetIntent() const = 0;
+
+  // Returns the client's locale.
+  virtual const std::string GetLocale() const = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 

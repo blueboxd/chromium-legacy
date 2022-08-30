@@ -5,10 +5,11 @@
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 
 #include "base/command_line.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(ChromeOSSystemExtensionInfo, AllowlistedExtensionsSizeEqualsToOne) {
-  ASSERT_EQ(2u, chromeos::GetChromeOSSystemExtensionInfosSize());
+TEST(ChromeOSSystemExtensionInfo, CheckAllowlistedExtensionsSize) {
+  ASSERT_EQ(3u, chromeos::GetChromeOSSystemExtensionInfosSize());
 }
 
 TEST(ChromeOSSystemExtensionInfo, GoogleExtension) {
@@ -17,7 +18,8 @@ TEST(ChromeOSSystemExtensionInfo, GoogleExtension) {
 
   const auto& extension_info =
       chromeos::GetChromeOSExtensionInfoForId(google_extension_id);
-  EXPECT_EQ("HP", extension_info.manufacturer);
+  EXPECT_THAT(extension_info.manufacturers,
+              testing::UnorderedElementsAre("ASUS", "HP"));
   EXPECT_EQ("*://www.google.com/*", extension_info.pwa_origin);
 }
 
@@ -27,8 +29,20 @@ TEST(ChromeOSSystemExtensionInfo, HPExtension) {
 
   const auto extension_info =
       chromeos::GetChromeOSExtensionInfoForId(hp_extension_id);
-  EXPECT_EQ("HP", extension_info.manufacturer);
+  EXPECT_THAT(extension_info.manufacturers,
+              testing::UnorderedElementsAre("HP"));
   EXPECT_EQ("https://hpcs-appschr.hpcloud.hp.com/*", extension_info.pwa_origin);
+}
+
+TEST(ChromeOSSystemExtensionInfo, ASUSExtension) {
+  const auto& asus_extension_id = "hdnhcpcfohaeangjpkcjkgmgmjanbmeo";
+  ASSERT_TRUE(chromeos::IsChromeOSSystemExtension(asus_extension_id));
+
+  const auto extension_info =
+      chromeos::GetChromeOSExtensionInfoForId(asus_extension_id);
+  EXPECT_THAT(extension_info.manufacturers,
+              testing::UnorderedElementsAre("ASUS"));
+  EXPECT_EQ("https://dlcdnccls.asus.com/*", extension_info.pwa_origin);
 }
 
 TEST(ChromeOSSystemExtensionInfo, ManufacturerOverride) {
@@ -41,13 +55,15 @@ TEST(ChromeOSSystemExtensionInfo, ManufacturerOverride) {
   const auto google_extension_info = chromeos::GetChromeOSExtensionInfoForId(
       "gogonhoemckpdpadfnjnpgbjpbjnodgc");
   EXPECT_EQ("*://www.google.com/*", google_extension_info.pwa_origin);
-  EXPECT_EQ(kManufacturerOverride, google_extension_info.manufacturer);
+  EXPECT_THAT(google_extension_info.manufacturers,
+              testing::UnorderedElementsAre(kManufacturerOverride));
 
   const auto hp_extension_info = chromeos::GetChromeOSExtensionInfoForId(
       "alnedpmllcfpgldkagbfbjkloonjlfjb");
   EXPECT_EQ("https://hpcs-appschr.hpcloud.hp.com/*",
             hp_extension_info.pwa_origin);
-  EXPECT_EQ(kManufacturerOverride, hp_extension_info.manufacturer);
+  EXPECT_THAT(hp_extension_info.manufacturers,
+              testing::UnorderedElementsAre(kManufacturerOverride));
 }
 
 TEST(ChromeOSSystemExtensionInfo, PwaOriginOverride) {
@@ -60,10 +76,12 @@ TEST(ChromeOSSystemExtensionInfo, PwaOriginOverride) {
   const auto google_extension_info = chromeos::GetChromeOSExtensionInfoForId(
       "gogonhoemckpdpadfnjnpgbjpbjnodgc");
   EXPECT_EQ(kPwaOriginOverride, google_extension_info.pwa_origin);
-  EXPECT_EQ("HP", google_extension_info.manufacturer);
+  EXPECT_THAT(google_extension_info.manufacturers,
+              testing::UnorderedElementsAre("HP", "ASUS"));
 
   const auto hp_extension_info = chromeos::GetChromeOSExtensionInfoForId(
       "alnedpmllcfpgldkagbfbjkloonjlfjb");
   EXPECT_EQ(kPwaOriginOverride, hp_extension_info.pwa_origin);
-  EXPECT_EQ("HP", hp_extension_info.manufacturer);
+  EXPECT_THAT(hp_extension_info.manufacturers,
+              testing::UnorderedElementsAre("HP"));
 }

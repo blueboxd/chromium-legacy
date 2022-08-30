@@ -13,11 +13,12 @@ SwitchAccessTabNodeTest = class extends SwitchAccessE2ETest {
     await importModule('Navigator', '/switch_access/navigator.js');
     await importModule(
         'SwitchAccessMenuAction', '/switch_access/switch_access_constants.js');
+    await importModule('RectUtil', '/common/rect_util.js');
   }
 };
 
 TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
-  this.runWithLoadedDesktop((desktop) => {
+  this.runWithLoadedDesktop(desktop => {
     const tab = desktop.find({role: chrome.automation.RoleType.TAB});
 
     // To find the close button, Switch Access relies on it being the only
@@ -33,7 +34,7 @@ TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
 });
 
 TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
-  this.runWithLoadedDesktop((desktop) => {
+  this.runWithLoadedDesktop(desktop => {
     Navigator.byItem.moveTo_(
         desktop.find({role: chrome.automation.RoleType.TAB}));
 

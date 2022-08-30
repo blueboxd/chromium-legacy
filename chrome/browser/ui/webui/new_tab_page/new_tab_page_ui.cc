@@ -27,9 +27,9 @@
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
@@ -73,6 +73,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/color/color_provider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "url/url_util.h"
@@ -88,15 +89,6 @@ namespace {
 
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
 constexpr char kSignedOutNtpModulesSwitch[] = "signed-out-ntp-modules";
-
-const std::pair<const char*, const base::Feature&> kModuleFeatures[] = {
-#if !defined(OFFICIAL_BUILD)
-    {"dummyModulesEnabled", ntp_features::kNtpDummyModules},
-#endif
-    {"recipeTasksModuleEnabled", ntp_features::kNtpRecipeTasksModule},
-    {"chromeCartModuleEnabled", ntp_features::kNtpChromeCartModule},
-    {"photosModuleEnabled", ntp_features::kNtpPhotosModule},
-};
 
 void AddRawStringOrDefault(content::WebUIDataSource* source,
                            const char key[],
@@ -196,6 +188,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       "middleSlotPromoEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromo) &&
           profile->GetPrefs()->GetBoolean(prefs::kNtpPromoVisible));
+  source->AddBoolean(
+      "middleSlotPromoDismissalEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromoDismissal));
   source->AddBoolean(
       "modulesDragAndDropEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop));
@@ -425,11 +420,20 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                                IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT);
   }
 
-  for (const auto& nameFeature : kModuleFeatures) {
-    source->AddBoolean(nameFeature.first,
-                       base::FeatureList::IsEnabled(nameFeature.second));
-  }
-
+#if !defined(OFFICIAL_BUILD)
+  source->AddBoolean(
+      "dummyModulesEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpDummyModules));
+#endif
+  source->AddBoolean(
+      "recipeTasksModuleEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule));
+  source->AddBoolean(
+      "chromeCartModuleEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule));
+  source->AddBoolean(
+      "photosModuleEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpPhotosModule));
   source->AddString("photosModuleCustomArtWork",
                     base::GetFieldTrialParamValueByFeature(
                         ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
@@ -729,18 +733,9 @@ void NewTabPageUI::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 void NewTabPageUI::OnThemeChanged() {
   base::Value::Dict update;
-
-  const ui::ThemeProvider* theme_provider =
-      webui::GetThemeProvider(web_contents_);
-  // TODO(crbug.com/1299925): Always mock theme provider in tests so that
-  // `theme_provider` is never nullptr.
-  if (theme_provider) {
-    auto background_color =
-        theme_provider->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-    update.Set("backgroundColor", skia::SkColorToHexString(background_color));
-  } else {
-    update.Set("backgroundColor", "");
-  }
+  const ui::ColorProvider& color_provider = web_contents_->GetColorProvider();
+  auto background_color = color_provider.GetColor(kColorNewTabPageBackground);
+  update.Set("backgroundColor", skia::SkColorToHexString(background_color));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }
@@ -816,22 +811,17 @@ void NewTabPageUI::OnTilesVisibilityPrefChanged() {
 void NewTabPageUI::OnLoad() {
   base::Value::Dict update;
   update.Set("navigationStartTime", navigation_start_time_.ToJsTime());
-  bool driveModuleEnabled = NewTabPageUI::IsDriveModuleEnabled(profile_);
-  bool anyModuleEnabled = driveModuleEnabled;
-  for (const auto& nameFeature : kModuleFeatures) {
-    anyModuleEnabled |= base::FeatureList::IsEnabled(nameFeature.second);
-  }
   // Only enable modules if account credentials are available as most modules
   // won't have data to render otherwise. We can override this behavior with the
   // "--signed-out-ntp-modules" command line switch, e.g. to allow modules in
   // perf tests, which do not support sign-in.
   update.Set("modulesEnabled",
-             anyModuleEnabled &&
-                 !base::FeatureList::IsEnabled(ntp_features::kNtpModulesLoad) &&
+             base::FeatureList::IsEnabled(ntp_features::kModules) &&
                  (base::CommandLine::ForCurrentProcess()->HasSwitch(
                       kSignedOutNtpModulesSwitch) ||
                   HasCredentials(profile_)));
-  update.Set("driveModuleEnabled", driveModuleEnabled);
+  update.Set("driveModuleEnabled",
+             NewTabPageUI::IsDriveModuleEnabled(profile_));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }

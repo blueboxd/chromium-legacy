@@ -147,15 +147,23 @@ class CORE_EXPORT MatchResult {
 
   void SetIsCacheable(bool cacheable) { is_cacheable_ = cacheable; }
   bool IsCacheable() const { return is_cacheable_; }
-  void SetDependsOnContainerQueries() { depends_on_container_queries_ = true; }
-  bool DependsOnContainerQueries() const {
-    return depends_on_container_queries_;
+  void SetDependsOnSizeContainerQueries() {
+    depends_on_size_container_queries_ = true;
   }
-  void SetDependsOnViewportContainerQueries() {
-    depends_on_viewport_container_queries_ = true;
+  bool DependsOnSizeContainerQueries() const {
+    return depends_on_size_container_queries_;
   }
-  bool DependsOnViewportContainerQueries() const {
-    return depends_on_viewport_container_queries_;
+  void SetDependsOnStaticViewportUnits() {
+    depends_on_static_viewport_units_ = true;
+  }
+  void SetDependsOnDynamicViewportUnits() {
+    depends_on_dynamic_viewport_units_ = true;
+  }
+  bool DependsOnStaticViewportUnits() const {
+    return depends_on_static_viewport_units_;
+  }
+  bool DependsOnDynamicViewportUnits() const {
+    return depends_on_dynamic_viewport_units_;
   }
   void SetDependsOnRemContainerQueries() {
     depends_on_rem_container_queries_ = true;
@@ -187,8 +195,9 @@ class CORE_EXPORT MatchResult {
   MatchedPropertiesVector matched_properties_;
   HeapVector<Member<const TreeScope>, 4> tree_scopes_;
   bool is_cacheable_{true};
-  bool depends_on_container_queries_{false};
-  bool depends_on_viewport_container_queries_{false};
+  bool depends_on_size_container_queries_{false};
+  bool depends_on_static_viewport_units_{false};
+  bool depends_on_dynamic_viewport_units_{false};
   bool depends_on_rem_container_queries_{false};
   bool conditionally_affects_animations_{false};
   CascadeOrigin current_origin_{CascadeOrigin::kUserAgent};

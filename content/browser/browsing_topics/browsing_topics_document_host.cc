@@ -15,7 +15,7 @@
 namespace content {
 
 BrowsingTopicsDocumentHost::BrowsingTopicsDocumentHost(
-    RenderFrameHost* render_frame_host,
+    RenderFrameHost& render_frame_host,
     mojo::PendingReceiver<blink::mojom::BrowsingTopicsDocumentService> receiver)
     : DocumentService(render_frame_host, std::move(receiver)) {}
 
@@ -24,66 +24,35 @@ void BrowsingTopicsDocumentHost::CreateMojoService(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::BrowsingTopicsDocumentService>
         receiver) {
-  DCHECK(render_frame_host);
+  CHECK(render_frame_host);
 
   if (render_frame_host->GetLastCommittedOrigin().opaque()) {
     mojo::ReportBadMessage(
         "Unexpected BrowsingTopicsDocumentHost::CreateMojoService in an opaque "
-        "origin document.");
+        "origin document");
     return;
   }
 
-  if (render_frame_host->IsNestedWithinFencedFrame()) {
+  if (!render_frame_host->GetMainFrame()->IsInPrimaryMainFrame()) {
     mojo::ReportBadMessage(
-        "Unexpected BrowsingTopicsDocumentHost::CreateMojoService in a fenced "
-        "frame.");
+        "Unexpected BrowsingTopicsDocumentHost::CreateMojoService in a "
+        "non-primary main frame context.");
     return;
   }
-
-  if (render_frame_host->GetLifecycleState() ==
-      RenderFrameHost::LifecycleState::kPrerendering) {
-    mojo::ReportBadMessage(
-        "Unexpected BrowsingTopicsDocumentHost::CreateMojoService when the "
-        "page is being prerendered.");
-    return;
-  }
-
-  // We do not check for portals here and we check at the API entry points
-  // because whether or not a frame is in a portal is dynamic state that could
-  // change.
 
   // The object is bound to the lifetime of |render_frame_host| and the mojo
   // connection. See DocumentService for details.
-  new BrowsingTopicsDocumentHost(render_frame_host, std::move(receiver));
+  new BrowsingTopicsDocumentHost(*render_frame_host, std::move(receiver));
 }
 
 void BrowsingTopicsDocumentHost::GetBrowsingTopics(
     GetBrowsingTopicsCallback callback) {
-  // IPCs may race with navigation events, so:
-  // - Ignore non-active frames, e.g. a frame placed into bfcache, or a
-  //   frame that has been detached (this could happen as a result of
-  //   cross-process races when navigating).
-  if (!render_frame_host()->IsActive() ||
-      // Ignore non-primary frames, e.g. frames in a portal. Fenced frames and
-      // prerendered pages are also covered in this condition but they should
-      // have already been checked in `CreateMojoService()`.
-      !render_frame_host()->GetPage().IsPrimary() ||
-      // TODO(crbug.com/1244137): IsPrimary() doesn't actually detect portals
-      // yet. Remove this when it does.
-      render_frame_host()->GetOutermostMainFrame() !=
-          render_frame_host()->GetMainFrame()) {
-    std::move(callback).Run(
-        blink::mojom::GetBrowsingTopicsResult::NewErrorMessage(
-            "document.browsingTopics() is only allowed in the outermost page "
-            "and when the page is active."));
-    return;
-  }
+  std::vector<blink::mojom::EpochTopicPtr> browsing_topics =
+      GetContentClient()->browser()->GetBrowsingTopicsForJsApi(
+          render_frame_host().GetLastCommittedOrigin(),
+          render_frame_host().GetMainFrame());
 
-  std::move(callback).Run(
-      blink::mojom::GetBrowsingTopicsResult::NewBrowsingTopics(
-          GetContentClient()->browser()->GetBrowsingTopicsForJsApi(
-              render_frame_host()->GetLastCommittedOrigin(),
-              render_frame_host()->GetMainFrame())));
+  std::move(callback).Run(std::move(browsing_topics));
 }
 
 BrowsingTopicsDocumentHost::~BrowsingTopicsDocumentHost() = default;

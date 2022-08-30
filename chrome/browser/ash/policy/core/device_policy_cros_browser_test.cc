@@ -23,8 +23,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/prefs/pref_service.h"
@@ -177,9 +177,8 @@ const std::string DevicePolicyCrosTestHelper::device_policy_blob() {
 }
 
 void DevicePolicyCrosTestHelper::RefreshDevicePolicy() {
-  chromeos::FakeSessionManagerClient::Get()->set_device_policy(
-      device_policy_blob());
-  chromeos::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  ash::FakeSessionManagerClient::Get()->set_device_policy(device_policy_blob());
+  ash::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
 }
 
 void DevicePolicyCrosTestHelper::RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
@@ -227,9 +226,9 @@ DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest() {}
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() = default;
 
-chromeos::FakeSessionManagerClient*
+ash::FakeSessionManagerClient*
 DevicePolicyCrosBrowserTest::session_manager_client() {
-  return chromeos::FakeSessionManagerClient::Get();
+  return ash::FakeSessionManagerClient::Get();
 }
 
 }  // namespace policy

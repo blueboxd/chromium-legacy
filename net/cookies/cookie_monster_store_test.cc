@@ -141,8 +141,10 @@ void MockSimplePersistentCookieStore::Load(
     const NetLogWithSource& /* net_log */) {
   std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
 
-  for (auto it = cookies_.begin(); it != cookies_.end(); it++)
-    out_cookies.push_back(std::make_unique<CanonicalCookie>(it->second));
+  for (const auto& cookie_map_it : cookies_) {
+    out_cookies.push_back(
+        std::make_unique<CanonicalCookie>(cookie_map_it.second));
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -203,8 +205,7 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     int days_old) {
   base::Time current(base::Time::Now());
   base::Time past_creation(base::Time::Now() - base::Days(100));
-  scoped_refptr<MockSimplePersistentCookieStore> store(
-      new MockSimplePersistentCookieStore);
+  auto store = base::MakeRefCounted<MockSimplePersistentCookieStore>();
   int total_cookies = num_secure_cookies + num_non_secure_cookies;
   int base = 0;
   // Must expire to be persistent

@@ -6,6 +6,7 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_t
 
 import {getSizeStats} from '../../common/js/api.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
+import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
 import {Crostini} from '../../externs/background/crostini.js';
@@ -820,11 +821,15 @@ export class BannerController extends EventTarget {
       return;
     }
     for (const volumeId of this.pendingVolumeSizeUpdates_) {
-      const sizeStats = await getSizeStats(volumeId);
-      if (!sizeStats || sizeStats.totalSize === 0) {
-        continue;
+      try {
+        const sizeStats = await getSizeStats(volumeId);
+        if (!sizeStats || sizeStats.totalSize === 0) {
+          continue;
+        }
+        this.volumeSizeStats_[volumeId] = sizeStats;
+      } catch (e) {
+        console.warn('Error getting size stats', e);
       }
-      this.volumeSizeStats_[volumeId] = sizeStats;
     }
     this.pendingVolumeSizeUpdates_.clear();
     await this.reconcile();
@@ -898,7 +903,8 @@ export function isBelowThreshold(threshold, sizeStats) {
   if (!threshold || !sizeStats) {
     return false;
   }
-  if (!sizeStats.remainingSize || !sizeStats.totalSize) {
+  if (util.isNullOrUndefined(sizeStats.remainingSize) ||
+      util.isNullOrUndefined(sizeStats.totalSize)) {
     return false;
   }
   if (threshold.minSize < sizeStats.remainingSize) {

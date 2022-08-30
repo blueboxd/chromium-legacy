@@ -507,10 +507,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_userInteractionEnabled(), nil);
 }
 
-+ (id<GREYMatcher>)settingsMenuButton {
-  return grey_accessibilityID(kToolsMenuSettingsId);
-}
-
 + (id<GREYMatcher>)settingsDoneButton {
   return grey_accessibilityID(kSettingsDoneButtonId);
 }
@@ -539,10 +535,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)autofillCreditCardTableView {
   return grey_accessibilityID(kAutofillCreditCardTableViewId);
-}
-
-+ (id<GREYMatcher>)addPaymentMethodButton {
-  return grey_accessibilityID(kSettingsAddPaymentMethodButtonId);
 }
 
 + (id<GREYMatcher>)addCreditCardButton {
@@ -793,20 +785,12 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kToolsMenuNewWindowId);
 }
 
-+ (id<GREYMatcher>)readingListMenuButton {
-  return grey_accessibilityID(kToolsMenuReadingListId);
-}
-
-+ (id<GREYMatcher>)bookmarksMenuButton {
-  return grey_accessibilityID(kToolsMenuBookmarksId);
-}
-
-+ (id<GREYMatcher>)recentTabsMenuButton {
-  return grey_accessibilityID(kToolsMenuOtherDevicesId);
-}
-
 + (id<GREYMatcher>)systemSelectionCallout {
-  return grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"));
+  if (@available(iOS 16.0, *)) {
+    return grey_kindOfClass(NSClassFromString(@"_UIEditMenuListViewCell"));
+  } else {
+    return grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"));
+  }
 }
 
 + (id<GREYMatcher>)systemSelectionCalloutLinkToTextButton {
@@ -1064,6 +1048,46 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kSettingsToolbarAddButtonId);
 }
 
+#pragma mark - Overflow Menu Destinations
+
++ (id<GREYMatcher>)bookmarksDestinationButton {
+  return grey_accessibilityID(kToolsMenuBookmarksId);
+}
+
++ (id<GREYMatcher>)downloadsDestinationButton {
+  return grey_accessibilityID(kToolsMenuDownloadsId);
+}
+
++ (id<GREYMatcher>)historyDestinationButton {
+  return grey_accessibilityID(kToolsMenuHistoryId);
+}
+
++ (id<GREYMatcher>)passwordsDestinationButton {
+  return grey_accessibilityID(kToolsMenuPasswordsId);
+}
+
++ (id<GREYMatcher>)readingListDestinationButton {
+  return grey_accessibilityID(kToolsMenuReadingListId);
+}
+
++ (id<GREYMatcher>)recentTabsDestinationButton {
+  return grey_accessibilityID(kToolsMenuOtherDevicesId);
+}
+
++ (id<GREYMatcher>)settingsDestinationButton {
+  return grey_accessibilityID(kToolsMenuSettingsId);
+}
+
++ (id<GREYMatcher>)siteInfoDestinationButton {
+  return grey_accessibilityID(kToolsMenuSiteInformation);
+}
+
+#pragma mark - Overflow Menu Actions
+
++ (id<GREYMatcher>)settingsActionButton {
+  return grey_accessibilityID(kToolsMenuSettingsActionId);
+}
+
 #pragma mark - Manual Fallback
 
 + (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher {
@@ -1166,27 +1190,29 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)activityViewHeaderWithURLHost:(NSString*)host
                                            title:(NSString*)pageTitle {
-#if TARGET_IPHONE_SIMULATOR
+  // The title of the activity view starts as the URL, then asynchronously
+  // changes to the page title. Sometimes, the activity view fails to update
+  // the text to the page title, causing test flake. Allow matcher to pass
+  // with either value for the activity view title.
+
+  GREYMatchesBlock matches = ^BOOL(id element) {
+    NSString* label = [element accessibilityLabel];
+    NSLog(@"label is %@ %d %d", label, [label containsString:host],
+          [label containsString:pageTitle]);
+    return [label containsString:host] || [label containsString:pageTitle];
+  };
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description
+        appendText:[NSString stringWithFormat:
+                                 @"accessibilityLabel containing %@ or %@",
+                                 host, pageTitle]];
+  };
+
   return grey_allOf(
-      // The title of the activity view starts as the URL, then asynchronously
-      // changes to the page title. Sometimes, the activity view fails to update
-      // the text to the page title, causing test flake. Allow matcher to pass
-      // with either value for the activity view title.
-      grey_anyOf(grey_accessibilityLabel(host),
-                 grey_accessibilityLabel(pageTitle), nil),
-      grey_ancestor(
-          grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitHeader),
-                     grey_kindOfClassName(@"LPLinkView"), nil)),
+      grey_kindOfClassName(@"LPLinkView"),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
       nil);
-#else
-  // Device tests tend to fail more often if the host is allowed in the
-  // grey_anyOf as above.
-  return grey_allOf(grey_accessibilityLabel(pageTitle),
-                    grey_ancestor(grey_allOf(
-                        grey_accessibilityTrait(UIAccessibilityTraitHeader),
-                        grey_kindOfClassName(@"LPLinkView"), nil)),
-                    nil);
-#endif
 }
 
 + (id<GREYMatcher>)manualFallbackSuggestPasswordMatcher {

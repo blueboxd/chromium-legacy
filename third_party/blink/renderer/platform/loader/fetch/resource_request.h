@@ -193,6 +193,11 @@ class PLATFORM_EXPORT ResourceRequestHead {
     SetHttpHeaderField(http_names::kContentType, http_content_type);
   }
 
+  bool IsFormSubmission() const { return is_form_submission_; }
+  void SetFormSubmission(bool is_form_submission) {
+    is_form_submission_ = is_form_submission;
+  }
+
   void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
   }
@@ -507,13 +512,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // |url|,
   bool CanDisplay(const KURL&) const;
 
-  void SetAllowHTTP1ForStreamingUpload(bool allow) {
-    allowHTTP1ForStreamingUpload_ = allow;
-  }
-  bool AllowHTTP1ForStreamingUpload() const {
-    return allowHTTP1ForStreamingUpload_;
-  }
-
   // The original destination of a request passed through by a service worker.
   network::mojom::RequestDestination GetOriginalDestination() const {
     return original_destination_;
@@ -569,6 +567,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool skip_service_worker_ : 1;
   bool download_to_cache_only_ : 1;
   bool site_for_cookies_set_ : 1;
+  bool is_form_submission_ : 1;
   ResourceLoadPriority initial_priority_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
@@ -629,8 +628,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // the request under the cross-origin's partition. Furthermore, its reuse from
   // the prefetch cache will be restricted to top-level-navigations.
   bool prefetch_maybe_for_top_level_navigation_ = false;
-
-  bool allowHTTP1ForStreamingUpload_ = false;
 
   // This is used when fetching preload header requests from cross-origin
   // prefetch responses. The browser process uses this token to ensure the

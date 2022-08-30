@@ -11,8 +11,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/enterprise/connectors/service_provider_config.h"
+#include "chrome/browser/enterprise/connectors/analysis/analysis_settings.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -68,60 +71,8 @@ enum class FileSystemConnector {
   SEND_DOWNLOAD_TO_CLOUD,
 };
 
-// Enum representing if an analysis should block further interactions with the
-// browser until its verdict is obtained.
-enum class BlockUntilVerdict {
-  NO_BLOCK = 0,
-  BLOCK = 1,
-};
-
-// A struct representing a custom message and associated "learn more" URL. These
-// are scoped to a tag.
-struct CustomMessageData {
-  std::u16string message;
-  GURL learn_more_url;
-};
-
-// A struct representing tag-specific settings that are applied to an analysis
-// which includes that tag.
-struct TagSettings {
-  CustomMessageData custom_message;
-  bool requires_justification = false;
-  const SupportedFiles* supported_files = nullptr;
-};
-
-// Structs representing settings to be used for an analysis or a report. These
-// settings should only be kept and considered valid for the specific
-// analysis/report they were obtained for.
-struct AnalysisSettings {
-  AnalysisSettings();
-  AnalysisSettings(AnalysisSettings&&);
-  AnalysisSettings& operator=(AnalysisSettings&&);
-  ~AnalysisSettings();
-
-  GURL analysis_url;
-  std::map<std::string, TagSettings> tags;
-  BlockUntilVerdict block_until_verdict = BlockUntilVerdict::NO_BLOCK;
-  bool block_password_protected_files = false;
-  bool block_large_files = false;
-  bool block_unsupported_file_types = false;
-
-  // Minimum text size for BulkDataEntry scans. 0 means no minimum.
-  size_t minimum_data_size = 100;
-
-  // The DM token to be used for scanning. May be empty, for example if this
-  // scan is initiated by APP.
-  std::string dm_token = "";
-
-  // Indicates if the scan is made at the profile level, or at the browser level
-  // if false.
-  bool per_profile = false;
-
-  // ClientMetadata to include in the scanning request(s). This is populated
-  // based on OnSecurityEvent and the affiliation state of the browser.
-  std::unique_ptr<ClientMetadata> client_metadata;
-};
-
+// Struct holding the necessary data to tweak the behavior of the reporting
+// Connector.
 struct ReportingSettings {
   ReportingSettings();
   ReportingSettings(GURL url, const std::string& dm_token, bool per_profile);
@@ -139,6 +90,8 @@ struct ReportingSettings {
   bool per_profile = false;
 };
 
+// Struct holding the necessary data to tweak the behavior of the file system
+// Connector.
 struct FileSystemSettings {
   FileSystemSettings();
   FileSystemSettings(const FileSystemSettings&);
@@ -229,6 +182,34 @@ enum class FinalContentAnalysisResult {
   // Show that no issue was found and that the user may proceed.
   SUCCESS = 4,
 };
+
+// Result for a single request of the RequestHandler classes.
+struct RequestHandlerResult {
+  bool complies;
+  FinalContentAnalysisResult final_result;
+  std::string tag;
+};
+
+// Calculates the result for the request handler based on the upload result and
+// the analysis response.
+RequestHandlerResult CalculateRequestHandlerResult(
+    const AnalysisSettings& settings,
+    safe_browsing::BinaryUploadService::Result upload_result,
+    ContentAnalysisResponse response);
+
+// Determines if a request result should be used to allow a data use or to
+// block it.
+bool ResultShouldAllowDataUse(
+    const AnalysisSettings& settings,
+    safe_browsing::BinaryUploadService::Result upload_result);
+
+// Calculates the event result that is experienced by the user.
+// If data is allowed to be accessed immediately, the result will indicate that
+// the user was allowed to use the data independent of the scanning result.
+safe_browsing::EventResult CalculateEventResult(
+    const AnalysisSettings& settings,
+    bool allowed_by_scan_result,
+    bool should_warn);
 
 // User data to persist a save package's final callback allowing/denying
 // completion. This is used since the callback can be called either when

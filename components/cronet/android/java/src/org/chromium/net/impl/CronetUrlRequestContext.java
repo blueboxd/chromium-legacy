@@ -20,6 +20,7 @@ import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.net.BidirectionalStream;
+import org.chromium.net.CronetEngine;
 import org.chromium.net.EffectiveConnectionType;
 import org.chromium.net.ExperimentalBidirectionalStream;
 import org.chromium.net.NetworkQualityRttListener;
@@ -27,6 +28,9 @@ import org.chromium.net.NetworkQualityThroughputListener;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RttThroughputValues;
 import org.chromium.net.UrlRequest;
+import org.chromium.net.impl.CronetLogger.CronetEngineBuilderInfo;
+import org.chromium.net.impl.CronetLogger.CronetSource;
+import org.chromium.net.impl.CronetLogger.CronetVersion;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
@@ -160,8 +164,20 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     /** If not null, the network to be used for requests that do not explicitly specify one. **/
     private @Nullable Network mNetwork;
 
+    private final int mCronetEngineId;
+    private final CronetLogger mLogger;
+
+    int getCronetEngineId() {
+        return mCronetEngineId;
+    }
+
+    CronetLogger getCronetLogger() {
+        return mLogger;
+    }
+
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
+        mCronetEngineId = hashCode();
         mRttListenerList.disableThreadAsserts();
         mThroughputListenerList.disableThreadAsserts();
         mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
@@ -188,6 +204,17 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             }
         }
 
+        mLogger = CronetLoggerFactory.createLogger(builder.getContext(), getCronetSource());
+
+        // getVersionString()'s output looks like "Cronet/w.x.y.z@hash". CronetVersion only cares
+        // about the "w.x.y.z" bit.
+        String version = getVersionString();
+        version = version.split("/")[1];
+        version = version.split("@")[0];
+
+        mLogger.logCronetEngineCreation(getCronetEngineId(), new CronetEngineBuilderInfo(builder),
+                new CronetVersion(version), getCronetSource());
+
         // Init native Chromium URLRequestContext on init thread.
         CronetLibraryLoader.postToInitThread(new Runnable() {
             @Override
@@ -202,6 +229,13 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 }
             }
         });
+    }
+
+    static CronetSource getCronetSource() {
+        ClassLoader apiClassLoader = CronetEngine.class.getClassLoader();
+        ClassLoader implClassLoader = CronetUrlRequest.class.getClassLoader();
+        return apiClassLoader.equals(implClassLoader) ? CronetSource.CRONET_SOURCE_STATICALLY_LINKED
+                                                      : CronetSource.CRONET_SOURCE_PLAY_SERVICES;
     }
 
     @VisibleForTesting

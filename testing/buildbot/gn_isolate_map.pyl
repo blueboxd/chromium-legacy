@@ -274,6 +274,14 @@
       "${ISOLATED_OUTDIR}",
     ],
   },
+  "blink_wpt_tests": {
+    "label": "//:blink_wpt_tests",
+    "type": "generated_script",
+    "args": [
+      "--results-directory",
+      "${ISOLATED_OUTDIR}",
+    ],
+  },
   "boundary_interface_example_apk": {
     "label": "//android_webview/support_library/boundary_interfaces:boundary_interface_example_apk",
     "type": "additional_compile_target",
@@ -296,10 +304,6 @@
   },
   "breakpad_unittests": {
     "label": "//third_party/breakpad:breakpad_unittests",
-    "type": "console_test_launcher",
-  },
-  "browser_switcher_bho_unittests": {
-    "label": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests",
     "type": "console_test_launcher",
   },
   "browser_tests": {
@@ -336,6 +340,10 @@
   },
   "cast_runner_integration_tests": {
     "label": "//fuchsia_web/runners:cast_runner_integration_tests",
+    "type": "console_test_launcher",
+  },
+  "cast_runner_integration_tests_cfv1": {
+    "label": "//fuchsia_web/runners:cast_runner_integration_tests_cfv1",
     "type": "console_test_launcher",
   },
   "cast_runner_pkg":{
@@ -718,12 +726,12 @@
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
   },
-  "cr_fuchsia_base_unittests": {
-    "label": "//fuchsia/base:cr_fuchsia_base_unittests",
-    "type": "console_test_launcher",
-  },
   "crashpad_tests": {
     "label": "//third_party/crashpad/crashpad:crashpad_tests",
+    "type": "console_test_launcher",
+  },
+  "gnrt_unittests": {
+    "label": "//tools/crates/gnrt:gnrt_unittests",
     "type": "console_test_launcher",
   },
   "cronet_package": {
@@ -865,6 +873,11 @@
   "fuchsia_mojo_unittests": {
     "label": "//mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests",
     "type": "console_test_launcher",
+  },
+  "fuchsia_pytype": {
+    "label": "//testing:fuchsia_pytype",
+    "script": "//build/fuchsia/test/run_pytype.py",
+    "type": "script",
   },
   "fuchsia_sizes": {
     "label": "//tools/fuchsia/size_tests:fuchsia_sizes",
@@ -1475,6 +1488,10 @@
     "label": "//chrome/test:performance_test_suite_eve",
     "type": "generated_script",
   },
+  "performance_test_suite_octopus": {
+    "label": "//chrome/test:performance_test_suite_octopus",
+    "type": "generated_script",
+  },
   "performance_web_engine_test_suite": {
     "args": [
       "../../content/test/gpu/run_telemetry_benchmark_fuchsia.py",
@@ -1599,8 +1616,8 @@
     "label": "//sandbox/linux:sandbox_linux_unittests",
     "type": "console_test_launcher",
   },
-  "sandbox_mac_unittests": {
-    "label": "//sandbox/mac:sandbox_mac_unittests",
+  "sandbox_unittests": {
+    "label": "//sandbox:sandbox_unittests",
     "type": "console_test_launcher",
   },
   "sbox_integration_tests": {
@@ -1864,6 +1881,11 @@
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
     "type": "windowed_test_launcher",
   },
+  "unexpected_passes_common_pytype": {
+    "label": "//testing:unexpected_passes_common_pytype",
+    "script": "//testing/run_pytype.py",
+    "type": "script",
+  },
   "unit_tests": {
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
@@ -1987,7 +2009,7 @@
     "type": "console_test_launcher",
   },
   "web_engine_shell_pkg": {
-    "label": "//fuchsia_web/webengine:web_engine_shell_pkg",
+    "label": "//fuchsia_web/shell:web_engine_shell_pkg",
     "type": "additional_compile_target",
   },
   "web_engine_unittests": {

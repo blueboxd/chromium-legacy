@@ -187,9 +187,9 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
@@ -354,6 +354,15 @@ OobeScreenId PrefToScreenId(const std::string& pref_value) {
   if (pref_value == kLegacyUpdateScreenName)
     return chromeos::UpdateView::kScreenId;
   return OobeScreenId(pref_value);
+}
+
+bool IsGaiaPageDefaultsToSAML() {
+  if (!features::IsRedirectToDefaultIdPEnabled())
+    return false;
+  int authentication_behavior = 0;
+  bool authentication_behavior_set = CrosSettings::Get()->GetInteger(
+      kLoginAuthenticationBehavior, &authentication_behavior);
+  return authentication_behavior_set && authentication_behavior;
 }
 
 }  // namespace
@@ -524,6 +533,13 @@ BaseScreen* WizardController::GetScreen(OobeScreenId screen_id) {
   return screen_manager_->GetScreen(screen_id);
 }
 
+OobeScreenId WizardController::GetScreenByName(const std::string& screen_name) {
+  if (screen_name == ErrorScreenView::kScreenId.name) {
+    return ErrorScreenView::kScreenId;
+  }
+  return screen_manager_->GetScreenByName(screen_name);
+}
+
 void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
   current_screen_ = screen;
 }
@@ -643,7 +659,7 @@ WizardController::CreateScreens() {
   }
 
   append(std::make_unique<AutoEnrollmentCheckScreen>(
-      oobe_ui->GetView<AutoEnrollmentCheckScreenHandler>(),
+      oobe_ui->GetView<AutoEnrollmentCheckScreenHandler>()->AsWeakPtr(),
       oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
                           weak_factory_.GetWeakPtr())));
@@ -656,7 +672,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnManagementTransitionScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateRequiredScreen>(
-      oobe_ui->GetView<UpdateRequiredScreenHandler>(),
+      oobe_ui->GetView<UpdateRequiredScreenHandler>()->AsWeakPtr(),
       oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUpdateRequiredScreenExit,
                           weak_factory_.GetWeakPtr())));
@@ -698,12 +714,12 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnSamlConfirmPasswordScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<OfflineLoginScreen>(
-      oobe_ui->GetView<OfflineLoginScreenHandler>(),
+      oobe_ui->GetView<OfflineLoginScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnOfflineLoginScreenExit,
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<TpmErrorScreen>(
-      oobe_ui->GetView<TpmErrorScreenHandler>()));
+      oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr()));
 
   auto gaia_password_change_screen =
       std::make_unique<GaiaPasswordChangedScreen>(
@@ -1072,7 +1088,7 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
   OnScreenExit(GaiaView::kScreenId, GaiaScreen::GetResultString(result));
   switch (result) {
     case GaiaScreen::Result::BACK:
-    case GaiaScreen::Result::CANCEL:
+    case GaiaScreen::Result::CANCEL: {
       if (result == GaiaScreen::Result::BACK &&
           wizard_context_->is_user_creation_enabled) {
         // `Result::BACK` is only triggered when pressing back button. It goes
@@ -1082,22 +1098,26 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
         AdvanceToScreen(UserCreationView::kScreenId);
         break;
       }
-      if (LoginDisplayHost::default_host()->HasUserPods() &&
-          !wizard_context_->is_user_creation_enabled) {
-        LoginDisplayHost::default_host()->HideOobeDialog();
+      // If a default redirection to third party IdP is set we can hide the
+      // dialog.
+      const bool gaia_page_defaults_to_saml = IsGaiaPageDefaultsToSAML();
+      if ((LoginDisplayHost::default_host()->HasUserPods() &&
+           !wizard_context_->is_user_creation_enabled) ||
+          (!LoginDisplayHost::default_host()->HasUserPods() &&
+           gaia_page_defaults_to_saml)) {
+        GetScreen<GaiaScreen>()->Reset();
+        LoginDisplayHost::default_host()->HideOobeDialog(
+            gaia_page_defaults_to_saml);
       } else {
         GetScreen<GaiaScreen>()->LoadOnline(EmptyAccountId());
       }
       break;
+    }
     case GaiaScreen::Result::ENTERPRISE_ENROLL:
       ShowEnrollmentScreenIfEligible();
       break;
     case GaiaScreen::Result::START_CONSUMER_KIOSK:
       LoginDisplayHost::default_host()->AttemptShowEnableConsumerKioskScreen();
-      break;
-    case GaiaScreen::Result::SAML_VIDEO_TIMEOUT:
-      LoginDisplayHost::default_host()->HideOobeDialog(
-          /*saml_video_timeout=*/true);
       break;
   }
 }
@@ -1198,6 +1218,7 @@ void WizardController::OnOfflineLoginScreenExit(
       AdvanceToScreen(UserCreationView::kScreenId);
       break;
     case OfflineLoginScreen::Result::RELOAD_ONLINE_LOGIN:
+      GetScreen<GaiaScreen>()->LoadOnline(EmptyAccountId());
       AdvanceToScreen(GaiaView::kScreenId);
       break;
   }
@@ -1376,6 +1397,7 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       ShowEulaScreen();
       break;
     case NetworkScreen::Result::CONNECTED_DEMO:
+    case NetworkScreen::Result::NOT_APPLICABLE_CONNECTED_DEMO:
       DCHECK(demo_setup_controller_);
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
@@ -1389,6 +1411,8 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       InitiateOOBEUpdate();
       break;
     case NetworkScreen::Result::CONNECTED_DEMO_CONSOLIDATED_CONSENT:
+    case NetworkScreen::Result::
+        NOT_APPLICABLE_CONNECTED_DEMO_CONSOLIDATED_CONSENT:
       DCHECK(demo_setup_controller_);
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
@@ -1490,8 +1514,10 @@ void WizardController::OnUpdateCompleted() {
   ShowAutoEnrollmentCheckScreen();
 }
 
-void WizardController::OnAutoEnrollmentCheckScreenExit() {
-  OnScreenExit(AutoEnrollmentCheckScreenView::kScreenId, kDefaultExitReason);
+void WizardController::OnAutoEnrollmentCheckScreenExit(
+    AutoEnrollmentCheckScreen::Result result) {
+  OnScreenExit(AutoEnrollmentCheckScreenView::kScreenId,
+               AutoEnrollmentCheckScreen::GetResultString(result));
   VLOG(1) << "WizardController::OnAutoEnrollmentCheckScreenExit()";
   // Check whether the device is disabled. OnDeviceDisabledChecked() will be
   // invoked when the result of this check is known. Until then, the current
@@ -1918,11 +1944,9 @@ void WizardController::InitiateOOBEUpdate() {
   // If this is a Cellular First device, instruct UpdateEngine to allow
   // updates over cellular data connections.
   if (switches::IsCellularFirstDevice()) {
-    DBusThreadManager::Get()
-        ->GetUpdateEngineClient()
-        ->SetUpdateOverCellularPermission(
-            true, base::BindOnce(&WizardController::StartOOBEUpdate,
-                                 weak_factory_.GetWeakPtr()));
+    UpdateEngineClient::Get()->SetUpdateOverCellularPermission(
+        true, base::BindOnce(&WizardController::StartOOBEUpdate,
+                             weak_factory_.GetWeakPtr()));
   } else {
     StartOOBEUpdate();
   }

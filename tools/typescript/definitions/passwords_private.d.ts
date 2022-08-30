@@ -30,6 +30,12 @@ declare global {
         PHISHED_AND_LEAKED = 'PHISHED_AND_LEAKED',
       }
 
+      export enum PasswordStoreSet {
+        DEVICE = 'DEVICE',
+        ACCOUNT = 'ACCOUNT',
+        DEVICE_AND_ACCOUNT = 'DEVICE_AND_ACCOUNT',
+      }
+
       export enum PasswordCheckState {
         IDLE = 'IDLE',
         RUNNING = 'RUNNING',
@@ -82,6 +88,7 @@ declare global {
         detailedOrigin: string;
         isAndroidCredential: boolean;
         changePasswordUrl?: string;
+        hasStartableScript: boolean;
         signonRealm: string;
         username: string;
         password?: string;
@@ -109,14 +116,17 @@ declare global {
         note?: string;
       }
 
+      export interface CredentialIds {
+        accountId?: number;
+        deviceId?: number;
+      }
+
       export function recordPasswordsPageAccessInSettings(): void;
       export function changeSavedPassword(
-          ids: Array<number>, params: ChangeSavedPasswordParams,
-          callback?: () => void): void;
-      export function removeSavedPassword(id: number): void;
-      export function removeSavedPasswords(ids: Array<number>): void;
+          ids: number[], params: ChangeSavedPasswordParams,
+          callback?: (newIds: CredentialIds) => void): void;
+      export function removeSavedPassword(id: number, fromStores: PasswordStoreSet): void;
       export function removePasswordException(id: number): void;
-      export function removePasswordExceptions(ids: Array<number>): void;
       export function undoRemoveSavedPasswordOrException(): void;
       export function requestPlaintextPassword(
           id: number, reason: PlaintextReason,
@@ -152,10 +162,15 @@ declare global {
           credential: InsecureCredential, callback?: () => void): void;
       export function recordChangePasswordFlowStarted(
           credential: InsecureCredential, isManualFlow: boolean): void;
+      export function refreshScriptsIfNecessary(
+          callback?: () => void): void;
       export function startPasswordCheck(callback?: () => void): void;
       export function stopPasswordCheck(callback?: () => void): void;
       export function getPasswordCheckStatus(
           callback: (status: PasswordCheckStatus) => void): void;
+      export function startAutomatedPasswordChange(
+          credential: InsecureCredential,
+          callback?: (success: boolean) => void): void;
       export function isAccountStoreDefault(
           callback: (isDefault: boolean) => void): void;
       export function getUrlCollection(

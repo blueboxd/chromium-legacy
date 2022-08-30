@@ -274,7 +274,7 @@ template("webapk_tmpl") {
 
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
-    target_sdk_version = 31
+    target_sdk_version = 33
     never_incremental = true
 
     # Force 32 bit mode on 64 bit devices.
@@ -383,7 +383,8 @@ android_library("shell_apk_javatests") {
   ]
 }
 
-junit_binary("webapk_shell_apk_junit_tests") {
+robolectric_binary("webapk_shell_apk_junit_tests") {
+  package_name = "org.chromium.test"
   sources = [
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java",
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserLauncherParamsTest.java",
@@ -405,7 +406,8 @@ junit_binary("webapk_shell_apk_junit_tests") {
   ]
 }
 
-junit_binary("webapk_shell_apk_h2o_junit_tests") {
+robolectric_binary("webapk_shell_apk_h2o_junit_tests") {
+  package_name = "org.chromium.test"
   sources = [
     "junit/src/org/chromium/webapk/shell_apk/CustomAndroidOsShadowAsyncTask.java",
     "junit/src/org/chromium/webapk/shell_apk/TestBrowserInstaller.java",

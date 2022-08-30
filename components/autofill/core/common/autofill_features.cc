@@ -97,6 +97,13 @@ const base::Feature kAutofillInferCountryCallingCode{
 const base::Feature kAutofillComplementCountryCodeOnImport{
     "AutofillComplementCountryCodeOnImport", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, label inference considers strings entirely made up of  '(', ')'
+// and '-' as valid labels.
+// TODO(crbug.com/1311937): Cleanup when launched.
+const base::Feature kAutofillConsiderPhoneNumberSeparatorsValidLabels{
+    "AutofillConsiderPhoneNumberSeparatorsValidLabels",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, local heuristics fall back to the fields placeholder attribute.
 const base::Feature kAutofillConsiderPlaceholderForParsing{
     "AutofillConsiderPlaceholderForParsing", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -127,12 +134,6 @@ const base::Feature kAutofillFillAndImportFromMoreFields{
 const base::Feature kAutofillFillCreditCardAsPerFormatString{
     "AutofillFillCreditCardAsPerFormatString",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, AutofillPopupControllerImpl is destructed not immediately in its
-// HideViewAndDie() function, but as a delayed task.
-// TODO(crbug.com/1277218): Cleanup when launched.
-const base::Feature kAutofillDelayPopupControllerDeletion{
-    "AutofillDelayPopupControllerDeletion", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for Autofill filling.
 const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
@@ -194,6 +195,12 @@ const base::Feature kAutofillEnableAccountWalletStorage {
 const base::Feature kAutofillEnableAugmentedPhoneCountryCode{
     "AutofillEnableAugmentedPhoneCountryCode",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables parsing for birthdate fields. Filling is not supported and parsing
+// is meant to prevent false positive credit card expiration dates.
+// TODO(crbug.com/1306654): Remove once launched.
+const base::Feature kAutofillEnableBirthdateParsing{
+    "AutofillEnableBirthdateParsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This feature guards the logic for Autofills future compatibility launch of
 // birthdates. Currently filling is not supported and this effectively
@@ -273,7 +280,7 @@ const base::Feature kAutofillEnableSupportForMoreStructureInNames{
 // TODO(crbug.com/1098943): Remove once launched.
 const base::Feature kAutofillEnableSupportForMoreStructureInAddresses{
     "AutofillEnableSupportForMoreStructureInAddresses",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls if Autofill supports merging subset names.
 // TODO(crbug.com/1098943): Remove once launched.
@@ -340,14 +347,14 @@ const base::Feature kAutofillFixFillableFieldTypes{
 // TODO(crbug.com/1293341): Remove once launched.
 const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled{
     "AutofillFixServerQueriesIfPasswordManagerIsEnabled",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, the Autofill popup ignores second clicks for a certain period
 // (kAutofillIgnoreEarlyClicksOnPopupDuration) after the Autofill popup was
 // shown. This is to prevent double clicks accidentally accepting suggestions.
 // TODO(crbug/1279268): Remove once launched.
 const base::Feature kAutofillIgnoreEarlyClicksOnPopup{
-    "AutofillIgnoreEarlyClicksOnPopup", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AutofillIgnoreEarlyClicksOnPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The duration for which clicks on the just-shown Autofill popup should be
 // ignored if AutofillIgnoreEarlyClicksOnPopup is enabled.
@@ -356,7 +363,14 @@ const base::Feature kAutofillIgnoreEarlyClicksOnPopup{
 const base::FeatureParam<base::TimeDelta>
     kAutofillIgnoreEarlyClicksOnPopupDuration{
         &kAutofillIgnoreEarlyClicksOnPopup, "duration",
-        base::Milliseconds(250)};
+        base::Milliseconds(500)};
+
+// When enabled, HTML autocomplete values that do not map to any known type, but
+// look reasonable (e.g. contain "address") are simply ignored. Without the
+// feature, Autofill is disabled on such fields.
+const base::Feature kAutofillIgnoreUnmappableAutocompleteValues{
+    "AutofillIgnoreUnmappableAutocompleteValues",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, only changed values are highlighted in preview mode.
 // TODO(crbug/1248585): Remove when launched.

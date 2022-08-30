@@ -6,9 +6,7 @@
 
 #include "base/pickle.h"
 
-namespace net {
-
-namespace ct {
+namespace net::ct {
 
 bool SignedCertificateTimestamp::LessThan::operator()(
     const scoped_refptr<SignedCertificateTimestamp>& lhs,
@@ -51,8 +49,7 @@ SignedCertificateTimestamp::CreateFromPickle(base::PickleIterator* iter) {
   int64_t timestamp;
   int hash_algorithm;
   int sig_algorithm;
-  scoped_refptr<SignedCertificateTimestamp> sct(
-      new SignedCertificateTimestamp());
+  auto sct = base::MakeRefCounted<SignedCertificateTimestamp>();
   int origin;
   // string values are set directly
   if (!(iter->ReadInt(&version) &&
@@ -97,6 +94,4 @@ bool DigitallySigned::SignatureParametersMatch(
   return (hash_algorithm == other_hash_algorithm) &&
          (signature_algorithm == other_signature_algorithm);
 }
-}  // namespace ct
-
-}  // namespace net
+}  // namespace net::ct

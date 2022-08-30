@@ -24,6 +24,7 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
@@ -181,7 +182,9 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
 
   void RequestFinished(DeepScanningRequest* request) override {}
 
-  BinaryUploadService* GetBinaryUploadService(Profile* profile) override {
+  BinaryUploadService* GetBinaryUploadService(
+      Profile* profile,
+      const enterprise_connectors::AnalysisSettings&) override {
     return &binary_upload_service_;
   }
 
@@ -288,10 +291,14 @@ class DeepScanningRequestTest : public testing::Test {
 
     enterprise_connectors::AnalysisSettings default_settings;
     default_settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
-    default_settings.analysis_url =
+    enterprise_connectors::CloudAnalysisSettings cloud_settings;
+    cloud_settings.analysis_url =
         GURL("https://safebrowsing.google.com/safebrowsing/uploads/scan");
+    default_settings.cloud_or_local_settings =
+        enterprise_connectors::CloudOrLocalAnalysisSettings(
+            std::move(cloud_settings));
     default_settings.block_until_verdict =
-        enterprise_connectors::BlockUntilVerdict::BLOCK;
+        enterprise_connectors::BlockUntilVerdict::kBlock;
 
     for (const auto& tag : settings.value().tags) {
       ASSERT_EQ(tag.second.requires_justification,
@@ -309,7 +316,8 @@ class DeepScanningRequestTest : public testing::Test {
               default_settings.block_unsupported_file_types);
     ASSERT_EQ(settings.value().block_until_verdict,
               default_settings.block_until_verdict);
-    ASSERT_EQ(settings.value().analysis_url, default_settings.analysis_url);
+    ASSERT_EQ(settings.value().cloud_or_local_settings.analysis_url(),
+              default_settings.cloud_or_local_settings.analysis_url());
   }
 
   void SetLastResult(DownloadCheckResult result) { last_result_ = result; }
@@ -369,7 +377,7 @@ TEST_P(DeepScanningRequestFeaturesEnabledTest, ChecksFeatureFlags) {
     settings.tags = {{"dlp", enterprise_connectors::TagSettings()},
                      {"malware", enterprise_connectors::TagSettings()}};
     settings.block_until_verdict =
-        enterprise_connectors::BlockUntilVerdict::BLOCK;
+        enterprise_connectors::BlockUntilVerdict::kBlock;
     return settings;
   };
 
@@ -517,7 +525,7 @@ TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
     EXPECT_FALSE(settings().has_value());
     enterprise_connectors::AnalysisSettings analysis_settings;
     analysis_settings.block_until_verdict =
-        enterprise_connectors::BlockUntilVerdict::BLOCK;
+        enterprise_connectors::BlockUntilVerdict::kBlock;
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         DownloadCheckResult::SAFE,
@@ -588,7 +596,12 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
         ->SetTestingFactory(
             profile_,
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+    enterprise_connectors::RealtimeReportingClientFactory::GetInstance()
+        ->SetTestingFactory(profile_,
+                            base::BindRepeating(&BuildRealtimeReportingClient));
+
+    enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+        profile_)
         ->SetBrowserCloudPolicyClientForTesting(client_.get());
     identity_test_environment_.MakePrimaryAccountAvailable(
         kUserName, signin::ConsentLevel::kSync);
@@ -611,7 +624,8 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
   }
 
   void TearDown() override {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+    enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+        profile_)
         ->SetBrowserCloudPolicyClientForTesting(nullptr);
     DeepScanningRequestTest::TearDown();
   }

@@ -99,6 +99,11 @@ void Update(UpdaterScope scope,
 // Invokes the active instance's UpdateService::UpdateAll (via RPC).
 void UpdateAll(UpdaterScope scope);
 
+// Deletes the updater executable directory. Does not do any kind of cleanup
+// related to service registration. The intent of this command is to replicate
+// a common mode of breaking the updater, so we can test how it recovers.
+void DeleteUpdaterDirectory(UpdaterScope scope);
+
 // Runs the command and waits for it to exit or time out.
 bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
 
@@ -175,9 +180,8 @@ void RunTestServiceCommand(const std::string& sub_command);
 // Calls a function defined in test/service/win/rpc_client.py.
 // Entries of the `arguments` dictionary should be the function's parameter
 // name/value pairs.
-void InvokeTestServiceFunction(
-    const std::string& function_name,
-    const base::flat_map<std::string, base::Value>& arguments);
+void InvokeTestServiceFunction(const std::string& function_name,
+                               const base::Value::Dict& arguments);
 
 void RunUninstallCmdLine(UpdaterScope scope);
 #endif  // BUILDFLAG(IS_WIN)

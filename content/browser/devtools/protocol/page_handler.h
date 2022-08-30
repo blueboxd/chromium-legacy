@@ -20,7 +20,7 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
-#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -180,6 +180,8 @@ class PageHandler : public DevToolsDomainHandler,
   Response SetBypassCSP(bool enabled) override;
   Response AddCompilationCache(const std::string& url,
                                const Binary& data) override;
+
+  Response AssureTopLevelActiveFrame();
 
  private:
   enum EncodingFormat { PNG, JPEG };

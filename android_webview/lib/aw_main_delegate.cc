@@ -38,7 +38,6 @@
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/embedder_support/switches.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/metrics/unsent_log_store_metrics.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
@@ -63,6 +62,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -184,13 +184,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
-  // Disable origin trial features on Webview unless the flag was
-  // explicitly provided via command-line.
-  if (!cl->HasSwitch(embedder_support::kOriginTrialDisabledFeatures)) {
-    cl->AppendSwitchASCII(embedder_support::kOriginTrialDisabledFeatures,
-                          "DocumentTransitionV2");
-  }
-
   {
     base::ScopedAddFeatureFlags features(cl);
 
@@ -281,6 +274,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(crbug.com/921655): Add support for User Agent Client hints on
     // WebView.
     features.DisableIfNotSet(blink::features::kUserAgentClientHint);
+
+    // Disable Reducing User Agent minor version on WebView.
+    features.DisableIfNotSet(blink::features::kReduceUserAgentMinorVersion);
 
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);
@@ -398,7 +394,7 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
 bool AwMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
   // In the browser process the FeatureList is created in
   // AwMainDelegate::PostEarlyInitialization().
-  return invoked_in == InvokedIn::kChildProcess;
+  return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
 }
 
 variations::VariationsIdsProvider*
@@ -408,7 +404,8 @@ AwMainDelegate::CreateVariationsIdsProvider() {
 }
 
 void AwMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
-  const bool is_browser_process = invoked_in != InvokedIn::kChildProcess;
+  const bool is_browser_process =
+      absl::holds_alternative<InvokedInBrowserProcess>(invoked_in);
   if (is_browser_process) {
     InitIcuAndResourceBundleBrowserSide();
     aw_feature_list_creator_->CreateFeatureListAndFieldTrials();

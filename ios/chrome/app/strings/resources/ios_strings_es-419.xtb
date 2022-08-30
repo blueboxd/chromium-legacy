@@ -100,7 +100,6 @@ Tu motor de búsqueda es <ph name="DSE_NAME" />. Consulta las instrucciones para
 <translation id="1687475363370981210">Marcar todas como leídas</translation>
 <translation id="1689333818294560261">Sobrenombre</translation>
 <translation id="1690731385917361335">Sin elementos</translation>
-<translation id="1692118695553449118">La sincronización está activada.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
 <translation id="1740468249224277719">Presiona dos veces para instalar.</translation>
 <translation id="1752547299766512813">Guardar contraseñas</translation>
@@ -174,7 +173,6 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 <translation id="2469960372084740698">¿Quieres desactivar la Navegación segura?</translation>
 <translation id="2473876017985765807">Ya guardaste una contraseña para <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Sin seleccionar</translation>
-<translation id="2497852260688568942">Tu administrador inhabilitó la sincronización</translation>
 <translation id="2500374554657206846">Opciones para guardar contraseñas</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra app de forma reiterada.</translation>
 <translation id="2529021024822217800">Abrir todo</translation>
@@ -326,6 +324,7 @@ Realiza los siguientes pasos:</translation>
 <translation id="369349502275246497">Sugerir guardar contraseñas</translation>
 <translation id="3709582977625132201">Marcar como no leído</translation>
 <translation id="371230970611282515">Predice y te advierte sobre eventos peligrosos antes de que ocurran.</translation>
+<translation id="37207012422556617">Tendencias de búsquedas</translation>
 <translation id="3740397331642243698">Abre las URL ingresadas en Google Chrome en modo Incógnito.</translation>
 <translation id="3762232513783804601">Diseñado para tu iPad</translation>
 <translation id="3771033907050503522">Pestañas de incógnito</translation>
@@ -489,7 +488,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="509789154667432072">Agregar un favorito</translation>
 <translation id="5118713593561876160">Intereses</translation>
 <translation id="5118764316110575523">No</translation>
-<translation id="5127805178023152808">La sincronización está desactivada.</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, historial y más en todos los dispositivos</translation>
 <translation id="5140288047769711648">Chrome recordará esta contraseña para que no tengas que hacerlo tú.</translation>
 <translation id="5150492518600715772">Enviar al dispositivo</translation>
@@ -532,7 +530,8 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 
 Handoff también debe estar habilitado en la sección General de la configuración, y los dispositivos deben utilizar la misma cuenta de iCloud.</translation>
 <translation id="5551897871312988470">Ofrecer la traducción</translation>
-<translation id="5556459405103347317">Volver a cargar</translation>
+<translation id="5556459405103347317">Cargar de nuevo</translation>
+<translation id="556042886152191864">Botón</translation>
 <translation id="5580834567471114021">¿Deseas agregar la página a la Lista de lectura para retomarla más tarde?</translation>
 <translation id="560322036295180549">Tu organización desactivó la opción.</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
@@ -600,7 +599,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="60829778314739003">Aceptar y continuar</translation>
 <translation id="6084848228346514841">Seleccionar pestañas</translation>
 <translation id="6103540626693881831">Encriptación integrada en el dispositivo</translation>
-<translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6119050551270742952">Pág. incógnito</translation>
 <translation id="6122191549521593678">En línea</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
@@ -776,7 +774,6 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> artículos sin leer.</translation>
 <translation id="7412027924265291969">Continuar</translation>
-<translation id="7419565702166471774">Usar siempre conexiones seguras</translation>
 <translation id="7425346204213733349">Los cambios de tus favoritos, historial, contraseñas y otras opciones de configuración ya no se sincronizarán con tu cuenta de Google. Sin embargo, los datos existentes permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="7431991332293347422">Controla cómo se usa tu historial de navegación para personalizar la Búsqueda y mucho más</translation>
 <translation id="7435356471928173109">El administrador desactivó la función</translation>
@@ -816,6 +813,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7781069478569868053">Página Nueva pestaña</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="778855399387580014">Realiza una búsqueda en una nueva pestaña de Chrome.</translation>
+<translation id="7790892308048519147">Usar conexiones seguras</translation>
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="7807060072011926525">Proporcionado por Google</translation>
 <translation id="7839985698273989086">Página sin conexión</translation>
@@ -913,7 +911,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8591976964826315682">Bloquear cookies de terceros en modo Incógnito</translation>
 <translation id="8605219856220328675">Cierra la pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>
-<translation id="8620785403235741379">Seleccionar una opción</translation>
 <translation id="8626393685701737946">Puedes cambiar la vista predeterminada de sitios a la versión de escritorio en Configuración &gt; Configuración de contenido</translation>
 <translation id="863090005774946393">Tu organización administra el navegador. Es posible que algunas funciones estén inhabilitadas.</translation>
 <translation id="8636825310635137004">Activa la sincronización para obtener las pestañas de tus otros dispositivos.</translation>

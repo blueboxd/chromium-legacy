@@ -511,12 +511,14 @@ class RenderTextTest : public testing::Test {
       size_t logical_index = run_list->visual_to_logical(i);
       const internal::TextRunHarfBuzz& run = *run_list->runs()[logical_index];
       if (run.range.length() == 1) {
-        result.append(base::StringPrintf("[%d]", run.range.start()));
+        result.append(base::StringPrintf("[%" PRIuS "]", run.range.start()));
       } else if (run.font_params.is_rtl) {
-        result.append(base::StringPrintf("[%d<-%d]", run.range.end() - 1,
+        result.append(base::StringPrintf("[%" PRIuS "<-%" PRIuS "]",
+                                         run.range.end() - 1,
                                          run.range.start()));
       } else {
-        result.append(base::StringPrintf("[%d->%d]", run.range.start(),
+        result.append(base::StringPrintf("[%" PRIuS "->%" PRIuS "]",
+                                         run.range.start(),
                                          run.range.end() - 1));
       }
     }
@@ -8579,8 +8581,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1298286) {
   gfx::FontList font_list;
   gfx::Rect field(2119635455, font_list.GetHeight());
 
-  std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateRenderText();
+  RenderText* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(ALIGN_RIGHT);
   render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_UI);
@@ -8588,7 +8589,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1298286) {
   render_text->SetDisplayRect(field);
   render_text->SetCursorEnabled(true);
 
-  gfx::test::RenderTextTestApi render_text_test_api(render_text.get());
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
   render_text_test_api.SetGlyphWidth(2016371456);
 
   EXPECT_FALSE(render_text->multiline());
@@ -8609,8 +8610,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1299054) {
   gfx::FontList font_list;
   gfx::Rect field(-1334808765, font_list.GetHeight());
 
-  std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateRenderText();
+  RenderText* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(ALIGN_CENTER);
   render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
@@ -8618,7 +8618,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1299054) {
   render_text->SetDisplayRect(field);
   render_text->SetCursorEnabled(false);
 
-  gfx::test::RenderTextTestApi render_text_test_api(render_text.get());
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
   render_text_test_api.SetGlyphWidth(1778384896);
 
   const Vector2d& offset = render_text->GetUpdatedDisplayOffset();
@@ -8634,6 +8634,17 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1287804) {
   render_text->SetDisplayRect(Rect(0, 0, 100, 24));
   render_text->SetElideBehavior(ELIDE_TAIL);
   EXPECT_EQ(RangeF(0, 0), render_text->GetCursorSpan(Range(0, 0)));
+}
+
+TEST_F(RenderTextTest, Clusterfuzz_Issue_1193815) {
+  RenderText* render_text = GetRenderText();
+  gfx::FontList font_list;
+  render_text->SetFontList(font_list);
+  render_text->Draw(canvas());
+  render_text->SetText(u"F\r");
+  render_text->SetMaxLines(1);
+  render_text->SetMultiline(true);
+  render_text->Draw(canvas());
 }
 
 }  // namespace gfx

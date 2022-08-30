@@ -23,6 +23,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_manager_base.h"
 #include "content/public/test/browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace file_manager {
 
@@ -86,6 +87,11 @@ struct TestCase {
 
   TestCase& FilesSwa() {
     options.files_swa = true;
+    return *this;
+  }
+
+  TestCase& FilesExperimental() {
+    options.files_experimental = true;
     return *this;
   }
 
@@ -155,8 +161,18 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableUploadOfficeToCloud() {
+    options.enable_upload_office_to_cloud = true;
+    return *this;
+  }
+
   TestCase& EnableGuestOsFiles() {
     options.enable_guest_os_files = true;
+    return *this;
+  }
+
+  TestCase& EnableMirrorSync() {
+    options.enable_mirrorsync = true;
     return *this;
   }
 
@@ -174,6 +190,9 @@ struct TestCase {
 
     if (options.files_swa)
       full_name += "_FilesSwa";
+
+    if (options.files_experimental)
+      full_name += "_FilesExperimental";
 
     if (!options.native_smb)
       full_name += "_DisableNativeSmb";
@@ -198,6 +217,9 @@ struct TestCase {
 
     if (options.enable_filters_in_recents_v2)
       full_name += "_FiltersInRecentsV2";
+
+    if (options.enable_mirrorsync)
+      full_name += "_MirrorSync";
 
     return full_name;
   }
@@ -282,6 +304,8 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
     auto dlp_rules_manager =
         std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
     mock_rules_manager_ = dlp_rules_manager.get();
+    ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
+        .WillByDefault(testing::Return(true));
     return dlp_rules_manager;
   }
 
@@ -1609,7 +1633,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openHelpPageFromDownloadsVolume"),
         TestCase("openHelpPageFromDownloadsVolume").FilesSwa(),
         TestCase("openHelpPageFromDriveVolume"),
-        TestCase("openHelpPageFromDriveVolume").FilesSwa()));
+        TestCase("openHelpPageFromDriveVolume").FilesSwa(),
+        TestCase("showManageMirrorSyncShowsOnlyInLocalRoot").FilesSwa(),
+        TestCase("showManageMirrorSyncShowsOnlyInLocalRoot")
+            .EnableMirrorSync()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesTooltip, /* files_tooltip.js */
@@ -1707,11 +1735,25 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("recentsA11yMessages").EnableFiltersInRecents(),
         TestCase("recentsA11yMessages").EnableFiltersInRecents().FilesSwa(),
-        TestCase("recentsAllowCut")
+        TestCase("recentsAllowCutForDownloads")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentsAllowCutForDownloads")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentsAllowCutForDrive")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentsAllowCutForDrive")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentsAllowCutForPlayFiles")
             .EnableArc()
             .EnableFiltersInRecents()
             .EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowCut")
+        TestCase("recentsAllowCutForPlayFiles")
             .EnableArc()
             .EnableFiltersInRecents()
             .EnableFiltersInRecentsV2()
@@ -1809,6 +1851,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableFiltersInRecents()
             .EnableFiltersInRecentsV2(),
         TestCase("recentsReadOnlyHidden")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentsTimePeriodHeadings")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentsTimePeriodHeadings")
             .EnableFiltersInRecents()
             .EnableFiltersInRecentsV2()
             .FilesSwa(),
@@ -1951,7 +2000,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("breadcrumbsNavigate"),
+        TestCase("breadcrumbsNavigate").FilesExperimental(),
         TestCase("breadcrumbsNavigate").FilesSwa(),
+        TestCase("breadcrumbsNavigate").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsDownloadsTranslation"),
         TestCase("breadcrumbsDownloadsTranslation").FilesSwa(),
         TestCase("breadcrumbsRenderShortPath"),
@@ -1960,6 +2011,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("breadcrumbsEliderButtonHidden").FilesSwa(),
         TestCase("breadcrumbsRenderLongPath"),
         TestCase("breadcrumbsRenderLongPath").FilesSwa(),
+        TestCase("breadcrumbsRenderLongPath").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsMainButtonClick"),
         TestCase("breadcrumbsMainButtonClick").FilesSwa(),
         TestCase("breadcrumbsMainButtonEnterKey"),
@@ -2033,15 +2085,17 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashRestoreFromTrashShortcut").EnableTrash(),
         TestCase("trashRestoreFromTrashShortcut").EnableTrash().FilesSwa(),
         TestCase("trashEmptyTrash").EnableTrash(),
-        // TODO(b/189173190): Enable
-        // TestCase("trashEmptyTrash").EnableTrash().FilesSwa(),
+        TestCase("trashEmptyTrash").EnableTrash().FilesSwa(),
         TestCase("trashEmptyTrashShortcut").EnableTrash(),
-        // TODO(b/189173190): Enable
-        // TestCase("trashEmptyTrashShortcut").EnableTrash().FilesSwa(),
-        TestCase("trashDeleteFromTrash").EnableTrash()
-        // TODO(b/189173190): Enable
-        // TestCase("trashDeleteFromTrash").EnableTrash().FilesSwa()
-        ));
+        TestCase("trashEmptyTrashShortcut").EnableTrash().FilesSwa(),
+        TestCase("trashDeleteFromTrash").EnableTrash(),
+        TestCase("trashDeleteFromTrash").EnableTrash().FilesSwa(),
+        TestCase("trashNoTasksInTrashRoot").EnableTrash(),
+        TestCase("trashNoTasksInTrashRoot").EnableTrash().FilesSwa(),
+        TestCase("trashDoubleClickOnFileInTrashRootShowsDialog").EnableTrash(),
+        TestCase("trashDoubleClickOnFileInTrashRootShowsDialog")
+            .EnableTrash()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */
@@ -2055,8 +2109,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("openOfficeWordFile").EnableWebDriveOffice(),
         TestCase("openOfficeWordFile").EnableWebDriveOffice().FilesSwa(),
-        TestCase("openOfficeWordFromMyFiles").EnableWebDriveOffice(),
-        TestCase("openOfficeWordFromMyFiles").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficeWordFromMyFiles")
+            .EnableWebDriveOffice()
+            .EnableUploadOfficeToCloud(),
+        TestCase("openOfficeWordFromMyFiles")
+            .EnableWebDriveOffice()
+            .EnableUploadOfficeToCloud()
+            .FilesSwa(),
         TestCase("openMultipleOfficeWordFromDrive").EnableWebDriveOffice(),
         TestCase("openMultipleOfficeWordFromDrive")
             .EnableWebDriveOffice()
@@ -2072,6 +2131,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openOfficeWordFromDriveNotSynced").EnableWebDriveOffice(),
         TestCase("openOfficeWordFromDriveNotSynced")
             .EnableWebDriveOffice()
+            .FilesSwa(),
+        TestCase("openOfficeWordFromMyFilesOffline")
+            .EnableWebDriveOffice()
+            .EnableUploadOfficeToCloud()
+            .Offline(),
+        TestCase("openOfficeWordFromMyFilesOffline")
+            .EnableWebDriveOffice()
+            .EnableUploadOfficeToCloud()
+            .Offline()
             .FilesSwa(),
         TestCase("openOfficeWordFromDriveOffline")
             .EnableWebDriveOffice()

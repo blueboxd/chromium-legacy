@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_MOCK_PASSWORD_CHANGE_RUN_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_MOCK_PASSWORD_CHANGE_RUN_CONTROLLER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
+
+#include "base/memory/weak_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 class PasswordChangeRunDisplay;
 
@@ -31,16 +33,20 @@ class MockPasswordChangeRunController : public PasswordChangeRunController {
               SetProgressBarStep,
               (autofill_assistant::password_change::ProgressStep),
               (override));
+  MOCK_METHOD(
+      void,
+      ShowBasePrompt,
+      (const autofill_assistant::password_change::BasePromptSpecification&),
+      (override));
+  MOCK_METHOD(void, OnBasePromptChoiceSelected, (size_t), (override));
   MOCK_METHOD(void,
-              ShowBasePrompt,
-              (const autofill_assistant::password_change::BasePrompt&),
+              ShowUseGeneratedPasswordPrompt,
+              (const autofill_assistant::password_change::
+                   UseGeneratedPasswordPromptSpecification&,
+               const std::u16string&),
               (override));
-  MOCK_METHOD(void, OnBasePromptOptionSelected, (int), (override));
-  MOCK_METHOD(void,
-              ShowSuggestedPasswordPrompt,
-              (const std::u16string&),
-              (override));
-  MOCK_METHOD(void, OnSuggestedPasswordSelected, (bool), (override));
+  MOCK_METHOD(void, ShowStartingScreen, (const GURL&), (override));
+  MOCK_METHOD(void, OnGeneratedPasswordSelected, (bool), (override));
   base::WeakPtr<PasswordChangeRunController> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
   }

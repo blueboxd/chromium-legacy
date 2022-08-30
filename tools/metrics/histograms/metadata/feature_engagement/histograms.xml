@@ -38,8 +38,8 @@ chromium-metrics-reviews@google.com.
       summary="educating users about adding website shortcuts to their home
                screen (using a message UI)"/>
   <variant name="IPH_AddToHomescreenTextBubble"
-      summary="educating users about adding website shortcuts to their home
-               screen (using a text bubble)"/>
+      summary="(obsolete) educating users about adding website shortcuts to
+               their home screen (using a text bubble)"/>
   <variant name="IPH_AutoDarkOptOut"
       summary="educating users about disabling auto dark feature globally"/>
   <variant name="IPH_AutoDarkUserEducationMessage"
@@ -167,6 +167,9 @@ chromium-metrics-reviews@google.com.
       summary="the Autofill password suggestions on iOS"/>
   <variant name="IPH_PreviewsOmniboxUI"
       summary="the Previews UI in the Android Omnibox"/>
+  <variant name="IPH_PriceDropNTP"
+      summary="the in product help message to inform users that a price drop
+               has occurred in a tab"/>
   <variant name="IPH_ProfileSwitch"
       summary="switching profiles using the profile menu"/>
   <variant name="IPH_PwaInstallAvailableFeature"
@@ -200,8 +203,6 @@ chromium-metrics-reviews@google.com.
       summary="A text bubble showing that a product can be tracked from the
                overflow menu"/>
   <variant name="IPH_SideSearch" summary="side search discovery"/>
-  <variant name="IPH_StartSurfaceTabSwitcherHomeButton"
-      summary="home button on the tab switcher when start surface is enabled"/>
   <variant name="IPH_TabGroupsDragAndDrop"
       summary="educating user to drop one tab on another tab to create group"/>
   <variant name="IPH_TabGroupsQuicklyComparePages"

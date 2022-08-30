@@ -23,7 +23,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -441,8 +441,9 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   observer.Wait();
 
   Shell* new_shell = new_shell_observer.GetShell();
-  EXPECT_EQ(url,
-            new_shell->web_contents()->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(
+      url,
+      new_shell->web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   return new_shell_observer.GetShell();
 }
 

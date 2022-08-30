@@ -19,15 +19,13 @@ import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.internal.R;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
@@ -41,10 +39,8 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.UpdateDelta;
-import org.chromium.components.prefs.PrefService;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -145,6 +141,24 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         int DRAWABLE = 0;
         int VECTOR_DRAWABLE = 1;
         int ANIMATED_VECTOR_DRAWABLE = 2;
+    }
+
+    /**
+     * Represents the values for the histogram Download.Incognito.Message.
+     */
+    @IntDef({IncognitoMessageEvent.SHOWN, IncognitoMessageEvent.ACCEPTED,
+            IncognitoMessageEvent.DISMISSED_WITH_GESTURE,
+            IncognitoMessageEvent.DISMISSED_WITH_TIMER, IncognitoMessageEvent.NUM_ENTRIES,
+            IncognitoMessageEvent.DISMISSED_WITH_DIFFERENT_REASON})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface IncognitoMessageEvent {
+        int SHOWN = 0;
+        int ACCEPTED = 1;
+        int DISMISSED_WITH_GESTURE = 2;
+        int DISMISSED_WITH_TIMER = 3;
+        int DISMISSED_WITH_DIFFERENT_REASON = 4;
+
+        int NUM_ENTRIES = 5;
     }
 
     /**
@@ -299,9 +313,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
     // Represents the currently displayed UI data.
     private DownloadProgressMessageUiData mCurrentInfo;
 
-    // Used to show the download later dialog to change download schedule.
-    private DownloadLaterDialogHelper mDownloadLaterDialogHelper;
-
     // The delegate to provide dependencies.
     private final Delegate mDelegate;
 
@@ -324,6 +335,41 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
     @Override
     public void onDownloadStarted() {
         computeNextStepForUpdate(null, true, false, false);
+    }
+
+    @Override
+    public void showIncognitoDownloadMessage(Callback<Boolean> callback) {
+        Context context = ContextUtils.getApplicationContext();
+
+        PropertyModel mPropertyModel =
+                new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS).build();
+
+        mPropertyModel.set(MessageBannerProperties.TITLE,
+                context.getString(R.string.incognito_download_message_title));
+        mPropertyModel.set(MessageBannerProperties.DESCRIPTION,
+                context.getString(R.string.incognito_download_message_detail));
+        mPropertyModel.set(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
+                context.getString(R.string.incognito_download_message_button));
+        mPropertyModel.set(MessageBannerProperties.ICON,
+                AppCompatResources.getDrawable(context, R.drawable.ic_incognito_download_message));
+        mPropertyModel.set(MessageBannerProperties.ON_PRIMARY_ACTION, () -> {
+            callback.onResult(/*accepted=*/true);
+            recordIncognitoDownloadMessage(IncognitoMessageEvent.ACCEPTED);
+            return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
+        });
+        mPropertyModel.set(MessageBannerProperties.ON_DISMISSED, (dismissReason) -> {
+            if (dismissReason == DismissReason.TIMER) {
+                recordIncognitoDownloadMessage(IncognitoMessageEvent.DISMISSED_WITH_TIMER);
+            } else if (dismissReason == DismissReason.GESTURE) {
+                recordIncognitoDownloadMessage(IncognitoMessageEvent.DISMISSED_WITH_GESTURE);
+            } else {
+                recordIncognitoDownloadMessage(
+                        IncognitoMessageEvent.DISMISSED_WITH_DIFFERENT_REASON);
+            }
+            callback.onResult(/*accepted=*/false);
+        });
+        getMessageDispatcher().enqueueWindowScopedMessage(mPropertyModel, /*highPriority=*/true);
+        recordIncognitoDownloadMessage(IncognitoMessageEvent.SHOWN);
     }
 
     /** Associates a notification ID with the tracked download for future usage. */
@@ -910,9 +956,7 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
             ContentId itemId, final OfflineItemSchedule schedule) {
         OfflineItem offlineItem = mTrackedItems.remove(itemId);
         removeNotification(itemId);
-        if (itemId != null && schedule != null) {
-            onChangeScheduleClicked(itemId, schedule);
-        } else if (itemId != null) {
+        if (itemId != null) {
             mDelegate.openDownload(itemId,
                     OTRProfileID.deserializeWithoutVerify(
                             offlineItem == null ? null : offlineItem.otrProfileId),
@@ -943,23 +987,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
             recordCloseButtonClicked();
             computeNextStepForUpdate(null, false, true, false);
         }
-    }
-
-    private void onChangeScheduleClicked(
-            final ContentId id, final OfflineItemSchedule currentSchedule) {
-        if (mDownloadLaterDialogHelper != null) mDownloadLaterDialogHelper.destroy();
-
-        PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
-        // Show the download later dialog to let the user change download schedule.
-        mDownloadLaterDialogHelper = DownloadLaterDialogHelper.create(
-                getContext(), getModalDialogManager(), prefService);
-        DownloadLaterMetrics.recordDownloadLaterUiEvent(
-                DownloadLaterUiEvent.DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CLICKED);
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(
-                currentSchedule, Source.DOWNLOAD_INFOBAR, (newSchedule) -> {
-                    if (newSchedule == null) return;
-                    OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
-                });
     }
 
     private static void recordMessageState(@UiState int state, DownloadProgressMessageUiData info) {
@@ -1022,5 +1049,14 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         } else {
             RecordUserAction.record("Android.Download.InfoBar.LinkClicked.OpenDownloadHome");
         }
+    }
+
+    /**
+     * Collects incognito download message event metrics.
+     * @param event The UI event to collect.
+     */
+    private static void recordIncognitoDownloadMessage(@IncognitoMessageEvent int event) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Download.Incognito.Message", event, IncognitoMessageEvent.NUM_ENTRIES);
     }
 }

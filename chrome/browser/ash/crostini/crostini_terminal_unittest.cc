@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -21,15 +22,15 @@ using CrostiniTerminalTest = testing::Test;
 TEST_F(CrostiniTerminalTest, GenerateTerminalURL) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
-  EXPECT_EQ(
-      GenerateTerminalURL(&profile, "", ContainerId::GetDefault(), "", {}),
-      "chrome-untrusted://terminal/html/terminal.html"
-      "?command=vmshell"
-      "&args[]=--vm_name%3Dtermina"
-      "&args[]=--target_container%3Dpenguin"
-      "&args[]=--owner_id%3Dtest");
+  EXPECT_EQ(GenerateTerminalURL(&profile, "", DefaultContainerId(), "", {}),
+            "chrome-untrusted://terminal/html/terminal.html"
+            "?command=vmshell"
+            "&args[]=--vm_name%3Dtermina"
+            "&args[]=--target_container%3Dpenguin"
+            "&args[]=--owner_id%3Dtest");
   EXPECT_EQ(GenerateTerminalURL(&profile, "red",
-                                ContainerId("test-vm", "test-container"),
+                                guest_os::GuestId(kCrostiniDefaultVmType,
+                                                  "test-vm", "test-container"),
                                 "/home/user", {"arg1"}),
             "chrome-untrusted://terminal/html/terminal.html"
             "?command=vmshell"
@@ -49,10 +50,14 @@ TEST_F(CrostiniTerminalTest, ShortcutIdForSSH) {
 TEST_F(CrostiniTerminalTest, ShortcutIdFromContainerId) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
-  ContainerId id("test-vm", "test-container");
-  EXPECT_EQ(ShortcutIdFromContainerId(&profile, id),
-            R"({"container_name":"test-container","shortcut":"terminal",)"
-            R"("vm_name":"test-vm"})");
+  guest_os::GuestId id(kCrostiniDefaultVmType, "test-vm", "test-container");
+  std::string shortcut = ShortcutIdFromContainerId(&profile, id);
+  EXPECT_EQ(shortcut, R"({"container_name":"test-container",)"
+                      R"("shortcut":"terminal",)"
+                      R"("vm_name":"test-vm",)"
+                      R"("vm_type":0})");
+  auto extras = ExtrasFromShortcutId(*base::JSONReader::Read(shortcut));
+  EXPECT_EQ(3, extras.size());
 
   // Container with multi-profile should include settings_profile.
   auto pref = base::JSONReader::Read(R"({
@@ -66,11 +71,14 @@ TEST_F(CrostiniTerminalTest, ShortcutIdFromContainerId) {
   })");
   ASSERT_TRUE(pref.has_value());
   profile.GetPrefs()->Set(prefs::kCrostiniTerminalSettings, std::move(*pref));
-  EXPECT_EQ(ShortcutIdFromContainerId(&profile, id),
-            R"({"container_name":"test-container",)"
-            R"("settings_profile":"green",)"
-            R"("shortcut":"terminal",)"
-            R"("vm_name":"test-vm"})");
+  shortcut = ShortcutIdFromContainerId(&profile, id);
+  EXPECT_EQ(shortcut, R"({"container_name":"test-container",)"
+                      R"("settings_profile":"green",)"
+                      R"("shortcut":"terminal",)"
+                      R"("vm_name":"test-vm",)"
+                      R"("vm_type":0})");
+  extras = ExtrasFromShortcutId(*base::JSONReader::Read(shortcut));
+  EXPECT_EQ(4, extras.size());
 }
 
 TEST_F(CrostiniTerminalTest, GetSSHConnections) {

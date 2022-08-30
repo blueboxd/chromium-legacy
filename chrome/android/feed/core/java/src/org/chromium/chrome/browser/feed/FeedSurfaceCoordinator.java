@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,9 +48,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -296,19 +292,6 @@ public class FeedSurfaceCoordinator
         mEmbeddingSurfaceCreatedTimeNs = embeddingSurfaceCreatedTimeNs;
         mWebFeedHasContent = false;
         mSectionHeaderIndex = 0;
-
-        TabModelObserver tabModelObserver = new TabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                if (mReliabilityLogger != null) {
-                    mReliabilityLogger.onSwitchTabs();
-                }
-            }
-        };
-        tabModelSelector.getModel(/*incognito=*/false).addObserver(tabModelObserver);
-        // The feed isn't shown in incognito tabs, but we add the observer to record when the user
-        // switches to an incognito tab from the feed.
-        tabModelSelector.getModel(/*incognito=*/true).addObserver(tabModelObserver);
 
         Resources resources = mActivity.getResources();
 
@@ -594,13 +577,10 @@ public class FeedSurfaceCoordinator
 
     private RecyclerView setUpView() {
         mContentManager = new NtpListContentManager();
-        Context context = new ContextThemeWrapper(mActivity,
-                (mShowDarkBackground ? R.style.ThemeOverlay_Feed_Dark
-                                     : R.style.ThemeOverlay_Feed_Light));
         ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
         if (processScope != null) {
-            mDependencyProvider =
-                    new FeedSurfaceScopeDependencyProvider(mActivity, context, mShowDarkBackground);
+            mDependencyProvider = new FeedSurfaceScopeDependencyProvider(
+                    mActivity, mActivity, mShowDarkBackground);
 
             mSurfaceScope = processScope.obtainSurfaceScope(mDependencyProvider);
             if (mScrollableContainerDelegate != null) {
@@ -624,7 +604,7 @@ public class FeedSurfaceCoordinator
             }
 
         } else {
-            mHybridListRenderer = new NativeViewListRenderer(context);
+            mHybridListRenderer = new NativeViewListRenderer(mActivity);
         }
 
         RecyclerView view;
@@ -633,7 +613,7 @@ public class FeedSurfaceCoordinator
             view = (RecyclerView) mHybridListRenderer.bind(mContentManager, mViewportView);
             view.setId(R.id.feed_stream_recycler_view);
             view.setClipToPadding(false);
-            view.setBackgroundColor(SemanticColorUtils.getDefaultBgColor(context));
+            view.setBackgroundColor(SemanticColorUtils.getDefaultBgColor(mActivity));
 
             // Work around https://crbug.com/943873 where default focus highlight shows up after
             // toggling dark mode.

@@ -23,11 +23,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-namespace net {
-
-namespace nqe {
-
-namespace internal {
+namespace net::nqe::internal {
 
 namespace {
 
@@ -100,8 +96,7 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_ReservedHostUncached) {
 
   MockCachingHostResolver mock_host_resolver;
 
-  scoped_refptr<net::RuleBasedHostResolverProc> rules(
-      new net::RuleBasedHostResolverProc(nullptr));
+  auto rules = base::MakeRefCounted<net::RuleBasedHostResolverProc>(nullptr);
 
   // Add example3.com resolution to the DNS cache.
   mock_host_resolver.rules()->AddRule("example3.com", "127.0.0.3");
@@ -194,8 +189,7 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_Localhost) {
   std::unique_ptr<ContextHostResolver> resolver =
       HostResolver::CreateStandaloneContextResolver(NetLog::Get());
 
-  scoped_refptr<net::RuleBasedHostResolverProc> rules(
-      new net::RuleBasedHostResolverProc(nullptr));
+  auto rules = base::MakeRefCounted<net::RuleBasedHostResolverProc>(nullptr);
 
   EXPECT_TRUE(IsPrivateHostForTesting(
       resolver.get(), HostPortPair("localhost", 443), NetworkIsolationKey()));
@@ -218,8 +212,4 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_Localhost) {
 
 }  // namespace
 
-}  // namespace internal
-
-}  // namespace nqe
-
-}  // namespace net
+}  // namespace net::nqe::internal

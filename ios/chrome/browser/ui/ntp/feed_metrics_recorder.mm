@@ -14,7 +14,6 @@
 #import "components/feed/core/v2/public/common_enums.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
-#import "ios/chrome/browser/ui/ntp/feed_session_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -309,8 +308,7 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
 }  // namespace
 
 @interface FeedMetricsRecorder ()
-// Helper for recording session time metrics.
-@property(nonatomic, strong) FeedSessionRecorder* sessionRecorder;
+
 // Tracking property to avoid duplicate recordings of
 // FeedEngagementType::kFeedEngagedSimple.
 @property(nonatomic, assign) BOOL engagedSimpleReportedDiscover;
@@ -329,15 +327,6 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
 @end
 
 @implementation FeedMetricsRecorder
-
-#pragma mark - Properties
-
-- (FeedSessionRecorder*)sessionRecorder {
-  if (!_sessionRecorder) {
-    _sessionRecorder = [[FeedSessionRecorder alloc] init];
-  }
-  return _sessionRecorder;
-}
 
 #pragma mark - Public
 
@@ -904,8 +893,6 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
   if (scrollDistance > kMinScrollThreshold || interacted) {
     [self recordEngaged];
   }
-
-  [self.sessionRecorder recordUserInteractionOrScrolling];
 }
 
 // Records any direct interaction with the Feed, this doesn't include scrolling.
@@ -929,7 +916,7 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
   }
 }
 
-// Records simple engagement for the current |selectedFeed|.
+// Records simple engagement for the current `selectedFeed`.
 - (void)recordEngagedSimple {
   // If neither feed has been engaged with, log "AllFeeds" simple engagement.
   if (!self.engagedSimpleReportedDiscover &&
@@ -979,9 +966,9 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
     self.engagedReportedFollowing = YES;
 
     // Log follow count when engaging with Following feed.
-    // TODO(crbug.com/1322640): |followDelegate| is nil when navigating to an
+    // TODO(crbug.com/1322640): `followDelegate` is nil when navigating to an
     // article, since NTPCoordinator is stopped first. When this is fixed, we
-    // should call |recordFollowCount| here.
+    // should call `recordFollowCount` here.
   }
 
   // TODO(crbug.com/1322640): Separate user action for Following feed
@@ -1008,7 +995,7 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
   self.scrolledReportedFollowing = NO;
 }
 
-// Records the |durationInSeconds| it took to Discover feed to perform any
+// Records the `durationInSeconds` it took to Discover feed to perform any
 // network operation.
 - (void)recordNetworkRequestDurationInSeconds:
     (NSTimeInterval)durationInSeconds {

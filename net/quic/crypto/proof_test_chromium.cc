@@ -22,8 +22,7 @@
 
 using std::string;
 
-namespace net {
-namespace test {
+namespace net::test {
 namespace {
 
 // TestProofVerifierCallback is a simple callback for a quic::ProofVerifier that
@@ -68,8 +67,8 @@ void RunVerification(quic::ProofVerifier* verifier,
   string error_details;
   std::unique_ptr<quic::ProofVerifyContext> verify_context(
       quic::test::crypto_test_utils::ProofVerifyContextForTesting());
-  std::unique_ptr<TestProofVerifierCallback> callback(
-      new TestProofVerifierCallback(&comp_callback, &ok, &error_details));
+  auto callback = std::make_unique<TestProofVerifierCallback>(
+      &comp_callback, &ok, &error_details);
 
   quic::QuicAsyncStatus status = verifier->VerifyProof(
       hostname, port, server_config, quic_version, chlo_hash, certs, "", proof,
@@ -152,10 +151,9 @@ TEST_P(ProofTest, Verify) {
   quic::QuicSocketAddress server_addr;
   quic::QuicSocketAddress client_addr;
 
-  std::unique_ptr<quic::ProofSource::Callback> cb(
-      new TestCallback(&called, &ok, &chain, &proof));
-  std::unique_ptr<quic::ProofSource::Callback> first_cb(
-      new TestCallback(&first_called, &first_ok, &first_chain, &first_proof));
+  auto cb = std::make_unique<TestCallback>(&called, &ok, &chain, &proof);
+  auto first_cb = std::make_unique<TestCallback>(&first_called, &first_ok,
+                                                 &first_chain, &first_proof);
 
   // GetProof here expects the async method to invoke the callback
   // synchronously.
@@ -290,8 +288,7 @@ TEST_P(ProofTest, UseAfterFree) {
   quic::QuicCryptoProof proof;
   quic::QuicSocketAddress server_addr;
   quic::QuicSocketAddress client_addr;
-  std::unique_ptr<quic::ProofSource::Callback> cb(
-      new TestCallback(&called, &ok, &chain, &proof));
+  auto cb = std::make_unique<TestCallback>(&called, &ok, &chain, &proof);
 
   // GetProof here expects the async method to invoke the callback
   // synchronously.
@@ -311,5 +308,4 @@ TEST_P(ProofTest, UseAfterFree) {
   }
 }
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

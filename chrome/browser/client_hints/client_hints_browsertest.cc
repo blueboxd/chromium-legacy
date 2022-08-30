@@ -275,6 +275,33 @@ void CheckUserAgentMinorVersion(
   }
 }
 
+// A helper function that returns true when the legacy GREASE implementation is
+// seen. It relies on the old algorithm having only 3 possible permutations due
+// to a very limited set of allowed special characters. This may be removed once
+// the legacy algorithm is no longer supported for emergency situations.
+bool SawOldGrease(const std::string& ua_ch_result) {
+  bool seen_legacy = false;
+  // The legacy GREASE algorithm had only semicolon and space, and thus had one
+  // of these three permutations.
+  const std::string old_grease_permutations[]{";Not A Brand", " Not;A Brand",
+                                              " Not A;Brand"};
+  for (auto i : old_grease_permutations) {
+    seen_legacy = seen_legacy || (ua_ch_result.find(i) != std::string::npos);
+  }
+  return seen_legacy;
+}
+
+// A helper function to determine whether the GREASE algorithm per the spec:
+// https://wicg.github.io/ua-client-hints/#create-arbitrary-brands-section
+// was observed in the client hint user agent header.
+bool SawUpdatedGrease(const std::string& ua_ch_result) {
+  // The updated GREASE algorithm would contain at least two of these
+  // characters.
+  static constexpr char kUpdatedGreaseRegex[] =
+      "Not[ ()\\-.\\/:;=?_]A[ ()\\-.\\/:;=?_]Brand";
+  return re2::RE2::PartialMatch(ua_ch_result, kUpdatedGreaseRegex);
+}
+
 enum class UserAgentOriginTrialTestType {
   UAReduction,
   UADeprecation,
@@ -1206,21 +1233,6 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 // headers.
 INSTANTIATE_TEST_SUITE_P(All, ClientHintsBrowserTest, testing::Bool());
 
-class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
-  std::unique_ptr<base::FeatureList> EnabledFeatures() override {
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        "AllowClientHintsToThirdParty,UserAgentClientHint,"
-        "PrefersColorSchemeClientHintHeader,ViewportHeightClientHintHeader",
-        "");
-    return feature_list;
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ClientHintsAllowThirdPartyBrowserTest,
-                         testing::Bool());
-
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
   for (const auto& elem : network::GetClientHintToNameMap()) {
     const auto& header = elem.second;
@@ -1961,73 +1973,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, OffTheRecordIndependent2) {
                           browser());
 }
 
-// Test that client hints are attached to third party subresources if
-// AllowClientHintsToThirdParty feature is enabled.
-IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
-                       ClientHintsThirdPartyAllowed_HttpEquiv) {
-  GURL gurl;
-  unsigned update_event_count = 0;
-  if (GetParam()) {
-    gurl = http_equiv_accept_ch_img_localhost();
-  } else {
-    gurl = accept_ch_img_localhost();
-    update_event_count = 1;
-  }
-
-  base::HistogramTester histogram_tester;
-
-  SetClientHintExpectationsOnMainFrame(false);
-  SetClientHintExpectationsOnSubresources(true);
-
-  // Add client hints for the embedded test server.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount",
-                                    update_event_count);
-
-  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
-
-  // Requests to third party servers should not have client hints attached.
-  EXPECT_EQ(1u, third_party_request_count_seen());
-
-  // Device memory, viewport width, DRP, and UA client hints should be sent to
-  // the third-party when feature "AllowClientHintsToThirdParty" is enabled.
-  EXPECT_EQ(6u, third_party_client_hints_count_seen());
-}
-IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
-                       ClientHintsThirdPartyAllowed_MetaName) {
-  GURL gurl;
-  unsigned update_event_count = 0;
-  if (GetParam()) {
-    gurl = meta_name_accept_ch_img_localhost();
-  } else {
-    gurl = accept_ch_img_localhost();
-    update_event_count = 1;
-  }
-
-  base::HistogramTester histogram_tester;
-
-  SetClientHintExpectationsOnMainFrame(false);
-  SetClientHintExpectationsOnSubresources(true);
-
-  // Add client hints for the embedded test server.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount",
-                                    update_event_count);
-
-  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
-
-  // Requests to third party servers should not have client hints attached.
-  EXPECT_EQ(1u, third_party_request_count_seen());
-
-  // Device memory, viewport width, DRP, and UA client hints should be sent to
-  // the third-party when feature "AllowClientHintsToThirdParty" is enabled.
-  EXPECT_EQ(6u, third_party_client_hints_count_seen());
-}
-
-// Test that client hints are not attached to third party subresources if
-// AllowClientHintsToThirdParty feature is not enabled.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsThirdPartyNotAllowed_HttpEquiv) {
+// Only default client hints should be delegated to third party subresources.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, Default_HttpEquiv) {
   GURL gurl;
   unsigned update_event_count = 0;
   if (GetParam()) {
@@ -2056,13 +2003,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
 
-  // Client hints should not be sent to the third-party when feature
-  // "AllowClientHintsToThirdParty" is not enabled, with the exception of the
-  // `Sec-CH-UA` hint, which is sent with every request.
+  // Client hints should not be sent to the third-party with the exception of
+  // the `Sec-CH-UA/-Platform/-Mobile))` hints sent every request.
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsThirdPartyNotAllowed_MetaName) {
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, Default_MetaName) {
   GURL gurl;
   unsigned update_event_count = 0;
   if (GetParam()) {
@@ -2091,9 +2036,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
 
-  // Client hints should not be sent to the third-party when feature
-  // "AllowClientHintsToThirdParty" is not enabled, with the exception of the
-  // `Sec-CH-UA` hint, which is sent with every request.
+  // Client hints should not be sent to the third-party with the exception of
+  // the `Sec-CH-UA/-Platform/-Mobile))` hints sent every request.
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
 }
 
@@ -5344,33 +5288,40 @@ IN_PROC_BROWSER_TEST_F(ClientHintsCommandLineSwitchBrowserTest,
       ui_test_utils::NavigateToURL(otr_browser, without_accept_ch_url()));
 }
 
-class UpdatedGreaseFeatureParamTest : public ClientHintsBrowserTest {
+// Validate that the updated GREASE algorithm is used by default. The continued
+// support of the old algorithm (which used only semicolon and space) is tested
+// separately below. That functionality will be maintained for a period of time
+// until we are confident in more permutations generated by the updated
+// algorithm.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UpdatedGREASEByDefault) {
+  const GURL gurl = accept_ch_url();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
+  std::string ua_ch_result = main_frame_ua_observed();
+
+  ASSERT_TRUE(SawUpdatedGrease(ua_ch_result) && !SawOldGrease(ua_ch_result));
+}
+
+class GreaseFeatureParamOptOutTest : public ClientHintsBrowserTest {
+  // Test that feature param opt outs are able to trigger the old algorithm,
+  // which we will maintain until additional confidence in the permutations of
+  // the new algorithm is attained.
   std::unique_ptr<base::FeatureList> EnabledFeatures() override {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("GreaseUACH:updated_algorithm/true",
-                                            "");
+    feature_list->InitializeFromCommandLine(
+        "GreaseUACH:updated_algorithm/false", "");
     return feature_list;
   }
 };
 
-// Checks that the updated GREASE algorithm is used when explicitly enabled.
-IN_PROC_BROWSER_TEST_F(UpdatedGreaseFeatureParamTest,
-                       UpdatedGreaseFeatureParamTest) {
+// Checks that the updated GREASE algorithm is not used when explicitly
+// disabled.
+IN_PROC_BROWSER_TEST_F(GreaseFeatureParamOptOutTest,
+                       UpdatedGreaseFeatureParamOptOutTest) {
   const GURL gurl = accept_ch_url();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   std::string ua_ch_result = main_frame_ua_observed();
-  // The updated GREASE algorithm should contain at least one of these
-  // characters. The equal sign, space, and semicolon are not present as they
-  // exist in the old algorithm.
-  std::vector<char> updated_grease_chars = {'(', ':', '-', '.',
-                                            '/', ')', '?', '_'};
-  bool saw_updated_grease = false;
-  for (auto i : updated_grease_chars) {
-    if (ua_ch_result.find(i) != std::string::npos) {
-      saw_updated_grease = true;
-    }
-  }
-  ASSERT_TRUE(saw_updated_grease);
+
+  ASSERT_TRUE(SawOldGrease(ua_ch_result));
 }
 
 class GreaseEnterprisePolicyTest : public ClientHintsBrowserTest {
@@ -5381,13 +5332,6 @@ class GreaseEnterprisePolicyTest : public ClientHintsBrowserTest {
               absl::optional<base::Value>(false));
     provider_.UpdateChromePolicy(policies);
   }
-
-  std::unique_ptr<base::FeatureList> EnabledFeatures() override {
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("GreaseUACH:updated_algorithm/true",
-                                            "");
-    return feature_list;
-  }
 };
 
 // Makes sure that the enterprise policy is able to prevent updated GREASE.
@@ -5395,14 +5339,8 @@ IN_PROC_BROWSER_TEST_F(GreaseEnterprisePolicyTest, GreaseEnterprisePolicyTest) {
   const GURL gurl = accept_ch_url();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   std::string ua_ch_result = main_frame_ua_observed();
-  // The updated GREASE algorithm would contain at least one of these
-  // characters. The equal sign, space, and semicolon are not present as they
-  // exist in the old algorithm.
-  std::vector<char> updated_grease_chars = {'(', ':', '-', '.',
-                                            '/', ')', '?', '_'};
-  for (auto i : updated_grease_chars) {
-    ASSERT_TRUE(ua_ch_result.find(i) == std::string::npos);
-  }
+
+  ASSERT_TRUE(SawOldGrease(ua_ch_result));
 }
 IN_PROC_BROWSER_TEST_F(GreaseEnterprisePolicyTest,
                        GreaseEnterprisePolicyDynamicRefreshTest) {
@@ -5416,13 +5354,8 @@ IN_PROC_BROWSER_TEST_F(GreaseEnterprisePolicyTest,
   provider_.UpdateChromePolicy(policies);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   std::string ua_ch_result = main_frame_ua_observed();
-  bool seen_updated = false;
-  std::vector<char> updated_grease_chars = {'(', ':', '-', '.',
-                                            '/', ')', '?', '_'};
-  for (auto c : updated_grease_chars) {
-    seen_updated = seen_updated || (ua_ch_result.find(c) != std::string::npos);
-  }
-  ASSERT_TRUE(seen_updated);
+
+  ASSERT_TRUE(SawUpdatedGrease(ua_ch_result) && !SawOldGrease(ua_ch_result));
 }
 
 // Tests that the Sec-CH-UA-Reduced client hint gets cleared on a redirect if

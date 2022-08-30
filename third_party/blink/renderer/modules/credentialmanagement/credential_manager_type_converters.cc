@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_rps_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_logout_rps_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -232,8 +232,8 @@ TypeConverter<absl::optional<UserVerificationRequirement>, String>::Convert(
 }
 
 // static
-AttestationConveyancePreference
-TypeConverter<AttestationConveyancePreference, String>::Convert(
+absl::optional<AttestationConveyancePreference>
+TypeConverter<absl::optional<AttestationConveyancePreference>, String>::Convert(
     const String& preference) {
   if (preference == "none")
     return AttestationConveyancePreference::NONE;
@@ -243,22 +243,20 @@ TypeConverter<AttestationConveyancePreference, String>::Convert(
     return AttestationConveyancePreference::DIRECT;
   if (preference == "enterprise")
     return AttestationConveyancePreference::ENTERPRISE;
-  NOTREACHED();
-  return AttestationConveyancePreference::NONE;
+  return absl::nullopt;
 }
 
 // static
-AuthenticatorAttachment
-TypeConverter<AuthenticatorAttachment, absl::optional<String>>::Convert(
-    const absl::optional<String>& attachment) {
+absl::optional<AuthenticatorAttachment> TypeConverter<
+    absl::optional<AuthenticatorAttachment>,
+    absl::optional<String>>::Convert(const absl::optional<String>& attachment) {
   if (!attachment.has_value())
     return AuthenticatorAttachment::NO_PREFERENCE;
   if (attachment.value() == "platform")
     return AuthenticatorAttachment::PLATFORM;
   if (attachment.value() == "cross-platform")
     return AuthenticatorAttachment::CROSS_PLATFORM;
-  NOTREACHED();
-  return AuthenticatorAttachment::NO_PREFERENCE;
+  return absl::nullopt;
 }
 
 // static
@@ -283,11 +281,18 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
     Convert(const blink::AuthenticatorSelectionCriteria& criteria) {
   auto mojo_criteria =
       blink::mojom::blink::AuthenticatorSelectionCriteria::New();
-  absl::optional<String> attachment;
-  if (criteria.hasAuthenticatorAttachment())
-    attachment = criteria.authenticatorAttachment();
+
   mojo_criteria->authenticator_attachment =
-      ConvertTo<AuthenticatorAttachment>(attachment);
+      AuthenticatorAttachment::NO_PREFERENCE;
+  if (criteria.hasAuthenticatorAttachment()) {
+    absl::optional<String> attachment = criteria.authenticatorAttachment();
+    auto maybe_attachment =
+        ConvertTo<absl::optional<AuthenticatorAttachment>>(attachment);
+    if (maybe_attachment) {
+      mojo_criteria->authenticator_attachment = *maybe_attachment;
+    }
+  }
+
   absl::optional<ResidentKeyRequirement> resident_key;
   if (criteria.hasResidentKey()) {
     resident_key = ConvertTo<absl::optional<ResidentKeyRequirement>>(
@@ -315,8 +320,8 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
 
 // static
 LogoutRpsRequestPtr
-TypeConverter<LogoutRpsRequestPtr, blink::FederatedCredentialLogoutRpsRequest>::
-    Convert(const blink::FederatedCredentialLogoutRpsRequest& request) {
+TypeConverter<LogoutRpsRequestPtr, blink::IdentityCredentialLogoutRpsRequest>::
+    Convert(const blink::IdentityCredentialLogoutRpsRequest& request) {
   auto mojo_request = LogoutRpsRequest::New();
 
   mojo_request->url = blink::KURL(request.url());
@@ -464,23 +469,13 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
         AuthenticatorSelectionCriteria::From(*options.authenticatorSelection());
   }
 
-  mojo_options->attestation =
-      blink::mojom::AttestationConveyancePreference::NONE;
+  mojo_options->attestation = AttestationConveyancePreference::NONE;
   if (options.hasAttestation()) {
-    const auto& attestation = options.attestation();
-    if (attestation == "none") {
-      // Default value.
-    } else if (attestation == "indirect") {
-      mojo_options->attestation =
-          blink::mojom::AttestationConveyancePreference::INDIRECT;
-    } else if (attestation == "direct") {
-      mojo_options->attestation =
-          blink::mojom::AttestationConveyancePreference::DIRECT;
-    } else if (attestation == "enterprise") {
-      mojo_options->attestation =
-          blink::mojom::AttestationConveyancePreference::ENTERPRISE;
-    } else {
-      return nullptr;
+    absl::optional<AttestationConveyancePreference> attestation =
+        ConvertTo<absl::optional<AttestationConveyancePreference>>(
+            options.attestation());
+    if (attestation) {
+      mojo_options->attestation = *attestation;
     }
   }
 

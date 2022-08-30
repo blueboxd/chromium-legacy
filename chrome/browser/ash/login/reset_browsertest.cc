@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/oobe_window_visibility_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
@@ -30,12 +31,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -82,7 +83,9 @@ void ClickResetButton() {
 }
 
 void ClickRestartButton() {
-  test::OobeJS().TapOnPath({kResetScreen, kRestartButton});
+  // Clicking on the button to restart can be flaky if a synchronous call is
+  // used because the WebUI can be destroyed before it returns.
+  test::TapOnPathAndWaitForOobeToBeDestroyed({kResetScreen, kRestartButton});
 }
 
 void ClickToConfirmButton() {
@@ -289,7 +292,9 @@ IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
+
   ClickRestartButton();
+
   ASSERT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 
@@ -513,8 +518,7 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       // TODO(crbug.com/1324763): Re-enable this test
-                       DISABLED_ResetFromSigninWithFirmwareUpdate) {
+                       ResetFromSigninWithFirmwareUpdate) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
 
   ASSERT_TRUE(HasPendingTpmFirmwareUpdateCheck());

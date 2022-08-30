@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/stable_video_decoder_service.h"
 
+#include "media/mojo/common/media_type_converters.h"
+
 namespace media {
 
 StableVideoDecoderService::StableVideoDecoderService(
@@ -26,7 +28,7 @@ StableVideoDecoderService::~StableVideoDecoderService() {
 void StableVideoDecoderService::GetSupportedConfigs(
     GetSupportedConfigsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  dst_video_decoder_remote_->GetSupportedConfigs(std::move(callback));
 }
 
 void StableVideoDecoderService::Construct(
@@ -72,6 +74,7 @@ void StableVideoDecoderService::Initialize(
     InitializeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!video_decoder_client_receiver_.is_bound()) {
+    DVLOG(2) << __func__ << " Construct() must be called first";
     std::move(callback).Run(DecoderStatus::Codes::kFailedToCreateDecoder,
                             /*needs_bitstream_conversion=*/false,
                             /*max_decode_requests=*/1,
@@ -99,18 +102,39 @@ void StableVideoDecoderService::Decode(
     const scoped_refptr<DecoderBuffer>& buffer,
     DecodeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  if (!video_decoder_client_receiver_.is_bound()) {
+    DVLOG(2) << __func__ << " Construct() must be called first";
+    std::move(callback).Run(DecoderStatus::Codes::kFailedToCreateDecoder);
+    return;
+  }
+
+  CHECK(buffer);
+  mojom::DecoderBufferPtr mojo_buffer = mojom::DecoderBuffer::From(*buffer);
+  CHECK(mojo_buffer);
+  dst_video_decoder_remote_->Decode(std::move(mojo_buffer),
+                                    std::move(callback));
 }
 
 void StableVideoDecoderService::Reset(ResetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  if (!video_decoder_client_receiver_.is_bound()) {
+    DVLOG(2) << __func__ << " Construct() must be called first";
+    std::move(callback).Run();
+    return;
+  }
+  dst_video_decoder_remote_->Reset(std::move(callback));
 }
 
 void StableVideoDecoderService::ReleaseVideoFrame(
     const base::UnguessableToken& release_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(video_frame_handle_releaser_remote_.is_bound());
+  // Note: we don't pass a gpu::SyncToken because it's assumed that the client
+  // (the GPU process) has already waited on the SyncToken that comes from the
+  // ultimate client (the renderer process) before calling ReleaseVideoFrame()
+  // on the out-of-process video decoder.
+  video_frame_handle_releaser_remote_->ReleaseVideoFrame(
+      release_token, /*release_sync_token=*/absl::nullopt);
 }
 
 void StableVideoDecoderService::OnVideoFrameDecoded(
@@ -126,7 +150,8 @@ void StableVideoDecoderService::OnVideoFrameDecoded(
 
 void StableVideoDecoderService::OnWaiting(WaitingReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(stable_video_decoder_client_remote_.is_bound());
+  stable_video_decoder_client_remote_->OnWaiting(reason);
 }
 
 void StableVideoDecoderService::RequestOverlayInfo(
@@ -137,7 +162,8 @@ void StableVideoDecoderService::RequestOverlayInfo(
 
 void StableVideoDecoderService::AddLogRecord(const MediaLogRecord& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(stable_media_log_remote_.is_bound());
+  stable_media_log_remote_->AddLogRecord(event);
 }
 
 }  // namespace media

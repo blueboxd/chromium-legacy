@@ -124,6 +124,7 @@ class Controller : public ScriptExecutorDelegate,
   password_manager::PasswordChangeSuccessTracker*
   GetPasswordChangeSuccessTracker() override;
   content::WebContents* GetWebContents() override;
+  const std::string GetLocale() override;
   void SetJsFlowLibrary(const std::string& js_flow_library) override;
   JsFlowDevtoolsWrapper* GetJsFlowDevtoolsWrapper() override;
   std::string GetEmailAddressForAccessTokenAccount() override;
@@ -138,6 +139,8 @@ class Controller : public ScriptExecutorDelegate,
   bool ShouldShowWarning() override;
   ProcessedActionStatusDetailsProto& GetLogInfo() override;
   bool MustUseBackendData() const override;
+  void OnActionsResponseReceived(
+      const RoundtripNetworkStats& network_stats) override;
 
   // Show the UI if it's not already shown. This is only meaningful while in
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
@@ -234,13 +237,7 @@ class Controller : public ScriptExecutorDelegate,
   // execution with an error.
   void MaybeAutostartScript(const std::vector<ScriptHandle>& runnable_scripts);
 
-  void DisableAutostart();
-
   void InitFromParameters();
-
-  // Called when a script is selected.
-  void OnScriptSelected(const ScriptHandle& handle,
-                        std::unique_ptr<TriggerContext> context);
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsForPage() override;
@@ -297,6 +294,10 @@ class Controller : public ScriptExecutorDelegate,
   void ResetState();
   void SetDirectActionScripts(
       const std::vector<ScriptHandle>& direct_action_scripts);
+
+  // Records flow metrics. This may be invoked multiple times per flow, but will
+  // only record the first impression for each flow.
+  void MaybeRecordFlowFinishedMetrics(Metrics::FlowFinishedState state);
 
   // Sets the semantic selector in the DOM annotation service.
   void SetSemanticSelectorPolicy(SemanticSelectorPolicy policy);
@@ -443,6 +444,10 @@ class Controller : public ScriptExecutorDelegate,
   // If instantiated, will start delivering the required model for annotating
   // DOM nodes. May be nullptr.
   const raw_ptr<AnnotateDomModelService> annotate_dom_model_service_;
+
+  // The accumulated network stats of an entire flow. Used for metrics upon
+  // flow completion.
+  RoundtripNetworkStats accumulated_network_stats_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 };

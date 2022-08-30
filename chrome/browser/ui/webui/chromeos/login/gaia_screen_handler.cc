@@ -408,6 +408,8 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     const bool* collect_stats_consent) {
   base::Value params(base::Value::Type::DICTIONARY);
 
+  // TODO(https://crbug.com/1338102): Looks like `forceReload` isn't used
+  //                                  anywhere further. Remove?
   params.SetBoolKey("forceReload", context.force_reload);
   params.SetStringKey("gaiaId", context.gaia_id);
   params.SetBoolKey("readOnlyEmail", true);
@@ -717,6 +719,13 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
       std::make_unique<LoginClientCertUsageObserver>();
+
+  // Clear old storage partitions after a new sign-in page is loaded. All
+  // reference to the old storage partitions should be cleared.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  signin_partition_manager->DisposeOldStoragePartitions();
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
@@ -1211,6 +1220,10 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
   }
 }
 
+void GaiaScreenHandler::Reset() {
+  CallExternalAPI("reset");
+}
+
 void GaiaScreenHandler::ShowSecurityTokenPinDialog(
     const std::string& /*caller_extension_name*/,
     security_token_pin::CodeType code_type,
@@ -1329,6 +1342,10 @@ void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
   params.SetBoolKey("familyLinkAllowed", family_link_allowed);
 
   CallExternalAPI("showAllowlistCheckFailedError", std::move(params));
+}
+
+void GaiaScreenHandler::ReloadGaiaAuthenticator() {
+  CallExternalAPI("doReload");
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force) {

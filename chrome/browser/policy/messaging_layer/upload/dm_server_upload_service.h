@@ -16,14 +16,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
+#include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 #include "components/reporting/util/task_runner_context.h"
 #include "net/base/backoff_entry.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/profiles/profile.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace reporting {
 
@@ -101,6 +98,7 @@ class DmServerUploadService {
     DmServerUploader(
         bool need_encryption_key,
         std::vector<EncryptedRecord> records,
+        ScopedReservation scoped_reservation,
         RecordHandler* handler,
         ReportSuccessfulUploadCallback report_success_upload_cb,
         EncryptionKeyAttachedCallback encryption_key_attached_cb,
@@ -113,6 +111,10 @@ class DmServerUploadService {
     // OnStart checks to ensure that our record set isn't empty, and requests
     // handler size status from |handlers_|.
     void OnStart() override;
+
+    // OnComplete finalizes the uploader, releasing resources that are no longer
+    // used.
+    void OnCompletion() override;
 
     // ProcessRecords verifies that the records provided are parseable and sets
     // the |Record|s up for handling by the |RecordHandlers|s. On
@@ -136,6 +138,7 @@ class DmServerUploadService {
 
     const bool need_encryption_key_;
     std::vector<EncryptedRecord> encrypted_records_;
+    ScopedReservation scoped_reservation_;
     const ReportSuccessfulUploadCallback report_success_upload_cb_;
     const EncryptionKeyAttachedCallback encryption_key_attached_cb_;
     raw_ptr<RecordHandler> handler_;
@@ -162,6 +165,7 @@ class DmServerUploadService {
   Status EnqueueUpload(
       bool need_encryption_key,
       std::vector<EncryptedRecord> records,
+      ScopedReservation scoped_reservation,
       ReportSuccessfulUploadCallback report_upload_success_cb,
       EncryptionKeyAttachedCallback encryption_key_attached_cb);
 

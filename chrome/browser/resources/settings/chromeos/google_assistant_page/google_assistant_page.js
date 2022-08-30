@@ -6,20 +6,21 @@
  * @fileoverview 'settings-google-assistant-page' is the settings page
  * containing Google Assistant settings.
  */
-import '//resources/cr_elements/cr_link_row/cr_link_row.js';
-import '//resources/cr_elements/md_select_css.m.js';
-import '//resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import '../../prefs/pref_util.js';
 import '../../settings_shared_css.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
-import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from '//resources/js/web_ui_listener_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -43,7 +44,7 @@ export const DspHotwordState = {
  * Indicates user's activity control consent status.
  *
  * Note: This should be kept in sync with ConsentStatus in
- * chromeos/services/assistant/public/cpp/assistant_prefs.h
+ * chromeos/ash/services/assistant/public/cpp/assistant_prefs.h
  * @enum {number}
  */
 export const ConsentStatus = {
@@ -145,17 +146,17 @@ class SettingsGoogleAssistantPageElement extends
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kAssistantOnOff,
-          chromeos.settings.mojom.Setting.kAssistantRelatedInfo,
-          chromeos.settings.mojom.Setting.kAssistantOkGoogle,
-          chromeos.settings.mojom.Setting.kAssistantNotifications,
-          chromeos.settings.mojom.Setting.kAssistantVoiceInput,
-          chromeos.settings.mojom.Setting.kTrainAssistantVoiceModel,
+          Setting.kAssistantOnOff,
+          Setting.kAssistantRelatedInfo,
+          Setting.kAssistantOkGoogle,
+          Setting.kAssistantNotifications,
+          Setting.kAssistantVoiceInput,
+          Setting.kTrainAssistantVoiceModel,
         ]),
       },
     };

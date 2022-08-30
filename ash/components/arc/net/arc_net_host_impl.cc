@@ -22,14 +22,14 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
+#include "chromeos/ash/components/network/client_cert_util.h"
+#include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/client_cert_util.h"
-#include "chromeos/network/device_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -486,6 +486,13 @@ void StartDisconnectFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name) {
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
+}
+
+void HostVpnSuccessCallback() {}
+
+void HostVpnErrorCallback(const std::string& operation,
+                          const std::string& error_name) {
+  NET_LOG(ERROR) << "HostVpnErrorCallback: " << operation << ": " << error_name;
 }
 
 void ArcVpnSuccessCallback() {}
@@ -1225,6 +1232,17 @@ void ArcNetHostImpl::SetAlwaysOnVpn(const std::string& vpn_package,
   DCHECK(pref_service_);
   pref_service_->SetString(prefs::kAlwaysOnVpnPackage, vpn_package);
   pref_service_->SetBoolean(prefs::kAlwaysOnVpnLockdown, lockdown);
+}
+
+void ArcNetHostImpl::DisconnectHostVpn() {
+  const chromeos::NetworkState* default_network =
+      GetShillBackedNetwork(GetStateHandler()->DefaultNetwork());
+  if (default_network && default_network->type() == shill::kTypeVPN &&
+      default_network->GetVpnProviderType() != shill::kProviderArcVpn) {
+    GetNetworkConnectionHandler()->DisconnectNetwork(
+        default_network->path(), base::BindOnce(&HostVpnSuccessCallback),
+        base::BindOnce(&HostVpnErrorCallback, "disconnecting host VPN"));
+  }
 }
 
 void ArcNetHostImpl::DisconnectArcVpn() {

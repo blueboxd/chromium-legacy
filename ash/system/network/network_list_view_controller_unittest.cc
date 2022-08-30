@@ -4,6 +4,7 @@
 
 #include "ash/system/network/network_list_view_controller_impl.h"
 
+#include <cstddef>
 #include <memory>
 
 #include "ash/constants/ash_features.h"
@@ -22,8 +23,10 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/network/mock_managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/mock_managed_network_configuration_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/bluetooth_config/fake_adapter_state_controller.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
@@ -108,6 +111,42 @@ std::string CreateTestEid(int euicc_num) {
   return base::StringPrintf("%s%d", kTestBaseEid, euicc_num);
 }
 
+class TestNetworkStateHandlerObserver
+    : public chromeos::NetworkStateHandlerObserver {
+ public:
+  TestNetworkStateHandlerObserver() = default;
+
+  TestNetworkStateHandlerObserver(const TestNetworkStateHandlerObserver&) =
+      delete;
+  TestNetworkStateHandlerObserver& operator=(
+      const TestNetworkStateHandlerObserver&) = delete;
+
+  // chromeos::NetworkStateHandlerObserver:
+  void ScanRequested(const NetworkTypePattern& type) override {
+    scan_request_count_++;
+
+    if (type.MatchesPattern(NetworkTypePattern::WiFi())) {
+      wifi_scan_request_count_++;
+    }
+
+    if (type.MatchesPattern(NetworkTypePattern::Tether())) {
+      tether_scan_request_count_++;
+    }
+  }
+
+  // Returns the number of ScanRequested() call.
+  size_t scan_request_count() { return scan_request_count_; }
+
+  size_t wifi_scan_request_count() { return wifi_scan_request_count_; }
+
+  size_t tether_scan_request_count() { return tether_scan_request_count_; }
+
+ private:
+  size_t scan_request_count_ = 0;
+  size_t wifi_scan_request_count_ = 0;
+  size_t tether_scan_request_count_ = 0;
+};
+
 }  // namespace
 
 class NetworkListViewControllerTest : public AshTestBase {
@@ -150,6 +189,10 @@ class NetworkListViewControllerTest : public AshTestBase {
     network_list_view_controller_impl_ =
         std::make_unique<NetworkListViewControllerImpl>(
             fake_network_detailed_network_view_.get());
+
+    network_state_handler_observer_ =
+        std::make_unique<TestNetworkStateHandlerObserver>();
+    network_state_handler()->AddObserver(network_state_handler_observer_.get());
   }
 
   void SetGlobalPolicyConfig(bool allow_only_policy) {
@@ -173,6 +216,10 @@ class NetworkListViewControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
+    network_state_handler()->RemoveObserver(
+        network_state_handler_observer_.get());
+    network_state_handler_observer_.reset();
+
     network_list_view_controller_impl_.reset();
     fake_network_detailed_network_view_.reset();
     cros_network_config_test_helper_.reset();
@@ -343,16 +390,15 @@ class NetworkListViewControllerTest : public AshTestBase {
     network_state_helper()->device_test()->AddDevice(
         kCellularDevicePath, shill::kTypeCellular, kCellularDeviceName);
 
-    base::Value::ListStorage sim_slot_infos;
-    base::Value slot_info_item(base::Value::Type::DICTIONARY);
-    slot_info_item.SetKey(shill::kSIMSlotInfoICCID,
-                          base::Value(kCellularTestIccid));
-    slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
-    slot_info_item.SetStringKey(shill::kSIMSlotInfoEID, kTestBaseEid);
-    sim_slot_infos.push_back(std::move(slot_info_item));
+    base::Value::List sim_slot_infos;
+    base::Value::Dict slot_info_item;
+    slot_info_item.Set(shill::kSIMSlotInfoICCID, kCellularTestIccid);
+    slot_info_item.Set(shill::kSIMSlotInfoPrimary, true);
+    slot_info_item.Set(shill::kSIMSlotInfoEID, kTestBaseEid);
+    sim_slot_infos.Append(std::move(slot_info_item));
     network_state_helper()->device_test()->SetDeviceProperty(
         kCellularDevicePath, shill::kSIMSlotInfoProperty,
-        base::Value(sim_slot_infos), /*notify_changed=*/true);
+        base::Value(std::move(sim_slot_infos)), /*notify_changed=*/true);
 
     // Wait for network state and device change events to be handled.
     base::RunLoop().RunUntilIdle();
@@ -365,6 +411,20 @@ class NetworkListViewControllerTest : public AshTestBase {
         /*physical_slot=*/0);
 
     // Wait for network state change events to be handled.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetCellularSimLockStatus(const std::string& lock_type, bool sim_locked) {
+    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
+    sim_lock_status.SetKey(shill::kSIMLockEnabledProperty,
+                           base::Value(sim_locked));
+    sim_lock_status.SetKey(shill::kSIMLockTypeProperty, base::Value(lock_type));
+    sim_lock_status.SetKey(shill::kSIMLockRetriesLeftProperty, base::Value(3));
+    network_state_helper()->device_test()->SetDeviceProperty(
+        kCellularDevicePath, shill::kSIMLockStatusProperty,
+        std::move(sim_lock_status),
+        /*notify_changed=*/true);
+
     base::RunLoop().RunUntilIdle();
   }
 
@@ -398,8 +458,28 @@ class NetworkListViewControllerTest : public AshTestBase {
     network_state_helper()->device_test()->AddDevice(
         kWifiDevicePath, shill::kTypeWifi, kWifiName);
 
+    network_state_helper()->device_test()->SetDeviceProperty(
+        kWifiDevicePath, shill::kScanningProperty, base::Value(true),
+        /*notify_changed=*/true);
+
     // Wait for network state and device change events to be handled.
     base::RunLoop().RunUntilIdle();
+  }
+
+  bool getScanningBarVisibility() {
+    return fake_network_detailed_network_view_->last_scan_bar_visibility();
+  }
+
+  size_t GetScanCount() {
+    return network_state_handler_observer_->scan_request_count();
+  }
+
+  size_t GetWifiScanCount() {
+    return network_state_handler_observer_->wifi_scan_request_count();
+  }
+
+  size_t GetTetherScanCount() {
+    return network_state_handler_observer_->tether_scan_request_count();
   }
 
   std::unique_ptr<CellularInhibitor::InhibitLock> InhibitCellularScanning() {
@@ -440,6 +520,11 @@ class NetworkListViewControllerTest : public AshTestBase {
     GetSessionControllerClient()->SetSessionState(
         session_manager::SessionState::LOGIN_SECONDARY);
     base::RunLoop().RunUntilIdle();
+  }
+
+  bool HasScanTimerStarted() {
+    return network_list_view_controller_impl_->network_scan_repeating_timer_
+        .IsRunning();
   }
 
   chromeos::NetworkStateHandler* network_state_handler() {
@@ -483,6 +568,9 @@ class NetworkListViewControllerTest : public AshTestBase {
       mock_managed_network_configuration_manager_;
 
   base::Value global_config_;
+
+  std::unique_ptr<TestNetworkStateHandlerObserver>
+      network_state_handler_observer_;
 };
 
 TEST_F(NetworkListViewControllerTest, MobileDataSectionIsShown) {
@@ -554,8 +642,6 @@ TEST_F(NetworkListViewControllerTest, WifiSectionHeader) {
 }
 
 TEST_F(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(ash::features::kESimPolicy);
   EXPECT_EQ(nullptr, GetMobileSubHeader());
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
 
@@ -593,8 +679,6 @@ TEST_F(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
   // cellular devices which means adding a new eSIM is disallowed by enterprise
   // policy, add eSIM button is not displayed.
   SetGlobalPolicyConfig(/*allow_only_policy=*/true);
-  scoped_feature_list.Reset();
-  scoped_feature_list.InitAndEnableFeature(ash::features::kESimPolicy);
   UpdateNetworkList(empty_list_);
   EXPECT_FALSE(GetMobileSubHeader()->is_add_esim_visible());
 }
@@ -858,6 +942,16 @@ TEST_F(NetworkListViewControllerTest,
   EXPECT_TRUE(GetMobileSubHeader()->is_toggle_enabled());
   EXPECT_FALSE(GetMobileSubHeader()->is_toggle_on());
   EXPECT_TRUE(GetMobileToggleButton()->GetVisible());
+
+  // The toggle is not enabled, the cellular device SIM is locked, and user
+  // cannot open the settings page.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_SECONDARY);
+  SetCellularSimLockStatus(shill::kSIMLockPin, /*sim_locked=*/true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(GetMobileSubHeader()->is_toggle_enabled());
 }
 
 TEST_F(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
@@ -967,6 +1061,62 @@ TEST_F(NetworkListViewControllerTest, HasConnectionWarning) {
   // Clear all devices and make sure warning is no longer being shown.
   network_state_helper()->ClearDevices();
   EXPECT_EQ(nullptr, GetConnectionWarning());
+}
+
+TEST_F(NetworkListViewControllerTest, NetworkScanning) {
+  network_state_helper()->ClearDevices();
+  network_state_helper()->manager_test()->SetInteractiveDelay(
+      kInteractiveDelay);
+
+  // Scanning bar is not visible if WiFi is not enabled.
+  EXPECT_FALSE(HasScanTimerStarted());
+  EXPECT_FALSE(getScanningBarVisibility());
+  EXPECT_EQ(0u, GetScanCount());
+  EXPECT_EQ(0u, GetWifiScanCount());
+  EXPECT_EQ(0u, GetTetherScanCount());
+
+  // Add an enabled WiFi device.
+  AddWifiDevice();
+  EXPECT_TRUE(HasScanTimerStarted());
+  EXPECT_TRUE(getScanningBarVisibility());
+  EXPECT_EQ(2u, GetScanCount());
+  EXPECT_EQ(1u, GetWifiScanCount());
+  EXPECT_EQ(1u, GetTetherScanCount());
+
+  // Simulate scanning finishing.
+  task_environment()->FastForwardBy(kInteractiveDelay);
+
+  EXPECT_FALSE(getScanningBarVisibility());
+  EXPECT_TRUE(HasScanTimerStarted());
+  EXPECT_EQ(2u, GetScanCount());
+  EXPECT_EQ(1u, GetWifiScanCount());
+  EXPECT_EQ(1u, GetTetherScanCount());
+
+  // Make sure scan timer is still running.
+  task_environment()->FastForwardBy(kInteractiveDelay);
+  EXPECT_TRUE(HasScanTimerStarted());
+  EXPECT_FALSE(getScanningBarVisibility());
+  EXPECT_EQ(2u, GetScanCount());
+  EXPECT_EQ(1u, GetWifiScanCount());
+  EXPECT_EQ(1u, GetTetherScanCount());
+
+  task_environment()->FastForwardBy(kInteractiveDelay);
+  EXPECT_TRUE(HasScanTimerStarted());
+  EXPECT_FALSE(getScanningBarVisibility());
+  EXPECT_EQ(2u, GetScanCount());
+  EXPECT_EQ(1u, GetWifiScanCount());
+  EXPECT_EQ(1u, GetTetherScanCount());
+
+  // Disabling WiFi device ends scan timer.
+  network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), /*enabled=*/false, base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(getScanningBarVisibility());
+  EXPECT_FALSE(HasScanTimerStarted());
+  EXPECT_EQ(2u, GetScanCount());
+  EXPECT_EQ(1u, GetWifiScanCount());
+  EXPECT_EQ(1u, GetTetherScanCount());
 }
 
 }  // namespace ash

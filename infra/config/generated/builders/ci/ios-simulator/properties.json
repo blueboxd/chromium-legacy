@@ -44,6 +44,14 @@
         {
           "builder": "ios-simulator",
           "group": "tryserver.chromium.mac"
+        },
+        {
+          "builder": "ios-simulator-inverse-fieldtrials-fyi",
+          "group": "tryserver.chromium.mac"
+        },
+        {
+          "builder": "ios-simulator-rts",
+          "group": "tryserver.chromium.mac"
         }
       ]
     }
@@ -63,7 +71,8 @@
   "builder_group": "chromium.mac",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium",
+    "ios"
   ],
   "xcode_build_version": "13c100"
 }

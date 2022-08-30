@@ -177,6 +177,7 @@
 <translation id="1391289752476847787">ភាគហ៊ុន និង​សញ្ញាបណ្ណ</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> មិនបានផ្ញើទិន្នន័យណាមួយទេ</translation>
 <translation id="1405567553485452995">បៃតងខ្ចី</translation>
+<translation id="1406500794671479665">កំពុងផ្ទៀងផ្ទាត់...</translation>
 <translation id="1407135791313364759">បើកទាំងអស់</translation>
 <translation id="1408787208417187241">កិប​បីគ្រាប់​ខាងលើ</translation>
 <translation id="1413407968866574823">ហ្គេម​រត់លោត និង​ហ្គេមប្រយុទ្ធគ្នា</translation>
@@ -259,7 +260,6 @@
 <translation id="1583429793053364125">មានបញ្ហាអ្វីមួយកើតឡើង ខណៈពេលកំពុងបង្ហាញគេហទំព័រនេះ</translation>
 <translation id="1586541204584340881">ថាតើកម្មវិធីបន្ថែមណាខ្លះដែលអ្នកបានដំឡើង</translation>
 <translation id="1588438908519853928">ធម្មតា</translation>
-<translation id="1589050138437146318">ដំឡើង ARCore ឬ?</translation>
 <translation id="1592005682883173041">ការចូលប្រើទិន្នន័យមូលដ្ឋាន</translation>
 <translation id="1594030484168838125">ជ្រើសរើស</translation>
 <translation id="1596296697375291157">ភាពយន្ត​បែបរន្ធត់ ឧក្រិដ្ឋកម្ម និង​អាថ៌កំបាំង</translation>
@@ -336,11 +336,6 @@
 <translation id="1763864636252898013">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> ទេ វិញ្ញាបនប័ត្រសុវត្ថិភាពរបស់វា
 មិនត្រូវបានជឿ៌ជាក់ដោយប្រព័ន្ធប្រតិបត្តិការឧបករណ៍របស់អ្នកទេ។ នេះអាចបណ្តាលមកពីការកំណត់មិនត្រឹមត្រូវ ឬមានការស្ទាក់ការភ្ជាប់របស់អ្នកពីអ្នកវាយប្រហារ។</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />សាកល្បងដំណើរការការវិភាគបណ្តាញ Windows<ph name="END_LINK" /></translation>
-<translation id="1772163372082567643">ម៉ាស៊ីនមេ <ph name="ORIGIN" /> ដែលអ្នក​កំពុងចូលបានកំណត់ផ្នែកក្បាល
-    ដែលតម្រូវឱ្យអនុវត្ត​គោលការណ៍ដើម​ចំពោះគ្រប់សំណើ​មកកាន់វា។ ប៉ុន្តែ
-    ផ្នែកក្បាលនោះមានទម្រង់មិនត្រឹមត្រូវ ដែលជាហេតុធ្វើឱ្យកម្មវិធីរុករកតាមអ៊ីនធឺណិតមិនអាចបំពេញ
-    តាមសំណើរបស់អ្នកសម្រាប់ <ph name="SITE" />។ ប្រតិបត្តិករ​គេហទំព័រ​អាចប្រើ
-    គោលការណ៍​ដើម ដើម្បីកំណត់​រចនាសម្ព័ន្ធ​សុវត្ថិភាព និង​លក្ខណសម្បត្តិ​ផ្សេងទៀត​សម្រាប់​គេហទំព័រ​។</translation>
 <translation id="1774592222195216949"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែមអំពីមុខងារឯកជននៅក្នុង Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">ផ្ទាំង​ដែល​អ្នកបានបើកបង្ហាញ​នៅ​ទីនេះ</translation>
@@ -385,7 +380,6 @@
 <translation id="1908217026282415406">ការផ្លាស់ទី និងការប្រើប្រាស់កាមេរ៉ា</translation>
 <translation id="191374271204266022">ចម្លងជា JSON</translation>
 <translation id="1914326953223720820">សេវាកម្ម​ពន្លាឯកសារ</translation>
-<translation id="1915697529809968049">ប្រើ​ Touch ID ជំនួសឱ្យ CVC?</translation>
 <translation id="1916770123977586577">ដើម្បី​អនុវត្ត​ការកំណត់​ដែលអ្នកបាន​ធ្វើបច្ចុប្បន្នភាព​ចំពោះ​ទំព័រនេះ សូមផ្ទុក​ទំព័រនេះ​ឡើងវិញ</translation>
 <translation id="1919345977826869612">ពាណិជ្ជកម្ម</translation>
 <translation id="1919367280705858090">ទទួល​បានជំនួយដោយ​ប្រើ​​សារ​បញ្ហា​ជាក់លាក់មួយ</translation>
@@ -838,6 +832,7 @@
 <translation id="3226387218769101247">រូបភាព​តូចៗ</translation>
 <translation id="3227137524299004712">ម៉ៃក្រូហ្វូន</translation>
 <translation id="3229041911291329567">ព័ត៌មានកំណែ​អំពីឧបករណ៍ និងកម្មវិធីរុករក​តាមអ៊ីនធឺណិតរបស់អ្នក</translation>
+<translation id="3229277193950731405">ចម្លង​ជួរអក្សរកំណែ</translation>
 <translation id="323107829343500871">បញ្ចូល CVC សម្រាប់ <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">តែងតែចាប់យកមាតិកាសំខាន់ជានិច្ចនៅលើគេហទំព័រនេះ</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច tab រួចចុច Enter ដើម្បីប្ដូរ​រូបរាងនៃ​កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នក​តាមបំណង</translation>
@@ -1113,8 +1108,6 @@
 <translation id="3987940399970879459">តិចជាង 1 MB</translation>
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
 <translation id="3992684624889376114">អំពី​ទំព័រ​នេះ</translation>
-<translation id="3996311196211510766">គេហទំព័រ <ph name="ORIGIN" /> បានស្នើសុំឱ្យ​អនុវត្ត​គោលការណ៍​ដើម
-    ចំពោះ​គ្រប់សំណើ​មក​កាន់​វា ប៉ុន្តែ​គោលការណ៍នេះមិនអាច​អនុវត្ត​បាន​ទេក្នុងពេលបច្ចុប្បន្ន។</translation>
 <translation id="4006465311664329701">វិធី​បង់ប្រាក់ ការផ្ដល់ជូន និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
 <translation id="4009243425692662128">ខ្លឹមសារក្នុងទំព័រដែលអ្នកបោះពុម្ពត្រូវបានផ្ញើទៅ Google Cloud ឬភាគីទីបីដើម្បីវិភាគ។ ឧទាហរណ៍ ខ្លឹមសារនោះ​អាចត្រូវបាន​ស្កេន ដើម្បីរកមើល​ទិន្នន័យ​រសើប​។</translation>
 <translation id="4010758435855888356">អនុញ្ញាត​ឱ្យចូលប្រើ​ទំហំផ្ទុក​ដែរទេ?</translation>
@@ -1132,7 +1125,6 @@
 <translation id="4072486802667267160">មាន​បញ្ហា​ក្នុងការដំណើរការ​ការ​បញ្ជា​ទិញ​របស់​អ្នក។ សូម​ព្យាយាម​ម្ដង​ទៀត។</translation>
 <translation id="4073797364926776829">មើល​កាត</translation>
 <translation id="4075732493274867456">ម៉ាស៊ីនកូន និងម៉ាស៊ីនមេមិនគាំទ្រកំណែប្រូតូកូល SSL ទូទៅ ឬសៃភ័រស៊ូត (cipher suite) ទេ។</translation>
-<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">ការតំឡើងប្រូកស៊ីត្រូវបានកំណត់ឲ្យប្រើ URL ស្គ្រីបផេក មិនមែនម៉ាស៊ីនមេប្រូកស៊ីដែលថេរទេ។</translation>
 <translation id="4082393374666368382">ការកំណត់៖ ការគ្រប់គ្រង</translation>
 <translation id="4087296516249690906">ប៊ូតុងបង្កើត​ព្រឹត្តិការណ៍ ចុច Enter ដើម្បីបង្កើត​ព្រឹត្តិការណ៍ថ្មី​នៅក្នុង Google ប្រតិទិន​បានរហ័ស</translation>
@@ -1179,11 +1171,6 @@
 <translation id="4202554117186904723">ដុំទីប្រាំ</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ពិនិត្យការកំណត់រចនាសម្ព័ន្ធ firewall និងកម្មវិធីកម្ចាត់មេរោគ<ph name="END_LINK" /></translation>
 <translation id="4209092469652827314">ធំ</translation>
-<translation id="4209166701302774460">ម៉ាស៊ីនមេ <ph name="ORIGIN" /> ដែលអ្នក​កំពុងចូលបាន​ស្នើឱ្យ
-    អនុវត្ត​គោលការណ៍ដើម​ចំពោះគ្រប់សំណើ​មកកាន់វា។ ប៉ុន្តែ​ឥឡូវនេះ ម៉ាស៊ីនមេ​នេះមិនអាច
-    ផ្ដល់​គោលការណ៍បានទេ​ ដែល​ជាហេតុ​ធ្វើឱ្យ​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត​មិនអាច​បំពេញតាមសំណើ​របស់អ្នក
-    សម្រាប់ <ph name="SITE" /> បាន។ ប្រតិបត្តិករ​គេហទំព័រ​អាចប្រើគោលការណ៍​ដើម
-     ដើម្បីកំណត់​រចនាសម្ព័ន្ធ​សុវត្ថិភាព និង​លក្ខណសម្បត្តិ​ផ្សេងទៀត​សម្រាប់​គេហទំព័រ​។</translation>
 <translation id="4210602799576081649">លេខកូដផ្ទៀងផ្ទាត់បានផុតកំណត់ សូមស្នើលេខកូដថ្មី</translation>
 <translation id="421066178035138955">ប្រើ​ទិន្នន័យ និង​ឧបករណ៍ VR</translation>
 <translation id="4213305257324635756">ភាពយន្ត​គំនូរជីវចល</translation>
@@ -1211,7 +1198,6 @@
     &lt;p&gt;ប្រសិនបើ​អ្នកនៅតែ​មើលឃើញ​បញ្ហានេះ សូម​ទាក់ទង​ម្ចាស់​គេហទំព័រ។&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />សាកល្បងដំណើរការការវិភាគបណ្តាញ<ph name="END_LINK" /></translation>
 <translation id="4230204356098880324">អាចស្នើសុំ​ប្រើ និងផ្លាស់ទី​កាមេរ៉ា​របស់អ្នក</translation>
-<translation id="4234495348042597185"><ph name="BEGIN_LINK" />បន្តទៅ <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">មានសុពលភាព</translation>
 <translation id="4250431568374086873">ការតភ្ជាប់របស់អ្នកទៅគេហទំព័រនេះមិនមានសុវត្ថិភាពពេញលេញទេ</translation>
 <translation id="4250680216510889253">ទេ</translation>
@@ -1311,7 +1297,6 @@
 <translation id="4506176782989081258">កំហុសឆ្គងសុពលភាព៖ <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">ទាក់ទងទៅអ្នកគ្រប់គ្រងប្រព័ន្ធ</translation>
 <translation id="450710068430902550">ការចែករំលែកជាមួយអ្នកគ្រប់គ្រង</translation>
-<translation id="4508814173490746936">មិនអាចប្រើ Touch ID បានទេ</translation>
 <translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច "Tab" រួចចុច "Enter" ដើម្បីបកប្រែទំព័រនេះដោយប្រើ Google បកប្រែ</translation>
 <translation id="4510487217173779431">Chou4 (ស្រោម​សំបុត្រ)</translation>
 <translation id="4514308731478712184">បិទ​ការស្វែងរក</translation>
@@ -1416,7 +1401,6 @@
 <translation id="4796594887379589189">លេខសម្គាល់​គណនីការងារ</translation>
 <translation id="4798078619018708837">បញ្ចូល​កាលបរិច្ឆេទ​ផុតកំណត់ និង CVC សម្រាប់ <ph name="CREDIT_CARD" /> ដើម្បី​ធ្វើបច្ចុប្បន្ន​ភាព​ព័ត៌មាន​លម្អិត​អំពីកាតរបស់អ្នក។ បន្ទាប់ពី​អ្នក​បញ្ជាក់​ហើយ ព័ត៌មាន​លម្អិត​អំពី​កាតដែលបាន​មកពីគណនី Google របស់អ្នក​នឹងត្រូវ​បាន​ចែករំលែក​ជាមួយ​គេហទំព័រ​នេះ។</translation>
 <translation id="4800132727771399293">ពិនិត្យកាលបរិចេ្ឆទផុតកំណត់ និងលេខកូដ CVC ហើយព្យាយាមម្តងទៀត</translation>
-<translation id="480334179571489655">បញ្ហា​គោលការណ៍​ប្រភពដើម</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4809079943450490359">ការណែនាំពីអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នក៖</translation>
 <translation id="4812751092864334025">បច្ចេកវិទ្យា​ឧបករណ៍​អាចពាក់បាន</translation>
@@ -1811,7 +1795,6 @@
 <translation id="5901630391730855834">លឿង</translation>
 <translation id="5903264686717710770">ចំណង​ជើង៖</translation>
 <translation id="5904360430676679685">គ្រួសារ និង​ទំនាក់ទំនង</translation>
-<translation id="5905445707201418379">បានទប់ស្កាត់​ដោយ​ផ្អែកលើ​គោលការណ៍​ដើម​របស់ <ph name="ORIGIN" /> ។</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (បានធ្វើសមកាលកម្ម)</translation>
 <translation id="59174027418879706">បានបើកដំណើរការ</translation>
 <translation id="5919090499915321845">B10</translation>
@@ -1978,14 +1961,15 @@
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6391700400718590966">សន្លឹក​ព័ត៌មានផ្ទៀងផ្ទាត់​ការបង់ប្រាក់​មានសុវត្ថិភាព ដែលគ្មានព័ត៌មានផ្ទៀងផ្ទាត់​ត្រូវគ្នា​ត្រូវបានបិទ</translation>
 <translation id="6393956493820063117">ការដាក់ចូលពី <ph name="ORIGIN_NAME" /> ទៅក្នុងទីតាំងនេះត្រូវបានទប់ស្កាត់ដោយគោលការណ៍របស់អ្នកគ្រប់គ្រង</translation>
+<translation id="6394852772105848029">គេហទំព័រ​នេះ​ចង់​បើក​កម្មវិធី <ph name="APP_NAME" /></translation>
 <translation id="6398277657359595425">យំឮៗ</translation>
 <translation id="6398765197997659313">ចាកចេញពីអេក្រង់ពេញ</translation>
 <translation id="6401136357288658127">គោលការណ៍នេះ​ត្រូវបានបញ្ឈប់។ អ្នក​គួរតែ​ប្រើ​គោលការណ៍ <ph name="NEW_POLICY" /> ជំនួសវិញ។</translation>
 <translation id="6404511346730675251">កែប្រែចំណាំ</translation>
+<translation id="6405181733356710802">បន្ត​ទៅ​កាន់ <ph name="APP_NAME" /> ឬ?</translation>
 <translation id="6406765186087300643">C0 (ស្រោម​សំបុត្រ)</translation>
 <translation id="6410264514553301377">បញ្ចូល​កាលបរិច្ឆេទ​ផុត​កំណត់​ និង​ CVC សម្រាប់ <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium អាច​ជួយ​អ្នក​ក្នុងការការពារ​គណនី Google និង​ផ្លាស់ប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​។</translation>
-<translation id="6423385022588644828">បញ្ជាក់​បណ្ណ​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ Touch ID ចាប់ពី​ពេលនេះ​តទៅ</translation>
 <translation id="6425092077175753609">សម្ភារៈ</translation>
 <translation id="6427730057873428458">បត់ជា​ផ្ទាំងៗមានសណ្ឋានជាទ្វារ</translation>
 <translation id="6428450836711225518">ផ្ទៀងផ្ទាត់​លេខ​ទូរសព្ទ​របស់​អ្នក</translation>
@@ -2679,7 +2663,6 @@
 <translation id="830498451218851433">បត់​ពាក់កណ្ដាល</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">កម្មវិធី​ដែលបានដំឡើង និងភាពញឹកញាប់​នៃការប្រើប្រាស់កម្មវិធីទាំងនោះ</translation>
-<translation id="8317207217658302555">ដំឡើងកំណែ ARCore ឬ?</translation>
 <translation id="831997045666694187">ល្ងាច</translation>
 <translation id="8321476692217554900">ការជូន​ដំណឹង</translation>
 <translation id="8332188693563227489">បានបដិសេធការចូលប្រើ <ph name="HOST_NAME" /></translation>
@@ -2756,7 +2739,6 @@
 <translation id="8559762987265718583">ការភ្ជាប់ឯកជនទៅ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> មិនអាចធ្វើឡើងទេ ពីព្រោះកាលបរិច្ឆេទ និងម៉ោងឧបករណ៍របស់អ្នក (<ph name="DATE_AND_TIME" />)មិនត្រឹមត្រូវ។</translation>
 <translation id="8564182942834072828">ឯកសារ​ដាច់ដោយឡែក/ច្បាប់ចម្លង​ដាច់ដោយឡែក</translation>
 <translation id="8564985650692024650">Chromium ណែនាំឱ្យ​កំណត់​ពាក្យសម្ងាត់ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> របស់អ្នក​ឡើងវិញ ប្រសិនបើ​អ្នកបាន​ប្រើ​វាម្តងទៀត​នៅលើ​ទំព័រផ្សេង។</translation>
-<translation id="8574899947864779331">ប្រើ Touch ID ដើម្បី​បញ្ជាក់​បណ្ណឱ្យ​បាន​រហ័ស​ជាងមុន</translation>
 <translation id="8576310925653847813">ប្រព័ន្ធបញ្ចាំង​ភាពយន្តនៅផ្ទះ</translation>
 <translation id="8577348305244205642">មិនអាចប្រើ​កាតនិមិ្មតបានទេ</translation>
 <translation id="858637041960032120">បន្ថែមលេខទូរស័ព្ទ</translation>
@@ -2912,7 +2894,6 @@
 <translation id="9039213469156557790">ជាងនេះទៅទៀត ទំព័រនេះរាប់បញ្ចូលធនធានផ្សេងទៀតដែលគ្មានសុវត្ថិភាព។ ធនធានទាំងនេះអាចត្រូវបានមើលដោយអ្នកផ្សេងទៀតខណៈពេលឆ្លងកាត់ និងអាចត្រូវបានកែសម្រួលដោយអ្នកវាយប្រហារដើម្បីប្តូរលក្ខណៈសម្បតិ្តរបស់ទំព័រ។</translation>
 <translation id="9040464167025094690">ប៊ូតុង "រកឧបករណ៍របស់ខ្ញុំ" ចុច Enter ដើម្បីចូលទៅកាន់ "រកឧបករណ៍របស់អ្នក" នៅក្នុងគណនី Google</translation>
 <translation id="9042617223719777575">ទម្រ​ផ្ទុកធំ</translation>
-<translation id="9044359186343685026">ប្រើ Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">អ្នកប៉ុនប៉ងទៅកាន់ <ph name="DOMAIN" /> ប៉ុន្តែម៉ាស៊ីនមេបានបង្ហាញវិញ្ញាបនប័ត្រដែលគ្មានសុពលភាព។</translation>
 <translation id="9050666287014529139">ឃ្លាសម្ងាត់</translation>

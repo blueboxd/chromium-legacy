@@ -14,6 +14,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {BrowserProxy, BrowserProxyImpl, PIIDataItem} from './browser_proxy.js';
 import {getTemplate} from './pii_selection.html.js';
+import {SupportToolPageMixin} from './support_tool_page_mixin.js';
 
 // Names of the radio buttons which allow the user to choose to keep or remove
 // their PII data.
@@ -21,9 +22,12 @@ enum PiiRadioButtons {
   INCLUDE_ALL = 'include-all',
   INCLUDE_NONE = 'include-none',
   INCLUDE_SOME = 'include-some',
+  UNSELECTED = 'unselected',
 }
 
-export class PIISelectionElement extends PolymerElement {
+const PIISelectionElementBase = SupportToolPageMixin(PolymerElement);
+
+export class PIISelectionElement extends PIISelectionElementBase {
   static get is() {
     return 'pii-selection';
   }
@@ -49,7 +53,7 @@ export class PIISelectionElement extends PolymerElement {
       },
       selectedRadioButton_: {
         type: String,
-        value: PiiRadioButtons.INCLUDE_NONE,
+        value: PiiRadioButtons.UNSELECTED,
       },
       showPIISelection_: {
         type: Boolean,
@@ -95,13 +99,26 @@ export class PIISelectionElement extends PolymerElement {
 
   private onSelectedRadioButtonChanged_(event: CustomEvent<{value: string}>) {
     this.selectedRadioButton_ = event.detail.value;
+    // this.selectedRadioButton_ is initialized as PiiRadioButtons.UNSELECTED by
+    // default and this value is not reachable once user modifies the value by
+    // selecting it in UI as it's not exposed in the UI. that's why we don't
+    // handle it in the if-else condition below.
     if (this.selectedRadioButton_ === PiiRadioButtons.INCLUDE_ALL) {
       this.setSelectAll_(true);
     } else if (this.selectedRadioButton_ === PiiRadioButtons.INCLUDE_NONE) {
       this.setSelectAll_(false);
-    } else {
+    } else if (this.selectedRadioButton_ === PiiRadioButtons.INCLUDE_SOME) {
       this.showPIISelection_ = true;
     }
+  }
+
+  private showDisclaimer_(selectedButton: PiiRadioButtons): boolean {
+    return (selectedButton === PiiRadioButtons.INCLUDE_NONE);
+  }
+
+  private getPiiItemAriaDescription_(description: string, count: number):
+      string {
+    return 'More info for ' + description + ' ' + count;
   }
 }
 

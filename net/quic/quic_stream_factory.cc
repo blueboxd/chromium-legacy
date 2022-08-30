@@ -339,7 +339,7 @@ class QuicStreamFactory::CryptoClientConfigHandle
     map_iterator->second->AddRef();
   }
 
-  explicit CryptoClientConfigHandle(const CryptoClientConfigHandle& other)
+  CryptoClientConfigHandle(const CryptoClientConfigHandle& other)
       : CryptoClientConfigHandle(other.map_iterator_) {}
 
   CryptoClientConfigHandle& operator=(const CryptoClientConfigHandle&) = delete;
@@ -1136,6 +1136,21 @@ void QuicStreamRequest::SetSession(
   session_ = std::move(session);
 }
 
+bool QuicStreamRequest::CanUseExistingSession(
+    const GURL& url,
+    PrivacyMode privacy_mode,
+    const SocketTag& socket_tag,
+    const NetworkIsolationKey& network_isolation_key,
+    SecureDnsPolicy secure_dns_policy,
+    bool require_dns_https_alpn,
+    const url::SchemeHostPort& destination) const {
+  return factory_->CanUseExistingSession(
+      QuicSessionKey(HostPortPair::FromURL(url), privacy_mode, socket_tag,
+                     network_isolation_key, secure_dns_policy,
+                     require_dns_https_alpn),
+      destination);
+}
+
 QuicStreamFactory::QuicSessionAliasKey::QuicSessionAliasKey(
     url::SchemeHostPort destination,
     QuicSessionKey session_key)
@@ -1234,13 +1249,15 @@ QuicStreamFactory::~QuicStreamFactory() {
 
 bool QuicStreamFactory::CanUseExistingSession(
     const QuicSessionKey& session_key,
-    const url::SchemeHostPort& destination) {
+    const url::SchemeHostPort& destination) const {
   if (base::Contains(active_sessions_, session_key))
     return true;
 
   for (const auto& key_value : active_sessions_) {
     QuicChromiumClientSession* session = key_value.second;
-    if (destination == all_sessions_[session].destination() &&
+    const auto& it = all_sessions_.find(session);
+    if ((it != all_sessions_.end()) &&
+        (destination == it->second.destination()) &&
         session->CanPool(session_key.host(), session_key)) {
       return true;
     }
@@ -1348,14 +1365,14 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
 
 void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   const AliasSet& aliases = session_aliases_[session];
-  for (auto it = aliases.begin(); it != aliases.end(); ++it) {
-    const QuicSessionKey& session_key = it->session_key();
+  for (const auto& alias : aliases) {
+    const QuicSessionKey& session_key = alias.session_key();
     DCHECK(active_sessions_.count(session_key));
     DCHECK_EQ(session, active_sessions_[session_key]);
     // Track sessions which have recently gone away so that we can disable
     // port suggestions.
     if (session->goaway_received())
-      gone_away_aliases_.insert(*it);
+      gone_away_aliases_.insert(alias);
 
     active_sessions_.erase(session_key);
     ProcessGoingAwaySession(session, session_key.server_id(), true);
@@ -1428,17 +1445,16 @@ void QuicStreamFactory::CloseAllSessions(int error,
 base::Value QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
   base::Value::List list;
 
-  for (auto it = active_sessions_.begin(); it != active_sessions_.end(); ++it) {
-    const quic::QuicServerId& server_id = it->first.server_id();
-    QuicChromiumClientSession* session = it->second;
+  for (const auto& active_session : active_sessions_) {
+    const quic::QuicServerId& server_id = active_session.first.server_id();
+    QuicChromiumClientSession* session = active_session.second;
     const AliasSet& aliases = session_aliases_.find(session)->second;
     // Only add a session to the list once.
     if (server_id == aliases.begin()->server_id()) {
       std::set<HostPortPair> hosts;
-      for (auto alias_it = aliases.begin(); alias_it != aliases.end();
-           ++alias_it) {
-        hosts.insert(HostPortPair(alias_it->server_id().host(),
-                                  alias_it->server_id().port()));
+      for (const auto& alias : aliases) {
+        hosts.insert(
+            HostPortPair(alias.server_id().host(), alias.server_id().port()));
       }
       list.Append(session->GetInfoAsValue(hosts));
     }

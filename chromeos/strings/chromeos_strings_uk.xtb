@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (потоків: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> ГГц)</translation>
 <translation id="1047773237499189053">Доступна нова функція. Щоб дізнатися більше, натисніть клавішу зі стрілкою вгору.</translation>
 <translation id="1059913517121127803">Не вдається почати сканування</translation>
+<translation id="1062407476771304334">Замінити</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">виявлено брандмауер</translation>
 <translation id="1075811647922107217">Розмір сторінки</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Користувач</translation>
 <translation id="1128128132059598906">EAP – TTLS</translation>
 <translation id="1145018782460575098">Вікно "Оновіть мікропрограму для зовнішніх пристроїв" відкрито. Доступно оновлень: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Шукайте довідкові статті та відповіді на поширені запитання про Chromebook</translation>
+<translation id="1165039591588034296">Помилка</translation>
 <translation id="1175697296044146566">Цим пристроєм <ph name="DEVICE_TYPE" /> керує <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Середній сигнал (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> керує цим пристроєм і може відстежувати ваші дії.</translation>
 <translation id="147809995039451286">Не вдалося завантажити оновлення</translation>
 <translation id="1478594628797167447">Сканери</translation>
+<translation id="1483493594462132177">Надіслати</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" />: оновлення мікропрограми на пристрої</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> керує цим користувачем і може віддалено змінювати налаштування та відстежувати його дії.</translation>
 <translation id="150962533380566081">Недійсний PUK-код.</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Не вдалося завантажити зображення. Перевірте з’єднання з мережею або повторіть спробу.</translation>
 <translation id="1751249301761991853">Персоналізація</translation>
 <translation id="1753496554272155572">Закрити попередній перегляд фонового малюнка</translation>
+<translation id="1755556344721611131">Додаток Діагностика</translation>
 <translation id="175763766237925754">Добрий сигнал (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Вимкнути темну тему</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Вимкнути темний режим</translation>
+<translation id="1881188606372070653">Щоб надіслати запит на змінення контенту з юридичних причин, перейдіть на <ph name="BEGIN_LINK1" />сторінку правової довідки<ph name="END_LINK1" />. Певні дані про ваш обліковий запис і систему можуть надсилатися в Google. Ми використовуватимемо їх відповідно до <ph name="BEGIN_LINK2" />Політики конфіденційності<ph name="END_LINK2" /> й <ph name="BEGIN_LINK3" />Умов використання<ph name="END_LINK3" />, щоб вирішувати технічні проблеми та покращувати наші сервіси.</translation>
 <translation id="1887850431809612466">Апаратне забезпечення</translation>
+<translation id="1904932688895783618">Нижче наведено інші корисні ресурси.</translation>
 <translation id="1905710495812624430">Перевищено максимальну кількість дозволених спроб.</translation>
 <translation id="1908234395526491708">Не виконано запити за протоколом UDP</translation>
 <translation id="1932611479324127242">Відключити акумулятор</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Виконайте дії для вирішення проблеми</translation>
 <translation id="2016848882344942759">--немає бренду продавця--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Щоб переглянути заставку, підключіться до мережі й оновіть сторінку.</translation>
 <translation id="2080070583977670716">Інші налаштування</translation>
 <translation id="2085089206770112532">Зменшити яскравість екрана</translation>
 <translation id="2105810540595158374">Це ігровий контролер.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Увімкнути темний режим</translation>
 <translation id="2177831236093724629">Виявлено <ph name="LINK_BEGIN" />неналежні компоненти<ph name="LINK_END" />. Щоб ідентифікувати всі належні компоненти, установіть останню версію ОС Chrome.</translation>
 <translation id="2180197493692062006">Сталася помилка. Відкрийте додаток ще раз.</translation>
+<translation id="2182088270354640012">Дякуємо за відгук. Наша команда розгляне його. Він допоможе покращити ОС Chrome. Зверніть увагу: через велику кількість повідомлень ми не відповідаємо на них.</translation>
 <translation id="2209788852729124853">Скинути лічильники трафіку</translation>
 <translation id="2212733584906323460">Перетворення імені</translation>
 <translation id="2217935453350629363">Поточна швидкість</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Діагностика з'єднання</translation>
 <translation id="3084958266922136097">Деактивувати заставку</translation>
 <translation id="3091839911843451378">Не надруковано – друк зупинено</translation>
+<translation id="3096753366938912951">Покладіть пристрій кришкою на плоску поверхню</translation>
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3122464029669770682">ЦП</translation>
 <translation id="3124039320086536031">Пристрій підключено.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Пошук сканерів</translation>
 <translation id="3246869037381808805">Завдання друку, старіші за 1 день, буде вилучено</translation>
 <translation id="3268178239013324452">Не надруковано – відкрито кришку принтера</translation>
+<translation id="3275729367986477355">Зображення аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Редагувати файл}one{Редагувати файли}few{Редагувати файли}many{Редагувати файли}other{Редагувати файли}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3291996639387199448">Напрямок ключа</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Змінити фоновий малюнок</translation>
 <translation id="360565022852130722">Мережа Wi-Fi захищена ненадійним протоколом WEP 802.1x</translation>
 <translation id="3606583719724308068">Велика затримка для веб-сайтів HTTPS</translation>
+<translation id="361575905210396100">Дякуємо за відгук</translation>
 <translation id="3616113530831147358">Аудіо</translation>
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3632579075709132555">Перемикач Екрана конфіденційності</translation>
+<translation id="3643198267586205643">Оновіть ОС</translation>
 <translation id="3643810137582748570">Пропустити калібрування</translation>
 <translation id="3651050199673793219">Виберіть одиницю вимірювання температури</translation>
 <translation id="3678765385266369662">Виберіть спосіб, у який хочете вимкнути захист від запису</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Заблокувати</translation>
 <translation id="38114475217616659">Очистити всю історію</translation>
 <translation id="3820172043799983114">Недійсний PIN-код.</translation>
+<translation id="3824259034819781947">Вкласти файли</translation>
 <translation id="3838338534323494292">Новий пароль</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3856304145690230735">Гіроскоп корпусу</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Потужність сигналу</translation>
 <translation id="4731797938093519117">Батьківський доступ</translation>
 <translation id="473775607612524610">Оновити</translation>
+<translation id="4740255236714854844">Покладіть пристрій корпусом на плоску поверхню</translation>
 <translation id="4744944742468440486">Інформація, пов'язана з виділеним текстом</translation>
 <translation id="4751272708893364980">Переглянути журнали RMA</translation>
 <translation id="4773299976671772492">Зупинено</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Щоб дізнатися більше, перейдіть у <ph name="BEGIN_LINK" />Довідковий центр<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгоритм стиснення</translation>
 <translation id="4794140124556169553">Активна перевірка ЦП може вплинути на ефективність системи</translation>
+<translation id="4800589996161293643">Спільнота Chromebook</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4808449224298348341">Завдання друку "<ph name="DOCUMENT_TITLE" />" скасовано</translation>
 <translation id="4809927044794281115">Світла тема</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Показувати фотографії, час, прогноз погоди й медіадані на неактивному екрані.</translation>
 <translation id="5039804452771397117">Дозволити</translation>
+<translation id="5044978354634658544">Вставте пристрій USB</translation>
 <translation id="5049856988445523908">SIM-карту заблоковано (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Назва групи</translation>
 <translation id="5051044138948155788">Це єдина сторінка. Ви перейдете на екран початку сканування.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Стан акумулятора</translation>
 <translation id="5170568018924773124">Показати в папці</translation>
 <translation id="5179530508336824319">Увімкніть захист від запису, щоб перейти на наступний екран. Вказівки можна дізнатися на сторінці підтримки виробника пристрою.</translation>
+<translation id="5181140330217080051">Завантаження</translation>
 <translation id="5190187232518914472">Пориньте в улюблені спогади. Щоб додати або змінити альбом, перейдіть у <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">На екрані не знайдено елементів, проблеми з якими я можу вирішити.
 Торкніться значка мікрофона, щоб поставити запитання.</translation>
 <translation id="5212593641110061691">Таблоїд</translation>
 <translation id="5222676887888702881">Вийти</translation>
+<translation id="522307662484862935">Не вказувати електронну адресу</translation>
 <translation id="5227902338748591677">Розклад для темної теми</translation>
 <translation id="5234764350956374838">Закрити</translation>
 <translation id="5252456968953390977">Роумінг</translation>
@@ -526,6 +545,7 @@
 <translation id="5620281292257375798">Лише для внутрішнього використання</translation>
 <translation id="5649768706273821470">Слухати</translation>
 <translation id="5655283760733841251">Збільшити яскравість клавіатури</translation>
+<translation id="5659593005791499971">Ел. пошта</translation>
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Сім’я</translation>
@@ -538,6 +558,7 @@
 <translation id="57838592816432529">Вимкнути звук</translation>
 <translation id="5784136236926853061">Велика затримка HTTP</translation>
 <translation id="578753362485952307">Якщо ви модифікуєте материнську плату для використання на іншому пристрої, застосуйте <ph name="LINK_BEGIN" />цей процес<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Готово</translation>
 <translation id="5832805196449965646">Додати користувача</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5843706793424741864">Градуси Фаренгейта</translation>
@@ -599,6 +620,7 @@
 <translation id="6284632978374966585">Увімкнути темну тему</translation>
 <translation id="6295178529664209245">Продовжити ремонт?</translation>
 <translation id="6302401976930124515">Тест "<ph name="TEST_NAME" />" скасовано</translation>
+<translation id="631063167932043783">Додаток Можливості</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />: оновіть мікропрограму на пристрої</translation>
 <translation id="6321407676395378991">Увімкнути заставку</translation>
 <translation id="6325525973963619867">Помилка</translation>
@@ -610,6 +632,7 @@
 <translation id="6379086450106841622">Сенсорний екран</translation>
 <translation id="6381741036071372448">Перевірте клавіатуру</translation>
 <translation id="6388847657025262518">Автоподавач документів заклинило. Перевірте його та повторіть спробу.</translation>
+<translation id="6394634179843537518">Додати файл</translation>
 <translation id="6410257289063177456">Файли зображень</translation>
 <translation id="641081527798843608">Збіг суб’єкта</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@
 <translation id="6516990319416533844">Щоб перевірити швидкість заряджання акумулятора, максимально використайте його заряд протягом короткого періоду часу</translation>
 <translation id="6517239166834772319">Можливості</translation>
 <translation id="6527081081771465939">Невідомий протокол безпеки Wi-Fi</translation>
+<translation id="6535178685492749208">Ви не в мережі. Відгук буде надіслано пізніше.</translation>
 <translation id="65587193855025101">Планшетний сканер</translation>
 <translation id="6564646048574748301">Не надруковано – принтер недоступний</translation>
 <translation id="6566314079205407217">Сканування кількох сторінок</translation>
@@ -643,6 +667,7 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6692996468359469499">Отримати інформацію, пов'язану з виділеним текстом</translation>
 <translation id="6704062477274546131">Розпізнавання DNS</translation>
+<translation id="6721744718589119342">Ми можемо надсилати вам додаткову чи оновлену інформацію електронною поштою</translation>
 <translation id="6723839937902243910">Заряд</translation>
 <translation id="6723847290197874913">Підсвічування клавіатури</translation>
 <translation id="672609503628871915">Докладніше про нові функції</translation>
@@ -703,10 +728,12 @@
 <translation id="7297226631177386107">Не вдається підключитися до веб-сайтів HTTPS через брандмауер</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Ставте запитання спеціалістам на довідковому форуму Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Щоб переглянути результат у Пошуку Google, натисніть клавішу пошуку та пробіл.</translation>
 <translation id="7343649194310845056">Мережеві пристрої</translation>
 <translation id="7359657277149375382">Тип файлу</translation>
+<translation id="73631062356239394">Поділитися даними діагностики</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">Артикул</translation>
 <translation id="7397270852490618635">Вимкнути світлу тему</translation>
@@ -737,15 +764,18 @@
 <translation id="7657530360897961171">Помилка ремонту пристрою <ph name="DEVICE_TYPE" /></translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7665800271478495366">Змінити аватар</translation>
+<translation id="7682274994254393134">Початок ремонту</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>
 <translation id="7701040980221191251">Немає</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Кількість циклів</translation>
 <translation id="7747039790905080783">Спільний ключ</translation>
 <translation id="7762130827864645708">Ваш пароль змінено. Відтепер використовуйте новий.</translation>
+<translation id="7762839321248874531">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему й додатки<ph name="END_LINK1" />, а також <ph name="BEGIN_LINK2" />показники<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Збіг із суфіксом домену</translation>
 <translation id="7769672763586021400">Ідентифікатор моделі</translation>
 <translation id="7784116172884276937">DNS-сервери не налаштовано</translation>
+<translation id="779591286616261875">Надіслати новий звіт</translation>
 <translation id="7799817062559422778">Світлий режим</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7805768142964895445">Статус</translation>
@@ -812,6 +842,7 @@
 <translation id="8382302752385457774">Бренд продавця</translation>
 <translation id="8395584934117017006">Цим пристроєм <ph name="DEVICE_TYPE" /> керує організація</translation>
 <translation id="8398927464629426868">Поточна сила струму заряджання або розряджання</translation>
+<translation id="8420955526972171689">Проводьте тести й вирішуйте проблеми з апаратним забезпеченням</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Вбудована клавіатура</translation>
 <translation id="8431300646573772016">Нові функції ОС Chrome</translation>
@@ -897,6 +928,7 @@
 <translation id="9082718469794970195">Використати це відео</translation>
 <translation id="9087578468327036362">Повідомити про проблеми із запитом</translation>
 <translation id="9088306295921699330">Використовується</translation>
+<translation id="9092255287806472980">Наша команда розгляне ваш відгук. Він допоможе покращити ОС Chrome. Зверніть увагу: через велику кількість повідомлень ми не відповідаємо на них.</translation>
 <translation id="9095775724867566971">PluginVM</translation>
 <translation id="90977145661420967">Вам доведеться розібрати пристрій</translation>
 <translation id="9098156406873149060">Зберегти дані користувача</translation>
@@ -911,6 +943,7 @@
 <translation id="9149391708638971077">Виконати перевірку пам'яті</translation>
 <translation id="9173638680043580060">Залишилося менше хвилини</translation>
 <translation id="917720651393141712">Перевірити</translation>
+<translation id="9188992814426075118">Колір підсвічування клавіатури може автоматично підлаштовуватися до фонового малюнка</translation>
 <translation id="9204237731135241582">Не вдається зв’язатися зі шлюзом із додатків для Android</translation>
 <translation id="9211490828691860325">Усі робочі столи</translation>
 <translation id="922179502584117429">Поточна версія <ph name="VERSION_NUMBER" /> застаріла</translation>

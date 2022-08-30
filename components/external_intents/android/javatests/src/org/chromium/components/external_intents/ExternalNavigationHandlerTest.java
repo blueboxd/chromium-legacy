@@ -45,6 +45,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Function;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.MaxAndroidSdkLevel;
@@ -95,7 +96,6 @@ public class ExternalNavigationHandlerTest {
     private static final String YOUTUBE_URL = "http://youtube.com/";
     private static final String YOUTUBE_MOBILE_URL = "http://m.youtube.com";
     private static final String YOUTUBE_PACKAGE_NAME = "youtube";
-    private static final String OTHER_BROWSER_PACKAGE = "com.other.browser";
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -781,6 +781,29 @@ public class ExternalNavigationHandlerTest {
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime() + 1, 0, false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.LINK)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testExternalRedirectForTwa() throws URISyntaxException {
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        // TWAs use AUTO_TOPLEVEL for metrics reasons.
+        int transTypeTopLevelFromIntent = PageTransition.AUTO_TOPLEVEL | PageTransition.FROM_API;
+
+        Intent intent = Intent.parseUri(IMDB_APP_INTENT_FOR_TOM_HANKS, Intent.URI_INTENT_SCHEME);
+        redirectHandler.updateIntent(
+                intent, !IS_CUSTOM_TAB_INTENT, !SEND_TO_EXTERNAL_APPS, !INTENT_STARTED_TASK);
+        redirectHandler.updateNewUrlLoading(transTypeTopLevelFromIntent, false, false, 0, 0, true);
+        redirectHandler.updateNewUrlLoading(transTypeTopLevelFromIntent, true, false, 0, 0, false);
+        checkUrl(IMDB_APP_INTENT_FOR_TOM_HANKS)
+                .withPageTransition(transTypeTopLevelFromIntent)
+                .withIsRendererInitiated(false)
+                .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -2439,36 +2462,19 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testUrlIntentToOtherBrowser() {
-        mDelegate.setResolvesToOtherBrowser(true);
+    public void testIntentToOtherBrowser() {
+        // This will create a non-specialized ResolveInfo for the target package.
+        mDelegate.setCanResolveActivityForExternalSchemes(true);
 
-        String unsafeUrls[] = new String[] {
-                "intent:#Intent;S.EXTRA_HIDDEN_URL=encodedUrl;action=CUSTOM.ACTION;end",
-                "intent:#Intent;S.EXTRA_HIDDEN_URL=encodedUrl;end",
-                "intent://example.com#Intent;scheme=https;action=CUSTOM.ACTION;end",
-                "intent://example.com#Intent;scheme=https;end", "intent:example.com#Intent;end"};
-        for (String url : unsafeUrls) {
-            checkUrl(url)
-                    .withPageTransition(PageTransition.LINK)
-                    .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
-                            START_OTHER_ACTIVITY);
-            Assert.assertTrue(mUrlHandler.mRequiresIntentChooser);
-        }
-    }
+        String intent = "intent://example.com#Intent;scheme=https;package=com.other.browser;end";
 
-    @Test
-    @SmallTest
-    public void testSafeIntentToOtherBrowser() throws Exception {
-        mDelegate.setResolvesToOtherBrowser(true);
-
-        String intent =
-                "intent:#Intent;action=ACTION.PROMO;package=" + OTHER_BROWSER_PACKAGE + ";end";
-
+        // This is a limitation of this testing harness, which doesn't get past
+        // startActivityIfNeeded as that requires an Activity context. This functionality is
+        // tested in ExternalNavigationDelegateImplTest.
         checkUrl(intent)
                 .withPageTransition(PageTransition.LINK)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        Assert.assertFalse(mUrlHandler.mRequiresIntentChooser);
     }
 
     @Test
@@ -2609,7 +2615,6 @@ public class ExternalNavigationHandlerTest {
         public boolean mResolveInfoContainsSelf;
         public Intent mStartActivityIntent;
         public boolean mCalledWithProxy;
-        public boolean mRequiresIntentChooser;
         private boolean mSendIntentsForReal;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
@@ -2688,12 +2693,11 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         protected OverrideUrlLoadingResult startActivity(Intent intent, boolean proxy,
-                boolean requiresIntentChooser, List<ResolveInfo> resolvingInfos,
+                boolean requiresIntentChooser, QueryIntentActivitiesSupplier resolvingInfos,
                 ResolveActivitySupplier resolveActivity, GURL browserFallbackUrl,
                 GURL intentDataUrl, GURL referrerUrl) {
             mStartActivityIntent = intent;
             mCalledWithProxy = proxy;
-            mRequiresIntentChooser = requiresIntentChooser;
             if (mSendIntentsForReal) {
                 return super.startActivity(intent, proxy, requiresIntentChooser, resolvingInfos,
                         resolveActivity, browserFallbackUrl, intentDataUrl, referrerUrl);
@@ -2725,6 +2729,7 @@ public class ExternalNavigationHandlerTest {
                                 intentActivity.packageName(), intentActivity));
                     }
                 }
+                if (!list.isEmpty()) return list;
 
                 String schemeString = intent.getScheme();
                 boolean isMarketScheme = schemeString != null && schemeString.startsWith("market");
@@ -2739,18 +2744,12 @@ public class ExternalNavigationHandlerTest {
                 // Scheme-less intents (eg. Action-based intents like opening Settings).
                 list.add(newResolveInfo("package"));
             }
-            if (mResolvesToOtherBrowser) {
-                list.add(newResolveInfo(OTHER_BROWSER_PACKAGE));
-            }
             return list;
         }
 
         public ResolveInfo resolveActivity(Intent intent) {
             if (mWillResolveToDisambiguationDialog) {
                 return newResolveInfo("android.disambiguation.dialog");
-            }
-            if (mResolvesToOtherBrowser) {
-                return newResolveInfo(OTHER_BROWSER_PACKAGE);
             }
 
             List<ResolveInfo> list = queryIntentActivities(intent);
@@ -2849,8 +2848,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean maybeLaunchInstantApp(
-                GURL url, GURL referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer) {
+        public boolean maybeLaunchInstantApp(GURL url, GURL referrerUrl, boolean isIncomingRedirect,
+                boolean isSerpReferrer, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
             return mCanHandleWithInstantApp;
         }
 
@@ -2875,7 +2874,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean isIntentForTrustedCallingApp(Intent intent) {
+        public boolean isIntentForTrustedCallingApp(
+                Intent intent, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
             return mIsCallingAppTrusted;
         }
 
@@ -2903,7 +2903,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean maybeSetTargetPackage(Intent intent) {
+        public boolean maybeSetTargetPackage(
+                Intent intent, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
             if (mTargetPackageName != null) {
                 intent.setSelector(null);
                 intent.setPackage(mTargetPackageName);
@@ -3011,10 +3012,6 @@ public class ExternalNavigationHandlerTest {
             mHandlesInstantAppLaunchingInternally = value;
         }
 
-        public void setResolvesToOtherBrowser(boolean value) {
-            mResolvesToOtherBrowser = value;
-        }
-
         public boolean startIncognitoIntentCalled;
         public boolean maybeSetRequestMetadataCalled;
         public Callback<Boolean> incognitoDialogUserDecisionCallback;
@@ -3040,7 +3037,6 @@ public class ExternalNavigationHandlerTest {
         private Context mContext;
         private boolean mShouldEmbedderInitiatedNavigationsStayInBrowser = true;
         private boolean mHandlesInstantAppLaunchingInternally = true;
-        private boolean mResolvesToOtherBrowser;
     }
 
     private void checkIntentSanity(Intent intent, String name) {
@@ -3211,7 +3207,6 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-            Assert.assertTrue((flags & PackageManager.MATCH_DEFAULT_ONLY) > 0);
             return mDelegate.queryIntentActivities(intent);
         }
 

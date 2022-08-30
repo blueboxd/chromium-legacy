@@ -35,6 +35,8 @@ The test verifies functionality of querying style information for document-trans
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -48,6 +50,10 @@ The test verifies functionality of querying style information for document-trans
                             [0] : {
                                 name : display
                                 value : block
+                            }
+                            [1] : {
+                                name : page-transition-tag
+                                value : root
                             }
                         ]
                         shorthandEntries : [
@@ -73,6 +79,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -132,6 +140,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -182,6 +192,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -226,6 +238,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -276,6 +290,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -322,6 +338,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -398,6 +416,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -462,6 +482,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -526,6 +548,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -583,6 +607,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -653,6 +679,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : regular
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -761,6 +789,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -818,6 +848,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -888,6 +920,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : regular
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -996,6 +1030,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -1053,6 +1089,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -1129,6 +1167,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -1186,6 +1226,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : user-agent
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -1256,6 +1298,8 @@ The test verifies functionality of querying style information for document-trans
                             media : [
                             ]
                             origin : regular
+                            scopes : [
+                            ]
                             selectorList : {
                                 selectors : [
                                     [0] : {
@@ -1330,6 +1374,8 @@ Dumping styles for : ::page-transition with id undefined{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1392,6 +1438,8 @@ Dumping styles for : ::page-transition-container with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1442,6 +1490,8 @@ Dumping styles for : ::page-transition-container with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1488,6 +1538,8 @@ Dumping styles for : ::page-transition-image-wrapper with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1554,6 +1606,8 @@ Dumping styles for : ::page-transition-outgoing-image with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1611,6 +1665,8 @@ Dumping styles for : ::page-transition-outgoing-image with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1681,6 +1737,8 @@ Dumping styles for : ::page-transition-outgoing-image with id root{
                     media : [
                     ]
                     origin : regular
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1791,6 +1849,8 @@ Dumping styles for : ::page-transition-incoming-image with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1848,6 +1908,8 @@ Dumping styles for : ::page-transition-incoming-image with id root{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1926,6 +1988,8 @@ Dumping styles for : ::page-transition-container with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -1976,6 +2040,8 @@ Dumping styles for : ::page-transition-container with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2022,6 +2088,8 @@ Dumping styles for : ::page-transition-container with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2100,6 +2168,8 @@ Dumping styles for : ::page-transition-image-wrapper with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2166,6 +2236,8 @@ Dumping styles for : ::page-transition-outgoing-image with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2223,6 +2295,8 @@ Dumping styles for : ::page-transition-outgoing-image with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2293,6 +2367,8 @@ Dumping styles for : ::page-transition-outgoing-image with id shared{
                     media : [
                     ]
                     origin : regular
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2403,6 +2479,8 @@ Dumping styles for : ::page-transition-incoming-image with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2460,6 +2538,8 @@ Dumping styles for : ::page-transition-incoming-image with id shared{
                     media : [
                     ]
                     origin : user-agent
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {
@@ -2530,6 +2610,8 @@ Dumping styles for : ::page-transition-incoming-image with id shared{
                     media : [
                     ]
                     origin : regular
+                    scopes : [
+                    ]
                     selectorList : {
                         selectors : [
                             [0] : {

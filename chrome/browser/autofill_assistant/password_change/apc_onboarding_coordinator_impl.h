@@ -5,19 +5,16 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_APC_ONBOARDING_COORDINATOR_IMPL_H_
 #define CHROME_BROWSER_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_APC_ONBOARDING_COORDINATOR_IMPL_H_
 
-#include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
-
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_onboarding_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_onboarding_prompt.h"
-
-namespace content {
-class WebContents;
-}  // namespace content
+#include "content/public/browser/web_contents_observer.h"
 
 class PrefService;
 
@@ -42,9 +39,29 @@ class ApcOnboardingCoordinatorImpl : public ApcOnboardingCoordinator {
       base::WeakPtr<AssistantOnboardingController> controller);
 
  private:
+  // Helper class that listens to a `WebContents` and executes a closure to
+  // open the onboarding dialog on a `DidFinishNavigation` that ends in a
+  // commit.
+  class DialogLauncher : public content::WebContentsObserver {
+   public:
+    DialogLauncher(content::WebContents* web_contents,
+                   base::OnceClosure open_dialog);
+    ~DialogLauncher() override;
+
+   private:
+    // content::WebContentsObserver:
+    void DidFinishNavigation(content::NavigationHandle*) override;
+
+    // The closure that opens the dialog.
+    base::OnceClosure open_dialog_;
+  };
+
   // Returns whether the user has previously accepted onboarding by checking
   // the respective pref key.
   bool IsOnboardingAlreadyAccepted();
+
+  // Creates controller and view for the onboarding dialog and shows it.
+  void OpenOnboardingDialog();
 
   // Handles the response from the UI controller prompting the user for consent.
   void OnControllerResponseReceived(bool success);
@@ -61,6 +78,10 @@ class ApcOnboardingCoordinatorImpl : public ApcOnboardingCoordinator {
 
   // Controller for the dialog.
   std::unique_ptr<AssistantOnboardingController> dialog_controller_;
+
+  // A helper object that is used to delay opening the onboarding dialog until
+  // an ongoing navigation is finished.
+  std::unique_ptr<DialogLauncher> dialog_launcher_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_APC_ONBOARDING_COORDINATOR_IMPL_H_

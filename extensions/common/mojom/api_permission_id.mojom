@@ -177,7 +177,7 @@ enum APIPermissionID {
   kVirtualKeyboardPrivate = 151,
   kVpnProvider = 152,
   kWallpaper = 153,
-  kWallpaperPrivate = 154,
+  kDeleted_WallpaperPrivate = 154,
   kWebcamPrivate = 155,
   kDeleted_kWebConnectable = 156,
   kWebNavigation = 157,
@@ -236,7 +236,7 @@ enum APIPermissionID {
   kEnterpriseReportingPrivate = 210,
   kCecPrivate = 211,
   kSafeBrowsingPrivate = 212,
-  kFileSystemRequestDownloads = 213,
+  kDeleted_FileSystemRequestDownloads = 213,
   kDeleted_SystemPowerSource = 214,
   kArcAppsPrivate = 215,
   kEnterpriseHardwarePlatform = 216,
@@ -262,6 +262,8 @@ enum APIPermissionID {
   kChromeOSDiagnostics = 236,
   kChromeOSTelemetrySerialNumber = 237,
   kSharedStoragePrivate = 238,
+  kEnterpriseRemoteApps = 239,
+  kOffscreen = 240,
 
   // Add new entries at the end of the enum and be sure to update the
   // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml

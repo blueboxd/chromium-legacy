@@ -12,11 +12,13 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
@@ -220,6 +222,23 @@ void AttributionManagerImpl::RunInMemoryForTesting() {
   AttributionStorageSql::RunInMemoryForTesting();
 }
 
+// static
+std::unique_ptr<AttributionManagerImpl>
+AttributionManagerImpl::CreateWithNewDbForTesting(
+    StoragePartitionImpl* storage_partition,
+    const base::FilePath& user_data_directory,
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    if (!AttributionStorageSql::DeleteStorageForTesting(user_data_directory))
+      return nullptr;
+  }
+
+  return std::make_unique<AttributionManagerImpl>(
+      storage_partition, user_data_directory,
+      std::move(special_storage_policy));
+}
+
 bool AttributionManagerImpl::IsReportAllowed(
     const AttributionReport& report) const {
   const CommonSourceInfo& common_info =
@@ -241,7 +260,7 @@ AttributionManagerImpl::CreateForTesting(
     std::unique_ptr<AttributionCookieChecker> cookie_checker,
     std::unique_ptr<AttributionReportSender> report_sender,
     StoragePartitionImpl* storage_partition) {
-  return absl::WrapUnique(new AttributionManagerImpl(
+  return base::WrapUnique(new AttributionManagerImpl(
       storage_partition, user_data_directory, max_pending_events,
       std::move(special_storage_policy), std::move(storage_delegate),
       std::move(cookie_checker), std::move(report_sender),

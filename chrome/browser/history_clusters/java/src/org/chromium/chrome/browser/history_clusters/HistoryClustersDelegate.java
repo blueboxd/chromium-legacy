@@ -9,7 +9,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.url.GURL;
 
 /**
@@ -33,9 +36,47 @@ public interface HistoryClustersDelegate {
 
     /** Returns an intent that opens the given url in the correct main browsing activity. */
     @Nullable
-    Intent getOpenUrlIntent(GURL gurl);
+    Intent getOpenUrlIntent(GURL gurl, boolean inIncognito, boolean createNewTab);
 
     /** Returns a toggle view that swaps between the Journeys UI and the "normal" History UI. */
     @Nullable
     ViewGroup getToggleView(ViewGroup parent);
+
+    /** Returns an object that can create new tabs. */
+    @Nullable
+    default TabCreator getTabCreator(boolean isIncognito) {
+        return null;
+    }
+
+    /**
+     * Returns a view containing a disclaimer about the presence of other forms of browsing
+     * history.
+     */
+    @Nullable
+    default ViewGroup getPrivacyDisclaimerView(ViewGroup parent) {
+        return null;
+    }
+
+    /** Returns an updatable indicator of whether the privacy disclaimer should be shown. */
+    default ObservableSupplier<Boolean> shouldShowPrivacyDisclaimerSupplier() {
+        return new ObservableSupplierImpl<>();
+    }
+
+    /** Called when the info header's visibility should be toggled. */
+    default void toggleInfoHeaderVisibility() {}
+
+    /** Returns a view containing a link to a UI where the user can clear their browsing data. */
+    @Nullable
+    default ViewGroup getClearBrowsingDataView(ViewGroup parent) {
+        return null;
+    }
+
+    /** Returns an updatable indicator of whether the clear browsing data link should be shown. */
+    default ObservableSupplier<Boolean> shouldShowClearBrowsingDataSupplier() {
+        return new ObservableSupplierImpl<>();
+    }
+
+    default void markVisitForRemoval(ClusterVisit clusterVisit) {}
+
+    default void removeMarkedItems() {}
 }

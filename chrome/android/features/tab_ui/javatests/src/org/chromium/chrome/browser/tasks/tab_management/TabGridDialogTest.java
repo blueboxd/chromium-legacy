@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -34,8 +33,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickNthTabInDialog;
@@ -110,6 +111,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.util.ColorUtils;
@@ -121,9 +123,9 @@ import java.util.concurrent.ExecutionException;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Restriction({UiRestriction.RESTRICTION_TYPE_PHONE,
-        Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-@Features.EnableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID})
+@Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+@Features.EnableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID,
+    TAB_GROUPS_FOR_TABLETS,GRID_TAB_SWITCHER_FOR_TABLETS})
 public class TabGridDialogTest {
     // clang-format on
     private static final String CUSTOMIZED_TITLE1 = "wfh tips";
@@ -150,6 +152,7 @@ public class TabGridDialogTest {
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
         ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+        TabUiFeatureUtilities.setTabletGridTabSwitcherPolishEnabledForTesting(true);
     }
 
     @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
@@ -178,7 +181,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024")
     public void testBackPressCloseDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -203,17 +205,31 @@ public class TabGridDialogTest {
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
 
-        // Open dialog from tab strip and verify dialog is showing correct content.
-        openDialogFromStripAndVerify(cta, 2, null);
+        if (isPhone()) {
+            // Open dialog from tab strip and verify dialog is showing correct content.
+            openDialogFromStripAndVerify(cta, 2, null);
 
-        // Press back and dialog should be hidden.
-        Espresso.pressBack();
-        waitForDialogHidingAnimation(cta);
+            // Press back and dialog should be hidden.
+            Espresso.pressBack();
+            waitForDialogHidingAnimation(cta);
+        }
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024")
+    public void testBackPressCloseDialogViaGroupStrip() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+    }
+
+    @Test
+    @MediumTest
     public void testClickScrimCloseDialog() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -238,12 +254,14 @@ public class TabGridDialogTest {
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
 
-        // Open dialog from tab strip and verify dialog is showing correct content.
-        openDialogFromStripAndVerify(cta, 2, null);
+        if (isPhone()) {
+            // Open dialog from tab strip and verify dialog is showing correct content.
+            openDialogFromStripAndVerify(cta, 2, null);
 
-        // Click scrim view and dialog should be hidden.
-        clickScrimToExitDialog(cta);
-        waitForDialogHidingAnimation(cta);
+            // Click scrim view and dialog should be hidden.
+            clickScrimToExitDialog(cta);
+            waitForDialogHidingAnimation(cta);
+        }
 
         // Checkout the scrim view observer is correctly setup by closing dialog in tab switcher
         // again.
@@ -308,7 +326,7 @@ public class TabGridDialogTest {
 
         // Add 400px top margin to the recyclerView.
         RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
-        float tabGridCardPadding = TabUiThemeProvider.getTabCardPaddingDimension(cta);
+        float tabGridCardPadding = TabUiThemeProvider.getTabGridCardMargin(cta);
         int deltaTopMargin = 400;
         ViewGroup.MarginLayoutParams params =
                 (ViewGroup.MarginLayoutParams) recyclerView.getLayoutParams();
@@ -343,7 +361,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024 and https://crbug.com/1121363")
     public void testUndoClosureInDialog_DialogUndoBar() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -359,15 +376,17 @@ public class TabGridDialogTest {
         verifyDialogUndoBarAndClick();
         verifyShowingDialog(cta, 2, null);
 
-        // Verify close and undo in dialog from tab strip.
-        clickFirstTabInDialog(cta);
-        openDialogFromStripAndVerify(cta, 2, null);
-        closeFirstTabInDialog();
-        verifyShowingDialog(cta, 1, null);
-        verifyDialogUndoBarAndClick();
-        verifyShowingDialog(cta, 2, null);
-        clickScrimToExitDialog(cta);
-        verifyTabStripFaviconCount(cta, 2);
+        if (isPhone()) {
+            // Verify close and undo in dialog from tab strip.
+            clickFirstTabInDialog(cta);
+            openDialogFromStripAndVerify(cta, 2, null);
+            closeFirstTabInDialog();
+            verifyShowingDialog(cta, 1, null);
+            verifyDialogUndoBarAndClick();
+            verifyShowingDialog(cta, 2, null);
+            clickScrimToExitDialog(cta);
+            verifyTabStripFaviconCount(cta, 2);
+        }
     }
 
     @Test
@@ -464,7 +483,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1206781")
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testSelectionEditorUngroup() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -544,12 +562,14 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    // TODO Enable for Tablets (crbug.com/1342387)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testSelectionEditorPosition() {
-        // clang-format on
+        // clang-format on;
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         View parentView = cta.getCompositorViewHolderForTesting();
         createTabs(cta, false, 3);
@@ -606,7 +626,6 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -629,15 +648,17 @@ public class TabGridDialogTest {
         verifyFirstCardTitle(CUSTOMIZED_TITLE1);
         openDialogFromTabSwitcherAndVerify(cta, 2, CUSTOMIZED_TITLE1);
 
-        // Modify title in dialog from tab strip.
-        clickFirstTabInDialog(cta);
-        openDialogFromStripAndVerify(cta, 2, CUSTOMIZED_TITLE1);
-        editDialogTitle(cta, CUSTOMIZED_TITLE2);
+        if(isPhone()) {
+            // Modify title in dialog from tab strip.
+            clickFirstTabInDialog(cta);
+            openDialogFromStripAndVerify(cta, 2, CUSTOMIZED_TITLE1);
+            editDialogTitle(cta, CUSTOMIZED_TITLE2);
 
-        clickScrimToExitDialog(cta);
-        waitForDialogHidingAnimation(cta);
-        enterTabSwitcher(cta);
-        verifyFirstCardTitle(CUSTOMIZED_TITLE2);
+            clickScrimToExitDialog(cta);
+            waitForDialogHidingAnimation(cta);
+            enterTabSwitcher(cta);
+            verifyFirstCardTitle(CUSTOMIZED_TITLE2);
+        }
     }
 
     @Test
@@ -645,7 +666,6 @@ public class TabGridDialogTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
-    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming_KeyboardVisibility() throws ExecutionException {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -667,8 +687,10 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 2, null);
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
-        openDialogFromStripAndVerify(cta, 2, null);
-        testTitleTextFocus(cta);
+        if (isPhone()) {
+            openDialogFromStripAndVerify(cta, 2, null);
+            testTitleTextFocus(cta);
+        }
     }
 
     @Test
@@ -786,7 +808,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1157518")
     public void testAdjustBackGroundViewAccessibilityImportance() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -806,10 +827,12 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 2, null);
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
-        openDialogFromStripAndVerify(cta, 2, null);
-        verifyBackgroundViewAccessibilityImportance(cta, true);
-        Espresso.pressBack();
-        waitForDialogHidingAnimation(cta);
+        if (isPhone()) {
+            openDialogFromStripAndVerify(cta, 2, null);
+            verifyBackgroundViewAccessibilityImportance(cta, true);
+            Espresso.pressBack();
+            waitForDialogHidingAnimation(cta);
+        }
         verifyBackgroundViewAccessibilityImportance(cta, false);
     }
 
@@ -817,8 +840,7 @@ public class TabGridDialogTest {
     @MediumTest
     @DisabledTest(message = "TODO(crbug.com/1128345): Fix flakiness.")
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
     public void testAccessibilityString() throws ExecutionException {
         // clang-format on
@@ -900,6 +922,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Features.EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", START_SURFACE_BASE_PARAMS + "/single"})
     public void testDialogSetup_WithStartSurface() throws Exception {
@@ -925,6 +948,7 @@ public class TabGridDialogTest {
         // Test opening dialog from strip and from tab switcher.
         openDialogFromStripAndVerify(cta, 2, null);
         Espresso.pressBack();
+
         // Tab switcher is created, and the dummy signal to hide dialog is sent. This line would
         // crash if the dummy signal is not properly handled. See crbug.com/1096358.
         enterTabSwitcher(cta);
@@ -939,8 +963,10 @@ public class TabGridDialogTest {
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", START_SURFACE_BASE_PARAMS + "/single"})
-    @DisabledTest(message = "crbug.com/1119899, crbug.com/1131545")
-    public void testUndoClosureInDialog_WithStartSurface() throws Exception {
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.M,
+            message = "crbug.com/1119899, crbug.com/1131545")
+    public void
+    testUndoClosureInDialog_WithStartSurface() throws Exception {
         // Create a tab group with 2 tabs.
         finishActivity(mActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0);
@@ -994,7 +1020,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024")
     public void testCreateTabInDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -1019,15 +1044,18 @@ public class TabGridDialogTest {
         // Enter first tab page.
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
-        // Open dialog from tab strip and verify dialog is showing correct content.
-        openDialogFromStripAndVerify(cta, 3, null);
 
-        // Create a tab by tapping "+" on the dialog.
-        onView(allOf(withId(R.id.toolbar_right_button),
-                       isDescendantOfA(withId(R.id.dialog_container_view))))
-                .perform(click());
-        waitForDialogHidingAnimation(cta);
-        openDialogFromStripAndVerify(cta, 4, null);
+        if (isPhone()) {
+            // Open dialog from tab strip and verify dialog is showing correct content.
+            openDialogFromStripAndVerify(cta, 3, null);
+
+            // Create a tab by tapping "+" on the dialog.
+            onView(allOf(withId(R.id.toolbar_right_button),
+                           isDescendantOfA(withId(R.id.dialog_container_view))))
+                    .perform(click());
+            waitForDialogHidingAnimation(cta);
+            openDialogFromStripAndVerify(cta, 4, null);
+        }
     }
 
     private void openDialogFromTabSwitcherAndVerify(
@@ -1076,7 +1104,7 @@ public class TabGridDialogTest {
         // make sure that the color of navigation bar is changed by dialog scrim.
         Resources resources = cta.getResources();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1
-                || !resources.getBoolean(R.bool.window_light_navigation_bar)) {
+                || !resources.getBoolean(R.bool.window_light_navigation_bar) || isTablet(cta)) {
             return;
         }
         final @ColorInt int scrimDefaultColor = cta.getColor(R.color.default_scrim_color);
@@ -1090,9 +1118,14 @@ public class TabGridDialogTest {
         assertNotEquals(navigationBarColor, navigationBarColorWithScrimOverlay);
     }
 
+    private boolean isPhone() {
+        return !isTablet(mActivityTestRule.getActivity());
+    }
+
     private boolean isDialogShowing(ChromeTabbedActivity cta) {
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        return dialogView.getVisibility() == View.VISIBLE && dialogView.getAlpha() == 1f;
+        View dialogContainerView = cta.findViewById(R.id.dialog_container_view);
+        return dialogView.getVisibility() == View.VISIBLE && dialogContainerView.getAlpha() == 1f;
     }
 
     private boolean isDialogHiding(ChromeTabbedActivity cta) {
@@ -1140,19 +1173,20 @@ public class TabGridDialogTest {
                     if (noMatchException != null) throw noMatchException;
                     Assert.assertTrue(v instanceof ListView);
                     ListView listView = (ListView) v;
+                    int menuItemCount = 1;
                     verifyTabGridDialogToolbarMenuItem(listView, 0,
                             cta.getString(R.string.tab_grid_dialog_toolbar_remove_from_group));
                     if (TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING.getValue()) {
-                        verifyTabGridDialogToolbarMenuItem(listView, 1,
+                        menuItemCount += 1;
+                        verifyTabGridDialogToolbarMenuItem(listView, menuItemCount - 1,
                                 cta.getString(R.string.tab_grid_dialog_toolbar_share_group));
                     }
                     if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
-                        assertEquals(3, listView.getCount());
-                        verifyTabGridDialogToolbarMenuItem(listView, 2,
+                        menuItemCount += 1;
+                        verifyTabGridDialogToolbarMenuItem(listView, menuItemCount - 1,
                                 cta.getString(R.string.tab_grid_dialog_toolbar_edit_group_name));
-                    } else {
-                        assertEquals(2, listView.getCount());
                     }
+                    assertEquals(menuItemCount, listView.getCount());
                 });
     }
 
@@ -1221,7 +1255,7 @@ public class TabGridDialogTest {
         int largeMargin = (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
         int topMargin = isPortrait ? largeMargin : smallMargin;
         int sideMargin = isPortrait ? smallMargin : largeMargin;
-        View parentView = cta.getCompositorViewHolderForTesting();
+        View parentView = cta.findViewById(TabUiTestHelper.getTabSwitcherParentId(cta));
         Rect parentRect = new Rect();
         parentView.getGlobalVisibleRect(parentRect);
 
@@ -1255,7 +1289,9 @@ public class TabGridDialogTest {
     }
 
     private void verifyFirstCardTitle(String title) {
-        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(
+                             mActivityTestRule.getActivity()))),
+                       withId(R.id.tab_list_view)))
                 .check((v, noMatchException) -> {
                     if (noMatchException != null) throw noMatchException;
 
@@ -1270,30 +1306,49 @@ public class TabGridDialogTest {
     private void clickScrimToExitDialog(ChromeTabbedActivity cta) throws ExecutionException {
         CriteriaHelper.pollUiThread(() -> isDialogShowing(cta));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            View scrimView =
-                    cta.getRootUiCoordinatorForTesting().getScrimCoordinator().getViewForTesting();
+            View scrimView;
+            if (isTablet(cta)) {
+                TabGridDialogView dialogView = cta.findViewById(R.id.dialog_parent_view);
+                scrimView = dialogView.getScrimCoordinatorForTesting().getViewForTesting();
+            } else {
+                scrimView = cta.getRootUiCoordinatorForTesting()
+                                    .getScrimCoordinator()
+                                    .getViewForTesting();
+            }
             scrimView.performClick();
         });
+    }
+
+    private boolean isTablet(ChromeTabbedActivity cta) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(cta);
     }
 
     private void verifyBackgroundViewAccessibilityImportance(
             ChromeTabbedActivity cta, boolean isDialogShowing) {
         View controlContainer = cta.findViewById(R.id.control_container);
-        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
-                controlContainer.getImportantForAccessibility());
-        View bottomControls = cta.findViewById(R.id.bottom_controls);
-        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
-                bottomControls.getImportantForAccessibility());
+        assertEquals(isDialogShowing,
+                IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                        == controlContainer.getImportantForAccessibility());
         View compositorViewHolder = cta.getCompositorViewHolderForTesting();
-        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
-                compositorViewHolder.getImportantForAccessibility());
+        assertEquals(isDialogShowing,
+                IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                        == compositorViewHolder.getImportantForAccessibility());
         View bottomContainer = cta.findViewById(R.id.bottom_container);
-        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
-                bottomContainer.getImportantForAccessibility());
+        assertEquals(isDialogShowing,
+                IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                        == bottomContainer.getImportantForAccessibility());
+        if (isPhone()) {
+            View bottomControls = cta.findViewById(R.id.bottom_controls);
+            assertEquals(isDialogShowing,
+                    IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                            == bottomControls.getImportantForAccessibility());
+        }
+        if (isTablet(cta)) {
+            View tabSwitcherViewHolder = cta.findViewById(R.id.grid_tab_switcher_view_holder);
+            assertEquals(isDialogShowing,
+                    IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                            == tabSwitcherViewHolder.getImportantForAccessibility());
+        }
     }
 
     private void verifyDialogUndoBarAndClick() {

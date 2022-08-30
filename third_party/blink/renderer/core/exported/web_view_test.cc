@@ -497,7 +497,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // The color should be passed to the compositor.
   cc::LayerTreeHost* host = widget->LayerTreeHostForTesting();
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
-  EXPECT_EQ(SK_ColorBLUE, host->background_color());
+  EXPECT_EQ(SkColors::kBlue, host->background_color());
 
   web_view->Close();
 }
@@ -3816,15 +3816,17 @@ class ViewCreatingWebViewClient : public frame_test_helpers::TestWebViewClient {
   ViewCreatingWebViewClient() : did_focus_called_(false) {}
 
   // WebViewClient overrides.
-  WebView* CreateView(WebLocalFrame* opener,
-                      const WebURLRequest&,
-                      const WebWindowFeatures&,
-                      const WebString& name,
-                      WebNavigationPolicy,
-                      network::mojom::blink::WebSandboxFlags,
-                      const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture,
-                      const absl::optional<Impression>&) override {
+  WebView* CreateView(
+      WebLocalFrame* opener,
+      const WebURLRequest&,
+      const WebWindowFeatures&,
+      const WebString& name,
+      WebNavigationPolicy,
+      network::mojom::blink::WebSandboxFlags,
+      const SessionStorageNamespaceId&,
+      bool& consumed_user_gesture,
+      const absl::optional<Impression>&,
+      const absl::optional<WebPictureInPictureWindowOptions>&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
   void DidFocus() override { did_focus_called_ = true; }
@@ -3899,15 +3901,17 @@ class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
   ViewReusingWebViewClient() = default;
 
   // WebViewClient methods
-  WebView* CreateView(WebLocalFrame*,
-                      const WebURLRequest&,
-                      const WebWindowFeatures&,
-                      const WebString& name,
-                      WebNavigationPolicy,
-                      network::mojom::blink::WebSandboxFlags,
-                      const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture,
-                      const absl::optional<Impression>&) override {
+  WebView* CreateView(
+      WebLocalFrame*,
+      const WebURLRequest&,
+      const WebWindowFeatures&,
+      const WebString& name,
+      WebNavigationPolicy,
+      network::mojom::blink::WebSandboxFlags,
+      const SessionStorageNamespaceId&,
+      bool& consumed_user_gesture,
+      const absl::optional<Impression>&,
+      const absl::optional<WebPictureInPictureWindowOptions>&) override {
     return web_view_;
   }
 

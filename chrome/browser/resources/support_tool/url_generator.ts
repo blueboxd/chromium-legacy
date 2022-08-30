@@ -8,9 +8,6 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -49,21 +46,21 @@ export class UrlGeneratorElement extends PolymerElement {
         type: String,
         value: '',
       },
-      urlGenerated_: {
-        type: Boolean,
-        value: false,
-      },
       errorMessage_: {
         type: String,
         value: '',
+      },
+      buttonDisabled_: {
+        type: Boolean,
+        value: true,
       }
     };
   }
 
   private caseId_: string;
   private generatedURL_: string;
-  private urlGenerated_: boolean;
   private errorMessage_: string;
+  private buttonDisabled_: boolean;
   private dataCollectors_: DataCollectorItem[];
   private browserProxy_: BrowserProxy = BrowserProxyImpl.getInstance();
 
@@ -76,33 +73,39 @@ export class UrlGeneratorElement extends PolymerElement {
         });
   }
 
+  private onDataCollectorItemClicked_() {
+    // The button should be disabled if no data collector is selected.
+    this.buttonDisabled_ = !this.hasDataCollectorSelected();
+  }
+
+  private hasDataCollectorSelected(): boolean {
+    for (let index = 0; index < this.dataCollectors_.length; index++) {
+      if (this.dataCollectors_[index]!.isIncluded) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private showErrorMessageToast_(errorMessage: string) {
     this.errorMessage_ = errorMessage;
     this.$.errorMessageToast.show();
   }
 
-  private showUrlGenerationResult_(result: UrlGenerationResult) {
+  private onUrlGenerationResult_(result: UrlGenerationResult) {
     if (result.success) {
       this.generatedURL_ = result.url;
-      this.urlGenerated_ = true;
+      navigator.clipboard.writeText(this.generatedURL_.toString());
+      this.$.copyToast.show();
+      this.$.copyToast.focus();
     } else {
       this.showErrorMessageToast_(result.errorMessage);
     }
   }
 
-  private onGenerateClick_() {
-    this.browserProxy_.generateCustomizedURL(this.caseId_, this.dataCollectors_)
-        .then(this.showUrlGenerationResult_.bind(this));
-  }
-
-  private onBackClick_() {
-    this.generatedURL_ = '';
-    this.urlGenerated_ = false;
-  }
-
   private onCopyURLClick_() {
-    navigator.clipboard.writeText(this.generatedURL_.toString());
-    this.$.copyToast.show();
+    this.browserProxy_.generateCustomizedURL(this.caseId_, this.dataCollectors_)
+        .then(this.onUrlGenerationResult_.bind(this));
   }
 
   private onErrorMessageToastCloseClicked_() {

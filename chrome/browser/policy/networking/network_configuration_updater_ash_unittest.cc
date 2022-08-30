@@ -20,14 +20,14 @@
 #include "chrome/browser/policy/networking/device_network_configuration_updater_ash.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/network/fake_network_device_handler.h"
+#include "chromeos/ash/components/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/onc/onc_certificate_importer.h"
 #include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/components/onc/onc_parsed_certificates.h"
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/network/fake_network_device_handler.h"
-#include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
@@ -276,11 +276,10 @@ void SelectSingleClientCertificateFromOnc(
       toplevel_onc->FindKey(onc::toplevel_config::kCertificates);
   ASSERT_TRUE(certs);
   ASSERT_TRUE(certs->is_list());
-  ASSERT_TRUE(certs->GetListDeprecated().size() > client_certificate_index);
+  ASSERT_TRUE(certs->GetList().size() > client_certificate_index);
 
   base::ListValue selected_certs;
-  selected_certs.Append(
-      certs->GetListDeprecated()[client_certificate_index].Clone());
+  selected_certs.Append(certs->GetList()[client_certificate_index].Clone());
 
   chromeos::onc::OncParsedCertificates parsed_selected_certs(selected_certs);
   ASSERT_FALSE(parsed_selected_certs.has_error());
@@ -298,7 +297,7 @@ MATCHER_P(IsEqualTo,
 }
 
 MATCHER(IsListEmpty, std::string(negation ? "isn't" : "is") + " empty.") {
-  return arg.GetListDeprecated().empty();
+  return arg.GetList().empty();
 }
 
 MATCHER(IsDictEmpty, std::string(negation ? "isn't" : "is") + " empty.") {
@@ -448,7 +447,7 @@ class NetworkConfigurationUpdaterAshTest : public testing::Test {
  private:
   base::Value fake_network_configs_;
   base::Value fake_global_network_config_{base::Value::Type::DICTIONARY};
-  chromeos::ScopedFakeSessionManagerClient scoped_session_manager_client_;
+  ash::ScopedFakeSessionManagerClient scoped_session_manager_client_;
 };
 
 TEST_F(NetworkConfigurationUpdaterAshTest, CellularRoamingDefaults) {

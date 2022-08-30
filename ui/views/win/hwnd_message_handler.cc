@@ -3231,6 +3231,41 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   bool handled = false;
 
+  if (event.type() == ui::ET_MOUSE_DRAGGED) {
+    POINT point;
+    point.x = event.x();
+    point.y = event.y();
+    ::ClientToScreen(hwnd(), &point);
+    num_drag_events_after_press_++;
+    // Windows sometimes sends spurious WM_MOUSEMOVEs at 0,0. If this happens
+    // after a mouse down on a tab, it can cause a detach of the tab to 0,0.
+    // In general, it would cause weird behavior while dragging, so ignore
+    // these events if they're fairly far from the cursor.
+    if (point.x == 0 && point.y == 0) {
+      POINT cursor_pos;
+      ::GetCursorPos(&cursor_pos);
+      constexpr int kMinSpuriousDistance = 200;
+      constexpr int kMaxDragEvents = 10;
+      auto distance = sqrt(pow(static_cast<float>(abs(cursor_pos.x)), 2) +
+                           pow(static_cast<float>(abs(cursor_pos.y)), 2));
+      // TODO(crbug.com/1270828): If this stat shows that
+      // `num_drag_events_after_press_` is predominantly less than some small
+      // number, add a check for that below and reduce kMinSpurious distance
+      // to something like 20 or 30 to reduce the chance of one of the first
+      // tab or two being detached incorrectly. Also fix the comment above the
+      // declaration of `num_drag_events_after_press_` to reflect this.
+      if (distance > kMinSpuriousDistance) {
+        base::UmaHistogramExactLinear("Windows.DragEventsAfterPress",
+                                      num_drag_events_after_press_,
+                                      kMaxDragEvents + 1);
+        SetMsgHandled(true);
+        return 0;
+      }
+    }
+  } else if (event.type() == ui::ET_MOUSE_PRESSED) {
+    num_drag_events_after_press_ = 0;
+  }
+
   // Don't send right mouse button up to the delegate when displaying system
   // command menu. This prevents left clicking in the upper left hand corner of
   // an app window and then right clicking from sending the right click to the
@@ -3649,8 +3684,13 @@ void HWNDMessageHandler::SizeWindowToAspectRatio(UINT param,
   delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
   min_window_size = delegate_->DIPToScreenSize(min_window_size);
   max_window_size = delegate_->DIPToScreenSize(max_window_size);
+
+  absl::optional<gfx::Size> max_size_param;
+  if (!max_window_size.IsEmpty())
+    max_size_param = max_window_size;
+
   gfx::SizeRectToAspectRatio(GetWindowResizeEdge(param), aspect_ratio_.value(),
-                             min_window_size, max_window_size, window_rect);
+                             min_window_size, max_size_param, window_rect);
 }
 
 POINT HWNDMessageHandler::GetCursorPos() const {

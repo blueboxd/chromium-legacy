@@ -33,6 +33,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
@@ -109,6 +110,7 @@ class PaintControllerCycleScope;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
+class RemoteFrameView;
 class RootFrameViewport;
 class ScrollableArea;
 class Scrollbar;
@@ -296,33 +298,22 @@ class CORE_EXPORT LocalFrameView final
   void DidChangeScrollOffset();
 
   void ViewportSizeChanged(bool width_changed, bool height_changed);
-  void MarkViewportConstrainedObjectsForLayout(bool width_changed,
-                                               bool height_changed);
+  void MarkFixedPositionObjectsForLayout(bool width_changed,
+                                         bool height_changed);
   void DynamicViewportUnitsChanged();
 
   AtomicString MediaType() const;
   void SetMediaType(const AtomicString&);
   void AdjustMediaTypeForPrinting(bool printing);
 
-  // For any viewport-constrained object, we need to know if it's due to fixed
-  // or sticky so that we can support HasStickyViewportConstrainedObject().
-  enum ViewportConstrainedType { kFixed = 0, kSticky = 1 };
-  // Fixed-position and viewport-constrained sticky-position objects.
   typedef HeapHashSet<Member<LayoutObject>> ObjectSet;
-  void AddViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
-  void RemoveViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
-  const ObjectSet* ViewportConstrainedObjects() const {
-    return viewport_constrained_objects_;
+  void AddFixedPositionObject(LayoutObject&);
+  void RemoveFixedPositionObject(LayoutObject&);
+  const ObjectSet* FixedPositionObjects() const {
+    return fixed_position_objects_;
   }
-  bool HasViewportConstrainedObjects() const {
-    return viewport_constrained_objects_ &&
-           viewport_constrained_objects_->size() > 0;
-  }
-  // Returns true if any of the objects in viewport_constrained_objects_ are
-  // sticky position.
-  bool HasStickyViewportConstrainedObject() const {
-    DCHECK(!sticky_position_object_count_ || HasViewportConstrainedObjects());
-    return sticky_position_object_count_ > 0;
+  bool HasFixedPositionObjects() const {
+    return fixed_position_objects_ && fixed_position_objects_->size() > 0;
   }
 
   // Objects with background-attachment:fixed.
@@ -411,8 +402,6 @@ class CORE_EXPORT LocalFrameView final
   void RunPostLifecycleSteps();
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
-
-  bool InvalidateViewportConstrainedObjects();
 
   // Perform a hit test on the frame with throttling allowed. Normally, a hit
   // test will do a synchronous lifecycle update to kPrePaintClean with
@@ -710,7 +699,7 @@ class CORE_EXPORT LocalFrameView final
 
   void MapLocalToRemoteMainFrame(TransformState&);
 
-  void CrossOriginToMainFrameChanged();
+  void CrossOriginToNearestMainFrameChanged();
   void CrossOriginToParentFrameChanged();
 
   void SetVisualViewportOrOverlayNeedsRepaint();
@@ -749,7 +738,9 @@ class CORE_EXPORT LocalFrameView final
   }
   void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
-  // Return the UKM aggregator for this frame, creating it if necessary.
+  // Returns the UKM aggregator for this frame, or this frame's local root if
+  // features::kLocalFrameRootPrePostFCPMetrics is enabled, creating it if
+  // necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
 
   // Report the First Contentful Paint signal to the LocalFrameView.
@@ -836,7 +827,7 @@ class CORE_EXPORT LocalFrameView final
   // throttling (e.g., during BeginMainFrame). If a script needs to run inside
   // this scope, DisallowThrottlingScope should be used to let the script
   // perform a synchronous layout if necessary.
-  class AllowThrottlingScope {
+  class CORE_EXPORT AllowThrottlingScope {
     STACK_ALLOCATED();
 
    public:
@@ -974,25 +965,17 @@ class CORE_EXPORT LocalFrameView final
   void CollectAnnotatedRegions(LayoutObject&,
                                Vector<AnnotatedRegionValue>&) const;
 
-  template <typename Function>
-  void ForAllChildViewsAndPlugins(const Function&);
-
-  template <typename Function>
-  void ForAllChildLocalFrameViews(const Function&);
+  void ForAllChildViewsAndPlugins(
+      absl::FunctionRef<void(EmbeddedContentView&)>);
+  void ForAllChildLocalFrameViews(absl::FunctionRef<void(LocalFrameView&)>);
 
   enum TraversalOrder { kPreOrder, kPostOrder };
-  template <typename Function>
-  void ForAllNonThrottledLocalFrameViews(const Function&,
-                                         TraversalOrder = kPreOrder);
+  void ForAllNonThrottledLocalFrameViews(
+      absl::FunctionRef<void(LocalFrameView&)>,
+      TraversalOrder = kPreOrder);
+  void ForAllThrottledLocalFrameViews(absl::FunctionRef<void(LocalFrameView&)>);
 
-  template <typename Function>
-  void ForAllThrottledLocalFrameViews(const Function&);
-
-  void ForAllThrottledLocalFrameViewsForTesting(
-      base::RepeatingCallback<void(LocalFrameView&)>);
-
-  template <typename Function>
-  void ForAllRemoteFrameViews(const Function&);
+  void ForAllRemoteFrameViews(absl::FunctionRef<void(RemoteFrameView&)>);
 
   bool UpdateViewportIntersectionsForSubtree(
       unsigned parent_flags,
@@ -1101,9 +1084,7 @@ class CORE_EXPORT LocalFrameView final
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   // Scrollable areas which are user-scrollable, whether they overflow or not.
   Member<ScrollableAreaSet> user_scrollable_areas_;
-  Member<ObjectSet> viewport_constrained_objects_;
-  // Number of entries in viewport_constrained_objects_ that are sticky.
-  unsigned sticky_position_object_count_;
+  Member<ObjectSet> fixed_position_objects_;
   ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 

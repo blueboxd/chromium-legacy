@@ -111,6 +111,7 @@ class QtInterface {
     virtual ~Delegate() = default;
 
     virtual void FontChanged() = 0;
+    virtual void ThemeChanged() = 0;
   };
 
   QtInterface() = default;
@@ -124,6 +125,15 @@ class QtInterface {
   virtual Image GetIconForContentType(const String& content_type,
                                       int size) const = 0;
   virtual SkColor GetColor(ColorType role, ColorState state) const = 0;
+  virtual SkColor GetFrameColor(ColorState state,
+                                bool use_custom_frame) const = 0;
+  virtual Image DrawHeader(int width,
+                           int height,
+                           SkColor default_color,
+                           ColorState state,
+                           bool use_custom_frame) const = 0;
+  virtual int GetCursorBlinkIntervalMs() const = 0;
+  virtual int GetAnimationDurationMs() const = 0;
 };
 
 }  // namespace qt

@@ -169,13 +169,13 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
   }
   void AddFramesToBeInput(
       const std::vector<std::unique_ptr<WebSocketFrame>>& frames) {
-    for (size_t i = 0; i < frames.size(); ++i)
-      AddFrameToBeInput(frames[i].get());
+    for (const auto& frame : frames)
+      AddFrameToBeInput(frame.get());
   }
   void VerifySentFrames(
       const std::vector<std::unique_ptr<WebSocketFrame>>& frames) {
-    for (size_t i = 0; i < frames.size(); ++i)
-      VerifySentFrame(frames[i].get());
+    for (const auto& frame : frames)
+      VerifySentFrame(frame.get());
   }
   // Call this method in order to disable checks in the destructor when
   // WriteFrames fails.
@@ -1192,8 +1192,7 @@ TEST_F(WebSocketDeflateStreamTest, LargeDeflatedFramesShouldBeSplit) {
     ASSERT_THAT(deflate_stream_->WriteFrames(&frames, CompletionOnceCallback()),
                 IsOk());
     for (auto& frame : *stub.frames()) {
-      buffers.push_back(
-          std::string(frame->payload, frame->header.payload_length));
+      buffers.emplace_back(frame->payload, frame->header.payload_length);
       frame->payload = (buffers.end() - 1)->data();
     }
     total_compressed_frames.insert(

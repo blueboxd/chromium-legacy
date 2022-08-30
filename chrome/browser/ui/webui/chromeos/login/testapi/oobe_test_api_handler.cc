@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -112,8 +113,15 @@ void OobeTestAPIHandler::AdvanceToScreen(const std::string& screen) {
 }
 
 void OobeTestAPIHandler::SkipToLoginForTesting() {
-  ash::WizardController::default_controller()
-      ->SkipToLoginForTesting();  // IN-TEST
+  ash::WizardController* controller =
+      ash::WizardController::default_controller();
+  if (!controller || !controller->is_initialized()) {
+    LOG(ERROR)
+        << "SkipToLoginForTesting is called when WizardController is not yet "
+           "initialized. Please report at https://crbug.com/1336940";
+    return;
+  }
+  controller->SkipToLoginForTesting();  // IN-TEST
 }
 
 void OobeTestAPIHandler::SkipPostLoginScreens() {
@@ -133,6 +141,7 @@ void OobeTestAPIHandler::LoginAsGuest() {
 void OobeTestAPIHandler::ShowGaiaDialog() {
   LoginDisplayHost::default_host()->ShowGaiaDialog(EmptyAccountId());
 }
+
 void OobeTestAPIHandler::HandleGetPrimaryDisplayName(
     const std::string& callback_id) {
   mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config;

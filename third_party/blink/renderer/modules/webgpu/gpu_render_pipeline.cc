@@ -120,18 +120,24 @@ void GPUPrimitiveStateAsWGPUPrimitiveState(
   dawn_state->dawn_desc.frontFace = AsDawnEnum(webgpu_desc->frontFace());
   dawn_state->dawn_desc.cullMode = AsDawnEnum(webgpu_desc->cullMode());
 
-  if (webgpu_desc->hasClampDepth()) {
-    auto* clamp_state = &dawn_state->depth_clamping_state;
-    clamp_state->chain.sType = WGPUSType_PrimitiveDepthClampingState;
-    clamp_state->clampDepth = webgpu_desc->clampDepth().has_value() &&
-                              webgpu_desc->clampDepth().value();
+  if (webgpu_desc->unclippedDepth()) {
+    auto* depth_clip_control = &dawn_state->depth_clip_control;
+    depth_clip_control->chain.sType = WGPUSType_PrimitiveDepthClipControl;
+    depth_clip_control->unclippedDepth = webgpu_desc->unclippedDepth();
     dawn_state->dawn_desc.nextInChain =
-        reinterpret_cast<WGPUChainedStruct*>(clamp_state);
+        reinterpret_cast<WGPUChainedStruct*>(depth_clip_control);
   }
 }
 
-WGPUDepthStencilState AsDawnType(const GPUDepthStencilState* webgpu_desc) {
+WGPUDepthStencilState AsDawnType(GPUDevice* device,
+                                 const GPUDepthStencilState* webgpu_desc,
+                                 ExceptionState& exception_state) {
   DCHECK(webgpu_desc);
+
+  if (!device->ValidateTextureFormatUsage(webgpu_desc->format(),
+                                          exception_state)) {
+    return {};
+  }
 
   WGPUDepthStencilState dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
@@ -214,7 +220,7 @@ void GPUFragmentStateAsWGPUFragmentState(GPUDevice* device,
   dawn_fragment->dawn_desc.nextInChain = nullptr;
   dawn_fragment->dawn_desc.module = descriptor->module()->GetHandle();
 
-  dawn_fragment->entry_point = descriptor->entryPoint().Ascii();
+  dawn_fragment->entry_point = descriptor->entryPoint().Utf8();
   dawn_fragment->dawn_desc.entryPoint = dawn_fragment->entry_point.c_str();
 
   // TODO(crbug.com/dawn/1041): implement pipeline overridable constants when
@@ -287,7 +293,7 @@ void ConvertToDawnType(v8::Isolate* isolate,
 
   dawn_vertex->module = vertex->module()->GetHandle();
 
-  dawn_desc_info->vertex_entry_point = vertex->entryPoint().Ascii();
+  dawn_desc_info->vertex_entry_point = vertex->entryPoint().Utf8();
   dawn_vertex->entryPoint = dawn_desc_info->vertex_entry_point.c_str();
 
   // TODO(crbug.com/dawn/1041): implement pipeline overridable constants when
@@ -306,7 +312,8 @@ void ConvertToDawnType(v8::Isolate* isolate,
 
   // DepthStencil
   if (webgpu_desc->hasDepthStencil()) {
-    dawn_desc_info->depth_stencil = AsDawnType(webgpu_desc->depthStencil());
+    dawn_desc_info->depth_stencil =
+        AsDawnType(device, webgpu_desc->depthStencil(), exception_state);
     dawn_desc_info->dawn_desc.depthStencil = &dawn_desc_info->depth_stencil;
   }
 

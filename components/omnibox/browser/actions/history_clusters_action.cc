@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
-#include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
@@ -52,14 +51,30 @@ int TopRelevance(const AutocompleteResult& result, bool search) {
       ->relevance;
 }
 
-// Record the entity collection level CTR metric for the journey chip.
-void RecordEntityCollectionCtrForJourney(const std::string& collection_label,
-                                         bool executed) {
-  // Append an entity collection label.
-  std::string uma_metric_name = base::StringPrintf(
-      "Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection.%s.CTR",
-      collection_label.c_str());
-  base::UmaHistogramBoolean(uma_metric_name, executed);
+// A template function for recording enum metrics for shown and used journey
+// chips as well as their CTR metrics.
+template <class EnumT>
+void RecordShownUsedEnumAndCtrMetrics(const std::string& metric_name,
+                                      EnumT val,
+                                      const std::string& label,
+                                      bool executed) {
+  base::UmaHistogramEnumeration("Omnibox.ResumeJourneyShown." + metric_name,
+                                val);
+  if (executed) {
+    base::UmaHistogramEnumeration(
+        "Omnibox.SuggestionUsed.ResumeJourney." + metric_name, val);
+  }
+
+  // Record the CTR metric.
+  std::string ctr_metric_name =
+      base::StringPrintf("Omnibox.SuggestionUsed.ResumeJourney.%s.%s.CTR",
+                         metric_name.c_str(), label.c_str());
+  base::UmaHistogramBoolean(ctr_metric_name, executed);
+}
+
+// Multiplies a keyword score by 100, and converts it to int.
+int TransformKeywordScoreForUma(float keyword_score) {
+  return static_cast<int>(keyword_score * 100);
 }
 
 }  // namespace
@@ -97,26 +112,33 @@ void HistoryClustersAction::RecordActionShown(size_t position,
   base::UmaHistogramBoolean("Omnibox.SuggestionUsed.ResumeJourneyCTR",
                             executed);
 
+  // Record cluster keyword score UMA metrics.
+  base::UmaHistogramCounts1000(
+      "Omnibox.ResumeJourneyShown.ClusterKeywordScore",
+      TransformKeywordScoreForUma(matched_keyword_data_.score));
+  if (executed) {
+    base::UmaHistogramCounts1000(
+        "Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordScore",
+        TransformKeywordScoreForUma(matched_keyword_data_.score));
+  }
+
+  // Record cluster keyword type UMA metrics.
+  RecordShownUsedEnumAndCtrMetrics<
+      history::ClusterKeywordData::ClusterKeywordType>(
+      "ClusterKeywordType", matched_keyword_data_.type,
+      matched_keyword_data_.GetKeywordTypeLabel(), executed);
+
+  // Record entity collection UMA metrics.
   if (matched_keyword_data_.entity_collections.empty()) {
     return;
   }
-
-  // Record entity collection UMA metrics.
   const auto& collection_str = matched_keyword_data_.entity_collections.front();
   const optimization_guide::PageEntityCollection collection =
       optimization_guide::GetPageEntityCollectionForString(collection_str);
-
-  base::UmaHistogramEnumeration(
-      "Omnibox.ResumeJourneyShown.PageEntityCollection", collection);
-  if (executed) {
-    base::UmaHistogramEnumeration(
-        "Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection",
-        collection);
-  }
-
   const auto collection_label =
       optimization_guide::GetPageEntityCollectionLabel(collection_str);
-  RecordEntityCollectionCtrForJourney(collection_label, executed);
+  RecordShownUsedEnumAndCtrMetrics<optimization_guide::PageEntityCollection>(
+      "PageEntityCollection", collection, collection_label, executed);
 }
 
 int32_t HistoryClustersAction::GetID() const {
@@ -154,18 +176,12 @@ void AttachHistoryClustersActions(
   // This is to prevent binary size increase for no reason.
   return;
 #else
-  if (!service)
+
+  if (!IsJourneysEnabledInOmnibox(service, prefs))
     return;
 
-  // Both features must be enabled to ever attach the action chip.
-  if (!service->IsJourneysEnabled() || !GetConfig().omnibox_action) {
+  if (!GetConfig().omnibox_action)
     return;
-  }
-
-  // History Clusters must be visible to the user to attach the action chip.
-  if (!prefs->GetBoolean(history_clusters::prefs::kVisible)) {
-    return;
-  }
 
   if (result.empty())
     return;

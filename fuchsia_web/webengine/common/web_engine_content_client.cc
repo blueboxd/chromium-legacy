@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
-#include "fuchsia/base/fuchsia_dir_scheme.h"
+#include "fuchsia_web/common/fuchsia_dir_scheme.h"
 #include "fuchsia_web/webengine/features.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,6 +63,6 @@ blink::OriginTrialPolicy* WebEngineContentClient::GetOriginTrialPolicy() {
 void WebEngineContentClient::AddAdditionalSchemes(Schemes* schemes) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableContentDirectories)) {
-    schemes->standard_schemes.push_back(cr_fuchsia::kFuchsiaDirScheme);
+    schemes->standard_schemes.push_back(kFuchsiaDirScheme);
   }
 }

@@ -207,9 +207,8 @@ BackendImpl::~BackendImpl() {
   }
 }
 
-net::Error BackendImpl::Init(CompletionOnceCallback callback) {
+void BackendImpl::Init(CompletionOnceCallback callback) {
   background_queue_.Init(std::move(callback));
-  return net::ERR_IO_PENDING;
 }
 
 int BackendImpl::SyncInit() {
@@ -412,7 +411,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
     return net::ERR_FAILED;
 
   scoped_refptr<EntryImpl> node;
-  std::unique_ptr<Rankings::Iterator> iterator(new Rankings::Iterator());
+  auto iterator = std::make_unique<Rankings::Iterator>();
   scoped_refptr<EntryImpl> next = OpenNextEntryImpl(iterator.get());
   if (!next)
     return net::OK;
@@ -454,7 +453,7 @@ int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
 
   stats_.OnEvent(Stats::DOOM_RECENT);
   for (;;) {
-    std::unique_ptr<Rankings::Iterator> iterator(new Rankings::Iterator());
+    auto iterator = std::make_unique<Rankings::Iterator>();
     scoped_refptr<EntryImpl> entry = OpenNextEntryImpl(iterator.get());
     if (!entry)
       return net::OK;
@@ -594,8 +593,8 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     return nullptr;
   }
 
-  scoped_refptr<EntryImpl> cache_entry(
-      new EntryImpl(this, entry_address, false));
+  auto cache_entry =
+      base::MakeRefCounted<EntryImpl>(this, entry_address, false);
   IncreaseNumRefs();
 
   if (!cache_entry->CreateEntry(node_address, key, hash)) {
@@ -1297,8 +1296,7 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
  public:
   explicit IteratorImpl(base::WeakPtr<InFlightBackendIO> background_queue)
       : background_queue_(background_queue),
-        iterator_(new Rankings::Iterator()) {
-  }
+        iterator_(std::make_unique<Rankings::Iterator>()) {}
 
   ~IteratorImpl() override {
     if (background_queue_)
@@ -1318,8 +1316,7 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
 };
 
 std::unique_ptr<Backend::Iterator> BackendImpl::CreateIterator() {
-  return std::unique_ptr<Backend::Iterator>(
-      new IteratorImpl(GetBackgroundQueue()));
+  return std::make_unique<IteratorImpl>(GetBackgroundQueue());
 }
 
 void BackendImpl::GetStats(StatsItems* stats) {
@@ -1390,7 +1387,7 @@ bool BackendImpl::CreateBackingStore(disk_cache::File* file) {
   static_assert(sizeof(disk_cache::IndexHeader) < kPageSize,
                 "Code below assumes it wouldn't overwrite header by starting "
                 "at kPageSize");
-  std::unique_ptr<char[]> page(new char[kPageSize]);
+  auto page = std::make_unique<char[]>(kPageSize);
   memset(page.get(), 0, kPageSize);
 
   for (size_t offset = kPageSize; offset < size; offset += kPageSize) {
@@ -1417,8 +1414,7 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   bool ret = true;
   *file_created = base_file.created();
 
-  scoped_refptr<disk_cache::File> file(
-      new disk_cache::File(std::move(base_file)));
+  auto file = base::MakeRefCounted<disk_cache::File>(std::move(base_file));
   if (*file_created)
     ret = CreateBackingStore(file.get());
 
@@ -1426,7 +1422,7 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   if (!ret)
     return false;
 
-  index_ = new MappedFile();
+  index_ = base::MakeRefCounted<MappedFile>();
   data_ = static_cast<Index*>(index_->Init(index_name, 0));
   if (!data_) {
     LOG(ERROR) << "Unable to map Index file";
@@ -1498,7 +1494,7 @@ bool BackendImpl::InitStats() {
   if (!file)
     return false;
 
-  std::unique_ptr<char[]> data(new char[size]);
+  auto data = std::make_unique<char[]>(size);
   size_t offset = address.start_block() * address.BlockSize() +
                   kBlockHeaderSize;
   if (!file->Read(data.get(), size, offset))
@@ -1513,7 +1509,7 @@ bool BackendImpl::InitStats() {
 
 void BackendImpl::StoreStats() {
   int size = stats_.StorageSize();
-  std::unique_ptr<char[]> data(new char[size]);
+  auto data = std::make_unique<char[]>(size);
   Addr address;
   size = stats_.SerializeStats(data.get(), size, &address);
   DCHECK(size);
@@ -1593,8 +1589,7 @@ int BackendImpl::NewEntry(Addr address, scoped_refptr<EntryImpl>* entry) {
     return ERR_INVALID_ADDRESS;
   }
 
-  scoped_refptr<EntryImpl> cache_entry(
-      new EntryImpl(this, address, read_only_));
+  auto cache_entry = base::MakeRefCounted<EntryImpl>(this, address, read_only_);
   IncreaseNumRefs();
   *entry = nullptr;
 
@@ -1878,8 +1873,8 @@ void BackendImpl::LogStats() {
   StatsItems stats;
   GetStats(&stats);
 
-  for (size_t index = 0; index < stats.size(); index++)
-    VLOG(1) << stats[index].first << ": " << stats[index].second;
+  for (const auto& stat : stats)
+    VLOG(1) << stat.first << ": " << stat.second;
 }
 
 void BackendImpl::ReportStats() {
@@ -2111,18 +2106,17 @@ bool BackendImpl::CheckEntry(EntryImpl* cache_entry) {
 }
 
 int BackendImpl::MaxBuffersSize() {
-  static int64_t total_memory = base::SysInfo::AmountOfPhysicalMemory();
+  static uint64_t total_memory = base::SysInfo::AmountOfPhysicalMemory();
   static bool done = false;
 
   if (!done) {
-    const int kMaxBuffersSize = 30 * 1024 * 1024;
-
-    // We want to use up to 2% of the computer's memory.
-    total_memory = total_memory * 2 / 100;
-    if (total_memory > kMaxBuffersSize || total_memory <= 0)
-      total_memory = kMaxBuffersSize;
-
     done = true;
+
+    // We want to use up to 2% of the computer's memory, limit 30 MB.
+    total_memory = total_memory * 2 / 100;
+    constexpr uint64_t kMaxBuffersSize = 30 * 1024 * 1024;
+    if (total_memory > kMaxBuffersSize || total_memory == 0)
+      total_memory = kMaxBuffersSize;
   }
 
   return static_cast<int>(total_memory);

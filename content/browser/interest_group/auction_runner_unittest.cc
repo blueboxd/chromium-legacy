@@ -1693,6 +1693,8 @@ class AuctionRunnerTest : public testing::Test,
     StorageInterestGroup storage_group;
     storage_group.interest_group = blink::InterestGroup(
         base::Time::Max(), std::move(owner), std::move(name), /*priority=*/1.0,
+        /*execution_mode=*/
+        blink::InterestGroup::ExecutionMode::kCompatibilityMode,
         std::move(bidding_url),
         /*bidding_wasm_helper_url=*/absl::nullopt,
         /*update_url=*/absl::nullopt, std::move(trusted_bidding_signals_url),
@@ -6815,6 +6817,78 @@ TEST_F(AuctionRunnerTest, WorkletOrder) {
         EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
         ASSERT_EQ(4u, result_.bidder2_prev_wins.size());
       }
+    }
+  }
+}
+
+// Check that the top bid and `highestScoringOtherBid` are randomized in a 3-way
+// tie for the highest bid.
+TEST_F(AuctionRunnerTest, ThreeWayTie) {
+  bool seen_result[3][3] = {{false}};
+  int total_seen_results = 0;
+
+  const GURL kBidder3Url{"https://bidder3.test/bids.js"};
+  const url::Origin kBidder3 = url::Origin::Create(kBidder3Url);
+  interest_group_buyers_ = {{kBidder1, kBidder2, kBidder3}};
+
+  while (total_seen_results < 6) {
+    auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
+                                           MakeBidScriptSupportsTie());
+    auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder2Url,
+                                           MakeBidScriptSupportsTie());
+    auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder3Url,
+                                           MakeBidScriptSupportsTie());
+    auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                           MakeAuctionScriptSupportsTie());
+
+    std::vector<StorageInterestGroup> bidders;
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder1, /*name=*/"1", kBidder1Url,
+        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com")));
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder2, /*name=*/"2", kBidder2Url,
+        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com")));
+    // Use name "5" so that the IG bids "5", which is given the same score as
+    // bids of "1" and "2" (A bid of "3" is given a different score).
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder3, /*name=*/"5", kBidder3Url,
+        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_keys=*/{}, GURL("https://ad3.com")));
+
+    RunAuctionAndWait(kSellerUrl, std::move(bidders));
+    EXPECT_THAT(result_.errors, testing::ElementsAre());
+    ASSERT_TRUE(result_.ad_url);
+
+    int winner;
+    if (result_.ad_url->spec() == "https://ad1.com/") {
+      winner = 0;
+    } else if (result_.ad_url->spec() == "https://ad2.com/") {
+      winner = 1;
+    } else {
+      ASSERT_EQ(result_.ad_url->spec(), "https://ad3.com/");
+      winner = 2;
+    }
+
+    int highest_other_bidder;
+    ASSERT_EQ(2u, result_.report_urls.size());
+    if (result_.report_urls[0].spec().find("highestScoringOtherBid=1") !=
+        std::string::npos) {
+      highest_other_bidder = 0;
+    } else if (result_.report_urls[0].spec().find("highestScoringOtherBid=2") !=
+               std::string::npos) {
+      highest_other_bidder = 1;
+    } else {
+      ASSERT_NE(std::string::npos,
+                result_.report_urls[0].spec().find("highestScoringOtherBid=5"));
+      highest_other_bidder = 2;
+    }
+
+    ASSERT_NE(winner, highest_other_bidder);
+    if (!seen_result[winner][highest_other_bidder]) {
+      seen_result[winner][highest_other_bidder] = true;
+      ++total_seen_results;
     }
   }
 }

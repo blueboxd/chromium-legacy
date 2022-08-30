@@ -44,81 +44,8 @@
     Family Link
   </message>
 
-  <!-- Wallpaper Manager (Deprecated Chrome App Version) -->
-  <message name="IDS_WALLPAPER_MANAGER_APP_NAME" desc="Name of the app which allows users to pick their wallpaper.">
-    Wallpaper Picker
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL" desc="Wallpaper category label.">
-    All
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL" desc="Wallpaper delete command label.">
-    Delete
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL" desc="Wallpaper category label, the equivalent of the Custom category on the new wallpaper picker.">
-    My Images
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL" desc="Selects custom wallpaper label.">
-    Custom Image:
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_POSITION_LABEL" desc="Custom wallpaper position label.">
-    Position:
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_COLOR_LABEL" desc="Custom wallpaper color label.">
-    Color:
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_REFRESH_LABEL" desc="The label of the refresh option in the top bar. Upon click, the wallpaper picker will fetch the online wallpapers again.">
-    Refresh
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_EXPLORE_LABEL" desc="The label of the explore option in the top bar. Upon click, a link with more information on the selected wallpaper will open.">
-    Explore
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper.">
-    Wallpapers appear on the Sign-in Screen.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL" desc="Wallpaper daily refresh checkbox label. It is the equivalent of surprise me on the new wallpaper picker.">
-    Daily Refresh
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_NETWORK_ERROR" desc="The string displayed when user can't use wallpaper picker because they're not connected to the internet.">
-    The images are currently not available. Please reconnect to the internet to see wallpaper collections.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_IMAGE_ERROR" desc="The string displayed to user when downloading the wallpaper failed on the new wallpaper picker.">
-    There's an error. Please try again by choosing other images.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_DOWNLOAD_CANCEL" desc="The string displayed to user when downloading the wallpaper canceled.">
-    Download was canceled.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_ACCESS_FILE_FAILURE" desc="The string displayed to user when accessing custom wallpaper on disk failed.">
-    Chrome cannot access the image.
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER" desc="The string displayed to user when user selected wallpaper can not be set as a wallpaper.">
     Chrome cannot set wallpaper.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_NO_IMAGES_AVAILABLE" desc="The string displayed to user when there're no local files that can be used as wallpaper.">
-    No images available
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_CENTER" desc="Label for option to center a customized wallpaper.">
-    Center
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_CENTER_CROPPED" desc="Label for option to center crop a customized wallpaper.">
-    Center Cropped
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_STRETCH" desc="Label for option to stretch a customized wallpaper.">
-    Stretch
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_CURRENTLY_SET_LABEL" desc="The string displayed before the title of the currently set wallpaper.">
-    Currently set
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_CONFIRM_PREVIEW_WALLPAPER_LABEL" desc="Label for the button that confirms setting the preview wallpaper.">
-    Set Wallpaper
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_SET_SUCCESSFULLY_MESSAGE" desc="Message shown to user after setting wallpaper is done.">
-    Wallpaper set successfully
-  </message>
-  <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
-    The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
-  </message>
-  <message name="IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL" desc="Accessibility text read by chromevox when the default wallpaper is focused.">
-    Default wallpaper
   </message>
 
   <!-- MultiDevice setup dialog. -->
@@ -1361,6 +1288,12 @@
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE" desc="The sub-title of the dialog that allows user to opt-in into several Google marketing options.">
     Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips, offers, and updates, and share feedback.
   </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_WITH_CLOUDGAMINGDEVICE_TITLE" desc="An alternate title for the last dialog the marketing opt-in for cloud gaming devices.">
+    Setup is complete! Get your device ready for gaming next
+  </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_WITH_CLOUDGAMINGDEVICE_SUBTITLE" desc="An alternate subtitle for the last dialog the marketing opt-in for cloud gaming devices.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is built for gaming. The Explore app will open next where you can access hundreds of the latest games, see gaming offers, and discover gaming features that come with your device.
+  </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_UNSUBSCRIBE_SHORT" desc="Disclaimer about being able to unsubscribe">
     Unsubscribe anytime.
   </message>
@@ -1375,6 +1308,9 @@
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES_SIGN_ME_UP" desc="A lablel next to the checkbox that controls user subscription to marketing updates and useful information about the user's Chrome device.">
     Sign me up
+  </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_WITH_CLOUDGAMINGDEVICE_SIGN_ME_UP" desc="Alternate the lablel next to the checkbox that controls user subscription to marketing updates and useful information about the user's Chrome device for gaming device.">
+    Sign up for <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> emails
   </message>
   <message name="IDS_LOGIN_GET_STARTED" desc="A label on the button. Used on the welcome screen (the first one on OOBE) and on the marketing optin screen (the last one in OOBE).">
     Get started
@@ -1494,6 +1430,27 @@
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN" desc="Label for the retry button on the proceed anyway step in the the GAIA password changed flow">
     Try again
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_DATA_LOSS_WARNING_TITLE" desc="Title for the data loss warning screen if the user decided not to recover local data">
+    Local data will be deleted
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_DATA_LOSS_WARNING_SUBTITLE_P1" desc="First paragraph of subtitle message for the data loss warning screen if the user decided not to recover local data">
+    Local data is protected by your old password. If you recently changed your password, try your old password again.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_DATA_LOSS_WARNING_SUBTITLE_P2" desc="Second paragraph of subtitle message for the data loss warning screen if the user decided not to recover local data">
+    If you continue without entering your old password, your local data will be deleted. You’ll sign in with your Google Account to set up this user again.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVER_DATA_TITLE" desc="Title for the screen to recover local data by entering old password.">
+    Restore your local data
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVER_DATA_SUBTITLE" desc="Subtitle for the screen to recover local data by entering old password.">
+    Your password has changed. To restore your local data, you need to enter your old password.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_CONTINUE_AND_DELETE_BUTTON" desc="Button to continue and delete data without providing old password on the data loss warning dialog.">
+    Continue and delete data
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_CONTINUE_WITHOUT_LOCAL_DATA_BUTTON" desc="Button to confirm continue without local data on the recover local data dialog.">
+    Continue without local data
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
@@ -2028,9 +1985,6 @@
     Skip for now
   </message>
 
-  <message name="IDS_AUTO_ENROLLMENT_CHECK_SCREEN_HEADER" desc="Header of message only used for accessibility label in the current design,  notifying about pending auto-enrollment check completion.">
-    Determining device configuration.
-  </message>
   <message name="IDS_AUTO_ENROLLMENT_CHECK_SCREEN_MESSAGE" desc="Warning message shown on screen notifying about pending auto-enrollment check completion.">
     Determining device configuration...
   </message>
@@ -5076,14 +5030,8 @@
   <message name="IDS_ECHE_APP_SCREEN_LOCK_SETTINGS_BUTTON" desc="Label for the button in the screen lock notification of EcheApp to open the settings app.">
     Settings
   </message>
-  <message name="IDS_ECHE_APP_SCREEN_LOCK_LEARN_MORE" desc="Learn more link text in screen lock notification of EcheApp.">
-    Learn more
-  </message>
   <message name="IDS_ECHE_APP_NOTIFICATION_TRY_AGAIN_BUTTON" desc="Label for the connection lost button of EcheApp to try again.">
     Try again
-  </message>
-  <message name="IDS_ECHE_APP_NOTIFICATION_LEARN_MORE_BUTTON" desc="Learn more link text in connection lost notification of EcheApp.">
-    Learn more
   </message>
   <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_TITLE" desc="Title for notification shown when screen lock is not enabled while using app stream of EcheApp.">
     Can't open <ph name="APP_NAME">$1<ex>the app</ex></ph>
@@ -6214,8 +6162,11 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_THEME_SELECTION_TITLE" desc="Title of the theme selection screen.">
     Personalize your display theme
   </message>
-  <message name="IDS_THEME_SELECTION_DESCRIPTION" desc="Description of the theme selection screen.">
+  <message name="IDS_THEME_SELECTION_DESCRIPTION_CLAMSHELL" desc="Description of the theme selection screen for clamshell devices.">
     Choose the theme that fits your needs. To change your theme, wallpaper, screen saver, and more, just right-click on the desktop.
+  </message>
+  <message name="IDS_THEME_SELECTION_DESCRIPTION_TABLET" desc="Description of the theme selection screen for tablets.">
+    Choose the theme that fits your needs. To change your theme, wallpaper, screen saver, and more, just touch &amp; hold on the desktop.
   </message>
   <message name="IDS_THEME_LIGHT_LABEL" desc="Name of the light theme button">
     Light theme

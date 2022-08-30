@@ -7,6 +7,10 @@
 
 #include "media/gpu/v4l2/test/video_decoder.h"
 
+// TODO(b/234019411): Move this include to v4l2_stateless_decoder.cc
+// once the bug is fixed.
+#include <linux/media/av1-ctrls.h>
+
 #include <set>
 
 #include "base/files/memory_mapped_file.h"
@@ -22,6 +26,15 @@
 // in base/logging.h for Chromium. Note that this already exists in
 // base/logging.h for ChromeOS.
 #define ANALYZER_ALLOW_UNUSED(var) static_cast<void>(var);
+
+// TODO(stevecho): RESTORATION_TILESIZE_MAX in the spec is not available in the
+// AV1 uAPI. It was recommended to be added in the userspace code. If the uAPI
+// stays as it is for upstreaming, then #ifndef can be removed. If the uAPI ends
+// up adding this constant, then we can remove this define at that time.
+// https://patchwork.linuxtv.org/project/linux-media/patch/20210810220552.298140-2-daniel.almeida@collabora.com/
+#ifndef V4L2_AV1_RESTORATION_TILESIZE_MAX
+#define V4L2_AV1_RESTORATION_TILESIZE_MAX 256
+#endif
 
 namespace media {
 namespace v4l2_test {

@@ -32,6 +32,7 @@
 <translation id="1197088940767939838">ទឹក​ក្រូច</translation>
 <translation id="1198865190323699001">ចលនាចុច</translation>
 <translation id="1201402288615127009">បន្ទាប់</translation>
+<translation id="1202112913213080585">បោះបង់</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">គ្មានផ្នែកក្បាលកម្រិតទី 4 បន្ទាប់ទេ</translation>
 <translation id="1212770441379271564">ផ្លូវកាត់​មួយចំនួន​បន្ទាប់មិនមែន​ជាបញ្ជា​របស់ ChromeVox ទេ ប៉ុន្តែផ្លូវកាត់ទាំងនេះនៅតែ​មានប្រយោជន៍ ដើម្បីទទួលបាន​អត្ថប្រយោជន៍​ច្រើនបំផុត​ពី Chrome។
@@ -43,6 +44,7 @@
     ដើម្បី​បើកម៉ឺនុយ​កម្មវិធី​រុករកតាម​អ៊ីនធឺណិត Chrome សូមចុច Alt+F។</translation>
 <translation id="1213216066620407844">ChromeVox - ការផ្តល់សម្លេងទៅ Chrome</translation>
 <translation id="1225969361094801578">ប្រផេះចាស់</translation>
+<translation id="122928249241119550">ផ្លាស់ទី​ទៅ​ប្រយោគមុន</translation>
 <translation id="1230503547248836149">ផ្នែកចាប់ផ្ដើមនៃការជ្រើសរើស</translation>
 <translation id="1236794971743289975">កំណត់​ចំណាំ​នៅខាងចុង</translation>
 <translation id="1237797094773582699">ស្រដៀងគ្នា​នេះដែរ ការអូស​ដោយប្រើម្រាមដៃបួន​ពីស្ដាំទៅឆ្វេង​អាចត្រូវបានប្រើ ដើម្បីទៅកាន់​ផ្នែកមុន។ សាកល្បង​ឥឡូវនេះ!</translation>
@@ -213,6 +215,7 @@
 <translation id="2435422727584637732">ខៀវខ្ចី</translation>
 <translation id="2438712309510062123">ណែនាំ</translation>
 <translation id="2450814015951372393">ប្រអប់ធីក</translation>
+<translation id="2450992626945324272">ផ្លាស់ទី​ទៅ​ប្រយោគ​បន្ទាប់</translation>
 <translation id="2461822463642141190">បច្ចុប្បន្ន</translation>
 <translation id="2462626033734746142">ប៊ូតុងក្រុមវិទ្យុ</translation>
 <translation id="2467741090055146971">ដក​ការ​ជ្រើសរើស</translation>
@@ -489,6 +492,7 @@
 <translation id="42164919740161077">ស៊ីលៀបចាស់</translation>
 <translation id="4217571870635786043">ការសរសេរ​តាមអាន​</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{សញ្ញាដាស}other{# សញ្ញាដាស}}</translation>
+<translation id="4220024144662591089">ជ្រើសរើស​ពី <ph name="START_PHRASE" /> ដល់ <ph name="END_PHRASE" /></translation>
 <translation id="4221012616705981690">គ្មានបញ្ជីមុនទេ</translation>
 <translation id="4225355998815256469">ការគ្រប់គ្រងទម្រង់បែបបទ</translation>
 <translation id="4230834257931120629">ប្រផេះស្រាល</translation>
@@ -759,6 +763,7 @@
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">ប្រអប់បញ្ជី ឬប្រអប់បន្សំ</translation>
+<translation id="613344593214611552">លុបប្រយោគមុន</translation>
 <translation id="6142308968191113180">ផ្នែកក្បាល 4</translation>
 <translation id="6150023170003443621">បៃតងខ្ចី</translation>
 <translation id="6158882249329863701">ជួរដេកទី <ph name="TABLECELLROWINDEX" /> ជួរឈរទី <ph name="TABLECELLCOLUMNINDEX" /></translation>
@@ -768,6 +773,7 @@
 <translation id="6186305613600865047">លោតទៅខាងក្រោមទំព័រ</translation>
 <translation id="6187190722927752226">បៃតងខ្ចី</translation>
 <translation id="6197361807490522975">ខៀវចាស់</translation>
+<translation id="6218813441317556731">ជំនួស <ph name="DELETE_PHRASE" /> ដោយ <ph name="INSERT_PHRASE" /></translation>
 <translation id="6236061028292614533">ផ្នែកក្បាលបន្ទាប់</translation>
 <translation id="6254901459154107917">តំបន់ដែលអាចកែប្រែអត្ថបទបានបន្ទាប់</translation>
 <translation id="6259464875943891919">បានចាកចេញ <ph name="TYPE" />។</translation>
@@ -854,7 +860,6 @@
 <translation id="6910211073230771657">បានលុប</translation>
 <translation id="6910969481785184048">បើក បិទ និងឈប់</translation>
 <translation id="6919104639734799681">បង្ហាញបញ្ជីតារាង</translation>
-<translation id="692135145298539227">លុប</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
 <translation id="6949846980769640811">បៃតងស្រាល</translation>
 <translation id="6951482098621102657">គ្មានផ្នែកក្បាលកម្រិតទី 5 បន្ទាប់ទេ</translation>
@@ -922,6 +927,7 @@
 <translation id="7356610683936413584">ព័ត៌មានលម្អិត​អំពីបញ្ជីពណ៌នា</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{សញ្ញានឹង}other{# សញ្ញានឹង}}</translation>
 <translation id="737396357417333429">clk</translation>
+<translation id="7388656272362719103">លុប​តួអក្សរ​មុន</translation>
 <translation id="738899727977260036">ប្រផេះចាស់</translation>
 <translation id="7393979322571982935">សំឡេង និង​ការកំណត់</translation>
 <translation id="739763518212184081">បន្ទាត់ពីមុន</translation>
@@ -942,6 +948,7 @@
 <translation id="7533226154149229506">លឿងខ្ចី</translation>
 <translation id="7543255924852002459">លុបចោលស្លាក</translation>
 <translation id="7552432549459840808">ផ្លូវកាត់ Chrome ដែលមានប្រយោជន៍</translation>
+<translation id="7553679324939294712">បញ្ចូល <ph name="INSERT_PHRASE" /> នៅ​ពី​មុខ <ph name="BEFORE_PHRASE" /></translation>
 <translation id="7569983096843329377">ខ្មៅ</translation>
 <translation id="7579911500627256166">ចំណុច <ph name="DOT" /></translation>
 <translation id="7592060599656252486">មួយ​ចំនួន</translation>
@@ -965,6 +972,7 @@
 <translation id="7684431668231950609">កែប្រែអត្ថបទ ធាតុបញ្ចូល URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ប៊ូតុងវិទ្យុពីមុន</translation>
+<translation id="7696631298608145306">ផ្លាស់ទីទៅ​ពាក្យ​បន្ទាប់</translation>
 <translation id="7701040980221191251">គ្មាន</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">សំឡេងធម្មជាតិ</translation>
@@ -1072,6 +1080,7 @@
 <translation id="8455868257606149352">អតិបរមា <ph name="X" /></translation>
 <translation id="84575901236241018">មានពាក្យគន្លឹះចូលប្រើ <ph name="KEY" /></translation>
 <translation id="8463645336674919227">កំពុង​ចាកចេញពី​កំហុស​វេយ្យាករណ៍</translation>
+<translation id="8465573210279050749">លុប​ពាក្យ​មុន</translation>
 <translation id="847040613207937740">គ្មានប្រអប់ធីកបន្ទាប់ទេ</translation>
 <translation id="8473540203671727883">អានអត្ថបទនៅផ្នែកខាងក្រោម​កណ្ដុរ</translation>
 <translation id="8476408756881832830">ផ្អាក​ការ​ចាក់​នៅ​ពេល​ដែល​ ChromeVox កំពុង​និយាយ</translation>
@@ -1108,6 +1117,7 @@
 <translation id="8697111817566059991">{COUNT,plural, =1{បំពង់}other{# បំពង់ឈរ}}</translation>
 <translation id="8741370088760768424">តម្រុយ៖ ចុច​ស្វែងរក + ដកឃ្លា ដើម្បី​បើក​ធាតុ​បច្ចុប្បន្ន​។</translation>
 <translation id="8743786158317878347">ចូលមាតិការចនាសម្ព័ន្ធ ដូចជាតារាងជាដើម</translation>
+<translation id="8746846427395705317">ផ្លាស់ទី​ទៅ​ពាក្យ​មុន</translation>
 <translation id="8747966237988593539">បញ្ជីដែលបានតម្រៀប</translation>
 <translation id="8749988712346667988">ប្រាក់</translation>
 <translation id="875769700429317857">បាន​បញ្ចប់​ការទាញយក <ph name="FILE_NAME" /></translation>
@@ -1135,6 +1145,7 @@
 <translation id="8970172509886453271">គ្មានផ្នែកមុនទេ</translation>
 <translation id="89720367119469899">គេច</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="898089897833732740">លុប <ph name="PHRASE" /></translation>
 <translation id="8986362086234534611">បំភ្លេច</translation>
 <translation id="8989104346085848538">ដើម្បី​បញ្ឈប់​ការនិយាយ​បច្ចុប្បន្ន​របស់ ChromeVox សូមចុច​គ្រាប់ចុច Control។</translation>
 <translation id="8993737615451556423">ផ្ដល់ការគ្រប់គ្រង ដើម្បីបង្កើនល្បឿន បន្ថយល្បឿន និងផ្អាកសំឡេងអាន</translation>

@@ -106,7 +106,7 @@ export class SiteDataElement extends SiteDataElementBase {
   filter: string;
   focusConfig: FocusConfig;
   private isLoading_: boolean;
-  sites: Array<LocalDataItem>;
+  sites: LocalDataItem[];
   subpageRoute: Route;
   private listBlurred_: boolean;
   private browserProxy_: LocalDataBrowserProxy =
@@ -252,7 +252,7 @@ export class SiteDataElement extends SiteDataElementBase {
   /**
    * Shows a dialog to confirm the deletion of multiple sites.
    */
-  onRemoveShowingSitesTap_(e: Event) {
+  private onRemoveShowingSitesTap_(e: Event) {
     e.preventDefault();
     this.$.confirmDeleteDialog.showModal();
   }

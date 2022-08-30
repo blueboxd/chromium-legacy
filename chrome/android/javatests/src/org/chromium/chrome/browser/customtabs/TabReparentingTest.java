@@ -33,7 +33,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
@@ -121,10 +120,10 @@ public class TabReparentingTest {
     }
 
     /**
-     * @see CustomTabsTestUtils#createMinimalCustomTabIntent(Context, String).
+     * @see CustomTabsIntentTestUtils#createMinimalCustomTabIntent(Context, String).
      */
     private Intent createMinimalCustomTabIntent() {
-        return CustomTabsTestUtils.createMinimalCustomTabIntent(
+        return CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), mTestPage);
     }
 
@@ -205,7 +204,7 @@ public class TabReparentingTest {
     public void testTabReparentingInfoBar() {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
                         mTestServer.getURL(POPUP_PAGE)));
         CriteriaHelper.pollUiThread(
@@ -223,15 +222,15 @@ public class TabReparentingTest {
     }
 
     /**
-     * Test whether a custom tab can be reparented to a new activity while showing a select popup.
+     * Test whether a custom tab can be reparented to a new activity and the select element is
+     * still interactable after reparenting.
      */
-    // @SmallTest
+    @SmallTest
     @Test
-    @DisabledTest(message = "Flaky on browser_side_navigation apk - see crbug.com/707766")
     public void testTabReparentingSelectPopup() throws TimeoutException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
                         mTestServer.getURL(SELECT_POPUP_PAGE)));
         CriteriaHelper.pollUiThread(() -> {
@@ -239,10 +238,13 @@ public class TabReparentingTest {
             Criteria.checkThat(currentTab, Matchers.notNullValue());
             Criteria.checkThat(currentTab.getWebContents(), Matchers.notNullValue());
         });
+
         DOMUtils.clickNode(mCustomTabActivityTestRule.getWebContents(), "select");
         CriteriaHelper.pollUiThread(
                 () -> isSelectPopupVisible(mCustomTabActivityTestRule.getActivity()));
+
         final ChromeActivity newActivity = reparentAndVerifyTab();
+        DOMUtils.clickNode(newActivity.getActivityTab().getWebContents(), "select");
         CriteriaHelper.pollUiThread(() -> isSelectPopupVisible(newActivity));
     }
 

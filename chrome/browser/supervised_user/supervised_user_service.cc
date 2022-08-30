@@ -37,12 +37,15 @@
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
@@ -379,6 +382,18 @@ void SupervisedUserService::SetActive(bool active) {
     theme_service->UseDefaultTheme();
 #endif
 
+  // Trigger a sync reconfig to enable/disable the right SU data types.
+  // The logic to do this lives in the SupervisedUserSyncModelTypeController.
+  // TODO(crbug.com/946473): Get rid of this hack and instead call
+  // DataTypePreconditionChanged from the controller.
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_);
+  if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
+    // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and
+    // immediately releasing it again (via the temporary unique_ptr going away).
+    sync_service->GetSetupInProgressHandle();
+  }
+
   GetSettingsService()->SetActive(active_);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -652,10 +667,10 @@ void SupervisedUserService::UpdateDenylist() {
 }
 
 void SupervisedUserService::UpdateManualHosts() {
-  const base::Value* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
+  const base::Value::Dict& dict =
+      profile_->GetPrefs()->GetValueDict(prefs::kSupervisedUserManualHosts);
   std::map<std::string, bool> host_map;
-  for (auto it : dict->DictItems()) {
+  for (auto it : dict) {
     DCHECK(it.second.is_bool());
     host_map[it.first] = it.second.GetIfBool().value_or(false);
   }
@@ -669,10 +684,10 @@ void SupervisedUserService::UpdateManualHosts() {
 }
 
 void SupervisedUserService::UpdateManualURLs() {
-  const base::Value* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
+  const base::Value::Dict& dict =
+      profile_->GetPrefs()->GetValueDict(prefs::kSupervisedUserManualURLs);
   std::map<GURL, bool> url_map;
-  for (auto it : dict->DictItems()) {
+  for (auto it : dict) {
     DCHECK(it.second.is_bool());
     url_map[GURL(it.first)] = it.second.GetIfBool().value_or(false);
   }

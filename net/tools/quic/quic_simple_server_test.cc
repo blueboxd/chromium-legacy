@@ -20,8 +20,7 @@
 
 using ::testing::_;
 
-namespace net {
-namespace test {
+namespace net::test {
 
 // TODO(dmz) Remove "Chrome" part of name once net/tools/quic is deleted.
 class QuicChromeServerDispatchPacketTest : public ::testing::Test {
@@ -36,9 +35,8 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
                     &crypto_config_,
                     &version_manager_,
                     std::make_unique<quic::test::MockQuicConnectionHelper>(),
-                    std::unique_ptr<quic::QuicCryptoServerStreamBase::Helper>(
-                        new QuicSimpleServerSessionHelper(
-                            quic::QuicRandom::GetInstance())),
+                    std::make_unique<QuicSimpleServerSessionHelper>(
+                        quic::QuicRandom::GetInstance()),
                     std::make_unique<quic::test::MockAlarmFactory>(),
                     &memory_cache_backend_) {
     dispatcher_.InitializeWithWriter(nullptr);
@@ -76,5 +74,4 @@ TEST_F(QuicChromeServerDispatchPacketTest, DispatchPacket) {
   DispatchPacket(encrypted_valid_packet);
 }
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

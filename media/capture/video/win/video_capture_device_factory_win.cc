@@ -732,7 +732,7 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoMediaFoundation() {
   DevicesInfo devices_info;
 
   if (use_d3d11_with_media_foundation_ && !dxgi_device_manager_) {
-    dxgi_device_manager_ = DXGIDeviceManager::Create();
+    dxgi_device_manager_ = DXGIDeviceManager::Create(luid_);
   }
 
   // Recent non-RGB (depth, IR) cameras could be marked as sensor cameras in
@@ -996,6 +996,11 @@ VideoCaptureDeviceFactoryWin::GetSupportedFormatsMediaFoundation(
   }
 
   return formats;
+}
+
+scoped_refptr<DXGIDeviceManager>
+VideoCaptureDeviceFactoryWin::GetDxgiDeviceManager() {
+  return dxgi_device_manager_;
 }
 
 }  // namespace media

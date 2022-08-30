@@ -39,10 +39,12 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/arc.mojom.h"
+#include "chromeos/crosapi/mojom/audio_service.mojom.h"
 #include "chromeos/crosapi/mojom/authentication.mojom.h"
 #include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
+#include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
@@ -57,6 +59,7 @@
 #include "chromeos/crosapi/mojom/download_controller.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/echo_private.mojom.h"
+#include "chromeos/crosapi/mojom/emoji_picker.mojom.h"
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
@@ -81,6 +84,7 @@
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
+#include "chromeos/crosapi/mojom/printing_metrics.mojom.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/sharesheet.mojom.h"
@@ -99,6 +103,7 @@
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
 #include "chromeos/system/statistics_provider.h"
@@ -112,6 +117,8 @@
 #include "components/ukm/ukm_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
+#include "device/bluetooth/floss/floss_features.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -163,6 +170,18 @@ absl::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
   return policy::CopyComponentPolicyMap(map);
 }
 
+bool GetIsCurrentUserOwner() {
+  return user_manager::UserManager::Get()->IsCurrentUserOwner();
+}
+
+bool GetUseCupsForPrinting() {
+#if defined(USE_CUPS)
+  return true;
+#else
+  return false;
+#endif  // defined(USE_CUPS)
+}
+
 // Returns the device specific data needed for Lacros.
 mojom::DevicePropertiesPtr GetDeviceProperties() {
   mojom::DevicePropertiesPtr result = mojom::DeviceProperties::New();
@@ -211,7 +230,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 82,
+static_assert(crosapi::mojom::Crosapi::Version_ == 86,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -221,6 +240,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
         chromeos::remote_apps::mojom::RemoteAppsLacrosBridge>(),
     MakeInterfaceVersionEntry<chromeos::sensors::mojom::SensorHalClient>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Arc>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::AudioService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Authentication>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Automation>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AccountManager>(),
@@ -231,6 +251,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserVersionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::CertProvisioning>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ChromeAppKioskService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
@@ -245,6 +266,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::DownloadController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DriveIntegrationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EchoPrivate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::EmojiPicker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ExtensionInfoPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
@@ -273,6 +295,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::PolicyService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ResourceManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
@@ -510,6 +533,11 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->is_ondevice_speech_supported =
       base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition);
 
+  params->ash_chrome_version = version_info::GetVersionNumber();
+  params->use_cups_for_printing = GetUseCupsForPrinting();
+  params->use_floss_bluetooth = floss::features::IsFlossEnabled();
+  params->is_current_user_device_owner = GetIsCurrentUserOwner();
+
   return params;
 }
 
@@ -543,6 +571,8 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
 
   result->attestation_for_content_protection_enabled = MojoOptionalBool::kUnset;
   result->device_ephemeral_users_enabled = MojoOptionalBool::kUnset;
+  result->device_restricted_managed_guest_session_enabled =
+      MojoOptionalBool::kUnset;
   if (ash::CrosSettings::IsInitialized()) {
     // It's expected that the CrosSettings values are trusted. The only
     // theoretical exception is when device ownership is taken on consumer
@@ -591,6 +621,16 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
         result->device_ephemeral_users_enabled = ephemeral_users_enabled
                                                      ? MojoOptionalBool::kTrue
                                                      : MojoOptionalBool::kFalse;
+      }
+
+      bool device_restricted_managed_guest_session_enabled = false;
+      if (cros_settings->GetBoolean(
+              ash::kDeviceRestrictedManagedGuestSessionEnabled,
+              &device_restricted_managed_guest_session_enabled)) {
+        result->device_restricted_managed_guest_session_enabled =
+            device_restricted_managed_guest_session_enabled
+                ? MojoOptionalBool::kTrue
+                : MojoOptionalBool::kFalse;
       }
     } else {
       LOG(WARNING) << "Unexpected crossettings trusted values status: "

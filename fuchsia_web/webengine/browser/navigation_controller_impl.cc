@@ -18,7 +18,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "fuchsia/base/string_util.h"
+#include "fuchsia_web/common/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
@@ -278,8 +278,8 @@ void NavigationControllerImpl::LoadUrl(std::string url,
     std::vector<std::string> extra_headers;
     extra_headers.reserve(params.headers().size());
     for (const auto& header : params.headers()) {
-      base::StringPiece header_name = cr_fuchsia::BytesAsString(header.name);
-      base::StringPiece header_value = cr_fuchsia::BytesAsString(header.value);
+      base::StringPiece header_name = BytesAsString(header.name);
+      base::StringPiece header_value = BytesAsString(header.value);
       if (!net::HttpUtil::IsValidHeaderName(header_name) ||
           !net::HttpUtil::IsValidHeaderValue(header_value)) {
         callback(fpromise::error(

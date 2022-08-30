@@ -43,6 +43,8 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   METADATA_HEADER(Combobox);
 
+  using MenuSelectionAtCallback = base::RepeatingCallback<bool(int index)>;
+
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
@@ -99,9 +101,18 @@ class VIEWS_EXPORT Combobox : public View,
   void SetInvalid(bool invalid);
   bool GetInvalid() const { return invalid_; }
 
+  void SetBorderColorId(ui::ColorId color_id);
+
+  // Sets whether there should be ink drop highlighting on hover/press.
+  void SetEventHighlighting(bool should_highlight);
+
   // Whether the combobox should use the largest label as the content size.
   void SetSizeToLargestLabel(bool size_to_largest_label);
   bool GetSizeToLargestLabel() const { return size_to_largest_label_; }
+
+  void SetMenuSelectionAtCallback(MenuSelectionAtCallback callback) {
+    menu_selection_at_callback_ = std::move(callback);
+  }
 
   // Use the time when combobox was closed in order for parent view to not
   // treat a user event already treated by the combobox.
@@ -160,11 +171,18 @@ class VIEWS_EXPORT Combobox : public View,
   // Cleans up after the menu as closed
   void OnMenuClosed(Button::ButtonState original_button_state);
 
+  // Called when there has been a selection from the menu.
+  void MenuSelectionAt(int index);
+
   // Called when the selection is changed by the user.
   void OnPerformAction();
 
   // Finds the size of the largest menu label.
   gfx::Size GetContentSize() const;
+
+  // Returns the width needed to accommodate the provided width and checkmarks
+  // and padding if checkmarks should be shown.
+  int MaybeAdjustWidthForCheckmarks(int original_width) const;
 
   void OnContentSizeMaybeChanged();
 
@@ -191,11 +209,23 @@ class VIEWS_EXPORT Combobox : public View,
   // Callback notified when the selected index changes.
   base::RepeatingClosure callback_;
 
+  // Callback notified when the selected index is triggered to change. If set,
+  // when a selection is made in the combobox this callback is called. If it
+  // returns true no other action is taken, if it returns false then the model
+  // will updated based on the selection.
+  MenuSelectionAtCallback menu_selection_at_callback_;
+
   // The current selected index; -1 and means no selection.
   int selected_index_ = -1;
 
   // True when the selection is visually denoted as invalid.
   bool invalid_ = false;
+
+  // True when there should be ink drop highlighting on hover and press.
+  bool should_highlight_ = false;
+
+  // Overriding ColorId for the combobox border.
+  absl::optional<ui::ColorId> border_color_id_;
 
   // The accessible name of this combobox.
   std::u16string accessible_name_;
@@ -226,9 +256,10 @@ class VIEWS_EXPORT Combobox : public View,
   // destroyed.
   std::unique_ptr<MenuRunner> menu_runner_;
 
-  // When true, the size of contents is defined by the selected label.
-  // Otherwise, it's defined by the widest label in the menu. If this is set to
-  // true, the parent view must relayout in ChildPreferredSizeChanged().
+  // When true, the size of contents is defined by the widest label in the menu.
+  // If this is set to true, the parent view must relayout in
+  // ChildPreferredSizeChanged(). When false, the size of contents is defined by
+  // the selected label
   bool size_to_largest_label_ = true;
 
   base::ScopedObservation<ui::ComboboxModel, ui::ComboboxModelObserver>

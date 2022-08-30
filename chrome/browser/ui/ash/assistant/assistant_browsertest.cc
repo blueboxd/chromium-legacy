@@ -8,16 +8,17 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/assistant/test_support/expect_utils.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/public/cpp/switches.h"
 #include "chromeos/ash/services/assistant/service.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/cpp/switches.h"
 #include "content/public/test/browser_test.h"
 
 namespace chromeos {
@@ -32,6 +33,12 @@ constexpr auto kMode = FakeS3Mode::kReplay;
 constexpr int kVersion = 1;
 
 constexpr int kStartBrightnessPercent = 50;
+
+inline constexpr char kDlcInstallResultHistogram[] =
+    "Assistant.Libassistant.DlcInstallResult";
+
+inline constexpr char kDlcLoadStatusHistogram[] =
+    "Assistant.Libassistant.DlcLoadStatus";
 
 // Ensures that |value_| is within the range {min_, max_}. If it isn't, this
 // will print a nice error message.
@@ -136,8 +143,11 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
         }));
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
   AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
                              kVersion};
 };
@@ -157,6 +167,8 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
   }
 
   EXPECT_TRUE(tester()->IsVisible());
+  histogram_tester()->ExpectTotalCount(kDlcInstallResultHistogram, 1);
+  histogram_tester()->ExpectTotalCount(kDlcLoadStatusHistogram, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayTextResponse) {

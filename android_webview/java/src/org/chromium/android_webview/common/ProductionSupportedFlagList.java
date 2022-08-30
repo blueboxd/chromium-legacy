@@ -14,14 +14,12 @@ import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.variations.VariationsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
-import org.chromium.components.webrtc.ComponentsWebRtcFeatures;
 import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
 import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
-import org.chromium.webrtc_overrides.WebRtcOverridesFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -269,8 +267,6 @@ public final class ProductionSupportedFlagList {
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
                     "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
-            Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_METRONOME_TASK_QUEUE,
-                    "Enables more efficient scheduling of work in WebRTC."),
             Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
                     "Enables creation of initial NavigationEntries on WebContents creation."),
             Flag.baseFeature(BlinkFeatures.CANVAS2D_STAYS_GPU_ON_READBACK,
@@ -285,8 +281,6 @@ public final class ProductionSupportedFlagList {
                     "Enable establishing the GPU channel early in renderer startup."),
             Flag.baseFeature(ContentFeatures.OPTIMIZE_EARLY_NAVIGATION,
                     "Temporarily pauses the compositor early in navigation."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_SEND_VARIATIONS_HEADERS,
-                    "Whether WebView will send variations headers on URLs where applicable."),
             Flag.baseFeature(ContentFeatures.INCLUDE_IPC_OVERHEAD_IN_NAVIGATION_START,
                     "Whether navigation metrics include ipc overhead."),
             Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK_POST_TASK,
@@ -299,10 +293,6 @@ public final class ProductionSupportedFlagList {
                     AwFeatures.WEBVIEW_SYNTHESIZE_PAGE_LOAD_ONLY_ON_INITIAL_MAIN_DOCUMENT_ACCESS,
                     "Only synthesize page load for URL spoof prevention at most once,"
                             + " on initial main document access."),
-            Flag.baseFeature(ComponentsWebRtcFeatures.THREAD_WRAPPER_USES_METRONOME,
-                    "Makes ThreadWrapper coalesce delayed tasks on metronome ticks."),
-            Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_TIMER_USES_METRONOME,
-                    "Makes WebRtcTimer coalesce delayed tasks on metronome ticks."),
             Flag.baseFeature(BlinkFeatures.VIEWPORT_HEIGHT_CLIENT_HINT_HEADER,
                     "Enables the use of sec-ch-viewport-height client hint."),
             Flag.baseFeature(BlinkFeatures.USER_AGENT_OVERRIDE_EXPERIMENT,
@@ -323,9 +313,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.ESTABLISH_GPU_CHANNEL_ASYNC,
                     "Enables establishing the GPU channel asnchronously when requesting a new "
                             + "layer tree frame sink."),
-            Flag.baseFeature(BlinkFeatures.DEFER_BEGIN_MAIN_FRAME_DURING_LOADING,
-                    "If enabled, the parser may continue parsing if BeginMainFrame was "
-                            + "recently called."),
             Flag.baseFeature(BlinkFeatures.DECODE_SCRIPT_SOURCE_OFF_THREAD,
                     "If enabled, script source text will be decoded and hashed off the main"
                             + "thread."),
@@ -342,7 +329,17 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.OFFSET_PARENT_NEW_SPEC_BEHAVIOR,
                     "Enables new HTMLElement.offsetParent behavior to match other browsers."),
             Flag.baseFeature(AwFeatures.WEBVIEW_RECORD_APP_DATA_DIRECTORY_SIZE,
-                    "Record the size of the embedding app's data directory")
+                    "Record the size of the embedding app's data directory"),
+            Flag.baseFeature(BlinkFeatures.EARLY_EXIT_ON_NOOP_CLASS_OR_STYLE_CHANGE,
+                    "Early exit when the style or class attribute of a DOM element is set to the"
+                            + " same value as before."),
+            Flag.baseFeature(BlinkFeatures.THREADED_PRELOAD_SCANNER,
+                    "If enabled, the HTMLPreloadScanner will run on a worker thread."),
+            Flag.baseFeature(BlinkFeatures.TIMED_HTML_PARSER_BUDGET,
+                    "If enabled, the HTMLDocumentParser will use a budget based on elapsed time"
+                            + " rather than token count."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_HIT_TEST_IN_BLINK_ON_TOUCH_START,
+                    "Hit test on touch start in blink"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

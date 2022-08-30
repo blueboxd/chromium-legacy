@@ -148,6 +148,7 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorOverlayScrollbarStrokeHoveredLight] =
       SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillHoveredLight),
                gfx::kGoogleGreyAlpha500);
+  mixer[kColorProgressBarPaused] = {kColorDisabledForeground};
   mixer[kColorProgressBar] = {kColorAccent};
   mixer[kColorSeparator] = {kColorMidground};
   mixer[kColorShadowBase] = {dark_mode ? SK_ColorBLACK : gfx::kGoogleGrey800};
@@ -159,6 +160,7 @@ void AddUiColorMixer(ColorProvider* provider,
       SetAlpha(kColorShadowBase, 0x3d);
   mixer[kColorShadowValueKeyShadowElevationSixteen] =
       SetAlpha(kColorShadowBase, 0x1a);
+  mixer[kColorSidePanelComboboxBorder] = {SK_ColorTRANSPARENT};
   mixer[kColorSliderThumb] = {kColorAccent};
   mixer[kColorSliderThumbMinimal] = {kColorSecondaryForeground};
   mixer[kColorSliderTrack] = {kColorSubtleAccent};

@@ -104,6 +104,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="UMA.CleanExitBeacon.BeaconFileConsistency"
     enum="UmaCleanExitConsistency2" expires_after="2023-05-31">
+  <obsolete>
+    Removed in M105.
+  </obsolete>
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -114,20 +117,6 @@ chromium-metrics-reviews@google.com.
     As of M102 for desktop and iOS and M103 for Android Chrome, any client may
     emit this metric. Prior to this, the metric was emitted by only clients in
     an enabled group that used the beacon file.
-  </summary>
-</histogram>
-
-<histogram name="UMA.CleanExitBeacon.ExtendedMonitoringStageDuration"
-    units="ms" expires_after="2022-11-01">
-  <owner>ssid@chromium.org</owner>
-  <owner>wnwen@chromium.org</owner>
-  <summary>
-    The amount of time in ms between the extended and status quo browser crash
-    monitoring stages. The extended monitoring stage may begin in
-    MaybeExtendVariationsSafeMode(), and the status quo stage begins in
-    MetricsService::OnAppEnterForeground(). Emitted when the status quo
-    monitoring stage begins. Recorded by Extended Variations Safe Mode
-    enabled-group clients on Android Chrome.
   </summary>
 </histogram>
 
@@ -158,6 +147,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="UMA.CleanExitBeaconConsistency2"
     enum="UmaCleanExitConsistency2" expires_after="2023-05-31">
+  <obsolete>
+    Removed in M105.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -234,7 +226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.CrosPerUser.IdReset" enum="PerUserIdType"
-    expires_after="2022-10-01">
+    expires_after="2022-12-11">
   <owner>jongahn@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -246,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.CrosPerUser.UserLogStoreState" enum="PerUserLogStoreState"
-    expires_after="2022-10-01">
+    expires_after="2022-12-11">
   <owner>jongahn@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -351,7 +343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2022-10-09">
+    units="samples" expires_after="2022-12-25">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -362,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedUserActionCount"
-    units="samples" expires_after="2022-10-09">
+    units="samples" expires_after="2022-12-25">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -519,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.MetricsReporting.Toggle" enum="MetricsReportingChange"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -781,7 +773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StartupVisibility" enum="StartupVisibility"
-    expires_after="2022-11-01">
+    expires_after="2023-01-01">
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -823,7 +815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.InternalError2"
-    enum="StructuredMetricsInternalError2" expires_after="2022-11-01">
+    enum="StructuredMetricsInternalError2" expires_after="2023-01-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -867,7 +859,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2022-12-04">
+    expires_after="2023-01-01">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

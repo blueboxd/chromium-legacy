@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/event.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -32,7 +33,6 @@
 #include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_frame_manager.h"
@@ -295,7 +295,7 @@ void WaylandWindow::SetBoundsInPixels(const gfx::Rect& bounds_px) {
     return;
   bounds_px_ = adjusted_bounds_px;
 
-  if (update_visual_size_immediately_)
+  if (update_visual_size_immediately_for_testing_)
     UpdateVisualSize(bounds_px.size(), window_scale());
   delegate_->OnBoundsChanged(bounds_px_);
 }
@@ -457,8 +457,6 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
         connection_->wayland_window_manager()->located_events_grabber();
     auto* root_parent_window = GetRootParentWindow();
 
-    UpdateCursorPositionFromEvent(event);
-
     // We must reroute the events to the event grabber iff these windows belong
     // to the same root parent window. For example, there are 2 top level
     // Wayland windows. One of them (window_1) has a child menu window that is
@@ -473,25 +471,48 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
         event_grabber &&
         root_parent_window == event_grabber->GetRootParentWindow();
     if (send_to_grabber) {
-      ConvertEventLocationToTargetWindowLocation(
-          event_grabber->GetBoundsInDIP().origin(), GetBoundsInDIP().origin(),
-          event->AsLocatedEvent());
+      ConvertEventToTarget(event_grabber, event->AsLocatedEvent());
+      Event::DispatcherApi(event).set_target(event_grabber);
     }
 
-    // Wayland sends locations in DIP so they need to be translated to
-    // physical pixels.
+    // Wayland sends locations in DIP but dispatch code expects pixels, so they
+    // need to be translated to physical pixels.
     event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
         event->AsLocatedEvent()->location_f(), window_scale(), window_scale()));
 
     if (send_to_grabber)
-      return event_grabber->DispatchEventToDelegate(native_event);
+      return event_grabber->DispatchEventToDelegate(event);
   }
 
   // Dispatch all keyboard events to the root window.
   if (event->IsKeyEvent())
     return GetRootParentWindow()->DispatchEventToDelegate(event);
 
-  return DispatchEventToDelegate(native_event);
+  return DispatchEventToDelegate(event);
+}
+
+// EventTarget:
+bool WaylandWindow::CanAcceptEvent(const Event& event) {
+  return true;
+}
+
+EventTarget* WaylandWindow::GetParentTarget() {
+  return nullptr;
+}
+
+std::unique_ptr<EventTargetIterator> WaylandWindow::GetChildIterator() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+EventTargeter* WaylandWindow::GetEventTargeter() {
+  return nullptr;
+}
+
+void WaylandWindow::ConvertEventToTarget(const EventTarget* new_target,
+                                         LocatedEvent* event) const {
+  // Move this to wayland event soruce?
+  WaylandEventSource::ConvertEventToTarget(new_target, event);
 }
 
 void WaylandWindow::HandleSurfaceConfigure(uint32_t serial) {
@@ -530,7 +551,7 @@ void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px,
   visual_size_px_ = size_px;
   UpdateWindowMask();
 
-  if (apply_pending_state_on_update_visual_size_) {
+  if (apply_pending_state_on_update_visual_size_for_testing_) {
     root_surface_->ApplyPendingState();
     connection_->ScheduleFlush();
   }
@@ -607,8 +628,10 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   // Update visual size in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.
-  if (!update_visual_size_immediately_)
-    set_update_visual_size_immediately(UseTestConfigForPlatformWindows());
+  if (!update_visual_size_immediately_for_testing_) {
+    set_update_visual_size_immediately_for_testing(
+        UseTestConfigForPlatformWindows());
+  }
 
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
@@ -670,43 +693,6 @@ void WaylandWindow::OnLeftOutput() {
   // output.
 }
 
-void WaylandWindow::UpdateCursorPositionFromEvent(const Event* orig_event) {
-  DCHECK(orig_event->IsLocatedEvent());
-
-  // This is a tricky part. Initially, Wayland sends events to surfaces the
-  // events are targeted for. But, in order to fulfill Chromium's assumptions
-  // about event targets, some of the events are rerouted and their locations
-  // are converted. The event we got here is rerouted and it has had its
-  // location fixed.
-  //
-  // Basically, this method must translate coordinates of all events
-  // in regards to top-level windows' coordinates as it's always located at
-  // origin (0,0) from Chromium point of view (remember that wl_shell/xdg_shell
-  // doesn't provide global coordinates to its clients). And it's totally fine
-  // to use it as the target. Thus, the location of the |event| is always
-  // converted using the top-level window's bounds as the target excluding
-  // cases, when the mouse/touch is over a top-level window.
-  auto* cursor_position = connection_->wayland_cursor_position();
-  if (!cursor_position)
-    return;
-  const LocatedEvent* located_event = orig_event->AsLocatedEvent();
-  std::unique_ptr<Event> event;
-
-  auto* toplevel_window = GetRootParentWindow();
-  if (toplevel_window != this) {
-    event = Event::Clone(*orig_event);
-    ConvertEventLocationToTargetWindowLocation(
-        toplevel_window->GetBoundsInDIP().origin(), GetBoundsInDIP().origin(),
-        event->AsLocatedEvent());
-
-    located_event = event->AsLocatedEvent();
-  }
-
-  cursor_position->OnCursorPositionChanged(
-      located_event->location() +
-      toplevel_window->GetBoundsInDIP().origin().OffsetFromOrigin());
-}
-
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
   return child_window_ ? child_window_->GetTopMostChildWindow() : this;
 }
@@ -722,6 +708,10 @@ bool WaylandWindow::IsActive() const {
 
 WaylandPopup* WaylandWindow::AsWaylandPopup() {
   return nullptr;
+}
+
+bool WaylandWindow::IsScreenCoordinatesEnabled() const {
+  return false;
 }
 
 uint32_t WaylandWindow::DispatchEventToDelegate(

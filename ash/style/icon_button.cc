@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -26,6 +27,7 @@
 namespace ash {
 namespace {
 
+constexpr int kTinyButtonSize = 24;
 constexpr int kSmallButtonSize = 32;
 constexpr int kMediumButtonSize = 36;
 constexpr int kLargeButtonSize = 48;
@@ -41,6 +43,9 @@ constexpr gfx::Insets kFocusRingPadding(1);
 
 int GetButtonSizeOnType(IconButton::Type type) {
   switch (type) {
+    case IconButton::Type::kTiny:
+    case IconButton::Type::kTinyFloating:
+      return kTinyButtonSize;
     case IconButton::Type::kSmall:
     case IconButton::Type::kSmallFloating:
       return kSmallButtonSize;
@@ -54,7 +59,8 @@ int GetButtonSizeOnType(IconButton::Type type) {
 }
 
 bool IsFloatingIconButton(IconButton::Type type) {
-  return type == IconButton::Type::kSmallFloating ||
+  return type == IconButton::Type::kTinyFloating ||
+         type == IconButton::Type::kSmallFloating ||
          type == IconButton::Type::kMediumFloating ||
          type == IconButton::Type::kLargeFloating;
 }
@@ -93,6 +99,7 @@ IconButton::IconButton(PressedCallback callback,
   StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                    /*highlight_on_hover=*/false,
                                    /*highlight_on_focus=*/false);
+  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
   if (has_border) {
     // The focus ring will be around the whole button's bounds, but the inkdrop
     // will have the same size as the content.
@@ -154,6 +161,13 @@ void IconButton::SetIconColor(const SkColor icon_color) {
   if (icon_color_ == icon_color)
     return;
   icon_color_ = icon_color;
+  UpdateVectorIcon();
+}
+
+void IconButton::SetIconSize(int size) {
+  if (icon_size_ == size)
+    return;
+  icon_size_ = size;
   UpdateVectorIcon();
 }
 
@@ -222,11 +236,7 @@ void IconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void IconButton::OnThemeChanged() {
   views::ImageButton::OnThemeChanged();
-
   UpdateVectorIcon();
-  views::FocusRing::Get(this)->SetColor(
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kFocusRingColor));
   SchedulePaint();
 }
 
@@ -249,6 +259,7 @@ void IconButton::UpdateVectorIcon() {
   const SkColor toggled_icon_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
   const SkColor icon_color = toggled_ ? toggled_icon_color : normal_icon_color;
+  const int icon_size = icon_size_.value_or(kIconSize);
 
   // Skip repainting if the incoming icon is the same as the current icon. If
   // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
@@ -256,7 +267,7 @@ void IconButton::UpdateVectorIcon() {
   // assumes that toggled/disabled images changes at the same time as the normal
   // image, which it currently does.
   const gfx::ImageSkia new_normal_image =
-      gfx::CreateVectorIcon(*icon_, kIconSize, icon_color);
+      gfx::CreateVectorIcon(*icon_, icon_size, icon_color);
   const gfx::ImageSkia& old_normal_image =
       GetImage(views::Button::STATE_NORMAL);
   if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
@@ -267,7 +278,7 @@ void IconButton::UpdateVectorIcon() {
   SetImage(views::Button::STATE_NORMAL, new_normal_image);
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(
-               *icon_, kIconSize,
+               *icon_, icon_size,
                AshColorProvider::GetDisabledColor(normal_icon_color)));
 }
 

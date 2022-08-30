@@ -40,7 +40,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="ExtensionBlacklist.BlacklistInstalled"
     enum="ExtensionLocation" expires_after="2022-11-18">
   <owner>anunoy@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The number of extensions that were blocklisted when already installed,
     grouped by Extension::Location. Logged when ExtensionService blockists and
@@ -51,7 +51,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="ExtensionBlacklist.BlockCRX" enum="ExtensionLocation"
     expires_after="2022-11-18">
   <owner>anunoy@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The number of extensions that have been blocked from installing grouped by
     Extension::Location. Logged when ExtensionService refuses to install a
@@ -62,7 +62,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="ExtensionBlacklist.SilentInstall" enum="ExtensionLocation"
     expires_after="2022-11-18">
   <owner>anunoy@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The number of extensions that have been silently installed in a blocklisted
     state, grouped by Extension::Location. Logged when ExtensionService installs
@@ -75,7 +75,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="ExtensionBlacklist.UnblacklistInstalled"
     enum="ExtensionLocation" expires_after="2022-11-18">
   <owner>anunoy@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The number of extensions that were unblocklisted when installed, grouped by
     Extension::Location. Logged when ExtensionService unblocklists and loads a
@@ -134,7 +134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.PermittedExtensions"
-    units="Extension Count" expires_after="2022-10-23">
+    units="Extension Count" expires_after="2022-12-25">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -222,6 +222,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BackgroundHostCreatedForExtension"
+    enum="BackgroundHostCreatedForExtensionValues" expires_after="2023-01-01">
+  <owner>fdoray@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Recorded when a background host is created for an extension. The value
+    indicates for which extension the host was created.
+
+    The breakdown of extensions that make up the &quot;Other extension&quot;
+    bucket can be derived from the LoadCountsPerTopLevelDocument UKM event. To
+    compare UKM event counts with UMA sample counts, use this formula:
+
+    count of UKM events for a given extension * count of samples in the
+    &quot;Other extension&quot; bucket of this histogram / count of UKM events
+    for all extensions
+
+    Extensions bundled with Chrome have dedicated values in this histogram
+    because they are not synced and therefore not reported through UKM.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BackgroundPageLoadTime2" units="ms"
     expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -305,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BookmarkAppLaunchSource" enum="AppLaunchSource"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>phillis@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -1053,7 +1074,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.EsbAllowlistOmahaAttribute"
     enum="ExtensionAllowlistOmahaAttributeValue" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Reports the value of the Safe Browsing CRX allowlist custom omaha attribute
     when an update check occurs for an extension.
@@ -1183,7 +1204,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.ExtensionAddDisabledRemotelyReason2"
     enum="ExtensionUpdateCheckDataKey" expires_after="2022-10-10">
   <owner>drubery@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Recorded when a new violation is retrieved from Omaha for an extension. The
     new violation reason is retrieved from the update service data key reasons
@@ -1194,7 +1215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheCount" units="units"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1205,7 +1226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheSize" units="MB"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1218,7 +1239,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.ExtensionDisabledRemotely2"
     enum="ExtensionUpdateCheckDataKey" expires_after="2022-09-11">
   <owner>drubery@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Recorded when an extension that was previously enabled is disabled due to a
     new violation retrieved from Omaha. This is recorded when the violation is
@@ -1251,9 +1272,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionReenabledRemotely" units="count"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>drubery@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Recorded when an extension that was previously only disabled remotely is
     re-enabled remotely during an update service session.
@@ -1261,9 +1282,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionReenabledRemotely{BlocklistState}"
-    units="count" expires_after="2022-06-03">
-  <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+    units="count" expires_after="2023-06-10">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Recorded when a {BlocklistState} extension that was previously only disabled
     remotely is re-enabled remotely during an update service session.
@@ -1482,7 +1503,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2022-10-16">
+    enum="ExtensionInstallationFailureReason" expires_after="2022-12-18">
 <!-- Name completed by histogram_suffixes name="ExtensionSource" -->
 
   <owner>vkovalova@google.com</owner>
@@ -1589,7 +1610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledLoadTime" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1625,7 +1646,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured"
-    enum="Boolean" expires_after="2022-10-16">
+    enum="Boolean" expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1670,7 +1691,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutCount" units="units"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1833,7 +1854,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Functions.ExtensionServiceWorkerCalls"
-    enum="ExtensionFunctions" expires_after="2022-10-09">
+    enum="ExtensionFunctions" expires_after="2022-12-11">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -1932,7 +1953,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Functions.SucceededTotalExecutionTime" units="ms"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1945,7 +1966,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Functions.SynchronousExecutionTime" units="ms"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1998,7 +2019,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.Greylist.Disabled" enum="ExtensionLocation"
     expires_after="2022-09-07">
   <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Emits the Extension::Location of a newly-disabled greylisted extension.
     Logged when SafeBrowsingVerdictHandler greylists and disables an installed
@@ -2009,11 +2030,25 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.Greylist.Enabled" enum="ExtensionLocation"
     expires_after="2022-09-07">
   <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-safebrowsing-alerts@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Emits the Extension::Location of an extension that was ungreylisted. Logged
     when SafeBrowsingVerdictHandler ungreylists and enables an installed
     extension.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.GuestView.ChangeOwnerWebContentsOnAttach"
+    enum="Boolean" expires_after="2023-02-01">
+  <owner>mcnee@chromium.org</owner>
+  <owner>src/components/guest_view/OWNERS</owner>
+  <summary>
+    It is possible for a Chrome Apps webview to be attached to a WebContents
+    that did not create it. This reports True if attachment involves a change to
+    the owner WebContents or False if attachment does not change the owner.
+
+    We'd like to understand how common this case is, as this is architecturally
+    complex to support.
   </summary>
 </histogram>
 
@@ -2270,7 +2305,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.InstallFrictionDialogAction"
     enum="ExtensionInstallFrictionDialogAction" expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Action taken in the extension install friction dialog displayed to Enhanced
     Safe Browsing users before installing an extension that is not included in
@@ -2500,14 +2535,14 @@ chromium-metrics-reviews@google.com.
   <summary>The number of platform apps loaded at profile open.</summary>
 </histogram>
 
-<histogram name="Extensions.LoadTheme" units="units" expires_after="2022-10-30">
+<histogram name="Extensions.LoadTheme" units="units" expires_after="2023-01-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>The number of themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2526,7 +2561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Management_Refresh" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -2752,7 +2787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.NewTabPageOverrides" units="units"
-    expires_after="2022-09-11">
+    expires_after="2022-12-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>
@@ -2783,7 +2818,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.NotAllowlistedDisabled" units="extensions"
     expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The total number of disabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for all users on profile
@@ -2794,7 +2829,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.NotAllowlistedDisabledAndEsbUser"
     units="extensions" expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The total number of disabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for only for Enhanced Safe Browsing
@@ -2805,7 +2840,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.NotAllowlistedEnabled" units="extensions"
     expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The total number of enabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for all users on profile
@@ -2816,7 +2851,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.NotAllowlistedEnabledAndEsbUser" units="extensions"
     expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The total number of enabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for only for Enhanced Safe Browsing
@@ -3126,7 +3161,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.BackToOtherSearchOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-10-30">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-01-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3153,7 +3188,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.GenericSearchOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-10-09">
+    enum="SettingsOverriddenDialogResult" expires_after="2022-12-11">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3610,7 +3645,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Extensions.WebStoreInstall.EsbAllowlistParameter"
     enum="WebStoreInstallAllowlistParameter" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Reports the Safe Browsing CRX allowlist state received from Chrome Web Store
     when a user presses on &quot;Add to Chrome&quot; in Chrome Web Store.
@@ -3621,7 +3656,7 @@ chromium-metrics-reviews@google.com.
     name="Extensions.WebStoreInstall.NotAllowlistedInstalledWithFriction"
     enum="Boolean" expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Reports when a user with install friction dialog enabled tries to install an
     extension that is not included in the Safe Browsing CRX allowlist. 'True' if
@@ -3634,7 +3669,7 @@ chromium-metrics-reviews@google.com.
     name="Extensions.WebStoreInstall.NotAllowlistedInstalledWithoutFriction"
     enum="Boolean" expires_after="2022-12-04">
   <owner>jeffcyr@google.com</owner>
-  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Reports when a user with install friction dialog disabled tries to install
     an extension that is not included in the Safe Browsing CRX allowlist. 'True'

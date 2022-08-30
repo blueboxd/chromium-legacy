@@ -61,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.ApplicationStart.NeverTranslateLanguage"
-    enum="LocaleCodeISO639" expires_after="2022-09-11">
+    enum="LocaleCodeISO639" expires_after="2022-12-25">
   <owner>curranmax@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2022-11-13">
   <owner>groby@google.com</owner>
   <owner>chrome-language@google.com</owner>
-  <summary>Tracks UI events related to the translate bubble.</summary>
+  <summary>Tracks UI events related to the Full Page Translate bubble.</summary>
 </histogram>
 
 <histogram name="Translate.CaptureText" units="ms" expires_after="2022-11-13">
@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.CompactInfobar.Language.MoreLanguages"
-    enum="LocaleCodeISO639" expires_after="2022-09-11">
+    enum="LocaleCodeISO639" expires_after="2022-12-18">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -386,7 +386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.MenuTranslation.UnavailableReasons"
-    enum="MenuTranslationUnavailableReason" expires_after="2022-09-11">
+    enum="MenuTranslationUnavailableReason" expires_after="2022-12-25">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -429,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.NeverTranslateSite" units="units"
-    expires_after="2022-09-11">
+    expires_after="2022-12-11">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -678,7 +678,7 @@ chromium-metrics-reviews@google.com.
     enum="PartialTranslateBubbleUiEvent" expires_after="2022-11-01">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
-  <summary>Tracks UI events related to the partial translate bubble.</summary>
+  <summary>Tracks UI events related to the Partial Translate bubble.</summary>
 </histogram>
 
 <histogram name="Translate.Ranker.Model.Status" enum="RankerModelStatus"
@@ -1056,7 +1056,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="TranslateModelService.LanguageDetectionModel.PendingRequestCallbacks"
-    units="requests" expires_after="2022-09-11">
+    units="requests" expires_after="2023-01-01">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-language@chromium.org</owner>
   <summary>

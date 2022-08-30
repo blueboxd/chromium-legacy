@@ -244,18 +244,16 @@ void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
 
 void TouchInjector::OnInputMenuViewRemoved() {
   OnSaveProtoFile();
-  const auto* package_name = GetPackageName();
   // Record UMA stats upon |InputMenuView| close because it needs to ignore the
   // unfinalized menu state change.
   if (touch_injector_enable_ != touch_injector_enable_uma_) {
     touch_injector_enable_uma_ = touch_injector_enable_;
-    RecordInputOverlayFeatureState(*package_name, touch_injector_enable_uma_);
+    RecordInputOverlayFeatureState(touch_injector_enable_uma_);
   }
 
   if (input_mapping_visible_ != input_mapping_visible_uma_) {
     input_mapping_visible_uma_ = input_mapping_visible_;
-    RecordInputOverlayMappingHintState(*package_name,
-                                       input_mapping_visible_uma_);
+    RecordInputOverlayMappingHintState(input_mapping_visible_uma_);
   }
 }
 
@@ -384,7 +382,6 @@ bool TouchInjector::LocatedEventOnMenuEntry(const ui::Event& event,
   if (!event.IsLocatedEvent())
     return false;
 
-  auto event_location = event.AsLocatedEvent()->root_location();
   auto menu_anchor_bounds =
       display_overlay_controller_->GetOverlayMenuEntryBounds();
   if (!menu_anchor_bounds) {
@@ -392,6 +389,12 @@ bool TouchInjector::LocatedEventOnMenuEntry(const ui::Event& event,
            display_mode_ != DisplayMode::kPreMenu);
     return false;
   }
+
+  auto event_location = gfx::Point(event.AsLocatedEvent()->root_location());
+  target_window_->GetHost()->ConvertPixelsToDIP(&event_location);
+  // Convert |event_location| from root window location to screen location.
+  auto origin = target_window_->GetRootWindow()->GetBoundsInScreen().origin();
+  event_location.Offset(origin.x(), origin.y());
 
   if (!press_required)
     return menu_anchor_bounds->Contains(event_location);
@@ -487,7 +490,15 @@ ui::EventDispatchDetails TouchInjector::RewriteEvent(
     if (new_touch_event)
       return SendEventFinally(continuation, new_touch_event.get());
 
-    return DiscardEvent(continuation);
+    // TODO(b/237037540): workaround for b/233785660. Theoretically it
+    // should discard the event if original touch-move or touch-release with
+    // same ID is not rewritten due to missing original touch-press. But
+    // thinking of real world user cases, it's unlikely to trigger any issues
+    // with sending original event. The logic is already complicated in
+    // |RewriteEvent()| so here it uses a workaround. The menu entry will be
+    // removed and simplify the logic in future version, then it will be
+    // fundamentally improved.
+    return SendEvent(continuation, &event);
   }
 
   if (mouse_lock_ && mouse_lock_->Process(event))
@@ -630,9 +641,8 @@ void TouchInjector::LoadMenuStateFromProto(AppDataProto& proto) {
 void TouchInjector::RecordMenuStateOnLaunch() {
   touch_injector_enable_uma_ = touch_injector_enable_;
   input_mapping_visible_uma_ = input_mapping_visible_;
-  const auto* package_name = GetPackageName();
-  RecordInputOverlayFeatureState(*package_name, touch_injector_enable_uma_);
-  RecordInputOverlayMappingHintState(*package_name, input_mapping_visible_uma_);
+  RecordInputOverlayFeatureState(touch_injector_enable_uma_);
+  RecordInputOverlayMappingHintState(input_mapping_visible_uma_);
 }
 
 int TouchInjector::GetRewrittenTouchIdForTesting(ui::PointerId original_id) {

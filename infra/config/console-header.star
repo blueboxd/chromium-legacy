@@ -131,7 +131,7 @@ HEADER = headers.header(
                 headers.link(
                     text = "coverage",
                     branch_selector = branches.ALL_BRANCHES,
-                    url = "https://analysis.chromium.org/p/chromium/coverage",
+                    url = "https://analysis.chromium.org/coverage/p/chromium",
                     alt = "Chromium code coverage dashboard",
                 ),
                 headers.link(
@@ -304,6 +304,11 @@ HEADER = headers.header(
                     text = "swangle",
                     url = "/p/{}/g/tryserver.chromium.swangle/builders".format(settings.project),
                     alt = "SWANGLE",
+                ),
+                headers.link(
+                    text = "tricium",
+                    url = "/p/{}/g/tryserver.chromium.tricium/builders".format(settings.project),
+                    alt = "Tricium",
                 ),
                 headers.link(
                     text = "win",

@@ -37,7 +37,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/device_service.h"
@@ -449,9 +448,7 @@ CrosUsbDetector::CrosUsbDetector() {
   fastboot_device_filter_->protocol_code = kFastbootProtocol;
 
   ConciergeClient::Get()->AddVmObserver(this);
-  chromeos::DBusThreadManager::Get()
-      ->GetVmPluginDispatcherClient()
-      ->AddObserver(this);
+  VmPluginDispatcherClient::Get()->AddObserver(this);
   disks::DiskMountManager::GetInstance()->AddObserver(this);
 }
 
@@ -459,9 +456,7 @@ CrosUsbDetector::~CrosUsbDetector() {
   DCHECK_EQ(this, g_cros_usb_detector);
   disks::DiskMountManager::GetInstance()->RemoveObserver(this);
   ConciergeClient::Get()->RemoveVmObserver(this);
-  chromeos::DBusThreadManager::Get()
-      ->GetVmPluginDispatcherClient()
-      ->RemoveObserver(this);
+  VmPluginDispatcherClient::Get()->RemoveObserver(this);
   g_cros_usb_detector = nullptr;
 }
 
@@ -555,7 +550,9 @@ void CrosUsbDetector::OnVmStarted(
 }
 
 void CrosUsbDetector::OnVmStopped(
-    const vm_tools::concierge::VmStoppedSignal& signal) {}
+    const vm_tools::concierge::VmStoppedSignal& signal) {
+  DisconnectSharedDevicesOnVmShutdown(signal.name());
+}
 
 void CrosUsbDetector::OnVmToolsStateChanged(
     const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal) {}
@@ -565,6 +562,9 @@ void CrosUsbDetector::OnVmStateChanged(
   if (signal.vm_state() ==
       vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
     ConnectSharedDevicesOnVmStartup(signal.vm_name());
+  } else if (signal.vm_state() ==
+             vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED) {
+    DisconnectSharedDevicesOnVmShutdown(signal.vm_name());
   }
 }
 
@@ -715,6 +715,18 @@ void CrosUsbDetector::ConnectSharedDevicesOnVmStartup(
       // Clear any older guest_port setting.
       device.guest_port = absl::nullopt;
       AttachUsbDeviceToVm(vm_name, device.info->guid, base::DoNothing());
+    }
+  }
+}
+
+void CrosUsbDetector::DisconnectSharedDevicesOnVmShutdown(
+    const std::string& vm_name) {
+  // Clear guest_port on shared devices when the VM shuts down.
+  for (auto& it : usb_devices_) {
+    auto& device = it.second;
+    if (device.shared_vm_name == vm_name) {
+      VLOG(1) << device.label << " is disconnected from " << vm_name;
+      device.guest_port = absl::nullopt;
     }
   }
 }

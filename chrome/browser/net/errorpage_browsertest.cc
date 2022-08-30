@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -82,7 +81,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"  // nogncheck
+#include "chrome/browser/ash/system_web_apps/test_support/system_web_app_browsertest_base.h"  // nogncheck
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::BrowserThread;
@@ -1068,11 +1068,9 @@ void ClickDiagnosticsLink(Browser* browser) {
 // LaCROS due to errors on Wayland initialization and to keep test to ChromeOS
 // devices.
 // TODO(crbug.com/1285441): Disabled due to test flakes.
-class ErrorPageOfflineAppLaunchTest
-    : public web_app::SystemWebAppBrowserTestBase {
+class ErrorPageOfflineAppLaunchTest : public ash::SystemWebAppBrowserTestBase {
  public:
-  ErrorPageOfflineAppLaunchTest()
-      : web_app::SystemWebAppBrowserTestBase(true) {}
+  ErrorPageOfflineAppLaunchTest() : ash::SystemWebAppBrowserTestBase(true) {}
 };
 
 IN_PROC_BROWSER_TEST_F(ErrorPageOfflineAppLaunchTest,
@@ -1084,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageOfflineAppLaunchTest,
 
   // Click to open diagnostics app.
   ClickDiagnosticsLink(browser());
-  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
+  ash::FlushSystemWebAppLaunchesForTesting(browser()->profile());
 
   // The active screen should be Connectivity Diagnostics app.
   content::WebContents* contents =

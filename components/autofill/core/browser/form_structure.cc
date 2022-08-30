@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
+#include "components/autofill/core/browser/form_processing/autocomplete_attribute_processing_util.h"
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
 #include "components/autofill/core/browser/form_processing/name_processing_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -72,9 +73,6 @@ namespace autofill {
 using mojom::SubmissionIndicatorEvent;
 
 namespace {
-
-constexpr char kBillingMode[] = "billing";
-constexpr char kShippingMode[] = "shipping";
 
 // Default section name for the fields.
 constexpr char kDefaultSection[] = "-default";
@@ -119,168 +117,6 @@ std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
   }
 
   return data_presence;
-}
-
-// Returns |true| iff the |token| is a type hint for a contact field, as
-// specified in the implementation section of http://is.gd/whatwg_autocomplete
-// Note that "fax" and "pager" are intentionally ignored, as Chrome does not
-// support filling either type of information.
-bool IsContactTypeHint(const std::string& token) {
-  return token == "home" || token == "work" || token == "mobile";
-}
-
-// Returns |true| iff the |token| is a type hint appropriate for a field of the
-// given |field_type|, as specified in the implementation section of
-// http://is.gd/whatwg_autocomplete
-bool ContactTypeHintMatchesFieldType(const std::string& token,
-                                     HtmlFieldType field_type) {
-  // The "home" and "work" type hints are only appropriate for email and phone
-  // number field types.
-  if (token == "home" || token == "work") {
-    return field_type == HTML_TYPE_EMAIL ||
-           (field_type >= HTML_TYPE_TEL &&
-            field_type <= HTML_TYPE_TEL_LOCAL_SUFFIX);
-  }
-
-  // The "mobile" type hint is only appropriate for phone number field types.
-  // Note that "fax" and "pager" are intentionally ignored, as Chrome does not
-  // support filling either type of information.
-  if (token == "mobile") {
-    return field_type >= HTML_TYPE_TEL &&
-           field_type <= HTML_TYPE_TEL_LOCAL_SUFFIX;
-  }
-
-  return false;
-}
-
-// Rationalizes the HTML `type` of `field`, based on the fields properties. At
-// the moment only `max_length` is considered. For example, a max_length of 4
-// might indicate a 4 digit year.
-// In case no rationalization rule applies, the original type is returned.
-HtmlFieldType RationalizeAutocompleteType(HtmlFieldType type,
-                                          const AutofillField& field) {
-  // (original-type, max-length) -> new-type
-  static constexpr auto rules =
-      base::MakeFixedFlatMap<std::pair<HtmlFieldType, uint64_t>, HtmlFieldType>(
-          {
-              {{HTML_TYPE_ADDITIONAL_NAME, 1},
-               HTML_TYPE_ADDITIONAL_NAME_INITIAL},
-              {{HTML_TYPE_CREDIT_CARD_EXP, 5},
-               HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
-              {{HTML_TYPE_CREDIT_CARD_EXP, 7},
-               HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
-              {{HTML_TYPE_CREDIT_CARD_EXP_YEAR, 2},
-               HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR},
-              {{HTML_TYPE_CREDIT_CARD_EXP_YEAR, 4},
-               HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR},
-          });
-
-  auto* it = rules.find(std::make_pair(type, field.max_length));
-  return it == rules.end() ? type : it->second;
-}
-
-// Chrome Autofill supports a subset of the field types listed at
-// http://is.gd/whatwg_autocomplete. Returns the corresponding HtmlFieldType, if
-// `value` matches any of them.
-absl::optional<HtmlFieldType> ParseStandardizedAutocompleteAttribute(
-    base::StringPiece value) {
-  static constexpr auto standardized_attributes =
-      base::MakeFixedFlatMap<base::StringPiece, HtmlFieldType>({
-          {"additional-name", HTML_TYPE_ADDITIONAL_NAME},
-          {"address-level1", HTML_TYPE_ADDRESS_LEVEL1},
-          {"address-level2", HTML_TYPE_ADDRESS_LEVEL2},
-          {"address-level3", HTML_TYPE_ADDRESS_LEVEL3},
-          {"address-line1", HTML_TYPE_ADDRESS_LINE1},
-          {"address-line2", HTML_TYPE_ADDRESS_LINE2},
-          {"address-line3", HTML_TYPE_ADDRESS_LINE3},
-          {"cc-csc", HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE},
-          {"cc-exp", HTML_TYPE_CREDIT_CARD_EXP},
-          {"cc-exp-month", HTML_TYPE_CREDIT_CARD_EXP_MONTH},
-          {"cc-exp-year", HTML_TYPE_CREDIT_CARD_EXP_YEAR},
-          {"cc-family-name", HTML_TYPE_CREDIT_CARD_NAME_LAST},
-          {"cc-given-name", HTML_TYPE_CREDIT_CARD_NAME_FIRST},
-          {"cc-name", HTML_TYPE_CREDIT_CARD_NAME_FULL},
-          {"cc-number", HTML_TYPE_CREDIT_CARD_NUMBER},
-          {"cc-type", HTML_TYPE_CREDIT_CARD_TYPE},
-          {"country", HTML_TYPE_COUNTRY_CODE},
-          {"country-name", HTML_TYPE_COUNTRY_NAME},
-          {"email", HTML_TYPE_EMAIL},
-          {"family-name", HTML_TYPE_FAMILY_NAME},
-          {"given-name", HTML_TYPE_GIVEN_NAME},
-          {"honorific-prefix", HTML_TYPE_HONORIFIC_PREFIX},
-          {"name", HTML_TYPE_NAME},
-          {"one-time-code", HTML_TYPE_ONE_TIME_CODE},
-          {"organization", HTML_TYPE_ORGANIZATION},
-          {"postal-code", HTML_TYPE_POSTAL_CODE},
-          {"street-address", HTML_TYPE_STREET_ADDRESS},
-          {"tel-area-code", HTML_TYPE_TEL_AREA_CODE},
-          {"tel-country-code", HTML_TYPE_TEL_COUNTRY_CODE},
-          {"tel-extension", HTML_TYPE_TEL_EXTENSION},
-          {"tel", HTML_TYPE_TEL},
-          {"tel-local", HTML_TYPE_TEL_LOCAL},
-          {"tel-local-prefix", HTML_TYPE_TEL_LOCAL_PREFIX},
-          {"tel-local-suffix", HTML_TYPE_TEL_LOCAL_SUFFIX},
-          {"tel-national", HTML_TYPE_TEL_NATIONAL},
-          {"transaction-amount", HTML_TYPE_TRANSACTION_AMOUNT},
-          {"transaction-currency", HTML_TYPE_TRANSACTION_CURRENCY},
-      });
-
-  auto* it = standardized_attributes.find(value);
-  return it != standardized_attributes.end()
-             ? absl::optional<HtmlFieldType>(it->second)
-             : absl::nullopt;
-}
-
-// Tries mapping a non-standardized html autocomplete `value` to an
-// HtmlFieldType.
-absl::optional<HtmlFieldType> ParseAutocompleteAttributeExtensions(
-    base::StringPiece value) {
-  static constexpr auto extensions =
-      base::MakeFixedFlatMap<base::StringPiece, HtmlFieldType>({
-          {"address", HTML_TYPE_STREET_ADDRESS},
-          {"company", HTML_TYPE_ORGANIZATION},
-          {"coupon-code", HTML_TYPE_MERCHANT_PROMO_CODE},
-          {"first-name", HTML_TYPE_GIVEN_NAME},
-          {"gift-code", HTML_TYPE_MERCHANT_PROMO_CODE},
-          {"locality", HTML_TYPE_ADDRESS_LEVEL2},
-          {"promo-code", HTML_TYPE_MERCHANT_PROMO_CODE},
-          {"promotional-code", HTML_TYPE_MERCHANT_PROMO_CODE},
-          {"promotion-code", HTML_TYPE_MERCHANT_PROMO_CODE},
-          {"region", HTML_TYPE_ADDRESS_LEVEL1},
-          {"tel-ext", HTML_TYPE_TEL_EXTENSION},
-          {"upi", HTML_TYPE_UPI_VPA},
-          {"upi-vpa", HTML_TYPE_UPI_VPA},
-          {"username", HTML_TYPE_EMAIL},
-      });
-
-  auto* it = extensions.find(value);
-  return it != extensions.end() ? absl::optional<HtmlFieldType>(it->second)
-                                : absl::nullopt;
-}
-
-// Returns the Chrome Autofill-supported field type corresponding to a given
-// autocomplete `value`, if there is one, in the context of the given
-// `field`.
-HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
-    std::string value,
-    const AutofillField& field) {
-  if (value.empty())
-    return HTML_TYPE_UNSPECIFIED;
-
-  // We are lenient and accept '_' instead of '-' as a separator. E.g.
-  // "given_name" is treated like "given-name".
-  base::ReplaceChars(value, "_", "-", &value);
-  // We accept e.g. "phone-country" instead of "tel-country".
-  if (base::StartsWith(value, "phone"))
-    base::ReplaceFirstSubstringAfterOffset(&value, 0, "phone", "tel");
-
-  absl::optional<HtmlFieldType> type =
-      ParseStandardizedAutocompleteAttribute(value);
-  if (!type.has_value())
-    type = ParseAutocompleteAttributeExtensions(value);
-
-  return type.has_value() ? RationalizeAutocompleteType(type.value(), field)
-                          : HTML_TYPE_UNRECOGNIZED;
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -464,14 +300,6 @@ ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
     default:
       return {};
   }
-}
-
-LogBufferSubmitter LogRationalization(LogManager* log_manager) {
-  if (!log_manager)
-    return LogManager::DevNull();
-  LogBufferSubmitter submitter = log_manager->Log();
-  submitter << LoggingScope::kRationalization << LogMessage::kRationalization;
-  return submitter;
 }
 
 // Creates a unique name for the section that starts with |field|.
@@ -780,10 +608,8 @@ void FormStructure::ProcessQueryResponse(
   using FieldSuggestion =
       AutofillQueryResponse::FormSuggestion::FieldSuggestion;
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
-  if (log_manager) {
-    log_manager->Log() << LoggingScope::kParsing
-                       << LogMessage::kProcessingServerData;
-  }
+  LOG_AF(log_manager) << LoggingScope::kParsing
+                      << LogMessage::kProcessingServerData;
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -988,10 +814,8 @@ void FormStructure::UpdateAutofillCount() {
 bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
   // Exclude URLs not on the web via HTTP(S).
   if (!HasAllowedScheme(source_url_)) {
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kAbortParsing
-                         << LogMessage::kAbortParsingNotAllowedScheme << *this;
-    }
+    LOG_AF(log_manager) << LoggingScope::kAbortParsing
+                        << LogMessage::kAbortParsingNotAllowedScheme << *this;
     return false;
   }
 
@@ -1002,22 +826,18 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
       !has_author_specified_types_) {
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kAbortParsing
-                         << LogMessage::kAbortParsingNotEnoughFields
-                         << active_field_count() << *this;
-    }
+    LOG_AF(log_manager) << LoggingScope::kAbortParsing
+                        << LogMessage::kAbortParsingNotEnoughFields
+                        << active_field_count() << *this;
     return false;
   }
 
   // Rule out search forms.
   if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
                      kUrlSearchActionRe)) {
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kAbortParsing
-                         << LogMessage::kAbortParsingUrlMatchesSearchRegex
-                         << *this;
-    }
+    LOG_AF(log_manager) << LoggingScope::kAbortParsing
+                        << LogMessage::kAbortParsingUrlMatchesSearchRegex
+                        << *this;
     return false;
   }
 
@@ -1026,9 +846,9 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
     has_text_field |= it->form_control_type != "select-one";
   }
 
-  if (!has_text_field && log_manager) {
-    log_manager->Log() << LoggingScope::kAbortParsing
-                       << LogMessage::kAbortParsingFormHasNoTextfield << *this;
+  if (!has_text_field) {
+    LOG_AF(log_manager) << LoggingScope::kAbortParsing
+                        << LogMessage::kAbortParsingFormHasNoTextfield << *this;
   }
 
   return has_text_field;
@@ -1461,105 +1281,45 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   has_author_specified_upi_vpa_hint_ = false;
   for (const std::unique_ptr<AutofillField>& field : fields_) {
     // To prevent potential section name collisions, add a default suffix for
-    // other fields.  Without this, 'autocomplete' attribute values
+    // other fields. Without this, 'autocomplete' attribute values
     // "section--shipping street-address" and "shipping street-address" would be
-    // parsed identically, given the section handling code below.  We do this
+    // parsed identically, given the section handling code below. We do this
     // before any validation so that fields with invalid attributes still end up
-    // in the default section.  These default section names will be overridden
+    // in the default section. These default section names will be overridden
     // by subsequent heuristic parsing steps if there are no author-specified
     // section names.
     field->section = kDefaultSection;
 
-    std::vector<std::string> tokens =
-        LowercaseAndTokenizeAttributeString(field->autocomplete_attribute);
-
-    // The autocomplete attribute is overloaded: it can specify either a field
-    // type hint or whether autocomplete should be enabled at all.  Ignore the
-    // latter type of attribute value.
-    if (tokens.empty() ||
-        (tokens.size() == 1 &&
-         (tokens[0] == "on" || tokens[0] == "off" || tokens[0] == "false"))) {
+    auto parsing_result = ParseAutocompleteAttribute(*field);
+    if (!parsing_result)
       continue;
-    }
 
-    // Any other value, even it is invalid, is considered to be a type hint.
-    // This allows a website's author to specify an attribute like
-    // autocomplete="other" on a field to disable all Autofill heuristics for
-    // the form.
+    // A parsable autocomplete value was specified. Even an invalid field_type
+    // is considered a type hint. This allows a website's author to specify an
+    // attribute like autocomplete="other" on a field to disable all Autofill
+    // heuristics for the form.
     has_author_specified_types_ = true;
+    if (parsing_result->field_type == HTML_TYPE_UNSPECIFIED)
+      continue;
 
-    // Per the spec, the tokens are parsed in reverse order. The expected
-    // pattern is:
-    // [section-*] [shipping|billing] [type_hint] field_type
-
-    // (1) The final token must be the field type. If it is not one of the known
-    // types, abort.
-    std::string field_type_token = tokens.back();
-    tokens.pop_back();
-    HtmlFieldType field_type =
-        FieldTypeFromAutocompleteAttributeValue(field_type_token, *field);
-    if (field_type == HTML_TYPE_UPI_VPA) {
+    // TODO(crbug.com/702223): Flesh out support for UPI-VPA.
+    if (parsing_result->field_type == HTML_TYPE_UPI_VPA) {
       has_author_specified_upi_vpa_hint_ = true;
-      // TODO(crbug.com/702223): Flesh out support for UPI-VPA.
-      field_type = HTML_TYPE_UNRECOGNIZED;
-    }
-    if (field_type == HTML_TYPE_UNSPECIFIED)
-      continue;
-
-    // (2) The preceding token, if any, may be a type hint.
-    if (!tokens.empty() && IsContactTypeHint(tokens.back())) {
-      // If it is, it must match the field type; otherwise, abort.
-      // Note that an invalid token invalidates the entire attribute value, even
-      // if the other tokens are valid.
-      if (!ContactTypeHintMatchesFieldType(tokens.back(), field_type))
-        continue;
-
-      // Chrome Autofill ignores these type hints.
-      tokens.pop_back();
+      parsing_result->field_type = HTML_TYPE_UNRECOGNIZED;
     }
 
-    DCHECK_EQ(kDefaultSection, field->section);
-    std::string section = field->section;
-    HtmlFieldMode mode = HTML_MODE_NONE;
+    // Compute a section name based on the specified hints and apply the result.
+    field->section =
+        parsing_result->section +
+        (parsing_result->mode != HTML_MODE_NONE
+             ? "-" +
+                   std::string(HtmlFieldModeToStringPiece(parsing_result->mode))
+             : kDefaultSection);
+    field->SetHtmlType(parsing_result->field_type, parsing_result->mode);
 
-    // (3) The preceding token, if any, may be a fixed string that is either
-    // "shipping" or "billing".  Chrome Autofill treats these as implicit
-    // section name suffixes.
-    if (!tokens.empty()) {
-      if (tokens.back() == kShippingMode)
-        mode = HTML_MODE_SHIPPING;
-      else if (tokens.back() == kBillingMode)
-        mode = HTML_MODE_BILLING;
-
-      if (mode != HTML_MODE_NONE) {
-        section = "-" + tokens.back();
-        tokens.pop_back();
-      }
-    }
-
-    // (4) The preceding token, if any, may be a named section.
-    const base::StringPiece kSectionPrefix = "section-";
-    if (!tokens.empty() && base::StartsWith(tokens.back(), kSectionPrefix,
-                                            base::CompareCase::SENSITIVE)) {
-      // Prepend this section name to the suffix set in the preceding block.
-      section = tokens.back().substr(kSectionPrefix.size()) + section;
-      tokens.pop_back();
-    }
-
-    // (5) No other tokens are allowed.  If there are any remaining, abort.
-    if (!tokens.empty())
-      continue;
-
-    if (section != kDefaultSection) {
+    if (field->section != kDefaultSection)
       has_author_specified_sections_ = true;
-      field->section = section;
-    }
-
-    // No errors encountered while parsing!
-    // Update the |field|'s type based on what was parsed from the attribute.
-    field->SetHtmlType(field_type, mode);
   }
-
   was_parsed_for_autocomplete_attributes_ = true;
 }
 
@@ -1680,7 +1440,6 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
         cc_cvc_found = true;
         break;
       case ADDRESS_HOME_ZIP:
-      case ADDRESS_BILLING_ZIP:
         // Zip/Postal code often appears as part of a Credit Card form. Do
         // not count it as a non-cc-related field.
         break;
@@ -1712,7 +1471,8 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
       cc_num_found || num_cc_fields_found >= 3 || num_other_fields_found == 0;
 
   if (!keep_cc_fields && num_cc_fields_found && log_manager) {
-    LogRationalization(log_manager)
+    LOG_AF(log_manager)
+        << LoggingScope::kRationalization << LogMessage::kRationalization
         << "Credit card rationalization: Did not find credit card number, did "
            "not find >= 3 credit card fields ("
         << num_cc_fields_found << "), and had non-cc fields ("
@@ -1759,7 +1519,9 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
         //       month field(s) not immediately preceding an expiry year field.
         if (!keep_cc_fields || !cc_date_found) {
           if (!cc_date_found && log_manager) {
-            LogRationalization(log_manager)
+            LOG_AF(log_manager)
+                << LoggingScope::kRationalization
+                << LogMessage::kRationalization
                 << "Credit card rationalization: Found CC expiration month but "
                    "not a full date.";
           }
@@ -1768,7 +1530,9 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
           auto it2 = it + 1;
           if (it2 == fields_.end()) {
             field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
-            LogRationalization(log_manager)
+            LOG_AF(log_manager)
+                << LoggingScope::kRationalization
+                << LogMessage::kRationalization
                 << "Credit card rationalization: Found multiple expiration "
                    "months and the last field was an expiration month";
             field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
@@ -1778,7 +1542,9 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
                 next_field_type != CREDIT_CARD_EXP_4_DIGIT_YEAR) {
               field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
             }
-            LogRationalization(log_manager)
+            LOG_AF(log_manager)
+                << LoggingScope::kRationalization
+                << LogMessage::kRationalization
                 << "Credit card rationalization: Found multiple expiration "
                    "months and the field following one is not an "
                    "expiration year but "
@@ -1791,7 +1557,9 @@ void FormStructure::RationalizeCreditCardFieldPredictions(
         if (!keep_cc_fields || !cc_date_found) {
           field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
           if (!cc_date_found && log_manager) {
-            LogRationalization(log_manager)
+            LOG_AF(log_manager)
+                << LoggingScope::kRationalization
+                << LogMessage::kRationalization
                 << "Credit card rationalization: Found expiration year but no "
                    "full expriration date.";
           }
@@ -1825,7 +1593,8 @@ void FormStructure::RationalizeStreetAddressAndAddressLine(
       continue;
     }
     if (log_manager) {
-      LogRationalization(log_manager)
+      LOG_AF(log_manager)
+          << LoggingScope::kRationalization << LogMessage::kRationalization
           << "Street Address Rationalization: Converting sequence of (street "
              "address, address line 2) to (address line 1, address line 2)";
     }
@@ -1880,24 +1649,30 @@ void FormStructure::RationalizeAddressLineFields(
 
     int nb_address_rationalized = 0;
     for (auto field_index : *current_section) {
-      LogBufferSubmitter log_submitter = LogRationalization(log_manager);
-      log_submitter
+      LOG_AF(log_manager)
+          << LoggingScope::kRationalization << LogMessage::kRationalization
           << "RationalizeAddressLineFields ADDRESS_HOME_STREET_ADDRESS to ";
       switch (nb_address_rationalized) {
         case 0:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE1,
                                              form_interactions_ukm_logger);
-          log_submitter << "ADDRESS_HOME_LINE1";
+          LOG_AF(log_manager)
+              << LoggingScope::kRationalization << LogMessage::kRationalization
+              << "ADDRESS_HOME_LINE1";
           break;
         case 1:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE2,
                                              form_interactions_ukm_logger);
-          log_submitter << "ADDRESS_HOME_LINE2";
+          LOG_AF(log_manager)
+              << LoggingScope::kRationalization << LogMessage::kRationalization
+              << "ADDRESS_HOME_LINE2";
           break;
         case 2:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE3,
                                              form_interactions_ukm_logger);
-          log_submitter << "ADDRESS_HOME_LINE3";
+          LOG_AF(log_manager)
+              << LoggingScope::kRationalization << LogMessage::kRationalization
+              << "ADDRESS_HOME_LINE3";
           break;
         default:
           NOTREACHED();
@@ -2073,7 +1848,8 @@ void FormStructure::RationalizeAddressStateCountry(
       ApplyRationalizationsToFields(
           upper_index, lower_index, fields_[upper_index]->heuristic_type(),
           fields_[lower_index]->heuristic_type(), form_interactions_ukm_logger);
-      LogRationalization(log_manager)
+      LOG_AF(log_manager)
+          << LoggingScope::kRationalization << LogMessage::kRationalization
           << "RationalizeAddressStateCountry: Heuristics are applicable";
       continue;
     }
@@ -2082,14 +1858,18 @@ void FormStructure::RationalizeAddressStateCountry(
       ApplyRationalizationsToFields(upper_index, lower_index,
                                     ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE,
                                     form_interactions_ukm_logger);
-      LogRationalization(log_manager) << "RationalizeAddressStateCountry: "
-                                         "FieldShouldBeRationalizedToCountry";
+      LOG_AF(log_manager) << LoggingScope::kRationalization
+                          << LogMessage::kRationalization
+                          << "RationalizeAddressStateCountry: "
+                             "FieldShouldBeRationalizedToCountry";
     } else {
       ApplyRationalizationsToFields(upper_index, lower_index,
                                     ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
                                     form_interactions_ukm_logger);
-      LogRationalization(log_manager) << "RationalizeAddressStateCountry: "
-                                         "!FieldShouldBeRationalizedToCountry";
+      LOG_AF(log_manager) << LoggingScope::kRationalization
+                          << LogMessage::kRationalization
+                          << "RationalizeAddressStateCountry: "
+                             "!FieldShouldBeRationalizedToCountry";
     }
   }
 }
@@ -2129,8 +1909,6 @@ void FormStructure::RationalizeRepeatedFields(
   RationalizeAddressLineFields(
       &(sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]),
       form_interactions_ukm_logger, log_manager);
-  // Since the billing types are mapped to the non-billing ones, no need to
-  // take care of ADDRESS_BILLING_STATE and .. .
   RationalizeAddressStateCountry(
       &(sectioned_field_indexes_by_type[ADDRESS_HOME_STATE]),
       &(sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]),
@@ -2678,7 +2456,7 @@ void FormStructure::RationalizeTypeRelationships(LogManager* log_manager) {
       // We have relationship rules for this type, but no `neccessary_type` was
       // found. Disabling Autofill for this field.
       field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
-      LogRationalization(log_manager)
+      LOG_AF(log_manager)
           << "RationalizeTypeRelationships: Fields of type "
           << FieldTypeToStringPiece(field_type)
           << " can only exist if other fields of specific types exist.";

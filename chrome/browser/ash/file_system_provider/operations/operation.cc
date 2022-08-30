@@ -51,10 +51,9 @@ bool DispatchEventImpl(extensions::EventRouter* event_router,
                        ProviderId provider_id,
                        const std::string& file_system_id,
                        int request_id,
-
                        extensions::events::HistogramValue histogram_value,
                        const std::string& event_name,
-                       std::vector<base::Value> event_args) {
+                       base::Value::List event_args) {
   // If ash has a matching extension, forward the event. This should not be
   // needed once Lacros is the only browser on all devices.
   if (event_router->ExtensionHasEventListener(extension_id, event_name)) {
@@ -100,7 +99,7 @@ void Operation::SetDispatchEventImplForTesting(
       [](const DispatchEventImplCallback& callback, ProviderId provider_id,
          const std::string& file_system_id, int request_id,
          extensions::events::HistogramValue histogram_value,
-         const std::string& event_name, std::vector<base::Value> event_args) {
+         const std::string& event_name, base::Value::List event_args) {
         auto event = std::make_unique<extensions::Event>(
             histogram_value, event_name, std::move(event_args));
         return callback.Run(std::move(event));
@@ -112,7 +111,7 @@ void Operation::SetDispatchEventImplForTesting(
 bool Operation::SendEvent(int request_id,
                           extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
-                          std::vector<base::Value> event_args) {
+                          base::Value::List event_args) {
   return dispatch_event_impl_.Run(
       file_system_info_.provider_id(), file_system_info_.file_system_id(),
       request_id, histogram_value, event_name, std::move(event_args));

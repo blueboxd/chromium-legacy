@@ -108,9 +108,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     private StartSurface mStartSurface;
 
     @Mock
-    private StartSurface.Controller mStartSurfaceController;
-
-    @Mock
     private TabSwitcher.TabListDelegate mTabListDelegate;
 
     @Captor
@@ -190,7 +187,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         mDpToPx = context.getResources().getDisplayMetrics().density;
 
-        when(mStartSurface.getController()).thenReturn(mStartSurfaceController);
         when(mStartSurface.getGridTabListDelegate()).thenReturn(mTabListDelegate);
         when(mStartSurface.getTabGridDialogVisibilitySupplier()).thenReturn(() -> false);
 
@@ -216,10 +212,11 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         ObservableSupplierImpl<TabContentManager> tabContentManagerSupplier =
                 new ObservableSupplierImpl<>();
+
         mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, container,
                 mStartSurfaceSupplier, tabContentManagerSupplier,
                 () -> mTopUiThemeColorProvider, new DummyJankTracker());
-        verify(mStartSurfaceController)
+        verify(mStartSurface)
                 .addTabSwitcherViewObserver(mTabSwitcherViewObserverArgumentCaptor.capture());
 
         doAnswer((Answer<Void>) invocation -> {
@@ -227,14 +224,14 @@ public class LayoutManagerTest implements MockTabModelDelegate {
             simulateTime(mManager, 1000);
             return null;
         })
-                .when(mStartSurfaceController)
+                .when(mStartSurface)
                 .showOverview(anyBoolean());
 
         doAnswer((Answer<Void>) invocation -> {
             mTabSwitcherViewObserverArgumentCaptor.getValue().finishedHiding();
             return null;
         })
-                .when(mStartSurfaceController)
+                .when(mStartSurface)
                 .hideTabSwitcherView(anyBoolean());
 
         tabContentManagerSupplier.set(tabContentManager);

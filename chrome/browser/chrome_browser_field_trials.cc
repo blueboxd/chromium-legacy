@@ -60,31 +60,6 @@ void CreateFallbackUkmSamplingTrialIfNeeded(base::FeatureList* feature_list) {
       chrome::GetChannel() == version_info::Channel::STABLE, feature_list);
 }
 
-void MaybeCreateDCheckIsFatalFieldTrial(base::FeatureList* feature_list) {
-#if defined(DCHECK_IS_CONFIGURABLE)
-  // If DCHECK_IS_CONFIGURABLE then configure the DCheckIsFatal dynamic trial
-  // (see crbug.com/596231). This must be instantiated before the FeatureList
-  // is set, since FeatureList::SetInstance() will configure LOGGING_DCHECK
-  // based on the Feature's state, in DCHECK_IS_CONFIGURABLE builds.
-  // Always enable the trial at 50/50 per-session.
-  base::FieldTrial* const trial = base::FieldTrialList::FactoryGetFieldTrial(
-      "DCheckIsFatal", 100, "Default",
-      base::FieldTrial::RandomizationType::SESSION_RANDOMIZED,
-      /* default_group_number */ nullptr);
-  const int enabled_group = trial->AppendGroup("Enabled_20220517", 50);
-  trial->AppendGroup("Disabled_20220517", 50);
-
-  LOG(WARNING) << "DCheckIsFatal group: " << trial->group_name();
-
-  feature_list->RegisterFieldTrialOverride(
-      base::kDCheckIsFatalFeature.name,
-      ((trial->group() == enabled_group)
-           ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
-           : base::FeatureList::OVERRIDE_DISABLE_FEATURE),
-      trial);
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
-}
-
 }  // namespace
 
 ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(PrefService* local_state)
@@ -124,8 +99,6 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     ash::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
-
-  MaybeCreateDCheckIsFatalFieldTrial(feature_list);
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
@@ -158,7 +131,7 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
     // command line flag. Check if this has happened -- it may not have happened
     // if this is the first startup after the feature is enabled.
     bool actually_enabled =
-        base::internal::CanUseBackgroundPriorityForWorkerThread();
+        base::internal::CanUseBackgroundThreadTypeForWorkerThread();
     // Use the default group if either the feature wasn't overridden or if the
     // feature target state and actual state don't agree. Also separate users
     // that override the feature via the commandline into separate groups.

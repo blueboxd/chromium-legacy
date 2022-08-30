@@ -9,14 +9,15 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/video.h"
+#include "media/gpu/test/video_player/decoder_wrapper.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
-#include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_player/video_player.h"
 #include "media/gpu/test/video_player/video_player_test_environment.h"
 #include "sandbox/linux/services/resource_limits.h"
@@ -173,7 +174,7 @@ class PerformanceEvaluator : public VideoFrameProcessor {
 
   // Frame renderer used to get the dropped frame rate, owned by the creator of
   // the performance evaluator.
-  const FrameRendererDummy* const frame_renderer_;
+  const raw_ptr<const FrameRendererDummy> frame_renderer_;
 };
 
 void PerformanceEvaluator::ProcessVideoFrame(
@@ -352,7 +353,7 @@ class VideoDecoderTest : public ::testing::Test {
     frame_processors.push_back(std::move(performance_evaluator));
 
     // Use the new VD-based video decoders if requested.
-    VideoDecoderClientConfig config;
+    DecoderWrapperConfig config;
     config.implementation = g_env->GetDecoderImplementation();
     config.linear_output = g_env->ShouldOutputLinearBuffers();
 
@@ -367,7 +368,7 @@ class VideoDecoderTest : public ::testing::Test {
     return video_player;
   }
 
-  PerformanceEvaluator* performance_evaluator_;
+  raw_ptr<PerformanceEvaluator> performance_evaluator_;
 };
 
 }  // namespace

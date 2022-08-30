@@ -107,9 +107,6 @@ const char kUrlParamFilterEnabled[] = "policy.url_param_filter_enabled";
 const char kIsolatedAppsDeveloperModeAllowed[] =
     "policy.isolated_apps_developer_mode_allowed";
 
-// Boolean policy to force WebSQL to be enabled.
-const char kWebSQLAccess[] = "policy.web_sql_access";
-
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // Last time that a check for cloud policy management was done. This time is
 // recorded on Android and iOS so that retries aren't attempted on every
@@ -122,6 +119,11 @@ const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
 const char kUserPolicyNotificationWasShown[] =
     "policy.user_policy_notification_was_shown";
 #endif
+
+// A boolean indicating whether the deprecated API Event.path is enabled. It
+// should eventually be disabled and removed.
+// https://chromestatus.com/feature/5726124632965120
+const char kEventPathEnabled[] = "policy.event_path_enabled";
 
 }  // namespace policy_prefs
 }  // namespace policy

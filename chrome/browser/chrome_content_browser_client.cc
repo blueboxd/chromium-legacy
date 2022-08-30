@@ -87,6 +87,7 @@
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/prefetch/prefetch_proxy/chrome_prefetch_service_delegate.h"
 #include "chrome/browser/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service.h"
@@ -95,6 +96,7 @@
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
+#include "chrome/browser/preloading/navigation_ablation_throttle.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
@@ -234,10 +236,10 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
-#include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/services/storage/public/cpp/storage_prefs.h"
 #include "components/site_isolation/pref_names.h"
 #include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/site_isolation/site_isolation_policy.h"
@@ -366,6 +368,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_loader_factory.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -426,6 +429,7 @@
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
 #include "chrome/browser/chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
@@ -1381,6 +1385,9 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
           embedder_support::ForceMajorVersionToMinorPosition::kDefault));
   registry->RegisterBooleanPref(
       policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed, true);
+
+  // TODO(crbug.com/1277431): Disable it by default in M109.
+  registry->RegisterBooleanPref(policy::policy_prefs::kEventPathEnabled, true);
 }
 
 // static
@@ -2314,13 +2321,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                                               process, profile);
     }
 
-    // This passes the preference set by an enterprise policy on to a blink
-    // switch so that we know whether to force WebSQL to be enabled.
-    if (g_browser_process->local_state()->GetBoolean(
-            policy::policy_prefs::kWebSQLAccess)) {
-      command_line->AppendSwitch(blink::switches::kWebSQLAccess);
-    }
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     const std::string& login_profile =
         browser_command_line.GetSwitchValueASCII(ash::switches::kLoginProfile);
@@ -2342,6 +2342,17 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       if (prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kDisablePrintPreview);
+
+      // This passes the preference set by an enterprise policy on to a blink
+      // switch so that we know whether to force WebSQL/WebSQL in non-secure
+      // context to be enabled.
+      if (prefs->GetBoolean(storage::kWebSQLAccess)) {
+        command_line->AppendSwitch(blink::switches::kWebSQLAccess);
+      }
+      if (prefs->GetBoolean(storage::kWebSQLNonSecureContextEnabled)) {
+        command_line->AppendSwitch(
+            blink::switches::kWebSQLNonSecureContextEnabled);
+      }
 
 #if !BUILDFLAG(IS_ANDROID)
       InstantService* instant_service =
@@ -2403,6 +2414,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                 ? blink::switches::kUnthrottledNestedTimeoutPolicy_ForceEnable
                 : blink::switches::
                       kUnthrottledNestedTimeoutPolicy_ForceDisable);
+      }
+      // Override EventPath feature if its Enterprise Policy is specified.
+      if (prefs->HasPrefPath(policy::policy_prefs::kEventPathEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kEventPathPolicy,
+            prefs->GetBoolean(policy::policy_prefs::kEventPathEnabled)
+                ? blink::switches::kEventPathPolicy_ForceEnable
+                : blink::switches::kEventPathPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
@@ -2477,7 +2496,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClDebug,
 #endif
       switches::kEnableNetBenchmarking,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
       switches::kForceAppMode,
 #endif
 #if BUILDFLAG(ENABLE_NACL)
@@ -2558,13 +2577,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line);
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(https://crbug.com/1316129): Re-enable for Lacros.
-  // Processes may only query perf_event_open with the BPF sandbox disabled.
-  if (browser_command_line.HasSwitch(switches::kEnableThreadInstructionCount) &&
-      command_line->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
-    command_line->AppendSwitch(switches::kEnableThreadInstructionCount);
-  }
-
   // Opt into a hardened stack canary mitigation if it hasn't already been
   // force-disabled.
   if (!browser_command_line.HasSwitch(switches::kChangeStackGuardOnFork)) {
@@ -2663,14 +2675,12 @@ void ChromeContentBrowserClient::WillStartServiceWorker(
   DCHECK(context);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!ash::SystemExtensionsProvider::IsEnabled())
+  auto* profile = Profile::FromBrowserContext(context);
+  if (!ash::IsSystemExtensionsEnabled(profile))
     return;
 
-  auto* system_extensions_provider =
-      ash::SystemExtensionsProvider::Get(Profile::FromBrowserContext(context));
-  if (system_extensions_provider)
-    system_extensions_provider->WillStartServiceWorker(script_url,
-                                                       render_process_host);
+  ash::SystemExtensionsProvider::Get(profile).WillStartServiceWorker(
+      script_url, render_process_host);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -2709,6 +2719,27 @@ bool ChromeContentBrowserClient::AllowSignedExchange(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->GetPrefs()->GetBoolean(prefs::kSignedHTTPExchangeEnabled);
+}
+
+void ChromeContentBrowserClient::RequestFilesAccess(
+    const std::vector<base::FilePath>& files,
+    const GURL& destination_url,
+    base::OnceCallback<void(file_access::ScopedFileAccess)>
+        continuation_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if BUILDFLAG(IS_CHROMEOS)
+  auto* delegate = policy::DlpScopedFileAccessDelegate::Get();
+  if (delegate) {
+    delegate->RequestFilesAccess(files, destination_url,
+                                 std::move(continuation_callback));
+  } else {
+    std::move(continuation_callback)
+        .Run(file_access::ScopedFileAccess::Allowed());
+  }
+#else
+  std::move(continuation_callback)
+      .Run(file_access::ScopedFileAccess::Allowed());
+#endif
 }
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
@@ -4022,7 +4053,9 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
       return std::wstring();
     case sandbox::mojom::Sandbox::kGpu:
       return std::wstring();
+#if BUILDFLAG(ENABLE_PLUGINS)
     case sandbox::mojom::Sandbox::kPpapi:
+#endif
     case sandbox::mojom::Sandbox::kNoSandbox:
     case sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges:
     case sandbox::mojom::Sandbox::kXrCompositing:
@@ -4107,7 +4140,9 @@ bool ChromeContentBrowserClient::PreSpawnChild(
       break;
     case sandbox::mojom::Sandbox::kUtility:
     case sandbox::mojom::Sandbox::kGpu:
+#if BUILDFLAG(ENABLE_PLUGINS)
     case sandbox::mojom::Sandbox::kPpapi:
+#endif
     case sandbox::mojom::Sandbox::kNoSandbox:
     case sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges:
     case sandbox::mojom::Sandbox::kXrCompositing:
@@ -4296,13 +4331,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
 
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
-  if (handle->IsInMainFrame()) {
-    // Redirect some navigations to apps that have registered matching URL
-    // handlers ('url_handlers' in the manifest).
-    MaybeAddThrottle(
-        PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle),
-        &throttles);
-  }
+  // Redirect some navigations to apps that have registered matching URL
+  // handlers ('url_handlers' in the manifest).
+  MaybeAddThrottle(
+      PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -4515,6 +4548,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
             profile->GetPrefs()),
         &throttles);
   }
+
+  MaybeAddThrottle(MaybeCreateNavigationAblationThrottle(handle), &throttles);
 
   return throttles;
 }
@@ -5875,14 +5910,6 @@ ChromeContentBrowserClient::GetUrlLookupService(
   return nullptr;
 }
 
-absl::optional<std::string>
-ChromeContentBrowserClient::GetOriginPolicyErrorPage(
-    network::OriginPolicyState error_reason,
-    content::NavigationHandle* handle) {
-  return security_interstitials::OriginPolicyUI::GetErrorPageAsHTML(
-      error_reason, handle);
-}
-
 bool ChromeContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   // We require --user-data-dir flag too so that no dangerous changes are made
   // in the user's regular profile.
@@ -6464,6 +6491,12 @@ ChromeContentBrowserClient::CreateSpeculationHostDelegate(
   return std::make_unique<ChromeSpeculationHostDelegate>(render_frame_host);
 }
 
+std::unique_ptr<content::PrefetchServiceDelegate>
+ChromeContentBrowserClient::CreatePrefetchServiceDelegate(
+    content::BrowserContext* browser_context) {
+  return std::make_unique<ChromePrefetchServiceDelegate>(browser_context);
+}
+
 void ChromeContentBrowserClient::OnWebContentsCreated(
     content::WebContents* web_contents) {
   // NOTE: Please don't add additional code to this method - attaching universal
@@ -6551,13 +6584,8 @@ base::Value::Dict ChromeContentBrowserClient::GetFirstPartySetsOverrides() {
                           first_party_sets::kFirstPartySetsOverrides)) {
     return base::Value::Dict();
   }
-  const base::Value* maybe_dict =
-      local_state->GetDictionary(first_party_sets::kFirstPartySetsOverrides);
-
-  if (!maybe_dict)
-    return base::Value::Dict();
-
-  return maybe_dict->GetDict().Clone();
+  return local_state->GetValueDict(first_party_sets::kFirstPartySetsOverrides)
+      .Clone();
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr

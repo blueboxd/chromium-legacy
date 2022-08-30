@@ -31,7 +31,7 @@ export interface ServiceInterface extends ActivityLogDelegate,
   getProfileStateChangedTarget():
       ChromeEvent<(info: chrome.developerPrivate.ProfileInfo) => void>;
   getProfileConfiguration(): Promise<chrome.developerPrivate.ProfileInfo>;
-  getExtensionsInfo(): Promise<Array<chrome.developerPrivate.ExtensionInfo>>;
+  getExtensionsInfo(): Promise<chrome.developerPrivate.ExtensionInfo[]>;
   getExtensionSize(id: string): Promise<string>;
 }
 
@@ -65,7 +65,7 @@ export class Service implements ServiceInterface {
   }
 
   getExtensionsInfo() {
-    return new Promise<Array<chrome.developerPrivate.ExtensionInfo>>(function(
+    return new Promise<chrome.developerPrivate.ExtensionInfo[]>(function(
         resolve) {
       chrome.developerPrivate.getExtensionsInfo(
           {includeDisabled: true, includeTerminated: true}, resolve);
@@ -110,7 +110,7 @@ export class Service implements ServiceInterface {
    * Opens a file browser dialog for the user to select a file (or directory).
    * @return The promise to be resolved with the selected path.
    */
-  chooseFilePath_(
+  private chooseFilePath_(
       selectType: chrome.developerPrivate.SelectType,
       fileType: chrome.developerPrivate.FileType): Promise<string> {
     return new Promise(function(resolve, reject) {

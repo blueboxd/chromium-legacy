@@ -15,29 +15,13 @@
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
-class AnomalyDetectorClient;
-class ArcAppfuseProviderClient;
-class ArcDataSnapshotdClient;
-class ArcKeymasterClient;
-class ArcMidisClient;
 class ArcObbMounterClient;
 class CecServiceClient;
-class ChunneldClient;
 class CrosDisksClient;
 class DBusClientsBrowser;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
-class GnubbyClient;
-class ImageBurnerClient;
-class ImageLoaderClient;
-class LorgnetteManagerClient;
-class OobeConfigurationClient;
-class RuntimeProbeClient;
-class SmbProviderClient;
-class UpdateEngineClient;
-class VirtualFileProviderClient;
-class VmPluginDispatcherClient;
 
 // THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
 // https://crbug.com/647367 for details.
@@ -74,27 +58,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager
   // pointers after DBusThreadManager has been shut down.
   // TODO(jamescook): Replace this with calls to FooClient::Get().
   // http://crbug.com/647367
-  AnomalyDetectorClient* GetAnomalyDetectorClient();
-  ArcAppfuseProviderClient* GetArcAppfuseProviderClient();
-  ArcDataSnapshotdClient* GetArcDataSnapshotdClient();
-  ArcKeymasterClient* GetArcKeymasterClient();
-  ArcMidisClient* GetArcMidisClient();
   ArcObbMounterClient* GetArcObbMounterClient();
   CecServiceClient* GetCecServiceClient();
-  ChunneldClient* GetChunneldClient();
   CrosDisksClient* GetCrosDisksClient();
   DebugDaemonClient* GetDebugDaemonClient();
   EasyUnlockClient* GetEasyUnlockClient();
-  GnubbyClient* GetGnubbyClient();
-  ImageBurnerClient* GetImageBurnerClient();
-  ImageLoaderClient* GetImageLoaderClient();
-  LorgnetteManagerClient* GetLorgnetteManagerClient();
-  OobeConfigurationClient* GetOobeConfigurationClient();
-  RuntimeProbeClient* GetRuntimeProbeClient();
-  SmbProviderClient* GetSmbProviderClient();
-  UpdateEngineClient* GetUpdateEngineClient();
-  VirtualFileProviderClient* GetVirtualFileProviderClient();
-  VmPluginDispatcherClient* GetVmPluginDispatcherClient();
 
  private:
   DBusThreadManager();
@@ -115,11 +83,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
  public:
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
-  void SetGnubbyClient(std::unique_ptr<GnubbyClient> client);
-  void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
-  void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
-  void SetSmbProviderClient(std::unique_ptr<SmbProviderClient> client);
-  void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);
 
  private:
   friend class DBusThreadManager;
@@ -132,11 +95,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
 
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
-  std::unique_ptr<GnubbyClient> gnubby_client_;
-  std::unique_ptr<ImageBurnerClient> image_burner_client_;
-  std::unique_ptr<ImageLoaderClient> image_loader_client_;
-  std::unique_ptr<SmbProviderClient> smb_provider_client_;
-  std::unique_ptr<UpdateEngineClient> update_engine_client_;
 };
 
 }  // namespace chromeos

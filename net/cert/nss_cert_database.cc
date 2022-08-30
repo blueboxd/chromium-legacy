@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -65,7 +66,7 @@ class CertNotificationForwarder : public NSSCertDatabase::Observer {
   void OnCertDBChanged() override { cert_db_->NotifyObserversCertDBChanged(); }
 
  private:
-  CertDatabase* cert_db_;
+  raw_ptr<CertDatabase> cert_db_;
 };
 
 }  // namespace
@@ -90,7 +91,8 @@ NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
                                  crypto::ScopedPK11Slot private_slot)
     : public_slot_(std::move(public_slot)),
       private_slot_(std::move(private_slot)),
-      observer_list_(new base::ObserverListThreadSafe<Observer>) {
+      observer_list_(
+          base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()) {
   CHECK(public_slot_);
 
   CertDatabase* cert_db = CertDatabase::GetInstance();

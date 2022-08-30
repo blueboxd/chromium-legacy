@@ -30,8 +30,12 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
   }
 
   /** @override */
-  setUp() {
-    super.setUp();
+  async setUpDeferred() {
+    await super.setUpDeferred();
+
+    await importModule(
+        'LocaleOutputHelper', '/chromevox/common/locale_output_helper.js');
+
     // Mock this api to return a predefined set of voices.
     chrome.tts.getVoices = function(callback) {
       callback([
@@ -176,7 +180,7 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
   }
 };
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'MultipleLanguagesLabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -194,7 +198,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'NestedLanguagesLabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -221,7 +225,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'ButtonAndLinkDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -243,7 +247,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'JapaneseAndEnglishUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -266,7 +270,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'EnglishAndKoreanUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -282,7 +286,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'EnglishAndFrenchUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -300,7 +304,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'JapaneseCharacterUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -313,7 +317,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'JapaneseAndChineseUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -328,7 +332,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'JapaneseAndChineseLabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -349,7 +353,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'JapaneseAndKoreanUnlabeledDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -366,7 +370,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'AsturianAndJapaneseDocTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -384,7 +388,7 @@ TEST_F(
     });
 
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'LanguageSwitchingOffTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -404,7 +408,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'DefaultToUILocaleTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -421,7 +425,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'NoAvailableVoicesTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -438,7 +442,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'WordNavigationTest', async function() {
       const mockFeedback = this.createMockFeedback();
       await this.runWithLoadedTree(this.nestedLanguagesLabeledDoc);
@@ -489,7 +493,7 @@ TEST_F(
           .replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'CharacterNavigationTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -534,7 +538,7 @@ TEST_F(
           .replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'SwitchBetweenChineseDialectsTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -551,7 +555,7 @@ TEST_F(
       mockFeedback.replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'SwitchBetweenPortugueseDialectsTest',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -572,7 +576,7 @@ TEST_F(
 // less specific locales, e.g. 'en-us' -> 'en' should not be announced. Finally,
 // subsequent transitions to the same locale, e.g. 'en' -> 'en-us' should not be
 // announced.
-TEST_F(
+AX_TEST_F(
     'ChromeVoxLocaleOutputHelperTest', 'MaybeAnnounceLocale', async function() {
       const mockFeedback = this.createMockFeedback();
       await this.runWithLoadedTree(`

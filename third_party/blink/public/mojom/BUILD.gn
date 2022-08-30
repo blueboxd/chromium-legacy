@@ -48,6 +48,7 @@ mojom("mojom_platform") {
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
     "conversions/attribution_data_host.mojom",
+    "conversions/attribution_reporting_automation.mojom",
     "conversions/conversions.mojom",
     "cookie_manager/cookie_manager_automation.mojom",
     "cookie_store/cookie_store.mojom",
@@ -121,7 +122,6 @@ mojom("mojom_platform") {
     "locks/lock_manager.mojom",
     "manifest/capture_links.mojom",
     "manifest/display_mode.mojom",
-    "manifest/handle_links.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
     "manifest/manifest_observer.mojom",
@@ -156,6 +156,7 @@ mojom("mojom_platform") {
     "permissions_policy/policy_disposition.mojom",
     "permissions_policy/policy_value.mojom",
     "picture_in_picture/picture_in_picture.mojom",
+    "picture_in_picture_window_options/picture_in_picture_window_options.mojom",
     "plugins/plugin_registry.mojom",
     "prerender/prerender.mojom",
     "presentation/presentation.mojom",
@@ -173,6 +174,7 @@ mojom("mojom_platform") {
     "selection_menu/selection_menu_behavior.mojom",
     "service_worker/controller_service_worker_mode.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
+    "service_worker/service_worker_ancestor_frame_type.mojom",
     "service_worker/service_worker_client.mojom",
     "service_worker/service_worker_container_type.mojom",
     "service_worker/service_worker_error_type.mojom",
@@ -199,7 +201,6 @@ mojom("mojom_platform") {
     "subapps/sub_apps_service.mojom",
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
-    "timing/worker_timing_container.mojom",
     "use_counter/use_counter_feature.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
@@ -648,6 +649,11 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.ManifestTranslationItem"
           cpp = "::blink::Manifest::TranslationItem"
+        },
+
+        {
+          mojom = "blink.mojom.ManifestTabStrip"
+          cpp = "::blink::Manifest::TabStrip"
         },
       ]
       traits_headers = [

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -26,6 +28,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -37,6 +40,8 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/taskbar/taskbar_decorator_win.h"
+#include "ui/display/win/screen_win.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 // static
@@ -152,18 +157,16 @@ bool BrowserNonClientFrameView::CanDrawStrokes() const {
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
     BrowserFrameActiveState active_state) const {
-  return GetThemeProvider()->GetColor(
-      ShouldPaintAsActive(active_state)
-          ? ThemeProperties::COLOR_FRAME_CAPTION_ACTIVE
-          : ThemeProperties::COLOR_FRAME_CAPTION_INACTIVE);
+  return GetColorProvider()->GetColor(ShouldPaintAsActive(active_state)
+                                          ? kColorFrameCaptionActive
+                                          : kColorFrameCaptionInactive);
 }
 
 SkColor BrowserNonClientFrameView::GetFrameColor(
     BrowserFrameActiveState active_state) const {
-  return GetThemeProvider()->GetColor(
-      ShouldPaintAsActive(active_state)
-          ? ThemeProperties::COLOR_FRAME_ACTIVE
-          : ThemeProperties::COLOR_FRAME_INACTIVE);
+  return GetColorProvider()->GetColor(ShouldPaintAsActive(active_state)
+                                          ? ui::kColorFrameActive
+                                          : ui::kColorFrameInactive);
 }
 
 void BrowserNonClientFrameView::UpdateFrameColor() {
@@ -325,6 +328,25 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
 }
 
 #if BUILDFLAG(IS_WIN)
+// Sending the WM_NCPOINTERDOWN, WM_NCPOINTERUPDATE, and WM_NCPOINTERUP to the
+// default window proc does not bring up the system menu on long press, so we
+// use the gesture recognizer to turn it into a LONG_TAP gesture and handle it
+// here. See https://crbug.com/1327506 for more info.
+void BrowserNonClientFrameView::OnGestureEvent(ui::GestureEvent* event) {
+  gfx::Point event_loc = event->location();
+  // This opens the title bar system context menu on long press in the titlebar.
+  // NonClientHitTest returns HTCAPTION if `event_loc` is in the empty space on
+  // the titlebar.
+  if (event->type() == ui::ET_GESTURE_LONG_TAP &&
+      NonClientHitTest(event_loc) == HTCAPTION) {
+    views::View::ConvertPointToScreen(this, &event_loc);
+    event_loc = display::win::ScreenWin::DIPToScreenPoint(event_loc);
+    views::ShowSystemMenuAtScreenPixelLocation(views::HWNDForView(this),
+                                               event_loc);
+    event->SetHandled();
+  }
+}
+
 int BrowserNonClientFrameView::GetSystemMenuY() const {
   if (!browser_view()->GetTabStripVisible())
     return GetTopInset(false);
@@ -333,7 +355,7 @@ int BrowserNonClientFrameView::GetSystemMenuY() const {
              .bottom() -
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
-#endif
+#endif  // BUILDFLAG(IS_WIN)
 
 BEGIN_METADATA(BrowserNonClientFrameView, views::NonClientFrameView)
 END_METADATA

@@ -23,17 +23,13 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
-  'accessibility_unittests':{
-    'modifications': {
-      'fuchsia-fyi-x64-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.accessibility_unittests.filter',
-        ],
-      },
-    },
-  },
   'android_browsertests': {
     'modifications': {
+      'Marshmallow Tablet Tester': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'android-11-x86-rel': {
         'args': [
           # https://crbug.com/1289764
@@ -200,6 +196,12 @@
   },
   'blink_platform_unittests': {
     'modifications': {
+      # TODO(crbug.com/1303439): Remove this filter
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.blink_platform_unittests.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
         # capacity has been deployed.
@@ -249,7 +251,8 @@
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
         'swarming': {
-          'quickrun_shards': 18,
+          'quickrun_shards': 7,
+          'shards': 8,
         },
       },
       'Linux Tests (dbg)(1)': {
@@ -257,7 +260,7 @@
           '--debug',
         ],
         'swarming': {
-          'shards': 30,
+          'shards': 12,
         },
       },
 <<<<<<< HEAD
@@ -279,7 +282,7 @@
               'gpu': None,
             },
           ],
-          'shards': 25,
+          'shards': 10,
         },
       },
       'Mac10.15 Tests': {
@@ -289,7 +292,7 @@
               'gpu': None,
             },
           ],
-          'shards': 25,
+          'shards': 10,
         },
       },
       'Mac11 Tests': {
@@ -299,17 +302,28 @@
               'gpu': None,
             },
           ],
-          'shards': 25,
-          'quickrun_shards': 26,
+          'shards': 12,
+          'quickrun_shards': 10,
         },
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 12,
+          'quickrun_shards': 10,
+        },
+      },
+      'Mac12 Tests (dbg)': {
         'experiment_percentage': 100,
         'args': [
           '--debug',
         ],
         'swarming': {
-          'shards': 40,
+          'shards': 16,
         },
       },
       'ToTFuchsia x64': {
@@ -344,7 +358,7 @@
           '--enable-sanitizer',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 8,
         },
       },
       'WebKit Linux Leak': {
@@ -356,7 +370,7 @@
           '--enable-leak-detection',
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 4,
         },
       },
       'WebKit Linux MSAN': {
@@ -371,7 +385,7 @@
           'expiration': 36000,
           'hard_timeout': 10800,
           'io_timeout': 3600,
-          'shards': 20,
+          'shards': 8,
         },
       },
       'Win10 Tests x64': {
@@ -380,7 +394,7 @@
           'Release_x64',
         ],
         'swarming': {
-          "shards": 28
+          "shards": 12
         },
       },
       'Win10 Tests x64 (dbg)': {
@@ -396,7 +410,7 @@
           'Release_x64',
         ],
         'swarming': {
-          "shards": 28
+          "shards": 12
         },
       },
       # tryserver.chromium.android
@@ -418,7 +432,7 @@
           'http/tests/devtools',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 2,
         },
       },
       'devtools_frontend_linux_blink_light_rel_fastbuild': {
@@ -426,8 +440,282 @@
           'http/tests/devtools',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 2,
         },
+      },
+      'fuchsia-fyi-x64-rel': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'linux-autofill-assistant': {
+        'args': [
+          '--release',
+        ],
+      },
+      'linux-bfcache-rel': {
+        'args': [
+          '--flag-specific=enable-back-forward-cache-same-site',
+        ],
+      },
+      'linux-blink-animation-use-time-delta': {
+        'args': [
+          '--debug',
+        ],
+      },
+      'linux-blink-web-tests-force-accessibility-rel': {
+        'args': [
+          '--flag-specific=force-renderer-accessibility',
+        ],
+      },
+      'linux-code-coverage': {
+        'args': [
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'linux-layout-tests-edit-ng': {
+        'args': [
+          '--flag-specific=enable-editing-ng',
+        ],
+      },
+      'linux_layout_tests_layout_ng_disabled': {
+        'args': [
+          '--flag-specific=disable-layout-ng',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'mac10.13-blink-rel-dummy': {
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'mac10.14-blink-rel-dummy': {
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'mac10.15-blink-rel-dummy': {
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'mac11.0-blink-rel-dummy': {
+        'swarming': {
+          'shards': 5,
+          'hard_timeout': 1800,
+        },
+      },
+      'win10.20h2-blink-rel-dummy': {
+        'swarming': {
+          'shards': 6,
+          'hard_timeout': 1200,
+        },
+      },
+      'win11-blink-rel': {
+        'swarming': {
+          'hard_timeout': 1200,
+        },
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+      },
+    },
+  },
+  'blink_wpt_tests': {
+    'remove_from': [
+      'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
+      'Win7 Tests (1)',
+      'Win10 Tests x64 (dbg)',
+      'devtools_frontend_linux_blink_light_rel',
+      'devtools_frontend_linux_blink_light_rel_fastbuild',
+    ],
+    'modifications': {
+      'Fuchsia x64': {
+        'args': [
+          '--platform=fuchsia',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'Linux Tests': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+        ],
+        'swarming': {
+          'quickrun_shards': 11,
+          'shards': 10,
+        },
+      },
+      'Linux Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
+          'shards': 18,
+        },
+      },
+      'Mac10.13 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 15,
+        },
+      },
+      'Mac10.15 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 15,
+        },
+      },
+      'Mac11 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 18,
+          'quickrun_shards': 16,
+        },
+      },
+      'Mac12 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 18,
+          'quickrun_shards': 16,
+        },
+      },
+      'Mac12 Tests (dbg)': {
+        'experiment_percentage': 100,
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
+          'shards': 24,
+        },
+      },
+      'ToTFuchsia x64': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'V8 Blink Linux Debug': {
+        # This builder compiles Chromium in release mode, but V8 in debug.
+        # TODO(machenbach): Change name and out directory of this builder to
+        # something less confusing.
+        'args': [
+          '-t',
+          'Debug',
+          '--release',
+        ],
+      },
+      'V8 Blink Linux Future': {
+        'args': [
+          '--flag-specific=future-js',
+        ],
+      },
+      'WebKit Linux ASAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/ASANExpectations',
+          '--timeout-ms',
+          '48000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'shards': 12,
+        },
+      },
+      'WebKit Linux Leak': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/LeakExpectations',
+          '--timeout-ms',
+          '48000',
+          '--enable-leak-detection',
+        ],
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'WebKit Linux MSAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/MSANExpectations',
+          '--timeout-ms',
+          '66000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'expiration': 36000,
+          'hard_timeout': 10800,
+          'io_timeout': 3600,
+          'shards': 12,
+        },
+      },
+      'Win10 Tests x64': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 18
+        },
+      },
+      'Win10 Tests x64 (dbg)': {
+        'args': [
+          '--debug',
+          '--target',
+          'Debug_x64',
+        ],
+      },
+      'Win11 Tests x64': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 18
+        },
+      },
+      # tryserver.chromium.android
+      'android_blink_rel': {
+        'args': [
+          '--release',
+          '--android',
+          # TODO(crbug.com/912120): Breakpad was entirely disabled on
+          # Android. Remove this when it no longer affects Android crash
+          # log handling.
+          '--disable-breakpad',
+          # TODO(crbug.com/875172): run on the real GPU since the
+          # software fallback, SwiftShader, isn't yet for 32-bit ARM.
+          '--additional-driver-flag=--use-gpu-in-tests',
+        ],
       },
       'fuchsia-fyi-x64-rel': {
         'args': [
@@ -464,7 +752,7 @@
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 12,
         },
       },
       'linux-layout-tests-edit-ng': {
@@ -477,37 +765,37 @@
           '--flag-specific=disable-layout-ng',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 12,
         },
       },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
-          'shards': 2,
+          'shards': 1,
         },
       },
       'mac10.14-blink-rel-dummy': {
         'swarming': {
-          'shards': 2,
+          'shards': 1,
         },
       },
       'mac10.15-blink-rel-dummy': {
         'swarming': {
-          'shards': 20,
+          'shards': 12,
         },
       },
       'mac11.0-blink-rel-dummy': {
         'swarming': {
-          'shards': 12,
+          'shards': 7,
           'hard_timeout': 1800,
         },
       },
       'win10.20h2-blink-rel-dummy': {
         'swarming': {
-          'shards': 14,
+          'shards': 9,
           'hard_timeout': 1200,
         },
       },
-      'win11-blink-rel-dummy': {
+      'win11-blink-rel': {
         'swarming': {
           'hard_timeout': 1200,
         },
@@ -515,7 +803,7 @@
           '--target',
           'Release_x64',
         ],
-      },
+      }
     },
   },
   'breakpad_unittests': {
@@ -537,7 +825,7 @@
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests', # https://crbug.com/1042757
-      'Mac11 Tests (dbg)', # https://crbug.com/1201386
+      'Mac12 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
@@ -560,6 +848,14 @@
       'Linux - Future (dbg)': {  # client.v8.chromium
         'swarming': {
           'shards': 10,
+        },
+      },
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 40,
+          'quickrun_shards': 80
         },
       },
       'Linux ASan LSan Tests (1)': {
@@ -665,7 +961,10 @@
       'Mac11 Tests': {
         'ci_only': True,
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests': {
+        'ci_only': True,
+      },
+      'Mac12 Tests (dbg)': {
         # crbug.com/1042757
         'swarming': {
           'dimension_sets': [
@@ -795,6 +1094,16 @@
           'shards': 30,
         },
       },
+      'mac12-arm64-rel-tests': {
+        'ci_only': False,  # https://crbug.com/1234525
+        'args': [
+          # crbug.com/1262402
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac12-arm64-rel.browser_tests.filter',
+        ],
+        'swarming': {
+          'shards': 30,
+        },
+      },
       'win-asan': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -871,6 +1180,7 @@
       'chromeos-amd64-generic-rel': {
         'swarming': {
           'quickrun_shards': 8,
+          'shards': 7,
         },
       },
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': {
@@ -878,6 +1188,26 @@
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
         ],
+      },
+      # TODO(crbug.com/1141234): Move out of experimental if/when the bots are
+      # stable.
+      'chromeos-jacuzzi-chrome': {
+        'experiment_percentage': 100,
+      },
+      'chromeos-kevin-chrome': {
+        'swarming': {
+          # Reducing parallelism due to DUT shortage (b/238271231) 
+          'shards': 5,
+        }
+      },
+      'chromeos-kevin-rel': {
+        'swarming': {
+          # Reducing parallelism due to DUT shortage (b/238271231) 
+          'shards': 5,
+        }
+      },
+      'chromeos-octopus-chrome': {
+        'experiment_percentage': 100,
       },
     },
   },
@@ -1163,6 +1493,13 @@
       'android-marshmallow-arm64-rel',
     ],
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -1239,6 +1576,12 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
       },
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        'swarming': {
+          'shards': 12,
+          'quickrun_shards': 24,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
           'shards': 12,
@@ -1265,7 +1608,13 @@
           'quickrun_shards': 10,
         },
       },
-      'Mac11 Tests (dbg)': { # https://crbug.com/1279504
+      'Mac12 Tests': {
+        'swarming': {
+          'shards': 12,
+          'quickrun_shards': 10,
+        },
+      },
+      'Mac12 Tests (dbg)': { # https://crbug.com/1279504
         'swarming': {
           'shards': 18,
         },
@@ -1481,6 +1830,11 @@
           'quickrun_shards': 8,
         },
       },
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter',
+        ],
+      },
       'android-pie-x86-rel': {
         'args': [
           '--gtest_filter=-ContentViewScrollingTest.testFling',
@@ -1490,6 +1844,13 @@
   },
   'content_unittests': {
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -1657,6 +2018,7 @@
   'gin_unittests': {
     'remove_from': [
       'ToTLinuxASan',  # https://crbug.com/831667
+      'Linux ASan LSan Low Symbols FYI Tests (1)',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
@@ -1679,6 +2041,21 @@
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:2184',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         'args': [
           '--use-gpu-in-tests',
@@ -1761,6 +2138,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
         ],
       },
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
@@ -1828,6 +2210,8 @@
       'Win7 Tests (1)',
       # TODO(https://crbug.com/1267125): Re-enable.
       'mac11-arm64-rel-tests',
+      # TODO(https://crbug.com/1267125): Re-enable.
+      'mac12-arm64-rel-tests',
     ],
   },
   'hardware_accelerated_feature_tests': {
@@ -1893,6 +2277,14 @@
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
         },
       },
+      'Mac FYI Experimental Release (Apple M1)': {
+        'args': {
+          # The GPU information is not yet exposed in swarming, so we can't
+          # explicitly request it and have the JSON generation handle this
+          # automatically.
+          '--expected-vendor-id': '106b',
+        },
+      },
       'Mac FYI Release (Apple M1)': {
         'args': {
           # The GPU information is not yet exposed in swarming, so we can't
@@ -1927,6 +2319,13 @@
       'Linux - Future (dbg)': {  # client.v8.chromium
         'swarming': {
           'shards': 3,
+        },
+      },
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are slow on the ASan trybot for some reason, crbug.com/1257927
+        'swarming': {
+          'shards': 6,
+          'quickrun_shards': 12,
         },
       },
       'Linux ASan LSan Tests (1)': {
@@ -1977,7 +2376,12 @@
           'quickrun_shards': 6,
         },
       },
-      'Mac11 Tests (dbg)': { # https://crbug.com/1265051
+      'Mac12 Tests': {
+        'swarming': {
+          'quickrun_shards': 6,
+        },
+      },
+      'Mac12 Tests (dbg)': { # https://crbug.com/1265051
         'experiment_percentage': 100,
       },
       'ToTLinuxTSan': {
@@ -2164,11 +2568,6 @@
           '--git-revision': '${got_cr_revision}',
         },
       },
-      'Mac V8 FYI Release (Intel)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
     },
   },
   'media_unittests': {
@@ -2295,6 +2694,13 @@
       },
       'CrWinAsan(dll)': {
         # TODO(crbug.com/1257927): net_unittests is slow under ASan.
+        'swarming': {
+          'shards': 16,
+        },
+      },
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
         'swarming': {
           'shards': 16,
         },
@@ -2504,6 +2910,12 @@
           '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
         ],
       },
+      'android-nougat-x86-rel': {
+        'args': [
+          # TODO(crbug.com/1260440): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
       'fuchsia-fyi-x64-asan': {
         'args': [
           # TODO(crbug.com/1199334): Error messages only show up in klog.
@@ -2531,7 +2943,7 @@
   },
   'performance_test_suite': {
     'modifications': {
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         'args': [
           '--browser=debug',
         ],
@@ -2631,11 +3043,6 @@
           '--git-revision': '${got_cr_revision}',
         },
       },
-      'Mac V8 FYI Release (Intel)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
     },
   },
   'pixel_test':{
@@ -2655,6 +3062,11 @@
         ]
       },
       'android-marshmallow-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
+        ]
+      },
+      'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
         ]
@@ -2731,6 +3143,11 @@
       },
     },
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        'swarming': {
+          'quickrun_shards': 2,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
           'quickrun_shards': 2,
@@ -2743,6 +3160,12 @@
         ],
       },
       'android-12-x64-rel': {
+        'args': [
+          # TODO(crbug.com/1264654): Fix the failed tests
+          '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
+        ],
+      },
+      'android-nougat-x86-rel': {
         'args': [
           # TODO(crbug.com/1264654): Fix the failed tests
           '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
@@ -2769,6 +3192,11 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
     ],
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
           'shards': 4,
@@ -2785,6 +3213,11 @@
           },
       },
       'Mac11 Tests': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'Mac12 Tests': {
         'swarming': {
           'shards': 4,
         },
@@ -2852,7 +3285,7 @@
       'Mac Retina Debug (AMD)',
       'Win10 FYI x64 Debug (NVIDIA)',
       # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Release (Intel UHD 630)',
+      'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux Release (NVIDIA)',
     ],
@@ -2897,6 +3330,9 @@
       'Mac11 Tests': {
         'ci_only': True,
       },
+      'Mac12 Tests': {
+        'ci_only': True,
+      },
       'chromeos-amd64-generic-rel': {
         'swarming': {
           'quickrun_shards': 24,
@@ -2926,7 +3362,7 @@
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
-      'Mac11 Tests (dbg)',
+      'Mac12 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
@@ -2958,6 +3394,8 @@
 
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac11-arm64-rel-tests',
+      # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
+      'mac12-arm64-rel-tests',
     ],
   },
   'test_buildbucket_api_gpu_use_cases GTX 1660': {
@@ -2972,11 +3410,23 @@
       },
     },
   },
+  'unexpected_passes_common_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
+  },
   'unit_tests': {
     'remove_from': [
       'android-pie-arm64-rel',  # https://crbug.com/1010211
     ],
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 4,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -3009,7 +3459,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         'swarming': {
           'shards': 2,
         },
@@ -3106,11 +3556,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.views_unittests.filter',
         ],
       },
-      'fuchsia-fyi-x64-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.views_unittests.filter',
-        ],
-      },
       # https://crbug.com/1111979,
       'linux-lacros-code-coverage': {
         'args': [
@@ -3191,18 +3636,6 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
-    ],
-  },
-  'webgl2_conformance_gl_passthrough_tests': {
-    'remove_from': [
-      # Not enough capacity. https://crbug.com/982294
-      'Mac FYI Retina Release (NVIDIA)',
-    ],
-  },
-  'webgl2_conformance_gl_passthrough_tests 8086:3e9b': {
-    'remove_from': [
-      # Only run validating on Mac Intel due to capacity http://crbug.com/1236796
-      'mac_optional_gpu_tests_rel'
     ],
   },
   'webgl2_conformance_gles_passthrough_tests': {
@@ -3393,6 +3826,13 @@
       'android-marshmallow-x86-rel-non-cq',
     ],
     'modifications': {
+      'Linux ASan LSan Low Symbols FYI Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -3527,6 +3967,12 @@
   },
   'webview_cts_tests': {
     'modifications': {
+      'android-nougat-x86-rel': {
+        'args': [
+          # crbug.com/1343008
+          '--gtest_filter=-android.assist.cts.WebViewTest#testWebView',
+        ],
+      },
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
         # capacity has been deployed.
@@ -3565,12 +4011,6 @@
         'args': [
           # TODO(crbug.com/1189746) Enable this test once the issue is fixed.
           '--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers',
-        ],
-      },
-      'android-12-x64-rel': {
-        'args': [
-          # crbug.com/1292197
-          '--gtest_filter=-org.chromium.android_webview.test.devui.HomeFragmentTest.testLongPressCopy*',
         ],
       },
       'android-marshmallow-x86-fyi-rel-reviver': {

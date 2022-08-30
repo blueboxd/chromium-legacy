@@ -56,8 +56,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
-import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
@@ -83,6 +81,8 @@ import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.components.power_bookmarks.PowerBookmarkType;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.WebappsUtils;
@@ -214,7 +214,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         if (startSurfaceSupplier != null) {
             mStartSurfaceSupplier = startSurfaceSupplier;
             startSurfaceSupplier.onAvailable(mCallbackController.makeCancelable((startSurface) -> {
-                mStartSurfaceState = startSurface.getController().getStartSurfaceState();
+                mStartSurfaceState = startSurface.getStartSurfaceState();
                 mStartSurfaceStateObserver = (newState, shouldShowToolbar) -> {
                     assert ReturnToChromeUtil.isStartSurfaceEnabled(mContext);
                     mStartSurfaceState = newState;
@@ -306,7 +306,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     /**
      * @return Whether the Start surface homepage is showing.
      */
-    private boolean isInStartSurfaceHomepage() {
+    @VisibleForTesting
+    boolean isInStartSurfaceHomepage() {
         return mStartSurfaceSupplier != null && mStartSurfaceSupplier.get() != null
                 && mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE;
     }
@@ -612,8 +613,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 item.setVisible(!isIncognito);
             }
             if (item.getItemId() == R.id.menu_group_tabs) {
+                // Disable incognito group tabs when a re-authentication screen is shown.
+                // We show the re-auth screen only in Incognito mode.
+                boolean isIncognitoReauthShowing = isIncognito
+                        && (mIncognitoReauthController != null)
+                        && mIncognitoReauthController.isReauthPageShowing();
+
                 item.setVisible(isMenuGroupTabsVisible);
-                item.setEnabled(isMenuGroupTabsEnabled);
+                item.setEnabled(!isIncognitoReauthShowing && isMenuGroupTabsEnabled);
             }
             if (item.getItemId() == R.id.track_prices_row_menu_id) {
                 item.setVisible(isPriceTrackingVisible);
@@ -1257,6 +1264,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @VisibleForTesting
     static void setPageInReadingListForTesting(Boolean highlight) {
         sItemInReadingListForTesting = highlight;
+    }
+
+    @VisibleForTesting
+    void setStartSurfaceStateForTesting(@StartSurfaceState int state) {
+        mStartSurfaceState = state;
     }
 
     void setBookmarkBridgeSupplierForTesting(

@@ -43,6 +43,11 @@ const char kDisableGpuProcessForDX12InfoCollection[] =
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 
+// Enables WebGPU developer features which are not generally exposed to the web
+// platform.
+const char kEnableWebGPUDeveloperFeatures[] =
+    "enable-webgpu-developer-features";
+
 // Enable validation layers in Dawn backends.
 const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
 
@@ -55,8 +60,7 @@ const char kEnableDawnFeatures[] = "enable-dawn-features";
 // Set the Dawn features(toggles) disabled on the creation of Dawn devices.
 const char kDisableDawnFeatures[] = "disable-dawn-features";
 
-// Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
-// thread.
+// Changes the type (to kRealtimeAudio) of gpu process and compositor thread.
 // This is only to be used for perf tests on macOS for more reliable values.
 const char kUseHighGPUThreadPriorityForPerfTests[] =
     "use-gpu-high-thread-priority-for-perf-tests";

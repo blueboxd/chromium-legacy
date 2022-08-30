@@ -27,7 +27,7 @@ namespace net {
 
 class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
  public:
-  BufferedSpdyFramerVisitorInterface() {}
+  BufferedSpdyFramerVisitorInterface() = default;
 
   BufferedSpdyFramerVisitorInterface(
       const BufferedSpdyFramerVisitorInterface&) = delete;
@@ -123,13 +123,13 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                               uint8_t frame_type) = 0;
 
  protected:
-  virtual ~BufferedSpdyFramerVisitorInterface() {}
+  virtual ~BufferedSpdyFramerVisitorInterface() = default;
 };
 
 class NET_EXPORT_PRIVATE BufferedSpdyFramer
     : public spdy::SpdyFramerVisitorInterface {
  public:
-  using TimeFunc = base::TimeTicks (*)(void);
+  using TimeFunc = base::TimeTicks (*)();
 
   BufferedSpdyFramer(uint32_t max_header_list_size,
                      const NetLogWithSource& net_log,

@@ -6,8 +6,8 @@
 
 #include <dawn/native/DawnNative.h>
 #include <dawn/native/OpenGLBackend.h>
-#include <dawn_platform/DawnPlatform.h>
-#include <dawn_wire/WireServer.h>
+#include <dawn/platform/DawnPlatform.h>
+#include <dawn/wire/WireServer.h>
 
 #include <algorithm>
 #include <memory>
@@ -1033,8 +1033,8 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUFeatureName feature) const {
     case WGPUFeatureName_PipelineStatisticsQuery:
     case WGPUFeatureName_ChromiumExperimentalDp4a:
     case WGPUFeatureName_DawnMultiPlanarFormats:
+    case WGPUFeatureName_DepthClipControl:
       return allow_unsafe_apis_;
-    case WGPUFeatureName_Depth24UnormStencil8:
     case WGPUFeatureName_Depth32FloatStencil8:
     case WGPUFeatureName_TextureCompressionBC:
     case WGPUFeatureName_TextureCompressionETC2:
@@ -1668,7 +1668,7 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     color_attachment.view = view;
     color_attachment.loadOp = WGPULoadOp_Clear;
     color_attachment.storeOp = WGPUStoreOp_Store;
-    color_attachment.clearColor = {0.0, 0.0, 0.0, 0.0};
+    color_attachment.clearValue = {0.0, 0.0, 0.0, 0.0};
 
     WGPURenderPassDescriptor render_pass_descriptor = {};
     render_pass_descriptor.colorAttachmentCount = 1;

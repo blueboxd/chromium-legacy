@@ -4,17 +4,17 @@
 
 #include "fuchsia_web/webengine/web_engine_integration_test_base.h"
 
+#include <dirent.h>
 #include <lib/fdio/directory.h>
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
-#include "fuchsia/base/test/context_provider_test_connector.h"
-#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/webengine/test/context_provider_test_connector.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
 namespace {
@@ -33,15 +33,24 @@ fuchsia::web::ContentDirectoryProvider CreateTestDataDirectoryProvider() {
 
 WebEngineIntegrationTestBase::WebEngineIntegrationTestBase()
     : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-      filtered_service_directory_(base::ComponentContextForProcess()->svc()) {
+      filtered_service_directory_(std::make_shared<sys::ServiceDirectory>(
+          base::OpenDirectoryHandle(base::FilePath("/svc")))) {
   // Push all services from /svc to the filtered service directory.
-  base::FileEnumerator file_enum(base::FilePath("/svc"), false,
-                                 base::FileEnumerator::FILES);
-  for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
-    zx_status_t status = filtered_service_directory_.AddService(
-        file_enum.GetInfo().GetName().value().c_str());
+  // TODO(fxbug.dev/100207): base::FileEnumerator would stat() each directory
+  // entry, which can hang with some legacy directory implementations.
+  DIR* dir = opendir("/svc");
+  PCHECK(dir);
+  struct dirent* dirent = nullptr;
+  while ((dirent = readdir(dir))) {
+    const base::StringPiece name = dirent->d_name;
+    if (name == base::FilePath::kCurrentDirectory ||
+        name == base::FilePath::kParentDirectory) {
+      continue;
+    }
+    zx_status_t status = filtered_service_directory_.AddService(name);
     ZX_CHECK(status == ZX_OK, status) << "FilteredServiceDirectory::AddService";
   }
+  closedir(dir);
 }
 
 WebEngineIntegrationTestBase::~WebEngineIntegrationTestBase() = default;
@@ -55,7 +64,7 @@ void WebEngineIntegrationTestBase::SetUp() {
 
 void WebEngineIntegrationTestBase::StartWebEngine(
     base::CommandLine command_line) {
-  web_context_provider_ = cr_fuchsia::ConnectContextProvider(
+  web_context_provider_ = ConnectContextProvider(
       web_engine_controller_.NewRequest(), std::move(command_line));
   web_context_provider_.set_error_handler(
       [](zx_status_t status) { ADD_FAILURE(); });
@@ -142,7 +151,7 @@ void WebEngineIntegrationTestBase::CreateContextAndFrameAndLoadUrl(
 
   // Navigate the Frame to |url| and wait for it to complete loading.
   auto navigation_controller = CreateNavigationController();
-  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(::LoadUrlAndExpectResponse(
       navigation_controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
 
   // Wait for the URL to finish loading.
@@ -158,8 +167,8 @@ void WebEngineIntegrationTestBase::LoadUrlAndExpectResponse(
   frame_->GetNavigationController(navigation_controller.NewRequest());
   navigation_controller.set_error_handler(
       [](zx_status_t status) { ADD_FAILURE(); });
-  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      navigation_controller.get(), std::move(load_url_params), url));
+  ASSERT_TRUE(::LoadUrlAndExpectResponse(navigation_controller.get(),
+                                         std::move(load_url_params), url));
 }
 
 void WebEngineIntegrationTestBase::GrantPermission(
@@ -173,29 +182,26 @@ void WebEngineIntegrationTestBase::GrantPermission(
 
 std::string WebEngineIntegrationTestBase::ExecuteJavaScriptWithStringResult(
     base::StringPiece script) {
-  absl::optional<base::Value> value =
-      cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
+  absl::optional<base::Value> value = ExecuteJavaScript(frame_.get(), script);
   return value ? value->GetString() : std::string();
 }
 
 double WebEngineIntegrationTestBase::ExecuteJavaScriptWithDoubleResult(
     base::StringPiece script) {
-  absl::optional<base::Value> value =
-      cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
+  absl::optional<base::Value> value = ExecuteJavaScript(frame_.get(), script);
   return value ? value->GetDouble() : 0.0;
 }
 
 bool WebEngineIntegrationTestBase::ExecuteJavaScriptWithBoolResult(
     base::StringPiece script) {
-  absl::optional<base::Value> value =
-      cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
+  absl::optional<base::Value> value = ExecuteJavaScript(frame_.get(), script);
   return value ? value->GetBool() : false;
 }
 
 void WebEngineIntegrationTestBase::CreateNavigationListener() {
   CHECK(frame_);
   CHECK(!navigation_listener_);
-  navigation_listener_ = std::make_unique<cr_fuchsia::TestNavigationListener>();
+  navigation_listener_ = std::make_unique<TestNavigationListener>();
   navigation_listener_binding_ =
       std::make_unique<fidl::Binding<fuchsia::web::NavigationEventListener>>(
           navigation_listener_.get());

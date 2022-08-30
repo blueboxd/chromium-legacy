@@ -34,7 +34,7 @@ inline constexpr base::Feature kIgnoreSyncEncryptionKeysLongMissing{
 // The threshold for kIgnoreSyncEncryptionKeysLongMissing to start ignoring keys
 // (measured in number of GetUpdatesResponses messages).
 inline constexpr base::FeatureParam<int> kMinGuResponsesToIgnoreKey{
-    &kIgnoreSyncEncryptionKeysLongMissing, "MinGuResponsesToIgnoreKey", 50};
+    &kIgnoreSyncEncryptionKeysLongMissing, "MinGuResponsesToIgnoreKey", 3};
 
 // When enabled, Sync machinery will read and writes password notes to the
 // `encrypted_notes_backup` field inside the PasswordSpecifics proto. Together
@@ -126,12 +126,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 // being registered is consistent with the server-side state.
 inline constexpr base::Feature kSyncTrustedVaultVerifyDeviceRegistration{
     "SyncTrustedVaultVerifyDeviceRegistration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Triggers another device registration attempt if the device was registered
-// before this feature was introduced.
-inline constexpr base::Feature kSyncTrustedVaultRedoDeviceRegistration{
-    "SyncTrustedVaultRedoDeviceRegistration",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the device will register with FCM and listen to new

@@ -31,6 +31,7 @@ class NGFragmentItems;
 class NGInlineBackwardCursor;
 class NGInlineBreakToken;
 class NGInlineCursor;
+class NGInlinePaintContext;
 class NGPhysicalBoxFragment;
 class Node;
 class ShapeResultView;
@@ -156,7 +157,8 @@ class CORE_EXPORT NGInlineCursorPosition {
     return item_->SelfInkOverflow();
   }
 
-  void RecalcInkOverflow(const NGInlineCursor& cursor) const;
+  void RecalcInkOverflow(const NGInlineCursor& cursor,
+                         NGInlinePaintContext* inline_context) const;
 
   // Returns start/end of offset in text content of current text fragment.
   // It is error when this cursor doesn't point to text fragment.
@@ -544,6 +546,22 @@ class CORE_EXPORT NGInlineCursor {
   // Move the current position to the last fragment on same layout object.
   void MoveToLastForSameLayoutObject();
 
+  // Move the current position to the last fragment on the same layout object,
+  // in visual order. This is the same as |MoveToLastForSameLayoutObject|,
+  // except for culled inlines.
+  //
+  // Note that this method will only consider fragments reachable through
+  // |MoveToNextForSameLayoutObject|.
+  void MoveToVisualLastForSameLayoutObject();
+
+  // Move the current position to the first fragment on the same layout object,
+  // in visual order.
+  //
+  // Note that this method will only consider fragments reachable through
+  // |MoveToNextForSameLayoutObject|. For non-culled inlines, this means this
+  // method is a no-op.
+  void MoveToVisualFirstForSameLayoutObject();
+
 #if DCHECK_IS_ON()
   void CheckValid(const NGInlineCursorPosition& position) const;
 #else
@@ -603,6 +621,10 @@ class CORE_EXPORT NGInlineCursor {
 
   // |MoveToNextForSameLayoutObject| that doesn't check |culled_inline_|.
   void MoveToNextForSameLayoutObjectExceptCulledInline();
+
+  // Used for |MoveToVisualLastForSameLayoutObject| and
+  // |MoveToVisualFirstForSameLayoutObject|.
+  void MoveToVisualFirstOrLastForCulledInline(bool last);
 
   // A helper class to enumerate |LayoutObject|s that contribute to a culled
   // inline.

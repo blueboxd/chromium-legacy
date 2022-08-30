@@ -100,7 +100,6 @@
 <translation id="1687475363370981210">Означаване на всичко като прочетено</translation>
 <translation id="1689333818294560261">Псевдоним</translation>
 <translation id="1690731385917361335">Няма елементи</translation>
-<translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="1700629756560807968">Избрахте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Докоснете двукратно, за да инсталирате.</translation>
 <translation id="1752547299766512813">Запазени пароли</translation>
@@ -174,7 +173,6 @@
 <translation id="2469960372084740698">Да се изключи ли „Безопасно сърфиране“?</translation>
 <translation id="2473876017985765807">Вече запазихте парола за <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не е избрано</translation>
-<translation id="2497852260688568942">Синхронизирането е деактивирано от администратора ви</translation>
 <translation id="2500374554657206846">Опции за запазване на паролата</translation>
 <translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
@@ -326,6 +324,7 @@
 <translation id="369349502275246497">Показване на предложение за запазване на паролите</translation>
 <translation id="3709582977625132201">Означав. като непрочетено</translation>
 <translation id="371230970611282515">Предвижда и ви предупреждава за опасни събития, преди да се случат.</translation>
+<translation id="37207012422556617">Набиращи популярност търсения</translation>
 <translation id="3740397331642243698">Въведените URL адреси се отварят в режим „инкогнито“ в Google Chrome.</translation>
 <translation id="3762232513783804601">Създаден за вашия iPad</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
@@ -489,7 +488,6 @@
 <translation id="509789154667432072">Добавяне на отметка</translation>
 <translation id="5118713593561876160">Интереси</translation>
 <translation id="5118764316110575523">Изкл.</translation>
-<translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5132942445612118989">Синхронизиране на паролите, историята ви и др. на всички устройства</translation>
 <translation id="5140288047769711648">Chrome ще запамети тази парола. Няма нужда да я помните.</translation>
 <translation id="5150492518600715772">Изпращане до устройството ви</translation>
@@ -533,6 +531,7 @@
 Трябва да активирате Handoff и в секцията „General“ на Settings, както и да използвате един и същ профил в iCloud на устройствата си.</translation>
 <translation id="5551897871312988470">Предложения за превод</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
+<translation id="556042886152191864">Бутон</translation>
 <translation id="5580834567471114021">Да се добави ли към списъка за четене по-късно?</translation>
 <translation id="560322036295180549">Изключено от организацията ви</translation>
 <translation id="5614553682702429503">Да се запази ли паролата?</translation>
@@ -600,7 +599,6 @@
 <translation id="60829778314739003">Приемам и продължавам</translation>
 <translation id="6084848228346514841">Избиране на раздели</translation>
 <translation id="6103540626693881831">Шифроване на устройството</translation>
-<translation id="6108923351542677676">Извършва се настройване…</translation>
 <translation id="6119050551270742952">Страницата е в режим „инкогнито“</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
@@ -776,7 +774,6 @@
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> непрочетени статии.</translation>
 <translation id="7412027924265291969">Напред</translation>
-<translation id="7419565702166471774">Винаги да се използват сигурни връзки</translation>
 <translation id="7425346204213733349">Промените в отметките, историята, паролите и другите ви настройки вече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него.</translation>
 <translation id="7431991332293347422">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето и др.</translation>
 <translation id="7435356471928173109">Изключено от администратора ви</translation>
@@ -816,6 +813,7 @@
 <translation id="7781069478569868053">Нов раздел в браузъра</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете търсене в нов раздел в Chrome.</translation>
+<translation id="7790892308048519147">Опит за използване на защитени връзки</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="7807060072011926525">Предоставено от Google</translation>
 <translation id="7839985698273989086">Офлайн страница</translation>
@@ -913,7 +911,6 @@
 <translation id="8591976964826315682">Блокиране на „бисквитките“ на трети страни в режим „инкогнито“</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
-<translation id="8620785403235741379">Изберете опция</translation>
 <translation id="8626393685701737946">Можете да зададете настолния сайт като основен в „Настройки &gt; Настройки за съдържанието“</translation>
 <translation id="863090005774946393">Браузърът се управлява от организацията ви. Някои функции може да са деактивирани.</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>

@@ -407,7 +407,7 @@ void BrowserTestBase::SetUp() {
 
   ui::fuchsia::IgnorePresentCallsForTest();
 
-  // Clear the per-process cached BuildInfo, which was initialized by
+  // Clear the per-process cached system info, which was initialized by
   // TestSuite::Initialize(), to prevent a DCHECK for multiple calls during
   // in-process browser tests. There is not a single TestSuite for all browser
   // tests and some use the cached values, so skipping the earlier
@@ -610,8 +610,6 @@ void BrowserTestBase::SetUp() {
   tracing::EnableStartupTracingIfNeeded();
 
   {
-    using InvokedIn = ContentMainDelegate::InvokedIn;
-
     SetBrowserClientForTesting(delegate->CreateContentBrowserClient());
     if (command_line->HasSwitch(switches::kSingleProcess))
       SetRendererClientForTesting(delegate->CreateContentRendererClient());
@@ -621,8 +619,10 @@ void BrowserTestBase::SetUp() {
 
     delegate->PreSandboxStartup();
 
+    const ContentMainDelegate::InvokedInBrowserProcess invoked_in_browser{
+        .is_running_test = true};
     DCHECK(!field_trial_list_);
-    if (delegate->ShouldCreateFeatureList(InvokedIn::kBrowserProcessUnderTest))
+    if (delegate->ShouldCreateFeatureList(invoked_in_browser))
       field_trial_list_ = SetUpFieldTrialsAndFeatureList();
 
     base::ThreadPoolInstance::Create("Browser");
@@ -636,7 +636,7 @@ void BrowserTestBase::SetUp() {
           variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
 
-    delegate->PostEarlyInitialization(InvokedIn::kBrowserProcessUnderTest);
+    delegate->PostEarlyInitialization(invoked_in_browser);
 
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();

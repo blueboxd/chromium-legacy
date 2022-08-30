@@ -251,6 +251,8 @@ static_library("test_support") {
     "../public/test/permissions_test_utils.h",
     "../public/test/policy_container_utils.cc",
     "../public/test/policy_container_utils.h",
+    "../public/test/preloading_test_util.cc",
+    "../public/test/preloading_test_util.h",
     "../public/test/prerender_test_util.cc",
     "../public/test/prerender_test_util.h",
     "../public/test/private_network_access_util.cc",
@@ -499,6 +501,7 @@ static_library("test_support") {
     "//components/network_session_configurator/common:common",
     "//components/services/storage",
     "//components/startup_metric_utils/browser",
+    "//components/ukm:test_support",
     "//components/variations",
     "//components/viz/client",
     "//components/viz/host",
@@ -506,6 +509,7 @@ static_library("test_support") {
     "//content/browser:for_content_tests",
     "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/child:for_content_tests",
+    "//content/common:for_content_tests",
     "//content/gpu",
     "//content/public/browser",
     "//content/public/browser:proto",
@@ -620,8 +624,6 @@ static_library("test_support") {
 
   if (enable_plugins) {
     sources += [
-      "../public/test/fake_pepper_plugin_instance.cc",
-      "../public/test/fake_pepper_plugin_instance.h",
       "../public/test/ppapi_test_utils.cc",
       "../public/test/ppapi_test_utils.h",
       "ppapi_unittest.cc",
@@ -786,7 +788,7 @@ if (is_fuchsia) {
     data = [ "//content/test/gpu/fuchsia_util.py" ]
     data_deps = [
       "//chrome/app:chrome_fuchsia",
-      "//fuchsia_web/webengine:web_engine_shell",
+      "//fuchsia_web/shell",
       "//fuchsia_web/webengine:web_engine_with_webui_installer",
     ]
   }
@@ -985,7 +987,7 @@ static_library("browsertest_support") {
     deps += [ "//content/public/browser" ]
   }
 
-  if (use_aura && toolkit_views && !is_chromecast) {
+  if (use_aura && toolkit_views && !is_castos) {
     deps += [ "//ui/views" ]
   }
 
@@ -1313,6 +1315,7 @@ test("content_browsertests") {
     "../browser/net/network_field_trial_browsertest.cc",
     "../browser/net/sandboxed_http_cache_browsertest.cc",
     "../browser/net/sandboxed_nqe_browsertest.cc",
+    "../browser/net/sandboxed_socket_broker_browsertest.cc",
     "../browser/net/split_cache_browsertest.cc",
     "../browser/net/trust_token_browsertest.cc",
     "../browser/net/trust_token_browsertest.h",
@@ -1330,8 +1333,8 @@ test("content_browsertests") {
     "../browser/portal/portal_browsertest.cc",
     "../browser/portal/portal_navigation_throttle_browsertest.cc",
     "../browser/power_monitor_browsertest.cc",
-    "../browser/prerender/prerender_browsertest.cc",
-    "../browser/prerender/prerender_origin_trial_browsertest.cc",
+    "../browser/preloading/prerender/prerender_browsertest.cc",
+    "../browser/preloading/prerender/prerender_origin_trial_browsertest.cc",
     "../browser/process_internals/process_internals_browsertest.cc",
     "../browser/quota/quota_change_browsertest.cc",
     "../browser/quota/quota_internals_browsertest.cc",
@@ -1652,6 +1655,8 @@ test("content_browsertests") {
   if (enable_plugins) {
     sources += [
       "../browser/plugin_service_impl_browsertest.cc",
+      "../renderer/pepper/fake_pepper_plugin_instance.cc",
+      "../renderer/pepper/fake_pepper_plugin_instance.h",
       "../renderer/pepper/mock_renderer_ppapi_host.cc",
       "../renderer/pepper/mock_renderer_ppapi_host.h",
       "../renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc",
@@ -1701,7 +1706,7 @@ test("content_browsertests") {
       sources += [ "../browser/media/capture/mouse_cursor_overlay_controller_browsertest.cc" ]
 
       # For chromecast, content_browsertests does not provide a shell window.
-      if (use_aura && !is_chromecast) {
+      if (use_aura && !is_castos) {
         sources += [ "../browser/media/capture/aura_window_video_capture_device_browsertest.cc" ]
       }
     }
@@ -1893,7 +1898,7 @@ test("content_browsertests") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/components/audio",
-      "//chromeos/dbus/audio",
+      "//chromeos/ash/components/dbus/audio",
       "//chromeos/system",
     ]
   }
@@ -1966,7 +1971,7 @@ test("content_browsertests") {
     ]
   }
 
-  if (is_chromecast) {
+  if (is_castos || is_cast_android) {
     sources -= [
       # The cast shell media pipeline doesn't produce real video frames that we
       # can inspect.
@@ -2247,6 +2252,7 @@ test("content_unittests") {
     "../browser/net/cross_origin_embedder_policy_reporter_unittest.cc",
     "../browser/net/cross_origin_opener_policy_reporter_unittest.cc",
     "../browser/net/network_quality_observer_impl_unittest.cc",
+    "../browser/net/socket_broker_impl_unittest.cc",
     "../browser/network_context_client_base_impl_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/blink_notification_service_impl_unittest.cc",
@@ -2263,10 +2269,13 @@ test("content_unittests") {
     "../browser/payments/payment_manager_unittest.cc",
     "../browser/permissions/permission_controller_impl_unittest.cc",
     "../browser/picture_in_picture/picture_in_picture_service_impl_unittest.cc",
-    "../browser/plugin_list_unittest.cc",
-    "../browser/prerender/prerender_host_registry_unittest.cc",
-    "../browser/prerender/prerender_host_unittest.cc",
+    "../browser/preloading/prerender/prerender_host_registry_unittest.cc",
+    "../browser/preloading/prerender/prerender_host_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
+    "../browser/private_aggregation/private_aggregation_budget_key_unittest.cc",
+    "../browser/private_aggregation/private_aggregation_budget_storage_unittest.cc",
+    "../browser/private_aggregation/private_aggregation_budgeter_unittest.cc",
+    "../browser/private_aggregation/private_aggregation_host_unittest.cc",
     "../browser/quota/quota_change_dispatcher_unittest.cc",
     "../browser/renderer_host/ancestor_throttle_unittest.cc",
     "../browser/renderer_host/back_forward_cache_metrics_unittest.cc",
@@ -2330,7 +2339,6 @@ test("content_unittests") {
     "../browser/renderer_host/navigation_request_unittest.cc",
     "../browser/renderer_host/navigation_throttle_runner_unittest.cc",
     "../browser/renderer_host/navigator_unittest.cc",
-    "../browser/renderer_host/origin_policy_throttle_unittest.cc",
     "../browser/renderer_host/overscroll_controller_unittest.cc",
     "../browser/renderer_host/policy_container_host_unittest.cc",
     "../browser/renderer_host/recently_destroyed_hosts_unittest.cc",
@@ -2635,8 +2643,10 @@ test("content_unittests") {
     "//content/browser/devtools:devtools_background_services_proto",
     "//content/browser/download:proto",
     "//content/browser/notifications:notification_proto",
+    "//content/browser/private_aggregation/proto:private_aggregation_budgets_proto",
     "//content/child:for_content_tests",
     "//content/common:buildflags",
+    "//content/common:for_content_tests",
     "//content/gpu",
     "//content/public/browser",
     "//content/public/browser:proto",
@@ -2744,6 +2754,10 @@ test("content_unittests") {
     "//third_party/mesa_headers",
   ]
 
+  if (is_mac) {
+    data_deps += [ "//device/fido/strings:fido_test_strings" ]
+  }
+
   if (is_posix) {
     sources += [ "../browser/posix_file_descriptor_info_impl_unittest.cc" ]
     deps += [ "//services/tracing:test_utils" ]
@@ -2790,9 +2804,9 @@ test("content_unittests") {
 
   if (enable_library_cdms) {
     sources += [
-      "../browser/media/cdm_storage_impl_unittest.cc",
       "../browser/media/key_system_support_impl_unittest.cc",
       "../browser/media/media_license_manager_unittest.cc",
+      "../browser/media/media_license_storage_host_unittest.cc",
     ]
   }
 
@@ -2869,7 +2883,7 @@ test("content_unittests") {
     deps += [
       "//ash/components/audio",
       "//ash/constants:constants",
-      "//chromeos/dbus/audio",
+      "//chromeos/ash/components/dbus/audio",
       "//chromeos/services/machine_learning/public/cpp:stub",
       "//chromeos/services/machine_learning/public/mojom",
     ]
@@ -2882,6 +2896,7 @@ test("content_unittests") {
       "../browser/android/android_overlay_provider_impl_unittest.cc",
       "../browser/android/java/gin_java_method_invocation_helper_unittest.cc",
       "../browser/android/java/java_type_unittest.cc",
+      "../browser/android/message_payload_unittest.cc",
       "../browser/android/overscroll_controller_android_unittest.cc",
       "../browser/android/scoped_surface_request_manager_unittest.cc",
       "../browser/font_unique_name_lookup/font_unique_name_lookup_unittest.cc",
@@ -2976,8 +2991,8 @@ test("content_unittests") {
     deps += [ "//ui/events:test_support" ]
   }
 
-  if (!is_win && !is_mac) {
-    sources -= [ "../browser/plugin_list_unittest.cc" ]
+  if (enable_plugins && (is_win || is_mac)) {
+    sources += [ "../browser/plugin_list_unittest.cc" ]
   }
 
   if (use_ozone) {
@@ -3004,7 +3019,8 @@ test("content_unittests") {
     deps += [ "//device/vr:vr_fakes" ]
   }
 
-  if (is_chromecast) {
+  # TODO(crbug.com/1293538): Update to check is_cast_audio_only
+  if (is_castos || is_cast_android) {
     deps += [ "//chromecast:chromecast_buildflags" ]
   }
 }
@@ -3075,10 +3091,9 @@ group("gpu_pytype") {
     "//content/test/gpu/run_pytype.py",
     "//content/test/gpu/validate_tag_consistency.py",
 
-    "//build/util/lib/results/",
     "//content/test/gpu/gold_inexact_matching/",
     "//content/test/gpu/flake_suppressor/",
-    "//testing/pytype_common/",
+    "//content/test/gpu/unexpected_passes/",
     "//testing/unexpected_passes_common/",
   ]
 
@@ -3087,5 +3102,6 @@ group("gpu_pytype") {
     # don't accidentally omit Python files that the real tests would be using.
     ":telemetry_gpu_integration_test_scripts_only",
     ":telemetry_gpu_integration_test_support",
+    "//testing:pytype_dependencies",
   ]
 }

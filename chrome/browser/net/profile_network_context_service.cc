@@ -79,10 +79,10 @@
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/net/client_cert_store_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -959,6 +959,9 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     PopulateInitialAdditionalCerts(relative_partition_path,
                                    network_context_params);
   }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
   // Disable idle sockets close on memory pressure if configured by finch or
   // about://flags.
   if (base::FeatureList::IsEnabled(
@@ -992,10 +995,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       fps_access_delegate_remote;
   network_context_params->first_party_sets_access_delegate_receiver =
       fps_access_delegate_remote.BindNewPipeAndPassReceiver();
-  // TODO(crbug.com/1325050): Call NotifyReady() here for now to match the
-  // existing behavior. NotifyReady() will be called by the remote handle owner
-  // in the follow up change.
-  fps_access_delegate_remote->NotifyReady();
+  // TODO(crbug.com/1325050): NotifyReady() will be called by the remote
+  // handle owner with the proper input in the follow up changes.
+  fps_access_delegate_remote->NotifyReady(
+      network::mojom::FirstPartySetsReadyEvent::New());
   fps_access_delegate_remote_set_.Add(std::move(fps_access_delegate_remote));
 }
 

@@ -5,7 +5,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/send_tab_to_self/features.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/driver/sync_service_impl.h"
@@ -30,7 +28,7 @@
 namespace {
 
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
-  static_assert(39 == syncer::GetNumModelTypes(),
+  static_assert(40 == syncer::GetNumModelTypes(),
                 "Add new types below if they run in transport mode");
   // Only some special allowlisted types (and control types) are allowed in
   // standalone transport mode.
@@ -42,11 +40,12 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // OS sync types run in transport mode.
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    allowed_types.PutAll({syncer::APPS, syncer::APP_SETTINGS, syncer::APP_LIST,
-                          syncer::APP_SETTINGS, syncer::ARC_PACKAGE,
-                          syncer::PRINTERS, syncer::OS_PREFERENCES,
-                          syncer::OS_PRIORITY_PREFERENCES, syncer::WEB_APPS,
-                          syncer::WORKSPACE_DESK});
+    allowed_types.PutAll(
+        {syncer::APPS, syncer::APP_SETTINGS, syncer::APP_LIST,
+         syncer::APP_SETTINGS, syncer::ARC_PACKAGE, syncer::PRINTERS,
+         syncer::PRINTERS_AUTHORIZATION_SERVERS, syncer::OS_PREFERENCES,
+         syncer::OS_PRIORITY_PREFERENCES, syncer::WEB_APPS,
+         syncer::WORKSPACE_DESK});
   }
   allowed_types.Put(syncer::WIFI_CONFIGURATIONS);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -75,12 +74,6 @@ class SingleClientStandaloneTransportSyncTest : public SyncTest {
  public:
   SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientStandaloneTransportSyncTest() override = default;
-
- private:
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  base::test::ScopedFeatureList scoped_feature_list{
-      switches::kLacrosNonSyncingProfiles};
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
 // On Chrome OS sync auto-starts on sign-in.

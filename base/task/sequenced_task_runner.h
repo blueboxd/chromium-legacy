@@ -16,15 +16,19 @@
 #include "base/types/pass_key.h"
 
 namespace blink {
+class LowPrecisionTimer;
 class MetronomeSource;
 class TimerBase;
-class WebRtcMetronomeTaskQueue;
-class WebRtcTimer;
-class WebrtcTaskQueue;
+class WebRtcTaskQueue;
 }
 namespace webrtc {
 class ThreadWrapper;
 }  // namespace webrtc
+namespace media {
+class AlsaPcmOutputStream;
+class AlsaPcmInputStream;
+class FakeAudioWorker;
+}  // namespace media
 
 namespace base {
 
@@ -50,13 +54,15 @@ class PostDelayedTaskPassKey {
   friend class base::internal::DelayedTaskManager;
   friend class base::DeadlineTimer;
   friend class base::MetronomeTimer;
+  friend class blink::LowPrecisionTimer;
   friend class blink::MetronomeSource;
   friend class blink::TimerBase;
-  friend class blink::WebRtcMetronomeTaskQueue;
-  friend class blink::WebRtcTimer;
-  friend class blink::WebrtcTaskQueue;
+  friend class blink::WebRtcTaskQueue;
   friend class PostDelayedTaskPassKeyForTesting;
   friend class webrtc::ThreadWrapper;
+  friend class media::AlsaPcmOutputStream;
+  friend class media::AlsaPcmInputStream;
+  friend class media::FakeAudioWorker;
 };
 
 class PostDelayedTaskPassKeyForTesting : public PostDelayedTaskPassKey {};
@@ -184,31 +190,29 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
       OnceClosure task,
       TimeDelta delay);
 
-  // Posts the given |task| to be run at |delayed_run_time|, following
-  // |delay_policy|. Returns a handle that can be used to cancel the task.
-  // This should not be used directly. Consider using higher level timer
-  // primitives in base/timer/timer.h.
+  // Posts the given |task| to be run at |delayed_run_time| (or immediately if
+  // in the past), following |delay_policy|. Returns a handle that can be used
+  // to cancel the task. This should not be used directly. Consider using higher
+  // level timer primitives in base/timer/timer.h.
   [[nodiscard]] virtual DelayedTaskHandle PostCancelableDelayedTaskAt(
       subtle::PostDelayedTaskPassKey,
       const Location& from_here,
       OnceClosure task,
       TimeTicks delayed_run_time,
-      subtle::DelayPolicy delay_policy =
-          subtle::DelayPolicy::kFlexibleNoSooner);
+      subtle::DelayPolicy delay_policy);
 
-  // Posts the given |task| to be run at |delayed_run_time|, following
-  // |delay_policy|. This is used by the default implementation of
-  // PostCancelableDelayedTaskAt(). The default behavior subtracts
-  // TimeTicks::Now() from |delayed_run_time| to get a delay. See base::Timer to
-  // post precise/repeating timeouts.
+  // Posts the given |task| to be run at |delayed_run_time| (or immediately if
+  // in the past), following |delay_policy|. This is used by the default
+  // implementation of PostCancelableDelayedTaskAt(). The default behavior
+  // subtracts TimeTicks::Now() from |delayed_run_time| to get a delay. See
+  // base::Timer to post precise/repeating timeouts.
   // TODO(1153139): Make pure virtual once all SequencedTaskRunners implement
   // this.
   virtual bool PostDelayedTaskAt(subtle::PostDelayedTaskPassKey,
                                  const Location& from_here,
                                  OnceClosure task,
                                  TimeTicks delayed_run_time,
-                                 subtle::DelayPolicy delay_policy =
-                                     subtle::DelayPolicy::kFlexibleNoSooner);
+                                 subtle::DelayPolicy delay_policy);
 
   // Submits a non-nestable task to delete the given object.  Returns
   // true if the object may be deleted at some point in the future,

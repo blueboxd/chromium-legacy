@@ -17,6 +17,7 @@
           "--git-revision=${got_revision}",
           "--flag-specific=enable-editing-ng"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -42,9 +43,45 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
+          "shards": 5
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--git-revision=${got_revision}",
+          "--flag-specific=enable-editing-ng"
+        ],
+        "check_flakiness_for_new_tests": false,
+        "isolate_name": "blink_wpt_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_wpt_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "resultdb": {
+          "enable": true
+        },
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 7
+        },
+        "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
   },
@@ -83,6 +120,7 @@
           "--git-revision=${got_revision}",
           "--flag-specific=disable-layout-ng"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -109,9 +147,46 @@
           ],
           "hard_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 20
+          "shards": 8
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--git-revision=${got_revision}",
+          "--flag-specific=disable-layout-ng"
+        ],
+        "check_flakiness_for_new_tests": false,
+        "isolate_name": "blink_wpt_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_wpt_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "resultdb": {
+          "enable": true
+        },
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
+        },
+        "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
   },
@@ -149,13 +224,13 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "gles2_conform_test UHD 630",
+        "name": "gles2_conform_test HD 630",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -163,7 +238,7 @@
         },
         "test": "gles2_conform_test",
         "test_id_prefix": "ninja://gpu/gles2_conform_support:gles2_conform_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       }
     ],
     "isolated_scripts": [
@@ -217,14 +292,14 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "9bc5"
+          "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "info_collection_tests UHD 630",
+        "name": "info_collection_tests HD 630",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -234,8 +309,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -243,7 +318,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       },
       {
         "args": [
@@ -294,7 +369,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "mediapipe_passthrough_tests UHD 630",
+        "name": "mediapipe_passthrough_tests HD 630",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -304,8 +379,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -313,7 +388,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       },
       {
         "args": [
@@ -364,7 +439,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "trace_test UHD 630",
+        "name": "trace_test HD 630",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -374,8 +449,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -383,7 +458,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       },
       {
         "args": [
@@ -430,14 +505,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "webcodecs_tests UHD 630",
+        "name": "webcodecs_tests HD 630",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -445,7 +520,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       },
       {
         "args": [
@@ -501,7 +576,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "webgl2_conformance_gl_passthrough_tests UHD 630",
+        "name": "webgl2_conformance_gl_passthrough_tests HD 630",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -511,8 +586,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -521,7 +596,7 @@
           "shards": 20
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       },
       {
         "args": [
@@ -575,7 +650,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "webgl_conformance_gl_passthrough_tests UHD 630",
+        "name": "webgl_conformance_gl_passthrough_tests HD 630",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -585,8 +660,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -595,7 +670,7 @@
           "shards": 2
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
-        "variant_id": "UHD 630"
+        "variant_id": "HD 630"
       }
     ]
   }

@@ -76,7 +76,6 @@ const char* const kDumpProviderAllowlist[] = {
     "WebMediaPlayer_MediaThread",
     "SyncDirectory",
     "TabRestoreServiceHelper",
-    "VizProcessContextProvider",
     nullptr  // End of list marker.
 };
 
@@ -139,6 +138,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "history/delta_file_service/leveldb_0x?",
     "history/usage_reports_buffer/leveldb_0x?",
 #if BUILDFLAG(IS_MAC)
+    "ioaccelerator",
     "iosurface",
 #endif
     "java_heap",
@@ -287,6 +287,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "sync/0x?/model_type/PASSWORD",
     "sync/0x?/model_type/PREFERENCE",
     "sync/0x?/model_type/PRINTER",
+    "sync/0x?/model_type/PRINTERS_AUTHORIZATION_SERVER",
     "sync/0x?/model_type/PRIORITY_PREFERENCE",
     "sync/0x?/model_type/READING_LIST",
     "sync/0x?/model_type/SEARCH_ENGINE",

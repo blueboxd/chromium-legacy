@@ -11,7 +11,10 @@
 #include <QIcon>
 #include <QMimeDatabase>
 #include <QMimeType>
+#include <QPainter>
 #include <QPalette>
+#include <QStyle>
+#include <QStyleOptionTitleBar>
 
 namespace qt {
 
@@ -90,12 +93,13 @@ SkColor TextureColor(QImage image) {
   size_t r = 0;
   size_t g = 0;
   size_t b = 0;
-  const auto* pixels = image.bits();
+  const auto* pixels = reinterpret_cast<QRgb*>(image.bits());
   for (size_t i = 0; i < size; i++) {
-    a += pixels[4 * i + 0];
-    r += pixels[4 * i + 1];
-    g += pixels[4 * i + 2];
-    b += pixels[4 * i + 3];
+    auto color = QColor::fromRgba(pixels[i]);
+    a += color.alpha();
+    r += color.red();
+    g += color.green();
+    b += color.blue();
   }
   return qRgba(r / size, g / size, b / size, a / size);
 }
@@ -194,6 +198,8 @@ QtShim::QtShim(QtInterface::Delegate* delegate, int* argc, char** argv)
     : delegate_(delegate), app_(*argc, argv) {
   connect(&app_, SIGNAL(fontChanged(const QFont&)), this,
           SLOT(FontChanged(const QFont&)));
+  connect(&app_, SIGNAL(paletteChanged(const QPalette&)), this,
+          SLOT(PaletteChanged(const QPalette&)));
 }
 
 QtShim::~QtShim() = default;
@@ -249,8 +255,65 @@ SkColor QtShim::GetColor(ColorType role, ColorState state) const {
                                          ColorTypeToColorRole(role)));
 }
 
+SkColor QtShim::GetFrameColor(ColorState state, bool use_custom_frame) const {
+  constexpr int kSampleSize = 32;
+  return TextureColor(DrawHeaderImpl(kSampleSize, kSampleSize,
+                                     GetColor(ColorType::kWindowBg, state),
+                                     state, use_custom_frame));
+}
+
+int QtShim::GetCursorBlinkIntervalMs() const {
+  return app_.cursorFlashTime();
+}
+
+int QtShim::GetAnimationDurationMs() const {
+  return app_.style()->styleHint(QStyle::SH_Widget_Animation_Duration);
+}
+
 void QtShim::FontChanged(const QFont& font) {
   delegate_->FontChanged();
+}
+
+void QtShim::PaletteChanged(const QPalette& palette) {
+  delegate_->ThemeChanged();
+}
+
+Image QtShim::DrawHeader(int width,
+                         int height,
+                         SkColor default_color,
+                         ColorState state,
+                         bool use_custom_frame) const {
+  QImage image =
+      DrawHeaderImpl(width, height, default_color, state, use_custom_frame);
+  return {width, height, 1.0f, Buffer(image.bits(), image.sizeInBytes())};
+}
+
+QImage QtShim::DrawHeaderImpl(int width,
+                              int height,
+                              SkColor default_color,
+                              ColorState state,
+                              bool use_custom_frame) const {
+  QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+  image.fill(default_color);
+  QPainter painter(&image);
+  if (use_custom_frame) {
+    // Chrome renders it's own window border, so clip the border out by
+    // rendering the titlebar larger than the image.
+    constexpr int kBorderWidth = 5;
+
+    QStyleOptionTitleBar opt;
+    opt.rect = QRect(-kBorderWidth, -kBorderWidth, width + 2 * kBorderWidth,
+                     height + 2 * kBorderWidth);
+    if (state == ColorState::kNormal)
+      opt.titleBarState = QStyle::State_Active;
+    app_.style()->drawComplexControl(QStyle::CC_TitleBar, &opt, &painter,
+                                     nullptr);
+  } else {
+    painter.fillRect(
+        0, 0, width, height,
+        app_.palette().brush(ColorStateToColorGroup(state), QPalette::Window));
+  }
+  return image;
 }
 
 }  // namespace qt

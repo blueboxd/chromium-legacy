@@ -285,7 +285,7 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
               NULL, X509_ASN_ENCODING, CRYPT_VERIFY_CERT_SIGN_SUBJECT_CERT,
               const_cast<PCERT_CONTEXT>(cert),
               CRYPT_VERIFY_CERT_SIGN_ISSUER_CERT,
-              const_cast<PCERT_CONTEXT>(issuer), 0, NULL)) {
+              const_cast<PCERT_CONTEXT>(issuer), 0, nullptr)) {
         verify_result->cert_status |= CERT_STATUS_INVALID;
         break;
       }
@@ -453,7 +453,7 @@ CRLSetResult CheckRevocationWithCRLSet(CRLSet* crl_set,
   // Compute the subject's serial.
   const CRYPT_INTEGER_BLOB* serial_blob =
       &subject_cert->pCertInfo->SerialNumber;
-  std::unique_ptr<uint8_t[]> serial_bytes(new uint8_t[serial_blob->cbData]);
+  auto serial_bytes = std::make_unique<uint8_t[]>(serial_blob->cbData);
   // The bytes of the serial number are stored little-endian.
   // Note: While MSDN implies that bytes are stripped from this serial,
   // they are not - only CertCompareIntegerBlob actually removes bytes.
@@ -1055,9 +1055,9 @@ CertVerifyProcWin::ResultDebugData::Clone() {
   return std::make_unique<ResultDebugData>(*this);
 }
 
-CertVerifyProcWin::CertVerifyProcWin() {}
+CertVerifyProcWin::CertVerifyProcWin() = default;
 
-CertVerifyProcWin::~CertVerifyProcWin() {}
+CertVerifyProcWin::~CertVerifyProcWin() = default;
 
 bool CertVerifyProcWin::SupportsAdditionalTrustAnchors() const {
   return false;

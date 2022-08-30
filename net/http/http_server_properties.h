@@ -234,10 +234,11 @@ class NET_EXPORT HttpServerProperties
   //
   // |clock| is used for converting base::TimeTicks to base::Time for
   // wherever base::Time is preferable.
-  HttpServerProperties(std::unique_ptr<PrefDelegate> pref_delegate = nullptr,
-                       NetLog* net_log = nullptr,
-                       const base::TickClock* tick_clock = nullptr,
-                       base::Clock* clock = nullptr);
+  explicit HttpServerProperties(
+      std::unique_ptr<PrefDelegate> pref_delegate = nullptr,
+      NetLog* net_log = nullptr,
+      const base::TickClock* tick_clock = nullptr,
+      base::Clock* clock = nullptr);
 
   HttpServerProperties(const HttpServerProperties&) = delete;
   HttpServerProperties& operator=(const HttpServerProperties&) = delete;
@@ -462,6 +463,15 @@ class NET_EXPORT HttpServerProperties
 
   const ServerInfoMap& server_info_map_for_testing() const {
     return server_info_map_;
+  }
+
+  const BrokenAlternativeServices& broken_alternative_services_for_testing()
+      const {
+    return broken_alternative_services_;
+  }
+
+  const QuicServerInfoMap& quic_server_info_map_for_testing() const {
+    return quic_server_info_map_;
   }
 
   // TODO(mmenke): Look into removing this.

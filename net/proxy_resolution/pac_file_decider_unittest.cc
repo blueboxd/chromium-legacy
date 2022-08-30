@@ -88,9 +88,9 @@ class Rules {
   }
 
   const Rule& GetRuleByUrl(const GURL& url) const {
-    for (auto it = rules_.begin(); it != rules_.end(); ++it) {
-      if (it->url == url)
-        return *it;
+    for (const auto& rule : rules_) {
+      if (rule.url == url)
+        return rule;
     }
     LOG(FATAL) << "Rule not found for " << url;
     return rules_[0];
@@ -852,8 +852,7 @@ TEST(PacFileDeciderTest, DhcpCancelledByDestructor) {
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
 
-  std::unique_ptr<AsyncFailDhcpFetcher> dhcp_fetcher(
-      new AsyncFailDhcpFetcher());
+  auto dhcp_fetcher = std::make_unique<AsyncFailDhcpFetcher>();
 
   ProxyConfig config;
   config.set_auto_detect(true);

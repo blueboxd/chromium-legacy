@@ -205,10 +205,6 @@ constexpr base::FeatureParam<int> kUtilityProcessThreadPoolLogLevel{
     &kEnableHangWatcher, "utility_process_threadpool_log_level",
     static_cast<int>(LoggingLevel::kUmaOnly)};
 
-// static
-const base::TimeDelta WatchHangsInScope::kDefaultHangWatchTime =
-    base::Seconds(10);
-
 constexpr const char* kThreadName = "HangWatcher";
 
 // The time that the HangWatcher thread will sleep for between calls to
@@ -223,7 +219,9 @@ constexpr auto kMonitoringPeriod = base::Seconds(10);
 
 WatchHangsInScope::WatchHangsInScope(TimeDelta timeout) {
   internal::HangWatchState* current_hang_watch_state =
-      internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+      HangWatcher::IsEnabled()
+          ? internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get()
+          : nullptr;
 
   DCHECK(timeout >= base::TimeDelta()) << "Negative timeouts are invalid.";
 
@@ -742,7 +740,7 @@ void HangWatcher::WatchStateSnapShot::Init(
       // Emit trace events for monitored threads.
       if (ThreadTypeLoggingLevelGreaterOrEqual(watch_state.get()->thread_type(),
                                                LoggingLevel::kUmaOnly)) {
-        const uint64_t thread_id = watch_state.get()->GetThreadID();
+        const PlatformThreadId thread_id = watch_state.get()->GetThreadID();
         const auto track = perfetto::Track::FromPointer(
             this, perfetto::ThreadTrack::ForThread(thread_id));
         TRACE_EVENT_BEGIN("base", "HangWatcher::ThreadHung", track, deadline);
@@ -760,9 +758,8 @@ void HangWatcher::WatchStateSnapShot::Init(
       // the next capture then they'll already be marked and will be included
       // in the capture at that time.
       if (thread_marked && all_threads_marked) {
-        hung_watch_state_copies_.push_back(WatchStateCopy{
-            deadline,
-            static_cast<PlatformThreadId>(watch_state.get()->GetThreadID())});
+        hung_watch_state_copies_.push_back(
+            WatchStateCopy{deadline, watch_state.get()->GetThreadID()});
       } else {
         all_threads_marked = false;
       }
@@ -1000,9 +997,9 @@ void HangWatcher::UnregisterThread() {
 namespace internal {
 namespace {
 
-constexpr uint64_t kOnlyDeadlineMask = 0x00FFFFFFFFFFFFFFu;
+constexpr uint64_t kOnlyDeadlineMask = 0x00FF'FFFF'FFFF'FFFFu;
 constexpr uint64_t kOnlyFlagsMask = ~kOnlyDeadlineMask;
-constexpr uint64_t kMaximumFlag = 0x8000000000000000u;
+constexpr uint64_t kMaximumFlag = 0x8000'0000'0000'0000u;
 
 // Use as a mask to keep persistent flags and the deadline.
 constexpr uint64_t kPersistentFlagsAndDeadlineMask =
@@ -1062,7 +1059,8 @@ void HangWatchDeadline::SetDeadline(TimeTicks new_deadline) {
   const uint64_t old_bits = bits_.load(std::memory_order_relaxed);
   const uint64_t new_flags =
       ExtractFlags(old_bits & kPersistentFlagsAndDeadlineMask);
-  bits_.store(new_flags | ExtractDeadline(new_deadline.ToInternalValue()),
+  bits_.store(new_flags | ExtractDeadline(static_cast<uint64_t>(
+                              new_deadline.ToInternalValue())),
               std::memory_order_relaxed);
 }
 
@@ -1133,7 +1131,8 @@ TimeTicks HangWatchDeadline::DeadlineFromBits(uint64_t bits) {
   // representable value.
   DCHECK(bits <= kOnlyDeadlineMask)
       << "Flags bits are set. Remove them before returning deadline.";
-  return TimeTicks::FromInternalValue(bits);
+  static_assert(kOnlyDeadlineMask <= std::numeric_limits<int64_t>::max());
+  return TimeTicks::FromInternalValue(static_cast<int64_t>(bits));
 }
 
 bool HangWatchDeadline::IsFlagSet(Flag flag) const {
@@ -1172,7 +1171,9 @@ HangWatchState::HangWatchState(HangWatcher::ThreadType thread_type)
 // provided by PlatformThread. Make sure to use the same for correct
 // attribution.
 #if BUILDFLAG(IS_MAC)
-  pthread_threadid_np(pthread_self(), &thread_id_);
+  uint64_t thread_id;
+  pthread_threadid_np(pthread_self(), &thread_id);
+  thread_id_ = thread_id;
 #else
   thread_id_ = PlatformThread::CurrentId();
 #endif
@@ -1275,7 +1276,7 @@ HangWatchState::GetHangWatchStateForCurrentThread() {
   return hang_watch_state.get();
 }
 
-uint64_t HangWatchState::GetThreadID() const {
+PlatformThreadId HangWatchState::GetThreadID() const {
   return thread_id_;
 }
 

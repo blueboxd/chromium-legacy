@@ -683,12 +683,17 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class ScopedUnpackParametersResetRestore;
 
   // WebGL extensions.
+  friend class EXTColorBufferFloat;
+  friend class EXTColorBufferHalfFloat;
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
   friend class EXTTextureCompressionBPTC;
   friend class EXTTextureCompressionRGTC;
+  friend class OESDrawBuffersIndexed;
+  friend class OESTextureFloat;
   friend class OESVertexArrayObject;
   friend class OVRMultiview2;
+  friend class WebGLColorBufferFloat;
   friend class WebGLCompressedTextureASTC;
   friend class WebGLCompressedTextureETC;
   friend class WebGLCompressedTextureETC1;
@@ -749,6 +754,26 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool DrawingBufferClientUserAllocatedMultisampledRenderbuffers() override;
   void DrawingBufferClientForceLostContextWithAutoRecovery() override;
 
+  // All draw calls should go through this wrapper so that various
+  // bookkeeping related to compositing and preserveDrawingBuffer
+  // can happen.
+  template <typename Func>
+  void DrawWrapper(const char* func_name,
+                   CanvasPerformanceMonitor::DrawType draw_type,
+                   Func draw_func) {
+    if (!bound_vertex_array_object_->IsAllEnabledAttribBufferBound()) {
+      SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                        "no buffer is bound to enabled attribute");
+      return;
+    }
+
+    ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
+                                                     drawing_buffer_.get());
+    OnBeforeDrawCall(draw_type);
+    draw_func();
+    RecordUKMCanvasDrawnToAtFirstDrawCall();
+  }
+
   virtual void DestroyContext();
   void MarkContextChanged(ContentChangeType,
                           CanvasPerformanceMonitor::DrawType);
@@ -790,10 +815,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Restore the client unpack parameters.
   virtual void RestoreUnpackParameters();
 
-  scoped_refptr<Image> DrawImageIntoBuffer(scoped_refptr<Image>,
-                                           int width,
-                                           int height,
-                                           const char* function_name);
+  // Draw the specified image into a new image. Used for a workaround when
+  // uploading SVG images (see the caller).
+  scoped_refptr<Image> DrawImageIntoBufferForTexImage(
+      scoped_refptr<Image>,
+      int width,
+      int height,
+      const char* function_name);
 
   // Structure for rendering to a DrawingBuffer, instead of directly
   // to the back-buffer of m_context.
@@ -870,7 +898,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     enum class CacheType { kImage, kVideo };
     LRUCanvasResourceProviderCache(wtf_size_t capacity, CacheType type);
     // The pointer returned is owned by the image buffer map.
-    CanvasResourceProvider* GetCanvasResourceProvider(const gfx::Size&);
+    CanvasResourceProvider* GetCanvasResourceProvider(const SkImageInfo&);
 
    private:
     void BubbleToFront(wtf_size_t idx);
@@ -915,6 +943,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   GLint scissor_box_[4];
   GLfloat clear_depth_;
   GLint clear_stencil_;
+  // State of the color mask - or the zeroth indexed color mask, if
+  // OES_draw_buffers_indexed is enabled.
   GLboolean color_mask_[4];
   GLboolean depth_mask_;
 
@@ -1034,6 +1064,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   }
 
   bool ExtensionSupportedAndAllowed(const ExtensionTracker*);
+  WebGLExtension* EnableExtensionIfSupported(const String& name);
 
   inline bool ExtensionEnabled(WebGLExtensionName name) {
     return extension_enabled_[name];
@@ -1346,8 +1377,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                   GLenum shader_type);
 
   // Helper function to check texture binding target and texture bound to the
-  // target.  Generate GL errors and return 0 if target is invalid or texture
-  // bound is null.  Otherwise, return the texture bound to the target.
+  // target.  Generates GL errors and returns 0 if target is invalid or texture
+  // bound is null.  Otherwise, returns the texture bound to the target.
   WebGLTexture* ValidateTextureBinding(const char* function_name,
                                        GLenum target);
 
@@ -1358,8 +1389,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check texture 2D target and texture bound to the target.
   // Generate GL errors and return 0 if target is invalid or texture bound is
   // null.  Otherwise, return the texture bound to the target.
+  // If |validate_opaque_textures| is true, the helper will also generate a GL
+  // error when the texture bound to the target is opaque.
+  // See https://www.w3.org/TR/webxrlayers-1/#opaque-texture for details about
+  // opaque textures.
   WebGLTexture* ValidateTexture2DBinding(const char* function_name,
-                                         GLenum target);
+                                         GLenum target,
+                                         bool validate_opaque_textures = false);
 
   void AddExtensionSupportedFormatsTypes();
   void AddExtensionSupportedFormatsTypesWebGL2();

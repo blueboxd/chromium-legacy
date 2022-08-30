@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {RectUtil} from '/common/rect_util.js';
+
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 
@@ -137,7 +139,7 @@ export class Magnifier {
     }, Magnifier.IGNORE_FOCUS_UPDATES_INITIALIZATION_MS);
 
     chrome.commandLinePrivate.hasSwitch(
-        'enable-magnifier-debug-draw-rect', (enabled) => {
+        'enable-magnifier-debug-draw-rect', enabled => {
           if (enabled) {
             this.magnifierDebugDrawRect_ = true;
           }
@@ -170,7 +172,7 @@ export class Magnifier {
    * @private
    */
   updateFromPrefs_(prefs) {
-    prefs.forEach((pref) => {
+    prefs.forEach(pref => {
       switch (pref.key) {
         case Magnifier.Prefs.SCREEN_MAGNIFIER_FOCUS_FOLLOWING:
           this.screenMagnifierFocusFollowing_ = Boolean(pref.value);

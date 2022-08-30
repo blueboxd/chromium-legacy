@@ -219,7 +219,8 @@ void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
   }
 }
 
-#if BUILDFLAG(IS_CHROMECAST)
+// TODO(crbug.com/1328879): Remove this method when fixing the bug.
+#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
 void LaunchUtilityProcessServiceDeprecated(
     const std::string& service_name,
     const std::u16string& display_name,

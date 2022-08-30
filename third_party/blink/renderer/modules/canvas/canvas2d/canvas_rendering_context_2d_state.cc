@@ -343,6 +343,13 @@ void CanvasRenderingContext2DState::SetFont(
     selector->RegisterForInvalidationCallbacks(this);
 }
 
+bool CanvasRenderingContext2DState::IsFontDirtyForFilter() const {
+  // Indicates if the font has changed since the last time the filter was set.
+  if (!HasRealizedFont())
+    return true;
+  return GetFont() != font_for_filter_;
+}
+
 const Font& CanvasRenderingContext2DState::GetFont() const {
   DCHECK(realized_font_);
   return font_;
@@ -591,9 +598,11 @@ sk_sp<PaintFilter>& CanvasRenderingContext2DState::ShadowOnlyImageFilter()
   using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_only_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
+    // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
     shadow_only_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
-        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma, shadow_color_,
-        ShadowMode::kDrawShadowOnly, nullptr);
+        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma,
+        SkColor4f::FromColor(shadow_color_), ShadowMode::kDrawShadowOnly,
+        nullptr);
   }
   return shadow_only_image_filter_;
 }
@@ -603,8 +612,10 @@ CanvasRenderingContext2DState::ShadowAndForegroundImageFilter() const {
   using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_and_foreground_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
+    // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
     shadow_and_foreground_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
-        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma, shadow_color_,
+        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma,
+        SkColor4f::FromColor(shadow_color_),
         ShadowMode::kDrawShadowAndForeground, nullptr);
   }
   return shadow_and_foreground_image_filter_;

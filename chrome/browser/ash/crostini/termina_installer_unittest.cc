@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/crostini/termina_installer.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -78,12 +77,13 @@ class TerminaInstallTest : public testing::Test {
     run_loop_.Quit();
   }
 
-  void ExpectNotCalled(TerminaInstaller::InstallResult result) {
-    ASSERT_TRUE(false) << "Callback was run unexpectedly";
-  }
-
   void ExpectOffline(TerminaInstaller::InstallResult result) {
     EXPECT_EQ(result, TerminaInstaller::InstallResult::Offline);
+    run_loop_.Quit();
+  }
+
+  void ExpectCancelled(TerminaInstaller::InstallResult result) {
+    EXPECT_EQ(result, TerminaInstaller::InstallResult::Cancelled);
     run_loop_.Quit();
   }
 
@@ -136,14 +136,6 @@ class TerminaInstallTest : public testing::Test {
     EXPECT_EQ(termina_installer_.GetInstallLocation(),
               base::FilePath(dlc_root_path_));
     EXPECT_EQ(termina_installer_.GetDlcId(), "termina-dlc");
-  }
-
-  void ExpectComponentInstalled() {
-    EXPECT_TRUE(component_manager_->IsRegisteredMayBlock(
-        imageloader::kTerminaComponentName));
-    EXPECT_EQ(termina_installer_.GetInstallLocation(),
-              base::FilePath(component_mount_path_));
-    EXPECT_EQ(termina_installer_.GetDlcId(), absl::nullopt);
   }
 
  protected:
@@ -246,6 +238,17 @@ TEST_F(TerminaInstallTest, InstallDlc) {
   ExpectDlcInstalled();
 }
 
+TEST_F(TerminaInstallTest, InstallDlcCancell) {
+  termina_installer_.Install(
+      base::BindOnce(&TerminaInstallTest::ExpectCancelled,
+                     base::Unretained(this)),
+      /*is_initial_install=*/true);
+  termina_installer_.CancelInstall();
+  run_loop_.Run();
+
+  CheckDlcInstallCalledTimes(1);
+}
+
 TEST_F(TerminaInstallTest, InstallDlcError) {
   fake_dlc_client_->set_install_error("An error");
 
@@ -294,14 +297,14 @@ TEST_F(TerminaInstallTest, InstallDlcBusyRetryIsCancelable) {
   fake_dlc_client_->set_install_error(dlcservice::kErrorBusy);
 
   termina_installer_.Install(
-      base::BindOnce(&TerminaInstallTest::ExpectNotCalled,
+      base::BindOnce(&TerminaInstallTest::ExpectCancelled,
                      base::Unretained(this)),
       /*is_initial_install=*/true);
   task_env_.FastForwardBy(base::Seconds(0));
 
   CheckDlcInstallCalledTimes(1);
 
-  termina_installer_.Cancel();
+  termina_installer_.CancelInstall();
 
   task_env_.FastForwardBy(base::Days(1));
 
@@ -378,26 +381,10 @@ TEST_F(TerminaInstallTest, InstallDlcFallbackError) {
   fake_dlc_client_->set_install_error("An error");
   PrepareComponentForLoad();
 
-  termina_installer_.Install(base::BindOnce(&TerminaInstallTest::ExpectSuccess,
+  termina_installer_.Install(base::BindOnce(&TerminaInstallTest::ExpectFailure,
                                             base::Unretained(this)),
                              /*is_initial_install=*/false);
   run_loop_.Run();
-
-  CheckDlcInstallCalledTimes(1);
-  ExpectComponentInstalled();
-}
-
-TEST_F(TerminaInstallTest, InstallDlcFallbackIsCancelable) {
-  fake_dlc_client_->set_install_error("An error");
-  PrepareComponentForLoad();
-
-  termina_installer_.Install(
-      base::BindOnce(&TerminaInstallTest::ExpectNotCalled,
-                     base::Unretained(this)),
-      /*is_initial_install=*/false);
-  termina_installer_.Cancel();
-
-  task_env_.FastForwardBy(base::Days(1));
 
   CheckDlcInstallCalledTimes(1);
   EXPECT_FALSE(component_manager_->IsRegisteredMayBlock(
@@ -433,12 +420,13 @@ TEST_F(TerminaInstallTest, InstallDlcFallbackOfflineComponentAlreadyInstalled) {
   network_connection_tracker->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_NONE);
 
-  termina_installer_.Install(base::BindOnce(&TerminaInstallTest::ExpectSuccess,
+  termina_installer_.Install(base::BindOnce(&TerminaInstallTest::ExpectOffline,
                                             base::Unretained(this)),
                              /*is_initial_install=*/false);
   run_loop_.Run();
 
-  ExpectComponentInstalled();
+  EXPECT_FALSE(component_manager_->IsRegisteredMayBlock(
+      imageloader::kTerminaComponentName));
 }
 
 }  // namespace crostini

@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(DocumentServicePrerenderingBrowserTest,
   mojo::Remote<mojom::Echo> echo_remote;
   bool echo_deleted = false;
   new DocumentServiceEchoImpl(
-      prerendered_frame_host, echo_remote.BindNewPipeAndPassReceiver(),
+      *prerendered_frame_host, echo_remote.BindNewPipeAndPassReceiver(),
       base::BindOnce([](bool* deleted) { *deleted = true; }, &echo_deleted));
 
   // Activate the prerendered page.
@@ -119,13 +119,13 @@ IN_PROC_BROWSER_TEST_F(DocumentServiceBFCacheBrowserTest, DocumentService) {
   // 1) Navigate to A.
   ASSERT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHost* rfh_a =
-      web_contents()->GetMainFrame();  // current_frame_host();
+      web_contents()->GetPrimaryMainFrame();  // current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   mojo::Remote<mojom::Echo> echo_remote;
   bool echo_deleted = false;
   new DocumentServiceEchoImpl(
-      rfh_a, echo_remote.BindNewPipeAndPassReceiver(),
+      *rfh_a, echo_remote.BindNewPipeAndPassReceiver(),
       base::BindOnce([](bool* deleted) { *deleted = true; }, &echo_deleted));
 
   // 2) Navigate to B.

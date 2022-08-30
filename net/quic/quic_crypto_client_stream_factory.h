@@ -27,9 +27,10 @@ namespace net {
 // to facilitate testing code with mock implementations.
 class NET_EXPORT QuicCryptoClientStreamFactory {
  public:
-  virtual ~QuicCryptoClientStreamFactory() {}
+  virtual ~QuicCryptoClientStreamFactory() = default;
 
-  virtual quic::QuicCryptoClientStream* CreateQuicCryptoClientStream(
+  virtual std::unique_ptr<quic::QuicCryptoClientStream>
+  CreateQuicCryptoClientStream(
       const quic::QuicServerId& server_id,
       QuicChromiumClientSession* session,
       std::unique_ptr<quic::ProofVerifyContext> proof_verify_context,

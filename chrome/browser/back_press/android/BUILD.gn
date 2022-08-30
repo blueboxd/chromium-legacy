@@ -23,12 +23,7 @@ android_library("java") {
   ]
 }
 
-java_library("junit") {
-  testonly = true
-
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
-
+robolectric_library("junit") {
   sources = [ "java/src/org/chromium/chrome/browser/back_press/BackPressManagerUnitTest.java" ]
 
   deps = [
@@ -38,14 +33,13 @@ java_library("junit") {
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
     "//components/browser_ui/widget/android:java",
-    "//third_party/android_deps:robolectric_all_java",
     "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/junit:junit",
   ]
 }
 
 # On-device unit tests.
-android_library("javatests") {
+android_library("unit_device_javatests") {
   testonly = true
 
   sources = [
@@ -57,6 +51,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//chrome/browser/flags:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
     "//components/browser_ui/widget/android:java",

@@ -273,4 +273,19 @@ views::Widget* WindowManagementImpl::GetWidget(
   return widget;
 }
 
+void WindowManagementImpl::GetAllScreens(GetAllScreensCallback callback) {
+  std::vector<blink::mojom::CrosScreenInfoPtr> screens;
+
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    auto screen = blink::mojom::CrosScreenInfo::New();
+    screen->work_area = display.work_area();
+    screen->bounds = display.bounds();
+    screen->is_primary =
+        display.id() == display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    screens.push_back(std::move(screen));
+  }
+
+  std::move(callback).Run(std::move(screens));
+}
+
 }  // namespace ash

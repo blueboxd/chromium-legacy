@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ash/crostini/crostini_port_forwarder.h"
 
-#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
@@ -32,9 +32,12 @@ using Protocol = CrostiniPortForwarder::Protocol;
 class CrostiniPortForwarderTest : public testing::Test {
  public:
   CrostiniPortForwarderTest()
-      : default_container_id_(ContainerId::GetDefault()),
-        other_container_id_(ContainerId("other", "other")),
-        inactive_container_id_(ContainerId("inactive", "inactive")) {}
+      : default_container_id_(DefaultContainerId()),
+        other_container_id_(
+            guest_os::GuestId(kCrostiniDefaultVmType, "other", "other")),
+        inactive_container_id_(
+            guest_os::GuestId(kCrostiniDefaultVmType, "inactive", "inactive")) {
+  }
 
   CrostiniPortForwarderTest(const CrostiniPortForwarderTest&) = delete;
   CrostiniPortForwarderTest& operator=(const CrostiniPortForwarderTest&) =
@@ -44,6 +47,7 @@ class CrostiniPortForwarderTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
@@ -70,6 +74,7 @@ class CrostiniPortForwarderTest : public testing::Test {
     ash::SeneschalClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
+    ash::ChunneldClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -84,9 +89,10 @@ class CrostiniPortForwarderTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
-  CrostiniPortForwarder::PortRuleKey GetPortKey(int port_number,
-                                                Protocol protocol_type,
-                                                ContainerId container_id) {
+  CrostiniPortForwarder::PortRuleKey GetPortKey(
+      int port_number,
+      Protocol protocol_type,
+      guest_os::GuestId container_id) {
     return {
         .port_number = static_cast<uint16_t>(port_number),
         .protocol_type = protocol_type,
@@ -127,7 +133,7 @@ class CrostiniPortForwarderTest : public testing::Test {
               pref.value().FindIntKey(crostini::kPortNumberKey).value());
     EXPECT_EQ(static_cast<int>(key.protocol_type),
               pref.value().FindIntKey(crostini::kPortProtocolKey).value());
-    EXPECT_EQ(key.container_id, ContainerId(pref.value()));
+    EXPECT_EQ(key.container_id, guest_os::GuestId(pref.value()));
     EXPECT_EQ(label, *pref.value().FindStringKey(crostini::kPortLabelKey));
   }
 
@@ -187,9 +193,9 @@ class CrostiniPortForwarderTest : public testing::Test {
     return success;
   }
 
-  ContainerId default_container_id_;
-  ContainerId other_container_id_;
-  ContainerId inactive_container_id_;
+  guest_os::GuestId default_container_id_;
+  guest_os::GuestId other_container_id_;
+  guest_os::GuestId inactive_container_id_;
 
   testing::NiceMock<MockPortObserver> mock_observer_;
 
@@ -434,7 +440,7 @@ TEST_F(CrostiniPortForwarderTest, InactiveContainerHandling) {
 }
 
 TEST_F(CrostiniPortForwarderTest, DeactivateAllPorts) {
-  ContainerId container_id = default_container_id_;
+  guest_os::GuestId container_id = default_container_id_;
   std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
       GetPortKey(5000, Protocol::TCP, container_id),
       GetPortKey(5000, Protocol::UDP, container_id),
@@ -465,7 +471,7 @@ TEST_F(CrostiniPortForwarderTest, DeactivateAllPorts) {
 }
 
 TEST_F(CrostiniPortForwarderTest, RemoveAllPorts) {
-  ContainerId container_id = default_container_id_;
+  guest_os::GuestId container_id = default_container_id_;
   std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
       GetPortKey(5000, Protocol::TCP, container_id),
       GetPortKey(5000, Protocol::UDP, container_id),
@@ -498,7 +504,7 @@ TEST_F(CrostiniPortForwarderTest, RemoveAllPorts) {
 }
 
 TEST_F(CrostiniPortForwarderTest, GetActivePorts) {
-  ContainerId container_id = default_container_id_;
+  guest_os::GuestId container_id = default_container_id_;
   std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
       GetPortKey(5000, Protocol::TCP, container_id),
       GetPortKey(5000, Protocol::UDP, container_id),

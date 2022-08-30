@@ -36,7 +36,6 @@ import collections
 import json
 import logging
 import optparse
-import os
 import re
 import sys
 import tempfile
@@ -56,7 +55,11 @@ from blinkpy.w3c.wpt_manifest import WPTManifest, MANIFEST_NAME
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.models.test_run_results import TestRunException
-from blinkpy.web_tests.models.typ_types import TestExpectations, ResultType
+from blinkpy.web_tests.models.typ_types import (
+    TestExpectations,
+    ResultType,
+    SerializableTypHost,
+)
 from blinkpy.web_tests.port import driver
 from blinkpy.web_tests.port import server_process
 from blinkpy.web_tests.port.factory import PortFactory
@@ -148,7 +151,6 @@ class Port(object):
         ('mac11-arm64', 'arm64'),
         ('mac12', 'x86_64'),
         ('mac12-arm64', 'arm64'),
-        ('win7', 'x86'),
         ('win10.20h2', 'x86'),
         ('win11', 'x64'),
         ('trusty', 'x86_64'),
@@ -160,7 +162,7 @@ class Port(object):
             'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
             'mac12', 'mac12-arm64'
         ],
-        'win': ['win7', 'win10.20h2', 'win11'],
+        'win': ['win10.20h2', 'win11'],
         'linux': ['trusty'],
         'fuchsia': ['fuchsia'],
     }
@@ -991,7 +993,7 @@ class Port(object):
             ]
             tests_by_dir = defaultdict(list)
             for test in tests + wpt_tests:
-                dirname = os.path.dirname(test) + '/'
+                dirname = self._filesystem.dirname(test) + '/'
                 tests_by_dir[dirname].append(test)
 
             if not self._options.no_virtual_tests:
@@ -1004,7 +1006,10 @@ class Port(object):
         files = []
         for path in paths:
             if self._has_supported_extension_for_all(path):
-                files.append(path)
+                # only append the file when it is in tests_by_dir
+                dirname = self._filesystem.dirname(path) + '/'
+                if path in tests_by_dir.get(dirname, []):
+                    files.append(path)
                 continue
             path = path + '/' if path[-1] != '/' else path
             for key, value in tests_by_dir.items():
@@ -1090,6 +1095,8 @@ class Port(object):
         assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
+        self._filesystem.maybe_make_directory(
+            self._filesystem.join(self.web_tests_dir(), path))
         manifest_path = self._filesystem.join(self.web_tests_dir(), path,
                                               MANIFEST_NAME)
         if not self._filesystem.exists(manifest_path) or self.get_option(
@@ -1277,14 +1284,16 @@ class Port(object):
     def skips_test(self, test):
         """Checks whether the given test is skipped for this port.
 
-        Returns True if the test is skipped because the port runs smoke tests
-        only or because the test is marked as Skip in NeverFixTest or because
-        it is a virtual test not intended to run on this platform (otherwise
-        the test is only marked as Skip indicating a temporary skip).
+        Returns True if:
+          - the test is a manual test
+          - the port runs smoke tests only and the test is not in the list
+          - the test is marked as Skip in NeverFixTest
+          - the test is a virtual test not intended to run on this platform.
         """
-        return self.skipped_due_to_smoke_tests(
-            test) or self.skipped_in_never_fix_tests(
-            test) or self.virtual_test_skipped_due_to_platform_config(test)
+        return (self.is_manual_test(test)
+                or self.skipped_due_to_smoke_tests(test)
+                or self.skipped_in_never_fix_tests(test)
+                or self.virtual_test_skipped_due_to_platform_config(test))
 
     @memoized
     def _tests_from_file(self, filename):
@@ -1296,6 +1305,10 @@ class Port(object):
                 continue
             tests.add(line)
         return tests
+
+    def is_manual_test(self, test):
+        """Skip the test if it is a WPT manual test"""
+        return self.is_wpt_test(test) and '-manual.' in test
 
     def skipped_due_to_smoke_tests(self, test):
         """Checks if the test is skipped based on the set of Smoke tests.
@@ -1484,6 +1497,10 @@ class Port(object):
     def default_results_directory(self):
         """Returns the absolute path to the build directory."""
         return self._build_path()
+
+    @memoized
+    def typ_host(self):
+        return SerializableTypHost()
 
     def setup_test_run(self):
         """Performs port-specific work at the beginning of a test run."""
@@ -1717,11 +1734,11 @@ class Port(object):
         """Ports may provide a way to abbreviate configuration specifiers to conveniently
         refer to them as one term or alias specific values to more generic ones. For example:
 
-        (vista, win7) -> win # Abbreviate all Windows versions into one namesake.
+        (win10, win11) -> win # Abbreviate all Windows versions into one namesake.
         (precise, trusty) -> linux  # Change specific name of Linux distro to a more generic term.
 
         Returns a dictionary, each key representing a macro term ('win', for example),
-        and value being a list of valid configuration specifiers (such as ['vista', 'win7']).
+        and value being a list of valid configuration specifiers (such as ['win10', 'win11']).
         """
         return self.CONFIGURATION_SPECIFIER_MACROS
 
@@ -1829,22 +1846,27 @@ class Port(object):
         full_port_name = self.determine_full_port_name(
             self.host, self._options, self.port_name)
         builder_category = self.get_option('ignore_builder_category', 'layout')
-        factory = BotTestExpectationsFactory(self.host.builders)
-        # FIXME: This only grabs release builder's flakiness data. If we're running debug,
-        # when we should grab the debug builder's data.
-        expectations = factory.expectations_for_port(full_port_name,
-                                                     builder_category)
+        step_names = ['blink_web_tests', 'blink_wpt_tests']
+        retval = {}
+        for step_name in step_names:
+            factory = BotTestExpectationsFactory(self.host.builders, step_name)
+            # FIXME: This only grabs release builder's flakiness data. If we're running debug,
+            # when we should grab the debug builder's data.
+            expectations = factory.expectations_for_port(full_port_name,
+                                                         builder_category)
 
-        if not expectations:
-            return {}
+            if not expectations:
+                continue
 
-        ignore_mode = self.get_option('ignore_flaky_tests')
-        if ignore_mode == 'very-flaky' or ignore_mode == 'maybe-flaky':
-            return expectations.flakes_by_path(ignore_mode == 'very-flaky')
-        if ignore_mode == 'unexpected':
-            return expectations.unexpected_results_by_path()
-        _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
-        return {}
+            ignore_mode = self.get_option('ignore_flaky_tests')
+            if ignore_mode == 'very-flaky' or ignore_mode == 'maybe-flaky':
+                retval.update(expectations.flakes_by_path(ignore_mode == 'very-flaky'))
+            elif ignore_mode == 'unexpected':
+                retval.update(expectations.unexpected_results_by_path())
+            else:
+                _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
+
+        return retval
 
     def default_expectations_files(self):
         """Returns a list of paths to expectations files that apply by default.

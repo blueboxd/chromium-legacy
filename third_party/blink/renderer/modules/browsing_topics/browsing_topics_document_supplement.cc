@@ -83,22 +83,13 @@ ScriptPromise BrowsingTopicsDocumentSupplement::GetBrowsingTopics(
     return promise;
   }
 
-  // Fenced frames disallow all permissions policies which would deny this call
-  // regardless, but adding this check to make the error more explicit.
-  if (document.GetFrame()->IsInFencedFrameTree()) {
+  if (!document.GetFrame()->GetPage()->MainFrame()->IsOutermostMainFrame() ||
+      document.GetFrame()->GetPage()->IsPrerendering()) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        "document.browsingTopics() is not allowed in a fenced frame."));
-    return promise;
-  }
+        "document.browsingTopics() is only allowed in the primary main frame "
+        "or in its child iframes."));
 
-  // The Mojo requests on a prerendered page will be canceled by default. Adding
-  // this check to make the error more explicit.
-  if (document.GetFrame()->GetPage()->IsPrerendering()) {
-    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        "document.browsingTopics() is not allowed when the page is being "
-        "prerendered."));
     return promise;
   }
 
@@ -133,34 +124,22 @@ ScriptPromise BrowsingTopicsDocumentSupplement::GetBrowsingTopics(
   document_host_->GetBrowsingTopics(WTF::Bind(
       [](ScriptPromiseResolver* resolver,
          BrowsingTopicsDocumentSupplement* supplement,
-         mojom::blink::GetBrowsingTopicsResultPtr result) {
+         Vector<mojom::blink::EpochTopicPtr> browsing_topics) {
         DCHECK(resolver);
         DCHECK(supplement);
 
-        if (result->is_error_message()) {
-          ScriptState* script_state = resolver->GetScriptState();
-          ScriptState::Scope scope(script_state);
-
-          resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-              script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-              result->get_error_message()));
-          return;
-        }
-
-        DCHECK(result->is_browsing_topics());
-
-        HeapVector<Member<BrowsingTopic>> result_array;
-        for (const auto& topic : result->get_browsing_topics()) {
+        HeapVector<Member<BrowsingTopic>> result;
+        for (const auto& topic : browsing_topics) {
           BrowsingTopic* result_topic = BrowsingTopic::Create();
           result_topic->setTopic(topic->topic);
           result_topic->setVersion(topic->version);
           result_topic->setConfigVersion(topic->config_version);
           result_topic->setModelVersion(topic->model_version);
           result_topic->setTaxonomyVersion(topic->taxonomy_version);
-          result_array.push_back(result_topic);
+          result.push_back(result_topic);
         }
 
-        resolver->Resolve(result_array);
+        resolver->Resolve(result);
       },
       WrapPersistent(resolver), WrapPersistent(this)));
 

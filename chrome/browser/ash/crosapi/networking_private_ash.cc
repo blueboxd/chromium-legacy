@@ -14,6 +14,11 @@
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+
+using chromeos::NetworkHandler;
+using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
 
 namespace crosapi {
 
@@ -224,9 +229,36 @@ void DeviceStateListCallbackAdapter(
   std::move(callback).Run(std::move(list));
 }
 
+mojom::CaptivePortalStatus GetCaptivePortalStatusFromNetworkState(
+    const NetworkState* network) {
+  if (!network) {
+    return mojom::CaptivePortalStatus::kUnknown;
+  }
+  if (!network->IsConnectedState()) {
+    return mojom::CaptivePortalStatus::kOnline;
+  }
+
+  switch (network->portal_state()) {
+    case NetworkState::PortalState::kUnknown:
+      return mojom::CaptivePortalStatus::kUnknown;
+    case NetworkState::PortalState::kOnline:
+      return mojom::CaptivePortalStatus::kOnline;
+    case NetworkState::PortalState::kPortalSuspected:
+    case NetworkState::PortalState::kPortal:
+    case NetworkState::PortalState::kNoInternet:
+      return mojom::CaptivePortalStatus::kPortal;
+    case NetworkState::PortalState::kProxyAuthRequired:
+      return mojom::CaptivePortalStatus::kProxyAuthRequired;
+  }
+}
+
 }  // namespace
 
-NetworkingPrivateAsh::NetworkingPrivateAsh() = default;
+NetworkingPrivateAsh::NetworkingPrivateAsh() {
+  observers_.set_disconnect_handler(base::BindRepeating(
+      &NetworkingPrivateAsh::OnObserverDisconnected, base::Unretained(this)));
+}
+
 NetworkingPrivateAsh::~NetworkingPrivateAsh() = default;
 
 void NetworkingPrivateAsh::BindReceiver(
@@ -383,6 +415,94 @@ void NetworkingPrivateAsh::DisableNetworkType(
 void NetworkingPrivateAsh::RequestScan(const std::string& type,
                                        RequestScanCallback callback) {
   GetDelegate()->RequestScan(type, std::move(callback));
+}
+
+void NetworkingPrivateAsh::AddObserver(
+    mojo::PendingRemote<mojom::NetworkingPrivateDelegateObserver> observer) {
+  const bool is_listening_network_state = !observers_.empty();
+
+  observers_.Add(mojo::Remote<mojom::NetworkingPrivateDelegateObserver>(
+      std::move(observer)));
+
+  if (!is_listening_network_state) {
+    auto* net_handler = NetworkHandler::Get();
+    network_state_observation_.Observe(net_handler->network_state_handler());
+    network_certificate_observation_.Observe(
+        net_handler->network_certificate_handler());
+  }
+}
+
+void NetworkingPrivateAsh::DeviceListChanged() {
+  for (auto& observer : observers_) {
+    observer->OnDeviceStateListChanged();
+  }
+}
+
+void NetworkingPrivateAsh::DevicePropertiesUpdated(
+    const chromeos::DeviceState* device) {
+  // networkingPrivate uses a single event for device changes.
+  DeviceListChanged();
+
+  // DeviceState changes may affect Cellular networks.
+  if (device->type() != shill::kTypeCellular)
+    return;
+
+  NetworkStateHandler::NetworkStateList cellular_networks;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      chromeos::NetworkTypePattern::Cellular(), false /* configured_only */,
+      true /* visible_only */, -1 /* default limit */, &cellular_networks);
+  for (const chromeos::NetworkState* network : cellular_networks) {
+    NetworkPropertiesUpdated(network);
+  }
+}
+
+void NetworkingPrivateAsh::NetworkListChanged() {
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
+      &networks);
+  std::vector<std::string> changes;
+  for (NetworkStateHandler::NetworkStateList::const_iterator iter =
+           networks.begin();
+       iter != networks.end(); ++iter) {
+    changes.push_back((*iter)->guid());
+  }
+
+  for (auto& observer : observers_) {
+    observer->OnNetworkListChangedEvent(changes);
+  }
+}
+
+void NetworkingPrivateAsh::NetworkPropertiesUpdated(
+    const chromeos::NetworkState* network) {
+  for (auto& observer : observers_) {
+    observer->OnNetworksChangedEvent(
+        std::vector<std::string>(1, network->guid()));
+  }
+}
+
+void NetworkingPrivateAsh::PortalStateChanged(
+    const NetworkState* network,
+    NetworkState::PortalState portal_state) {
+  const std::string guid = network ? network->guid() : std::string();
+  const mojom::CaptivePortalStatus status =
+      GetCaptivePortalStatusFromNetworkState(network);
+
+  for (auto& observer : observers_) {
+    observer->OnPortalDetectionCompleted(guid, status);
+  }
+}
+
+void NetworkingPrivateAsh::OnCertificatesChanged() {
+  for (auto& observer : observers_) {
+    observer->OnCertificateListsChanged();
+  }
+}
+
+void NetworkingPrivateAsh::OnObserverDisconnected(mojo::RemoteSetElementId id) {
+  if (observers_.empty()) {
+    network_state_observation_.Reset();
+    network_certificate_observation_.Reset();
+  }
 }
 
 }  // namespace crosapi

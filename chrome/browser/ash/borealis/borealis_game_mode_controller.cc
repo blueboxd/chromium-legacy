@@ -9,7 +9,7 @@
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
-#include "chromeos/dbus/resourced/resourced_client.h"
+#include "chromeos/ash/components/dbus/resourced/resourced_client.h"
 #include "ui/views/widget/widget.h"
 
 namespace borealis {
@@ -92,9 +92,9 @@ bool BorealisGameModeController::GameModeEnabler::should_record_failure;
 BorealisGameModeController::GameModeEnabler::GameModeEnabler() {
   GameModeEnabler::should_record_failure = true;
   RecordBorealisGameModeResultHistogram(BorealisGameModeResult::kAttempted);
-  if (chromeos::ResourcedClient::Get()) {
-    chromeos::ResourcedClient::Get()->SetGameModeWithTimeout(
-        true, kTimeoutSec,
+  if (ash::ResourcedClient::Get()) {
+    ash::ResourcedClient::Get()->SetGameModeWithTimeout(
+        ash::ResourcedClient::GameMode::BOREALIS, kTimeoutSec,
         base::BindOnce(&GameModeEnabler::OnSetGameMode, false));
   }
   timer_.Start(FROM_HERE, base::Seconds(kRefreshSec), this,
@@ -103,16 +103,17 @@ BorealisGameModeController::GameModeEnabler::GameModeEnabler() {
 
 BorealisGameModeController::GameModeEnabler::~GameModeEnabler() {
   timer_.Stop();
-  if (chromeos::ResourcedClient::Get()) {
-    chromeos::ResourcedClient::Get()->SetGameModeWithTimeout(
-        false, 0, base::BindOnce(&GameModeEnabler::OnSetGameMode, true));
+  if (ash::ResourcedClient::Get()) {
+    ash::ResourcedClient::Get()->SetGameModeWithTimeout(
+        ash::ResourcedClient::GameMode::OFF, 0,
+        base::BindOnce(&GameModeEnabler::OnSetGameMode, true));
   }
 }
 
 void BorealisGameModeController::GameModeEnabler::RefreshGameMode() {
-  if (chromeos::ResourcedClient::Get()) {
-    chromeos::ResourcedClient::Get()->SetGameModeWithTimeout(
-        true, kTimeoutSec,
+  if (ash::ResourcedClient::Get()) {
+    ash::ResourcedClient::Get()->SetGameModeWithTimeout(
+        ash::ResourcedClient::GameMode::BOREALIS, kTimeoutSec,
         base::BindOnce(&GameModeEnabler::OnSetGameMode, true));
   }
 }
@@ -120,11 +121,11 @@ void BorealisGameModeController::GameModeEnabler::RefreshGameMode() {
 // Previous is whether game mode was enabled previous to this call.
 void BorealisGameModeController::GameModeEnabler::OnSetGameMode(
     bool was_refresh,
-    absl::optional<bool> previous) {
+    absl::optional<ash::ResourcedClient::GameMode> previous) {
   if (!previous.has_value()) {
     LOG(ERROR) << "Failed to set Game Mode";
   } else if (GameModeEnabler::should_record_failure && was_refresh &&
-             !previous.value()) {
+             previous.value() != ash::ResourcedClient::GameMode::BOREALIS) {
     // If game mode was not on and it was not the initial call,
     // it means the previous call failed/timed out.
     RecordBorealisGameModeResultHistogram(BorealisGameModeResult::kFailed);

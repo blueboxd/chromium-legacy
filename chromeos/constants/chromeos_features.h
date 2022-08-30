@@ -28,13 +28,13 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCloudGamingDevice;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDarkLightMode;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableOfficeEditingComponentApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableQuickAnswersV2Translation;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kQuickAnswersV2SettingsSubToggle;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kQuickAnswersAlwaysTriggerForSingleWord;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kQuickAnswersForMoreLocales;
 

@@ -147,6 +147,7 @@
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="1163080558183062209">停用拒絕清單上的印表機類型</translation>
 <translation id="117059611145966538">外部列印伺服器</translation>
+<translation id="117080706484659953">允許 <ph name="MAC_OS_NAME" /> 上的政策範圍偵測</translation>
 <translation id="1171785618439752042">你可以透過這項政策，指定從 <ph name="MS_AD_NAME" /> 伺服器提出 Kerberos 票證要求時可使用哪些加密類型。
 
       如果將這項政策的值設為：
@@ -256,6 +257,7 @@
       如果不設定這項政策，<ph name="CHROME_CLEANUP_NAME" />可按照 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> 所設定的政策，將偵測到垃圾軟體的掃描作業相關資訊回報給 Google。<ph name="CHROME_CLEANUP_NAME" />會詢問使用者是否要進行清理，並將掃描結果提供給 Google，協助改善日後的垃圾軟體偵測作業。這些結果包含檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請參閱《Chrome 隱私權白皮書》。
 
       在 <ph name="MS_WIN_NAME" /> 上，這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域、在 Windows 10 專業版上執行，或是已註冊 <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />服務的執行個體。</translation>
+<translation id="1285819498003746288">Event.path API 將無法使用。</translation>
 <translation id="1290634681382861275">管理其他設定，包括 USB、藍牙、政策更新、開發人員模式等等。</translation>
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
@@ -923,6 +925,17 @@
 <translation id="1962864958436828230">設定防止資料外洩的剪貼簿資料大小最低限制</translation>
 <translation id="1964634611280150550">無痕模式已停用</translation>
 <translation id="1964802606569741174">這項政策對 Android YouTube 應用程式沒有影響。如要強制採用 YouTube 安全模式，則必須禁止下載 Android YouTube 應用程式。</translation>
+<translation id="1965363065727209968">setTimeout(…, 0) 常用來細分長時間的 JavaScript 工作。
+          將這項政策設為啟用時，系統不會主動延遲間隔時間小於 4 毫秒的 setTimeouts 和 setIntervals。
+          這麼做可以提升短期間的執行效能，但濫用 API 的網站最終仍會將 setTimeouts 設為延遲。
+
+          這可能會改變網頁上的工作排序，進而導致必須以某種方法透過特定排序完成工作的網站發生異常行為，
+          也可能影響將許多 setTimeout() 設為逾時 0 毫秒 (例如增加 CPU 負載) 的網站。
+
+          對於未設定這項政策的使用者，<ph name="PRODUCT_NAME" /> 將在穩定版上逐步推出變更。
+
+          這項政策是暫時性的，預計會在 <ph name="PRODUCT_NAME" /> 107 中移除。如果有需要的企業眾多，我們將會延長這個期限。
+          </translation>
 <translation id="1967334955994230472">停用 Projector</translation>
 <translation id="1969212217917526199">覆寫遠端存取主機的偵錯版本政策。
 
@@ -1453,6 +1466,14 @@
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2497751676088107779">使用者指令碼</translation>
 <translation id="2497965601277442929">禁止使用者啟用僅限 HTTPS 模式</translation>
+<translation id="249798396824949930"> 這項政策可控管瀏覽器是否可以偵測 <ph name="MAC_OS_NAME" /> 上的強制政策範圍。
+
+      如果將這項政策設為啟用或不設定，系統會根據 <ph name="MAC_OS_NAME" /> 受管理設定檔的範圍，決定每項政策的範圍。
+      如果將這項政策設為停用，則所有政策都將被視為裝置範圍內的政策。
+
+      這項政策是暫時性的，目的是協助使用者能順利在 <ph name="MAC_OS_NAME" /> 上轉換至適當範圍的政策，且將於 <ph name="PRODUCT_NAME" /> 107 中移除。
+
+      </translation>
 <translation id="2498238926436517902">一律自動隱藏檔案櫃</translation>
 <translation id="250022556568924228">如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載《服務條款》，並在裝置本機帳戶的工作階段啟動時向使用者顯示。使用者必須接受《服務條款》才能登入工作階段。
 
@@ -1590,6 +1611,7 @@
 <translation id="264771271300359481">不允許任何網站使用剪貼簿網站權限</translation>
 <translation id="2649896281375932517">讓使用者決定</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
+<translation id="2656559539624760733">不要使用 Chrome Root Store。</translation>
 <translation id="2658653824183107970">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" /></translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="2661628029848851543">允許受管理帳戶的所有使用情況</translation>
@@ -2486,6 +2508,7 @@
 <translation id="3652670852519271837">允許網站要求使用者授予透過 File System API 讀取檔案和目錄的權限</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3654906736796256792">允許執行音訊沙箱</translation>
+<translation id="3655885297177292093">Event.path API 將為預設狀態：在 M109 之前的版本中可供使用，在 M109 到 114 的版本中則無法使用。</translation>
 <translation id="3659542706175323490">如果將這項政策設為啟用，系統會在支援的裝置上，將「連結 AC 電源時啟動」功能保持啟用。「連接 AC 電源時啟動」功能可讓系統在插入 AC 電源線時，從關閉或休眠狀態中重新啟動。
 
       如果將這項政策設為停用，系統會將「連接 AC 電源時啟動」功能保持停用。
@@ -2658,6 +2681,7 @@
 <translation id="3838094946886335701">你可以透過這項政策 (只能設為「建議」) 註冊通訊協定處理常式的清單，其中的通訊協定處理常式會與使用者所註冊的合併，二種皆可供使用。請將「protocol」(通訊協定) 屬性設為「mailto」等類型的網路通訊協定配置，並將「URL」(網址) 屬性設為處理該網路通訊協定的應用程式所使用的網址模式 (這裡的網路通訊協定指的是「通訊協定」欄位中所指定的網路通訊協定配置)。模式可包含「%s」預留位置，將替換為受處理的網址。
 
       使用者無法移除透過政策註冊的通訊協定處理常式，但可透過安裝新的預設處理常式，變更透過政策安裝的通訊協定處理常式。</translation>
+<translation id="3851443303439635700">控制巢狀閾值，系統會在達到此閾值之前延遲啟動 JavaScript setTimeout() 函式</translation>
 <translation id="3857816702027059082">針對清單中的網址啟用 <ph name="CHROME_ENTERPRISE_PLATFORM_IDENTITY_CONNECTOR" />。
 
       透過這項政策，你可以指定要讓哪些網址加入認證流程，接收裝置傳送的信號。
@@ -3000,6 +3024,14 @@
 <translation id="4228745249339680042">你可以透過這項政策指定網址和網域，當網站要求安全金鑰的認證憑證時，這些網址和網域不會顯示提示。系統也會傳送可能會使用個別認證的信號給安全金鑰。如果未設定這項政策，當網站要求安全金鑰的認證時，系統會向 <ph name="PRODUCT_NAME" /> 65 以上版本的使用者顯示提示。
 
       網址只會以 U2F appID 進行比對。網域只會以 webauthn RP ID 進行比對。因此，如要涵蓋 U2F API 和 webauthn API，請列出指定網站的 appID 網址和網域。</translation>
+<translation id="4239112794240794697">這項政策會授予 Projector 權限，讓企業版使用者能建立及轉錄螢幕畫面錄製內容，並上傳至雲端硬碟。
+
+      這項政策不適用於 Family Link 使用者。
+      這項政策不會影響 Family Link 使用者的 <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> 政策。
+
+      如果啟用這項政策，系統就會啟用 Projector。
+      如果停用這項政策，則系統會停用 Projector。
+      如果不設定這項政策，系統預設會停用 Projector。</translation>
 <translation id="4239720644496144453">這個快取不會供 Android 應用程式使用。如有多位使用者安裝同一個 Android 應用程式，則會針對每位使用者重新下載快取。</translation>
 <translation id="4247914291127524388">如果將這項政策設為啟用，系統會在使用行動網路連線時，關閉 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的 <ph name="GOOGLE_DRIVE_NAME" />同步功能。
 
@@ -3169,6 +3201,7 @@
 <translation id="4472740647327683596">頁面的寬度 (以微米為單位)</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4476769083125004742">如果將這項政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 應用程式將無法存取位置資訊。如果將這項政策設為任何其他值或不予設定，當 Android 應用程式要存取位置資訊時，會詢問使用者是否同意。</translation>
+<translation id="4478248026668918517">封鎖政策範圍偵測。</translation>
 <translation id="4479671363221255277">你可以透過這項政策建立網址模式清單，指定哪些網站可以要求使用者授予讀取權限，以透過 File System API 讀取主機作業系統中檔案系統的檔案或目錄。
 
       如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_FILE_SYSTEM_READ_GUARD_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
@@ -3298,7 +3331,6 @@
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
 <translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
 <translation id="4635284822166984665">裝置開始充電的時間 (根據裝置當地時區)。</translation>
-<translation id="4638532652671131094">控制巢狀閾值，系統會在達到此閾值之前延遲啟動 JavaScript setTimeout() 函式。</translation>
 <translation id="4646626362889216307">當所選政策的來源不同，但具有相同的範圍和層級時，就可以設定這項政策來合併所選的政策。
 
         合併方式是將各個來源字典的第一層金鑰合併。系統會首先採用優先順序最高的來源所提供的金鑰。
@@ -3454,6 +3486,12 @@
 
       如果不設定這項政策，預設值是允許受企業管理以及未受管理的使用者執行這項功能。</translation>
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
+<translation id="48749493657448872">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建的憑證驗證器執行伺服器憑證驗證作業。
+      除非 <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" /> 已啟用，否則如果停用這項設定，<ph name="PRODUCT_NAME" /> 將使用平台提供的舊版憑證驗證器執行伺服器憑證驗證作業。
+      如果不進行設定，系統可能會使用內建或舊版的憑證驗證器。
+
+      我們計劃將這項政策從 <ph name="MAC_OS_NAME" /> 107 版的 <ph name="PRODUCT_NAME" /> 中移除，屆時也將停止支援 <ph name="MAC_OS_NAME" /> 的舊版憑證驗證器。
+      </translation>
 <translation id="4874982543810021567">在這些網站上封鎖 WebUSB</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>
 <translation id="4877402532842958110">這項政策已遭淘汰，請改用「<ph name="URL_ALLOWLIST_POLICY_NAME" />」政策。
@@ -4009,6 +4047,7 @@
 
       如果未設定這項政策，使用者可控管卡片顯示設定。預設值為可顯示卡片。
       </translation>
+<translation id="5449690328792750354">Event.path API 將可供使用。</translation>
 <translation id="5455609857202311243">在 HTTP 驗證期間忽略 KDC 政策的核准結果</translation>
 <translation id="5455888515928026628">透過螢幕鎖定畫面登入時，<ph name="PRODUCT_OS_NAME" />可以透過伺服器進行線上驗證，或使用快取密碼進行離線驗證。
 
@@ -4245,6 +4284,7 @@
 <translation id="5733040281451845496">如果將這項政策設為啟用，系統會等到電源管理工作階段中出現第一項使用者活動後，才開始套用延遲時間和工作階段長度限制。
 
       如果將這項政策設為停用或不設定，系統會在電源管理工作階段一開始便套用延遲時間設定和時間限制。</translation>
+<translation id="5733357908790472408">使用 Chrome Root Store。</translation>
 <translation id="5735915264686983150">隱藏並封鎖已停用的功能</translation>
 <translation id="5737394734996319911">「<ph name="PRODUCT_NAME" />」無障礙功能可讓螢幕閱讀器的視障使用者取得無標籤網路圖片的說明。啟用這項功能的使用者可利用去識別化的 Google 服務，取得系統針對無標籤網路圖片自動產生的說明。啟用這項功能後，系統會將圖片內容傳送給 Google 伺服器以產生說明內容。系統不會傳送 Cookie 或其他使用者資料，且 Google 不會儲存或記錄任何圖片內容。如果將這項政策設為「啟用」，「<ph name="PRODUCT_NAME" />」功能便會開啟，不過這項設定只會影響螢幕閱讀器或其他類似輔助技術的使用者。如果將這項政策設為「停用」，使用者將無法啟用這項功能。如未設定這項政策，則使用者可自行選擇是否要使用此功能
           </translation>
@@ -4693,6 +4733,7 @@
 <translation id="6258658183356534534">控制 User-Agent Client Hints GREASE Update 功能。</translation>
 <translation id="6261643884958898336">回報裝置識別資訊</translation>
 <translation id="6265892395051519509">允許在這些網站上存取感應器</translation>
+<translation id="6266043141694454734">決定是否要使用 Chrome Root Store 和內建的憑證驗證器來驗證伺服器憑證</translation>
 <translation id="6273015149273504999">
       指定要在登入畫面上以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些網站。
 
@@ -4733,6 +4774,7 @@
 <translation id="6282799760374509080">允許或拒絕擷取音訊</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6287310684159482272">Cookie 設定</translation>
+<translation id="6299147100249359151">允許政策範圍偵測。</translation>
 <translation id="6300871921951390976">必須將這項政策設為 True，使用者才可變更裝置的發布版本。如果將這項政策設為 False 或不設定，使用者就不可變更版本。
 
       只有將 <ph name="CHROME_OS_RELEASE_CHANNEL_DELEGATED_POLICY_NAME" /> 設為 False，<ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> 設定才會生效。</translation>
@@ -4828,13 +4870,6 @@
       如果將這項政策設為停用，系統會關閉 WPAD 最佳化功能，導致 <ph name="PRODUCT_NAME" /> 等待 DNS WPAD 伺服器的時間增加。
 
       無論這項政策是否有設定，使用者都無法變更 WPAD 最佳化設定。</translation>
-<translation id="6365249741643189510">這項政策會授予 Projector 權限，讓企業版使用者能建立及轉錄螢幕畫面錄製內容，並上傳至雲端硬碟。
-
-      這項政策不適用於 Family Link 使用者。
-      這項政策不會影響 Family Link 使用者的 <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> 政策。
-
-      如果啟用這項政策或不設定，系統會啟用 Projector。
-      如果停用這項政策，Projector 也會隨之停用。</translation>
 <translation id="6366574325767783825">如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 將接受透過 Signed HTTP Exchange 提供的網路內容。
 
       如果將這項政策設為 False，系統將無法載入 Signed HTTP Exchange。</translation>
@@ -4879,12 +4914,6 @@
 <translation id="6424485010103067949"><ph name="OMA_URI" />：</translation>
 <translation id="6424486395812679373">對所有下載檔案執行安全瀏覽檢查</translation>
 <translation id="6433697627431665375">不允許將 <ph name="PRODUCT_NAME" /> 資料納入備份內容</translation>
-<translation id="6435570845618943258">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建的憑證驗證器執行伺服器憑證驗證作業。
-      如果停用這項設定，<ph name="PRODUCT_NAME" /> 將使用平台提供的舊版憑證驗證器執行伺服器憑證驗證作業。
-      如果不進行設定，系統可能會使用內建或舊版的憑證驗證器。
-
-      我們計劃將這項政策從適用於 <ph name="MAC_OS_NAME" /> 107 版的 <ph name="PRODUCT_NAME" /> 中移除，屆時也將停止支援 <ph name="MAC_OS_NAME" /> 的舊版憑證驗證器。
-      </translation>
 <translation id="6436052172226685535">LBS 的預設行為。</translation>
 <translation id="6438364096042399634">你可以透過這項政策來定義 USB 裝置清單，使用者可以從核心驅動程式中卸除這份清單中的 USB 裝置，並且直接透過 chrome.usb API 在網頁應用程式中使用。輸入項目為可識別特定硬體的 USB 供應商 ID 和產品 ID 組合。
 
@@ -5200,17 +5229,6 @@
       如果啟用這項政策，網站就可以不受限制地使用 SharedArrayBuffer。
       如果設為停用或未設定，則網站在進行跨來源隔離時才能使用 SharedArrayBuffers。</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
-<translation id="6740299900063889926">setTimeout(…, 0) 常用來細分長時間的 JavaScript 工作。
-          將這項政策設為啟用時，系統不會主動延遲間隔時間小於 4 毫秒的 setTimeouts 和 setIntervals。
-          這麼做可以提升短期間的執行效能，但濫用 API 的網站最終仍會將 setTimeouts 設為延遲。
-
-          這可能會改變網頁上的工作排序，進而導致必須以某種方法透過特定排序完成工作的網站發生異常行為，
-          也可能影響將許多 setTimeout() 設為逾時 0 毫秒 (例如增加 CPU 負載) 的網站。
-
-          對於未設定這項政策的使用者，Chrome 將在穩定版上逐步推出變更。
-
-          這項政策是暫時性的，預計會在 Chrome 107 中移除。如果有需要的企業眾多，我們將會延長這個期限。
-          </translation>
 <translation id="6740611636377710500">允許這位使用者執行 PluginVm。
 
       如果將這項政策設為 False 或不設定，系統不會為使用者啟用 <ph name="PLUGIN_VM_NAME" />。
@@ -5538,6 +5556,7 @@
 
           如果將這項政策設為停用，即使有視訊活動，系統仍會將使用者狀態視為閒置。</translation>
 <translation id="7086720321892395256">控管隱私保護畫面功能的使用者和裝置政策。</translation>
+<translation id="7090500018761495290">重新啟用 Event.path API，直到 M115 為止。</translation>
 <translation id="7090668780328470271">你可以透過這項政策建立網址模式清單，用於指定無法要求使用者授予 USB 裝置存取權的網站。
 
       如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
@@ -5696,6 +5715,23 @@
       如果未設定 <ph name="HOMEPAGE_LOCATION_POLICY_NAME" /> 和 <ph name="HOMEPAGE_IS_NEW_TAB_PAGE_POLICY_NAME" />，使用者將可選擇首頁。
 
       在 <ph name="MS_WIN_NAME" /> 上，這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的執行個體、在 Windows 10 專業版上執行的執行個體，或是已註冊 <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />服務的執行個體。在 <ph name="MAC_OS_NAME" /> 上，這項功能僅適用於透過行動裝置管理 (MDM) 軟體進行管理或透過 MCX 加入網域的執行個體。</translation>
+<translation id="7258250780552783197">要套用至 <ph name="ON_FILE_TRANSFER_ENTERPRISE_CONNECTOR" /> Enterprise 連接器的 Chrome Enterprise 連接器服務設定清單，該連接器會在檔案於 <ph name="PRODUCT_OS_NAME" /> 內轉移時觸發。
+
+      在來源和目的地之間轉移檔案時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_SOURCE_DESTINATION_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 欄位來判斷連接器是否要傳送檔案進行分析，以及要為該檔案在分析要求中加入哪些標記。系統會比對標記對應的規則，如果來源和目的地符合與該標記相關聯的規則，且該標記的「disable」規則不符合該項轉移作業，系統就會在分析要求中加入與「enable」規則相對應的標記。當要求中加入至少 1 個標記時，系統就會進行分析。<ph name="ENTERPRISE_CONNECTOR_SOURCE_DESTINATION_LIST_FIELD" /> 規則是由配對清單所定義，每組配對皆包含來源清單和目的地清單。<ph name="ENTERPRISE_CONNECTOR_FILE_SYSTEM_TYPE_FIELD" /> 會定義規則應套用至哪個檔案系統。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 欄位可用來指定設定是對應至哪個分析服務供應商。
+
+      如果將 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 欄位設為 1，<ph name="PRODUCT_OS_NAME" /> 會先等候分析服務的回應，再允許轉移作業。如果設為其他整數值，<ph name="PRODUCT_OS_NAME" /> 會立即允許轉移作業。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 欄位可控制 <ph name="PRODUCT_OS_NAME" /> 要封鎖還是允許受到密碼保護的檔案。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 <ph name="PRODUCT_OS_NAME" /> 要封鎖還是允許因太大而無法分析的檔案。
+
+      當掃描結果顯示可略過的警告時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" /> 欄位來判斷連接器該在哪些標記中要求使用者輸入略過掃描的原因。如果不設定這個欄位，系統會認定不需要輸入原因。
+
+      當掃描結果判定檔案有問題時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" /> 欄位來設定要向使用者顯示的訊息。「message」欄位包含要向使用者顯示的文字，長度上限為 200 個半形字元。「<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />」欄位包含由管理員提供的網址，使用者點選後可取得更多由客戶提供的資訊，瞭解動作遭到封鎖的原因。「<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />」欄位為選填，包含訊息所用語言。如果將「<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />」欄位留空或設為「default」值，表示在找不到使用者語言的訊息時，系統會使用預設訊息。「tag」欄位可用來指定要顯示訊息的掃描類型。「<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />」清單可以有零或多個項目，每個項目都必須包括非空白的「message」和「tag」欄位。
+
+      這項政策需要額外設定才會生效，詳情請參閱 https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting。</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
 <translation id="7260204423892780600">控管 Google 助理的設定。</translation>
 <translation id="7261140115553020049">啟用浮動工作區服務</translation>
@@ -6709,6 +6745,15 @@
 <translation id="8410477879938914253">這項政策僅適用於受管理的訪客工作階段。
       如果將這項政策設為 True 或不設定，系統會在使用者關閉最後一個視窗時顯示對話方塊，要求對方確認或拒絕登出。
       如果將這項政策設為 False，系統就不會顯示上述對話方塊，因此也會在關閉最後一個視窗後停用自動登出功能。</translation>
+<translation id="8411050083243181286"> 自 M109 起，非標準 API Event.path 將遭到移除，以改善網路相容性。這項政策會重新啟用 API，直到 M115 為止。
+
+      如果將這項政策設為啟用，則可使用 Event.path API。
+
+      如果將這項政策設為停用，將無法使用 Event.path API。
+
+      如果不設定這項政策，Event.path API 將為預設狀態：在 M109 之前的版本中可供使用，在 M109 到 114 的版本中則無法使用。
+
+      這項政策將在 Chrome 第 115 版後移除。</translation>
 <translation id="8415953438346821074">如果啟用這項設定，儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 將會一併寫入漫遊使用者設定檔資料夾中儲存的檔案，系統管理員也可以透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定這個檔案儲存的位置。啟用這項政策會停用雲端同步處理功能。
 
       如果停用或不設定這項政策，系統只會使用一般本機設定檔。</translation>
@@ -7108,6 +7153,7 @@
 
       如果不設定這項政策，系統會使用平台專屬的預設值：<ph name="MS_WIN_NAME" /> 使用 <ph name="IE_PRODUCT_NAME" />、<ph name="MAC_OS_NAME" /> 使用 <ph name="SAFARI_PRODUCT_NAME" />。<ph name="LINUX_OS_NAME" /> 將無法啟動替代瀏覽器。</translation>
 <translation id="8836975838488342340">存取碼的有效時限 (以秒為單位)。</translation>
+<translation id="883744045558067826">視功能啟動程序而定，系統可能會使用 Chrome Root Store。</translation>
 <translation id="8839799083601163225">這項政策可控管系統是否會採用沙箱機制執行網路服務程序。
       如果啟用這項政策，系統會採用沙箱機制執行網路服務程序。
       如果停用這項政策，系統將不採用沙箱機制執行網路服務程序。如果不採用沙箱機制執行網路服務，可能會讓使用者面臨額外的安全性風險。
@@ -7283,6 +7329,12 @@
 
       指定政策值時需以毫秒為單位。該值必須介於 30 秒至 24 小時之間。</translation>
 <translation id="9040042535845939426">設定登入畫面上的隱私保護畫面狀態</translation>
+<translation id="9046609670147277653">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建憑證驗證器和 Chrome Root Store 做為公開信任來源，驗證伺服器憑證。
+      如果停用這項設定，<ph name="PRODUCT_NAME" /> 將不會使用 Chrome Root Store。如果 <ph name="BUILT_IN_CERTIFICATE_VERIFIER_ENABLED_POLICY_NAME" /> 政策可供使用且沒有遭到停用，系統可能會使用系統憑證驗證器或內建的驗證器進行驗證。
+      如果不進行設定，系統可能會使用 Chrome Root Store 或系統提供的根層級。
+
+      我們計劃將這項政策從 <ph name="MS_WIN_NAME" /> 和 <ph name="MAC_OS_NAME" /> 111 版的 <ph name="PRODUCT_NAME" /> 中移除，屆時也將停止支援平台提供的憑證驗證器和根層級。
+      </translation>
 <translation id="9050853837490399534">這項政策可控管是否要將裝置更新為「快速修復版本」。
 
       如果將政策值設為對應至快速修復版本的符記，且其他政策未封鎖更新，則裝置會更新為相應的快速修復版本。
@@ -7331,6 +7383,7 @@
 
       如果將這項政策設為 False 或未設定，系統不會回報這項資訊。
       如果設為 True，則系統會回報裝置的登入/登出事件。</translation>
+<translation id="9087652369391570821">OnFileTransfer Chrome Enterprise 連接器的設定政策</translation>
 <translation id="9088191250434406767">如果將這項政策設為 Enabled 或不設定，使用者就可以使用 <ph name="GOOGLE_LENS_PRODUCT_NAME" />透過相機進行搜尋。如果將這項政策設為 Disabled，即使裝置支援 <ph name="GOOGLE_LENS_PRODUCT_NAME" />相機輔助搜尋功能，使用者在搜尋框中也不會看到 [<ph name="GOOGLE_LENS_PRODUCT_NAME" />] 按鈕。</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
 <translation id="9088444059179765143">設定自動偵測時區方式</translation>

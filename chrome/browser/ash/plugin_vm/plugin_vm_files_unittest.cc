@@ -22,10 +22,12 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/test/browser_task_environment.h"
@@ -62,7 +64,7 @@ class PluginVmFilesTest : public testing::Test {
     fake_plugin_vm_features_.set_enabled(true);
 
     vm_tools::apps::ApplicationList app_list;
-    app_list.set_vm_type(vm_tools::apps::ApplicationList::PLUGIN_VM);
+    app_list.set_vm_type(vm_tools::apps::VmType::PLUGIN_VM);
     app_list.set_vm_name("PvmDefault");
     app_list.set_container_name("penguin");
     *app_list.add_apps() = crostini::CrostiniTestHelper::BasicApp("name");
@@ -101,11 +103,15 @@ class PluginVmFilesTest : public testing::Test {
       ash::CiceroneClient::InitializeFake();
       ash::ConciergeClient::InitializeFake();
       ash::SeneschalClient::InitializeFake();
+      ash::ChunneldClient::InitializeFake();
+      ash::VmPluginDispatcherClient::InitializeFake();
     }
     ~ScopedDBusThreadManager() {
+      ash::VmPluginDispatcherClient::Shutdown();
       ash::SeneschalClient::Shutdown();
       ash::ConciergeClient::Shutdown();
       ash::CiceroneClient::Shutdown();
+      ash::ChunneldClient::Shutdown();
       chromeos::DBusThreadManager::Shutdown();
     }
   } dbus_thread_manager_;

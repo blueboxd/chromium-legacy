@@ -167,21 +167,21 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Set the server type and check it.
-  prediction.set_type(ADDRESS_BILLING_LINE1);
+  prediction.set_type(ADDRESS_HOME_LINE1);
   field.set_server_predictions({prediction});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Checks that overall_type trumps everything.
-  field.SetTypeTo(AutofillType(ADDRESS_BILLING_ZIP));
+  field.SetTypeTo(AutofillType(ADDRESS_HOME_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Checks that setting server type resets overall type.
-  prediction.set_type(ADDRESS_BILLING_LINE1);
+  prediction.set_type(ADDRESS_HOME_LINE1);
   field.set_server_predictions({prediction});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
   prediction.set_type(NO_SERVER_DATA);
@@ -190,9 +190,9 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Checks that overall_type trumps everything.
-  field.SetTypeTo(AutofillType(ADDRESS_BILLING_ZIP));
+  field.SetTypeTo(AutofillType(ADDRESS_HOME_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Set the heuristic type and check it and reset overall Type.
   field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
@@ -2056,6 +2056,31 @@ TEST_F(AutofillFieldFillerTest, FillUpperCaseAbbreviationInStateTextField) {
                        /*cvc=*/std::u16string(),
                        mojom::RendererFormDataAction::kFill);
   EXPECT_EQ(u"BY", field.value);
+}
+
+// Tests that Autofill does not fill the state when abbreviated data is stored
+// in the profile and none of the options match with the abbreviated state.
+TEST_F(AutofillFieldFillerTest,
+       DoNotFillStateFieldWhenAbbrStoredInProfileAndNotInOptionsList) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Colombia", "Connecticut", "Colifornia"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(GetActivePatternSource(), ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, u"CO");
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
+                       /*cvc=*/std::u16string(),
+                       mojom::RendererFormDataAction::kFill);
+  EXPECT_EQ(u"", field.value);
 }
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualMonth) {

@@ -43,7 +43,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -989,7 +989,7 @@ TEST_F(AppListBubbleViewTest, DownArrowFromRecentsSelectsLastColumnInAppsGrid) {
 
   // There are only 2 folders, and hence 2 columns, in the top level apps grid.
   auto* apps_grid_view = GetAppsGridView();
-  ASSERT_EQ(2, apps_grid_view->view_model()->view_size());
+  ASSERT_EQ(2u, apps_grid_view->view_model()->view_size());
 
   // Focus the 5th recent app.
   auto* recent_apps_view = GetRecentAppsView();

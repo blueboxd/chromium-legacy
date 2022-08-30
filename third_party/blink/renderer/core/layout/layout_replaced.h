@@ -123,10 +123,24 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   bool RespectsCSSOverflow() const override;
 
+  // Returns true if the content is guarenteed to be clipped to the element's
+  // content box.
+  bool ClipsToContentBox() const;
+
  protected:
   virtual bool CanApplyObjectViewBox() const {
     NOT_DESTROYED();
     return true;
+  }
+
+  bool IsInSelfHitTestingPhase(HitTestPhase phase) const final {
+    NOT_DESTROYED();
+    if (LayoutBox::IsInSelfHitTestingPhase(phase))
+      return true;
+
+    auto* element = DynamicTo<Element>(GetNode());
+    return element && element->IsReplacedElementRespectingCSSOverflow() &&
+           phase == HitTestPhase::kSelfBlockBackground;
   }
 
   void WillBeDestroyed() override;

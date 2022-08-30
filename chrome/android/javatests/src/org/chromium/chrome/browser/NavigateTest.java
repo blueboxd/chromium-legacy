@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -238,18 +239,20 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @DisabledTest(message = "crbug.com/879153")
     public void testRequestDesktopSiteSettingPers() throws Exception {
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         navigateAndObserve(url1);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(0.5f);
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                                true /* useDesktop */, true /* reloadOnChange */));
+                ()
+                        -> TabUtils.switchUserAgent(tab, /* switchToDesktop */ true,
+                                /* forcedByUser */ true, UseDesktopUserAgentCaller.OTHER));
         ChromeTabUtils.waitForTabPageLoaded(tab, url1);
+        mActivityTestRule.assertWaitForPageScaleFactorChange(0.5f);
 
         DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
@@ -280,8 +283,8 @@ public class NavigateTest {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> TabUtils.switchUserAgent(
-                                tab, /* switchToDesktop */ true, /* forcedByUser */ true));
+                        -> TabUtils.switchUserAgent(tab, /* switchToDesktop */ true,
+                                /* forcedByUser */ true, UseDesktopUserAgentCaller.OTHER));
         ChromeTabUtils.waitForTabPageLoaded(tab, url1);
 
         navigateAndObserve(url2);
@@ -312,8 +315,8 @@ public class NavigateTest {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> TabUtils.switchUserAgent(
-                                tab, /* switchToDesktop */ true, /* forcedByUser */ true));
+                        -> TabUtils.switchUserAgent(tab, /* switchToDesktop */ true,
+                                /* forcedByUser */ true, UseDesktopUserAgentCaller.OTHER));
 
         navigateAndObserve(url);
         ChromeTabUtils.waitForTabPageLoaded(tab, url);

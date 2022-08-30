@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -71,9 +72,10 @@ void CSSSelector::CreateRareData() {
   DCHECK_NE(Match(), kTag);
   if (has_rare_data_)
     return;
-  // This transitions the DataUnion from |value_| to |rare_data_| and thus needs to be careful to
-  // correctly manage explicitly destruction of |value_| followed by placement new of |rare_data_|.
-  // A straight-assignment will compile and may kinda work, but will be undefined behavior.
+  // This transitions the DataUnion from |value_| to |rare_data_| and thus needs
+  // to be careful to correctly manage explicitly destruction of |value_|
+  // followed by placement new of |rare_data_|. A straight-assignment will
+  // compile and may kinda work, but will be undefined behavior.
   auto rare_data = RareData::Create(data_.value_);
   data_.value_.~AtomicString();
   new (&data_.rare_data_) scoped_refptr<RareData>(std::move(rare_data));
@@ -148,6 +150,11 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
         case kPseudoSlotted:
           DCHECK(SelectorList()->HasOneSelector());
           return kClassLikeSpecificity + SelectorList()->First()->Specificity();
+        case kPseudoPageTransitionContainer:
+        case kPseudoPageTransitionImageWrapper:
+        case kPseudoPageTransitionOutgoingImage:
+        case kPseudoPageTransitionIncomingImage:
+          return Argument().IsNull() ? 0 : kClassLikeSpecificity;
         default:
           break;
       }
@@ -341,6 +348,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoHostHasAppearance:
     case kPseudoSlotted:
     case kPseudoTopLayer:
+    case kPseudoPopupHidden:
     case kPseudoVideoPersistent:
     case kPseudoVideoPersistentAncestor:
     case kPseudoXrOverlay:
@@ -374,6 +382,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
      CSSSelector::kPseudoWebKitCustomElement},
     {"-internal-modal", CSSSelector::kPseudoModal},
     {"-internal-multi-select-focus", CSSSelector::kPseudoMultiSelectFocus},
+    {"-internal-popup-hidden", CSSSelector::kPseudoPopupHidden},
     {"-internal-relative-anchor", CSSSelector::kPseudoRelativeAnchor},
     {"-internal-selector-fragment-anchor",
      CSSSelector::kPseudoSelectorFragmentAnchor},
@@ -557,6 +566,10 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
       !RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
     return CSSSelector::kPseudoUnknown;
 
+  if (match->type == CSSSelector::kPseudoPopupHidden &&
+      !RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+    return CSSSelector::kPseudoUnknown;
+
   if (match->type == CSSSelector::kPseudoHighlight &&
       !RuntimeEnabledFeatures::HighlightAPIEnabled()) {
     return CSSSelector::kPseudoUnknown;
@@ -569,7 +582,7 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
   }
 
   if (match->type == CSSSelector::kPseudoHas &&
-      !RuntimeEnabledFeatures::CSSPseudoHasInSnapshotProfileEnabled()) {
+      !RuntimeEnabledFeatures::CSSPseudoHasEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
@@ -749,6 +762,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoPictureInPicture:
     case kPseudoPlaceholderShown:
     case kPseudoPlaying:
+    case kPseudoPopupHidden:
     case kPseudoReadOnly:
     case kPseudoReadWrite:
     case kPseudoRelativeAnchor:
@@ -982,7 +996,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
     if (simple_selector->SelectorList()) {
       builder.Append('(');
       const CSSSelector* first_sub_selector =
-          simple_selector->SelectorList()->FirstForCSSOM();
+          simple_selector->SelectorList()->First();
       for (const CSSSelector* sub_selector = first_sub_selector; sub_selector;
            sub_selector = CSSSelectorList::Next(*sub_selector)) {
         if (sub_selector != first_sub_selector)
@@ -1047,7 +1061,9 @@ void CSSSelector::SetAttribute(const QualifiedName& value,
                                AttributeMatchType match_type) {
   CreateRareData();
   data_.rare_data_->attribute_ = value;
-  data_.rare_data_->bits_.attribute_match_ = match_type;
+  data_.rare_data_->bits_.attr_.attribute_match_ = match_type;
+  data_.rare_data_->bits_.attr_.is_case_sensitive_attribute_ =
+      HTMLDocument::IsCaseSensitiveAttribute(value);
 }
 
 void CSSSelector::SetArgument(const AtomicString& value) {

@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Session.Background.TotalDuration" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -49,7 +49,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Session.IsActive" enum="BooleanActive"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>rogerm@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -80,7 +80,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Session.OpenedTabCounts" units="operations"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>rohitrao@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -285,6 +285,13 @@ chromium-metrics-reviews@google.com.
     for Guest and System profiles which wasn't intentional. This was fixed in
     M93.
 
+    After launching background logging in the late February 2021 on Android,
+    this metric started recording for instances that were running in the
+    background, even if Chrome had never come to foreground. The bug was fixed
+    in M92, and after that the metric is recorded only after an instance becomes
+    foregrounded at least once. Hence a glitch is visible in the Feb-Aug 2021
+    data for Android.
+
     This histogram is of special interest to the chrome-analysis-team@ and
     chrome-signin-team@. Do not change its semantics or retire it without
     talking to them first.
@@ -370,6 +377,13 @@ chromium-metrics-reviews@google.com.
     profiles, instead of only from the profile that the user is using at that
     moment.
 
+    After launching background logging in the late February 2021 on Android,
+    this metric started recording for instances that were running in the
+    background, even if Chrome had never come to foreground. The bug was fixed
+    in M92, and after that the metric is recorded only after an instance becomes
+    foregrounded at least once. Hence a glitch is visible in the Feb-Aug 2021
+    data for Android.
+
     This histogram is of special interest to the chrome-analysis-team@ and
     chrome-signin-team@. Do not change its semantics or retire it without
     talking to them first.
@@ -377,7 +391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Session.TotalDuration.TouchMode" units="times"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>collinbaker@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -541,7 +555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Session.WebStates.NativeRestoreSessionFromCache"
-    enum="BooleanSuccess" expires_after="2022-10-16">
+    enum="BooleanSuccess" expires_after="2022-12-18">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

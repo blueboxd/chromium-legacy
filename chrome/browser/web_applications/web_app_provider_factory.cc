@@ -4,14 +4,22 @@
 
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
-#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
+#include "chrome/browser/web_applications/daily_metrics_helper.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/isolation_prefs_utils.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace web_app {
 
@@ -19,7 +27,7 @@ namespace web_app {
 WebAppProvider* WebAppProviderFactory::GetForProfile(Profile* profile) {
   return static_cast<WebAppProvider*>(
       WebAppProviderFactory::GetInstance()->GetServiceForBrowserContext(
-          profile, true /* create */));
+          profile, /*create=*/true));
 }
 
 // static
@@ -37,7 +45,6 @@ WebAppProviderFactory::WebAppProviderFactory()
     : BrowserContextKeyedServiceFactory(
           "WebAppProvider",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOnExtensionsSystem();
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ukm::UkmBackgroundRecorderFactory::GetInstance());
   // Required to listen to file handling settings change in
@@ -53,13 +60,6 @@ KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
   WebAppProvider* provider = new WebAppProvider(profile);
   provider->Start();
 
-  // TODO(crbug.com/1321984): Make SWAM a KeyedService and move this scheduling
-  // to that new service factory.
-  provider->on_registry_ready().Post(
-      FROM_HERE,
-      base::BindOnce(&ash::SystemWebAppManager::Start,
-                     provider->system_web_app_manager_->GetWeakPtr()));
-
   return provider;
 }
 
@@ -70,6 +70,18 @@ bool WebAppProviderFactory::ServiceIsCreatedWithBrowserContext() const {
 content::BrowserContext* WebAppProviderFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return GetBrowserContextForWebApps(context);
+}
+
+void WebAppProviderFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  UserUninstalledPreinstalledWebAppPrefs::RegisterProfilePrefs(registry);
+  ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
+  PreinstalledWebAppManager::RegisterProfilePrefs(registry);
+  WebAppPolicyManager::RegisterProfilePrefs(registry);
+  WebAppPrefsUtilsRegisterProfilePrefs(registry);
+  IsolationPrefsUtilsRegisterProfilePrefs(registry);
+  RegisterInstallBounceMetricProfilePrefs(registry);
+  RegisterDailyWebAppMetricsProfilePrefs(registry);
 }
 
 }  //  namespace web_app

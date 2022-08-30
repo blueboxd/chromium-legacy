@@ -4,7 +4,6 @@
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {EntryList, FakeEntryImpl, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {TrashRootEntry} from '../../common/js/trash.js';
@@ -697,6 +696,19 @@ export class NavigationListModel extends EventTarget {
           myFilesEntry.addEntry(new VolumeEntry(volume.volumeInfo));
         }
       }
+      // For each entry in the list, remove any for volumes that no longer
+      // exist.
+      for (const volume of myFilesEntry.getUIChildren()) {
+        if (!volume.volumeInfo ||
+            volume.volumeInfo.volumeType !=
+                VolumeManagerCommon.VolumeType.GUEST_OS) {
+          continue;
+        }
+        if (!getVolumes(VolumeManagerCommon.VolumeType.GUEST_OS)
+                 .find(v => v.label === volume.name)) {
+          myFilesEntry.removeChildEntry(volume);
+        }
+      }
       // Now we add any guests we know about which don't already have a
       // matching volume.
       for (const item of this.guestOsPlaceholders_) {
@@ -723,7 +735,8 @@ export class NavigationListModel extends EventTarget {
     }
 
     // Add Trash.
-    if (loadTimeData.getBoolean('FILES_TRASH_ENABLED')) {
+    // TODO(b/237351925): Trash should not show up when in File picker / saver.
+    if (util.isTrashEnabled()) {
       if (!this.trashItem_) {
         this.trashItem_ = new NavigationModelFakeItem(
             str('TRASH_ROOT_LABEL'), NavigationModelItemType.TRASH,

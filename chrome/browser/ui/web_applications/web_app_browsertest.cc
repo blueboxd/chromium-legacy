@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -66,11 +65,11 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -95,6 +94,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #endif
 
@@ -122,9 +122,8 @@ constexpr char kLaunchWebAppDisplayModeHistogram[] = "Launch.WebAppDisplayMode";
 // Represents the variety of states that can exist and which control the page
 // info bubble's app settings link.
 enum class WebAppSettingsState {
-  kNeitherEnabled,
-  kOnlyWebAppSettingsEnabled,
-  kFileHandlingAlsoEnabled,
+  kFileHandlingDisabled = 1,
+  kFileHandlingEnabled,
 };
 
 // Opens |url| in a new popup window with the dimensions |popup_size|.
@@ -334,112 +333,96 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ManifestWithColor) {
   EXPECT_EQ(provider->registrar().GetAppThemeColor(app_id), SK_ColorGREEN);
 }
 
-// Enumeration of test modes for `BackgroundColorChangeWebAppBrowserTest`s.
-enum class BackgroundColorChangeTestMode {
-  kSWA,
-  kNonSWA,
-};
+// Also see BackgroundColorChangeSystemWebAppBrowserTest.BackgroundColorChange
+// below.
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColorChange) {
+  const GURL app_url = GetSecureAppURL();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  web_app_info->start_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->theme_color = SK_ColorWHITE;
+  web_app_info->dark_mode_theme_color = SK_ColorBLACK;
+  web_app_info->background_color = SK_ColorWHITE;
+  web_app_info->dark_mode_background_color = SK_ColorBLACK;
 
-// Base class for `BackgroundColorChange` tests, parameterized by test mode and
-// whether to prefer manifest background color.
-class BackgroundColorChangeWebAppBrowserTest
+  const AppId app_id = InstallWebApp(std::move(web_app_info));
+
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  content::WebContents* const web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for original background color to load.
+  {
+    content::BackgroundColorChangeWaiter waiter(web_contents);
+    waiter.Wait();
+    EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
+              SK_ColorWHITE);
+  }
+  content::AwaitDocumentOnLoadCompleted(web_contents);
+
+  // Changing background color should update the toolbar color.
+  {
+    content::BackgroundColorChangeWaiter waiter(web_contents);
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents, "document.body.style.backgroundColor = 'cyan';"));
+    waiter.Wait();
+    EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
+              SK_ColorCYAN);
+    SkColor download_shelf_color;
+    app_browser->app_controller()->GetThemeSupplier()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR, &download_shelf_color);
+    EXPECT_EQ(download_shelf_color, SK_ColorCYAN);
+  }
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+class BackgroundColorChangeSystemWebAppBrowserTest
     : public WebAppBrowserTest,
       public testing::WithParamInterface<
-          std::tuple<BackgroundColorChangeTestMode,
-                     /*prefer_manifest_background_color=*/bool>> {
+          /*prefer_manifest_background_color=*/bool> {
  public:
-  BackgroundColorChangeWebAppBrowserTest() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    web_app::EnableSystemWebAppsInLacrosForTesting();
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-    switch (GetBackgroundColorChangeTestMode()) {
-      case BackgroundColorChangeTestMode::kSWA:
-        system_web_app_installation_ =
-            TestSystemWebAppInstallation::SetUpAppWithColors(
-                /*theme_color=*/SK_ColorWHITE,
-                /*dark_mode_theme_color=*/SK_ColorBLACK,
-                /*background_color=*/SK_ColorWHITE,
-                /*dark_mode_background_color=*/SK_ColorBLACK);
-        static_cast<UnittestingSystemAppDelegate*>(
-            system_web_app_installation_->GetDelegate())
-            ->SetPreferManifestBackgroundColor(PreferManifestBackgroundColor());
-        break;
-      case BackgroundColorChangeTestMode::kNonSWA:
-        break;
-    }
-  }
-
-  // Returns test mode given test parameterization.
-  BackgroundColorChangeTestMode GetBackgroundColorChangeTestMode() const {
-    return std::get<0>(GetParam());
+  BackgroundColorChangeSystemWebAppBrowserTest() {
+    system_web_app_installation_ =
+        ash::TestSystemWebAppInstallation::SetUpAppWithColors(
+            /*theme_color=*/SK_ColorWHITE,
+            /*dark_mode_theme_color=*/SK_ColorBLACK,
+            /*background_color=*/SK_ColorWHITE,
+            /*dark_mode_background_color=*/SK_ColorBLACK);
+    static_cast<ash::UnittestingSystemAppDelegate*>(
+        system_web_app_installation_->GetDelegate())
+        ->SetPreferManifestBackgroundColor(PreferManifestBackgroundColor());
   }
 
   // Returns whether the web app under test prefers manifest background colors
   // over web contents background colors.
-  bool PreferManifestBackgroundColor() const { return std::get<1>(GetParam()); }
+  bool PreferManifestBackgroundColor() const { return GetParam(); }
 
   // Installs the web app under test, blocking until installation is complete,
   // and returning the `AppId` for the installed web app.
-  AppId WaitForAppInstall() {
-    switch (GetBackgroundColorChangeTestMode()) {
-      case BackgroundColorChangeTestMode::kSWA:
-        system_web_app_installation_->WaitForAppInstall();
-        return system_web_app_installation_->GetAppId();
-      case BackgroundColorChangeTestMode::kNonSWA: {
-        const GURL app_url = GetSecureAppURL();
-        auto web_app_info = std::make_unique<WebAppInstallInfo>();
-        web_app_info->start_url = app_url;
-        web_app_info->scope = app_url.GetWithoutFilename();
-        web_app_info->theme_color = SK_ColorWHITE;
-        web_app_info->dark_mode_theme_color = SK_ColorBLACK;
-        web_app_info->background_color = SK_ColorWHITE;
-        web_app_info->dark_mode_background_color = SK_ColorBLACK;
-        return InstallWebApp(std::move(web_app_info));
-      }
-    }
+  AppId WaitForSwaInstall() {
+    system_web_app_installation_->WaitForAppInstall();
+    return system_web_app_installation_->GetAppId();
   }
 
  private:
-  std::unique_ptr<TestSystemWebAppInstallation> system_web_app_installation_;
+  std::unique_ptr<ash::TestSystemWebAppInstallation>
+      system_web_app_installation_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    Mode,
-    BackgroundColorChangeWebAppBrowserTest,
-    testing::Combine(testing::Values(BackgroundColorChangeTestMode::kSWA,
-                                     BackgroundColorChangeTestMode::kNonSWA),
-                     /*prefer_manifest_background_color=*/testing::Bool()),
-    [](const testing::TestParamInfo<
-        std::tuple<BackgroundColorChangeTestMode,
-                   /*prefer_manifest_background_color=*/bool>>& info) {
-      BackgroundColorChangeTestMode test_mode = std::get<0>(info.param);
-      bool prefer_manifest_background_color = std::get<1>(info.param);
+INSTANTIATE_TEST_SUITE_P(All,
+                         BackgroundColorChangeSystemWebAppBrowserTest,
+                         /*prefer_manifest_background_color=*/testing::Bool(),
+                         [](const testing::TestParamInfo<
+                             /*prefer_manifest_background_color=*/bool>& info) {
+                           return info.param ? "PreferManifestBackgroundColor"
+                                             : "WebContentsBackgroundColor";
+                         });
 
-      std::stringstream name;
-      switch (test_mode) {
-        case BackgroundColorChangeTestMode::kSWA:
-          name << "kSWA";
-          break;
-        case BackgroundColorChangeTestMode::kNonSWA:
-          name << "kNonSWA";
-          break;
-      }
-
-      if (prefer_manifest_background_color)
-        name << "_PreferManifestBackgroundColor";
-
-      return name.str();
-    });
-
-IN_PROC_BROWSER_TEST_P(BackgroundColorChangeWebAppBrowserTest,
+// Also see WebAppBrowserTest.BackgroundColorChange above.
+IN_PROC_BROWSER_TEST_P(BackgroundColorChangeSystemWebAppBrowserTest,
                        BackgroundColorChange) {
-  const bool is_non_swa = GetBackgroundColorChangeTestMode() ==
-                          BackgroundColorChangeTestMode::kNonSWA;
-  // Skip test parameterizations for non-system web apps that don't make sense.
-  if (is_non_swa && PreferManifestBackgroundColor())
-    GTEST_SKIP();
-
-  const AppId app_id = WaitForAppInstall();
+  const AppId app_id = WaitForSwaInstall();
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
@@ -450,9 +433,8 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeWebAppBrowserTest,
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
     waiter.Wait();
-    EXPECT_EQ(
-        app_browser->app_controller()->GetBackgroundColor().value(),
-        !is_non_swa && is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE);
+    EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
+              is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE);
   }
   content::AwaitDocumentOnLoadCompleted(web_contents);
 
@@ -477,6 +459,8 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeWebAppBrowserTest,
                   : SK_ColorCYAN);
   }
 }
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // This tests that we don't crash when launching a PWA window with an
 // autogenerated user theme set.
@@ -700,8 +684,16 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PWASizeIsCorrectlyRestored) {
 }
 
 // Tests that desktop PWAs are reopened at the correct size.
+// TODO(crbug.com/1065748): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_ReopenedPWASizeIsCorrectlyRestored \
+  DISABLED_ReopenedPWASizeIsCorrectlyRestored
+#else
+#define MAYBE_ReopenedPWASizeIsCorrectlyRestored \
+  ReopenedPWASizeIsCorrectlyRestored
+#endif
 IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest,
-                       ReopenedPWASizeIsCorrectlyRestored) {
+                       MAYBE_ReopenedPWASizeIsCorrectlyRestored) {
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -1487,9 +1479,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentDisplayBrowserApp) {
   EXPECT_EQ(provider->registrar().GetAppEffectiveDisplayMode(app_id),
             DisplayMode::kMinimalUi);
   EXPECT_FALSE(provider->registrar().GetAppLastLaunchTime(app_id).is_null());
-  tester.ExpectUniqueSample(
-      "Extensions.BookmarkAppLaunchContainer",
-      apps::mojom::LaunchContainer::kLaunchContainerWindow, 1);
+  tester.ExpectUniqueSample("Extensions.BookmarkAppLaunchContainer",
+                            apps::LaunchContainer::kLaunchContainerWindow, 1);
   tester.ExpectUniqueSample("Extensions.BookmarkAppLaunchSource",
                             extensions::AppLaunchSource::kSourceReparenting, 1);
 }
@@ -1885,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_NoDestroyProfile, Shutdown) {
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      app_id, apps::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
 
   BrowserHandler handler(nullptr, std::string());
@@ -2193,12 +2184,7 @@ class WebAppBrowserTest_PageInfoManagementLink
   WebAppBrowserTest_PageInfoManagementLink() {
     file_handling_feature_list_.InitWithFeatureState(
         blink::features::kFileHandlingAPI,
-        GetParam() == WebAppSettingsState::kFileHandlingAlsoEnabled);
-#if !BUILDFLAG(IS_CHROMEOS)
-    web_app_settings_feature_list_.InitWithFeatureState(
-        features::kDesktopPWAsWebAppSettingsPage,
-        GetParam() != WebAppSettingsState::kNeitherEnabled);
-#endif
+        GetParam() == WebAppSettingsState::kFileHandlingEnabled);
   }
 
   bool ShowingAppManagementLink(Browser* browser) {
@@ -2208,23 +2194,12 @@ class WebAppBrowserTest_PageInfoManagementLink
         &unused_id2);
   }
 
-  static bool HasAppSettingsPage() {
-#if BUILDFLAG(IS_CHROMEOS)
-    return true;
-#else
-    return base::FeatureList::IsEnabled(
-        features::kDesktopPWAsWebAppSettingsPage);
-#endif
-  }
-
   static bool ShowsAppSettingsLinkInTabbedBrowser() {
-    return HasAppSettingsPage() &&
-           base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI);
+    return base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI);
   }
 
  private:
   base::test::ScopedFeatureList file_handling_feature_list_;
-  base::test::ScopedFeatureList web_app_settings_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PageInfoManagementLink, Reparenting) {
@@ -2244,7 +2219,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PageInfoManagementLink, Reparenting) {
   // The leftover tab in the tabbed browser window should not be appy.
   EXPECT_FALSE(ShowingAppManagementLink(browser()));
   // After reparenting into an app browser, should show the app settings link.
-  EXPECT_EQ(HasAppSettingsPage(), ShowingAppManagementLink(app_browser));
+  EXPECT_TRUE(ShowingAppManagementLink(app_browser));
 
   // Move back into tabbed browser: should keep showing the app settings link.
   Browser* tabbed_browser = chrome::OpenInChrome(app_browser);
@@ -2270,7 +2245,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PageInfoManagementLink,
   EXPECT_TRUE(params.browser->is_type_app());
   EXPECT_TRUE(params.browser->is_trusted_source());
 
-  EXPECT_EQ(HasAppSettingsPage(), ShowingAppManagementLink(params.browser));
+  EXPECT_TRUE(ShowingAppManagementLink(params.browser));
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PageInfoManagementLink, LaunchAsTab) {
@@ -2291,9 +2266,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PageInfoManagementLink, LaunchAsTab) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppBrowserTest_PageInfoManagementLink,
-    ::testing::Values(WebAppSettingsState::kNeitherEnabled,
-                      WebAppSettingsState::kOnlyWebAppSettingsEnabled,
-                      WebAppSettingsState::kFileHandlingAlsoEnabled));
+    ::testing::Values(WebAppSettingsState::kFileHandlingDisabled,
+                      WebAppSettingsState::kFileHandlingEnabled));
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WebAppBrowserTest_ExternalPrefMigration,

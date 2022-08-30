@@ -772,7 +772,7 @@ std::string GenerateCacheKey(const std::string& url) {
 using HttpCacheTest = TestWithTaskEnvironment;
 class HttpCacheIOCallbackTest : public HttpCacheTest {
  public:
-  HttpCacheIOCallbackTest() {}
+  HttpCacheIOCallbackTest() = default;
   ~HttpCacheIOCallbackTest() override = default;
 
   // HttpCache::ActiveEntry is private, doing this allows tests to use it
@@ -814,7 +814,7 @@ class HttpCacheIOCallbackTest : public HttpCacheTest {
 
 class HttpSplitCacheKeyTest : public HttpCacheTest {
  public:
-  HttpSplitCacheKeyTest() {}
+  HttpSplitCacheKeyTest() = default;
   ~HttpSplitCacheKeyTest() override = default;
 
   std::string ComputeCacheKey(const std::string& url_string) {
@@ -825,7 +825,7 @@ class HttpSplitCacheKeyTest : public HttpCacheTest {
     request_info.method = "GET";
     request_info.network_isolation_key = net::NetworkIsolationKey(site, site);
     MockHttpCache cache;
-    return cache.http_cache()->GenerateCacheKeyForTest(&request_info);
+    return cache.http_cache()->GenerateCacheKeyForRequest(&request_info);
   }
 };
 
@@ -3804,12 +3804,11 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationNoMatch1) {
     EXPECT_EQ(LOAD_STATE_IDLE, context->trans->GetLoadState());
   }
 
-  for (size_t i = 0; i < context_list.size(); i++) {
-    if (context_list[i]->result == ERR_IO_PENDING)
-      context_list[i]->result = context_list[i]->callback.WaitForResult();
+  for (auto& context : context_list) {
+    if (context->result == ERR_IO_PENDING)
+      context->result = context->callback.WaitForResult();
 
-    ReadAndVerifyTransaction(context_list[i]->trans.get(),
-                             kSimpleGET_Transaction);
+    ReadAndVerifyTransaction(context->trans.get(), kSimpleGET_Transaction);
   }
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -5336,7 +5335,8 @@ TEST_F(HttpCacheTest, SimpleGET_ManyWriters_CancelFirst) {
   // Allow all requests to move from the Create queue to the active entry.
   // All would have been added to writers.
   base::RunLoop().RunUntilIdle();
-  std::string cache_key = cache.http_cache()->GenerateCacheKeyForTest(&request);
+  std::string cache_key =
+      cache.http_cache()->GenerateCacheKeyForRequest(&request);
   EXPECT_EQ(kNumTransactions, cache.GetCountWriterTransactions(cache_key));
 
   // The second transaction skipped validation, thus only one network
@@ -5695,7 +5695,7 @@ TEST_F(HttpCacheTest, SimpleGET_WaitForBackend_CancelCreate) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
-// Tests that we can delete the cache while creating the backend.
+// Tests that we can delete the HttpCache while creating the backend.
 TEST_F(HttpCacheTest, DeleteCacheWaitingForBackend) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   auto cache = std::make_unique<MockHttpCache>(base::WrapUnique(factory));
@@ -5714,20 +5714,16 @@ TEST_F(HttpCacheTest, DeleteCacheWaitingForBackend) {
   // The request should be creating the disk cache.
   EXPECT_FALSE(c->callback.have_result());
 
-  // We cannot call FinishCreation because the factory itself will go away with
-  // the cache.
-  CompletionOnceCallback callback = factory->ReleaseCallback();
-  std::unique_ptr<disk_cache::Backend>* backend = factory->backend();
+  // Manually arrange for completion to happen after ~HttpCache.
+  // This can't be done via FinishCreation() since that's in `factory`, and
+  // that's owned by `cache`.
+  disk_cache::BackendResultCallback callback = factory->ReleaseCallback();
 
   cache.reset();
   base::RunLoop().RunUntilIdle();
 
-  // Even though |HttpCache| is destroyed, the Backend that was passed in to
-  // disk_cache::CreateCacheBackend() must still be valid until the callback is
-  // called.
-  backend->reset();
-  // |callback| will destroy |backend|.
-  std::move(callback).Run(ERR_ABORTED);
+  // Simulate the backend completion callback running now the HttpCache is gone.
+  std::move(callback).Run(disk_cache::BackendResult::MakeError(ERR_ABORTED));
 }
 
 // Tests that we can delete the cache while creating the backend, from within
@@ -8309,7 +8305,8 @@ TEST_F(HttpCacheTest, Sparse_WaitForEntry) {
   // Simulate a previous transaction being cancelled.
   disk_cache::Entry* entry;
   MockHttpRequest request(transaction);
-  std::string cache_key = cache.http_cache()->GenerateCacheKeyForTest(&request);
+  std::string cache_key =
+      cache.http_cache()->GenerateCacheKeyForRequest(&request);
   ASSERT_TRUE(cache.OpenBackendEntry(cache_key, &entry));
   entry->CancelSparseIO();
 
@@ -9737,7 +9734,8 @@ TEST_F(HttpCacheTest, PersistHttpResponseInfo) {
   HttpResponseInfo response1;
   response1.was_cached = false;
   response1.remote_endpoint = expected_endpoint;
-  response1.headers = new HttpResponseHeaders("HTTP/1.1 200 OK");
+  response1.headers =
+      base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
 
   // Pickle.
   base::Pickle pickle;
@@ -11811,7 +11809,7 @@ HttpCacheHugeResourceTest::GetTestModes() {
 
   for (const auto phase : kTransactionPhases)
     for (const auto initializer : kInitializers)
-      test_modes.push_back(std::make_pair(phase, initializer));
+      test_modes.emplace_back(phase, initializer);
 
   return test_modes;
 }
@@ -12754,7 +12752,7 @@ TEST_F(HttpCacheTest, GetResourceURLFromHttpCacheKey) {
 
 class TestCompletionCallbackForHttpCache : public TestCompletionCallbackBase {
  public:
-  TestCompletionCallbackForHttpCache() {}
+  TestCompletionCallbackForHttpCache() = default;
   ~TestCompletionCallbackForHttpCache() override = default;
 
   CompletionRepeatingCallback callback() {

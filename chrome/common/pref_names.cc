@@ -706,7 +706,7 @@ const char kTermsOfServiceURL[] = "terms_of_service.url";
 const char kAttestationEnabled[] = "attestation.enabled";
 
 // A boolean pref recording whether user has dismissed the multiprofile
-// itroduction dialog show.
+// introduction dialog show.
 const char kMultiProfileNeverShowIntro[] =
     "settings.multi_profile_never_show_intro";
 
@@ -1398,7 +1398,7 @@ const char kProfileName[] = "profile.name";
 // Whether a profile is using a default avatar name (eg. Pickles or Person 1)
 // because it was randomly assigned at profile creation time.
 const char kProfileUsingDefaultName[] = "profile.using_default_name";
-// Whether a profile is using an avatar without having explicitely chosen it
+// Whether a profile is using an avatar without having explicitly chosen it
 // (i.e. was assigned by default by legacy profile creation).
 const char kProfileUsingDefaultAvatar[] = "profile.using_default_avatar";
 const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
@@ -1697,6 +1697,12 @@ const char kUserAgentReduction[] = "user_agent_reduction";
 const char kForceMajorVersionToMinorPositionInUserAgent[] =
     "force_major_version_to_minor_position_in_user_agent";
 
+#if (!BUILDFLAG(IS_ANDROID))
+// Boolean determining the side the side panel will be appear on (left / right).
+// True when the side panel is aligned to the right.
+const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
+#endif
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -1821,10 +1827,6 @@ const char kOpenPdfDownloadInSystemReader[] =
 // Int (as defined by DownloadPromptStatus) which specifies whether we should
 // ask the user where they want to download the file (only for Android).
 const char kPromptForDownloadAndroid[] = "download.prompt_for_download_android";
-
-// The prompt status for the download later dialog.
-const char kDownloadLaterPromptStatus[] =
-    "download.download_later_prompt_status";
 
 // Boolean which specifies whether we should display the missing SD card error.
 // This is only applicable for Android.
@@ -2024,7 +2026,7 @@ const char kDevToolsTCPDiscoveryConfig[] = "devtools.tcp_discovery_config";
 // A dictionary with all unsynced DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";
 
-// A boolean specyfing whether the "syncable" subset of DevTools preferences
+// A boolean specifying whether the "syncable" subset of DevTools preferences
 // should be synced or not.
 const char kDevToolsSyncPreferences[] = "devtools.sync_preferences";
 
@@ -2258,7 +2260,7 @@ const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Boolean whether Kerberos functionality is enabled.
 const char kKerberosEnabled[] = "kerberos.enabled";
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Boolean that specifies whether to enable revocation checking (best effort)
 // by default.
@@ -2379,9 +2381,11 @@ const char kDemoModeConfig[] = "demo_mode.config";
 // A string pref holding the value of the current country for demo sessions.
 const char kDemoModeCountry[] = "demo_mode.country";
 
-// A string pref holding the value of the retailer and store id input for demo
-// sessions.
-const char kDemoModeRetailerAndStoreIdInput[] = "demo_mode.retailer_id";
+// A string pref holding the value of the retailer id input for demo sessions.
+const char kDemoModeRetailerId[] = "demo_mode.retailer_id";
+
+// A string pref holding the value of the store id input for demo sessions.
+const char kDemoModeStoreId[] = "demo_mode.store_id";
 
 // A string pref holding the value of the default locale for demo sessions.
 const char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
@@ -3043,8 +3047,6 @@ const char kLacrosAccessibilityVirtualKeyboardEnabled[] =
     "lacros.settings.a11y.virtual_keyboard";
 #endif
 
-const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";
-
 const char kAllowDinosaurEasterEgg[] = "allow_dinosaur_easter_egg";
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3311,6 +3313,15 @@ const char kBuiltinCertificateVerifierEnabled[] =
     "builtin_certificate_verifier_enabled";
 #endif
 
+#if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
+// Boolean that specifies whether the Chrome Root Store and built-in
+// certificate verifier should be used. If false, Chrome will not use the
+// Chrome Root Store. (The built-in certificate verifier may or may not be used
+// depending on the state of kBuiltinCertificateVerifierEnabled, if supported.)
+// If not set, Chrome will choose the root store based on experiments.
+const char kChromeRootStoreEnabled[] = "chrome_root_store_enabled";
+#endif
+
 const char kSharingVapidKey[] = "sharing.vapid_key";
 const char kSharingFCMRegistration[] = "sharing.fcm_registration";
 const char kSharingLocalSharingInfo[] = "sharing.local_sharing_info";
@@ -3554,5 +3565,12 @@ const char kSCTAuditingHashdanceReportCount[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+// A dictionary containing kiosk metrics latest session related information.
+// For example, kiosk session start times, number of network drops.
+// This setting resides in local state.
+const char kKioskMetrics[] = "kiosk-metrics";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace prefs

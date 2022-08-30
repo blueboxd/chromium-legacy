@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (патокаў: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> ГГц)</translation>
 <translation id="1047773237499189053">З'явілася новая функцыя, націсніце стрэлку ўверх, каб даведацца больш.</translation>
 <translation id="1059913517121127803">Не ўдалося запусціць сканіраванне</translation>
+<translation id="1062407476771304334">Замяніць</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Выяўлены брандмаўар</translation>
 <translation id="1075811647922107217">Памер старонкі</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Карыстальнік</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Акно абнаўлення ўбудаванага праграмнага забеспячэння для знешніх прылад адкрыта. Даступных абнаўленняў: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Даведачныя артыкулы і адказы на распаўсюджаныя пытанні пра Chromebook</translation>
+<translation id="1165039591588034296">Памылка</translation>
 <translation id="1175697296044146566">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" /></translation>
 <translation id="1175951029573070619">Сярэдні (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> кіруе гэтай прыладай і можа адсочваць вашы дзеянні.</translation>
 <translation id="147809995039451286">Не ўдалося спампаваць абнаўленне</translation>
 <translation id="1478594628797167447">Сканер</translation>
+<translation id="1483493594462132177">Адправіць</translation>
 <translation id="1491076385728777984">Ідзе абнаўленне ўбудаванага праграмнага забеспячэння прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> можа кіраваць наладамі гэтага карыстальніка і адсочваць яго дзеянні.</translation>
 <translation id="150962533380566081">Няправільны PUK-код.</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Не ўдалося загрузіць відарысы. Праверце падключэнне да сеткі або паспрабуйце загрузіць відарысы зноў.</translation>
 <translation id="1751249301761991853">Персаналізацыя</translation>
 <translation id="1753496554272155572">Выйсці з рэжыму перадпрагляду шпалер</translation>
+<translation id="1755556344721611131">Праграма для дыягностыкі</translation>
 <translation id="175763766237925754">Добры (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Выключыць цёмную тэму</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключыць цёмны рэжым</translation>
+<translation id="1881188606372070653">Каб адправіць запыт на змяненне змесціва з юрыдычных прычын, перайдзіце на <ph name="BEGIN_LINK1" />старонку юрыдычнай даведкі<ph name="END_LINK1" />. Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць вашу інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы.</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
+<translation id="1904932688895783618">Вось яшчэ некалькі карысных рэсурсаў:</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
 <translation id="1932611479324127242">Выключыць акумулятар</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Паспрабуйце знайсці і выправіць непаладку</translation>
 <translation id="2016848882344942759">--без рэбрэндынгу--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Каб праглядзець застаўку, падключыце прыладу да інтэрнэту і перазагрузіце старонку.</translation>
 <translation id="2080070583977670716">Іншыя налады</translation>
 <translation id="2085089206770112532">Паменшыць яркасць дысплэя</translation>
 <translation id="2105810540595158374">Гэта гульнявы кантролер.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Уключыць цёмны рэжым</translation>
 <translation id="2177831236093724629">Выяўлены <ph name="LINK_BEGIN" />кампаненты, якія не адпавядаюць патрабаванням<ph name="LINK_END" />. Каб усе кампаненты, якія адпавядаюць патрабаванням, былі ідэнтыфікаваны, абнавіце Chrome OS да апошняй версіі.</translation>
 <translation id="2180197493692062006">Нешта пайшло не так. Паспрабуйце адкрыць праграму паўторна.</translation>
+<translation id="2182088270354640012">Дзякуй за водгук. Ваш водгук дапаможа нам палепшыць Chrome OS і будзе разгледжаны нашай камандай. Да нас звяртаецца вялікая колькасць людзей, і таму вы не атрымаеце непасрэднага адказу.</translation>
 <translation id="2209788852729124853">Скінуць лічыльнікі трафіка</translation>
 <translation id="2212733584906323460">Пераўтварэнне імён</translation>
 <translation id="2217935453350629363">Бягучая хуткасць</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Дыягностыка падключэння</translation>
 <translation id="3084958266922136097">Выключыць застаўку</translation>
 <translation id="3091839911843451378">Збой: работа спынена</translation>
+<translation id="3096753366938912951">Палажыце вечка на плоскую паверхню</translation>
 <translation id="3102119246920354026">Кэш</translation>
 <translation id="3122464029669770682">Працэсар</translation>
 <translation id="3124039320086536031">Прылада падключана.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Ідзе пошук сканераў</translation>
 <translation id="3246869037381808805">Заданні друку, старэйшыя за 1 дзень, будуць выдалены</translation>
 <translation id="3268178239013324452">Збой: дзверцы прынтара адкрыты</translation>
+<translation id="3275729367986477355">Відарыс аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Змяніць файл}one{Змяніць файлы}few{Змяніць файлы}many{Змяніць файлы}other{Змяніць файлы}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3291996639387199448">Кірунак ключа</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Змяніць шпалеры</translation>
 <translation id="360565022852130722">Сетка Wi-Fi абаронена слабым пратаколам WEP 802.1x</translation>
 <translation id="3606583719724308068">Высокая затрымка на вэб-сайтах HTTPS</translation>
+<translation id="361575905210396100">Дзякуй за водгук</translation>
 <translation id="3616113530831147358">Аўдыя</translation>
 <translation id="3621202678540785336">Увод</translation>
 <translation id="3632579075709132555">Пераключэнне экрана прыватнасці</translation>
+<translation id="3643198267586205643">Абнаўленне АС</translation>
 <translation id="3643810137582748570">Прапусціць каліброўку</translation>
 <translation id="3651050199673793219">Выберыце адзінку вымярэння тэмпературы</translation>
 <translation id="3678765385266369662">Выберыце спосаб выключэння абароны ад запісу</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Блакіроўка</translation>
 <translation id="38114475217616659">Ачысціць усю гісторыю</translation>
 <translation id="3820172043799983114">Несапраўдны PIN-код.</translation>
+<translation id="3824259034819781947">Далучыць файлы</translation>
 <translation id="3838338534323494292">Новы пароль</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3856304145690230735">Гіраскоп корпуса</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Магутнасць сігналу</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="473775607612524610">Абнавіць</translation>
+<translation id="4740255236714854844">Палажыце прыладу корпусам на плоскую паверхню</translation>
 <translation id="4744944742468440486">Інфармацыя, звязаная з вылучаным вамі фрагментам</translation>
 <translation id="4751272708893364980">Паказаць журналы RMA</translation>
 <translation id="4773299976671772492">Спынена</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Каб атрымаць дадатковую інфармацыю, наведайце <ph name="BEGIN_LINK" />Даведачны цэнтр<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгарытм сціскання</translation>
 <translation id="4794140124556169553">Выкананне праверкі ЦП можа паўплываць на прадукцыйнасць сістэмы</translation>
+<translation id="4800589996161293643">Супольнасць Chromebook</translation>
 <translation id="4804818685124855865">Адключыцца</translation>
 <translation id="4808449224298348341">Заданне друку "<ph name="DOCUMENT_TITLE" />" скасавана</translation>
 <translation id="4809927044794281115">Светлая тэма</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Паказваць фота, час, надвор'е і інфармацыю пра медыяфайлы, калі экран неактыўны.</translation>
 <translation id="5039804452771397117">Дазволіць</translation>
+<translation id="5044978354634658544">Устаўка USB-дыска</translation>
 <translation id="5049856988445523908">SIM-карта заблакіравана (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Назва групы</translation>
 <translation id="5051044138948155788">Гэта адзіная старонка. Вы будзеце перанакіраваны на пачатковы экран сканіравання.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Стан акумулятара</translation>
 <translation id="5170568018924773124">Паказаць у папцы</translation>
 <translation id="5179530508336824319">Каб перайсці на наступны экран, уключыце функцыю абароны ад запісу. Адпаведныя інструкцыі можна знайсці на старонцы падтрымкі вытворцы прылады.</translation>
+<translation id="5181140330217080051">Ідзе спампоўванне</translation>
 <translation id="5190187232518914472">Ажывіце прыемныя ўспаміны. Каб дадаць або змяніць альбомы, перайдзіце ў <ph name="LINK_BEGIN" />Google Фота<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Я не магу знайсці на экране нічога, з чым я мог бы вам дапамагчы.
 Каб спытаць мяне аб чым-небудзь, паспрабуйце дакрануцца да мікрафона.</translation>
 <translation id="5212593641110061691">Таблоід</translation>
 <translation id="5222676887888702881">Выйсці</translation>
+<translation id="522307662484862935">Не дадаваць адрас электроннай пошты</translation>
 <translation id="5227902338748591677">Расклад уключэння цёмнай тэмы</translation>
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="5252456968953390977">Роўмінг</translation>
@@ -526,6 +545,7 @@
 <translation id="5620281292257375798">Для ўнутранага карыстання</translation>
 <translation id="5649768706273821470">Праслухаць</translation>
 <translation id="5655283760733841251">Павялічыць яркасць клавіятуры</translation>
+<translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5669267381087807207">Ідзе актывацыя</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Сям'я</translation>
@@ -538,6 +558,7 @@
 <translation id="57838592816432529">Выключыць</translation>
 <translation id="5784136236926853061">Вялікая затрымка HTTP-запытаў</translation>
 <translation id="578753362485952307">Калі вы мадыфікуеце сістэмную плату для выкарыстання ў іншай прыладзе, трымайцеся <ph name="LINK_BEGIN" />адпаведнай працэдуры<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Выканана</translation>
 <translation id="5832805196449965646">Дадаць карыстальніка</translation>
 <translation id="583281660410589416">Невядома</translation>
 <translation id="5843706793424741864">Шкала Фарэнгейта</translation>
@@ -599,6 +620,7 @@
 <translation id="6284632978374966585">Уключыць цёмную тэму</translation>
 <translation id="6295178529664209245">Працягнуць рамонт?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тэст скасаваны</translation>
+<translation id="631063167932043783">Праграма "Агляд"</translation>
 <translation id="6319207335391420837">Абнаўленне ўбудаванага ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6321407676395378991">Уключыць застаўку</translation>
 <translation id="6325525973963619867">Збой</translation>
@@ -610,6 +632,7 @@
 <translation id="6379086450106841622">Сэнсарны экран</translation>
 <translation id="6381741036071372448">Праверце клавіятуру</translation>
 <translation id="6388847657025262518">Заела прыстасаванне сканера для падачы дакументаў. Праверце прыстасаванне і паўтарыце спробу.</translation>
+<translation id="6394634179843537518">Дадайце файл</translation>
 <translation id="6410257289063177456">Файлы відарысаў</translation>
 <translation id="641081527798843608">Супадзенне суб'екта</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@
 <translation id="6516990319416533844">Каб праверыць хуткасць зарадкі, пачакайце крыху, пакуль акумулятар дастаткова не разрадзіцца</translation>
 <translation id="6517239166834772319">Агляд</translation>
 <translation id="6527081081771465939">Невядомы пратакол сістэмы бяспекі Wi-Fi</translation>
+<translation id="6535178685492749208">Вы па-за сеткай. Водгук будзе адпраўлены пазней.</translation>
 <translation id="65587193855025101">Планшэтны сканер</translation>
 <translation id="6564646048574748301">Збой: прынтар недаступны</translation>
 <translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
@@ -643,6 +667,7 @@
 <translation id="6659594942844771486">Укладка</translation>
 <translation id="6692996468359469499">Атрыманне інфармацыі, звязанай з вылучаным вамі</translation>
 <translation id="6704062477274546131">Супастаўленне імён DNS</translation>
+<translation id="6721744718589119342">Мы можам выкарыстоўваць электронную пошту, каб запытваць у вас дадатковыя звесткі і паведамляць пра абнаўленні</translation>
 <translation id="6723839937902243910">Кнопка сілкавання</translation>
 <translation id="6723847290197874913">Падсветка клавіятуры</translation>
 <translation id="672609503628871915">Пазнаёмцеся з навінкамі</translation>
@@ -703,10 +728,12 @@
 <translation id="7297226631177386107">Не ўдалося падключыцца праз брандмаўар да вэб-сайтаў HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Пытанні экспертам і адказы на іх на даведачным форуме Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Каб пабачыць вынік у Google Пошуку, націсніце "Пошук" і клавішу прабелу.</translation>
 <translation id="7343649194310845056">Сеткавыя прылады</translation>
 <translation id="7359657277149375382">Тып файла</translation>
+<translation id="73631062356239394">Абагуліць даныя дыягностыкі</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">Ідэнтыфікатар SKU</translation>
 <translation id="7397270852490618635">Выключыць светлую тэму</translation>
@@ -737,15 +764,18 @@
 <translation id="7657530360897961171"><ph name="DEVICE_TYPE" />: памылка выпраўлення непаладак</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7665800271478495366">Змяніць аватар</translation>
+<translation id="7682274994254393134">Пачатак рамонту</translation>
 <translation id="7690294790491645610">Пацвердзіце новы пароль</translation>
 <translation id="7701040980221191251">Няма</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Колькасць цыклаў</translation>
 <translation id="7747039790905080783">Папярэдне абагулены ключ</translation>
 <translation id="7762130827864645708">Пароль зменены. У далейшым выкарыстоўвайце яго.</translation>
+<translation id="7762839321248874531">Адправіць <ph name="BEGIN_LINK1" />звесткі пра сістэму і праграмы<ph name="END_LINK1" />, а таксама <ph name="BEGIN_LINK2" />паказчыкі<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Супадзенне па суфіксе дамена</translation>
 <translation id="7769672763586021400">Ідэнтыфікатар мадэлі</translation>
 <translation id="7784116172884276937">DNS-серверы не наладжаны</translation>
+<translation id="779591286616261875">Адправіць яшчэ адну справаздачу</translation>
 <translation id="7799817062559422778">Светлы рэжым</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7805768142964895445">Стан</translation>
@@ -812,6 +842,7 @@
 <translation id="8382302752385457774">Рэбрэндынг</translation>
 <translation id="8395584934117017006">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе арганізацыя</translation>
 <translation id="8398927464629426868">Цяперашняя хуткасць зарадкі або разрадкі прылады</translation>
+<translation id="8420955526972171689">Запуск праверак, а таксама пошук і выпраўленне непаладак, звязаных з апаратным забеспячэннем</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Убудаваная клавіятура</translation>
 <translation id="8431300646573772016">Што новага ў Chrome OS</translation>
@@ -897,6 +928,7 @@
 <translation id="9082718469794970195">Выкарыстоўваць гэта відэа</translation>
 <translation id="9087578468327036362">Паскардзіцца на гэты запыт</translation>
 <translation id="9088306295921699330">Бягучае выкарыстанне</translation>
+<translation id="9092255287806472980">Ваш водгук дапаможа нам палепшыць Chrome OS і будзе разгледжаны нашай камандай. Да нас звяртаецца вялікая колькасць людзей, і таму мы не зможам адправіць вам адказ.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Вам трэба будзе разабраць прыладу</translation>
 <translation id="9098156406873149060">Захаваць карыстальніцкія даныя</translation>
@@ -911,6 +943,7 @@
 <translation id="9149391708638971077">Выканаць праверку памяці</translation>
 <translation id="9173638680043580060">Застаецца менш за хвіліну</translation>
 <translation id="917720651393141712">Праверыць</translation>
+<translation id="9188992814426075118">Падсветка клавіятуры можа аўтаматычна падбірацца пад колер шпалер</translation>
 <translation id="9204237731135241582">Не ўдалося звязацца са шлюзам з праграм для Android</translation>
 <translation id="9211490828691860325">Усе працоўныя сталы</translation>
 <translation id="922179502584117429">Бягучая версія <ph name="VERSION_NUMBER" /> састарэла.</translation>

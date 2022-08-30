@@ -16,10 +16,12 @@
 
 // Static
 void HistoryClustersUtil::PopulateSource(content::WebUIDataSource* source,
-                                         Profile* profile) {
+                                         Profile* profile,
+                                         bool in_side_panel) {
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",
                      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+  source->AddBoolean("inSidePanel", in_side_panel);
   auto* history_clusters_service =
       HistoryClustersServiceFactory::GetForBrowserContext(profile);
   source->AddBoolean("isHistoryClustersEnabled",
@@ -43,6 +45,7 @@ void HistoryClustersUtil::PopulateSource(content::WebUIDataSource* source,
       {"openAllInTabGroup", IDS_HISTORY_CLUSTERS_OPEN_ALL_IN_TABGROUP},
       {"relatedSearchesHeader", IDS_HISTORY_CLUSTERS_RELATED_SEARCHES_HEADER},
       {"removeAllFromHistory", IDS_HISTORY_CLUSTERS_REMOVE_ALL_ITEMS},
+      {"removeFromHistory", IDS_HISTORY_CLUSTERS_REMOVE_PAGE},
       {"removeFromHistoryToast", IDS_HISTORY_CLUSTERS_REMOVE_ITEM_TOAST},
       {"savedInTabGroup", IDS_HISTORY_CLUSTERS_SAVED_IN_TABGROUP_LABEL},
       {"toggleButtonLabelLess", IDS_HISTORY_CLUSTERS_SHOW_LESS_BUTTON_LABEL},

@@ -2814,21 +2814,28 @@ EGL_EXTENSIONS_EXTRA = [
   'EGL_ANGLE_display_semaphore_share_group',
   'EGL_ANGLE_display_texture_share_group',
   'EGL_ANGLE_context_virtualization',
+  'EGL_ANGLE_create_context_backwards_compatible',
   'EGL_ANGLE_create_context_client_arrays',
   'EGL_ANGLE_create_context_webgl_compatibility',
   'EGL_ANGLE_external_context_and_surface',
+  'EGL_ANGLE_keyed_mutex',
+  'EGL_ANGLE_robust_resource_initialization',
   'EGL_ANGLE_surface_orientation',
   'EGL_ANGLE_window_fixed_size',
+  'EGL_ARM_implicit_external_sync',
   'EGL_CHROMIUM_create_context_bind_generates_resource',
   'EGL_EXT_create_context_robustness',
   'EGL_EXT_gl_colorspace_display_p3',
   'EGL_EXT_gl_colorspace_display_p3_passthrough',
+  'EGL_EXT_image_dma_buf_import',
   'EGL_EXT_pixel_format_float',
   'EGL_IMG_context_priority',
+  'EGL_KHR_create_context',
   'EGL_KHR_gl_colorspace',
   'EGL_KHR_no_config_context',
   'EGL_KHR_surfaceless_context',
   'EGL_NV_robustness_video_memory_purge',
+  'EGL_NOK_texture_from_pixmap',
 ]
 
 GLX_FUNCTIONS = [
@@ -3117,9 +3124,6 @@ namespace gl {
 class GLContext;
 """ % {'name': set_name.upper()})
 
-  if set_name == 'egl':
-    file.write("class GLDisplayEGL;\n")
-
   # Write typedefs for function pointer types. Always use the GL name for the
   # typedef.
   file.write('\n')
@@ -3130,25 +3134,34 @@ class GLContext;
   # Write declarations for booleans indicating which extensions are available.
   file.write('\n')
   if set_name == 'egl':
-    file.write('struct GL_EXPORT ExtensionsEGL {\n')
+    file.write('struct GL_EXPORT ClientExtensionsEGL {\n')
+    for extension in sorted(used_client_extensions):
+      file.write('  bool b_%s;\n' % extension)
+    file.write(
+"""
+
+  void InitializeClientExtensionSettings();
+
+ private:
+  static std::string GetClientExtensions();
+};
+
+struct GL_EXPORT DisplayExtensionsEGL {
+""")
   else:
+    assert len(used_client_extensions) == 0
     file.write("struct Extensions%s {\n" % set_name.upper())
-  for extension in sorted(used_client_extensions):
-    file.write('  bool b_%s;\n' % extension)
+
   for extension in sorted(used_extensions):
     file.write('  bool b_%s;\n' % extension)
   if set_name == 'egl':
     file.write(
 """
 
-  void InitializeClientExtensionSettings();
-  void InitializeExtensionSettings(GLDisplayEGL* display);
-  void UpdateConditionalExtensionSettings(GLDisplayEGL* display);
+  void InitializeExtensionSettings(EGLDisplay display);
+  void UpdateConditionalExtensionSettings(EGLDisplay display);
 
-  static std::string GetPlatformExtensions(GLDisplayEGL* display);
-
- private:
-  static std::string GetClientExtensions();
+  static std::string GetPlatformExtensions(EGLDisplay display);
 """)
   file.write('};\n')
   file.write('\n')
@@ -3312,8 +3325,6 @@ def GenerateSource(file, functions, set_name, used_extensions,
                    'ui/gl/gl_implementation.h',
                    'ui/gl/gl_version_info.h',
                    set_header_name ]
-  if set_name == 'egl':
-    include_list.append('ui/gl/gl_display.h')
 
   includes_string = "\n".join(["#include \"{0}\"".format(h)
                                for h in sorted(include_list)])
@@ -3440,7 +3451,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
 """)
   elif set_name == 'egl':
     file.write("""\
-void ExtensionsEGL::InitializeClientExtensionSettings() {
+void ClientExtensionsEGL::InitializeClientExtensionSettings() {
   std::string client_extensions(GetClientExtensions());
   [[maybe_unused]] gfx::ExtensionSet extensions(
       gfx::MakeExtensionSet(client_extensions));
@@ -3480,7 +3491,7 @@ void Driver%s::InitializeExtensionBindings() {
     file.write("""\
 }
 
-void ExtensionsEGL::InitializeExtensionSettings(GLDisplayEGL* display) {
+void DisplayExtensionsEGL::InitializeExtensionSettings(EGLDisplay display) {
   std::string platform_extensions(GetPlatformExtensions(display));
   [[maybe_unused]] gfx::ExtensionSet extensions(
       gfx::MakeExtensionSet(platform_extensions));

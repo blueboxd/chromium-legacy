@@ -17,13 +17,14 @@ SwitchAccessFocusRingManagerTest = class extends SwitchAccessE2ETest {
     await importModule(
         'SAConstants', '/switch_access/switch_access_constants.js');
     await importModule('ActionManager', '/switch_access/action_manager.js');
+    await importModule('RectUtil', '/common/rect_util.js');
 
     await TestUtility.setup();
   }
 };
 
 TEST_F('SwitchAccessFocusRingManagerTest', 'BackButtonFocus', function() {
-  this.runWithLoadedDesktop((desktop) => {
+  this.runWithLoadedDesktop(desktop => {
     // Focus the back button.
     Navigator.byItem.moveTo_(
         desktop.find({role: chrome.automation.RoleType.TAB}));
@@ -51,7 +52,7 @@ TEST_F('SwitchAccessFocusRingManagerTest', 'BackButtonFocus', function() {
   });
 });
 
-TEST_F(
+AX_TEST_F(
     'SwitchAccessFocusRingManagerTest', 'BackButtonForMenuFocus',
     async function() {
       const site = '<input type="text">';
@@ -80,7 +81,7 @@ TEST_F(
       assertEquals(0, preview.rects.length);
     });
 
-TEST_F('SwitchAccessFocusRingManagerTest', 'ButtonFocus', async function() {
+AX_TEST_F('SwitchAccessFocusRingManagerTest', 'ButtonFocus', async function() {
   const site = '<button>Test</button>';
   const rootWebArea = await this.runWithLoadedTree(site);
   const button = rootWebArea.find({role: chrome.automation.RoleType.BUTTON});
@@ -97,7 +98,7 @@ TEST_F('SwitchAccessFocusRingManagerTest', 'ButtonFocus', async function() {
   assertTrue(RectUtil.equal(buttonLocation, focusLocation));
 });
 
-TEST_F('SwitchAccessFocusRingManagerTest', 'GroupFocus', async function() {
+AX_TEST_F('SwitchAccessFocusRingManagerTest', 'GroupFocus', async function() {
   const site = `
     <div role="menu">
       <div role="menuitem">Dog</div>

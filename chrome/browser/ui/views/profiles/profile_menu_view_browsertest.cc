@@ -88,7 +88,6 @@
 #include "chrome/browser/signin/signin_ui_delegate_impl_lacros.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/chromeos/fake_account_manager_ui.h"
-#include "components/signin/public/base/signin_switches.h"
 #endif
 
 namespace {
@@ -144,7 +143,7 @@ class FakeAccountManagerUITestObserver : public FakeAccountManagerUI::Observer {
   explicit FakeAccountManagerUITestObserver(
       FakeAccountManagerUI* account_manager_ui)
       : account_manager_ui_(account_manager_ui) {
-    scoped_observation_.Observe(account_manager_ui_);
+    scoped_observation_.Observe(account_manager_ui_.get());
   }
   ~FakeAccountManagerUITestObserver() override = default;
 
@@ -154,7 +153,7 @@ class FakeAccountManagerUITestObserver : public FakeAccountManagerUI::Observer {
   void OnReauthAccountDialogShown() override { reauth_run_loop_.Quit(); }
 
  private:
-  FakeAccountManagerUI* account_manager_ui_;
+  raw_ptr<FakeAccountManagerUI> account_manager_ui_;
   base::RunLoop reauth_run_loop_;
   base::ScopedObservation<FakeAccountManagerUI, FakeAccountManagerUI::Observer>
       scoped_observation_{this};
@@ -215,10 +214,6 @@ class ProfileMenuViewTestBase {
 
  private:
   Browser* target_browser_ = nullptr;
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  base::test::ScopedFeatureList feature_list_{
-      switches::kLacrosNonSyncingProfiles};
-#endif
 };
 
 class ProfileMenuViewExtensionsTest : public ProfileMenuViewTestBase,

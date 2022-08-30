@@ -86,7 +86,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   void AddTrack(MediaStreamVideoTrack* track,
                 const VideoTrackAdapterSettings& track_adapter_settings,
                 const VideoCaptureDeliverFrameCB& frame_callback,
+                const VideoCaptureNotifyFrameDroppedCB& dropped_callback,
                 const EncodedVideoFrameCB& encoded_frame_callback,
+                const VideoCaptureCropVersionCB& crop_version_callback,
                 const VideoTrackSettingsCallback& settings_callback,
                 const VideoTrackFormatCallback& format_callback,
                 ConstraintsOnceCallback callback);
@@ -206,6 +208,13 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   virtual absl::optional<uint32_t> GetNextCropVersion();
 #endif
 
+  // Returns the current crop version.
+  // For an explanation of what a |crop_version| is, see Crop().
+  // The initial crop version is zero. On platforms where cropping is not
+  // supported (Android), and for sources that don't support cropping (audio),
+  // the crop version never goes over 0.
+  virtual uint32_t GetCropVersion() const;
+
   // Notifies the source about that the number of encoded sinks have been
   // updated. Note: Can only be called if the number of encoded sinks have
   // actually changed!
@@ -240,11 +249,17 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
 
   // An implementation must start capturing frames after this method is called.
   // When the source has started or failed to start OnStartDone must be called.
-  // An implementation must call |frame_callback| on the IO thread with the
-  // captured frames, and |encoded_frame_callback| with encoded frames if
-  // supported and enabled via OnEncodedSinkEnabled.
-  virtual void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
-                               EncodedVideoFrameCB encoded_frame_callback) = 0;
+  // An implementation must call the following callbacks on the IO thread:
+  // * |frame_callback| with the captured frames.
+  // * |encoded_frame_callback| with encoded frames if supported and enabled
+  //   via OnEncodedSinkEnabled.
+  // * |crop_version_callback| whenever it is guaranteed that all subsequent
+  //   frames that |frame_callback| will be called for, will have either
+  //   the given crop version or higher.
+  virtual void StartSourceImpl(
+      VideoCaptureDeliverFrameCB frame_callback,
+      EncodedVideoFrameCB encoded_frame_callback,
+      VideoCaptureCropVersionCB crop_version_callback) = 0;
   void OnStartDone(mojom::MediaStreamRequestResult result);
 
   // A subclass that supports restart must override this method such that it
@@ -357,21 +372,11 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   State state_;
 
   struct PendingTrackInfo {
-    PendingTrackInfo(
-        MediaStreamVideoTrack* track,
-        const VideoCaptureDeliverFrameCB& frame_callback,
-        const EncodedVideoFrameCB& encoded_frame_callback,
-        const VideoTrackSettingsCallback& settings_callback,
-        const VideoTrackFormatCallback& format_callback,
-        std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
-        ConstraintsOnceCallback callback);
-    PendingTrackInfo(PendingTrackInfo&& other);
-    PendingTrackInfo& operator=(PendingTrackInfo&& other);
-    ~PendingTrackInfo();
-
     MediaStreamVideoTrack* track;
     VideoCaptureDeliverFrameCB frame_callback;
+    VideoCaptureNotifyFrameDroppedCB notify_frame_dropped_callback;
     EncodedVideoFrameCB encoded_frame_callback;
+    VideoCaptureCropVersionCB crop_version_callback;
     VideoTrackSettingsCallback settings_callback;
     VideoTrackFormatCallback format_callback;
     // TODO(guidou): Make |adapter_settings| a regular field instead of a

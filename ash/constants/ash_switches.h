@@ -40,6 +40,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcDisableMediaStoreMaintenance[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisablePlayAutoInstall[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableTtsCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
@@ -75,6 +76,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshForceStatusAreaCollapsible[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshHideNotificationsForFactory[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshNoNudges[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshPowerButtonPosition[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshSideVolumeButtonPosition[];
@@ -256,6 +258,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowTaps[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipForceOnlineSignInForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSkipReorderNudgeShowThresholdDurationForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSupportsClamshellAutoRotation[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSuppressMessageCenterPopups[];
@@ -277,6 +281,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOndeviceHandwritingSwitch[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGetAccessTokenForTest[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -364,6 +369,11 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldClearFastInkBuffer();
 
 // Returns whether the device has hps hardware.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool HasHps();
+
+// Returns true if the duration threshold for considering the nudge to be
+// shown is skipped.
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsSkipRecorderNudgeShowThresholdDurationEnabled();
 
 }  // namespace ash::switches
 

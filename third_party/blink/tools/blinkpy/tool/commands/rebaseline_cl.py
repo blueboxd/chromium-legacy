@@ -8,9 +8,11 @@ import itertools
 import json
 import logging
 import optparse
+import re
 
 from blinkpy.common.net.git_cl import GitCL, TryJobStatus
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.tool.commands.command import check_file_option
 from blinkpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
 
@@ -71,7 +73,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             optparse.make_option(
                 '--test-name-file',
                 dest='test_name_file',
-                default=None,
+                action='callback',
+                callback=check_file_option,
+                type='string',
                 help='Read names of tests to rebaseline from this file, one '
                 'test per line.'),
             optparse.make_option(
@@ -473,7 +477,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             r.test_name() for r in unexpected_results
             if r.is_missing_baseline() or r.has_non_reftest_mismatch())
 
-        new_failures = self._fetch_tests_with_new_failures(build)
+        test_suite = re.sub('\s*\(.*\)$', '', web_test_results.step_name())
+        new_failures = self._fetch_tests_with_new_failures(build, test_suite)
         if new_failures is None:
             _log.warning('No retry summary available for "%s".',
                          build.builder_name)
@@ -481,8 +486,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             tests = [t for t in tests if t in new_failures]
         return tests
 
-    def _fetch_tests_with_new_failures(self, build):
-        """For a given try job, lists tests that only failed with the patch.
+    def _fetch_tests_with_new_failures(self, build, test_suite):
+        """For a given test suite in the try job, lists tests that only failed
+        with the patch.
 
         If a test failed only with the patch but not without, then that
         indicates that the failure is actually related to the patch and
@@ -491,7 +497,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         If the list of new failures could not be obtained, this returns None.
         """
         results_fetcher = self._tool.results_fetcher
-        content = results_fetcher.fetch_retry_summary_json(build)
+        content = results_fetcher.fetch_retry_summary_json(build, test_suite)
         if content is None:
             return None
         try:
@@ -508,9 +514,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         then an entry should be added for that port using a build that is
         available.
 
-        For example, if there's no entry for the port "win-win7", but there
-        is an entry for the "win-win10" port, then an entry might be added
-        for "win-win7" using the results from "win-win10".
+        For example, if there's no entry for the port "win-win10", but there
+        is an entry for the "win-win11" port, then an entry might be added
+        for "win-win10" using the results from "win-win11".
         """
         all_ports = {
             self._tool.builders.port_name_for_builder_name(b)
@@ -537,7 +543,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """
 
         # A full port name should normally always be of the form <os>-<version>;
-        # for example "win-win7", or "linux-trusty". For the test port used in
+        # for example "win-win11", or "linux-trusty". For the test port used in
         # unit tests, though, the full port name may be "test-<os>-<version>".
         def os_name(port):
             if '-' not in port:

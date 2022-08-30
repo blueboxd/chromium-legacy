@@ -586,7 +586,7 @@ static bool IsValidElementName(Document* document, const String& name) {
 }
 
 static bool AcceptsEditingFocus(const Element& element) {
-  DCHECK(HasEditableStyle(element));
+  DCHECK(IsEditable(element));
 
   return element.GetDocument().GetFrame() && RootEditableElement(element);
 }
@@ -1754,16 +1754,18 @@ bool Document::prerendering() const {
   return IsPrerendering();
 }
 uint32_t Document::softNavigations() const {
-  if (LocalDOMWindow* window = domWindow()) {
-    if (LocalFrame* frame = window->GetFrame()) {
-      if (frame->IsMainFrame()) {
-        SoftNavigationHeuristics* heuristics =
-            SoftNavigationHeuristics::From(*window);
-        return heuristics->SoftNavigationCount();
-      }
-    }
+  LocalDOMWindow* window = domWindow();
+  if (!window) {
+    return 0;
   }
-  return 0;
+  LocalFrame* frame = window->GetFrame();
+  if (!frame || !frame->IsMainFrame()) {
+    return 0;
+  }
+  SoftNavigationHeuristics* heuristics =
+      SoftNavigationHeuristics::From(*window);
+  DCHECK(heuristics);
+  return heuristics->SoftNavigationCount();
 }
 
 bool Document::hidden() const {
@@ -2332,7 +2334,8 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
   //
   // [1] See blink::NodeLayoutUpgrade::Reasons
   NodeLayoutUpgrade::Reasons upgrade_mask =
-      maybe_needs_layout ? NodeLayoutUpgrade::kDependsOnContainerQueries : 0;
+      maybe_needs_layout ? NodeLayoutUpgrade::kDependsOnSizeContainerQueries
+                         : 0;
 
   if (NodeLayoutUpgrade::GetReasons(node) & upgrade_mask)
     is_dirty = true;
@@ -4260,20 +4263,44 @@ void Document::UpdateBaseURL() {
   }
 }
 
+// [spec] https://html.spec.whatwg.org/C/#fallback-base-url
 KURL Document::FallbackBaseURL() const {
+  const bool is_parent_cross_origin =
+      GetFrame() && GetFrame()->IsCrossOriginToParentOrOuterDocument();
+  // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
+  // ParentDocument() is not correct.
+  // We avoid using it when it is cross-origin, to avoid leaking cross-origin.
+  const Document* same_origin_parent =
+      is_parent_cross_origin ? nullptr : ParentDocument();
+
+  // [spec] 1. If document is an iframe srcdoc document, then return the
+  //           document base URL of document's browsing context's container
+  //           document.
   if (IsSrcdocDocument()) {
-    // TODO(tkent): Referring to ParentDocument() is not correct.  See
-    // crbug.com/751329.
-    if (Document* parent = ParentDocument())
+    // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
+    // ParentDocument() is not correct.
+    if (Document* parent = ParentDocument()) {
       return parent->BaseURL();
-  } else if (urlForBinding().IsAboutBlankURL()) {
-    if (!dom_window_ && execution_context_)
-      return execution_context_->BaseURL();
-    // TODO(tkent): Referring to ParentDocument() is not correct.  See
-    // crbug.com/751329.
-    if (Document* parent = ParentDocument())
-      return parent->BaseURL();
+    }
+    // TODO(https://crbug.com/1339824) Sandboxed about:srcdoc document can be
+    // hosted in a different process. As a result, their `parent` may be null,
+    // and we might return something wrong, in a different way here.
   }
+
+  // [spec] 2. If document's URL is about:blank, and document's browsing
+  //           context's creator base URL is non-null, then return that creator
+  //           base URL.
+  if (urlForBinding().IsAboutBlankURL()) {
+    if (!dom_window_ && execution_context_) {
+      return execution_context_->BaseURL();
+    }
+
+    if (same_origin_parent) {
+      return same_origin_parent->BaseURL();
+    }
+  }
+
+  // [spec] 3. Return document's URL.
   return urlForBinding();
 }
 
@@ -5050,7 +5077,13 @@ void Document::SendFocusNotification(Element* new_focused_element,
   bool is_editable = false;
   gfx::Rect element_bounds_in_dips;
   if (new_focused_element) {
-    is_editable = IsEditableElement(*new_focused_element);
+    auto* text_control = ToTextControlOrNull(new_focused_element);
+    is_editable =
+        IsEditable(*new_focused_element) ||
+        (text_control && !text_control->IsDisabledOrReadOnly()) ||
+        EqualIgnoringASCIICase(
+            new_focused_element->FastGetAttribute(html_names::kRoleAttr),
+            "textbox");
     gfx::Rect bounds_in_viewport;
 
     if (new_focused_element->IsSVGElement()) {
@@ -5850,28 +5883,32 @@ void Document::setDomain(const String& raw_domain,
                       dom_window_->GetSecurityOrigin()->Port() == 0
                           ? WebFeature::kDocumentDomainSetWithDefaultPort
                           : WebFeature::kDocumentDomainSetWithNonDefaultPort);
-    bool was_cross_origin_to_main_frame =
-        GetFrame()->IsCrossOriginToMainFrame();
+    bool was_cross_origin_to_nearest_main_frame =
+        GetFrame()->IsCrossOriginToNearestMainFrame();
     bool was_cross_origin_to_parent_frame =
         GetFrame()->IsCrossOriginToParentOrOuterDocument();
     dom_window_->GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
-    bool is_cross_origin_to_main_frame = GetFrame()->IsCrossOriginToMainFrame();
-    if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler())
-      frame_scheduler->SetCrossOriginToMainFrame(is_cross_origin_to_main_frame);
-    if (View() &&
-        (was_cross_origin_to_main_frame != is_cross_origin_to_main_frame)) {
-      View()->CrossOriginToMainFrameChanged();
+    bool is_cross_origin_to_nearest_main_frame =
+        GetFrame()->IsCrossOriginToNearestMainFrame();
+    if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler()) {
+      frame_scheduler->SetCrossOriginToNearestMainFrame(
+          is_cross_origin_to_nearest_main_frame);
+    }
+    if (View() && (was_cross_origin_to_nearest_main_frame !=
+                   is_cross_origin_to_nearest_main_frame)) {
+      View()->CrossOriginToNearestMainFrameChanged();
     }
     if (GetFrame()->IsMainFrame()) {
       // Notify descendants if their cross-origin-to-main-frame status changed.
-      // TODO(pdr): This will notify even if |Frame::IsCrossOriginToMainFrame|
-      // is the same. Track whether each child was cross-origin to main before
-      // and after changing the domain, and only notify the changed ones.
+      // TODO(pdr): This will notify even if
+      // |Frame::IsCrossOriginToNearestMainFrame| is the same. Track whether
+      // each child was cross-origin to main before and after changing the
+      // domain, and only notify the changed ones.
       for (Frame* child = GetFrame()->Tree().FirstChild(); child;
            child = child->Tree().TraverseNext(GetFrame())) {
         auto* child_local_frame = DynamicTo<LocalFrame>(child);
         if (child_local_frame && child_local_frame->View())
-          child_local_frame->View()->CrossOriginToMainFrameChanged();
+          child_local_frame->View()->CrossOriginToNearestMainFrameChanged();
       }
     }
 
@@ -6451,9 +6488,6 @@ KURL Document::CompleteURLWithOverride(const String& url,
   // Always return a null URL when passed a null string.
   // FIXME: Should we change the KURL constructor to have this behavior?
   // See also [CSS]StyleSheet::completeURL(const String&)
-  // TODO(crbug.com/1244483): Make sure that LinkWebBundle::CompleteURL
-  // implementation stays in line with this one (disregarding the encoding
-  // part).
   if (url.IsNull())
     return KURL();
   if (!Encoding().IsValid())
@@ -6772,9 +6806,11 @@ void Document::FinishedParsing() {
     if (ShouldMarkFontPerformance())
       FontPerformance::MarkDomContentLoaded();
 
-    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
-        "MarkDOMContent", inspector_mark_load_event::Data, frame);
-    probe::DomContentLoadedEventFired(frame);
+    if (frame->IsAttached()) {
+      DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+          "MarkDOMContent", inspector_mark_load_event::Data, frame);
+      probe::DomContentLoadedEventFired(frame);
+    }
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
   }
 
@@ -7198,6 +7234,8 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   }
   element->SetIsInTopLayer(true);
   display_lock_document_state_->ElementAddedToTopLayer(element);
+
+  probe::TopLayerElementsChanged(this);
 }
 
 void Document::RemoveFromTopLayer(Element* element) {
@@ -7208,6 +7246,8 @@ void Document::RemoveFromTopLayer(Element* element) {
   top_layer_elements_.EraseAt(position);
   element->SetIsInTopLayer(false);
   display_lock_document_state_->ElementRemovedFromTopLayer(element);
+
+  probe::TopLayerElementsChanged(this);
 }
 
 HTMLDialogElement* Document::ActiveModalDialog() const {
@@ -7220,44 +7260,12 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-bool Document::PopupOrHintShowing() const {
-  return !popup_and_hint_stack_.IsEmpty();
-}
-bool Document::HintShowing() const {
-  return !popup_and_hint_stack_.IsEmpty() &&
-         (popup_and_hint_stack_.back()->PopupType() == PopupValueType::kHint);
-}
-
-void Document::HideTopmostPopupOrHint(HidePopupFocusBehavior focus_behavior) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-  if (popup_and_hint_stack_.IsEmpty())
-    return;
-  popup_and_hint_stack_.back()->hidePopupInternal(focus_behavior);
-}
-
-void Document::HideAllPopupsUntil(const Element* endpoint,
-                                  HidePopupFocusBehavior focus_behavior) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-  while (!popup_and_hint_stack_.IsEmpty() &&
-         popup_and_hint_stack_.back() != endpoint) {
-    popup_and_hint_stack_.back()->hidePopupInternal(focus_behavior);
-  }
-}
-
-void Document::HidePopupIfShowing(Element* popup,
-                                  HidePopupFocusBehavior focus_behavior) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-  DCHECK(popup->HasValidPopupAttribute());
-  if (!popup->popupOpen())
-    return;
-  if (popup->PopupType() == PopupValueType::kAsync) {
-    popup->hidePopupInternal(focus_behavior);
-  } else {
-    HideAllPopupsUntil(popup, focus_behavior);
-    DCHECK(!popup_and_hint_stack_.IsEmpty() &&
-           popup_and_hint_stack_.back() == popup);
-    HideTopmostPopupOrHint(focus_behavior);
-  }
+Element* Document::TopmostPopupAutoOrHint() const {
+  if (PopupHintShowing())
+    return PopupHintShowing();
+  if (PopupStack().IsEmpty())
+    return nullptr;
+  return PopupStack().back();
 }
 
 void Document::exitPointerLock() {
@@ -8011,7 +8019,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);
-  visitor->Trace(popup_and_hint_stack_);
+  visitor->Trace(popup_hint_showing_);
+  visitor->Trace(popup_stack_);
+  visitor->Trace(popups_waiting_to_hide_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);

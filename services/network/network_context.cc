@@ -81,6 +81,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/brokered_client_socket_factory.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/disk_cache/mojo_backend_file_operations_factory.h"
@@ -533,8 +534,6 @@ NetworkContext::NetworkContext(
       url_request_context_->net_log(), url_request_context_);
   resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
-
   if (params_->http_auth_static_network_context_params) {
     http_auth_merged_preferences_.SetAllowDefaultCredentials(
         params_->http_auth_static_network_context_params
@@ -614,8 +613,6 @@ NetworkContext::NetworkContext(
 
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
-
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 }
 
 NetworkContext::~NetworkContext() {
@@ -745,15 +742,13 @@ void NetworkContext::SetClient(
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  if (!base::FeatureList::IsEnabled(features::kDisableResourceScheduler)) {
-    resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-        current_resource_scheduler_client_id_,
-        IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
-        resource_scheduler_.get(),
-        url_request_context_->network_quality_estimator());
-    current_resource_scheduler_client_id_.Increment();
-  }
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
+      base::MakeRefCounted<ResourceSchedulerClient>(
+          current_resource_scheduler_client_id_,
+          IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
+          resource_scheduler_.get(),
+          url_request_context_->network_quality_estimator());
+  current_resource_scheduler_client_id_.Increment();
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -964,7 +959,12 @@ void NetworkContext::ClearNetworkingHistoryBetween(
     base::Time start_time,
     base::Time end_time,
     base::OnceClosure completion_callback) {
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  auto barrier = base::BarrierClosure(3, std::move(completion_callback));
+  sct_auditing_handler()->ClearPendingReports(barrier);
+#else
   auto barrier = base::BarrierClosure(2, std::move(completion_callback));
+#endif  // BUIDLFLAG(IS_CT_SUPPORTED)
 
   url_request_context_->transport_security_state()->DeleteAllDynamicDataBetween(
       start_time, end_time, barrier);
@@ -989,6 +989,10 @@ void NetworkContext::ClearHttpCache(base::Time start_time,
       url_request_context_, std::move(filter), start_time, end_time,
       base::BindOnce(&NetworkContext::OnHttpCacheCleared,
                      base::Unretained(this), std::move(callback))));
+
+  NetworkServiceMemoryCache* memory_cache = GetMemoryCache();
+  if (memory_cache)
+    memory_cache->Clear();
 }
 
 void NetworkContext::ComputeHttpCacheSize(
@@ -1268,18 +1272,6 @@ void NetworkContext::ClearDomainReliability(
   std::move(callback).Run();
 }
 
-void NetworkContext::GetDomainReliabilityJSON(
-    GetDomainReliabilityJSONCallback callback) {
-  if (!domain_reliability_monitor_) {
-    base::Value data(base::Value::Type::DICTIONARY);
-    data.SetStringKey("error", "no_service");
-    std::move(callback).Run(std::move(data));
-    return;
-  }
-
-  std::move(callback).Run(domain_reliability_monitor_->GetWebUIData());
-}
-
 void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
   net::HttpNetworkSession* http_session =
       url_request_context_->http_transaction_factory()->GetSession();
@@ -1543,7 +1535,7 @@ void NetworkContext::GetExpectCTState(
     result.Set("error", "non-ASCII domain name");
   }
 
-  std::move(callback).Run(base::Value(std::move(result)));
+  std::move(callback).Run(std::move(result));
 }
 
 void NetworkContext::MaybeEnqueueSCTReport(
@@ -1862,7 +1854,7 @@ void NetworkContext::IsHSTSActiveForHost(const std::string& host,
 
 void NetworkContext::GetHSTSState(const std::string& domain,
                                   GetHSTSStateCallback callback) {
-  base::Value result(base::Value::Type::DICTIONARY);
+  base::Value::Dict result;
 
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
@@ -1875,24 +1867,22 @@ void NetworkContext::GetHSTSState(const std::string& domain,
       bool found_pkp_static = transport_security_state->GetStaticPKPState(
           domain, &static_pkp_state);
       if (found_sts_static || found_pkp_static) {
-        result.SetIntKey("static_upgrade_mode",
-                         static_cast<int>(static_sts_state.upgrade_mode));
-        result.SetBoolKey("static_sts_include_subdomains",
-                          static_sts_state.include_subdomains);
-        result.SetDoubleKey("static_sts_observed",
-                            static_sts_state.last_observed.ToDoubleT());
-        result.SetDoubleKey("static_sts_expiry",
-                            static_sts_state.expiry.ToDoubleT());
-        result.SetBoolKey("static_pkp_include_subdomains",
-                          static_pkp_state.include_subdomains);
-        result.SetDoubleKey("static_pkp_observed",
-                            static_pkp_state.last_observed.ToDoubleT());
-        result.SetDoubleKey("static_pkp_expiry",
-                            static_pkp_state.expiry.ToDoubleT());
-        result.SetStringKey("static_spki_hashes",
-                            HashesToBase64String(static_pkp_state.spki_hashes));
-        result.SetStringKey("static_sts_domain", static_sts_state.domain);
-        result.SetStringKey("static_pkp_domain", static_pkp_state.domain);
+        result.Set("static_upgrade_mode",
+                   static_cast<int>(static_sts_state.upgrade_mode));
+        result.Set("static_sts_include_subdomains",
+                   static_sts_state.include_subdomains);
+        result.Set("static_sts_observed",
+                   static_sts_state.last_observed.ToDoubleT());
+        result.Set("static_sts_expiry", static_sts_state.expiry.ToDoubleT());
+        result.Set("static_pkp_include_subdomains",
+                   static_pkp_state.include_subdomains);
+        result.Set("static_pkp_observed",
+                   static_pkp_state.last_observed.ToDoubleT());
+        result.Set("static_pkp_expiry", static_pkp_state.expiry.ToDoubleT());
+        result.Set("static_spki_hashes",
+                   HashesToBase64String(static_pkp_state.spki_hashes));
+        result.Set("static_sts_domain", static_sts_state.domain);
+        result.Set("static_pkp_domain", static_pkp_state.domain);
       }
 
       net::TransportSecurityState::STSState dynamic_sts_state;
@@ -1903,37 +1893,34 @@ void NetworkContext::GetHSTSState(const std::string& domain,
       bool found_pkp_dynamic = transport_security_state->GetDynamicPKPState(
           domain, &dynamic_pkp_state);
       if (found_sts_dynamic) {
-        result.SetIntKey("dynamic_upgrade_mode",
-                         static_cast<int>(dynamic_sts_state.upgrade_mode));
-        result.SetBoolKey("dynamic_sts_include_subdomains",
-                          dynamic_sts_state.include_subdomains);
-        result.SetDoubleKey("dynamic_sts_observed",
-                            dynamic_sts_state.last_observed.ToDoubleT());
-        result.SetDoubleKey("dynamic_sts_expiry",
-                            dynamic_sts_state.expiry.ToDoubleT());
-        result.SetStringKey("dynamic_sts_domain", dynamic_sts_state.domain);
+        result.Set("dynamic_upgrade_mode",
+                   static_cast<int>(dynamic_sts_state.upgrade_mode));
+        result.Set("dynamic_sts_include_subdomains",
+                   dynamic_sts_state.include_subdomains);
+        result.Set("dynamic_sts_observed",
+                   dynamic_sts_state.last_observed.ToDoubleT());
+        result.Set("dynamic_sts_expiry", dynamic_sts_state.expiry.ToDoubleT());
+        result.Set("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
       if (found_pkp_dynamic) {
-        result.SetBoolKey("dynamic_pkp_include_subdomains",
-                          dynamic_pkp_state.include_subdomains);
-        result.SetDoubleKey("dynamic_pkp_observed",
-                            dynamic_pkp_state.last_observed.ToDoubleT());
-        result.SetDoubleKey("dynamic_pkp_expiry",
-                            dynamic_pkp_state.expiry.ToDoubleT());
-        result.SetStringKey(
-            "dynamic_spki_hashes",
-            HashesToBase64String(dynamic_pkp_state.spki_hashes));
-        result.SetStringKey("dynamic_pkp_domain", dynamic_pkp_state.domain);
+        result.Set("dynamic_pkp_include_subdomains",
+                   dynamic_pkp_state.include_subdomains);
+        result.Set("dynamic_pkp_observed",
+                   dynamic_pkp_state.last_observed.ToDoubleT());
+        result.Set("dynamic_pkp_expiry", dynamic_pkp_state.expiry.ToDoubleT());
+        result.Set("dynamic_spki_hashes",
+                   HashesToBase64String(dynamic_pkp_state.spki_hashes));
+        result.Set("dynamic_pkp_domain", dynamic_pkp_state.domain);
       }
 
-      result.SetBoolKey("result", found_sts_static || found_pkp_static ||
-                                      found_sts_dynamic || found_pkp_dynamic);
+      result.Set("result", found_sts_static || found_pkp_static ||
+                               found_sts_dynamic || found_pkp_dynamic);
     } else {
-      result.SetStringKey("error", "no TransportSecurityState active");
+      result.Set("error", "no TransportSecurityState active");
     }
   } else {
-    result.SetStringKey("error", "non-ASCII domain name");
+    result.Set("error", "non-ASCII domain name");
   }
 
   std::move(callback).Run(std::move(result));
@@ -2195,6 +2182,13 @@ const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
   return &http_auth_merged_preferences_;
 }
 
+NetworkServiceMemoryCache* NetworkContext::GetMemoryCache() {
+  if (!base::FeatureList::IsEnabled(features::kNetworkServiceMemoryCache)) {
+    return nullptr;
+  }
+  return &memory_cache_;
+}
+
 size_t NetworkContext::NumOpenWebTransports() const {
   return std::count_if(web_transports_.begin(), web_transports_.end(),
                        [](const std::unique_ptr<WebTransport>& transport) {
@@ -2307,7 +2301,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::move(params_->initial_additional_certificates));
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
-    cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
+    cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_.get());
 #endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
@@ -2592,6 +2586,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
   builder.set_first_party_sets_enabled(
       first_party_sets_access_delegate_.is_enabled());
+
+  if (params_->socket_broker) {
+    builder.set_client_socket_factory(
+        std::make_unique<BrokeredClientSocketFactory>(
+            std::move(params_->socket_broker)));
+  }
 
   // If `require_network_isolation_key_` is true, but the features that can
   // trigger another URLRequest are not set to respect NetworkIsolationKeys,
@@ -2905,11 +2905,6 @@ bool NetworkContext::IsAllowedToUseAllHttpAuthSchemes(
     const url::SchemeHostPort& scheme_host_port) {
   DCHECK(url_matcher_);
   return !url_matcher_->MatchURL(scheme_host_port.GetURL()).empty();
-}
-
-void NetworkContext::GetOriginPolicyManager(
-    mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {
-  origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(

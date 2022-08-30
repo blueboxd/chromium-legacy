@@ -317,6 +317,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserWallpaperInfo[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kRecentDailyGooglePhotosWallpapers[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kWallpaperColors[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kWallpaperMeanColors[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSyncableWallpaperInfo[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -327,6 +328,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSystemTrayExpanded[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserCameraAllowed[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserMicrophoneAllowed[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTapDraggingEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadEnabled[];
@@ -416,9 +418,6 @@ extern const char kNextImeShortcutReminderDismissed[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDeviceI18nShortcutsEnabled[];
-
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kImprovedShortcutsNotificationShownCount[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLacrosProxyControllingExtension[];

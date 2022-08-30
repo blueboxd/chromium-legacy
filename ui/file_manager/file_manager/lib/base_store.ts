@@ -37,7 +37,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   private initialized_: boolean = false;
 
   /** Queues actions while the Store un-initialized. */
-  private queuedActions_: Array<ActionType>;
+  private queuedActions_: ActionType[];
 
   /**
    * Observers that are notified when the State is updated by Action/Reducer.
@@ -87,7 +87,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   /**
    * Subscribe to Store changes/updates.
    * @param observer Callback called whenever the Store is updated.
-   * @returns callback to unsusbscribe the obserer.
+   * @returns callback to unsusbscribe the observer.
    */
   subscribe(observer: StoreObserver<StateType>):
       (observer: StoreObserver<StateType>) => void {
@@ -154,7 +154,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   }
 
   /** Synchronously call apply the `action` by calling the reducer.  */
-  dispatchInternal_(action: ActionType) {
+  private dispatchInternal_(action: ActionType) {
     // action(this.reduce.bind(this));
     this.reduce(action);
   }
@@ -172,6 +172,8 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
 
   /** Notify observers with the current state. */
   private notifyObservers_(state: StateType) {
+    // TODO(lucmult): Should we try/catch each observer, so an error in observer
+    // doesn't stop other parts from rendering.
     this.observers_.forEach(o => o.onStateChanged(state));
   }
 }

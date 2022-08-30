@@ -251,14 +251,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   base::android::ScopedJavaLocalRef<jobject> AddBookmark(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_parent_id_obj,
-      jint index,
-      const base::android::JavaParamRef<jstring>& j_title,
-      const base::android::JavaParamRef<jobject>& j_url);
-
-  base::android::ScopedJavaLocalRef<jobject> AddPowerBookmark(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents,
       const base::android::JavaParamRef<jobject>& j_parent_id_obj,
       jint index,
@@ -398,7 +390,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
 
   // A means of accessing metadata about bookmarks.
-  OptimizationGuideKeyedService* opt_guide_;
+  raw_ptr<OptimizationGuideKeyedService> opt_guide_;
 
   // Weak pointers for creating callbacks that won't call into a destroyed
   // object.

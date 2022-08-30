@@ -10,18 +10,13 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/component_export.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
 class AssistantUiModelObserver;
-
-// Enumeration of Assistant UI modes.
-enum class AssistantUiMode {
-  kLauncherEmbeddedUi,
-};
 
 // Enumeration of Assistant visibility states.
 enum class AssistantVisibility {
@@ -64,13 +59,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   void AddObserver(AssistantUiModelObserver* observer) const;
   void RemoveObserver(AssistantUiModelObserver* observer) const;
 
-  // Sets the UI mode. If |due_to_interaction| is true, the UI mode was changed
-  // as a result of an Assistant interaction.
-  void SetUiMode(AssistantUiMode ui_mode, bool due_to_interaction = false);
-
-  // Returns the UI mode.
-  AssistantUiMode ui_mode() const { return ui_mode_; }
-
   // Sets the UI visibility.
   void SetVisible(AssistantEntryPoint entry_point);
   void SetClosing(AssistantExitPoint exit_point);
@@ -109,7 +97,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
       absl::optional<AssistantExitPoint> exit_point);
   void NotifyUsableWorkAreaChanged();
 
-  AssistantUiMode ui_mode_ = AssistantUiMode::kLauncherEmbeddedUi;
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
   AssistantEntryPoint entry_point_ = AssistantEntryPoint::kUnspecified;
   int app_list_bubble_width_ = kPreferredWidthDip;

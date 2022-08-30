@@ -372,10 +372,6 @@ void Node::setNodeValue(const String&, ExceptionState&) {
   // By default, setting nodeValue has no effect.
 }
 
-ContainerNode* Node::parentNode() const {
-  return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
-}
-
 NodeList* Node::childNodes() {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
@@ -1685,7 +1681,7 @@ bool Node::NeedsLayoutSubtreeUpdate() const {
 bool Node::CanStartSelection() const {
   if (DisplayLockUtilities::LockedAncestorPreventingPaint(*this))
     GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-  if (HasEditableStyle(*this))
+  if (IsEditable(*this))
     return true;
 
   if (GetLayoutObject()) {
@@ -1711,7 +1707,7 @@ bool Node::IsRichlyEditableForAccessibility() const {
       << GetDocument().Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  return HasRichlyEditableStyle(*this);
+  return IsRichlyEditable(*this);
 }
 
 void Node::NotifyPriorityScrollAnchorStatusChanged() {
@@ -2340,11 +2336,17 @@ String Node::ToString() const {
     builder.Append(" ");
     builder.Append(nodeValue().EncodeForDebugging());
     return builder.ReleaseString();
+  } else if (const auto* element = DynamicTo<Element>(this)) {
+    const AtomicString& pseudo = element->ShadowPseudoId();
+    if (!pseudo.IsEmpty()) {
+      builder.Append(" ::");
+      builder.Append(pseudo);
+    }
+    DumpAttributeDesc(*this, html_names::kIdAttr, builder);
+    DumpAttributeDesc(*this, html_names::kClassAttr, builder);
+    DumpAttributeDesc(*this, html_names::kStyleAttr, builder);
   }
-  DumpAttributeDesc(*this, html_names::kIdAttr, builder);
-  DumpAttributeDesc(*this, html_names::kClassAttr, builder);
-  DumpAttributeDesc(*this, html_names::kStyleAttr, builder);
-  if (HasEditableStyle(*this))
+  if (IsEditable(*this))
     builder.Append(" (editable)");
   if (GetDocument().FocusedElement() == this)
     builder.Append(" (focused)");
@@ -2892,7 +2894,7 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
-  if (UNLIKELY(IsDocumentNode() && GetDocument().PopupOrHintShowing())) {
+  if (UNLIKELY(IsDocumentNode() && GetDocument().TopmostPopupAutoOrHint())) {
     // Check if this event should "light dismiss" one or more popups.
     Element::HandlePopupLightDismiss(event);
   }
@@ -3068,7 +3070,7 @@ bool Node::WillRespondToMouseClickEvents() {
   if (IsDisabledFormControl(this))
     return false;
   GetDocument().UpdateStyleAndLayoutTree();
-  return HasEditableStyle(*this) ||
+  return IsEditable(*this) ||
          HasAnyEventListeners(event_util::MouseButtonEventTypes());
 }
 

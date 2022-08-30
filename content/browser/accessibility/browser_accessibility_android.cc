@@ -5,8 +5,8 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 
 #include <algorithm>
-#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/break_iterator.h"
 #include "base/lazy_instance.h"
@@ -81,7 +81,7 @@ std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
       new BrowserAccessibilityAndroid(manager, node));
 }
 
-using UniqueIdMap = std::unordered_map<int32_t, BrowserAccessibilityAndroid*>;
+using UniqueIdMap = base::flat_map<int32_t, BrowserAccessibilityAndroid*>;
 // Map from each AXPlatformNode's unique id to its instance.
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -481,13 +481,17 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     // On Android, contenteditable needs to be handled the same as any
     // other text field.
     role = ax::mojom::Role::kTextField;
-  } else if (ui::IsAndroidTextViewCandidate(role) && HasOnlyTextChildren()) {
+  } else if (IsAndroidTextView()) {
     // On Android, we want to report some extra nodes as TextViews. For example,
     // a <div> that only contains text, or a <p> that only contains text.
     role = ax::mojom::Role::kStaticText;
   }
 
   return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
+}
+
+bool BrowserAccessibilityAndroid::IsAndroidTextView() const {
+  return ui::IsAndroidTextViewCandidate(GetRole()) && HasOnlyTextChildren();
 }
 
 bool BrowserAccessibilityAndroid::IsChildOfLeaf() const {
@@ -771,9 +775,11 @@ std::u16string BrowserAccessibilityAndroid::GetStateDescription() const {
   // exclusive with the on/off of toggle buttons below.
   if (IsCheckable() && !IsReportingCheckable()) {
     state_descs.push_back(GetCheckboxStateDescription());
-  } else if (GetRole() == ax::mojom::Role::kToggleButton) {
-    // For Toggle buttons, we will append "on"/"off" in the state description.
-    state_descs.push_back(GetToggleButtonStateDescription());
+  } else if (GetRole() == ax::mojom::Role::kToggleButton ||
+             GetRole() == ax::mojom::Role::kSwitch) {
+    // For Toggle buttons and switches, we will append "on"/"off" in the state
+    // description.
+    state_descs.push_back(GetToggleStateDescription());
   }
 
   // For radio buttons, we will communicate how many radio buttons are in the
@@ -833,11 +839,11 @@ std::u16string BrowserAccessibilityAndroid::GetMultiselectableStateDescription()
       values, nullptr);
 }
 
-std::u16string BrowserAccessibilityAndroid::GetToggleButtonStateDescription()
-    const {
+std::u16string BrowserAccessibilityAndroid::GetToggleStateDescription() const {
   content::ContentClient* content_client = content::GetContentClient();
 
-  // For checked Toggle buttons, we will return "on", otherwise "off".
+  // For checked Toggle buttons and switches, we will return "on", otherwise
+  // "off".
   if (IsChecked())
     return content_client->GetLocalizedString(IDS_AX_TOGGLE_BUTTON_ON);
 
@@ -1924,19 +1930,6 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
   manager->ClearNodeInfoCacheForGivenId(unique_id());
-
-  // For any nodes that are the children of a leaf, we also want to invalidate
-  // the cache for the ancestry chain up until the first non-leaf node.
-  if (IsChildOfLeaf()) {
-    BrowserAccessibilityAndroid* parent =
-        static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());
-
-    while (parent != nullptr && (parent->IsChildOfLeaf() || parent->IsLeaf())) {
-      manager->ClearNodeInfoCacheForGivenId(parent->unique_id());
-      parent = static_cast<BrowserAccessibilityAndroid*>(
-          parent->PlatformGetParent());
-    }
-  }
 }
 
 int BrowserAccessibilityAndroid::CountChildrenWithRole(

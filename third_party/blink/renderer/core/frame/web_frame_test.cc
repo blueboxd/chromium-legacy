@@ -1113,6 +1113,12 @@ TEST_F(WebFrameTest, ChromePageNoJavascript) {
   web_view_helper.InitializeAndLoad(chrome_url_ + "history.html");
 
   // Try to run JS against the chrome-style URL after prohibiting it.
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/1329535): Remove if threaded preload scanner doesn't launch.
+  // This is needed because the preload scanner creates a thread when loading a
+  // page.
+  WTF::SetIsBeforeThreadCreatedForTest();
+#endif
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs("chrome");
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 "javascript:document.body.appendChild(document."
@@ -5113,6 +5119,7 @@ class TestFindInPageClient : public mojom::blink::FindInPageClient {
   mojo::Receiver<mojom::blink::FindInPageClient> receiver_{this};
 };
 
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(WebFrameTest, FindInPageMatchRects) {
   RegisterMockedHttpURLLoad("find_in_page_frame.html");
 
@@ -5190,6 +5197,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   EXPECT_TRUE(main_frame->GetFindInPage()->FindMatchMarkersVersion() !=
               rects_version);
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(WebFrameTest, FindInPageActiveIndex) {
   RegisterMockedHttpURLLoad("find_match_count.html");
@@ -6549,9 +6557,14 @@ class CompositedSelectionBoundsTest
     blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 0).ToLocalChecked());
-    ASSERT_TRUE(layer_owner_node_for_start);
-    int start_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
-                                         layer_owner_node_for_start);
+    // Hidden selection does not always have a layer (might be hidden due to not
+    // having been painted.
+    ASSERT_TRUE(layer_owner_node_for_start || selection.start.hidden);
+    int start_layer_id = 0;
+    if (layer_owner_node_for_start) {
+      start_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                       layer_owner_node_for_start);
+    }
     if (selection_is_caret) {
       // The selection data are recorded on the caret layer which is the next
       // layer for the current test cases.
@@ -6573,9 +6586,15 @@ class CompositedSelectionBoundsTest
     blink::Node* layer_owner_node_for_end = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 5).ToLocalChecked());
-    ASSERT_TRUE(layer_owner_node_for_end);
-    int end_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
-                                       layer_owner_node_for_end);
+    // Hidden selection does not always have a layer (might be hidden due to not
+    // having been painted.
+    ASSERT_TRUE(layer_owner_node_for_end || selection.end.hidden);
+    int end_layer_id = 0;
+    if (layer_owner_node_for_end) {
+      end_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                     layer_owner_node_for_end);
+    }
+
     if (selection_is_caret) {
       // The selection data are recorded on the caret layer which is the next
       // layer for the current test cases.
@@ -6709,6 +6728,12 @@ TEST_F(CompositedSelectionBoundsTest, SVGBasic) {
 }
 TEST_F(CompositedSelectionBoundsTest, SVGTextWithFragments) {
   RunTest("composited_selection_bounds_svg_text_with_fragments.html");
+}
+TEST_F(CompositedSelectionBoundsTest, LargeSelectionScroll) {
+  RunTest("composited_selection_bounds_large_selection_scroll.html");
+}
+TEST_F(CompositedSelectionBoundsTest, LargeSelectionNoScroll) {
+  RunTest("composited_selection_bounds_large_selection_noscroll.html");
 }
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #if !BUILDFLAG(IS_ANDROID)
@@ -7479,15 +7504,17 @@ class TestNewWindowWebViewClient
   ~TestNewWindowWebViewClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  WebView* CreateView(WebLocalFrame*,
-                      const WebURLRequest&,
-                      const WebWindowFeatures&,
-                      const WebString&,
-                      WebNavigationPolicy,
-                      network::mojom::blink::WebSandboxFlags,
-                      const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture,
-                      const absl::optional<Impression>&) override {
+  WebView* CreateView(
+      WebLocalFrame*,
+      const WebURLRequest&,
+      const WebWindowFeatures&,
+      const WebString&,
+      WebNavigationPolicy,
+      network::mojom::blink::WebSandboxFlags,
+      const SessionStorageNamespaceId&,
+      bool& consumed_user_gesture,
+      const absl::optional<Impression>&,
+      const absl::optional<WebPictureInPictureWindowOptions>&) override {
     EXPECT_TRUE(false);
     return nullptr;
   }
@@ -7776,17 +7803,23 @@ TEST_F(WebFrameTest, NavigateToSameNoConditionalRequestForSubresource) {
   RegisterMockedHttpURLLoad("white-1x1.png");
   TestSameDocumentWithImageWebFrameClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo_with_image.html", &client,
-                                    nullptr,
-                                    &ConfigureLoadsImagesAutomatically);
+  web_view_helper.Initialize(&client, nullptr,
+                             &ConfigureLoadsImagesAutomatically);
+  // TODO(crbug.com/1329535): Remove if threaded preload scanner doesn't launch.
+  // Disable preload scanner so it doesn't make any requests.
+  web_view_helper.LocalMainFrame()
+      ->GetFrame()
+      ->GetDocument()
+      ->GetSettings()
+      ->SetDoHtmlPreloadScanning(false);
+  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
+                                base_url_ + "foo_with_image.html");
+  EXPECT_EQ(client.NumOfImageRequests(), 1);
 
   WebCache::Clear();
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "foo_with_image.html");
-
-  // 2 images are requested, and each triggers 2 willSendRequest() calls,
-  // once for preloading and once for the real request.
-  EXPECT_EQ(client.NumOfImageRequests(), 4);
+  EXPECT_EQ(client.NumOfImageRequests(), 2);
 }
 
 TEST_F(WebFrameTest, WebNodeImageContents) {
@@ -7928,10 +7961,8 @@ TEST_F(WebFrameTest,
   params->policy_container = std::make_unique<WebPolicyContainer>(
       WebPolicyContainerPolicies(),
       mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
-  params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
   params->is_synchronous_commit_for_bug_778318 = true;
 
-  params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
   child_frame->CommitNavigation(std::move(params), nullptr);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(child_frame);
 
@@ -8693,7 +8724,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
 
   Element* overlay = document->getElementById("overlay");
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  EXPECT_TRUE(layer_tree_host->background_color().isOpaque());
 
   // It's not legal to switch the fullscreen element while in immersive-ar mode,
   // so set the fullscreen element first before activating that. This requires
@@ -8717,8 +8748,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
-            SK_AlphaTRANSPARENT);
+  EXPECT_TRUE(!layer_tree_host->background_color().isOpaque());
 
   root_layer = layer_tree_host->root_layer();
   EXPECT_EQ(0u, CcLayersByName(root_layer, view_background_layer_name).size());
@@ -8729,7 +8759,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  EXPECT_TRUE(layer_tree_host->background_color().isOpaque());
   document->SetIsXrOverlay(false, overlay);
 
   root_layer = layer_tree_host->root_layer();
@@ -10248,6 +10278,12 @@ TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "foo.html");
   EXPECT_TRUE(local_frame->GetDocument().SiteForCookies().IsNull());
 
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/1329535): Remove if threaded preload scanner doesn't launch.
+  // This is needed because the preload scanner creates a thread when loading a
+  // page.
+  WTF::SetIsBeforeThreadCreatedForTest();
+#endif
   SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel("http");
   EXPECT_TRUE(net::SiteForCookies::FromUrl(GURL(not_base_url_))
                   .IsEquivalent(local_frame->GetDocument().SiteForCookies()));
@@ -12089,6 +12125,7 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
   EXPECT_EQ(gfx::Point(800, 2000), original_tickmarks[0].origin());
 }
 
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   WebView().MainFrameViewWidget()->Resize(gfx::Size(500, 300));
   WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
@@ -12164,6 +12201,7 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
       << frame_view->GetScrollableArea()->VisibleContentRect().ToString()
       << "]";
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Check that removing an element whilst focusing it does not cause a null
 // pointer deference. This test passes if it does not crash.

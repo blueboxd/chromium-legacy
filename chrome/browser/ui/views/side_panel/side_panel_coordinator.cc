@@ -8,8 +8,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -19,7 +17,6 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
-#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/webui_url_constants.h"
@@ -72,20 +69,6 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
   return button;
 }
 
-class SidePanelSeparator : public views::Separator {
- public:
-  METADATA_HEADER(SidePanelSeparator);
-
-  void OnThemeChanged() override {
-    views::Separator::OnThemeChanged();
-    SetColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR));
-  }
-};
-
-BEGIN_METADATA(SidePanelSeparator, views::Separator)
-END_METADATA
-
 using PopulateSidePanelCallback = base::OnceCallback<void(
     SidePanelEntry* entry,
     absl::optional<std::unique_ptr<views::View>> content_view)>;
@@ -131,20 +114,25 @@ class SidePanelContentSwappingContainer : public views::View {
     }
   }
 
+  void ResetLoadingEntryIfNecessary() {
+    if (loading_entry_ && loading_entry_->CachedView()) {
+      // The available callback here is used for showing the entry once it has
+      // loaded. We need to reset this to make sure it is not triggered to be
+      // shown once available.
+      SidePanelUtil::GetSidePanelContentProxy(loading_entry_->CachedView())
+          ->ResetAvailableCallback();
+    }
+    loading_entry_ = nullptr;
+  }
+
+  SidePanelEntry* loading_entry() const { return loading_entry_; }
+
  private:
   void RunLoadedCallback() {
     DCHECK(!loaded_callback_.is_null());
     SidePanelEntry* entry = loading_entry_;
     loading_entry_ = nullptr;
     std::move(loaded_callback_).Run(entry, absl::nullopt);
-  }
-
-  void ResetLoadingEntryIfNecessary() {
-    if (loading_entry_ && loading_entry_->CachedView()) {
-      SidePanelUtil::GetSidePanelContentProxy(loading_entry_->CachedView())
-          ->ResetAvailableCallback();
-    }
-    loading_entry_ = nullptr;
   }
 
   // When true, don't delay switching panels.
@@ -177,9 +165,12 @@ SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view)
 
 SidePanelCoordinator::~SidePanelCoordinator() {
   browser_view_->browser()->tab_strip_model()->RemoveObserver(this);
+  view_state_observers_.Clear();
 }
 
-void SidePanelCoordinator::Show(absl::optional<SidePanelEntry::Id> entry_id) {
+void SidePanelCoordinator::Show(
+    absl::optional<SidePanelEntry::Id> entry_id,
+    absl::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger) {
   if (!entry_id.has_value())
     entry_id = GetLastActiveEntryId().value_or(kDefaultEntry);
 
@@ -189,7 +180,8 @@ void SidePanelCoordinator::Show(absl::optional<SidePanelEntry::Id> entry_id) {
 
   if (GetContentView() == nullptr) {
     InitializeSidePanel();
-    base::RecordAction(base::UserMetricsAction("SidePanel.Show"));
+    opened_timestamp_ = base::TimeTicks::Now();
+    SidePanelUtil::RecordSidePanelOpen(open_trigger);
     // Record usage for side panel promo.
     feature_engagement::TrackerFactory::GetForBrowserContext(
         browser_view_->GetProfile())
@@ -200,21 +192,40 @@ void SidePanelCoordinator::Show(absl::optional<SidePanelEntry::Id> entry_id) {
         feature_engagement::kIPHReadingListInSidePanelFeature);
   }
 
-  // Ensure that the correct combobox entry is selected. This may not be the
-  // case if `Show()` was called after registering a contextual entry.
-  if (entry_id.has_value()) {
-    DCHECK(header_combobox_);
-    header_combobox_->SetSelectedIndex(
-        combobox_model_->GetIndexForId(entry_id.value()));
-  }
-
   SidePanelContentSwappingContainer* content_wrapper =
       static_cast<SidePanelContentSwappingContainer*>(
           GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
   DCHECK(content_wrapper);
+
+  // If we are already loading this entry, do nothing.
+  if (content_wrapper->loading_entry() == entry)
+    return;
+
+  // If we are already showing this entry, make sure we prevent any loading
+  // entry from showing once the load has finished. Say if we are showing A then
+  // trigger B to show but switch back to A while B is still loading (and not
+  // yet shown) we want to make sure B will not then be shown when it has
+  // finished loading. Note, this does not cancel the triggered load of B, B
+  // remains cached.
+  if (current_entry_.get() == entry) {
+    if (content_wrapper->loading_entry())
+      content_wrapper->ResetLoadingEntryIfNecessary();
+    return;
+  }
+
   content_wrapper->RequestEntry(
       entry, base::BindOnce(&SidePanelCoordinator::PopulateSidePanel,
                             base::Unretained(this)));
+}
+
+void SidePanelCoordinator::AddSidePanelViewStateObserver(
+    SidePanelViewStateObserver* observer) {
+  view_state_observers_.AddObserver(observer);
+}
+
+void SidePanelCoordinator::RemoveSidePanelViewStateObserver(
+    SidePanelViewStateObserver* observer) {
+  view_state_observers_.RemoveObserver(observer);
 }
 
 void SidePanelCoordinator::Close() {
@@ -252,14 +263,19 @@ void SidePanelCoordinator::Close() {
   if (views::View* content_view = GetContentView())
     browser_view_->right_aligned_side_panel()->RemoveChildViewT(content_view);
   header_combobox_ = nullptr;
-  base::RecordAction(base::UserMetricsAction("SidePanel.Hide"));
+  SidePanelUtil::RecordSidePanelClosed(opened_timestamp_);
+
+  for (SidePanelViewStateObserver& view_state_observer :
+       view_state_observers_) {
+    view_state_observer.OnSidePanelDidClose();
+  }
 }
 
 void SidePanelCoordinator::Toggle() {
-  if (GetContentView() != nullptr) {
+  if (IsSidePanelShowing()) {
     Close();
   } else {
-    Show();
+    Show(absl::nullopt, SidePanelUtil::SidePanelOpenTrigger::kToolbarButton);
   }
 }
 
@@ -272,7 +288,31 @@ void SidePanelCoordinator::SetNoDelaysForTesting() {
   no_delays_for_testing_ = true;
 }
 
-views::View* SidePanelCoordinator::GetContentView() {
+absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetCurrentEntryId()
+    const {
+  return current_entry_
+             ? absl::optional<SidePanelEntry::Id>(current_entry_->id())
+             : absl::nullopt;
+}
+
+SidePanelEntry::Id SidePanelCoordinator::GetComboboxDisplayedEntryIdForTesting()
+    const {
+  return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
+}
+
+SidePanelEntry* SidePanelCoordinator::GetLoadingEntryForTesting() const {
+  SidePanelContentSwappingContainer* content_wrapper =
+      static_cast<SidePanelContentSwappingContainer*>(
+          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
+  DCHECK(content_wrapper);
+  return content_wrapper->loading_entry();
+}
+
+bool SidePanelCoordinator::IsSidePanelShowing() {
+  return GetContentView() != nullptr;
+}
+
+views::View* SidePanelCoordinator::GetContentView() const {
   return browser_view_->right_aligned_side_panel()->GetViewByID(
       kSidePanelContentViewId);
 }
@@ -302,7 +342,8 @@ void SidePanelCoordinator::InitializeSidePanel() {
   container->SetID(kSidePanelContentViewId);
 
   container->AddChildView(CreateHeader());
-  container->AddChildView(std::make_unique<SidePanelSeparator>());
+  container->AddChildView(std::make_unique<views::Separator>())
+      ->SetColorId(kColorSidePanelContentAreaSeparator);
 
   auto content_wrapper = std::make_unique<SidePanelContentSwappingContainer>(
       no_delays_for_testing_);
@@ -317,9 +358,11 @@ void SidePanelCoordinator::InitializeSidePanel() {
 void SidePanelCoordinator::PopulateSidePanel(
     SidePanelEntry* entry,
     absl::optional<std::unique_ptr<views::View>> content_view) {
-  if (current_entry_.get() == entry) {
-    return;
-  }
+  // Ensure that the correct combobox entry is selected. This may not be the
+  // case if `Show()` was called after registering a contextual entry.
+  DCHECK(header_combobox_);
+  header_combobox_->SetSelectedIndex(
+      combobox_model_->GetIndexForId(entry->id()));
 
   auto* content_wrapper =
       GetContentView()->GetViewByID(kSidePanelContentWrapperViewId);
@@ -333,15 +376,17 @@ void SidePanelCoordinator::PopulateSidePanel(
     auto current_entry_view =
         content_wrapper->RemoveChildViewT(content_wrapper->children().front());
     current_entry_->CacheView(std::move(current_entry_view));
-    current_entry_->OnEntryHidden();
   }
   content_wrapper->AddChildView(content_view.has_value()
                                     ? std::move(content_view.value())
                                     : entry->GetContent());
   if (auto* contextual_registry = GetActiveContextualRegistry())
     contextual_registry->ResetActiveEntry();
+  auto* previous_entry = current_entry_.get();
   current_entry_ = entry->GetWeakPtr();
   entry->OnEntryShown();
+  if (previous_entry)
+    previous_entry->OnEntryHidden();
 }
 
 void SidePanelCoordinator::ClearCachedEntryViews() {
@@ -378,6 +423,18 @@ absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetLastActiveEntryId()
 absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetSelectedId() const {
   if (!header_combobox_)
     return absl::nullopt;
+
+  // If we are waiting on content swapping delays we want to return the id for
+  // the entry we are attempting to swap to.
+  const SidePanelContentSwappingContainer* content_wrapper =
+      static_cast<SidePanelContentSwappingContainer*>(
+          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
+  DCHECK(content_wrapper);
+  if (const auto* entry = content_wrapper->loading_entry())
+    return entry->id();
+
+  // If we are not waiting on content swapping we want to return the active
+  // selected entry id.
   return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
 }
 
@@ -424,14 +481,14 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
 
 std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
   auto combobox = std::make_unique<views::Combobox>(combobox_model_.get());
+  combobox->SetMenuSelectionAtCallback(
+      base::BindRepeating(&SidePanelCoordinator::OnComboboxChangeTriggered,
+                          base::Unretained(this)));
   combobox->SetSelectedIndex(combobox_model_->GetIndexForId(
       GetLastActiveEntryId().value_or(kDefaultEntry)));
   // TODO(corising): Replace this with something appropriate.
   combobox->SetAccessibleName(
       combobox_model_->GetItemAt(combobox->GetSelectedIndex()));
-
-  combobox->SetCallback(base::BindRepeating(
-      &SidePanelCoordinator::OnComboboxChanged, base::Unretained(this)));
   combobox->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::LayoutOrientation::kHorizontal,
@@ -439,13 +496,16 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
                                views::MaximumFlexSizeRule::kUnbounded,
                                /*adjust_height_for_width=*/false)
           .WithAlignment(views::LayoutAlignment::kStart));
+  combobox->SetBorderColorId(ui::kColorSidePanelComboboxBorder);
+  combobox->SetEventHighlighting(true);
+  combobox->SetSizeToLargestLabel(false);
   return combobox;
 }
 
-void SidePanelCoordinator::OnComboboxChanged() {
-  SidePanelEntry::Id entry_id =
-      combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
+bool SidePanelCoordinator::OnComboboxChangeTriggered(int index) {
+  SidePanelEntry::Id entry_id = combobox_model_->GetIdAt(index);
   Show(entry_id);
+  return true;
 }
 
 void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
@@ -455,6 +515,12 @@ void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
 void SidePanelCoordinator::OnEntryWillDeregister(SidePanelEntry* entry) {
   absl::optional<SidePanelEntry::Id> selected_id = GetSelectedId();
   combobox_model_->RemoveItem(entry->id());
+
+  // If the active global entry is the entry being deregistered, reset
+  // last_active_global_entry_id_.
+  if (entry->id() == last_active_global_entry_id_) {
+    last_active_global_entry_id_ = absl::nullopt;
+  }
 
   // Update the current entry to make sure we don't show an entry that is being
   // removed or close the panel if the entry being deregistered is the only one

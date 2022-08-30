@@ -79,6 +79,9 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 const base::Feature kDownloadBubble{"DownloadBubble",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDownloadBubbleV2{"DownloadBubbleV2",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnhancedProtection {
   "SafeBrowsingEnhancedProtection",
 #if BUILDFLAG(IS_IOS)
@@ -118,8 +121,15 @@ const base::Feature kExtensionTelemetryReportContactedHosts{
 const base::Feature kFileTypePoliciesTag{"FileTypePoliciesTag",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLogAccountEnhancedProtectionStateInProtegoPings{
+    "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTailoredSecurityDesktopNotice{
+    "TailoredSecurityDesktopNotice", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTailoredSecurityIntegration{
     "TailoredSecurityIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -181,6 +191,7 @@ constexpr struct {
     {&kConnectorsScanningReportOnlyUI, true},
     {&kDelayedWarnings, true},
     {&kDownloadBubble, true},
+    {&kDownloadBubbleV2, true},
     {&kEnhancedProtection, true},
     {&kEnhancedProtectionPhase2IOS, true},
     {&kExtensionTelemetry, true},

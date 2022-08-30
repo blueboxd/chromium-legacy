@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/components/tpm/install_attributes.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "base/bind.h"
@@ -34,10 +35,12 @@
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -46,6 +49,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
@@ -396,8 +400,8 @@ base::Value DemoSession::GetCountryList() {
 void DemoSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDemoModeDefaultLocale, std::string());
   registry->RegisterStringPref(prefs::kDemoModeCountry, kSupportedCountries[0]);
-  registry->RegisterStringPref(prefs::kDemoModeRetailerAndStoreIdInput,
-                               std::string());
+  registry->RegisterStringPref(prefs::kDemoModeRetailerId, std::string());
+  registry->RegisterStringPref(prefs::kDemoModeStoreId, std::string());
 }
 
 void DemoSession::EnsureResourcesLoaded(base::OnceClosure load_callback) {
@@ -429,7 +433,14 @@ bool DemoSession::ShouldShowAndroidOrChromeAppInShelf(
 void DemoSession::SetExtensionsExternalLoader(
     scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
   extensions_external_loader_ = extensions_external_loader;
-  InstallAppFromUpdateUrl(GetScreensaverAppId());
+  if (!ash::features::IsDemoModeSWAEnabled() ||
+      extension_misc::IsDemoModeChromeApp(GetScreensaverAppId())) {
+    // Do app installation when one of the following condition holds:
+    // 1. Demo Mode SWA is NOT enabled, OR
+    // 2. Demo Mode SWA is enabled but the app ID to be installed is NOT
+    // one of the Demo Mode app IDs.
+    InstallAppFromUpdateUrl(GetScreensaverAppId());
+  }
 }
 
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
@@ -548,7 +559,24 @@ void DemoSession::OnSessionStateChanged() {
       }
       RestoreDefaultLocaleForNextSession();
 
-      InstallAppFromUpdateUrl(GetHighlightsAppId());
+      if (!ash::features::IsDemoModeSWAEnabled() ||
+          extension_misc::IsDemoModeChromeApp(GetHighlightsAppId())) {
+        // Do app installation when one of the following condition holds:
+        // 1. Demo Mode SWA is NOT enabled, OR
+        // 2. Demo Mode SWA is enabled but the app ID to be installed is NOT
+        // one of the Demo Mode app IDs.
+        InstallAppFromUpdateUrl(GetHighlightsAppId());
+      }
+
+      // Download/update the Demo app component during session startup
+      if (features::IsDemoModeSWAEnabled()) {
+        g_browser_process->platform_part()->cros_component_manager()->Load(
+            "demo-mode-app",
+            component_updater::CrOSComponentManager::MountPolicy::kMount,
+            component_updater::CrOSComponentManager::UpdatePolicy::kForce,
+            base::BindOnce(&DemoSession::OnDemoAppComponentLoaded,
+                           weak_ptr_factory_.GetWeakPtr()));
+      }
 
       EnsureResourcesLoaded(base::BindOnce(&DemoSession::InstallDemoResources,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -556,6 +584,27 @@ void DemoSession::OnSessionStateChanged() {
     default:
       break;
   }
+}
+
+void LaunchDemoSystemWebApp() {
+  // SystemWebAppManager won't run this callback if the profile is destroyed,
+  // so we don't need to worry about there being no active user profile
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::DEMO_MODE);
+}
+
+void DemoSession::OnDemoAppComponentLoaded(
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& path) {
+  if (error != component_updater::CrOSComponentManager::Error::NONE) {
+    LOG(WARNING) << "Error loading demo mode app component: "
+                 << static_cast<int>(error);
+    return;
+  }
+  demo_app_component_path_ = path;
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ash::SystemWebAppManager::Get(profile)->on_apps_synchronized().Post(
+      FROM_HERE, base::BindOnce(&LaunchDemoSystemWebApp));
 }
 
 void DemoSession::ShowSplashScreen() {
@@ -608,10 +657,10 @@ void DemoSession::OnAppUpdate(const apps::AppUpdate& update) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
-      apps::AppLaunchParams(
-          update.AppId(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromChromeInternal));
+      apps::AppLaunchParams(update.AppId(),
+                            apps::LaunchContainer::kLaunchContainerWindow,
+                            WindowOpenDisposition::NEW_WINDOW,
+                            apps::mojom::LaunchSource::kFromChromeInternal));
 }
 
 void DemoSession::OnAppRegistryCacheWillBeDestroyed(

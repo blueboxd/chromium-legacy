@@ -44,9 +44,7 @@
 
 // TODO(ukai): factor out common part with spdy_http_stream_unittest.cc
 //
-namespace net {
-
-namespace test {
+namespace net::test {
 
 namespace {
 
@@ -122,17 +120,13 @@ class SpdyStreamTest : public ::testing::Test, public WithTaskEnvironment {
     reads_.push_back(std::move(read));
   }
 
-  void AddReadEOF() {
-    reads_.push_back(MockRead(ASYNC, 0, offset_++));
-  }
+  void AddReadEOF() { reads_.emplace_back(ASYNC, 0, offset_++); }
 
   void AddWritePause() {
-    writes_.push_back(MockWrite(ASYNC, ERR_IO_PENDING, offset_++));
+    writes_.emplace_back(ASYNC, ERR_IO_PENDING, offset_++);
   }
 
-  void AddReadPause() {
-    reads_.push_back(MockRead(ASYNC, ERR_IO_PENDING, offset_++));
-  }
+  void AddReadPause() { reads_.emplace_back(ASYNC, ERR_IO_PENDING, offset_++); }
 
   base::span<const MockRead> GetReads() { return reads_; }
   base::span<const MockWrite> GetWrites() { return writes_; }
@@ -2076,6 +2070,4 @@ TEST_F(SpdyStreamTestWithMockClock, FlowControlSlowReads) {
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
-}  // namespace test
-
-}  // namespace net
+}  // namespace net::test

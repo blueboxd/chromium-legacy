@@ -1,0 +1,138 @@
+<style>
+  :host {
+    position: absolute;
+    z-index: 1;
+  }
+
+  .arrow {
+    background-color: var(--help-bubble-background);
+    height: 16px;
+    position: absolute;
+    transform: rotate(-45deg);
+    width: 16px;
+    z-index: -1;
+  }
+
+  /* Turns the arrow direction downwards, when the bubble is placed above
+   * the anchor element */
+  :host([position=above]) .arrow {
+    border-bottom-left-radius: 2px;
+    bottom: -8px;
+    left: calc(50% - 8px);
+  }
+
+  /* Turns the arrow direction upwards, when the bubble is placed below
+   * the anchor element */
+  :host([position=below]) .arrow {
+    border-top-right-radius: 2px;
+    left: calc(50% - 8px);
+    top: -8px;
+  }
+
+  /* Turns the arrow direction to the right, when the bubble is placed to the
+   * left of the anchor element */
+  :host([position=left]) .arrow {
+    border-bottom-right-radius: 2px;
+    right: -8px;
+    top: calc(50% - 8px);
+  }
+
+  /* Turns the arrow direction to the left, when the bubble is placed to the
+   * right of the anchor element */
+  :host([position=right]) .arrow {
+    border-top-left-radius: 2px;
+    left: -8px;
+    top: calc(50% - 8px);
+  }
+
+  #topContainer {
+    align-items: flex-start;
+    display: flex;
+  }
+
+  #body {
+    flex: auto;
+    font-size: 14px;
+  }
+
+  #title {
+    flex: auto;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  /* Note: help bubbles have the same color treatment in both light and dark
+   * themes, which is why the values below do not change based on theme
+   * preference. */
+
+   .help-bubble {
+    --help-bubble-background: var(--google-blue-700);
+    --help-bubble-text-color: var(--google-grey-200);
+    background-color: var(--help-bubble-background);
+    border-radius: 8px;
+    color: var(--help-bubble-text-color);
+    padding: 12px 16px;
+    width: 362px;
+  }
+
+  cr-icon-button {
+    --cr-icon-button-fill-color: var(--help-bubble-text-color);
+    --cr-icon-button-hover-background-color:
+        rgba(var(--google-blue-300-rgb), .3);
+    --cr-icon-button-icon-size: 16px;
+    --cr-icon-button-size: 20px;
+    --cr-icon-button-stroke-color: var(--help-bubble-text-color);
+    display: block;
+    flex: none;
+    float: right;
+    margin: 0;
+    margin-inline-end: 4px;
+    margin-inline-start: 12px;
+    order: 2;
+  }
+
+  cr-icon-button:focus {
+    border: 2px solid var(--help-bubble-text-color);
+  }
+
+  #buttons {
+    text-align: end;
+  }
+
+  cr-button {
+    --text-color: var(--help-bubble-text-color);
+    border-color: var(--help-bubble-text-color);
+    margin-inline-start: 8px;
+    margin-top: 8px;
+  }
+
+  cr-button:focus {
+    border-color: var(--help-bubble-background);
+    box-shadow: 0 0 0 2px var(--help-bubble-text-color);
+  }
+
+  cr-button.default-button {
+    --text-color: var(--help-bubble-background);
+    background-color: var(--help-bubble-text-color);
+  }
+
+  cr-button.default-button:focus {
+    border: 2px solid var(--help-bubble-background);
+    box-shadow: 0 0 0 1px var(--help-bubble-text-color);
+  }
+
+</style>
+
+<div class="help-bubble">
+  <div id="topContainer">
+    <cr-icon-button id="close" iron-icon="cr:close"
+        aria-label="[[closeText]]" on-click="dismiss_">
+    </cr-icon-button>
+    <div id="title"></div>
+    <div id="body"></div>
+  </div>
+  <div id="main"></div>
+  <div id="buttons"></div>
+  <div class="arrow"></div>
+</div>

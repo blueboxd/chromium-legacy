@@ -158,6 +158,15 @@ void StandaloneBrowserApps::LoadIcon(const std::string& app_id,
                        std::move(callback));
 }
 
+void StandaloneBrowserApps::Launch(const std::string& app_id,
+                                   int32_t event_flags,
+                                   LaunchSource launch_source,
+                                   WindowInfoPtr window_info) {
+  DCHECK_EQ(app_constants::kLacrosAppId, app_id);
+  crosapi::BrowserManager::Get()->NewTab(
+      /*should_trigger_session_restore=*/true);
+}
+
 void StandaloneBrowserApps::LaunchAppWithParams(AppLaunchParams&& params,
                                                 LaunchCallback callback) {
   Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
@@ -177,26 +186,6 @@ void StandaloneBrowserApps::Connect(
   subscriber->OnApps(std::move(apps), apps::mojom::AppType::kStandaloneBrowser,
                      true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
-}
-
-void StandaloneBrowserApps::LoadIcon(const std::string& app_id,
-                                     apps::mojom::IconKeyPtr icon_key,
-                                     apps::mojom::IconType icon_type,
-                                     int32_t size_hint_in_dip,
-                                     bool allow_placeholder_icon,
-                                     LoadIconCallback callback) {
-  if (icon_key &&
-      icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId) {
-    LoadIconFromResource(
-        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
-        icon_key->resource_id,
-        /*is_placeholder_icon=*/false,
-        static_cast<IconEffects>(icon_key->icon_effects),
-        apps::IconValueToMojomIconValueCallback(std::move(callback)));
-    return;
-  }
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
 void StandaloneBrowserApps::Launch(const std::string& app_id,

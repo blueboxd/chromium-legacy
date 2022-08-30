@@ -160,23 +160,20 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   //   returns true when the frame is detached.
   // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
   // behavior for detached windows.
-  // TODO(crbug.com/1318055): this function should be renamed
-  // IsCrossOriginToNearestMainFrame and most current usages should be
-  // conrverted to IsCrossOriginToOutermostMainFrame.
-  bool IsCrossOriginToMainFrame() const;
+  bool IsCrossOriginToNearestMainFrame() const;
 
   // Returns true if and only if:
   // - this frame is an embedded frame (i.e., a subframe or embedded main frame)
   // - it is cross-origin to the outermost main frame.
   //
-  // The notes for |IsCrossOriginToMainFrame| apply here, but it's also
+  // The notes for |IsCrossOriginToNearestMainFrame| apply here, but it's also
   // important to note that any frame in a fenced frame tree is considered
   // cross-origin with respect to the outermost main frame.
   bool IsCrossOriginToOutermostMainFrame() const;
 
   // Returns true if this frame is a subframe and is cross-origin to the parent
   // frame or has an outer document in another frame tree.
-  // See |IsCrossOriginToMainFrame| for important notes.
+  // See |IsCrossOriginToNearestMainFrame| for important notes.
   bool IsCrossOriginToParentOrOuterDocument() const;
 
   FrameOwner* Owner() const;
@@ -286,13 +283,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   TouchAction InheritedEffectiveTouchAction() const {
     return inherited_effective_touch_action_;
   }
-
-  // Continues to bubble logical scroll from |child| in this frame.
-  // Returns true if the scroll was consumed locally.
-  virtual bool BubbleLogicalScrollFromChildFrame(
-      mojom::blink::ScrollDirection direction,
-      ui::ScrollGranularity granularity,
-      Frame* child) = 0;
 
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
@@ -437,22 +427,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // frame tree. Otherwise returns `absl::nullopt`. This should not be called
   // on a detached frame.
   absl::optional<mojom::blink::FencedFrameMode> GetFencedFrameMode() const;
-
-  // Returns false if fenced frames are disabled. Returns true if the feature
-  // is enabled with the shadowDOM implementation and if `this` is in a fenced
-  // frame tree whose root is in opaque-ads mode.
-  // TODO(crbug.com/1262022): Remove this when we remove the shadowDOM
-  // implementation for fenced frames, or even earlier when we refactor mode
-  // checks to be based on capabilities instead.
-  bool IsInShadowDOMOpaqueAdsFencedFrameTree() const;
-
-  // Returns false if fenced frames are disabled. Returns true if the feature
-  // is enabled with the MPArch implementation and if `this` is in a fenced
-  // frame tree whose root is in opaque-ads mode.
-  // TODO(crbug.com/1262022): Simplify this when we remove the shadowDOM
-  // implementation for fenced frames, or even earlier when we refactor mode
-  // checks to be based on capabilities instead.
-  bool IsInMPArchOpaqueAdsFencedFrameTree() const;
 
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or

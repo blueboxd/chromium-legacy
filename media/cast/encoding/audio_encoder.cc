@@ -487,7 +487,7 @@ class AudioEncoder::AppleAacImpl final : public AudioEncoder::ImplBase {
                                       &cookie_size, nullptr) != noErr) {
       return false;
     }
-    std::unique_ptr<uint8_t[]> cookie_data(new uint8_t[cookie_size]);
+    auto cookie_data = std::make_unique<uint8_t[]>(cookie_size);
     if (AudioConverterGetProperty(converter_,
                                   kAudioConverterCompressionMagicCookie,
                                   &cookie_size, cookie_data.get()) != noErr) {
@@ -669,7 +669,7 @@ class AudioEncoder::AppleAacImpl final : public AudioEncoder::ImplBase {
 
   // A temporary pointer to the current output buffer. Only non-null when
   // writing an access unit. Accessed by the AudioFile write callback function.
-  std::string* output_buffer_;
+  raw_ptr<std::string> output_buffer_;
 
   // The |AudioConverter| is responsible for AAC encoding. This is a Core Audio
   // object, not to be confused with |media::AudioConverter|.
@@ -699,7 +699,8 @@ class AudioEncoder::Pcm16Impl final : public AudioEncoder::ImplBase {
                  sampling_rate / kDefaultFramesPerSecond, /* 10 ms frames */
                  0 /* bitrate, which is unused for the PCM16 implementation */,
                  std::move(callback)),
-        buffer_(new int16_t[num_channels * samples_per_frame_]) {
+        buffer_(
+            std::make_unique<int16_t[]>(num_channels * samples_per_frame_)) {
     if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
     operational_status_ = STATUS_INITIALIZED;

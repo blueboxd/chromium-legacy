@@ -291,6 +291,17 @@ namespace autotestPrivate {
   };
   callback GetArcAppCallback = void (ArcAppDict package);
 
+  dictionary ArcAppKillsDict {
+    double oom;
+    double lmkdForeground;
+    double lmkdPerceptible;
+    double lmkdCached;
+    double pressureForeground;
+    double pressurePerceptible;
+    double pressureCached;
+  };
+  callback GetArcAppKillsCallback = void (ArcAppKillsDict counts);
+
   dictionary ArcPackageDict {
     DOMString packageName;
     long packageVersion;
@@ -334,6 +345,17 @@ namespace autotestPrivate {
   callback SetShelfIconPinCallback = void(DOMString[] results);
 
   callback SetOverviewModeStateCallback = void(boolean finished);
+
+  enum ThemeStyle {
+    TonalSpot,
+    Vibrant,
+    Expressive,
+    Spritz,
+    Rainbow,
+    FruitSalad
+  };
+
+  callback SendArcOverlayColorCallback = void (boolean result);
 
   callback ArcAppTracingCallback = void(ArcAppTracingInfo info);
 
@@ -663,6 +685,34 @@ namespace autotestPrivate {
   callback GetLoginEventRecorderLoginEventsCallback = void
       (LoginEventRecorderData[] data);
 
+  // Request parameters for <code>getAccessToken</code>.
+  dictionary GetAccessTokenParams {
+     // An email associated with the account to get a token for.
+     DOMString email;
+     // A list of OAuth scopes to request.
+     DOMString[] scopes;
+     // An optional timeout in milliseconds for the request.
+     // Default: 90 seconds
+     long? timeoutMs;
+  };
+
+  // Response data for <code>getAccessToken</code>.
+  dictionary GetAccessTokenData {
+    // The access token
+    DOMString accessToken;
+    // The time the access token will expire as a unix timestamp in
+    // milliseconds.
+    DOMString expirationTimeUnixMs;
+  };
+
+  // Reponse callback for <code>getAccessToken</code>.
+  callback GetAccessTokenCallback = void(GetAccessTokenData data);
+
+  // Callback invoked to report whether the current input method is ready to
+  // accept key events from the test.
+  callback IsInputMethodReadyForTestingCallback = void
+      (boolean isReady);
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -780,6 +830,10 @@ namespace autotestPrivate {
     // Gets information about the requested ARC app.
     [supportsPromises] static void getArcApp(DOMString appId,
                                              GetArcAppCallback callback);
+
+    // Gets counts of how many ARC apps have been killed, by priority.
+    [supportsPromises] static void getArcAppKills(
+        GetArcAppKillsCallback callback);
 
     // Gets information about requested ARC package.
     [supportsPromises] static void getArcPackage(
@@ -1080,6 +1134,13 @@ namespace autotestPrivate {
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();
 
+    // Sends the overlay color and theme to Android and changes the Android system color and theme to these values.
+    // |color|: the int color of the system ui.
+    // |theme|: the theme of the system ui.
+    // |callback|: callback to deliver sendArcOverlayColor result.
+    [supportsPromises] static void sendArcOverlayColor(
+      long color, ThemeStyle theme, SendArcOverlayColorCallback callback);
+
     // Start ARC performance tracing for the active ARC app window.
     // |callback|: Called when the operation has completed.
     [supportsPromises] static void arcAppTracingStart(VoidCallback callback);
@@ -1335,6 +1396,15 @@ namespace autotestPrivate {
 
     // Force auto theme mode in dark mode or light mode for testing.
     [supportsPromises] static void forceAutoThemeMode(boolean darkModeEnabled, VoidCallback callback);
+
+    // Fetches an access token from Chrome.
+    [supportsPromises] static void getAccessToken(
+        GetAccessTokenParams accessTokenParams,
+        GetAccessTokenCallback callback);
+
+    // Returns whether the current input method is ready to accept key events.
+    [supportsPromises] static void isInputMethodReadyForTesting(
+        IsInputMethodReadyForTestingCallback callback);
   };
 
   interface Events {

@@ -235,6 +235,7 @@ class LoginShelfButton : public views::LabelButton {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
+    views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
     SetFocusPainter(nullptr);
@@ -300,13 +301,6 @@ class LoginShelfButton : public views::LabelButton {
     keyboard_controller->HideKeyboardImplicitlyByUser();
   }
 
-  void OnThemeChanged() override {
-    views::LabelButton::OnThemeChanged();
-    views::FocusRing::Get(this)->SetColor(
-        AshColorProvider::Get()->GetControlsLayerColor(
-            AshColorProvider::ControlsLayerType::kFocusRingColor));
-  }
-
  private:
   const int text_resource_id_;
   const gfx::VectorIcon& icon_;
@@ -330,6 +324,7 @@ class KioskAppsButton : public views::MenuButton,
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
+    views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
     SetFocusPainter(nullptr);
@@ -457,13 +452,6 @@ class KioskAppsButton : public views::MenuButton,
   bool IsCommandIdChecked(int command_id) const override { return false; }
 
   bool IsCommandIdEnabled(int command_id) const override { return true; }
-
-  void OnThemeChanged() override {
-    views::MenuButton::OnThemeChanged();
-    views::FocusRing::Get(this)->SetColor(
-        AshColorProvider::Get()->GetControlsLayerColor(
-            AshColorProvider::ControlsLayerType::kFocusRingColor));
-  }
 
   bool IsMenuOpened() { return is_menu_opened_; }
 

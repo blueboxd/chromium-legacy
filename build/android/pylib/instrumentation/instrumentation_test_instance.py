@@ -39,7 +39,7 @@ _COMMAND_LINE_PARAMETER = 'cmdlinearg-parameter'
 _DEFAULT_ANNOTATIONS = [
     'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest', 'IntegrationTest']
 # This annotation is for disabled tests that should not be run in Test Reviver.
-_DO_NOT_REVIVE_ANNOTATIONS = ['DoNotRevive']
+_DO_NOT_REVIVE_ANNOTATIONS = ['DoNotRevive', 'Manual']
 _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
     'DisabledTest', 'FlakyTest', 'Manual']
 _VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS + _DO_NOT_REVIVE_ANNOTATIONS +
@@ -630,6 +630,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._additional_apks = []
     self._forced_queryable_additional_apks = []
+    self._instant_additional_apks = []
     self._apk_under_test = None
     self._apk_under_test_incremental_install_json = None
     self._modules = None
@@ -697,6 +698,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._test_launcher_batch_limit = None
     self._initializeTestLauncherAttributes(args)
+
+    self._approve_app_links_domain = None
+    self._approve_app_links_package = None
+    self._initializeApproveAppLinksAttributes(args)
 
     self._wpr_enable_record = args.wpr_enable_record
 
@@ -808,7 +813,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           '(This may just mean that the test package is '
           'currently being installed.)', self._test_package)
 
-    for x in set(args.additional_apks + args.forced_queryable_additional_apks):
+    for x in set(args.additional_apks + args.forced_queryable_additional_apks +
+                 args.instant_additional_apks):
       if not os.path.exists(x):
         error_func('Unable to find additional APK: %s' % x)
 
@@ -817,6 +823,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
       if x in args.forced_queryable_additional_apks:
         self._forced_queryable_additional_apks.append(apk)
+
+      if x in args.instant_additional_apks:
+        self._instant_additional_apks.append(apk)
 
   def _initializeDataDependencyAttributes(self, args, data_deps_delegate):
     self._data_deps = []
@@ -928,6 +937,20 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if hasattr(args, 'test_launcher_batch_limit'):
       self._test_launcher_batch_limit = args.test_launcher_batch_limit
 
+  def _initializeApproveAppLinksAttributes(self, args):
+    if (not hasattr(args, 'approve_app_links') or not args.approve_app_links):
+      return
+
+    # The argument will be formatted as com.android.thing:www.example.com .
+    app_links = args.approve_app_links.split(':')
+
+    if (len(app_links) != 2 or not app_links[0] or not app_links[1]):
+      logging.warning('--approve_app_links option provided, but malformed.')
+      return
+
+    self._approve_app_links_package = app_links[0]
+    self._approve_app_links_domain = app_links[1]
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -939,6 +962,14 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def apk_under_test_incremental_install_json(self):
     return self._apk_under_test_incremental_install_json
+
+  @property
+  def approve_app_links_package(self):
+    return self._approve_app_links_package
+
+  @property
+  def approve_app_links_domain(self):
+    return self._approve_app_links_domain
 
   @property
   def modules(self):
@@ -1136,6 +1167,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def IsApkForceQueryable(self, apk):
     return apk in self._forced_queryable_additional_apks
+
+  def IsApkInstant(self, apk):
+    return apk in self._instant_additional_apks
 
   # pylint: disable=no-self-use
   def _InflateTests(self, tests):

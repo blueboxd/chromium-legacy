@@ -294,7 +294,8 @@ id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
   // UIAccessibilityTraitButton.
   return grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(label)),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitButton)), nil);
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitButton)),
+      grey_userInteractionEnabled(), nil);
 }
 
 // Returns matcher for the "Add Password" button located at the bottom of the
@@ -375,10 +376,7 @@ void CopyPasswordDetailWithID(int detail_id) {
 }
 
 id<GREYMatcher> EditDoneButton() {
-  if ([ChromeEarlGrey isAddCredentialsInSettingsEnabled]) {
-    return SettingToolbarEditDoneButton();
-  }
-  return NavigationBarDoneButton();
+  return SettingToolbarEditDoneButton();
 }
 
 }  // namespace
@@ -410,16 +408,6 @@ id<GREYMatcher> EditDoneButton() {
   if ([self isRunningTest:@selector(testNoOndeviceEncryptionWithoutFlag)]) {
     config.features_disabled.push_back(
         syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector(testToolbarAddPasswordButton)] ||
-      [self isRunningTest:@selector(testNoAddButtonInEditMode)] ||
-      [self isRunningTest:@selector(testAddNewPasswordCredential)] ||
-      [self isRunningTest:@selector(testAutoScroll)] ||
-      [self isRunningTest:@selector(testAddNewDuplicatedPasswordCredential)] ||
-      [self isRunningTest:@selector(testTLDMissingMessage)] ||
-      [self isRunningTest:@selector(testDuplicatedCredentialWithNoUsername)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kSupportForAddPasswordsInSettings);
   }
 
   return config;

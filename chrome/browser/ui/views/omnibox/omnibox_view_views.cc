@@ -32,8 +32,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
-#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -109,6 +109,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/browser_process.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/ui/base/tablet_state.h"
 #endif
 
 namespace {
@@ -455,7 +459,15 @@ bool OmniboxViewViews::IsImeComposing() const {
 }
 
 gfx::Size OmniboxViewViews::GetMinimumSize() const {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1338087): The minimum size of Lacros toolbar is set too wide
+  // to use split view in tablet mode. Temporally making the minimum size of
+  // omnibox smaller for Lacros to align the behavior with Ash.
+  const int kMinCharacters =
+      chromeos::TabletState::Get()->InTabletMode() ? 8 : 20;
+#else
   const int kMinCharacters = 20;
+#endif
   return gfx::Size(
       GetFontList().GetExpectedTextWidth(kMinCharacters) + GetInsets().width(),
       GetPreferredSize().height());
@@ -591,9 +603,8 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
 void OmniboxViewViews::OnThemeChanged() {
   views::Textfield::OnThemeChanged();
 
-  const SkColor dimmed_text_color = GetOmniboxColor(
-      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-  set_placeholder_text_color(dimmed_text_color);
+  set_placeholder_text_color(
+      GetColorProvider()->GetColor(kColorOmniboxTextDimmed));
 
   EmphasizeURLComponents();
 }
@@ -627,13 +638,13 @@ void OmniboxViewViews::SetTextAndSelectedRanges(
   // the cursor are visible. If possible given the prior guarantee, also
   // guarantees |kPadTrailing| chars of the text following the cursor are
   // visible.
-  static const uint32_t kPadTrailing = 30;
-  static const uint32_t kPadLeading = 10;
+  static const size_t kPadTrailing = 30;
+  static const size_t kPadLeading = 10;
 
   // We use SetTextWithoutCaretBoundsChangeNotification() in order to avoid
   // triggering accessibility events multiple times.
   SetTextWithoutCaretBoundsChangeNotification(text, ranges[0].end());
-  Scroll({0, std::min<size_t>(ranges[0].end() + kPadTrailing, text.size()),
+  Scroll({0, std::min(ranges[0].end() + kPadTrailing, text.size()),
           ranges[0].end() - std::min(kPadLeading, ranges[0].end())});
   // Setting the primary selected range will also fire an appropriate final
   // accessibility event after the changes above.
@@ -989,9 +1000,8 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
 }
 
 void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
-  SkColor color = GetOmniboxColor(
-      GetThemeProvider(), emphasize ? OmniboxPart::LOCATION_BAR_TEXT_DEFAULT
-                                    : OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  const SkColor color = GetColorProvider()->GetColor(
+      emphasize ? kColorOmniboxText : kColorOmniboxTextDimmed);
   if (range.IsValid())
     ApplyColor(color, range);
   else
@@ -1729,7 +1739,7 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
                              &write_url);
   if (IsSelectAll()) {
-    UMA_HISTOGRAM_COUNTS_1M("Omnibox.CutOrCopyAllText", 1);
+    UMA_HISTOGRAM_COUNTS_1M(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
     if (clipboard_buffer != ui::ClipboardBuffer::kSelection &&
         location_bar_view_) {

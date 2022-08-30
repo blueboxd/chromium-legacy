@@ -31,6 +31,11 @@ void LinuxUI::SetInstance(std::unique_ptr<LinuxUI> instance) {
   ShellDialogLinux::SetInstance(g_linux_ui);
 #endif
   ui::SetTextEditKeyBindingsDelegate(g_linux_ui);
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(ENABLE_PRINTING)
+  printing::PrintingContextLinuxDelegate::SetInstance(g_linux_ui);
+#endif
+  ui::CursorThemeManager::SetInstance(g_linux_ui);
+  gfx::AnimationSettingsProviderLinux::SetInstance(g_linux_ui);
 
   // Do not set IME instance for ozone as we delegate creating the input method
   // to OzonePlatforms instead. If this is set, OzonePlatform never sets a
@@ -47,10 +52,9 @@ LinuxUI::~LinuxUI() = default;
 
 LinuxUI::CmdLineArgs::CmdLineArgs() = default;
 
-LinuxUI::CmdLineArgs::CmdLineArgs(const CmdLineArgs&) = default;
+LinuxUI::CmdLineArgs::CmdLineArgs(CmdLineArgs&&) = default;
 
-LinuxUI::CmdLineArgs& LinuxUI::CmdLineArgs::operator=(const CmdLineArgs&) =
-    default;
+LinuxUI::CmdLineArgs& LinuxUI::CmdLineArgs::operator=(CmdLineArgs&&) = default;
 
 LinuxUI::CmdLineArgs::~CmdLineArgs() = default;
 

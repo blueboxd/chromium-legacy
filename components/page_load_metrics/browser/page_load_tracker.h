@@ -202,6 +202,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsUpdateDispatcher::Client implementation:
   bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
+  void OnPageInputTimingChanged(uint64_t num_input_events) override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
   void OnSubFrameInputTimingChanged(
@@ -215,6 +216,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                                  const mojom::FrameMetadata& metadata) override;
   void OnSubFrameMobileFriendlinessChanged(
       const blink::MobileFriendliness&) override;
+  void OnSoftNavigationCountChanged(uint32_t soft_navigation_count) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
       const std::vector<blink::UseCounterFeature>& new_features) override;
@@ -266,6 +268,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const LargestContentfulPaintHandler&
   GetExperimentalLargestContentfulPaintHandler() const override;
   ukm::SourceId GetPageUkmSourceId() const override;
+  uint32_t GetSoftNavigationCount() const override;
   bool IsFirstNavigationInWebContents() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
@@ -283,7 +286,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void PageHidden();
   void PageShown();
   void RenderFrameDeleted(content::RenderFrameHost* rfh);
-  void SubFrameDeleted(int frame_tree_node_id);
+  void FrameTreeNodeDeleted(int frame_tree_node_id);
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
@@ -410,7 +413,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr new_cpu_timing,
       mojom::InputTimingPtr input_timing_delta,
-      const absl::optional<blink::MobileFriendliness>& mobile_friendliness);
+      const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+      uint32_t soft_navigation_count);
 
   // Set RenderFrameHost for the main frame of the page this tracker instance is
   // bound. This is called on moving the tracker to the active / inactive
@@ -544,6 +548,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       largest_contentful_paint_handler_;
   page_load_metrics::LargestContentfulPaintHandler
       experimental_largest_contentful_paint_handler_;
+
+  uint32_t soft_navigation_count_ = 0;
 
   const base::WeakPtr<PageLoadTracker> parent_tracker_;
 

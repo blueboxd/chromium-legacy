@@ -169,9 +169,9 @@ class ASH_EXPORT AshNotificationView
     void OnThemeChanged() override;
 
     views::Label* title_view() { return title_view_; }
+
    private:
     friend class AshNotificationViewTest;
-
     // Showing notification title.
     views::Label* const title_view_;
 

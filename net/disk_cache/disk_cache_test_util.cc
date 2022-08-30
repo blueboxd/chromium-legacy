@@ -62,9 +62,9 @@ bool CheckCacheIntegrity(const base::FilePath& path,
                          bool new_eviction,
                          int max_size,
                          uint32_t mask) {
-  std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+  auto cache = std::make_unique<disk_cache::BackendImpl>(
       path, mask, base::ThreadTaskRunnerHandle::Get(), net::DISK_CACHE,
-      nullptr));
+      nullptr);
   if (max_size)
     cache->SetMaxSize(max_size);
   if (!cache.get())
@@ -78,6 +78,17 @@ bool CheckCacheIntegrity(const base::FilePath& path,
 }
 
 // -----------------------------------------------------------------------
+TestBackendResultCompletionCallback::TestBackendResultCompletionCallback() =
+    default;
+
+TestBackendResultCompletionCallback::~TestBackendResultCompletionCallback() =
+    default;
+
+disk_cache::BackendResultCallback
+TestBackendResultCompletionCallback::callback() {
+  return base::BindOnce(&TestBackendResultCompletionCallback::SetResult,
+                        base::Unretained(this));
+}
 
 TestEntryResultCompletionCallback::TestEntryResultCompletionCallback() =
     default;

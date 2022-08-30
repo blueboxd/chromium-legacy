@@ -16,7 +16,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -127,7 +126,12 @@ TEST_F(FormAutofillUtilsTest, FindChildTextTest) {
        "</div></div></div></div></div></div></div></div></div></div></div></"
        "div>",
        u"child0child1child2child3child4"},
-  };
+      {"Skip script tags",
+       "<div id='target'><script>alert('hello');</script>label</div>",
+       u"label"},
+      {"Script tag whitespacing",
+       "<div id='target'>Auto<script>alert('hello');</script>fill</div>",
+       u"Autofill"}};
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.description);
     LoadHTML(test_case.html);
@@ -188,29 +192,29 @@ TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
          <div><input id=target></div>
        </div>)",
        u"label"},
-      // TODO(crbug.com/796918): Should be label
       {"DIV table test 4", R"(
        <div>
          <div>should be skipped<input></div>
          label
          <div><input id=target></div>
        </div>)",
-       u""},
-      // TODO(crbug.com/796918): Should be label
+       u"label"},
       {"DIV table test 5",
        "<div>"
        "<div>label<div><input id='target'/></div>behind</div>"
        "</div>",
-       u"labelbehind"},
+       u"label"},
       {"DIV table test 6", R"(
        <div>
          label
-         <div>-</div>
+         <div>*</div>
          <div><input id='target'></div>
        </div>)",
-       // TODO(crbug.com/796918): Should be "label" or "label-". This happens
-       // because "-" is inferred, but discarded because `!IsLabelValid()`.
+       // TODO(crbug.com/796918): Should be "label" or "label*". This happens
+       // because "*" is inferred, but discarded because `!IsLabelValid()`.
        u""},
+      {"Infer from next sibling",
+       "<input id='target' type='checkbox'>hello <b>world</b>", u"hello world"},
   };
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.description);
@@ -249,7 +253,11 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
        FormFieldData::LabelSource::kAriaLabel},
       {"<input id='target' value='label'/>",
        FormFieldData::LabelSource::kValue},
+      // In the next test, the text node is picked up on the way up the DOM-tree
+      // by the div extraction logic.
       {"<li>label<div><input id='target'/></div></li>",
+       FormFieldData::LabelSource::kDivTable},
+      {"<li><span>label</span><div><input id='target'/></div></li>",
        FormFieldData::LabelSource::kLiTag},
       {"<table><tr><td>label</td><td><input id='target'/></td></tr></table>",
        FormFieldData::LabelSource::kTdTag},

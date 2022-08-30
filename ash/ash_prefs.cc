@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/ash_prefs.h"
 
-#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/ambient/ambient_controller.h"
@@ -28,8 +27,7 @@
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/session/fullscreen_controller.h"
 #include "ash/shelf/shelf_controller.h"
-#include "ash/style/ash_color_provider.h"
-#include "ash/style/dark_mode_controller.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
@@ -57,8 +55,8 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/live_caption/pref_names.h"
 #include "components/soda/constants.h"
@@ -69,11 +67,9 @@ namespace {
 
 // Registers prefs whose default values are same in user and signin prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  AcceleratorControllerImpl::RegisterProfilePrefs(registry);
   AccessibilityControllerImpl::RegisterProfilePrefs(registry);
   AppListControllerImpl::RegisterProfilePrefs(registry);
   AssistantControllerImpl::RegisterProfilePrefs(registry);
-  AshColorProvider::RegisterProfilePrefs(registry);
   AmbientController::RegisterProfilePrefs(registry);
   if (!ash::features::IsBluetoothRevampEnabled())
     BluetoothPowerController::RegisterProfilePrefs(registry);
@@ -82,7 +78,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   CellularSetupNotifier::RegisterProfilePrefs(registry);
   contextual_tooltip::RegisterProfilePrefs(registry);
   ClipboardNudgeController::RegisterProfilePrefs(registry);
-  DarkModeController::RegisterProfilePrefs(registry);
+  DarkLightModeControllerImpl::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
   saved_desk_util::RegisterProfilePrefs(registry);
   DockedMagnifierController::RegisterProfilePrefs(registry);

@@ -953,8 +953,8 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
 
 class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
  public:
-  MockUDPClientSocket(SocketDataProvider* data = nullptr,
-                      net::NetLog* net_log = nullptr);
+  explicit MockUDPClientSocket(SocketDataProvider* data = nullptr,
+                               net::NetLog* net_log = nullptr);
 
   MockUDPClientSocket(const MockUDPClientSocket&) = delete;
   MockUDPClientSocket& operator=(const MockUDPClientSocket&) = delete;
@@ -1167,7 +1167,7 @@ class MockTransportSocketParams
 
  private:
   friend class base::RefCounted<MockTransportSocketParams>;
-  ~MockTransportSocketParams() {}
+  ~MockTransportSocketParams() = default;
 };
 
 class MockTransportClientSocketPool : public TransportClientSocketPool {
@@ -1310,7 +1310,7 @@ class MockTaggingStreamSocket : public WrappedStreamSocket {
   MockTaggingStreamSocket(const MockTaggingStreamSocket&) = delete;
   MockTaggingStreamSocket& operator=(const MockTaggingStreamSocket&) = delete;
 
-  ~MockTaggingStreamSocket() override {}
+  ~MockTaggingStreamSocket() override = default;
 
   // StreamSocket implementation.
   int Connect(CompletionOnceCallback callback) override;
@@ -1360,7 +1360,8 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
   MockUDPClientSocket* GetLastProducedUDPSocket() const { return udp_socket_; }
 
  private:
-  raw_ptr<MockTaggingStreamSocket> tcp_socket_ = nullptr;
+  // TODO(crbug.com/1298696): Breaks net_unittests.
+  raw_ptr<MockTaggingStreamSocket, DegradeToNoOpWhenMTE> tcp_socket_ = nullptr;
   raw_ptr<MockUDPClientSocket> udp_socket_ = nullptr;
 };
 

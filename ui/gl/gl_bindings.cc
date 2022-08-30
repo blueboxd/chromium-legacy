@@ -23,7 +23,8 @@
 namespace gl {
 
 #if defined(USE_EGL)
-void ExtensionsEGL::UpdateConditionalExtensionSettings(GLDisplayEGL* display) {
+void DisplayExtensionsEGL::UpdateConditionalExtensionSettings(
+    EGLDisplay display) {
   // For the moment, only two extensions can be conditionally disabled
   // through GPU driver bug workarounds mechanism:
   //   EGL_KHR_fence_sync
@@ -42,17 +43,15 @@ void ExtensionsEGL::UpdateConditionalExtensionSettings(GLDisplayEGL* display) {
 }
 
 // static
-std::string ExtensionsEGL::GetPlatformExtensions(GLDisplayEGL* display) {
-  DCHECK(display);
-  EGLDisplay egl_display = display->GetHardwareDisplay();
-  if (egl_display == EGL_NO_DISPLAY)
+std::string DisplayExtensionsEGL::GetPlatformExtensions(EGLDisplay display) {
+  if (display == EGL_NO_DISPLAY)
     return "";
-  const char* str = eglQueryString(egl_display, EGL_EXTENSIONS);
+  const char* str = eglQueryString(display, EGL_EXTENSIONS);
   return str ? std::string(str) : "";
 }
 
 // static
-std::string ExtensionsEGL::GetClientExtensions() {
+std::string ClientExtensionsEGL::GetClientExtensions() {
   const char* str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   return str ? std::string(str) : "";
 }

@@ -126,7 +126,7 @@ const std::string kPolicyWithTwoTemplates =
     "2\",\"title\":\"Example2\"}],\"tab_groups\":[{\"range_"
     "start\":1,\"range_end\":2,\"title\":\"sample_tab_"
     "group\",\"color\":\"GREY\",\"is_collapsed\":false}],\"active_tab_index\":"
-    "1,\"window_id\":0,"
+    "1,\"first_non_pinned_tab_index\":1,\"window_id\":0,"
     "\"display_id\":\"100\",\"pre_minimized_window_state\":\"NORMAL\"}]}},"
     "{\"version\":1,\"uuid\":\"" +
     base::StringPrintf(kUuidFormat, 9) +
@@ -139,7 +139,8 @@ const std::string kPolicyWithTwoTemplates =
     "\"url\":\"https://google.com\",\"title\":\"Example "
     "2\"},{\"url\":\"https://"
     "gmail.com.com/"
-    "2\",\"title\":\"Example2\"}],\"active_tab_index\":1,\"window_id\":0,"
+    "2\",\"title\":\"Example2\"}],\"active_tab_index\":1,\"first_non_pinned_"
+    "tab_index\":1,\"window_id\":0,"
     "\"display_id\":\"100\",\"pre_minimized_window_state\":\"NORMAL\"}]}}]";
 
 void FillDefaultBrowserAppWindow(WorkspaceDeskSpecifics_App* app,
@@ -151,6 +152,7 @@ void FillDefaultBrowserAppWindow(WorkspaceDeskSpecifics_App* app,
   }
 
   app_window->set_active_tab_index(number_of_tabs - 1);
+  app_window->set_first_non_pinned_tab_index(number_of_tabs - 1);
 
   WindowBound* window_bound = app->mutable_window_bound();
   window_bound->set_left(110);
@@ -304,13 +306,11 @@ void FillExampleArcAppWindow(WorkspaceDeskSpecifics_App* app) {
   app->set_title(kTestArcAppTitle);
 }
 
-WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
+WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecificsWithoutDeskType(
     const std::string uuid,
     const std::string template_name,
     base::Time created_time = base::Time::Now(),
-    int number_of_tabs = 2,
-    SyncDeskType desk_type =
-        SyncDeskType::WorkspaceDeskSpecifics_DeskType_SAVE_AND_RECALL) {
+    int number_of_tabs = 2) {
   WorkspaceDeskSpecifics specifics;
   specifics.set_uuid(uuid);
   specifics.set_name(template_name);
@@ -320,13 +320,26 @@ WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
       (created_time + base::Minutes(5))
           .ToDeltaSinceWindowsEpoch()
           .InMicroseconds());
-  specifics.set_desk_type(desk_type);
   Desk* desk = specifics.mutable_desk();
   FillExampleBrowserAppWindow(desk->add_apps(), number_of_tabs);
   FillExampleArcAppWindow(desk->add_apps());
   FillExampleChromeAppWindow(desk->add_apps());
   FillExampleProgressiveWebAppWindow(desk->add_apps());
   FillExampleSystemWebAppWindow(desk->add_apps());
+  return specifics;
+}
+
+WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
+    const std::string uuid,
+    const std::string template_name,
+    base::Time created_time = base::Time::Now(),
+    int number_of_tabs = 2,
+    SyncDeskType desk_type =
+        SyncDeskType::WorkspaceDeskSpecifics_DeskType_SAVE_AND_RECALL) {
+  WorkspaceDeskSpecifics specifics =
+      ExampleWorkspaceDeskSpecificsWithoutDeskType(
+          uuid, template_name, created_time, number_of_tabs);
+  specifics.set_desk_type(desk_type);
   return specifics;
 }
 
@@ -370,12 +383,19 @@ WorkspaceDeskSpecifics CreateWorkspaceDeskSpecifics(
       base::StringPrintf(kNameFormat, templateIndex), created_time);
 }
 
-WorkspaceDeskSpecifics CreateUnkownDeskType() {
+WorkspaceDeskSpecifics CreateUnknownDeskType() {
   return ExampleWorkspaceDeskSpecifics(
       kTestUuid1.AsLowercaseString(), base::StringPrintf(kNameFormat, 1),
       base::Time::Now(),
       /*number_of_tabs=*/2,
       SyncDeskType::WorkspaceDeskSpecifics_DeskType_UNKNOWN_TYPE);
+}
+
+WorkspaceDeskSpecifics CreateWorkspaceDeskWithoutDeskType() {
+  return ExampleWorkspaceDeskSpecificsWithoutDeskType(
+      kTestUuid1.AsLowercaseString(), base::StringPrintf(kNameFormat, 1),
+      base::Time::Now(),
+      /*number_of_tabs=*/2);
 }
 
 WorkspaceDeskSpecifics CreateBrowserTemplateExpectedValue(
@@ -1037,10 +1057,20 @@ TEST_F(DeskSyncBridgeTest, EnsureUnsupportedAppCanBeIgnored) {
   EXPECT_THAT(converted_desk_proto, EqualsSpecifics(expected_desk_proto));
 }
 
-// Tests that the sync bridge appropriately handles all unknown desks as
-// templates by default.
-TEST_F(DeskSyncBridgeTest, EnsureGracefulHandlingOfUnkownDeskTypes) {
-  WorkspaceDeskSpecifics unknown_desk = CreateUnkownDeskType();
+// Tests that the sync bridge appropriately handles explicitly unknown desk type
+// as invalid.
+TEST_F(DeskSyncBridgeTest, EnsureGracefulHandlingOfUnknownDeskTypes) {
+  WorkspaceDeskSpecifics unknown_desk = CreateUnknownDeskType();
+  std::unique_ptr<DeskTemplate> desk_template =
+      DeskSyncBridge::FromSyncProto(unknown_desk);
+
+  EXPECT_EQ(desk_template, nullptr);
+}
+
+// Tests that the sync bridge treat saved desk with missing desk type as desk
+// template.
+TEST_F(DeskSyncBridgeTest, EnsureHandlingOfMissingDeskTypes) {
+  WorkspaceDeskSpecifics unknown_desk = CreateWorkspaceDeskWithoutDeskType();
   std::unique_ptr<DeskTemplate> desk_template =
       DeskSyncBridge::FromSyncProto(unknown_desk);
 
@@ -1675,12 +1705,11 @@ TEST_F(DeskSyncBridgeTest, GetTemplateJsonShouldReturnList) {
 
         EXPECT_TRUE(!templates_json.empty());
 
-        base::JSONReader::ValueWithError parsed_json =
-            base::JSONReader::ReadAndReturnValueWithError(
-                base::StringPiece(templates_json));
+        auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
+            base::StringPiece(templates_json));
 
-        EXPECT_TRUE(parsed_json.value.has_value());
-        EXPECT_TRUE(parsed_json.value->is_list());
+        EXPECT_TRUE(parsed_json.has_value());
+        EXPECT_TRUE(parsed_json->is_list());
 
         // Content of the conversion is tested in:
         // components/desks_storage/core/desk_template_conversion_unittests.cc

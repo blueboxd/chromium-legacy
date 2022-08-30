@@ -8,6 +8,7 @@
 #define UI_GL_GL_UTILS_H_
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gpu_preference.h"
@@ -78,6 +79,9 @@ GL_EXPORT void SetGpuPreferenceEGL(GpuPreference preference,
 
 // Query the default GLDisplayEGL.
 GL_EXPORT GLDisplayEGL* GetDefaultDisplayEGL();
+
+// Query the GLDisplayEGL by |system_device_id|.
+GL_EXPORT GLDisplayEGL* GetDisplayEGL(uint64_t system_device_id);
 #endif  // USE_EGL
 
 #if defined(USE_GLX)
@@ -106,7 +110,7 @@ class GL_EXPORT ScopedEnableTextureRectangleInShaderCompiler {
   ~ScopedEnableTextureRectangleInShaderCompiler();
 
  private:
-  gl::GLApi* gl_api_;
+  raw_ptr<gl::GLApi> gl_api_;
 #endif
 };
 

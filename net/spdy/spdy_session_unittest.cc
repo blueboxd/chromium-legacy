@@ -6617,7 +6617,7 @@ class AltSvcFrameTest : public SpdySessionTest {
   void AddSocketData(const spdy::SpdyAltSvcIR& altsvc_ir) {
     altsvc_frame_ = spdy_util_.SerializeFrame(altsvc_ir);
     reads_.push_back(CreateMockRead(altsvc_frame_, 0));
-    reads_.push_back(MockRead(ASYNC, 0, 1));
+    reads_.emplace_back(ASYNC, 0, 1);
 
     data_ =
         std::make_unique<SequencedSocketData>(reads_, base::span<MockWrite>());
@@ -7141,7 +7141,7 @@ namespace {
 
 class TestSSLConfigService : public SSLConfigService {
  public:
-  TestSSLConfigService() {}
+  TestSSLConfigService() = default;
   ~TestSSLConfigService() override = default;
 
   SSLContextConfig GetSSLContextConfig() override { return config_; }
@@ -7467,23 +7467,23 @@ TEST(RecordPushedStreamHistogramTest, VaryResponseHeader) {
                     {1, {"vary", "fooaccept-encoding"}, 5},
                     {1, {"vary", "foo, accept-encodingbar"}, 5}};
 
-  for (size_t i = 0; i < std::size(test_cases); ++i) {
+  for (const auto& test_case : test_cases) {
     spdy::Http2HeaderBlock headers;
-    for (size_t j = 0; j < test_cases[i].num_headers; ++j) {
-      headers[test_cases[i].headers[2 * j]] = test_cases[i].headers[2 * j + 1];
+    for (size_t j = 0; j < test_case.num_headers; ++j) {
+      headers[test_case.headers[2 * j]] = test_case.headers[2 * j + 1];
     }
     base::HistogramTester histograms;
     histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 0);
     SpdySession::RecordPushedStreamVaryResponseHeaderHistogram(headers);
     histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 1);
     histograms.ExpectBucketCount("Net.PushedStreamVaryResponseHeader",
-                                 test_cases[i].expected_bucket, 1);
+                                 test_case.expected_bucket, 1);
     // Adding an unrelated header field should not change how Vary is parsed.
     headers["foo"] = "bar";
     SpdySession::RecordPushedStreamVaryResponseHeaderHistogram(headers);
     histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 2);
     histograms.ExpectBucketCount("Net.PushedStreamVaryResponseHeader",
-                                 test_cases[i].expected_bucket, 2);
+                                 test_case.expected_bucket, 2);
   }
 }
 

@@ -20,7 +20,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_network.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
-#include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/public/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_data.h"
@@ -33,6 +33,7 @@
 #include "components/autofill_assistant/browser/web/send_keyboard_input_worker.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 #include "components/autofill_assistant/content/browser/annotate_dom_model_service.h"
+#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
@@ -52,6 +53,7 @@ class WebContents;
 }  // namespace content
 
 namespace autofill_assistant {
+class ContentAutofillAssistantDriver;
 class ElementFinderResult;
 enum class ElementFinderResultType;
 
@@ -186,6 +188,7 @@ class WebController {
   // |profile|.
   virtual void FillAddressForm(
       std::unique_ptr<autofill::AutofillProfile> profile,
+      const AutofillAssistantIntent intent,
       const ElementFinderResult& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -193,6 +196,7 @@ class WebController {
   // |cvc|.
   virtual void FillCardForm(
       std::unique_ptr<autofill::CreditCard> card,
+      const AutofillAssistantIntent intent,
       const std::u16string& cvc,
       const ElementFinderResult& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
@@ -390,6 +394,11 @@ class WebController {
       const ElementFinderResult& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  virtual void SetNativeChecked(
+      bool checked,
+      const ElementFinderResult& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
  private:
@@ -482,6 +491,7 @@ class WebController {
   void OnGetFormAndFieldDataForFilling(
       const autofill::AutofillableData& data_to_autofill,
       std::unique_ptr<autofill::AutofillDataModel> retain_data,
+      const autofill_assistant::AutofillAssistantIntent intent,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& form_status,
       autofill::ContentAutofillDriver* driver,
@@ -530,8 +540,14 @@ class WebController {
   void OnDispatchJsEvent(base::OnceCallback<void(const ClientStatus&)> callback,
                          const DevtoolsClient::ReplyStatus& reply_status,
                          std::unique_ptr<runtime::EvaluateResult> result) const;
-  void OnSetElementValue(base::OnceCallback<void(const ClientStatus&)> callback,
-                         bool success) const;
+  void OnSetNativeExecution(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      bool success) const;
+  // Get the driver for the given element finder results. Will return a nullptr
+  // if the driver is not available. Requires that the element has a backend
+  // node id.
+  autofill_assistant::ContentAutofillAssistantDriver* GetDriverForElement(
+      const ElementFinderResult& element) const;
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.

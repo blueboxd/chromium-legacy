@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -27,6 +28,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -154,13 +156,23 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   video_element->BindMediaPlayerReceiver(
       media_player_remote.InitWithNewEndpointAndPassReceiver());
 
+  gfx::Rect video_bounds;
+  if (auto* layout_video =
+          DynamicTo<LayoutVideo>(video_element->GetLayoutObject())) {
+    PhysicalRect content_rect = layout_video->ReplacedContentRect();
+    video_bounds = video_element->GetDocument().View()->FrameToViewport(
+        ToEnclosingRect(layout_video->LocalToAbsoluteRect(content_rect)));
+  } else {
+    video_bounds = video_element->BoundsInViewport();
+  }
+
   picture_in_picture_service_->StartSession(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
       std::move(media_player_remote),
       video_element->GetWebMediaPlayer()->GetSurfaceId().value(),
       video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
-      video_element->BoundsInViewport(),
+      video_bounds,
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(video_element),
                 WrapPersistent(resolver)));
@@ -413,6 +425,11 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
 
   auto* local_dom_window = dom_window->ToLocalDOMWindow();
   DCHECK(local_dom_window);
+
+  // Instantiate WindowProxy, so that a script state can be created for it
+  // successfully later.
+  // TODO(https://crbug.com/1336142): This should not be necessary.
+  local_dom_window->GetScriptController().WindowProxy(script_state->World());
 
   // Set the Picture-in-Picture window's base URL to be the same as the opener
   // window's so that relative URLs will be resolved in the same way.

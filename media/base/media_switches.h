@@ -48,6 +48,7 @@ MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
+MEDIA_EXPORT extern const char kUseFakeAudioCaptureTimestamps[];
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -104,6 +105,7 @@ MEDIA_EXPORT extern const char kUserGestureRequiredPolicy[];
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 MEDIA_EXPORT extern const char kHardwareVideoDecodeFrameRate[];
+MEDIA_EXPORT extern const char kMaxChromeOSDecoderThreads[];
 #endif
 
 }  // namespace switches
@@ -240,6 +242,7 @@ MEDIA_EXPORT extern const base::Feature kUseRealColorSpaceForAndroidVideo;
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+MEDIA_EXPORT extern const base::Feature kChromeOSHWVBREncoding;
 MEDIA_EXPORT extern const base::Feature kUseChromeOSDirectVideoDecoder;
 MEDIA_EXPORT extern const base::Feature kLimitConcurrentDecoderInstances;
 #if defined(ARCH_CPU_ARM_FAMILY)

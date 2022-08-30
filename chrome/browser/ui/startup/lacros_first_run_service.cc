@@ -12,9 +12,9 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/browser_process.h"
@@ -36,7 +36,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -201,12 +200,6 @@ LacrosFirstRunService::~LacrosFirstRunService() = default;
 bool LacrosFirstRunService::ShouldOpenFirstRun() const {
   DCHECK(IsFirstRunEligibleProfile(profile_));
 
-  if (!base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
-    // Sync is already always forced, no point showing the FRE to ask the user
-    // to sync.
-    return false;
-  }
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoFirstRun))
@@ -301,19 +294,24 @@ void LacrosFirstRunService::TryEnableSyncSilentlyWithToken(
       std::make_unique<SilentSyncEnablerDelegate>(), std::move(callback));
 }
 
-void LacrosFirstRunService::OpenFirstRunIfNeeded(ResumeTaskCallback callback) {
-  TryMarkFirstRunAlreadyFinished(
-      base::BindOnce(&LacrosFirstRunService::OpenFirstRunInternal,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+void LacrosFirstRunService::OpenFirstRunIfNeeded(EntryPoint entry_point,
+                                                 ResumeTaskCallback callback) {
+  TryMarkFirstRunAlreadyFinished(base::BindOnce(
+      &LacrosFirstRunService::OpenFirstRunInternal,
+      weak_ptr_factory_.GetWeakPtr(), entry_point, std::move(callback)));
 }
 
-void LacrosFirstRunService::OpenFirstRunInternal(ResumeTaskCallback callback) {
+void LacrosFirstRunService::OpenFirstRunInternal(EntryPoint entry_point,
+                                                 ResumeTaskCallback callback) {
   if (!ShouldOpenFirstRun()) {
     // Opening the First Run is not needed, it might have been marked finished
     // silently for example.
     std::move(callback).Run(/*proceed=*/true);
     return;
   }
+
+  base::UmaHistogramEnumeration(
+      "Profile.LacrosPrimaryProfileFirstRunEntryPoint", entry_point);
 
   ProfilePicker::Show(ProfilePicker::Params::ForLacrosPrimaryProfileFirstRun(
       base::BindOnce(&OnFirstRunHasExited, std::move(callback))));

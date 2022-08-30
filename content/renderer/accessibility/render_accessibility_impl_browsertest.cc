@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/common/render_accessibility.mojom-test-utils.h"
 #include "content/common/render_accessibility.mojom.h"
-#include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
@@ -307,10 +306,6 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   }
 
  protected:
-  RenderViewImpl* view() {
-    return static_cast<RenderViewImpl*>(view_);
-  }
-
   RenderFrameImpl* frame() {
     return static_cast<RenderFrameImpl*>(RenderViewTest::GetMainRenderFrame());
   }

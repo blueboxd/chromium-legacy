@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_service_aura_linux.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/common/pref_names.h"
@@ -25,7 +26,6 @@ class SystemThemeLinux : public CustomThemeSupplier {
   // Overridden from CustomThemeSupplier:
   void StartUsingTheme() override;
   void StopUsingTheme() override;
-  bool GetTint(int id, color_utils::HSL* hsl) const override;
   bool GetColor(int id, SkColor* color) const override;
   bool GetDisplayProperty(int id, int* result) const override;
   gfx::Image GetImageNamed(int id) const override;
@@ -35,8 +35,8 @@ class SystemThemeLinux : public CustomThemeSupplier {
   ~SystemThemeLinux() override;
 
   // These pointers are not owned by us.
-  views::LinuxUI* const linux_ui_;
-  PrefService* const pref_service_;
+  const raw_ptr<views::LinuxUI> linux_ui_;
+  const raw_ptr<PrefService> pref_service_;
 };
 
 SystemThemeLinux::SystemThemeLinux(PrefService* pref_service)
@@ -57,10 +57,6 @@ void SystemThemeLinux::StopUsingTheme() {
     linux_ui_->GetNativeTheme(nullptr)->NotifyOnNativeThemeUpdated();
 }
 
-bool SystemThemeLinux::GetTint(int id, color_utils::HSL* hsl) const {
-  return linux_ui_ && linux_ui_->GetTint(id, hsl);
-}
-
 bool SystemThemeLinux::GetColor(int id, SkColor* color) const {
   return linux_ui_ && linux_ui_->GetColor(id, color,
                                           pref_service_->GetBoolean(
@@ -79,7 +75,7 @@ bool SystemThemeLinux::HasCustomImage(int id) const {
   return false;
 }
 
-SystemThemeLinux::~SystemThemeLinux() {}
+SystemThemeLinux::~SystemThemeLinux() = default;
 
 }  // namespace
 

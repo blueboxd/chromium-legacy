@@ -184,8 +184,9 @@ void ClipboardProvider::Start(const AutocompleteInput& input,
 
 void ClipboardProvider::Stop(bool clear_cached_results,
                              bool due_to_user_inactivity) {
-  callback_weak_ptr_factory_.InvalidateWeakPtrs();
   AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
+
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void ClipboardProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -249,12 +250,8 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
   // If the omnibox is not empty, add a default match.
   // This match will be opened when the user presses "Enter".
   if (!input.text().empty()) {
-    const std::u16string description =
-        (base::FeatureList::IsEnabled(omnibox::kDisplayTitleForCurrentUrl))
-            ? input.current_title()
-            : std::u16string();
     AutocompleteMatch verbatim_match = VerbatimMatchForURL(
-        this, client_, input, input.current_url(), description, -1);
+        this, client_, input, input.current_url(), input.current_title(), -1);
     matches_.push_back(verbatim_match);
   }
 

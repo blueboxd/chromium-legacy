@@ -18,6 +18,7 @@
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
@@ -42,6 +43,7 @@
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/https_upgrades/https_only_mode_upgrade_tab_helper.h"
+#import "ios/chrome/browser/https_upgrades/typed_navigation_upgrade_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
@@ -68,6 +70,7 @@
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -245,7 +248,13 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     HttpsOnlyModeContainer::CreateForWebState(web_state);
   }
 
+  if (base::FeatureList::IsEnabled(omnibox::kDefaultTypedNavigationsToHttps)) {
+    TypedNavigationUpgradeTabHelper::CreateForWebState(web_state);
+  }
+
   if (IsWebChannelsEnabled()) {
     FollowTabHelper::CreateForWebState(web_state);
   }
+
+  CaptivePortalTabHelper::CreateForWebState(web_state);
 }

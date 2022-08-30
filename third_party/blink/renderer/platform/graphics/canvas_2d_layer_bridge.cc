@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -57,6 +58,21 @@
 
 namespace blink {
 
+#if BUILDFLAG(IS_MAC)
+
+namespace {
+
+base::Feature kCanvas2DHibernation{
+    "Canvas2DHibernation", base::FeatureState::FEATURE_DISABLED_BY_DEFAULT};
+}
+
+// static
+bool Canvas2DLayerBridge::IsHibernationEnabled() {
+  return base::FeatureList::IsEnabled(kCanvas2DHibernation);
+}
+
+#endif  // BUILDFLAG(IS_MAC)
+
 Canvas2DLayerBridge::Canvas2DLayerBridge(const gfx::Size& size,
                                          RasterMode raster_mode,
                                          OpacityMode opacity_mode)
@@ -69,8 +85,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const gfx::Size& size,
       size_(size),
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr),
-      random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability),
       last_recording_(nullptr) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
@@ -382,8 +396,8 @@ void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
           FROM_HERE, WTF::Bind(&LoseContextInBackgroundWrapper,
                                weak_ptr_factory_.GetWeakPtr()));
     }
-  } else if (CANVAS2D_HIBERNATION_ENABLED && ResourceProvider() &&
-             IsAccelerated() && IsHidden() && !hibernation_scheduled_ &&
+  } else if (IsHibernationEnabled() && ResourceProvider() && IsAccelerated() &&
+             IsHidden() && !hibernation_scheduled_ &&
              !base::FeatureList::IsEnabled(
                  ::features::kCanvasContextLostInBackground)) {
     if (layer_)
@@ -537,8 +551,9 @@ void Canvas2DLayerBridge::FlushRecording(bool printing) {
 
   // We are using @dont_use_idle_scheduling_for_testing_ temporarily to always
   // measure while testing.
-  const bool will_measure = dont_use_idle_scheduling_for_testing_ ||
-                            bernoulli_distribution_(random_generator_);
+  const bool will_measure =
+      dont_use_idle_scheduling_for_testing_ ||
+      metrics_subsampler_.ShouldSample(kRasterMetricProbability);
   const bool measure_raster_metric =
       (raster_interface || !IsAccelerated()) && will_measure;
 

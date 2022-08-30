@@ -92,6 +92,8 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   TrayBubbleView* GetBubbleView() override;
   views::Widget* GetBubbleWidget() const override;
   void OnVirtualKeyboardVisibilityChanged() override;
+  void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
+                                    bool visible) override;
 
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
@@ -144,7 +146,9 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   // The `url` parameter is used to load the `WebView` inside the bubble.
   // The `icon` is used to update the tray icon for `EcheTray`.
   // The `visible_name` is shown as a tooltip for the Eche icon.
-  void LoadBubble(const GURL& url,
+  //
+  // Returns true if the bubble is loaded or initialized successfully.
+  bool LoadBubble(const GURL& url,
                   const gfx::Image& icon,
                   const std::u16string& visible_name);
 
@@ -164,6 +168,10 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   // Note: This function makes the bubble active and makes the
   // TrayBackgroundView's background inkdrop activate.
   void InitBubble();
+
+  // Starts graceful close to ensure the connection resource is released before
+  // the window is closed.
+  void StartGracefulClose();
 
   // Test helpers
   TrayBubbleWrapper* get_bubble_wrapper_for_test() { return bubble_.get(); }
@@ -206,10 +214,6 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   void StartLoadingAnimation();
   void SetIconVisibility(bool visibility);
 
-  // Starts graceful close to ensure connection resource is released before
-  // window is closed.
-  void StartGracefulClose();
-
   PhoneHubTray* GetPhoneHubTray();
   EcheIconLoadingIndicatorView* GetLoadingIndicator();
 
@@ -233,6 +237,13 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
 
   // returns the position of the anchor that bubble needs to be anchored to.
   gfx::Rect GetAnchor();
+
+  // Processes the accelerator keys and returns true if the accelerator was
+  // processed completely in this method and no further processing is needed.
+  bool ProcessAcceleratorKeys(ui::KeyEvent* event);
+
+  // Returns true only if the bubble is initialized and visible.
+  bool IsBubbleVisible();
 
   // The url that is transferred to the web view.
   // In the current implementation, this is supposed to be

@@ -221,8 +221,7 @@ void PrintPreviewHandlerChromeOS::SendPrinterSetup(
 }
 
 PrintPreviewHandler* PrintPreviewHandlerChromeOS::GetPrintPreviewHandler() {
-  PrintPreviewUI* ui = web_ui()->GetController()->GetAs<PrintPreviewUI>();
-  CHECK(ui);
+  PrintPreviewUI* ui = static_cast<PrintPreviewUI*>(web_ui()->GetController());
   return ui->handler();
 }
 

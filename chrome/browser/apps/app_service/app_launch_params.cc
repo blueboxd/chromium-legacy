@@ -9,7 +9,7 @@
 namespace apps {
 
 AppLaunchParams::AppLaunchParams(const std::string& app_id,
-                                 apps::mojom::LaunchContainer container,
+                                 LaunchContainer container,
                                  WindowOpenDisposition disposition,
                                  apps::mojom::LaunchSource launch_source,
                                  int64_t display_id)
@@ -21,12 +21,12 @@ AppLaunchParams::AppLaunchParams(const std::string& app_id,
       display_id(display_id) {}
 
 AppLaunchParams::AppLaunchParams(const std::string& app_id,
-                                 apps::mojom::LaunchContainer container,
+                                 LaunchContainer container,
                                  WindowOpenDisposition disposition,
                                  apps::mojom::LaunchSource launch_source,
                                  int64_t display_id,
                                  const std::vector<base::FilePath>& files,
-                                 const apps::mojom::IntentPtr& intentPtr)
+                                 const IntentPtr& intentPtr)
     : app_id(app_id),
       container(container),
       disposition(disposition),
@@ -34,7 +34,7 @@ AppLaunchParams::AppLaunchParams(const std::string& app_id,
       launch_source(launch_source),
       display_id(display_id),
       launch_files(files),
-      intent(intentPtr ? intentPtr.Clone() : nullptr) {}
+      intent(intentPtr ? intentPtr->Clone() : nullptr) {}
 
 AppLaunchParams::AppLaunchParams(AppLaunchParams&&) = default;
 AppLaunchParams& AppLaunchParams::operator=(AppLaunchParams&&) = default;

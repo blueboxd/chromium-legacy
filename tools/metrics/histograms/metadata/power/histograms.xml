@@ -527,8 +527,9 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.AdaptiveChargingMinutesDelta.{AdaptiveChargingState}"
-    units="minutes" expires_after="2023-03-19">
+<histogram
+    name="Power.AdaptiveChargingMinutesDelta.{AdaptiveChargingState}.{OnTimeStatus}"
+    units="minutes" expires_after="2023-06-13">
   <owner>dbasehore@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -545,6 +546,11 @@ chromium-metrics-reviews@google.com.
     metric if the feature is not supported, since we may backport support to
     older systems, and we'd like to know how well the ML model does before
     enabling support.
+
+    Since metrics don't work with negative values, this is additionally split
+    across Late and Early variants. The absolute values of negatives are
+    reported under the Late variant. Positive and 0 values are reported under
+    the Early variant.
   </summary>
   <token key="AdaptiveChargingState">
     <variant name="Active"/>
@@ -552,6 +558,10 @@ chromium-metrics-reviews@google.com.
     <variant name="NotSupported"/>
     <variant name="UserCanceled"/>
     <variant name="UserDisabled"/>
+  </token>
+  <token key="OnTimeStatus">
+    <variant name="Early"/>
+    <variant name="Late"/>
   </token>
 </histogram>
 
@@ -644,7 +654,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeMode{UsageScenario}"
+<histogram name="Power.BatteryDischargeMode2{UsageScenario}"
     enum="BatteryDischargeMode" expires_after="2022-11-30">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
@@ -685,6 +695,20 @@ chromium-metrics-reviews@google.com.
   <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
+<histogram name="Power.BatteryDischargeRateWhileHibernated" units="mW"
+    expires_after="2023-06-15">
+  <owner>puthik@chromium.org</owner>
+  <owner>evgreen@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    Chrome OS battery discharge rate in mW while the system was hibernated,
+    sampled at resume. Only reported if the system was on battery power both
+    before hibernating and after resuming, if the energy level didn't increase
+    while hibernated (which would indicate that an AC adapter was connected),
+    and if the system was hibernated for at least a minute.
+  </summary>
+</histogram>
+
 <histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW"
     expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
@@ -707,7 +731,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-10-16">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-12-18">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -872,7 +896,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerPowerMode.{ProcessType}"
-    enum="PowerMode" expires_after="2022-06-30">
+    enum="PowerMode" expires_after="2022-12-31">
   <owner>eseckler@chromium.org</owner>
   <owner>oksamyt@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1046,7 +1070,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.DimEventOn{PowerSource}" enum="PowerDimEvent"
+<histogram name="Power.DimEvent{PowerSource}" enum="PowerDimEvent"
     expires_after="2023-03-01">
   <owner>mqg@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -1056,8 +1080,8 @@ chromium-metrics-reviews@google.com.
     the metrics is recorded.
   </summary>
   <token key="PowerSource">
-    <variant name="AC" summary="charging"/>
-    <variant name="Battery" summary="battery"/>
+    <variant name="OnAC" summary="charging"/>
+    <variant name="OnBattery" summary="battery"/>
   </token>
 </histogram>
 
@@ -1282,7 +1306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ForegroundRadio.SignalLevel.{NetworkType}"
-    enum="RadioSignalLevel" expires_after="2022-07-03">
+    enum="RadioSignalLevel" expires_after="2023-06-28">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@google.com</owner>
   <owner>skyostil@chromium.org</owner>
@@ -1302,7 +1326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ForegroundRadio.Wakeups.Cell.30Seconds"
-    enum="RadioSignalLevel" expires_after="2022-07-03">
+    enum="RadioSignalLevel" expires_after="2023-06-28">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@google.com</owner>
   <owner>skyostil@chromium.org</owner>
@@ -1321,7 +1345,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ForegroundRadio.{Direction}KiB.{NetworkType}.30Seconds"
-    enum="RadioSignalLevel" expires_after="2022-07-03">
+    enum="RadioSignalLevel" expires_after="2023-06-28">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@google.com</owner>
   <owner>skyostil@chromium.org</owner>
@@ -1363,9 +1387,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.FrameDamageAreaInDip.{ProcessType}" units="dip"
-    expires_after="2022-06-30">
+    expires_after="2023-06-28">
   <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@chromium.org</owner>
+  <owner>khokhlov@google.com</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
     Damaged area of a LayerTree's CompositorFrame in device-independent pixels.
@@ -1378,9 +1402,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.FrameDamageDiagonalInDip.{ProcessType}" units="dip"
-    expires_after="2022-06-30">
+    expires_after="2023-06-28">
   <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@chromium.org</owner>
+  <owner>khokhlov@google.com</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
     Diagonal length of the damaged area of a LayerTree's CompositorFrame in
@@ -1390,6 +1414,35 @@ chromium-metrics-reviews@google.com.
     <variant name="Browser"/>
     <variant name="Renderer"/>
   </token>
+</histogram>
+
+<histogram name="Power.HibernateAttemptsBeforeCancel" units="units"
+    expires_after="2023-06-15">
+  <owner>puthik@chromium.org</owner>
+  <owner>evgreen@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The number of hibernate attempts performed for a single hibernate request
+    (e.g. triggered by transition from suspend to hibernation) that was
+    eventually canceled on Chrome OS. This also includes requests that were
+    canceled due to the system eventually shutting down due to repeated
+    hibernation failures. This is recorded just after the SuspendDone signal is
+    emitted, while cleaning up from the canceled attempt.
+  </summary>
+</histogram>
+
+<histogram name="Power.HibernateAttemptsBeforeSuccess" units="units"
+    expires_after="2023-06-15">
+  <owner>puthik@chromium.org</owner>
+  <owner>evgreen@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The number of hibernation attempts performed for a single hibernation
+    request (e.g. triggered by transition from suspend to hibernation) that
+    eventually succeeded on Chrome OS. This includes the successful attempt.
+    This is recorded after the system resumes, just after the SuspendDone signal
+    is emitted, while unwinding the suspend preparations.
+  </summary>
 </histogram>
 
 <histogram name="Power.IdleCpuLoad.{ProcessType}" units="%"
@@ -1609,6 +1662,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.LockEvent{PowerSource}" enum="PowerLockEvent"
+    expires_after="2023-03-01">
+  <owner>mqg@chromium.org</owner>
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    The lock events inside power_manager.metrics.LockEvent, recorded when a
+    quick-lock/standard-lock starts. The device is on {PowerSource} when the
+    metrics is recorded.
+  </summary>
+  <token key="PowerSource">
+    <variant name="OnAC" summary="charging"/>
+    <variant name="OnBattery" summary="battery"/>
+  </token>
+</histogram>
+
 <histogram base="true" name="Power.Mac" units="mW" expires_after="2022-11-13">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
@@ -1621,7 +1689,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2022-10-09">
+    expires_after="2022-12-11">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -1855,7 +1923,9 @@ chromium-metrics-reviews@google.com.
     The number of suspend attempts performed for a single suspend request (e.g.
     triggered by the lid being closed) that was eventually canceled on Chrome
     OS. This also includes requests that were canceled due to the system
-    eventually shutting down due to repeated suspend failures.
+    eventually shutting down due to repeated suspend failures. This is recorded
+    just after the SuspendDone signal is emitted, while cleaning up from the
+    canceled attempt.
   </summary>
 </histogram>
 
@@ -1866,7 +1936,9 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of suspend attempts performed for a single suspend request (e.g.
     triggered by the lid being closed) that eventually succeeded on Chrome OS.
-    This includes the successful attempt.
+    This includes the successful attempt. This is recorded after the system
+    resumes, just after the SuspendDone signal is emitted, while unwinding the
+    suspend preparations.
   </summary>
 </histogram>
 
@@ -1919,16 +1991,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.{DimEvent}.DurationSeconds" units="seconds"
+<histogram name="Power.{HpsEvent}.DurationSeconds" units="seconds"
     expires_after="2023-03-01">
   <owner>mqg@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
-  <summary>The duration of a {DimEvent}, recorded on undimming.</summary>
-  <token key="DimEvent">
+  <summary>
+    The duration of a {HpsEvent}, recorded on undimming/deferring.
+  </summary>
+  <token key="HpsEvent">
     <variant name="QuickDimRevertedByHps"
         summary="quick dimming undimmed by hps"/>
     <variant name="QuickDimRevertedByUser"
         summary="quick dimming undimmed by user"/>
+    <variant name="StandardDimDeferredByHps"
+        summary="standard dimming deferred by hps"/>
     <variant name="StandardDimRevertedByUser"
         summary="standard dimming undimmed by user"/>
   </token>
@@ -2030,7 +2106,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2022-11-01">
+    expires_after="2023-01-01">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2042,7 +2118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2022-11-01">
+    expires_after="2023-01-01">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

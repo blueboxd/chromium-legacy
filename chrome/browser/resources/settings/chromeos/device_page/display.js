@@ -7,13 +7,13 @@
  * 'settings-display' is the settings subpage for display settings.
  */
 
-import '//resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
-import '//resources/cr_elements/cr_link_row/cr_link_row.js';
-import '//resources/cr_elements/cr_tabs/cr_tabs.js';
-import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import '//resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
-import '//resources/cr_elements/md_select_css.m.js';
-import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './display_layout.js';
 import './display_overscan_dialog.js';
 import '../settings_scheduler_slider/settings_scheduler_slider.js';
@@ -21,14 +21,15 @@ import '../../controls/settings_slider.js';
 import '../../settings_shared_css.js';
 import '../../settings_vars.css.js';
 import '../../controls/settings_dropdown_menu.js';
-import '//resources/cr_elements/cr_slider/cr_slider.js';
+import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
-import {assert} from '//resources/js/assert.m.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
-import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {flush, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
@@ -258,7 +259,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
       /**
        * Contains the settingId of any deep link that wasn't able to be shown,
        * null otherwise.
-       * @private {?chromeos.settings.mojom.Setting}
+       * @private {?Setting}
        */
       pendingSettingId_: {
         type: Number,
@@ -267,23 +268,23 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kDisplaySize,
-          chromeos.settings.mojom.Setting.kNightLight,
-          chromeos.settings.mojom.Setting.kDisplayOrientation,
-          chromeos.settings.mojom.Setting.kDisplayArrangement,
-          chromeos.settings.mojom.Setting.kDisplayResolution,
-          chromeos.settings.mojom.Setting.kDisplayRefreshRate,
-          chromeos.settings.mojom.Setting.kDisplayMirroring,
-          chromeos.settings.mojom.Setting.kAllowWindowsToSpanDisplays,
-          chromeos.settings.mojom.Setting.kAmbientColors,
-          chromeos.settings.mojom.Setting.kTouchscreenCalibration,
-          chromeos.settings.mojom.Setting.kNightLightColorTemperature,
-          chromeos.settings.mojom.Setting.kDisplayOverscan,
+          Setting.kDisplaySize,
+          Setting.kNightLight,
+          Setting.kDisplayOrientation,
+          Setting.kDisplayArrangement,
+          Setting.kDisplayResolution,
+          Setting.kDisplayRefreshRate,
+          Setting.kDisplayMirroring,
+          Setting.kAllowWindowsToSpanDisplays,
+          Setting.kAmbientColors,
+          Setting.kTouchscreenCalibration,
+          Setting.kNightLightColorTemperature,
+          Setting.kDisplayOverscan,
         ]),
       },
 
@@ -378,7 +379,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
   /**
    * Overridden from DeepLinkingBehavior.
-   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @param {!Setting} settingId
    * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
@@ -641,7 +642,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     // Clear the mappings before recalculating.
     this.modeToParentModeMap_ = new Map();
     this.parentModeToRefreshRateMap_ = new Map();
-    this.displayModeList_ = new Array();
+    this.displayModeList_ = [];
 
     // Build the modes into a nested map of width => height => refresh rate.
     const modes = this.createModeMap_(selectedDisplay);
@@ -715,7 +716,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     // Add an entry in the outer map for |parentModeIndex|. The inner
     // array (the value at |parentModeIndex|) will be populated with all
     // possible refresh rates for the given resolution.
-    this.parentModeToRefreshRateMap_.set(parentModeIndex, new Array());
+    this.parentModeToRefreshRateMap_.set(parentModeIndex, []);
 
     const resolutionOption =
         this.i18n('displayResolutionOnlyMenuItem', width, height);

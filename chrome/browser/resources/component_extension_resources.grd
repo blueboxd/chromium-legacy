@@ -11,11 +11,6 @@
     <output filename="component_extension_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <structures>
-      <if expr="chromeos_ash">
-        <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      </if>
-    </structures>
     <includes>
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_JS" file="network_speech_synthesis/tts_extension.js" type="BINDATA" />
 
@@ -44,12 +39,6 @@
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_JS" file="identity_scope_approval_dialog/scope_approval_dialog.js" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_INJECT_JS" file="identity_scope_approval_dialog/inject.js" type="BINDATA" />
       <if expr="chromeos_ash">
-        <include name="IDR_WALLPAPER_MANAGER_CONSTANTS_JS" file="chromeos/wallpaper_manager/js/constants.js" type="BINDATA" />
-        <include name="IDR_WALLPAPER_MANAGER_EVENT_JS" file="chromeos/wallpaper_manager/js/event_page.js" type="BINDATA" />
-        <include name="IDR_WALLPAPER_MANAGER_ICON_48" file="chromeos/wallpaper_manager/images/icon48.png" type="BINDATA" />
-        <include name="IDR_WALLPAPER_MANAGER_ICON_192" file="chromeos/wallpaper_manager/images/icon192.png" type="BINDATA" />
-        <include name="IDR_WALLPAPER_MANAGER_MAIN_JS" file="chromeos/wallpaper_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_WALLPAPER_MANAGER_UTIL_JS" file="chromeos/wallpaper_manager/js/util.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_BACKGROUND_JS" file="chromeos/arc_support/background.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_BUBBLE_CSS" file="chromeos/arc_support/bubble.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_BUBBLE_JS" file="chromeos/arc_support/bubble.js" type="BINDATA" />
@@ -74,12 +63,11 @@
         <include name="IDR_ARC_SUPPORT_ICON_ERROER_IMAGE" file="chromeos/arc_support/images/error_image.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_HEADER" file="chromeos/arc_support/images/header.png" type="BINDATA" />
         <!-- TODO(crbug.com/1261902): Remove. -->
-        <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_OLD_LIST_VIEW_JS" file="chromeos/arc_support/recommend_app_old_list_view.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS" file="chromeos/arc_support/recommend_app_list_view.js" type="BINDATA" />
         <!-- TODO(crbug.com/1261902): Remove. -->
-        <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_OLD_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_old_list_view.html" type="chrome_html" flattenhtml="true" />
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_list_view.html" type="chrome_html" flattenhtml="true" />
         <include name="IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION" file="chromeos/arc_input_overlay/onboarding_illustration.png" type="BINDATA" />
+        <include name="IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION_DARK" file="chromeos/arc_input_overlay/onboarding_illustration_dark.png" type="BINDATA" />
       </if>
       <include name="IDR_CRYPTOTOKEN_UTIL_JS" file="cryptotoken/util.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_B64_JS" file="cryptotoken/b64.js" type="BINDATA" />

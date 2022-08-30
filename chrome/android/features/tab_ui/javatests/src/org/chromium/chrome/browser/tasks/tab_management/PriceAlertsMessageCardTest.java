@@ -56,6 +56,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerFactory;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerImpl;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageDisableReason;
@@ -106,8 +108,8 @@ public class PriceAlertsMessageCardTest {
         Intents.init();
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         mMockNotificationManager = new MockNotificationManagerProxy();
-        PriceDropNotificationManager.setNotificationManagerForTesting(mMockNotificationManager);
-        mPriceDropNotificationManager = new PriceDropNotificationManager();
+        PriceDropNotificationManagerImpl.setNotificationManagerForTesting(mMockNotificationManager);
+        mPriceDropNotificationManager = PriceDropNotificationManagerFactory.create();
 
         mActivityTestRule.startMainActivityOnBlankPage();
         CriteriaHelper.pollUiThread(
@@ -120,7 +122,7 @@ public class PriceAlertsMessageCardTest {
             mPriceDropNotificationManager.deleteChannelForTesting();
         }
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(null);
-        PriceDropNotificationManager.setNotificationManagerForTesting(null);
+        PriceDropNotificationManagerImpl.setNotificationManagerForTesting(null);
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
         Intents.release();
     }

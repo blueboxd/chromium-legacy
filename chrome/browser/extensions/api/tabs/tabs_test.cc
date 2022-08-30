@@ -177,12 +177,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   EXPECT_EQ(window_id, GetWindowId(result));
   // "populate" was enabled so tabs should be populated.
-  std::unique_ptr<base::ListValue> tabs =
-      api_test_utils::GetList(result, keys::kTabsKey);
-  ASSERT_TRUE(tabs);
-  ASSERT_FALSE(tabs->GetListDeprecated().empty());
-  absl::optional<int> tab0_id =
-      tabs->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  base::Value::List tabs = api_test_utils::GetList(result, keys::kTabsKey);
+  ASSERT_FALSE(tabs.empty());
+  absl::optional<int> tab0_id = tabs[0].GetDict().FindInt(keys::kIdKey);
   ASSERT_TRUE(tab0_id.has_value());
   EXPECT_GE(*tab0_id, 0);
 
@@ -264,12 +261,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(window_id, GetWindowId(result));
   // "populate" was enabled so tabs should be populated.
-  std::unique_ptr<base::ListValue> tabs =
-      api_test_utils::GetList(result, keys::kTabsKey);
-  ASSERT_TRUE(tabs);
-  ASSERT_FALSE(tabs->GetListDeprecated().empty());
-  absl::optional<int> tab0_id =
-      tabs->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  base::Value::List tabs = api_test_utils::GetList(result, keys::kTabsKey);
+  ASSERT_FALSE(tabs.empty());
+  absl::optional<int> tab0_id = tabs[0].GetDict().FindInt(keys::kIdKey);
   ASSERT_TRUE(tab0_id.has_value());
   // The tab id should not be -1 as this is a browser window.
   EXPECT_GE(*tab0_id, 0);
@@ -2058,11 +2052,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(navigation_manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   EXPECT_EQ(first_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
   browser()->tab_strip_model()->ActivateTabAt(
-      1, {TabStripModel::GestureType::kOther});
+      1, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   EXPECT_EQ(second_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
 

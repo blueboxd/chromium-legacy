@@ -1,4 +1,3 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win7 Win10 Win11 ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
 # Expectations for --force-renderer-accessibility
@@ -111,7 +110,6 @@ virtual/prerender/wpt_internal/prerender/windowclient-navigate-to-cross-origin-u
 virtual/prerender/wpt_internal/prerender/windowclient-navigate-to-same-origin-url-on-iframe.https.html [ Skip ]
 virtual/scroll-unification/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 virtual/scroll-unification/fast/forms/select-popup/popup-menu-appearance-texttransform.html [ Skip ]
-virtual/system-color-compute/external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Skip ]
 virtual/text-antialias/sub-pixel/text-scaling-pixel.html [ Skip ]
 virtual/threaded/external/wpt/css/css-backgrounds/background-repeat-space-3.html [ Skip ]
 virtual/threaded/external/wpt/css/css-backgrounds/background-repeat-space-7.html [ Skip ]
@@ -147,3 +145,7 @@ wpt_internal/webcodecs/annexb_decoding.https.any.html [ Skip ]
 wpt_internal/webcodecs/annexb_decoding.https.any.worker.html [ Skip ]
 wpt_internal/webcodecs/avc_encoder_config.https.any.html [ Skip ]
 wpt_internal/webcodecs/avc_encoder_config.https.any.worker.html [ Skip ]
+
+#Sheriff 2022-7-04 crbug.com/1341679
+virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/reinsert.https.html [ Failure Pass ]
+virtual/fenced-frame-mparch/wpt_internal/fenced_frame/reinsert.https.html [ Failure Pass ]

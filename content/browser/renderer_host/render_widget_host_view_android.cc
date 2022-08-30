@@ -438,7 +438,6 @@ void RenderWidgetHostViewAndroid::LostFocus() {
 void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {
   bool is_transparent = metadata.has_transparent_background;
-  SkColor root_background_color = metadata.root_background_color;
 
   if (!using_browser_compositor_) {
     // DevTools ScreenCast support for Android WebView.
@@ -489,8 +488,10 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
       metadata.bottom_controls_shown_ratio,
       metadata.bottom_controls_min_height_offset);
 
-  SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
-                                           : root_background_color);
+  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+  SetContentBackgroundColor(is_transparent
+                                ? SK_ColorTRANSPARENT
+                                : metadata.root_background_color.toSkColor());
 
   if (overscroll_controller_) {
     overscroll_controller_->OnFrameMetadataUpdated(
@@ -1099,7 +1100,13 @@ void RenderWidgetHostViewAndroid::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
   if (ime_adapter_android_)
-    ime_adapter_android_->FocusedNodeChanged(is_editable_node);
+    ime_adapter_android_->FocusedNodeChanged(is_editable_node,
+                                             node_bounds_in_screen);
+}
+
+bool RenderWidgetHostViewAndroid::RequestStartStylusWriting() {
+  return ime_adapter_android_ &&
+         ime_adapter_android_->RequestStartStylusWriting();
 }
 
 void RenderWidgetHostViewAndroid::RenderProcessGone() {

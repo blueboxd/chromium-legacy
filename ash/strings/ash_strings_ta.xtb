@@ -102,6 +102,7 @@
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Calendar காட்சியைத் திறக்க, enter பட்டனை அழுத்தவும்</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> மற்றும் <ph name="FIRST_ITEM_TITLE" /> ஒன்றுக்கொன்று மாற்றப்பட்டன</translation>
+<translation id="1500926532737552529">அனைத்துப் பரிந்துரைகளையும் காட்டும்</translation>
 <translation id="1503394326855300303">பல உள்நுழைவு அமர்வில் இந்த உரிமையாளர் கணக்கு தான் முதலில் உள்நுழைந்த கணக்காக இருக்க வேண்டும்.</translation>
 <translation id="1510238584712386396">துவக்கி</translation>
 <translation id="1516740043221086139">'தொந்தரவு செய்ய வேண்டாம்' ஆன் செய்யப்பட்டுள்ளது.</translation>
@@ -151,6 +152,7 @@
 <translation id="1771761307086386028">வலப்புறம் செல்</translation>
 <translation id="1774796056689732716">கேலெண்டர், <ph name="CURRENT_MONTH_YEAR" />, தற்போது <ph name="DATE" /> என்ற தேதி தேர்ந்தெடுக்கப்பட்டுள்ளது.</translation>
 <translation id="1787955149152357925">முடக்கு</translation>
+<translation id="1797271123677381264">கடவுச்சொல் மறந்துவிட்டது</translation>
 <translation id="181103072419391116">சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="1812997170047690955">எனது திரையில் இருப்பவையா?</translation>
 <translation id="1823873187264960516">ஈதர்நெட்: <ph name="ADDRESS" /></translation>
@@ -535,6 +537,7 @@
 <translation id="4115378294792113321">மெஜந்தா</translation>
 <translation id="412298498316631026">சாளரம்</translation>
 <translation id="4123259114412175274">Chromebookகை அன்லாக் செய்ய, உங்கள் மொபைலில் புளூடூத் இயக்கப்பட்டிருப்பதை உறுதிசெய்துகொள்ளவும்</translation>
+<translation id="4125970834901680537">டேப்லெட் பயன்முறையில் ஆப்ஸை ஸ்ட்ரீம் செய்ய முடியாது. லேப்டாப் பயன்முறையில் மீண்டும் முயலவும்.</translation>
 <translation id="4129129681837227511">பூட்டுத் திரையில் அறிவிப்புகளைப் பார்க்க, அமைப்பை மாற்றுவதற்குச் சாதனத்தை அன்லாக் செய்யவும்</translation>
 <translation id="4136724716305260864">சூரிய உதயம் வரை இயங்கும்</translation>
 <translation id="4146833061457621061">இசையை இயக்கு</translation>
@@ -552,6 +555,7 @@
 <translation id="4215497585250573029">VPN அமைப்புகள்</translation>
 <translation id="4217571870635786043">சொல்வதை எழுதுவது</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, நிறுவப்பட்ட ஆப்ஸ், இடைநிறுத்தப்பட்டுள்ளது</translation>
+<translation id="423685346499232137">தற்சமயம் உள்ளடக்கத்தை நகலெடுக்கவோ ஒட்டவோ முடியாது</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">அமைப்புகளைத் திற</translation>
 <translation id="4250229828105606438">ஸ்கிரீன்ஷாட்</translation>
@@ -606,9 +610,11 @@
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
 <translation id="4481530544597605423">இணைக்காத சாதனங்கள்</translation>
 <translation id="4505050298327493054">செயலிலுள்ள டெஸ்க்.</translation>
+<translation id="450584155212756404">டெவ் சேனல்</translation>
 <translation id="4513946894732546136">கருத்து</translation>
 <translation id="4518404433291145981">Chromebookகை திறக்க உங்கள் ஃபோனை அன்லாக் செய்க</translation>
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
+<translation id="4533343294786968049">உங்கள் பேட்டரி சார்ஜ் ஆகிக்கொண்டிருக்கிறது. <ph name="FULLY_CHARGE_TIME" /> மணிக்கு முழுமையாகச் சார்ஜாகும்.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ஆகும் 100% சார்ஜாக</translation>
 <translation id="4538824937723742295">முழுத்திரையையும் ஸ்கிரீன்ஷாட் எடுக்கும்</translation>
 <translation id="4544483149666270818">ரெக்கார்டு செய்வதற்கான சாளரத்தைத் தேர்ந்தெடுக்கவும்</translation>
@@ -872,6 +878,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="6064463340679478396">இதற்கு மேல் ஃபைலைப் பயன்படுத்தாதே</translation>
 <translation id="6073451960410192870">பதிவுசெய்வதை நிறுத்து</translation>
+<translation id="6074087755403037157">பீட்டா அலைவரிசை</translation>
 <translation id="6099678161144790572">கடந்த மாதம் திருத்தப்பட்டது</translation>
 <translation id="6103838137565245112">சிஸ்டம்</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> மொழிக்கான பேச்சு அறிதல் ஃபைல்கள் பதிவிறக்கப்பட்டன</translation>
@@ -1222,6 +1229,7 @@
 <translation id="8200772114523450471">மீண்டும் தொடங்கு</translation>
 <translation id="8203795194971602413">வலது கிளிக் செய்யும்</translation>
 <translation id="8209010265547628927">மீட்டமை</translation>
+<translation id="8214996719228530800">Canary சேனல்</translation>
 <translation id="8219451629189078428">இந்தச் சமயத்தின்போது உங்கள் Chromebook ஆனில் இருப்பதுடன் பிளக் பாயிண்ட்டில் செருகப்பட்டிருக்கவும் வேண்டும். சார்ஜர், அடாப்டர் கேபிள்கள் போன்றவை உங்கள் Chromebook, பிளக் பாயிண்ட் ஆகிய இரண்டிலும் சரியாகச் செருகப்பட்டிருப்பதை உறுதிசெய்துகொள்ளவும். Chromebookகை ஆஃப் செய்ய வேண்டாம்.</translation>
 <translation id="8236042855478648955">இடைவேளைக்கான நேரம்</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />, மொபைல் பேட்டரி: <ph name="BATTERY_STATUS" /></translation>
@@ -1230,7 +1238,6 @@
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" />ஐ அன்லாக் செய்ய Enterரை அழுத்தவும்</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8270450402312105425">{0,plural, =1{சாதனத்தை ஒரு மணிநேரத்திற்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}other{சாதனத்தை # மணிநேரத்திற்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}}</translation>
-<translation id="8271580342040932214">பேட்டரியின் ஆயுளை நீட்டிப்பதற்காக, பிளக்கில் செருகப்பட்டிருக்கும் உங்கள் பேட்டரியின் நிலை தற்காலிகமாக 80%ல் உள்ளது. உங்கள் பேட்டரி <ph name="FULLY_CHARGE_TIME" />க்கு முழுமையாகச் சார்ஜ் ஆகும்.</translation>
 <translation id="8284362522226889623">முந்தைய டெஸ்க்கிற்கு மாற நான்கு விரல்களால் இடதுபுறமாக ஸ்வைப் செய்யவும்</translation>
 <translation id="828708037801473432">முடக்கப்பட்டுள்ளது</translation>
 <translation id="8297006494302853456">வலுவாக இல்லை</translation>

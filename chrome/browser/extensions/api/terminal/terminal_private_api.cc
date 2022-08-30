@@ -33,6 +33,8 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -45,6 +47,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -96,10 +99,10 @@ const char kCwdTerminalIdPrefix[] = "terminal_id:";
 // Prefs that we read and observe.
 static const base::NoDestructor<std::vector<std::string>> kPrefsReadAllowList{{
     ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-    crostini::prefs::kCrostiniContainers,
     crostini::prefs::kCrostiniEnabled,
     crostini::prefs::kCrostiniTerminalSettings,
     crostini::prefs::kTerminalSshAllowedByPolicy,
+    guest_os::prefs::kGuestOsContainers,
 }};
 
 void CloseTerminal(const std::string& terminal_id,
@@ -189,10 +192,10 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
     return;
   }
 
-  std::vector<base::Value> args;
-  args.push_back(base::Value(terminal_id));
-  args.push_back(base::Value(output_type));
-  args.push_back(base::Value(base::make_span(
+  base::Value::List args;
+  args.Append(terminal_id);
+  args.Append(output_type);
+  args.Append(base::Value(base::make_span(
       reinterpret_cast<const uint8_t*>(&output[0]), output.size())));
 
   extensions::EventRouter* event_router =
@@ -210,10 +213,10 @@ void PrefChanged(Profile* profile, const std::string& pref_name) {
   if (!event_router) {
     return;
   }
-  std::vector<base::Value> args;
+  base::Value::List args;
   base::Value prefs(base::Value::Type::DICTIONARY);
   prefs.SetKey(pref_name, profile->GetPrefs()->Get(pref_name)->Clone());
-  args.push_back(std::move(prefs));
+  args.Append(std::move(prefs));
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TERMINAL_PRIVATE_ON_PREF_CHANGED,
       terminal_private::OnPrefChanged::kEventName, std::move(args));
@@ -318,8 +321,8 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
                   crostini::kCrostiniDefaultContainerName);
     GetSwitch(params_args, &cmdline, kSwitchCurrentWorkingDir, "");
     std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
-    container_id_ =
-        std::make_unique<crostini::ContainerId>(vm_name, container_name);
+    container_id_ = std::make_unique<guest_os::GuestId>(
+        crostini::kCrostiniDefaultVmType, vm_name, container_name);
     VLOG(1) << "Starting " << *container_id_
             << ", cmdline=" << cmdline.GetCommandLineString();
 
@@ -376,28 +379,31 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenVmshellProcess(
       cwd.substr(sizeof(kCwdTerminalIdPrefix) - 1));
 
   // Lookup container shell pid from cicierone to use for cwd.
-  crostini::CrostiniManager::GetForProfile(
-      Profile::FromBrowserContext(browser_context()))
-      ->GetVshSession(
-          *container_id_, host_pid,
-          base::BindOnce(
-              &TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession,
-              this, user_id_hash, std::move(cmdline), /*terminal_id=*/cwd));
+  vm_tools::cicerone::GetVshSessionRequest request;
+  request.set_vm_name(container_id_->vm_name);
+  request.set_container_name(container_id_->container_name);
+  request.set_owner_id(crostini::CryptohomeIdForProfile(
+      Profile::FromBrowserContext(browser_context())));
+  request.set_host_vsh_pid(host_pid);
+  ash::CiceroneClient::Get()->GetVshSession(
+      request,
+      base::BindOnce(
+          &TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession, this,
+          user_id_hash, std::move(cmdline), /*terminal_id=*/cwd));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession(
     const std::string& user_id_hash,
     base::CommandLine cmdline,
     const std::string& terminal_id,
-    bool success,
-    const std::string& failure_reason,
-    int32_t container_shell_pid) {
-  if (!success) {
-    LOG(WARNING) << "Failed to get vsh session for " << terminal_id << ". "
-                 << failure_reason;
+    absl::optional<vm_tools::cicerone::GetVshSessionResponse> response) {
+  if (!response || !response->success()) {
+    LOG(WARNING) << "Failed to get vsh session for " << terminal_id << ": "
+                 << (response ? response->failure_reason() : "empty response");
   } else {
-    cmdline.AppendSwitchASCII(kSwitchCurrentWorkingDir,
-                              base::NumberToString(container_shell_pid));
+    cmdline.AppendSwitchASCII(
+        kSwitchCurrentWorkingDir,
+        base::NumberToString(response->container_shell_pid()));
   }
   OpenProcess(user_id_hash, std::move(cmdline));
 }
@@ -684,6 +690,9 @@ TerminalPrivateGetOSInfoFunction::~TerminalPrivateGetOSInfoFunction() = default;
 
 ExtensionFunction::ResponseAction TerminalPrivateGetOSInfoFunction::Run() {
   base::DictionaryValue info;
+  info.SetBoolKey("alternative_renderer",
+                  base::FeatureList::IsEnabled(
+                      chromeos::features::kTerminalAlternativeRenderer));
   info.SetBoolKey(
       "multi_profile",
       base::FeatureList::IsEnabled(chromeos::features::kTerminalMultiProfile));

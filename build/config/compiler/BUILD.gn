@@ -267,9 +267,6 @@ config("compiler") {
     configs += [ "//build/config/android:compiler" ]
   } else if (is_linux || is_chromeos) {
     configs += [ "//build/config/linux:compiler" ]
-    if (is_chromeos) {
-      configs += [ "//build/config/chromeos:compiler" ]
-    }
   } else if (is_nacl) {
     configs += [ "//build/config/nacl:compiler" ]
   } else if (is_mac) {
@@ -890,6 +887,11 @@ config("compiler_cpu_abi") {
   ldflags = []
   defines = []
 
+  configs = []
+  if (is_chromeos) {
+    configs += [ "//build/config/chromeos:compiler_cpu_abi" ]
+  }
+
   if ((is_posix && !is_apple) || is_fuchsia) {
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
@@ -909,7 +911,8 @@ config("compiler_cpu_abi") {
         ]
       }
     } else if (current_cpu == "arm") {
-      if (is_clang && !is_android && !is_nacl) {
+      if (is_clang && !is_android && !is_nacl &&
+          !(is_chromeos_lacros && is_chromeos_device)) {
         cflags += [ "--target=arm-linux-gnueabihf" ]
         ldflags += [ "--target=arm-linux-gnueabihf" ]
       }
@@ -923,7 +926,8 @@ config("compiler_cpu_abi") {
         cflags += [ "-mtune=$arm_tune" ]
       }
     } else if (current_cpu == "arm64") {
-      if (is_clang && !is_android && !is_nacl && !is_fuchsia) {
+      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
+          !(is_chromeos_lacros && is_chromeos_device)) {
         cflags += [ "--target=aarch64-linux-gnu" ]
         ldflags += [ "--target=aarch64-linux-gnu" ]
       }
@@ -1171,6 +1175,12 @@ config("compiler_cpu_abi") {
         cflags += [ "-m64" ]
         ldflags += [ "-m64" ]
       }
+    } else if (current_cpu == "riscv64") {
+      if (is_clang) {
+        cflags += [ "--target=riscv64-linux-gnu" ]
+        ldflags += [ "--target=riscv64-linux-gnu" ]
+      }
+      cflags += [ "-mabi=lp64d" ]
     } else if (current_cpu == "s390x") {
       cflags += [ "-m64" ]
       ldflags += [ "-m64" ]
@@ -1541,15 +1551,6 @@ config("default_warnings") {
         cflags += [ "-Wno-unqualified-std-cast-call" ]
       }
 
-      if (!is_nacl && !(is_chromeos ||
-                        default_toolchain == "//build/toolchain/cros:target")) {
-        # TODO(https://crbug.com/1322823): Remove flags once potential miscompile is investigated.
-        cflags += [
-          "-Xclang",
-          "-no-opaque-pointers",
-        ]
-      }
-
       if (is_fuchsia) {
         # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
         cflags += [ "-Wno-deprecated-copy" ]
@@ -1640,7 +1641,8 @@ config("chromium_code") {
 
     if (!is_debug && !using_sanitizer && current_cpu != "s390x" &&
         current_cpu != "s390" && current_cpu != "ppc64" &&
-        current_cpu != "mips" && current_cpu != "mips64") {
+        current_cpu != "mips" && current_cpu != "mips64" &&
+        current_cpu != "riscv64") {
       # Non-chromium code is not guaranteed to compile cleanly with
       # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
       # disabled, so only do that for Release build.
@@ -2211,9 +2213,9 @@ if (is_clang && is_a_target_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(is_android || is_chromeos || is_chromecast,
+    assert(is_android || is_chromeos || is_castos,
            "The current platform has no default profile")
-    if (is_android || is_chromecast) {
+    if (is_android || is_castos) {
       _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
     } else {
       assert(chromeos_afdo_platform == "atom" ||
@@ -2342,8 +2344,7 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
-    if (!is_nacl && is_clang && !is_tsan && !is_asan &&
-        !(is_ios && enable_ios_bitcode)) {
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
       # gcc generates dwarf-aranges by default on -g1 and -g2. On clang it has
       # to be manually enabled.
       #
@@ -2467,8 +2468,7 @@ config("minimal_symbols") {
       cflags += [ "-g1" ]
     }
 
-    if (!is_nacl && is_clang && !is_tsan && !is_asan &&
-        !(is_ios && enable_ios_bitcode)) {
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
       # See comment for -gdwarf-aranges in config("symbols").
       cflags += [ "-gdwarf-aranges" ]
     }

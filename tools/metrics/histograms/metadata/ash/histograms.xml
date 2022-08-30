@@ -130,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Accelerators.WindowSnap"
-    enum="WindowSnapAcceleratorAction" expires_after="M107">
+    enum="WindowSnapAcceleratorAction" expires_after="2022-12-18">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>Captures usage of Alt+[ and Alt+].</summary>
@@ -578,12 +578,14 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="TaskStatus">
     <variant name="Cancelled"/>
+    <variant name="MoveLacrosItemsCreateDirFailed"/>
     <variant name="MoveLacrosItemsToNewDirMoveFailed"/>
     <variant name="MoveLacrosItemsToNewDirNoWritePerm"/>
     <variant name="MoveSplitItemsToOriginalDirCreateDirFailed"/>
     <variant name="MoveSplitItemsToOriginalDirMoveExtensionsFailed"/>
     <variant name="MoveSplitItemsToOriginalDirMoveIndexedDBFailed"/>
     <variant name="MoveSplitItemsToOriginalDirMoveSplitItemsFailed"/>
+    <variant name="MoveSplitItemsToOriginalDirMoveStorageFailed"/>
     <variant name="MoveTmpDirToLacrosDirMoveFailed"/>
     <variant name="PreMigrationCleanUpDeleteLacrosDirFailed"/>
     <variant name="PreMigrationCleanUpDeleteTmpDirFailed"/>
@@ -591,6 +593,7 @@ chromium-metrics-reviews@google.com.
     <variant name="PreMigrationCleanUpNotEnoughSpace"/>
     <variant name="SetupAshDirCopyExtensionsFailed"/>
     <variant name="SetupAshDirCopyIndexedDBFailed"/>
+    <variant name="SetupAshDirCopyStorageFailed"/>
     <variant name="SetupAshDirCreateDirFailed"/>
     <variant name="SetupAshDirCreateSplitDirFailed"/>
     <variant name="SetupAshDirMigrateLevelDBForLocalStateFailed"/>
@@ -1272,7 +1275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Clipboard.ConsecutivePastes" units="times"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1282,7 +1285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ConsecutivePastes" units="times"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1295,7 +1298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatDeleted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-10-25">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1305,7 +1308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatPasted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-10-25">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1315,7 +1318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatShown"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-10-25">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1325,7 +1328,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.MenuOptionSelected"
-    units="index" expires_after="2022-10-25">
+    units="index" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1335,7 +1338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.NumberOfItemsShown"
-    units="Items Shown" expires_after="2022-10-25">
+    units="Items Shown" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1346,7 +1349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.ShowMenu"
-    enum="ClipboardHistoryTriggerType" expires_after="2022-10-25">
+    enum="ClipboardHistoryTriggerType" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1356,7 +1359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.ShowPlaceholderString"
-    enum="ClipboardHistoryPlaceholderStringType" expires_after="2022-10-25">
+    enum="ClipboardHistoryPlaceholderStringType" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1367,7 +1370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.UserJourneyTime" units="ms"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1379,7 +1382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ControlToVDelay" units="ms"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1394,7 +1397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.Lifetime" units="ms"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1404,7 +1407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.Runtime" units="ms"
-    expires_after="2022-10-25">
+    expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1414,7 +1417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.StopReason"
-    enum="RequestStopReason" expires_after="2022-10-25">
+    enum="RequestStopReason" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1465,7 +1468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.Operation"
-    enum="ClipboardHistoryOperation" expires_after="2022-10-25">
+    enum="ClipboardHistoryOperation" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1478,7 +1481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.PasteType"
-    enum="ClipboardHistoryPasteType" expires_after="2022-10-25">
+    enum="ClipboardHistoryPasteType" expires_after="2022-12-25">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -1643,7 +1646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.ConsecutiveDailyVisits" units="days"
-    expires_after="2022-10-24">
+    expires_after="2022-12-25">
   <owner>afakhry@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1731,7 +1734,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfDeskTraversals" units="units"
-    expires_after="2022-10-24">
+    expires_after="2022-12-25">
   <owner>afakhry@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -1979,6 +1982,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.DeskTemplate.ReplaceSaveAndRecall" enum="BooleanHit"
+    expires_after="2022-12-03">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>Recorded when the user replaces a Save and Recall desk.</summary>
+</histogram>
+
 <histogram name="Ash.DeskTemplate.ReplaceTemplate" enum="BooleanHit"
     expires_after="2022-07-14">
   <owner>aprilzhou@chromium.org</owner>
@@ -1994,6 +2004,18 @@ chromium-metrics-reviews@google.com.
   <owner>janetmac@chromium.org</owner>
   <summary>
     Records the number of tabs in a Save and Recall desk when it is saved.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.SaveAndRecallUnsupportedAppDialogShow"
+    units="count" expires_after="2022-12-03">
+  <owner>dandersson@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Records the number of times the unsupported Apps dialog shows. This event is
+    triggered when a user attempts to save a Save and Recall desk that contains
+    an unsupported app type. Currently the saved desk feature only supports
+    PWAs, Extensions, and browser instances.
   </summary>
 </histogram>
 
@@ -2021,6 +2043,16 @@ chromium-metrics-reviews@google.com.
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Records the number of tabs in a template when it is saved.</summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.TimeBetweenSaveAndRecall" units="seconds"
+    expires_after="2022-12-03">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of seconds between the creation of a new Save and Recall desk and
+    its launch (and automatic deletion).
+  </summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.TimeToLoadTemplate" units="ms"
@@ -2147,7 +2179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeviceActiveClient.StateCount"
-    enum="DeviceActiveClientState" expires_after="2022-11-01">
+    enum="DeviceActiveClientState" expires_after="2023-01-01">
   <owner>hirthanan@google.com</owner>
   <owner>chromeos-data-team@google.com</owner>
   <summary>
@@ -2576,7 +2608,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.AuthMethod.Used.TabletMode" enum="AuthMethod"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2944,7 +2976,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotificationPopup.AnimationSmoothness" units="%"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>leandre@chromium.org</owner>
   <owner>amehfooz@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -3175,7 +3207,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Overview.Items" units="units" expires_after="2022-10-08">
+<histogram name="Ash.Overview.Items" units="units" expires_after="2022-12-11">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3272,7 +3304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeInOverview" units="ms"
-    expires_after="2022-10-08">
+    expires_after="2022-12-18">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3382,6 +3414,36 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records which entry point is used to access Personalization Hub. Emitted
     every time Personalization hub is accessed.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Personalization.KeyboardBacklight.Color"
+    enum="PersonalizationKeyboardBacklightColor" expires_after="2023-06-15">
+  <owner>jasontt@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Emitted when a user selects a keyboard backlight color in personalization
+    hub.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Personalization.KeyboardBacklight.Color.Settled"
+    enum="PersonalizationKeyboardBacklightColor" expires_after="2023-06-15">
+  <owner>jasontt@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the keyboard backlight color that the user has settled on. Emitted
+    once for every UMA upload.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Personalization.KeyboardBacklight.WallpaperColor.Valid"
+    enum="BooleanValid" expires_after="2023-06-15">
+  <owner>jasontt@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Emitted when the keyboard backlight is updated to a new wallpaper extracted
+    color. Non transparent colors are considered valid.
   </summary>
 </histogram>
 
@@ -3660,6 +3722,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     The percentage of the screen area circled by the Assistant pen. Recorded
     when the &quot;closed shape&quot; gesture is recognized.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.DeprecateStylusFeaturesToastEvent"
+    units="dp" expires_after="2022-12-15">
+  <owner>angelaxiao@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Whether or not the user is shown the limitation toast notifying that the
+    Assistant stylus features (i.e. what's on my screen) have been deprecated.
+    Also considers whether or not the deprecation flag has been set. Recorded
+    upon every stylus long press action.
   </summary>
 </histogram>
 
@@ -3959,8 +4033,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.DeviceOrientation.{DeviceUIMode}"
-    enum="DeviceOrientation" expires_after="2022-08-11">
-  <owner>cattalyya@chromium.org</owner>
+    enum="DeviceOrientation" expires_after="2023-07-27">
+  <owner>zxdan@chromium.org</owner>
   <owner>afakhry@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
   <owner>fanafan@chromium.org</owner>
@@ -4001,7 +4075,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.OrientationInSplitView" enum="DeviceOrientation"
-    expires_after="2022-10-04">
+    expires_after="2022-12-11">
   <owner>xdai@chromium.org</owner>
   <owner>zxdan@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
@@ -4043,7 +4117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.TimeInMultiDisplaySplitView" units="ms"
-    expires_after="2022-10-12">
+    expires_after="2022-12-25">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -4055,7 +4129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.TimeInSplitView" units="ms"
-    expires_after="2022-10-17">
+    expires_after="2022-12-18">
   <owner>xdai@chromium.org</owner>
   <owner>nupurjain@chromim.org</owner>
   <owner>fanafan@chromium.org</owner>
@@ -4127,13 +4201,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StateKeysPresent" enum="BooleanPresent"
-    expires_after="2022-07-03">
+    expires_after="2023-06-01">
   <owner>igorcov@chromium.org</owner>
   <owner>vsavu@google.com</owner>
   <summary>
     The presense of state keys on first device policy fetch response. It is
     expected for state keys to be present. The histogram is logged only in case
-    of successful device policy fetch response.
+    of successful device policy fetch response. Warning: This histogram was
+    expired from 2022-07-03 to 2022-07-05; data may be missing.
   </summary>
 </histogram>
 
@@ -4196,7 +4271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusAreaShowBubble.PresentationTime" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>leandre@chromium.org</owner>
   <owner>amehfooz@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -4218,7 +4293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SwipeDownDrag.Tab.PresentationTime.TabletMode" units="ms"
-    expires_after="2022-10-04">
+    expires_after="2022-12-25">
   <owner>xdai@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>Presentation time while dragging a tab in tablet mode.</summary>
@@ -4780,7 +4855,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.Snap.DeviceOrientation" enum="DeviceOrientation"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>cattalyya@chromium.org</owner>
   <owner>afakhry@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>

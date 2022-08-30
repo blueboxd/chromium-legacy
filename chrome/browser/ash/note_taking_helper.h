@@ -16,13 +16,11 @@
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/ash/lock_screen_apps/lock_screen_helper.h"
+#include "chrome/browser/ash/lock_screen_apps/lock_screen_apps.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/unloaded_extension_reason.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -67,7 +65,6 @@ struct NoteTakingAppInfo {
 // Singleton class used to launch a note-taking app.
 class NoteTakingHelper : public arc::ArcIntentHelperObserver,
                          public arc::ArcSessionManagerObserver,
-                         public extensions::ExtensionRegistryObserver,
                          public apps::AppRegistryCache::Observer,
                          public ProfileManagerObserver {
  public:
@@ -216,14 +213,6 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // Chrome extension ID) to create a new note. Returns the attempt's result.
   LaunchResult LaunchAppInternal(Profile* profile, const std::string& app_id);
 
-  // extensions::ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-  void OnShutdown(extensions::ExtensionRegistry* registry) override;
-
   // apps::AppRegistryCache::Observer
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
@@ -250,11 +239,12 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // Cached information about available Android note-taking apps.
   std::vector<NoteTakingAppInfo> android_apps_;
 
-  // Tracks ExtensionRegistry observation for different profiles.
-  // TODO(crbug.com/1225848): Remove when App Service publishes Chrome Apps.
-  base::ScopedMultiSourceObservation<extensions::ExtensionRegistry,
-                                     extensions::ExtensionRegistryObserver>
-      extension_registry_observations_{this};
+  // Observes ArcIntentHelper for changes to Android intent filters.
+  // TODO(crbug.com/1336120): Remove when App Service publishes Android Apps
+  // with note-taking intent.
+  base::ScopedMultiSourceObservation<arc::ArcIntentHelperBridge,
+                                     arc::ArcIntentHelperObserver>
+      arc_intent_helper_observations_{this};
 
   // Obseves App Registry for all profiles with an App Registry.
   base::ScopedMultiSourceObservation<apps::AppRegistryCache,

@@ -66,10 +66,6 @@ class TestDelegate : public permissions::PermissionPrompt::Delegate {
   void SetBubbleShown() override {}
   void SetDecisionTime() override {}
 
-  base::WeakPtr<permissions::PermissionPrompt::Delegate> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
   bool IsRequestInProgress() { return !requests_.empty(); }
 
   void SetAlreadyDisplayed() { was_current_request_already_displayed_ = true; }
@@ -78,7 +74,6 @@ class TestDelegate : public permissions::PermissionPrompt::Delegate {
   std::vector<std::unique_ptr<permissions::PermissionRequest>> requests_;
   std::vector<permissions::PermissionRequest*> raw_requests_;
   bool was_current_request_already_displayed_ = false;
-  base::WeakPtrFactory<TestDelegate> weak_factory_{this};
 };
 }  // namespace
 

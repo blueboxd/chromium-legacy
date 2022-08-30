@@ -81,8 +81,7 @@ class WebAppInternalsBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    web_app::test::WaitUntilReady(
-        web_app::WebAppProvider::GetForTest(browser()->profile()));
+    test::WaitUntilReady(WebAppProvider::GetForTest(browser()->profile()));
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -164,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInternalsBrowserTest,
   ASSERT_EQ(1u, GetProvider().install_manager().error_log()->size());
 
   const base::Value& error_log =
-      GetProvider().install_manager().error_log()->at(0);
+      (*GetProvider().install_manager().error_log())[0];
 
   EXPECT_EQ(4u, error_log.DictSize());
 
@@ -174,14 +173,13 @@ IN_PROC_BROWSER_TEST_F(WebAppInternalsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppInternalsBrowserTest,
                        InstallManagerErrorsPersist) {
-  web_app::test::WaitUntilReady(
-      web_app::WebAppProvider::GetForTest(browser()->profile()));
+  test::WaitUntilReady(WebAppProvider::GetForTest(browser()->profile()));
 
   ASSERT_TRUE(GetProvider().install_manager().error_log());
   ASSERT_EQ(1u, GetProvider().install_manager().error_log()->size());
 
   const base::Value& error_log =
-      GetProvider().install_manager().error_log()->at(0);
+      (*GetProvider().install_manager().error_log())[0];
 
   EXPECT_EQ(4u, error_log.DictSize());
 

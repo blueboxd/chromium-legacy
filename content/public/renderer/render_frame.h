@@ -59,7 +59,6 @@ namespace content {
 class RenderAccessibility;
 struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
-class RenderView;
 struct WebPluginInfo;
 
 // A class that takes a snapshot of the accessibility tree. Accessibility
@@ -130,14 +129,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Visit all live RenderFrames.
   static void ForEach(RenderFrameVisitor* visitor);
-
-  // Returns the routing ID for |web_frame|, whether it is a WebLocalFrame in
-  // this process or a WebRemoteFrame placeholder for a frame in a different
-  // process.
-  static int GetRoutingIdForWebFrame(blink::WebFrame* web_frame);
-
-  // Returns the RenderView associated with this frame.
-  virtual RenderView* GetRenderView() = 0;
 
   // Returns the RenderFrame associated with the main frame of the WebView.
   // See `blink::WebView::MainFrame()`. Note that this will be null when

@@ -288,7 +288,7 @@ NSInteger kFeedSymbolPointSize = 17;
 
 #pragma mark - Setters
 
-// Sets |followingFeedSortType| and recreates the sort menu to assign the active
+// Sets `followingFeedSortType` and recreates the sort menu to assign the active
 // sort type.
 - (void)setFollowingFeedSortType:(FollowingFeedSortType)followingFeedSortType {
   _followingFeedSortType = followingFeedSortType;
@@ -363,8 +363,7 @@ NSInteger kFeedSymbolPointSize = 17;
     [menuButton setImage:DefaultSymbolTemplateWithPointSize(
                              kEllipsisFeedSymbol, kFeedSymbolPointSize)
                 forState:UIControlStateNormal];
-    menuButton.backgroundColor =
-        [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
+    menuButton.backgroundColor = [UIColor colorNamed:kGrey100Color];
     menuButton.layer.cornerRadius = kButtonSize / 2;
     menuButton.clipsToBounds = YES;
   } else {
@@ -439,6 +438,7 @@ NSInteger kFeedSymbolPointSize = 17;
       [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
   [segmentedControl setTitleTextAttributes:attributes
                                   forState:UIControlStateNormal];
+  segmentedControl.backgroundColor = [UIColor colorNamed:kGrey100Color];
 
   // Set selected feed and tap action.
   segmentedControl.selectedSegmentIndex =

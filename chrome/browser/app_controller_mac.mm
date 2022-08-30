@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
+
 #import "chrome/browser/app_controller_mac.h"
 
 #include <dispatch/dispatch.h>
@@ -62,7 +64,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -111,13 +112,15 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/filename_util.h"
 #include "net/base/mac/url_conversions.h"
+#import "ui/base/cocoa/nsmenu_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/native_theme/native_theme_mac.h"
+#include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
 
 namespace {
@@ -473,7 +476,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
     // kDestroyProfileOnBrowserClose or kUpdateHistoryEntryPointsInIncognito
     // are enabled.
     if (ObserveRegularProfiles() || ObserveOTRProfiles()) {
-      profile_manager_observer_.Observe(profile_manager_);
+      profile_manager_observer_.Observe(profile_manager_.get());
       for (Profile* profile : profile_manager_->GetLoadedProfiles()) {
         profile_observers_.AddObservation(profile);
         Profile* otr_profile =
@@ -555,7 +558,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
 
-  ProfileManager* const profile_manager_;
+  const raw_ptr<ProfileManager> profile_manager_;
   AppController* const app_controller_;  // Weak; owns us.
 };
 
@@ -587,9 +590,45 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 @end
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
+class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
+ public:
+  AppControllerNativeThemeObserver(AppController* app_controller)
+      : app_controller_(app_controller) {
+    native_theme_observation_.Observe(
+        ui::NativeThemeMac::GetInstanceForNativeUi());
+  }
+
+  // NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override {
+    [app_controller_ nativeThemeDidChange];
+  }
+
+ private:
+  base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observation_{this};
+  AppController* const app_controller_;  // Weak; owns us.
+};
+
 @implementation AppController
 
 @synthesize startupComplete = _startupComplete;
+
+- (instancetype)init {
+  if (self = [super init]) {
+    // -[NSMenu cr_menuItemForKeyEquivalentEvent:] lives in /content, but
+    // we need to execute special update code before the search begins.
+    // Setting this block gives us the hook we need.
+    [NSMenu cr_setMenuItemForKeyEquivalentEventPreSearchBlock:^{
+      // We avoid calling -[NSMenuDelegate menuNeedsUpdate:] on each submenu's
+      // delegate as that can be slow. Instead, we update the relevant
+      // NSMenuItems if [NSApp delegate] is an instance of AppController. See
+      // https://crbug.com/851260#c4 .
+      [base::mac::ObjCCast<AppController>([NSApp delegate])
+          updateMenuItemKeyEquivalents];
+    }];
+  }
+  return self;
+}
 
 - (void)dealloc {
   [[_closeTabMenuItem menu] setDelegate:nil];
@@ -838,6 +877,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     profile = profile->GetOriginalProfile();
   }
   [self setLastProfile:profile];
+  _lastActiveColorProvider = browser->window()->GetColorProvider();
 }
 
 - (void)activeSpaceDidChange:(NSNotification*)notify {
@@ -961,6 +1001,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       std::make_unique<AppControllerProfileObserver>(
           g_browser_process->profile_manager(), self);
 
+  // Observe native theme change (e.g. light and dark mode).
+  _nativeThemeObserver =
+      std::make_unique<AppControllerNativeThemeObserver>(self);
+
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
   if (base::mac::AmIBundled()) {
@@ -981,8 +1025,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   Browser* browser = chrome::FindLastActive();
   content::WebContents* activeWebContents = nullptr;
-  if (browser)
+  _lastActiveColorProvider = nullptr;
+  if (browser) {
     activeWebContents = browser->tab_strip_model()->GetActiveWebContents();
+    _lastActiveColorProvider = browser->window()->GetColorProvider();
+  }
   [self updateHandoffManager:activeWebContents];
   [self openStartupUrls];
 
@@ -1823,14 +1870,19 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
                           _menuState.get(), _lastProfile));
 }
 
-- (const ui::ThemeProvider&)lastActiveThemeProvider {
-  // Themes are only available while a profile is available.
-  DCHECK(_lastProfile);
+- (const ui::ColorProvider&)lastActiveColorProvider {
+  DCHECK(_lastActiveColorProvider);
+  return *_lastActiveColorProvider;
+}
 
-  // AppController is conceptually a root for Chromium Mac. As a result, it is
-  // allowed to refer to the profile to get a theme provider. Non-root UI
-  // concepts should rely on well known roots to obtain a ThemeProvider.
-  return ThemeService::GetThemeProviderForProfile(_lastProfile);
+- (void)nativeThemeDidChange {
+  // Some tests manually notify native theme change without setting
+  // a profile for app controller, so `_lastProfile` will be nullptr.
+  if (_lastProfile) {
+    Browser* browser = chrome::FindBrowserWithProfile(_lastProfile);
+    if (browser && browser->window())
+      _lastActiveColorProvider = browser->window()->GetColorProvider();
+  }
 }
 
 - (BOOL)windowHasBrowserTabs:(NSWindow*)window {
@@ -2004,6 +2056,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (void)setLastProfileForTesting:(Profile*)profile {
   _lastProfile = profile;
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  _lastActiveColorProvider = browser->window()->GetColorProvider();
 }
 
 @end  // @implementation AppController

@@ -902,6 +902,7 @@ ClientStatus ResolveSelectorUserData(SelectorProto* selector,
       case SelectorProto::Filter::kMatchCssSelector:
       case SelectorProto::Filter::kOnTop:
       case SelectorProto::Filter::kParent:
+      case SelectorProto::Filter::kSemantic:
       case SelectorProto::Filter::FILTER_NOT_SET:
         break;
         // Do not add default here. In case a new filter gets added (that may
@@ -919,6 +920,33 @@ void UpsertContact(const autofill::AutofillProfile& profile,
 void UpsertPhoneNumber(const autofill::AutofillProfile& profile,
                        std::vector<std::unique_ptr<PhoneNumber>>& list) {
   UpsertAutofillProfile(profile, list);
+}
+
+bool ContactHasAtLeastOneRequiredField(
+    const autofill::AutofillProfile& profile,
+    const CollectUserDataOptions& collect_user_data_options) {
+  autofill::ServerFieldTypeSet non_empty_fields;
+  profile.GetNonEmptyTypes(kDefaultLocale, &non_empty_fields);
+
+  if (collect_user_data_options.request_payer_name &&
+      (non_empty_fields.contains(autofill::NAME_FULL) ||
+       non_empty_fields.contains(autofill::NAME_FIRST) ||
+       non_empty_fields.contains(autofill::NAME_LAST))) {
+    return true;
+  }
+
+  if (collect_user_data_options.request_payer_email &&
+      non_empty_fields.contains(autofill::EMAIL_ADDRESS)) {
+    return true;
+  }
+
+  if (collect_user_data_options.request_payer_phone &&
+      (non_empty_fields.contains(autofill::PHONE_HOME_NUMBER) ||
+       non_empty_fields.contains(autofill::PHONE_HOME_COUNTRY_CODE) ||
+       non_empty_fields.contains(autofill::PHONE_HOME_WHOLE_NUMBER))) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace user_data

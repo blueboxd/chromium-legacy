@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/loader/attribution_header_constants.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -265,7 +267,7 @@ AttributionSrcLoader::CreateAndSendRequest(const KURL& src_url,
 
   if (document->IsPrerendering()) {
     document->AddPostPrerenderingActivationStep(
-        WTF::Bind(&AttributionSrcLoader::DoPrerenderingRegistration,
+        WTF::Bind(base::IgnoreResult(&AttributionSrcLoader::DoRegistration),
                   WrapPersistentIfNeeded(this), src_url, src_type,
                   associated_with_navigation));
     return nullptr;
@@ -320,13 +322,6 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
   RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus::kRequested);
 
   return client;
-}
-
-void AttributionSrcLoader::DoPrerenderingRegistration(
-    const KURL& src_url,
-    SrcType src_type,
-    bool associated_with_navigation) {
-  DoRegistration(src_url, src_type, associated_with_navigation);
 }
 
 bool AttributionSrcLoader::UrlCanRegisterAttribution(

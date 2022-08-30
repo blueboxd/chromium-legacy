@@ -325,10 +325,6 @@ void WebRuntimeFeatures::EnableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScrollUnification(bool enable) {
-  RuntimeEnabledFeatures::SetScrollUnificationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebGLDeveloperExtensions(bool enable) {
   RuntimeEnabledFeatures::SetWebGLDeveloperExtensionsEnabled(enable);
 }
@@ -407,6 +403,10 @@ void WebRuntimeFeatures::EnableWebShare(bool enable) {
 
 void WebRuntimeFeatures::EnableWebGPU(bool enable) {
   RuntimeEnabledFeatures::SetWebGPUEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebGPUDeveloperFeatures(bool enable) {
+  RuntimeEnabledFeatures::SetWebGPUDeveloperFeaturesEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableWebXR(bool enable) {
@@ -567,6 +567,12 @@ void WebRuntimeFeatures::EnableSubresourceWebBundles(bool enable) {
   RuntimeEnabledFeatures::SetSubresourceWebBundlesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableIdentityInCanMakePaymentEventFeature(
+    bool enable) {
+  RuntimeEnabledFeatures::SetIdentityInCanMakePaymentEventFeatureEnabled(
+      enable);
+}
+
 void WebRuntimeFeatures::EnableIdleDetection(bool enable) {
   RuntimeEnabledFeatures::SetIdleDetectionEnabled(enable);
 }
@@ -637,6 +643,10 @@ void WebRuntimeFeatures::EnableFedCmIdpSignout(bool enable) {
   RuntimeEnabledFeatures::SetFedCmIdpSignoutEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableFedCmIframeSupport(bool enable) {
+  RuntimeEnabledFeatures::SetFedCmIframeSupportEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableDocumentTransition(bool enable) {
   RuntimeEnabledFeatures::SetDocumentTransitionEnabled(enable);
 }
@@ -657,6 +667,14 @@ void WebRuntimeFeatures::EnableWebAuthenticationRemoteDesktopSupport(
 
 void WebRuntimeFeatures::EnableSpeculationRulesPrefetchProxy(bool enable) {
   RuntimeEnabledFeatures::SetSpeculationRulesPrefetchProxyEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableEventPath(bool enable) {
+  RuntimeEnabledFeatures::SetEventPathEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(bool enable) {
+  RuntimeEnabledFeatures::SetWebHIDOnServiceWorkersEnabled(enable);
 }
 
 }  // namespace blink

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ui;
 
 import android.app.Fragment;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -300,6 +299,8 @@ public class RootUiCoordinator
     @Nullable
     private final BackPressManager mBackPressManager;
     @Nullable
+    private final Runnable mUnblockDrawForOverviewPageRunnable;
+    @Nullable
     private PageZoomCoordinator mPageZoomCoordinator;
 
     /**
@@ -344,6 +345,10 @@ public class RootUiCoordinator
      * @param ephemeralTabCoordinatorSupplier Supplies the {@link EphemeralTabCoordinator}.
      * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      * @param backPressManager The {@link BackPressManager} handling back press.
+     * @param unblockDrawForOverviewPageRunnable The runnable for unblocking the {@link
+     *                                           AppLaunchDrawBlocker} which is specifically for
+     *                                           blocking draw on launch when overview page
+     *                                           is showing during startup.
      */
     public RootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -380,7 +385,8 @@ public class RootUiCoordinator
             @NonNull IntentRequestTracker intentRequestTracker,
             @NonNull OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
             @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            boolean initializeUiWithIncognitoColors, @Nullable BackPressManager backPressManager) {
+            boolean initializeUiWithIncognitoColors, @Nullable BackPressManager backPressManager,
+            @Nullable Runnable unblockDrawForOverviewPageRunnable) {
         mJankTracker = jankTracker;
         mCallbackController = new CallbackController();
         mActivity = activity;
@@ -408,6 +414,7 @@ public class RootUiCoordinator
         mTabReparentingControllerSupplier = tabReparentingControllerSupplier;
         mInitializeUiWithIncognitoColors = initializeUiWithIncognitoColors;
         mBackPressManager = backPressManager;
+        mUnblockDrawForOverviewPageRunnable = unblockDrawForOverviewPageRunnable;
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
@@ -790,15 +797,31 @@ public class RootUiCoordinator
                 }
             };
         }
-
+        Runnable showTabSwitcherRunnable =
+                () -> mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate=*/false);
         IncognitoReauthCoordinatorFactory incognitoReauthCoordinatorFactory =
                 new IncognitoReauthCoordinatorFactory(mActivity, tabModelSelector,
                         mModalDialogManagerSupplier.get(), new SettingsLauncherImpl(),
-                        tabSwitcherCustomViewSupplier, incognitoReauthTopToolbarDelegate);
+                        tabSwitcherCustomViewSupplier, incognitoReauthTopToolbarDelegate,
+                        showTabSwitcherRunnable);
         mIncognitoReauthController = new IncognitoReauthController(tabModelSelector,
                 mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier, mProfileSupplier,
-                incognitoReauthCoordinatorFactory);
+                incognitoReauthCoordinatorFactory, getBackPressRunnableForFullScreenReauth());
         mIncognitoReauthControllerOneshotSupplier.set(mIncognitoReauthController);
+    }
+
+    private Runnable getBackPressRunnableForFullScreenReauth() {
+        if (mActivityType == ActivityType.TABBED) {
+            return () -> {
+                // Show the regular overview mode.
+                mTabModelSelectorSupplier.get().selectModel(/*incognito=*/false);
+                mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate=*/false);
+            };
+        } else {
+            // TODO(crbug.com/1227656): Here we need to create an intent and
+            // launch the ChromeTabbedActivity and close the iCCT.
+            return () -> {};
+        }
     }
 
     private void initHistoryClustersCoordinator(Profile profile) {
@@ -823,7 +846,7 @@ public class RootUiCoordinator
                 }
 
                 @Override
-                public Intent getOpenUrlIntent(GURL gurl) {
+                public Intent getOpenUrlIntent(GURL gurl, boolean inIncognito, boolean inNewTab) {
                     return new Intent();
                 }
 
@@ -1129,7 +1152,8 @@ public class RootUiCoordinator
                     mSnackbarManagerSupplier.get(), mJankTracker,
                     getMerchantTrustSignalsCoordinatorSupplier(), mTabReparentingControllerSupplier,
                     mOmniboxPedalDelegate, mEphemeralTabCoordinatorSupplier,
-                    mInitializeUiWithIncognitoColors, mBackPressManager);
+                    mInitializeUiWithIncognitoColors, mBackPressManager,
+                    mUnblockDrawForOverviewPageRunnable);
             if (!mSupportsAppMenuSupplier.getAsBoolean()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -1230,13 +1254,7 @@ public class RootUiCoordinator
                     mActivityLifecycleDispatcher, mToolbarManager, mAppMenuDelegate,
                     mActivity.getWindow().getDecorView(),
                     mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub),
-                    () -> {
-                        View coord = mActivity.findViewById(R.id.coordinator);
-                        int[] location = new int[2];
-                        coord.getLocationInWindow(location);
-                        return new Rect(location[0], location[1], location[0] + coord.getWidth(),
-                                location[1] + coord.getHeight());
-                    });
+                    () -> mActivity.getWindow().getAttributes().y);
             AppMenuCoordinatorFactory.setExceptionReporter(
                     (throwable)
                             -> ChromePureJavaExceptionReporter.reportJavaException(
@@ -1332,8 +1350,7 @@ public class RootUiCoordinator
                         -> mScrimCoordinator,
                 sheetInitializedCallback, mActivity.getWindow(),
                 mWindowAndroid.getKeyboardDelegate(),
-                () -> mActivity.findViewById(R.id.sheet_container),
-                () -> mActivity.findViewById(R.id.coordinator).getHeight());
+                () -> mActivity.findViewById(R.id.sheet_container));
         BottomSheetControllerFactory.setExceptionReporter(
                 (throwable)
                         -> ChromePureJavaExceptionReporter.reportJavaException(

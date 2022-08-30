@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   // called as a result of a stream request.
   class NET_EXPORT_PRIVATE Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // This is the success case for RequestStream.
     // |stream| is now owned by the delegate.
@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
 
   class NET_EXPORT_PRIVATE Helper {
    public:
-    virtual ~Helper() {}
+    virtual ~Helper() = default;
 
     // Returns the LoadState for Request.
     virtual LoadState GetLoadState() const = 0;
@@ -220,7 +220,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   const GURL url_;
 
   // Unowned. The helper must outlive this request.
-  raw_ptr<Helper> helper_;
+  raw_ptr<Helper, DanglingUntriaged> helper_;
 
   const raw_ptr<WebSocketHandshakeStreamBase::CreateHelper>
       websocket_handshake_stream_create_helper_;

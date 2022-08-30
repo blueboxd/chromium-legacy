@@ -48,7 +48,7 @@ class TestSwitchAccessSubpageBrowserProxy extends TestBrowserProxy {
   }
 }
 
-suite('ManageAccessibilityPageTests', function() {
+suite('SwitchAccessSubpageTests', function() {
   let page = null;
   let browserProxy = null;
 
@@ -101,7 +101,7 @@ suite('ManageAccessibilityPageTests', function() {
 
   setup(function() {
     browserProxy = new TestSwitchAccessSubpageBrowserProxy();
-    SwitchAccessSubpageBrowserProxyImpl.setInstance(browserProxy);
+    SwitchAccessSubpageBrowserProxyImpl.setInstanceForTesting(browserProxy);
 
     PolymerTest.clearBody();
   });

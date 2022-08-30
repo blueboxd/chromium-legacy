@@ -18,11 +18,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -325,12 +325,10 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
 
     fake_registry_controller_ =
         std::make_unique<FakeWebAppRegistryController>();
-    externally_installed_app_prefs_ =
-        std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
     fake_externally_managed_app_manager_ =
         std::make_unique<FakeExternallyManagedAppManager>(profile());
     test_system_app_manager_ =
-        std::make_unique<web_app::TestSystemWebAppManager>(profile());
+        std::make_unique<ash::TestSystemWebAppManager>(profile());
     web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
 
     controller().SetUp(profile());
@@ -354,13 +352,10 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
                     ConvertExternalInstallSourceToSource(install_source));
                 if (install_options.override_name)
                   web_app->SetName(install_options.override_name.value());
-                web_app->AddInstallURLToManagementExternalConfigMap(
-                    ConvertExternalInstallSourceToSource(install_source),
-                    install_url);
                 RegisterApp(std::move(web_app));
-
-                externally_installed_app_prefs().Insert(install_url, app_id,
-                                                        install_source);
+                test::AddInstallUrlData(profile()->GetPrefs(),
+                                        &controller().sync_bridge(), app_id,
+                                        install_url, install_source);
               }
               return ExternallyManagedAppManager::InstallResult(
                   install_result_code_);
@@ -390,7 +385,6 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     web_app_policy_manager_.reset();
     test_system_app_manager_.reset();
     fake_externally_managed_app_manager_.reset();
-    externally_installed_app_prefs_.reset();
     fake_registry_controller_.reset();
 
     ChromeRenderViewHostTestHarness::TearDown();
@@ -400,12 +394,10 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
                                       ExternalInstallSource install_source) {
     auto web_app = test::CreateWebApp(
         url, ConvertExternalInstallSourceToSource(install_source));
-    web_app->AddInstallURLToManagementExternalConfigMap(
-        ConvertExternalInstallSourceToSource(install_source), url);
     RegisterApp(std::move(web_app));
-
-    externally_installed_app_prefs().Insert(
-        url, GenerateAppId(/*manifest_id=*/absl::nullopt, url), install_source);
+    test::AddInstallUrlData(profile()->GetPrefs(), &controller().sync_bridge(),
+                            GenerateAppId(/*manifest_id=*/absl::nullopt, url),
+                            url, install_source);
   }
 
   void AwaitPolicyManagerAppsSynchronized() {
@@ -456,7 +448,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     return *fake_externally_managed_app_manager_;
   }
 
-  TestSystemWebAppManager& system_app_manager() {
+  ash::TestSystemWebAppManager& system_app_manager() {
     return *test_system_app_manager_;
   }
 
@@ -464,22 +456,16 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
   WebAppPolicyManager& policy_manager() { return *web_app_policy_manager_; }
   ScopedTestingLocalState testing_local_state_;
 
-  ExternallyInstalledWebAppPrefs& externally_installed_app_prefs() {
-    return *externally_installed_app_prefs_;
-  }
-
   FakeWebAppRegistryController& controller() {
     return *fake_registry_controller_;
   }
 
   void SetWebAppSettingsListPref(const base::StringPiece pref) {
-    base::JSONReader::ValueWithError result =
-        base::JSONReader::ReadAndReturnValueWithError(
-            pref, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-    ASSERT_TRUE(result.value && result.value->is_list())
-        << result.error_message;
-    profile()->GetPrefs()->Set(prefs::kWebAppSettings,
-                               std::move(*result.value));
+    auto result = base::JSONReader::ReadAndReturnValueWithError(
+        pref, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    ASSERT_TRUE(result->is_list());
+    profile()->GetPrefs()->Set(prefs::kWebAppSettings, std::move(*result));
   }
 
   void ValidateEmptyWebAppSettingsPolicy() {
@@ -491,7 +477,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
               expected_default.run_on_os_login_policy);
   }
 
-  void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
+  void RegisterApp(std::unique_ptr<WebApp> web_app) {
     controller().RegisterApp(std::move(web_app));
   }
 
@@ -514,11 +500,9 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
       webapps::InstallResultCode::kSuccessNewInstall;
 
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
-  std::unique_ptr<ExternallyInstalledWebAppPrefs>
-      externally_installed_app_prefs_;
   std::unique_ptr<FakeExternallyManagedAppManager>
       fake_externally_managed_app_manager_;
-  std::unique_ptr<TestSystemWebAppManager> test_system_app_manager_;
+  std::unique_ptr<ash::TestSystemWebAppManager> test_system_app_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

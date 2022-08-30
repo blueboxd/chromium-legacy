@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   // quota_manager_impl_task_runner. Additionally, the asychonrous version of
   // this method `GetOrCreateBucket` is preferred; only use this synchronous
   // version where asynchronous bucket retrieval is not possible.
-  QuotaErrorOr<BucketInfo> GetOrCreateBucketSync(
+  virtual QuotaErrorOr<BucketInfo> GetOrCreateBucketSync(
       const BucketInitParams& params);
 
   // Same as GetOrCreateBucket but takes in StorageType. This should only be
@@ -144,6 +144,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
       blink::mojom::StorageType type,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback);
+
+  // Retrieves all buckets for `storage_key` and `type` that are in the buckets
+  // table. Expired buckets will be filtered out of the reply and also deleted
+  // from disk.
+  virtual void GetBucketsForStorageKeyDeleteExpired(
+      const blink::StorageKey& storage_key,
+      blink::mojom::StorageType type,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+      base::OnceCallback<void(QuotaErrorOr<std::set<BucketInfo>>)> callback);
 
   // Deletes bucket with `bucket_name` for `storage_key` for
   // StorageType::kTemporary for all registered QuotaClients if a bucket exists.

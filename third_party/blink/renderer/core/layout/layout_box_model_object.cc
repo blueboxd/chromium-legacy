@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section_interface.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -160,22 +161,6 @@ void LayoutBoxModelObject::WillBeDestroyed() {
   NOT_DESTROYED();
   // A continuation of this LayoutObject should be destroyed at subclasses.
   DCHECK(!Continuation());
-
-  if (IsPositioned()) {
-    // Don't use view() because the document's layoutView has been set to
-    // 0 during destruction.
-    if (LocalFrame* frame = GetFrame()) {
-      if (LocalFrameView* frame_view = frame->View()) {
-        if (StyleRef().HasViewportConstrainedPosition()) {
-          frame_view->RemoveViewportConstrainedObject(
-              *this, LocalFrameView::ViewportConstrainedType::kFixed);
-        } else if (StyleRef().HasStickyConstrainedPosition()) {
-          frame_view->RemoveViewportConstrainedObject(
-              *this, LocalFrameView::ViewportConstrainedType::kSticky);
-        }
-      }
-    }
-  }
 
   LayoutObject::WillBeDestroyed();
 
@@ -364,43 +349,6 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
               body_object->Style() && body_object->StyleRef().HasBackground())
             body_object->SetBackgroundNeedsFullPaintInvalidation();
         }
-      }
-    }
-  }
-
-  if (LocalFrameView* frame_view = View()->GetFrameView()) {
-    bool new_style_is_viewport_constained =
-        StyleRef().GetPosition() == EPosition::kFixed;
-    bool old_style_is_viewport_constrained =
-        old_style && old_style->GetPosition() == EPosition::kFixed;
-    bool new_style_is_sticky = StyleRef().HasStickyConstrainedPosition();
-    bool old_style_is_sticky =
-        old_style && old_style->HasStickyConstrainedPosition();
-
-    if (old_style_is_sticky && !new_style_is_sticky) {
-      // This may get re-added to viewport constrained objects if the object
-      // went from sticky to fixed.
-      frame_view->RemoveViewportConstrainedObject(
-          *this, LocalFrameView::ViewportConstrainedType::kSticky);
-
-      // Remove sticky constraints for this layer.
-      if (Layer()) {
-        if (const PaintLayer* ancestor_scroll_container_layer =
-                Layer()->AncestorScrollContainerLayer()) {
-          if (PaintLayerScrollableArea* scrollable_area =
-                  ancestor_scroll_container_layer->GetScrollableArea())
-            scrollable_area->InvalidateStickyConstraintsFor(Layer());
-        }
-      }
-    }
-
-    if (new_style_is_viewport_constained != old_style_is_viewport_constrained) {
-      if (new_style_is_viewport_constained && Layer()) {
-        frame_view->AddViewportConstrainedObject(
-            *this, LocalFrameView::ViewportConstrainedType::kFixed);
-      } else {
-        frame_view->RemoveViewportConstrainedObject(
-            *this, LocalFrameView::ViewportConstrainedType::kFixed);
       }
     }
   }
@@ -634,8 +582,12 @@ void LayoutBoxModelObject::RecalcVisualOverflow() {
   if (IsInline() && IsInLayoutNGInlineFormattingContext()) {
     DCHECK(HasSelfPaintingLayer());
     NGInlineCursor cursor;
-    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
-      cursor.Current().RecalcInkOverflow(cursor);
+    NGInlinePaintContext inline_context;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      NGInlinePaintContext::ScopedInlineBoxAncestors scoped_items(
+          cursor, &inline_context);
+      cursor.Current().RecalcInkOverflow(cursor, &inline_context);
+    }
     return;
   }
 
@@ -711,8 +663,6 @@ void LayoutBoxModelObject::UpdateFromStyle() {
   SetInline(style_to_use.IsDisplayInlineType());
   SetPositionState(style_to_use.GetPosition());
   SetHorizontalWritingMode(style_to_use.IsHorizontalWritingMode());
-  SetCanContainAbsolutePositionObjects(
-      ComputeIsAbsoluteContainer(&style_to_use));
   SetCanContainFixedPositionObjects(ComputeIsFixedContainer(&style_to_use));
 }
 

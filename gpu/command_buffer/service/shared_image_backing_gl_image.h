@@ -137,7 +137,7 @@ class SharedImageRepresentationOverlayImpl
   ~SharedImageRepresentationOverlayImpl() override;
 
  private:
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override;
+  bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override;
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override;
   gl::GLImage* GetGLImage() override;
 
@@ -214,6 +214,7 @@ class GPU_GLES2_EXPORT SharedImageBackingGLImage
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
+  SharedImageBackingType GetType() const override;
   gfx::Rect ClearedRect() const final;
   void SetClearedRect(const gfx::Rect& cleared_rect) final;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;

@@ -26,11 +26,13 @@ void BackupRefPtrImpl<AllowDangling>::AcquireInternal(uintptr_t address) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
   CHECK(partition_alloc::IsManagedByPartitionAllocBRPPool(address));
 #endif
-  uintptr_t slot_start = PartitionAllocGetSlotStartInBRPPool(address);
+  uintptr_t slot_start =
+      partition_alloc::PartitionAllocGetSlotStartInBRPPool(address);
   if constexpr (AllowDangling)
-    PartitionRefCountPointer(slot_start)->AcquireFromUnprotectedPtr();
+    partition_alloc::internal::PartitionRefCountPointer(slot_start)
+        ->AcquireFromUnprotectedPtr();
   else
-    PartitionRefCountPointer(slot_start)->Acquire();
+    partition_alloc::internal::PartitionRefCountPointer(slot_start)->Acquire();
 }
 
 template <bool AllowDangling>
@@ -38,13 +40,16 @@ void BackupRefPtrImpl<AllowDangling>::ReleaseInternal(uintptr_t address) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
   CHECK(partition_alloc::IsManagedByPartitionAllocBRPPool(address));
 #endif
-  uintptr_t slot_start = PartitionAllocGetSlotStartInBRPPool(address);
+  uintptr_t slot_start =
+      partition_alloc::PartitionAllocGetSlotStartInBRPPool(address);
   if constexpr (AllowDangling) {
-    if (PartitionRefCountPointer(slot_start)->ReleaseFromUnprotectedPtr())
-      PartitionAllocFreeForRefCounting(slot_start);
+    if (partition_alloc::internal::PartitionRefCountPointer(slot_start)
+            ->ReleaseFromUnprotectedPtr())
+      partition_alloc::internal::PartitionAllocFreeForRefCounting(slot_start);
   } else {
-    if (PartitionRefCountPointer(slot_start)->Release())
-      PartitionAllocFreeForRefCounting(slot_start);
+    if (partition_alloc::internal::PartitionRefCountPointer(slot_start)
+            ->Release())
+      partition_alloc::internal::PartitionAllocFreeForRefCounting(slot_start);
   }
 }
 
@@ -53,14 +58,26 @@ bool BackupRefPtrImpl<AllowDangling>::IsPointeeAlive(uintptr_t address) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
   CHECK(partition_alloc::IsManagedByPartitionAllocBRPPool(address));
 #endif
-  uintptr_t slot_start = PartitionAllocGetSlotStartInBRPPool(address);
-  return PartitionRefCountPointer(slot_start)->IsAlive();
+  uintptr_t slot_start =
+      partition_alloc::PartitionAllocGetSlotStartInBRPPool(address);
+  return partition_alloc::internal::PartitionRefCountPointer(slot_start)
+      ->IsAlive();
 }
 
 template <bool AllowDangling>
-bool BackupRefPtrImpl<AllowDangling>::IsValidDelta(uintptr_t address,
-                                                   ptrdiff_t delta_in_bytes) {
-  return PartitionAllocIsValidPtrDelta(address, delta_in_bytes);
+bool BackupRefPtrImpl<AllowDangling>::IsValidSignedDelta(
+    uintptr_t address,
+    ptrdiff_t delta_in_bytes) {
+  return partition_alloc::internal::PartitionAllocIsValidPtrDelta(
+      address, delta_in_bytes);
+}
+
+template <bool AllowDangling>
+bool BackupRefPtrImpl<AllowDangling>::IsValidUnsignedDelta(
+    uintptr_t address,
+    size_t delta_in_bytes) {
+  return partition_alloc::internal::PartitionAllocIsValidPtrDelta(
+      address, delta_in_bytes);
 }
 
 // Explicitly instantiates the two BackupRefPtr variants in the .cc. This
@@ -70,11 +87,12 @@ template struct BackupRefPtrImpl</*AllowDangling=*/true>;
 
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 void CheckThatAddressIsntWithinFirstPartitionPage(uintptr_t address) {
-  if (IsManagedByDirectMap(address)) {
-    uintptr_t reservation_start = GetDirectMapReservationStart(address);
+  if (partition_alloc::internal::IsManagedByDirectMap(address)) {
+    uintptr_t reservation_start =
+        partition_alloc::internal::GetDirectMapReservationStart(address);
     CHECK(address - reservation_start >= partition_alloc::PartitionPageSize());
   } else {
-    CHECK(IsManagedByNormalBuckets(address));
+    CHECK(partition_alloc::internal::IsManagedByNormalBuckets(address));
     CHECK(address % partition_alloc::kSuperPageSize >=
           partition_alloc::PartitionPageSize());
   }
@@ -128,6 +146,7 @@ void ForceRead(void const volatile* ptr) {
 }
 }  // namespace
 
+NO_SANITIZE("address")
 void AsanBackupRefPtrImpl::AsanCheckIfValidDereference(
     void const volatile* ptr) {
   if (RawPtrAsanService::GetInstance().is_dereference_check_enabled() &&
@@ -138,6 +157,7 @@ void AsanBackupRefPtrImpl::AsanCheckIfValidDereference(
   }
 }
 
+NO_SANITIZE("address")
 void AsanBackupRefPtrImpl::AsanCheckIfValidExtraction(
     void const volatile* ptr) {
   auto& service = RawPtrAsanService::GetInstance();
@@ -172,6 +192,7 @@ void AsanBackupRefPtrImpl::AsanCheckIfValidExtraction(
   }
 }
 
+NO_SANITIZE("address")
 void AsanBackupRefPtrImpl::AsanCheckIfValidInstantiation(
     void const volatile* ptr) {
   if (RawPtrAsanService::GetInstance().is_instantiation_check_enabled() &&

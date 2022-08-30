@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -79,10 +80,7 @@ class WaylandToplevelWindow : public WaylandWindow,
 
   // WaylandWindow overrides:
   absl::optional<std::vector<gfx::Rect>> GetWindowShape() const override;
-
-  bool screen_coordinates_enabled() const {
-    return screen_coordinates_enabled_;
-  }
+  bool IsScreenCoordinatesEnabled() const override;
 
   // Client-side decorations on Wayland take some portion of the window surface,
   // and when they are turned on or off, the window geometry is changed.  That
@@ -302,7 +300,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   // True when screen coordinates is enabled.
   bool screen_coordinates_enabled_;
 
-  WorkspaceExtensionDelegate* workspace_extension_delegate_ = nullptr;
+  raw_ptr<WorkspaceExtensionDelegate> workspace_extension_delegate_ = nullptr;
 };
 
 }  // namespace ui

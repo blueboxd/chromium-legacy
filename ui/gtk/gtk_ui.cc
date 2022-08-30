@@ -24,7 +24,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck
-#include "printing/buildflags/buildflags.h"          // nogncheck
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -34,6 +34,7 @@
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/base/ime/linux/linux_input_method_context_wrapper.h"
 #include "ui/base/linux/linux_ui_delegate.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -82,10 +83,6 @@
 #endif
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #define USE_X11
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "printing/printing_context_linux.h"
 #endif
 
 #if defined(USE_WAYLAND)
@@ -308,13 +305,6 @@ bool GtkUi::Initialize() {
 
   LoadGtkValues();
 
-#if BUILDFLAG(ENABLE_PRINTING)
-  printing::PrintingContextLinux::SetCreatePrintDialogFunction(
-      &PrintDialogGtk::CreatePrintDialog);
-  printing::PrintingContextLinux::SetPdfPaperSizeFunction(
-      &GetPdfPaperSizeDeviceUnitsGtk);
-#endif
-
   // We must build this after GTK gets initialized.
   settings_provider_ = CreateSettingsProvider(this);
 
@@ -323,24 +313,6 @@ bool GtkUi::Initialize() {
   platform_->OnInitialized(GetDummyWindow());
 
   return true;
-}
-
-bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
-  switch (id) {
-    // Tints for which the cross-platform default is fine. Before adding new
-    // values here, specifically verify they work well on Linux.
-    case ThemeProperties::TINT_BACKGROUND_TAB:
-    // TODO(estade): Return something useful for TINT_BUTTONS so that chrome://
-    // page icons are colored appropriately.
-    case ThemeProperties::TINT_BUTTONS:
-      break;
-    default:
-      // Assume any tints not specifically verified on Linux aren't usable.
-      // TODO(pkasting): Try to remove values from |colors_| that could just be
-      // added to the group above instead.
-      NOTREACHED();
-  }
-  return false;
 }
 
 bool GtkUi::GetColor(int id, SkColor* color, bool use_custom_frame) const {
@@ -503,9 +475,8 @@ void GtkUi::SetWindowFrameAction(WindowFrameActionSource source,
 }
 
 std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
-    ui::LinuxInputMethodContextDelegate* delegate,
-    bool is_simple) const {
-  return std::make_unique<InputMethodContextImplGtk>(delegate, is_simple);
+    ui::LinuxInputMethodContextDelegate* delegate) const {
+  return std::make_unique<InputMethodContextImplGtk>(delegate);
 }
 
 gfx::FontRenderParams GtkUi::GetDefaultFontRenderParams() const {
@@ -687,6 +658,17 @@ bool GtkUi::MatchEvent(const ui::Event& event,
   return key_bindings_handler_->MatchEvent(event, commands);
 }
 
+#if BUILDFLAG(ENABLE_PRINTING)
+printing::PrintDialogLinuxInterface* GtkUi::CreatePrintDialog(
+    printing::PrintingContextLinux* context) {
+  return PrintDialogGtk::CreatePrintDialog(context);
+}
+
+gfx::Size GtkUi::GetPdfPaperSize(printing::PrintingContextLinux* context) {
+  return GetPdfPaperSizeDeviceUnitsGtk(context);
+}
+#endif
+
 void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
   colors_.clear();
   custom_frame_colors_.clear();
@@ -749,7 +731,7 @@ void GtkUi::UpdateColors() {
            // Some theme colors, e.g. COLOR_NTP_LINK, are derived from color
            // provider colors. We assume that those sources' colors won't change
            // with frame type.
-           ui::ColorProviderManager::FrameType::kChromium, nullptr});
+           ui::ColorProviderManager::FrameType::kChromium});
 
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
@@ -766,11 +748,6 @@ void GtkUi::UpdateColors() {
 
   SkColor tab_border = GetBorderColor("GtkButton#button");
   // Separates the toolbar from the bookmark bar or butter bars.
-  colors_[ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR] =
-      tab_border;
-  colors_[ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR] = tab_border;
-  colors_[ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR] =
-      tab_border;
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
@@ -827,8 +804,6 @@ void GtkUi::UpdateColors() {
         color_utils::GetResultingPaintColor(GetBgColor(""), frame_color);
 
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
-    color_map[ThemeProperties::COLOR_DOWNLOAD_SHELF] = tab_color;
-    color_map[ThemeProperties::COLOR_INFOBAR] = tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE] =
         tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE] =
@@ -849,11 +824,6 @@ void GtkUi::UpdateColors() {
     color_map[ThemeProperties::
                   COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO] =
         background_tab_text_color_inactive;
-
-    color_map[ThemeProperties::COLOR_OMNIBOX_TEXT] =
-        color_provider->GetColor(ui::kColorTextfieldForeground);
-    color_map[ThemeProperties::COLOR_OMNIBOX_BACKGROUND] =
-        color_provider->GetColor(ui::kColorTextfieldBackground);
 
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.

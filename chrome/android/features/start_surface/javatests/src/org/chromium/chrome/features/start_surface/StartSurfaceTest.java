@@ -18,15 +18,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -43,7 +39,6 @@ import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.test.filters.LargeTest;
@@ -51,7 +46,6 @@ import androidx.test.filters.MediumTest;
 
 import com.google.android.material.appbar.AppBarLayout;
 
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -70,8 +64,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -83,14 +77,11 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.features.tasks.SingleTabSwitcherMediator;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -101,18 +92,15 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.RenderProcessHostUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Integration tests of the {@link StartSurface} for cases with tabs. See {@link
  * StartSurfaceNoTabsTest} for test that have no tabs. See {@link StartSurfaceTabSwitcherTest},
- * {@link StartSurfaceMVTilesTest}, {@link StartSurfaceBackButtonTest}, {@link
- * StartSurfaceFinaleTest} for more tests.
+ * {@link StartSurfaceMVTilesTest}, {@link StartSurfaceBackButtonTest} for more tests.
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
@@ -121,6 +109,7 @@ import java.util.concurrent.ExecutionException;
 @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
+@DoNotBatch(reason = "This test suite tests startup behaviors.")
 public class StartSurfaceTest {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams = sClassParamsForStartSurfaceTest;
@@ -190,31 +179,26 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    // clang-format off
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
-        "/home_button_on_grid_tab_switcher/false"})
-    @DisabledTest(message = "https://crbug.com/1291957")
+    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
     public void testShow_SingleAsHomepage() {
-        // clang-format on
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onViewWaiting(withId(R.id.search_box_text)).check(matches(isDisplayed()));
-        onView(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
-        onView(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onView(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
         StartSurfaceTestUtils.clickMoreTabs(cta);
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         waitForView(allOf(
                 withParent(withId(R.id.secondary_tasks_surface_view)), withId(R.id.tab_list_view)));
-        assertEquals(cta.findViewById(R.id.home_button_on_tab_switcher).getVisibility(), View.GONE);
 
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
@@ -227,22 +211,20 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.O, message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage_NoIncognitoSwitch() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
 
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onViewWaiting(withId(R.id.search_box_text));
-        onView(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
-        onView(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onView(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
         // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -282,9 +264,9 @@ public class StartSurfaceTest {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onViewWaiting(withId(R.id.search_box_text));
@@ -330,9 +312,9 @@ public class StartSurfaceTest {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onViewWaiting(withId(R.id.search_box_text));
@@ -400,7 +382,7 @@ public class StartSurfaceTest {
         assertTrue(cta.getTabModelSelector().getCurrentModel().isIncognito());
         if (mImmediateReturn) {
             StartSurfaceTestUtils.waitForOverviewVisible(
-                    mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+                    mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
             onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         } else {
             int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
@@ -413,26 +395,30 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/omnibox_focused_on_new_tab/false"})
+    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
     @DisabledTest(message = "crbug.com/1170673 - NoInstant_NoReturn version is flaky")
     public void testSearchInSingleSurface() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         onViewWaiting(withId(R.id.search_box_text)).perform(replaceText("about:blank"));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule));
         onViewWaiting(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(2));
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        ChromeTabUtils.waitForTabPageLoaded(cta.getActivityTab(), (String) null);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
-        onViewWaiting(withId(R.id.search_box_text));
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
         TextView urlBar = cta.findViewById(R.id.url_bar);
         Assert.assertFalse(urlBar.isFocused());
         waitForStableView(cta.findViewById(R.id.search_box_text));
@@ -443,40 +429,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisabledTest(message = "http://crbug/1120698 - NoInstant_Return version is flaky on bots.")
-    public void testSearchInIncognitoSingleSurface() {
-        if (!mImmediateReturn) {
-            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
-        }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): hide toolbar to make incognito switch visible.
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { cta.getTabModelSelector().selectModel(true); });
-
-            // TODO(crbug.com/1097001): remove after fixing the default focus issue, which might
-            // relate to crbug.com/1076274 above since it doesn't exist for the other combinations.
-            assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P);
-        } else {
-            onViewWaiting(withId(R.id.incognito_toggle_tabs)).perform(click());
-        }
-        assertTrue(cta.getTabModelSelector().isIncognitoSelected());
-
-        onViewWaiting(withId(R.id.search_box_text)).perform(replaceText("about:blank"));
-        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/open_ntp_instead_of_start/true"})
-    @FlakyTest(message = "https://crbug.com/1201548")
     public void testCreateNewTab_OpenNTPInsteadOfStart() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForTabModel(cta);
@@ -491,20 +444,20 @@ public class StartSurfaceTest {
             // omnibox.
             return;
         }
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         TabUiTestHelper.enterTabSwitcher(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
 
         // Click plus button from top toolbar should create NTP instead of showing start surface.
         onViewWaiting(withId(R.id.new_tab_button)).perform(click());
         TabUiTestHelper.verifyTabModelTabCount(cta, 3, 0);
-        assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
+        assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.BROWSING));
     }
 
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @DisabledTest(message = "https://crbug.com/1119322")
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/open_ntp_instead_of_start/true"})
     public void testHomeButton_OpenNTPInsteadOfStart() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -581,8 +534,8 @@ public class StartSurfaceTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertEquals(isSingleTabSwitcher,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForOverviewVisible(mLayoutChangedCallbackHelper,
+                mCurrentlyActiveLayout, mActivityTestRule.getActivity());
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         StartSurfaceTestUtils.waitForDeferredStartup(mActivityTestRule);
 
@@ -645,9 +598,8 @@ public class StartSurfaceTest {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
 
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(mActivityTestRule.getActivity());
+        StartSurfaceTestUtils.waitForOverviewVisible(mLayoutChangedCallbackHelper,
+                mCurrentlyActiveLayout, mActivityTestRule.getActivity());
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
@@ -667,8 +619,7 @@ public class StartSurfaceTest {
         BottomSheetTestSupport bottomSheetTestSupport = new BottomSheetTestSupport(
                 cta.getRootUiCoordinatorForTesting().getBottomSheetController());
         StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(cta);
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
@@ -714,8 +665,7 @@ public class StartSurfaceTest {
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(cta);
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         // Scroll the toolbar.
@@ -747,7 +697,7 @@ public class StartSurfaceTest {
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         onViewWaiting(allOf(withId(R.id.mv_tiles_container), isDisplayed()));
 
         // Launches the first site in mv tiles.
@@ -775,31 +725,6 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
-        "/check_sync_before_show_start_at_startup/true"})
-    public void testShowStartWithSyncCheck() throws Exception {
-        // clang-format on
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        assertEquals(1, cta.getTabModelSelector().getTotalTabCount());
-        mActivityTestRule.waitForActivityNativeInitializationComplete();
-        Assert.assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
-
-        Assert.assertFalse(ReturnToChromeUtil.isPrimaryAccountSync());
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowOverviewPageOnStart(cta, cta.getIntent(),
-                cta.getTabModelSelector(), cta.getInactivityTrackerForTesting()));
-        ReturnToChromeUtil.setSyncForTesting(true);
-        Assert.assertTrue(ReturnToChromeUtil.isPrimaryAccountSync());
-        Assert.assertEquals(mImmediateReturn,
-                ReturnToChromeUtil.shouldShowOverviewPageOnStart(cta, cta.getIntent(),
-                        cta.getTabModelSelector(), cta.getInactivityTrackerForTesting()));
-        ReturnToChromeUtil.setSyncForTesting(false);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
     @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, supported_abis_includes = "x86",
             message = "Flaky, see crbug.com/1258154")
@@ -811,8 +736,9 @@ public class StartSurfaceTest {
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(cta);
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
@@ -829,250 +755,6 @@ public class StartSurfaceTest {
                 ? R.id.revamped_incognito_ntp_container
                 : R.id.new_tab_incognito_container;
         onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    // clang-format off
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/behavioural_targeting/model_mv_tiles"
-        + "/user_clicks_threshold/1/num_days_user_click_below_threshold/2"})
-    public void testStartWithBehaviouralTargeting() throws Exception {
-        // clang-format on
-        Assume.assumeTrue(mImmediateReturn);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        Assert.assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
-
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        // Verifies that the START_NEXT_SHOW_ON_STARTUP_DECISION_MS has been set.
-        long nextDecisionTime =
-                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                        ReturnToChromeUtil.INVALID_DECISION_TIMESTAMP);
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
-
-        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
-                ReturnToChromeUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
-
-        StartSurfaceConfiguration.USER_CLICK_THRESHOLD.setForTesting(1);
-        int clicksHigherThreshold = StartSurfaceConfiguration.USER_CLICK_THRESHOLD.getValue();
-        Assert.assertEquals(1, clicksHigherThreshold);
-        ReturnToChromeUtil.onMVTileOpened();
-        // Verifies that userBehaviourSupported() returns the same result before the next decision
-        // time arrives.
-        Assert.assertFalse(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertEquals(nextDecisionTime,
-                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                        ReturnToChromeUtil.INVALID_DECISION_TIMESTAMP));
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        Assert.assertEquals(1, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
-
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "Startup.Android.ShowChromeStartSegmentationResultComparison"));
-
-        // Verifies if the next decision time past and the clicks of MV tiles is higher than the
-        // threshold, userBehaviourSupported() returns true. Besides, the next decision time is set
-        // to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later, and MV tiles count is reset.
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertTrue(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
-        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
-                        ReturnToChromeUtil.ShowChromeStartSegmentationResultComparison
-                                .SEGMENTATION_DISABLED_LOGIC_ENABLED));
-
-        // Verifies if the next decision time past and the clicks of MV tiles is lower than the
-        // threshold, userBehaviourSupported() returns false. Besides, the next decision time is
-        // set to NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
-                ReturnToChromeUtil.ShowChromeStartSegmentationResult.SHOW);
-        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
-        Assert.assertFalse(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
-                        ReturnToChromeUtil.ShowChromeStartSegmentationResultComparison
-                                .SEGMENTATION_ENABLED_LOGIC_DISABLED));
-
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("feeds");
-        verifyBehaviourTypeRecordedAndChecked(manager);
-
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_new_tab");
-        verifyBehaviourTypeRecordedAndChecked(manager);
-
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_history");
-        verifyBehaviourTypeRecordedAndChecked(manager);
-
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_recent_tabs");
-        verifyBehaviourTypeRecordedAndChecked(manager);
-
-        // Verifies if the key doesn't match the value of
-        // StartSurfaceConfiguration.BEHAVIOURAL_TARGETING, e.g., the value isn't set, onUIClicked()
-        // doesn't record or increase the count.
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("");
-        String type = "feeds";
-        String key = ReturnToChromeUtil.getBehaviourTypeKeyForTesting(type);
-        ReturnToChromeUtil.onUIClicked(key);
-        Assert.assertEquals(0, manager.readInt(key, 0));
-
-        // Verifies the combination case that BEHAVIOURAL_TARGETING is set to "all".
-        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("all");
-        String type1 = "open_history";
-        String type2 = "open_recent_tabs";
-        String key1 = ReturnToChromeUtil.getBehaviourTypeKeyForTesting(type1);
-        String key2 = ReturnToChromeUtil.getBehaviourTypeKeyForTesting(type2);
-        Assert.assertEquals(0, manager.readInt(key1, 0));
-        Assert.assertEquals(0, manager.readInt(key2, 0));
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-
-        // Increase the count of one key.
-        ReturnToChromeUtil.onHistoryOpened();
-        Assert.assertEquals(1, manager.readInt(key1, 0));
-
-        // Verifies that userBehaviourSupported() return true due to the count of this key is higher
-        // or equal to the threshold.
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertTrue(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertEquals(0, manager.readInt(key1, 0));
-        Assert.assertEquals(0, manager.readInt(key2, 0));
-        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-
-        // Resets the decision.
-        manager.writeBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/behavioural_targeting/model"})
-    public void testStartSegmentationUsage() throws Exception {
-        Assume.assumeTrue(mImmediateReturn);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        Assert.assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
-
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        // Verifies that the START_NEXT_SHOW_ON_STARTUP_DECISION_MS has been set.
-        long nextDecisionTime =
-                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                        ReturnToChromeUtil.INVALID_DECISION_TIMESTAMP);
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
-
-        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
-                ReturnToChromeUtil.ShowChromeStartSegmentationResult.SHOW);
-
-        // Verifies that userBehaviourSupported() returns the same result before the next decision
-        // time arrives.
-        Assert.assertFalse(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertEquals(nextDecisionTime,
-                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                        ReturnToChromeUtil.INVALID_DECISION_TIMESTAMP));
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-
-        // Verifies if the next decision time past, userBehaviourSupported() returns true. Besides,
-        // the next decision time is set to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later.
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertTrue(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
-
-        // Verifies if the next decision time past and segmentation says dont show,
-        // userBehaviourSupported() returns false. Besides, the next decision time is set to
-        // NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
-        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
-                ReturnToChromeUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertFalse(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
-
-        // Verifies that if segmentation stops returning results, then we continue to use the
-        // previous result.
-        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
-                ReturnToChromeUtil.ShowChromeStartSegmentationResult.UNINITIALIZED);
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertFalse(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-        verifyNextDecisionTimeStampInDays(
-                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    public void testStartSurfaceMenu() throws ExecutionException {
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AppMenuTestSupport.showAppMenu(mActivityTestRule.getAppMenuCoordinator(), null, false);
-        });
-
-        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.new_tab_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.new_incognito_tab_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.open_history_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.downloads_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.all_bookmarks_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.recent_tabs_menu_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.preferences_id));
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.help_id));
-
-        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.menu_group_tabs));
-        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.close_all_tabs_menu_id));
-
-        boolean hasUpdateMenuItem =
-                AppMenuTestSupport.getMenuItemPropertyModel(
-                        mActivityTestRule.getAppMenuCoordinator(), R.id.update_menu_id)
-                != null;
-        ModelList menuItemsModelList =
-                AppMenuTestSupport.getMenuModelList(mActivityTestRule.getAppMenuCoordinator());
-        assertEquals(hasUpdateMenuItem ? 11 : 10, menuItemsModelList.size());
     }
 
     @Test
@@ -1100,8 +782,7 @@ public class StartSurfaceTest {
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        StartSurfaceTestUtils.waitForTabModel(cta);
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         Assert.assertEquals(0, RenderProcessHostUtils.getCurrentRenderProcessCount());
 
@@ -1109,49 +790,6 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
         StartSurfaceTestUtils.waitForCurrentTabLoaded(mActivityTestRule);
         Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
-    }
-
-    /**
-     * Check that the next decision time is within |numOfDays| from now.
-     * @param numOfDays Number of days to check.
-     */
-    private void verifyNextDecisionTimeStampInDays(
-            SharedPreferencesManager manager, int numOfDays) {
-        long approximateTime =
-                System.currentTimeMillis() + numOfDays * ReturnToChromeUtil.MILLISECONDS_PER_DAY;
-        long nextDecisionTime =
-                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                        ReturnToChromeUtil.INVALID_DECISION_TIMESTAMP);
-
-        Assert.assertThat("new decision time lower bound",
-                approximateTime - MILLISECONDS_PER_MINUTE,
-                Matchers.lessThanOrEqualTo(nextDecisionTime));
-
-        Assert.assertThat("new decision time upper bound",
-                approximateTime + MILLISECONDS_PER_MINUTE,
-                Matchers.greaterThanOrEqualTo(nextDecisionTime));
-    }
-
-    private void verifyBehaviourTypeRecordedAndChecked(SharedPreferencesManager manager) {
-        String key = ReturnToChromeUtil.getBehaviourTypeKeyForTesting(
-                StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue());
-        Assert.assertEquals(0, manager.readInt(key, 0));
-
-        // Increase the count of the key.
-        ReturnToChromeUtil.onUIClicked(key);
-        Assert.assertEquals(1, manager.readInt(key, 0));
-        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-
-        // Verifies that userBehaviourSupported() return true due to the count of this key is higher
-        // or equal to the threshold.
-        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
-                System.currentTimeMillis() - 1);
-        Assert.assertTrue(ReturnToChromeUtil.userBehaviourSupported());
-        Assert.assertEquals(0, manager.readInt(key, 0));
-        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
-
-        // Resets the decision.
-        manager.writeBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
     }
 
     /**

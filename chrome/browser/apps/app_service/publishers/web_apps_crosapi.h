@@ -16,6 +16,7 @@
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
@@ -66,6 +67,10 @@ class WebAppsCrosapi : public KeyedService,
                            WebAppsCrosapiNotUpdated);
   FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
                            WebAppsCrosapiUpdated);
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsNotInitializedIfRegisterFirst);
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsInitializedForEmptyList);
 
   // apps::AppPublisher overrides.
   void LoadIcon(const std::string& app_id,
@@ -74,6 +79,10 @@ class WebAppsCrosapi : public KeyedService,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 apps::LoadIconCallback callback) override;
+  void Launch(const std::string& app_id,
+              int32_t event_flags,
+              LaunchSource launch_source,
+              WindowInfoPtr window_info) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
   void LaunchShortcut(const std::string& app_id,
@@ -83,12 +92,6 @@ class WebAppsCrosapi : public KeyedService,
   // apps::PublisherBase overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconType icon_type,
-                int32_t size_hint_in_dip,
-                bool allow_placeholder_icon,
-                LoadIconCallback callback) override;
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
@@ -151,6 +154,7 @@ class WebAppsCrosapi : public KeyedService,
   void OnApplyIconEffects(IconType icon_type,
                           apps::LoadIconCallback callback,
                           IconValuePtr icon_value);
+  void PublishImpl(std::vector<AppPtr> deltas);
 
   // Stores a copy of the app deltas, which haven't been published to
   // AppRegistryCache yet. When the crosapi is bound or changed from disconnect
@@ -158,11 +162,17 @@ class WebAppsCrosapi : public KeyedService,
   // AppRegistryCache.
   std::vector<AppPtr> delta_cache_;
 
+  // Record if OnApps interface been called from the Lacros. If it is called
+  // before Lacros web app controller registration, we should publish the
+  // |delta_cache_| to initialize the web app AppType even it is empty.
+  bool on_initial_apps_received_ = false;
+
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   mojo::Receiver<crosapi::mojom::AppPublisher> receiver_{this};
   mojo::Remote<crosapi::mojom::AppController> controller_;
   AppServiceProxy* const proxy_;
   bool should_notify_initialized_ = true;
+
   base::WeakPtrFactory<WebAppsCrosapi> weak_factory_{this};
 };
 

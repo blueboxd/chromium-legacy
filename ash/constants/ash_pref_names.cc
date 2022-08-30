@@ -704,6 +704,9 @@ const char kSyncableWallpaperInfo[] = "syncable_wallpaper_info";
 // A dictionary pref that maps wallpaper file paths to their prominent colors.
 const char kWallpaperColors[] = "ash.wallpaper.prominent_colors";
 
+// A dictionary pref that maps wallpaper file paths to their k mean colors.
+const char kWallpaperMeanColors[] = "ash.wallpaper.k_mean_colors";
+
 // Boolean pref indicating whether a user has enabled the bluetooth adapter.
 const char kUserBluetoothAdapterEnabled[] =
     "ash.user.bluetooth.adapter_enabled";
@@ -717,6 +720,9 @@ const char kSystemTrayExpanded[] = "ash.system_tray.expanded";
 
 // A boolean pref indicating whether the camera is allowed to be used.
 const char kUserCameraAllowed[] = "ash.user.camera_allowed";
+
+// A boolean pref indicating whether the microphone is allowed to be used.
+const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 
 // A boolean pref which determines whether tap-dragging is enabled.
 const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
@@ -921,11 +927,6 @@ const char kNextImeShortcutReminderDismissed[] =
 // Boolean pref to indicate whether to use i18n shortcut mapping and deprecate
 // legacy shortcuts.
 const char kDeviceI18nShortcutsEnabled[] = "ash.device_i18n_shortcuts_enabled";
-
-// An integer pref that tracks how many times the user has been shown the
-// notification about shortcuts changing.
-const char kImprovedShortcutsNotificationShownCount[] =
-    "ash.improved_shortcuts_notification_shown_count";
 
 // If a user installs an extension which controls the proxy settings in the
 // primary profile of Chrome OS, this dictionary will contain information about

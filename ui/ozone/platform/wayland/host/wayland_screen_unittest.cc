@@ -6,6 +6,7 @@
 #include <wayland-server.h>
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,9 +132,9 @@ class WaylandScreenTest : public WaylandTest {
     EXPECT_EQ(display_for_widget.id(), expected_display_id);
   }
 
-  wl::MockZAuraShell* mock_zaura_shell_ = nullptr;
-  wl::TestOutput* output_ = nullptr;
-  WaylandOutputManager* output_manager_ = nullptr;
+  raw_ptr<wl::MockZAuraShell> mock_zaura_shell_ = nullptr;
+  raw_ptr<wl::TestOutput> output_ = nullptr;
+  raw_ptr<WaylandOutputManager> output_manager_ = nullptr;
 
   std::unique_ptr<WaylandScreen> platform_screen_;
 };
@@ -485,9 +486,9 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
 
   // Test with missing logical size. Should fall back to calculating from
   // physical size.
-  platform_screen_->OnOutputAddedOrUpdated(display_id, origin, gfx::Size(),
-                                           physical_size, insets, scale,
-                                           panel_transform, logical_transform);
+  platform_screen_->OnOutputAddedOrUpdated(
+      display_id, origin, gfx::Size(), physical_size, insets, scale,
+      panel_transform, logical_transform, "display");
 
   const display::Display new_display(observer.GetDisplay());
   EXPECT_EQ(new_display.id(), display_id);
@@ -499,6 +500,7 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
   EXPECT_EQ(new_display.panel_rotation(), display::Display::ROTATE_270);
   EXPECT_EQ(new_display.rotation(), display::Display::ROTATE_0);
   EXPECT_EQ(new_display.device_scale_factor(), scale);
+  EXPECT_EQ(new_display.label(), "display");
 
   platform_screen_->RemoveObserver(&observer);
 }
@@ -514,12 +516,12 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesPrimaryDisplayChanged) {
       display1.id(), display1.bounds().origin(), display1.size(),
       display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
       display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL);
+      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
   platform_screen_->OnOutputAddedOrUpdated(
       display2.id(), display2.bounds().origin(), display2.size(),
       display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
       display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL);
+      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
 
   EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display1);
 
@@ -533,12 +535,12 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesPrimaryDisplayChanged) {
       display2.id(), display2.bounds().origin(), display2.size(),
       display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
       display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL);
+      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
   platform_screen_->OnOutputAddedOrUpdated(
       display1.id(), display1.bounds().origin(), display1.size(),
       display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
       display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL);
+      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
 
   EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display2);
 
@@ -1058,9 +1060,9 @@ class LazilyConfiguredScreenTest
     aux_output_->SetRect({0, 0, 800, 600});
   }
 
-  wl::TestOutput* primary_output_ = nullptr;
-  wl::TestOutput* aux_output_ = nullptr;
-  WaylandOutputManager* output_manager_ = nullptr;
+  raw_ptr<wl::TestOutput> primary_output_ = nullptr;
+  raw_ptr<wl::TestOutput> aux_output_ = nullptr;
+  raw_ptr<WaylandOutputManager> output_manager_ = nullptr;
   bool auto_configure;
 };
 

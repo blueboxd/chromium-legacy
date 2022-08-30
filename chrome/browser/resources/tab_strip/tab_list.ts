@@ -6,6 +6,7 @@ import './strings.m.js';
 import './tab.js';
 import './tab_group.js';
 
+import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {addWebUIListener, removeWebUIListener, WebUIListener} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
@@ -248,8 +249,7 @@ export class TabListElement extends CustomElement implements
         () => this.onReceivedKeyboardFocus_());
 
     callbackRouter.themeChanged.addListener(() => {
-      // Refetch theme colors, group color and tab favicons on theme change.
-      this.fetchAndUpdateColors_();
+      // Refetch theme group color and tab favicons on theme change.
       this.fetchAndUpdateGroupData_();
       this.fetchAndUpdateTabs_();
     });
@@ -273,6 +273,8 @@ export class TabListElement extends CustomElement implements
 
     const dragManager = new DragManager(this);
     dragManager.startObserving();
+
+    startColorChangeUpdater();
   }
 
   private addAnimationPromise_(promise: Promise<void>) {
@@ -336,7 +338,6 @@ export class TabListElement extends CustomElement implements
   connectedCallback() {
     this.tabsApi_.getLayout().then(
         ({layout}) => this.applyCSSDictionary_(layout));
-    this.fetchAndUpdateColors_();
 
     const getTabsStartTimestamp = Date.now();
     this.tabsApi_.getTabs().then(({tabs}) => {
@@ -393,11 +394,6 @@ export class TabListElement extends CustomElement implements
   private findTabGroupElement_(groupId: string): TabGroupElement|null {
     return this.$<TabGroupElement>(
         `tabstrip-tab-group[data-group-id="${groupId}"]`);
-  }
-
-  private fetchAndUpdateColors_() {
-    this.tabsApi_.getColors().then(
-        ({colors}) => this.applyCSSDictionary_(colors));
   }
 
   private fetchAndUpdateGroupData_() {
@@ -508,7 +504,12 @@ export class TabListElement extends CustomElement implements
   }
 
   private onTabActivating_(id: number) {
-    assert(this.activatingTabId_ === undefined);
+    // onTabActivating_() is called when the user clicks on a tab in JavaScript.
+    // We then expect a callback asynchronously from the browser after the tab
+    // we clicked on has finally activated. We may incur multiple calls to
+    // onTabActivating_()  before the active tab actually changes so we only
+    // consider the most recent activating action when recording metrics. (See
+    // crbug.com/1333405)
     const activeTab = this.getActiveTab_();
     if (activeTab && activeTab.tab.id === id) {
       return;
@@ -776,11 +777,7 @@ export class TabListElement extends CustomElement implements
   }
 
   shouldPreventDrag(): boolean {
-    // Do not allow dragging if there's only 1 tab with no tab group, or only 1
-    // tab group with no other tabs outside of the tab group.
-    return (this.pinnedTabsElement_.childElementCount +
-        this.unpinnedTabsElement_.childElementCount) ===
-        1;
+    return this.$all('tabstrip-tab').length === 1;
   }
 
   private tabThumbnailUpdated_(tabId: number, imgData: string) {

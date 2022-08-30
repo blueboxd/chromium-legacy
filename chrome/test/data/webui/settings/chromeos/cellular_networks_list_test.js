@@ -28,9 +28,6 @@ suite('CellularNetworksList', function() {
   let browserProxy;
 
   setup(function() {
-    loadTimeData.overrideValues({
-      esimPolicyEnabled: true,
-    });
     mojom = chromeos.networkConfig.mojom;
     mojoApi_ = new FakeNetworkConfig();
     MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
@@ -39,7 +36,7 @@ suite('CellularNetworksList', function() {
     setESimManagerRemoteForTesting(eSimManagerRemote);
 
     browserProxy = new TestMultideviceBrowserProxy();
-    MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
+    MultiDeviceBrowserProxyImpl.setInstanceForTesting(browserProxy);
   });
 
   teardown(function() {

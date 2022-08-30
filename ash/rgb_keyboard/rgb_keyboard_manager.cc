@@ -9,6 +9,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "ash/rgb_keyboard/rgb_keyboard_util.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/logging.h"
@@ -29,12 +30,14 @@ RgbKeyboardManager::RgbKeyboardManager(ImeControllerImpl* ime_controller)
   g_instance = this;
 
   ime_controller_ptr_->AddObserver(this);
+  RgbkbdClient::Get()->AddObserver(this);
 
   VLOG(1) << "Initializing RGB Keyboard support";
   FetchRgbKeyboardSupport();
 }
 
 RgbKeyboardManager::~RgbKeyboardManager() {
+  RgbkbdClient::Get()->RemoveObserver(this);
   ime_controller_ptr_->RemoveObserver(this);
 
   DCHECK_EQ(g_instance, this);
@@ -91,7 +94,7 @@ void RgbKeyboardManager::SetAnimationMode(rgbkbd::RgbAnimationMode mode) {
 }
 
 void RgbKeyboardManager::OnCapsLockChanged(bool enabled) {
-  if (IsRgbKeyboardSupported()) {
+  if (IsRgbKeyboardSupported() && IsPerKeyKeyboard()) {
     VLOG(1) << "Setting RGB keyboard caps lock state to " << enabled;
     RgbkbdClient::Get()->SetCapsLockState(enabled);
   }
@@ -100,6 +103,11 @@ void RgbKeyboardManager::OnCapsLockChanged(bool enabled) {
 // static
 RgbKeyboardManager* RgbKeyboardManager::Get() {
   return g_instance;
+}
+
+void RgbKeyboardManager::OnCapabilityUpdatedForTesting(
+    rgbkbd::RgbKeyboardCapabilities capability) {
+  capabilities_ = capability;
 }
 
 void RgbKeyboardManager::OnGetRgbKeyboardCapabilities(
@@ -113,13 +121,26 @@ void RgbKeyboardManager::OnGetRgbKeyboardCapabilities(
   VLOG(1) << "RGB Keyboard capabilities="
           << static_cast<uint32_t>(capabilities_);
 
-  // Upon login, CapsLock may already be enabled.
-  if (IsRgbKeyboardSupported()) {
-    VLOG(1) << "Setting initial RGB keyboard caps lock state to "
-            << ime_controller_ptr_->IsCapsLockEnabled();
-    RgbkbdClient::Get()->SetCapsLockState(
-        ime_controller_ptr_->IsCapsLockEnabled());
-  }
+  if (IsRgbKeyboardSupported())
+    InitializeRgbKeyboard();
 }
 
+void RgbKeyboardManager::InitializeRgbKeyboard() {
+  DCHECK(RgbkbdClient::Get());
+
+  // Upon login, CapsLock may already be enabled.
+  VLOG(1) << "Setting initial RGB keyboard caps lock state to "
+          << ime_controller_ptr_->IsCapsLockEnabled();
+  RgbkbdClient::Get()->SetCapsLockState(
+      ime_controller_ptr_->IsCapsLockEnabled());
+
+  // Set keyboard to the default color on startup
+  RgbkbdClient::Get()->SetStaticBackgroundColor(SkColorGetR(kDefaultColor),
+                                                SkColorGetG(kDefaultColor),
+                                                SkColorGetB(kDefaultColor));
+}
+
+bool RgbKeyboardManager::IsPerKeyKeyboard() const {
+  return capabilities_ == rgbkbd::RgbKeyboardCapabilities::kIndividualKey;
+}
 }  // namespace ash

@@ -68,7 +68,6 @@ uint16_t g_auto_import_state = first_run::AUTO_IMPORT_NONE;
 
 // Flags for functions of similar name.
 bool g_should_show_welcome_page = false;
-bool g_should_do_autofill_personal_data_manager_first_run = false;
 
 // Indicates whether this is first run. Populated when IsChromeFirstRun
 // is invoked, then used as a cache on subsequent calls.
@@ -378,24 +377,20 @@ bool IsOnWelcomePage(content::WebContents* contents) {
          GURL(chrome::kChromeUIWelcomeURL);
 }
 
-void SetShouldDoPersonalDataManagerFirstRun() {
-  g_should_do_autofill_personal_data_manager_first_run = true;
-}
-
-bool ShouldDoPersonalDataManagerFirstRun() {
-  bool retval = g_should_do_autofill_personal_data_manager_first_run;
-  g_should_do_autofill_personal_data_manager_first_run = false;
-  return retval;
-}
-
 void SetInitialPrefsPathForTesting(const base::FilePath& initial_prefs) {
   GetInitialPrefsPathForTesting() = initial_prefs;
 }
 
 std::unique_ptr<installer::InitialPreferences> LoadInitialPrefs() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
   base::FilePath initial_prefs_path;
   if (!GetInitialPrefsPathForTesting().empty())
     initial_prefs_path = GetInitialPrefsPathForTesting();
+  else if (command_line->HasSwitch(switches::kInitialPreferencesFile))
+    initial_prefs_path =
+        command_line->GetSwitchValuePath(switches::kInitialPreferencesFile);
   else
     initial_prefs_path =
         base::FilePath(first_run::internal::InitialPrefsPath());
@@ -504,7 +499,6 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {
   ProcessDefaultBrowserPolicy(make_chrome_default_for_user);
 
   SetShouldShowWelcomePage();
-  SetShouldDoPersonalDataManagerFirstRun();
 
   internal::DoPostImportPlatformSpecificTasks(profile);
 }

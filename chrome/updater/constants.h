@@ -16,6 +16,9 @@ extern const char kUpdaterAppId[];
 // The app ID used to qualify the updater.
 extern const char kQualificationAppId[];
 
+// The name of the updater program image, typically, "updater.exe" or "updater".
+extern const char kExecutableName[];
+
 // A suffix appended to the updater executable name before any file extension.
 extern const char kExecutableSuffix[];
 
@@ -186,6 +189,7 @@ extern const char kDevOverrideKeyInitialDelay[];
 extern const char kDevOverrideKeyServerKeepAliveSeconds[];
 extern const char kDevOverrideKeyCrxVerifierFormat[];
 extern const char kDevOverrideKeyGroupPolicies[];
+extern const char kDevOverrideKeyOverinstallTimeout[];
 
 // File name of developer overrides file.
 extern const char kDevOverrideFileName[];
@@ -265,7 +269,7 @@ constexpr int kErrorFailedToDeleteFolder = 16;
 constexpr int kErrorFailedToDeleteDataFolder = 17;
 
 // Failed to get versioned updater folder path.
-constexpr int kErrorFailedToGetVersionedUpdaterFolderPath = 18;
+constexpr int kErrorFailedToGetVersionedInstallDirectory = 18;
 
 // Failed to get the installed app bundle path.
 constexpr int kErrorFailedToGetAppBundlePath = 19;

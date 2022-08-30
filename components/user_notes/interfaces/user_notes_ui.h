@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_USER_NOTES_INTERFACES_USER_NOTES_UI_H_
 #define COMPONENTS_USER_NOTES_INTERFACES_USER_NOTES_UI_H_
 
-#include <string>
-
+#include "base/unguessable_token.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace user_notes {
@@ -24,7 +23,7 @@ class UserNotesUI {
 
   // Called when a note in the UI should be scrolled to / brought to the
   // foreground, and focused.
-  virtual void FocusNote(const std::string& guid) = 0;
+  virtual void FocusNote(const base::UnguessableToken& guid) = 0;
 
   // Called when the note creation UX should be shown in the UI layer. |bounds|
   // corresponds to the location in the webpage where the associated highlight

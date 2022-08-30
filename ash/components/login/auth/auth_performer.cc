@@ -12,11 +12,22 @@
 #include "ash/components/login/auth/user_context.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
-#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/user_manager/user_type.h"
 
 namespace ash {
+
+namespace {
+
+bool IsKioskUserType(user_manager::UserType type) {
+  return type == user_manager::USER_TYPE_KIOSK_APP ||
+         type == user_manager::USER_TYPE_ARC_KIOSK_APP ||
+         type == user_manager::USER_TYPE_WEB_KIOSK_APP;
+}
+
+}  // namespace
 
 AuthPerformer::AuthPerformer(base::raw_ptr<UserDataAuthClient> client)
     : client_(client) {}
@@ -160,7 +171,7 @@ void AuthPerformer::AuthenticateWithPassword(
 
   SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &AuthPerformer::HashPasswordAndAuthenticate, weak_factory_.GetWeakPtr(),
-      password, key_label, std::move(context), std::move(callback)));
+      key_label, password, std::move(context), std::move(callback)));
 }
 
 void AuthPerformer::HashPasswordAndAuthenticate(
@@ -249,12 +260,17 @@ void AuthPerformer::OnStartAuthSession(
   // Remember key metadata
   std::vector<cryptohome::KeyDefinition> key_definitions;
   for (const auto& [label, key_data] : reply->key_label_data()) {
-    // Backfill kiosk key type
+    // Backfill key type
     // TODO(crbug.com/1310312): Find if there is any better way.
     cryptohome::KeyData data(key_data);
     if (!data.has_type()) {
-      LOGIN_LOG(DEBUG) << "Backfilling Kiosk key type for key " << label;
-      data.set_type(cryptohome::KeyData::KEY_TYPE_KIOSK);
+      if (IsKioskUserType(context->GetUserType())) {
+        LOGIN_LOG(DEBUG) << "Backfilling Kiosk key type for key " << label;
+        data.set_type(cryptohome::KeyData::KEY_TYPE_KIOSK);
+      } else {
+        LOGIN_LOG(DEBUG) << "Backfilling Password key type for key " << label;
+        data.set_type(cryptohome::KeyData::KEY_TYPE_PASSWORD);
+      }
     }
     // "legacy-0" keys exist as label in map, but might not exist as labels
     // in KeyData.

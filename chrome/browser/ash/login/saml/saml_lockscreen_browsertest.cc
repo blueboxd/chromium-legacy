@@ -18,19 +18,20 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_handler_test_helper.h"
-#include "chromeos/network/network_state_test_helper.h"
 #include "components/account_id/account_id.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -363,6 +364,30 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, TriggerAndHideCaptivePortalDialog) {
   // Close all dialogs at the end of the test - otherwise these tests crash
   reauth_dialog_helper->ClickCloseNetworkButton();
   reauth_dialog_helper->ExpectVerifyAccountScreenHidden();
+}
+
+IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, LoadAbort) {
+  Login();
+
+  // Make gaia landing page unreachable
+  fake_gaia_mixin()->fake_gaia()->SetErrorResponse(
+      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(2),
+      net::HTTP_NOT_FOUND);
+
+  // Lock the screen and trigger the lock screen SAML reauth dialog.
+  ScreenLockerTester().Lock();
+
+  absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
+      LockScreenReauthDialogTestHelper::ShowDialogAndWait();
+  ASSERT_TRUE(reauth_dialog_helper);
+
+  // Unreachable gaia page should have resulted in load abort error which should
+  // trigger the network dialog
+  reauth_dialog_helper->WaitForNetworkDialogAndSetHandlers();
+  reauth_dialog_helper->ExpectNetworkDialogVisible();
+
+  // Close dialog at the end of the test - otherwise test will crash on exit
+  reauth_dialog_helper->ClickCloseNetworkButton();
 }
 
 // Sets up proxy server which requires authentication.

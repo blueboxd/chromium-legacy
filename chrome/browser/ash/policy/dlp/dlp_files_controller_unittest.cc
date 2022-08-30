@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
@@ -44,7 +45,12 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 
+using blink::mojom::FileChooserFileInfo;
+using blink::mojom::FileChooserFileInfoPtr;
+using blink::mojom::FileSystemFileInfo;
+using blink::mojom::NativeFileInfo;
 using testing::_;
 
 namespace policy {
@@ -65,6 +71,10 @@ bool CreateDummyFile(const base::FilePath& path) {
 }  // namespace
 
 class DlpFilesControllerTest : public testing::Test {
+ public:
+  DlpFilesControllerTest(const DlpFilesControllerTest&) = delete;
+  DlpFilesControllerTest& operator=(const DlpFilesControllerTest&) = delete;
+
  protected:
   DlpFilesControllerTest()
       : profile_(std::make_unique<TestingProfile>()),
@@ -72,10 +82,7 @@ class DlpFilesControllerTest : public testing::Test {
         scoped_user_manager_(std::make_unique<user_manager::ScopedUserManager>(
             base::WrapUnique(user_manager_))) {}
 
-  DlpFilesControllerTest(const DlpFilesControllerTest&) = delete;
-  DlpFilesControllerTest& operator=(const DlpFilesControllerTest&) = delete;
-
-  ~DlpFilesControllerTest() override {}
+  ~DlpFilesControllerTest() override = default;
 
   void SetUp() override {
     AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
@@ -237,19 +244,143 @@ TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_SameFileSystem) {
   EXPECT_EQ(0u, future.Get().size());
 }
 
+TEST_F(DlpFilesControllerTest, FilterDisallowedUploads_EmptyList) {
+  AddFilesToDlpClient();
+
+  std::vector<FileChooserFileInfoPtr> uploaded_files;
+
+  dlp::CheckFilesTransferResponse check_files_transfer_response;
+
+  base::test::TestFuture<std::vector<FileChooserFileInfoPtr>> future;
+  files_controller_.FilterDisallowedUploads(std::move(uploaded_files),
+                                            GURL("https://example.com"),
+                                            future.GetCallback());
+
+  std::vector<FileChooserFileInfoPtr> filtered_uploads;
+
+  ASSERT_EQ(0u, future.Get().size());
+  EXPECT_EQ(filtered_uploads, future.Take());
+}
+
+TEST_F(DlpFilesControllerTest, FilterDisallowedUploads_NonNativeFiles) {
+  AddFilesToDlpClient();
+
+  std::vector<FileChooserFileInfoPtr> uploaded_files;
+  uploaded_files.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  uploaded_files.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  uploaded_files.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+
+  base::test::TestFuture<std::vector<FileChooserFileInfoPtr>> future;
+  files_controller_.FilterDisallowedUploads(std::move(uploaded_files),
+                                            GURL("https://example.com"),
+                                            future.GetCallback());
+
+  std::vector<FileChooserFileInfoPtr> filtered_uploads;
+  filtered_uploads.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  filtered_uploads.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  filtered_uploads.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+
+  ASSERT_EQ(3u, future.Get().size());
+  EXPECT_EQ(filtered_uploads, future.Take());
+}
+
+TEST_F(DlpFilesControllerTest, FilterDisallowedUploads_MixedFiles) {
+  AddFilesToDlpClient();
+
+  std::vector<FileChooserFileInfoPtr> uploaded_files;
+  uploaded_files.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  uploaded_files.push_back(FileChooserFileInfo::NewNativeFile(
+      NativeFileInfo::New(file_url1_.path(), std::u16string())));
+  uploaded_files.push_back(FileChooserFileInfo::NewNativeFile(
+      NativeFileInfo::New(file_url2_.path(), std::u16string())));
+  uploaded_files.push_back(FileChooserFileInfo::NewNativeFile(
+      NativeFileInfo::New(file_url3_.path(), std::u16string())));
+  uploaded_files.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+
+  dlp::CheckFilesTransferResponse check_files_transfer_response;
+  check_files_transfer_response.add_files_paths(file_url1_.path().value());
+  check_files_transfer_response.add_files_paths(file_url3_.path().value());
+  ASSERT_TRUE(chromeos::DlpClient::Get()->IsAlive());
+  chromeos::DlpClient::Get()->GetTestInterface()->SetCheckFilesTransferResponse(
+      check_files_transfer_response);
+
+  base::test::TestFuture<std::vector<FileChooserFileInfoPtr>> future;
+  files_controller_.FilterDisallowedUploads(std::move(uploaded_files),
+                                            GURL("https://example.com"),
+                                            future.GetCallback());
+
+  std::vector<FileChooserFileInfoPtr> filtered_uploads;
+  filtered_uploads.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+  filtered_uploads.push_back(FileChooserFileInfo::NewNativeFile(
+      NativeFileInfo::New(file_url2_.path(), std::u16string())));
+  filtered_uploads.push_back(
+      FileChooserFileInfo::NewFileSystem(FileSystemFileInfo::New()));
+
+  ASSERT_EQ(3u, future.Get().size());
+  EXPECT_EQ(filtered_uploads, future.Take());
+}
+
+TEST_F(DlpFilesControllerTest, GetDlpMetadata) {
+  AddFilesToDlpClient();
+
+  std::vector<storage::FileSystemURL> files_to_check(
+      {file_url1_, file_url2_, file_url3_});
+  std::vector<DlpFilesController::DlpFileMetadata> dlp_metadata(
+      {DlpFilesController::DlpFileMetadata(kExample1, true),
+       DlpFilesController::DlpFileMetadata(kExample2, false),
+       DlpFilesController::DlpFileMetadata(kExample3, true)});
+
+  EXPECT_CALL(*rules_manager_, IsRestrictedByAnyRule)
+      .WillOnce(testing::Return(DlpRulesManager::Level::kBlock))
+      .WillOnce(testing::Return(DlpRulesManager::Level::kAllow))
+      .WillOnce(testing::Return(DlpRulesManager::Level::kWarn));
+
+  base::test::TestFuture<std::vector<DlpFilesController::DlpFileMetadata>>
+      future;
+  files_controller_.GetDlpMetadata(files_to_check, future.GetCallback());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(dlp_metadata, future.Take());
+}
+
+TEST_F(DlpFilesControllerTest, GetDlpMetadata_FileNotAvailable) {
+  ASSERT_TRUE(chromeos::DlpClient::Get()->IsAlive());
+
+  std::vector<storage::FileSystemURL> files_to_check({file_url1_});
+  std::vector<DlpFilesController::DlpFileMetadata> dlp_metadata(
+      {DlpFilesController::DlpFileMetadata("", false)});
+
+  EXPECT_CALL(*rules_manager_, IsRestrictedByAnyRule).Times(0);
+
+  base::test::TestFuture<std::vector<DlpFilesController::DlpFileMetadata>>
+      future;
+  files_controller_.GetDlpMetadata(files_to_check, future.GetCallback());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(dlp_metadata, future.Take());
+}
+
 class DlpFilesExternalDestinationTest
     : public DlpFilesControllerTest,
       public ::testing::WithParamInterface<
           std::tuple<std::string, std::string, DlpRulesManager::Component>> {
- protected:
-  DlpFilesExternalDestinationTest() = default;
-
+ public:
   DlpFilesExternalDestinationTest(const DlpFilesExternalDestinationTest&) =
       delete;
   DlpFilesExternalDestinationTest& operator=(
       const DlpFilesExternalDestinationTest&) = delete;
 
-  ~DlpFilesExternalDestinationTest() = default;
+ protected:
+  DlpFilesExternalDestinationTest() = default;
+
+  ~DlpFilesExternalDestinationTest() override = default;
 
   void SetUp() override {
     DlpFilesControllerTest::SetUp();
@@ -275,6 +406,7 @@ class DlpFilesExternalDestinationTest
     crostini_features.set_enabled(true);
 
     chromeos::DBusThreadManager::Initialize();
+    ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
@@ -310,6 +442,7 @@ class DlpFilesExternalDestinationTest
     DlpFilesControllerTest::TearDown();
 
     chromeos::DBusThreadManager::Shutdown();
+    ash::ChunneldClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::SeneschalClient::Shutdown();

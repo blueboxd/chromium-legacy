@@ -104,20 +104,17 @@ class GPU_GLES2_EXPORT SharedImageBackingD3D
 
   ~SharedImageBackingD3D() override;
 
+  // SharedImageBacking implementation.
+  SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-
   bool CopyToGpuMemoryBuffer() override;
-
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-
   bool PresentSwapChain() override;
-
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
       WGPUBackendType backend_type) override;
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -197,12 +194,10 @@ class GPU_GLES2_EXPORT SharedImageBackingD3D
   // Set if this backing corresponds to the back buffer of |swap_chain_|.
   const bool is_back_buffer_;
 
-  // If an external image exists, it means Dawn produced the D3D12 side of the
+  // If external_image_ exists, it means Dawn produced the D3D12 side of the
   // D3D11 texture created by ID3D12Device::OpenSharedHandle.
 #if BUILDFLAG(USE_DAWN)
-  base::flat_map<WGPUDevice,
-                 std::unique_ptr<dawn::native::d3d12::ExternalImageDXGI>>
-      dawn_external_images_;
+  std::unique_ptr<dawn::native::d3d12::ExternalImageDXGI> external_image_;
 #endif  // BUILDFLAG(USE_DAWN)
 
   // Staging texture used for copy to/from shared memory GMB.

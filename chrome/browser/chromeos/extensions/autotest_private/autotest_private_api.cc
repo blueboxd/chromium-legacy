@@ -14,6 +14,10 @@
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/arc/mojom/system_ui.mojom-shared.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
 #include "ash/components/login/auth/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/app_types.h"
@@ -38,11 +42,11 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shelf_ui_info.h"
 #include "ash/public/cpp/split_view_test_api.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -51,6 +55,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/json/json_reader.h"
+#include "base/json/values_util.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -112,6 +117,7 @@
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/default_pinned_apps.h"
@@ -120,6 +126,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -130,7 +137,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
@@ -138,14 +144,14 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/metrics/login_event_recorder.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/default_frame_header.h"
@@ -160,6 +166,8 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -193,6 +201,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_engine_handler_interface.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -708,6 +717,26 @@ api::autotest_private::Location ToLocationDictionary(const gfx::Point& point) {
   result.x = point.x();
   result.y = point.y();
   return result;
+}
+
+arc::mojom::ThemeStyleType ToThemeStyleType(
+    const api::autotest_private::ThemeStyle& theme) {
+  switch (theme) {
+    case api::autotest_private::ThemeStyle::THEME_STYLE_TONALSPOT:
+      return arc::mojom::ThemeStyleType::TONAL_SPOT;
+    case api::autotest_private::ThemeStyle::THEME_STYLE_VIBRANT:
+      return arc::mojom::ThemeStyleType::VIBRANT;
+    case api::autotest_private::ThemeStyle::THEME_STYLE_EXPRESSIVE:
+      return arc::mojom::ThemeStyleType::EXPRESSIVE;
+    case api::autotest_private::ThemeStyle::THEME_STYLE_SPRITZ:
+      return arc::mojom::ThemeStyleType::SPRITZ;
+    case api::autotest_private::ThemeStyle::THEME_STYLE_RAINBOW:
+      return arc::mojom::ThemeStyleType::RAINBOW;
+    case api::autotest_private::ThemeStyle::THEME_STYLE_FRUITSALAD:
+      return arc::mojom::ThemeStyleType::FRUIT_SALAD;
+    default:
+      return arc::mojom::ThemeStyleType::TONAL_SPOT;
+  }
 }
 
 aura::Window* FindAppWindowById(const int64_t id) {
@@ -1931,7 +1960,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetLacrosInfoFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateGetArcPackageFunction
+// AutotestPrivateGetArcAppFunction
 ///////////////////////////////////////////////////////////////////////////////
 
 AutotestPrivateGetArcAppFunction::~AutotestPrivateGetArcAppFunction() = default;
@@ -1981,6 +2010,51 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcAppFunction::Run() {
 
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(app_value))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcAppKillsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcAppKillsFunction::
+    ~AutotestPrivateGetArcAppKillsFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetArcAppKillsFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetArcAppKillsFunction";
+
+  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return RespondNow(Error("ARC service manager is not available"));
+
+  arc::ArcBridgeService* arc_bridge_service =
+      arc_service_manager->arc_bridge_service();
+
+  if (!arc_bridge_service)
+    return RespondNow(Error("ARC bridge service is not available"));
+
+  arc::mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service->process(), RequestLowMemoryKillCounts);
+
+  if (!process_instance)
+    return RespondNow(Error("ARC process service is not available"));
+
+  process_instance->RequestLowMemoryKillCounts(base::BindOnce(
+      &AutotestPrivateGetArcAppKillsFunction::OnKillCounts, this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateGetArcAppKillsFunction::OnKillCounts(
+    arc::mojom::LowMemoryKillCountsPtr counts) {
+  api::autotest_private::ArcAppKillsDict result;
+  result.oom = counts->guest_oom;
+  result.lmkd_foreground = counts->lmkd_foreground;
+  result.lmkd_perceptible = counts->lmkd_perceptible;
+  result.lmkd_cached = counts->lmkd_cached;
+  result.pressure_foreground = counts->pressure_foreground;
+  result.pressure_perceptible = counts->pressure_perceptible;
+  result.pressure_cached = counts->pressure_cached;
+  Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2182,12 +2256,12 @@ AutotestPrivateIsSystemWebAppOpenFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsSystemWebAppOpenFunction " << params->app_id;
   absl::optional<ash::SystemWebAppType> app_type =
-      web_app::GetSystemWebAppTypeForAppId(profile, params->app_id);
+      ash::GetSystemWebAppTypeForAppId(profile, params->app_id);
   if (!app_type)
     return RespondNow(Error("No system web app is found by given app id."));
 
   return RespondNow(OneArgument(base::Value(
-      web_app::FindSystemWebAppBrowser(profile, *app_type) != nullptr)));
+      ash::FindSystemWebAppBrowser(profile, *app_type) != nullptr)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2268,10 +2342,10 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
   if (!app_type.has_value())
     return RespondNow(Error("No mapped system web app found"));
 
-  web_app::SystemAppLaunchParams swa_params;
+  ash::SystemAppLaunchParams swa_params;
   swa_params.url = GURL(params->url);
-  web_app::LaunchSystemWebAppAsync(profile, *app_type, swa_params);
-  web_app::FlushSystemWebAppLaunchesForTesting(profile);
+  ash::LaunchSystemWebAppAsync(profile, *app_type, swa_params);
+  ash::FlushSystemWebAppLaunchesForTesting(profile);
 
   return RespondNow(NoArguments());
 }
@@ -2397,7 +2471,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
         installer_ui->ClickInstallForTesting();
       }));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       base::BindOnce(
           &AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted,
           this));
@@ -2473,7 +2547,7 @@ ExtensionFunction::ResponseAction AutotestPrivateExportCrostiniFunction::Run() {
   }
 
   crostini::CrostiniExportImport::GetForProfile(profile)->ExportContainer(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       file_manager::util::GetDownloadsFolderForProfile(profile).Append(path),
       base::BindOnce(&AutotestPrivateExportCrostiniFunction::CrostiniExported,
                      this));
@@ -2513,7 +2587,7 @@ ExtensionFunction::ResponseAction AutotestPrivateImportCrostiniFunction::Run() {
     return RespondNow(Error("Invalid import path must not reference parent"));
   }
   crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       file_manager::util::GetDownloadsFolderForProfile(profile).Append(path),
       base::BindOnce(&AutotestPrivateImportCrostiniFunction::CrostiniImported,
                      this));
@@ -3843,6 +3917,28 @@ void AutotestPrivateWaitForOverviewStateFunction::Done(bool success) {
     return;
   }
   Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSendArcOverlayColorFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSendArcOverlayColorFunction::
+    ~AutotestPrivateSendArcOverlayColorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSendArcOverlayColorFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSendArcOverlayColorFunction";
+  std::unique_ptr<api::autotest_private::SendArcOverlayColor::Params> params(
+      api::autotest_private::SendArcOverlayColor::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  arc::ArcSystemUIBridge* const system_ui =
+      arc::ArcSystemUIBridge::GetForBrowserContext(browser_context());
+  if (!system_ui)
+    return RespondNow(Error("No ARC System UI Bridge is available."));
+  const bool result = system_ui->SendOverlayColor(
+      params->color, ToThemeStyleType(params->theme));
+  return RespondNow(OneArgument(base::Value(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5733,11 +5829,110 @@ AutotestPrivateForceAutoThemeModeFunction::Run() {
       api::autotest_private::ForceAutoThemeMode::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
-  DCHECK(color_provider);
+  ash::DarkLightModeController* dark_light_mode_controller =
+      ash::DarkLightModeController::Get();
+  DCHECK(dark_light_mode_controller);
 
-  color_provider->SetDarkModeEnabledForTest(params->dark_mode_enabled);
+  dark_light_mode_controller->SetDarkModeEnabledForTest(
+      params->dark_mode_enabled);
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetAccessTokenFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetAccessTokenFunction::AutotestPrivateGetAccessTokenFunction() =
+    default;
+
+AutotestPrivateGetAccessTokenFunction::
+    ~AutotestPrivateGetAccessTokenFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetAccessTokenFunction::Run() {
+  // Require a command line switch to avoid crashing on accident.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kGetAccessTokenForTest)) {
+    return RespondNow(
+        Error("* switch is not set", ash::switches::kGetAccessTokenForTest));
+  }
+  // This API is available only on test images.
+  base::SysInfo::CrashIfChromeOSNonTestImage();
+
+  auto params(api::autotest_private::GetAccessToken::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  timeout_timer_.Start(
+      FROM_HERE,
+      base::Milliseconds(params->access_token_params.timeout_ms
+                             ? *params->access_token_params.timeout_ms
+                             : 90000),
+      base::BindOnce(
+          &AutotestPrivateGetAccessTokenFunction::RespondWithTimeoutError,
+          this));
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  OAuth2AccessTokenManager::ScopeSet scopes(
+      params->access_token_params.scopes.begin(),
+      params->access_token_params.scopes.end());
+  access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
+      identity_manager
+          ->FindExtendedAccountInfoByEmailAddress(
+              params->access_token_params.email)
+          .account_id,
+      /*oauth_consumer_name=*/"cros_autotest_private", scopes,
+      base::BindOnce(&AutotestPrivateGetAccessTokenFunction::OnAccessToken,
+                     this),
+      signin::AccessTokenFetcher::Mode::kImmediate);
+  return RespondLater();
+}
+
+void AutotestPrivateGetAccessTokenFunction::RespondWithTimeoutError() {
+  if (did_respond()) {
+    return;
+  }
+  Respond(Error("Timed out fetching access token"));
+  access_token_fetcher_.reset();
+}
+
+void AutotestPrivateGetAccessTokenFunction::OnAccessToken(
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo token_info) {
+  access_token_fetcher_.reset();
+  timeout_timer_.AbandonAndStop();
+  if (did_respond()) {
+    return;
+  }
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    Respond(Error("Failed to get access token: *", error.ToString()));
+    return;
+  }
+  auto token_dict = std::make_unique<base::DictionaryValue>();
+  token_dict->SetStringKey("accessToken", token_info.token);
+  token_dict->SetKey(
+      "expirationTimeUnixMs",
+      base::Int64ToValue((token_info.expiration_time - base::Time::UnixEpoch())
+                             .InMilliseconds()));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(token_dict))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateIsInputMethodReadyForTestingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateIsInputMethodReadyForTestingFunction::
+    AutotestPrivateIsInputMethodReadyForTestingFunction() = default;
+
+AutotestPrivateIsInputMethodReadyForTestingFunction::
+    ~AutotestPrivateIsInputMethodReadyForTestingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateIsInputMethodReadyForTestingFunction::Run() {
+  ui::IMEEngineHandlerInterface* engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  return RespondNow(OneArgument(
+      base::Value(engine ? engine->IsReadyForTesting() : false)));  // IN-TEST
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5775,7 +5970,7 @@ void AutotestPrivateAPI::OnClipboardDataChanged() {
   std::unique_ptr<Event> event(
       new Event(events::AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED,
                 api::autotest_private::OnClipboardDataChanged::kEventName,
-                std::vector<base::Value>()));
+                base::Value::List()));
   event_router->BroadcastEvent(std::move(event));
 }
 

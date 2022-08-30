@@ -310,7 +310,7 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
       stream.type, result.load_from_store_status, result.final_status,
       result.load_type == LoadType::kInitialLoad,
       result.loaded_new_content_from_network, result.stored_content_age,
-      content_stats, GetRequestMetadata(stream.type, false),
+      content_stats, GetContentOrder(result.stream_type),
       std::move(result.latencies));
 
   stream.model_loading_in_progress = false;
@@ -386,7 +386,7 @@ void FeedStream::SetStreamStale(const StreamType& stream_type, bool is_stale) {
   if (stream_metadata.is_known_stale() != is_stale) {
     stream_metadata.set_is_known_stale(is_stale);
     if (is_stale) {
-      SetStreamViewContentIds(metadata_, stream_type, {});
+      SetStreamViewContentHashes(metadata_, stream_type, {});
     }
     SetMetadata(metadata);
   }
@@ -978,14 +978,14 @@ RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
         /*allow_expired_session_id =*/false);
   }
 
-  if (stream_type.IsWebFeed()) {
-    result.content_order = GetValidWebFeedContentOrder(*profile_prefs_);
-  }
+  result.content_order = GetContentOrder(stream_type);
 
-  if (stream->model) {
+  const feedstore::Metadata::StreamMetadata* stream_metadata =
+      FindMetadataForStream(GetMetadata(), stream_type);
+  if (stream_metadata != nullptr) {
     result.info_card_tracking_states = info_card_tracker_.GetAllStates(
-        stream->model->last_server_response_time_millis(),
-        stream->model->last_added_time_millis());
+        stream_metadata->last_server_response_time_millis(),
+        stream_metadata->last_fetch_time_millis());
   }
 
   return result;
@@ -1123,8 +1123,8 @@ bool FeedStream::HasUnreadContent(const StreamType& stream_type) {
   // ViewContentIds to whatever the current set is. This can happen if the
   // surface already shown is refreshed.
   if (stream.model && stream.surfaces.HasSurfaceShowingContent()) {
-    SetMetadata(SetStreamViewContentIds(metadata_, stream_type,
-                                        stream.model->GetContentIds()));
+    SetMetadata(SetStreamViewContentHashes(metadata_, stream_type,
+                                           stream.model->GetContentIds()));
     return false;
   }
   return true;
@@ -1337,13 +1337,8 @@ void FeedStream::ReportFeedViewed(const StreamType& stream_type,
   metrics_reporter_->FeedViewed(surface_id);
 
   Stream& stream = GetStream(stream_type);
-
-  // Skip feed-close refresh scheduling if this surface was already viewed.
-  // entry should never be null, but if it is, we will skip rescheduling.
-  StreamSurfaceSet::Entry* entry = stream.surfaces.FindSurface(surface_id);
-  if (entry && !entry->feed_viewed)
+  if (!stream.surfaces.HasSurfaceShowingContent())
     ScheduleFeedCloseRefreshOnFirstView(stream_type);
-
   stream.surfaces.FeedViewed(surface_id);
   MaybeNotifyHasUnreadContent(stream_type);
 }
@@ -1425,13 +1420,9 @@ void FeedStream::SetContentOrder(const StreamType& stream_type,
           &FeedStream::ForceRefreshTask, base::Unretained(this), stream_type)));
 }
 
-ContentOrder FeedStream::GetContentOrder(const StreamType& stream_type) {
-  if (!stream_type.IsWebFeed()) {
-    NOTREACHED()
-        << "GetContentOrderFromPrefs is not supported for this stream_type "
-        << stream_type;
+ContentOrder FeedStream::GetContentOrder(const StreamType& stream_type) const {
+  if (!stream_type.IsWebFeed())
     return ContentOrder::kUnspecified;
-  }
   return GetValidWebFeedContentOrder(*profile_prefs_);
 }
 

@@ -155,6 +155,10 @@ class AngleVulkanBacking : public ClearTrackingSharedImageBacking,
 
  protected:
   // SharedImageBacking implementation.
+  SharedImageBackingType GetType() const override {
+    return SharedImageBackingType::kAngleVulkan;
+  }
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     NOTREACHED() << "Not supported.";
     return false;
@@ -597,7 +601,7 @@ SharedImageBackingFactoryAngleVulkan::SharedImageBackingFactoryAngleVulkan(
                                         context_state->progress_reporter()),
       context_state_(context_state) {
   DCHECK(context_state_->GrContextIsVulkan());
-  DCHECK(gl::GLSurfaceEGL::GetGLDisplayEGL()->IsANGLEVulkanImageSupported());
+  DCHECK(gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_ANGLE_vulkan_image);
 }
 
 SharedImageBackingFactoryAngleVulkan::~SharedImageBackingFactoryAngleVulkan() =

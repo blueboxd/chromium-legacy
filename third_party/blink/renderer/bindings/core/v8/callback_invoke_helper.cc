@@ -16,14 +16,19 @@ namespace blink {
 
 namespace bindings {
 
-template <class CallbackBase, CallbackInvokeHelperMode mode>
-bool CallbackInvokeHelper<CallbackBase, mode>::PrepareForCall(
-    V8ValueOrScriptWrappableAdapter callback_this) {
+template <class CallbackBase,
+          CallbackInvokeHelperMode mode,
+          CallbackReturnTypeIsPromise return_type_is_promise>
+bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
+    PrepareForCall(V8ValueOrScriptWrappableAdapter callback_this) {
   v8::Isolate* isolate = callback_->GetIsolate();
   if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
     ScriptForbiddenScope::ThrowScriptForbiddenException(isolate);
     return Abort();
   }
+  // TODO(crbug.com/1196853): Remove this once we have discovered and fixed
+  // sources of attempted script execution during blink lifecycle.
+  DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
 
   if constexpr (mode == CallbackInvokeHelperMode::kConstructorCall) {
     // step 3. If ! IsConstructor(F) is false, throw a TypeError exception.
@@ -94,39 +99,67 @@ bool CallbackInvokeHelper<CallbackBase, mode>::PrepareForCall(
     }
     if (auto* tracker =
             ThreadScheduler::Current()->GetTaskAttributionTracker()) {
-      task_attribution_scope_ =
-          tracker->CreateTaskScope(callback_->CallbackRelevantScriptState(),
-                                   callback_->GetParentTaskId());
+      // There are 3 possible callbacks here:
+      // a) Callbacks which track their registering task as their parent
+      // b) Callbacks which don't do the above, split into two groups:
+      //   1) If there's a current running task, use it as your parent. We could
+      //   have also elided creating a new scope entirely. 2) If there is no
+      //   current running task, set the parent to absl::nullopt, making the
+      //   current callback a root task.
+      absl::optional<scheduler::TaskId> parent_id =
+          callback_->GetParentTaskId();
+      if (!parent_id) {
+        parent_id =
+            tracker->RunningTaskId(callback_->CallbackRelevantScriptState());
+      }
+      task_attribution_scope_ = tracker->CreateTaskScope(
+          callback_->CallbackRelevantScriptState(), parent_id);
     }
   }
 
   return true;
 }
 
-template <class CallbackBase, CallbackInvokeHelperMode mode>
-bool CallbackInvokeHelper<CallbackBase, mode>::Call(
-    int argc,
-    v8::Local<v8::Value>* argv) {
-  if (mode == CallbackInvokeHelperMode::kConstructorCall) {
+template <class CallbackBase,
+          CallbackInvokeHelperMode mode,
+          CallbackReturnTypeIsPromise return_type_is_promise>
+bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
+    CallInternal(int argc, v8::Local<v8::Value>* argv) {
+  if constexpr (mode == CallbackInvokeHelperMode::kConstructorCall) {
     // step 10. Let callResult be Construct(F, esArgs).
-    if (!V8ScriptRunner::CallAsConstructor(
-             callback_->GetIsolate(), function_,
-             ExecutionContext::From(callback_->CallbackRelevantScriptState()),
-             argc, argv)
-             .ToLocal(&result_)) {
-      return Abort();
-    }
+    return V8ScriptRunner::CallAsConstructor(
+               callback_->GetIsolate(), function_,
+               ExecutionContext::From(callback_->CallbackRelevantScriptState()),
+               argc, argv)
+        .ToLocal(&result_);
   } else {
     // step 12. Let callResult be Call(X, thisArg, esArgs).
     // or
     // step 11. Let callResult be Call(F, thisArg, esArgs).
-    if (!V8ScriptRunner::CallFunction(
-             function_,
-             ExecutionContext::From(callback_->CallbackRelevantScriptState()),
-             callback_this_, argc, argv, callback_->GetIsolate())
-             .ToLocal(&result_)) {
-      return Abort();
+    return V8ScriptRunner::CallFunction(
+               function_,
+               ExecutionContext::From(callback_->CallbackRelevantScriptState()),
+               callback_this_, argc, argv, callback_->GetIsolate())
+        .ToLocal(&result_);
+  }
+}
+
+template <class CallbackBase,
+          CallbackInvokeHelperMode mode,
+          CallbackReturnTypeIsPromise return_type_is_promise>
+bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::Call(
+    int argc,
+    v8::Local<v8::Value>* argv) {
+  if constexpr (return_type_is_promise == CallbackReturnTypeIsPromise::kYes) {
+    v8::TryCatch block(callback_->GetIsolate());
+    if (!CallInternal(argc, argv)) {
+      result_ = ScriptPromise::Reject(callback_->CallbackRelevantScriptState(),
+                                      block.Exception())
+                    .V8Value();
     }
+  } else {
+    if (!CallInternal(argc, argv))
+      return Abort();
   }
   return true;
 }
@@ -139,6 +172,14 @@ template class CORE_TEMPLATE_EXPORT
     CallbackInvokeHelper<CallbackFunctionBase,
                          CallbackInvokeHelperMode::kLegacyTreatNonObjectAsNull>;
 template class CORE_TEMPLATE_EXPORT CallbackInvokeHelper<CallbackInterfaceBase>;
+template class CORE_TEMPLATE_EXPORT
+    CallbackInvokeHelper<CallbackFunctionBase,
+                         CallbackInvokeHelperMode::kDefault,
+                         CallbackReturnTypeIsPromise::kYes>;
+template class CORE_TEMPLATE_EXPORT
+    CallbackInvokeHelper<CallbackFunctionBase,
+                         CallbackInvokeHelperMode::kConstructorCall,
+                         CallbackReturnTypeIsPromise::kYes>;
 
 }  // namespace bindings
 

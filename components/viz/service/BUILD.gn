@@ -70,6 +70,8 @@ viz_component("service") {
     "display/output_surface_frame.h",
     "display/overlay_candidate.cc",
     "display/overlay_candidate.h",
+    "display/overlay_candidate_factory.cc",
+    "display/overlay_candidate_factory.h",
     "display/overlay_candidate_temporal_tracker.cc",
     "display/overlay_candidate_temporal_tracker.h",
     "display/overlay_processor_interface.cc",
@@ -186,6 +188,7 @@ viz_component("service") {
     "performance_hint/hint_session.h",
     "performance_hint/utils.cc",
     "performance_hint/utils.h",
+    "surfaces/frame_index_constants.h",
     "surfaces/latest_local_surface_id_lookup_delegate.h",
     "surfaces/pending_copy_output_request.cc",
     "surfaces/pending_copy_output_request.h",
@@ -288,10 +291,6 @@ viz_component("service") {
     }
   }
 
-  if (is_chromecast) {
-    deps += [ "//chromecast/media/service/mojom" ]
-  }
-
   if (is_mac) {
     sources += [
       "display/ca_layer_overlay.cc",
@@ -322,9 +321,16 @@ viz_component("service") {
       "display/overlay_strategy_single_on_top.h",
       "display/overlay_strategy_underlay.cc",
       "display/overlay_strategy_underlay.h",
+    ]
+  }
+
+  if (enable_cast_overlay_strategy) {
+    sources += [
       "display/overlay_strategy_underlay_cast.cc",
       "display/overlay_strategy_underlay_cast.h",
     ]
+
+    deps += [ "//chromecast/media/service/mojom" ]
   }
 
   if (is_android) {
@@ -353,10 +359,6 @@ viz_component("service") {
     ]
 
     public_deps += [ "//ui/ozone" ]
-  }
-
-  if (is_chromecast) {
-    defines += [ "ALWAYS_ENABLE_BLENDING_FOR_PRIMARY" ]
   }
 
   if (is_win) {

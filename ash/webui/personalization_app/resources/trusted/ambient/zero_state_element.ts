@@ -6,7 +6,7 @@
  * @fileoverview Polymer element that displays the Ambient zero state.
  */
 
-import '../../common/common_style.css.js';
+import '../../css/common.css.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 
 import {WithPersonalizationStore} from '../personalization_store.js';
@@ -40,8 +40,8 @@ export class AmbientZeroState extends WithPersonalizationStore {
    */
   private getImageSource_() {
     return this.isDarkModeActive_ ?
-        'chrome://personalization/common/ambient_mode_disabled_dark.svg' :
-        'chrome://personalization/common/ambient_mode_disabled.svg';
+        'chrome://personalization/images/ambient_mode_disabled_dark.svg' :
+        'chrome://personalization/images/ambient_mode_disabled.svg';
   }
 }
 

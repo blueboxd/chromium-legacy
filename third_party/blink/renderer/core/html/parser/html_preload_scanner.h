@@ -34,21 +34,42 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/sequence_bound.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+class HTMLDocumentParser;
 class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
+
+// Encapsulates values from the <meta http-equiv="accept-ch"> or <meta
+// name="accept-ch"> tags. These are collected by the preload scanner to be
+// later handled on the main thread.
+struct AcceptCHValue {
+  AtomicString value;
+  bool is_http_equiv = false;
+  bool is_preload_or_sync_parser = false;
+};
+using AcceptCHValues = Vector<AcceptCHValue>;
+
+// Encapsulates data created by HTMLPreloadScanner that needs to be processed on
+// the main thread.
+struct PendingPreloadData {
+  AcceptCHValues accept_ch_values;
+  absl::optional<ViewportDescription> viewport;
+  bool has_csp_meta_tag = false;
+  PreloadRequestStream requests;
+};
 
 bool Match(const StringImpl* impl, const QualifiedName& q_name);
 const StringImpl* TagImplFor(const HTMLToken::DataVector& data);
@@ -68,7 +89,6 @@ struct CORE_EXPORT CachedDocumentParameters {
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
   HashSet<String> disabled_image_types;
-  WeakPersistent<LocalDOMWindow> local_dom_window;
 };
 
 class TokenPreloadScanner {
@@ -89,6 +109,7 @@ class TokenPreloadScanner {
   void Scan(const HTMLToken&,
             const SegmentedString&,
             PreloadRequestStream& requests,
+            AcceptCHValues& accept_ch_values,
             absl::optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
 
@@ -100,11 +121,13 @@ class TokenPreloadScanner {
   class StartTagScanner;
 
   void HandleMetaNameAttribute(const HTMLToken& token,
+                               AcceptCHValues& accept_ch_values,
                                absl::optional<ViewportDescription>* viewport);
 
   inline void ScanCommon(const HTMLToken&,
                          const SegmentedString&,
                          PreloadRequestStream& requests,
+                         AcceptCHValues& accept_ch_values,
                          absl::optional<ViewportDescription>*,
                          bool* is_csp_meta_tag);
 
@@ -132,7 +155,6 @@ class TokenPreloadScanner {
   size_t template_count_;
   std::unique_ptr<CachedDocumentParameters> document_parameters_;
   Persistent<MediaValuesCached> media_values_;
-  ClientHintsPreferences client_hints_preferences_;
   ScannerType scanner_type_;
   // TODO(domfarolino): Remove this once Priority Hints is no longer in Origin
   // Trial (see https://crbug.com/821464). This member exists because
@@ -146,25 +168,50 @@ class CORE_EXPORT HTMLPreloadScanner {
   USING_FAST_MALLOC(HTMLPreloadScanner);
 
  public:
-  HTMLPreloadScanner(const HTMLParserOptions&,
+  // Creates a HTMLPreloadScanner which can be used on the main thread.
+  static std::unique_ptr<HTMLPreloadScanner> Create(
+      Document& document,
+      HTMLParserOptions options,
+      TokenPreloadScanner::ScannerType scanner_type);
+
+  // Creates a HTMLPreloadScanner which will be bound to |task_runner|.
+  static WTF::SequenceBound<HTMLPreloadScanner> CreateBackground(
+      HTMLDocumentParser* parser,
+      HTMLParserOptions options,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  HTMLPreloadScanner(std::unique_ptr<HTMLTokenizer>,
+                     bool priority_hints_origin_trial_enabled,
                      const KURL& document_url,
                      std::unique_ptr<CachedDocumentParameters>,
                      const MediaValuesCached::MediaValuesCachedData&,
-                     const TokenPreloadScanner::ScannerType);
+                     const TokenPreloadScanner::ScannerType,
+                     std::unique_ptr<BackgroundHTMLScanner::ScriptTokenScanner>
+                         script_token_scanner);
   HTMLPreloadScanner(const HTMLPreloadScanner&) = delete;
   HTMLPreloadScanner& operator=(const HTMLPreloadScanner&) = delete;
   ~HTMLPreloadScanner();
 
   void AppendToEnd(const SegmentedString&);
-  PreloadRequestStream Scan(const KURL& document_base_element_url,
-                            absl::optional<ViewportDescription>*,
-                            bool& has_csp_meta_tag);
+
+  using TakePreloadFn = WTF::CrossThreadRepeatingFunction<void(
+      std::unique_ptr<PendingPreloadData>)>;
+  std::unique_ptr<PendingPreloadData> Scan(
+      const KURL& document_base_element_url,
+      const TakePreloadFn& take_preload = TakePreloadFn());
+
+  // Scans |source| and calls |take_preload| with the generated preload data.
+  void ScanInBackground(const String& source,
+                        const KURL& document_base_element_url,
+                        const TakePreloadFn& take_preload);
 
  private:
   TokenPreloadScanner scanner_;
   SegmentedString source_;
   HTMLToken token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
+  std::unique_ptr<BackgroundHTMLScanner::ScriptTokenScanner>
+      script_token_scanner_;
 };
 
 }  // namespace blink

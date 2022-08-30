@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
+#include "third_party/blink/renderer/core/dom/popup_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -242,7 +243,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchSelector(
 
   if (sub_result.dynamic_pseudo != kPseudoIdNone) {
     result.dynamic_pseudo = sub_result.dynamic_pseudo;
-    result.custom_highlight_name = sub_result.custom_highlight_name;
+    result.custom_highlight_name = std::move(sub_result.custom_highlight_name);
   }
 
   if (context.selector->IsLastInTagHistory())
@@ -565,9 +566,8 @@ static bool AnyAttributeMatches(Element& element,
     // Legacy dictates that values of some attributes should be compared in
     // a case-insensitive manner regardless of whether the case insensitive
     // flag is set or not.
-    bool legacy_case_insensitive =
-        IsA<HTMLDocument>(element.GetDocument()) &&
-        !HTMLDocument::IsCaseSensitiveAttribute(selector_attr);
+    bool legacy_case_insensitive = IsA<HTMLDocument>(element.GetDocument()) &&
+                                   !selector.IsCaseSensitiveAttribute();
 
     // If case-insensitive, re-check, and count if result differs.
     // See http://code.google.com/p/chromium/issues/detail?id=327060
@@ -1392,6 +1392,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoTopLayer:
       if (element.HasValidPopupAttribute()) {
         return element.popupOpen();
+      }
+      return false;
+    case CSSSelector::kPseudoPopupHidden:
+      if (element.HasValidPopupAttribute()) {
+        return element.GetPopupData()->visibilityState() ==
+               PopupVisibilityState::kHidden;
       }
       return false;
     case CSSSelector::kPseudoFullscreen:

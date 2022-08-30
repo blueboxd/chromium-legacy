@@ -65,7 +65,6 @@ extern const base::Feature
 extern const base::Feature
     kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature;
 extern const base::Feature kIPHAddToHomescreenMessageFeature;
-extern const base::Feature kIPHAddToHomescreenTextBubbleFeature;
 extern const base::Feature kIPHAutoDarkOptOutFeature;
 extern const base::Feature kIPHAutoDarkUserEducationMessageFeature;
 extern const base::Feature kIPHAutoDarkUserEducationMessageOptInFeature;
@@ -129,6 +128,7 @@ extern const base::Feature kIPHNewTabPageHomeButtonFeature;
 extern const base::Feature kIPHPageInfoFeature;
 extern const base::Feature kIPHPageInfoStoreInfoFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
+extern const base::Feature kIPHPriceDropNTPFeature;
 extern const base::Feature kIPHQuietNotificationPromptsFeature;
 extern const base::Feature kIPHReadLaterContextMenuFeature;
 extern const base::Feature kIPHReadLaterAppMenuBookmarkThisPageFeature;
@@ -162,7 +162,6 @@ extern const base::Feature kIPHWebFeedFollowFeature;
 extern const base::Feature kIPHWebFeedPostFollowDialogFeature;
 extern const base::Feature kIPHSharedHighlightingBuilder;
 extern const base::Feature kIPHSharedHighlightingReceiverFeature;
-extern const base::Feature kIPHStartSurfaceTabSwitcherHomeButton;
 extern const base::Feature kIPHSharingHubWebnotesStylizeFeature;
 #endif  // BUILDFLAG(IS_ANDROID)
 

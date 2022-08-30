@@ -111,7 +111,7 @@ class AX_EXPORT AXNode final {
 
    protected:
     raw_ptr<const NodeType> parent_;
-    raw_ptr<NodeType> child_;
+    raw_ptr<NodeType, DanglingUntriaged> child_;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -658,6 +658,10 @@ class AX_EXPORT AXNode final {
   // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.
   bool IsInListMarker() const;
+
+  // Returns true if this node is a popup button that is a parent to a menu list
+  // popup.
+  bool IsMenuListPopUpButton() const;
 
   // Returns true if this node is a collapsed popup button that is parent to a
   // menu list popup.

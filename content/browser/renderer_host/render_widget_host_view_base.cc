@@ -378,6 +378,10 @@ bool RenderWidgetHostViewBase::GetIsMouseLockedUnadjustedMovementForTesting() {
   return false;
 }
 
+bool RenderWidgetHostViewBase::CanBeMouseLocked() {
+  return HasFocus();
+}
+
 bool RenderWidgetHostViewBase::LockKeyboard(
     absl::optional<base::flat_set<ui::DomCode>> codes) {
   NOTIMPLEMENTED_LOG_ONCE();
@@ -497,6 +501,10 @@ gfx::NativeViewAccessible
 gfx::NativeViewAccessible
 RenderWidgetHostViewBase::AccessibilityGetNativeViewAccessibleForWindow() {
   return nullptr;
+}
+
+bool RenderWidgetHostViewBase::RequestStartStylusWriting() {
+  return false;
 }
 
 bool RenderWidgetHostViewBase::RequestRepaintForTesting() {

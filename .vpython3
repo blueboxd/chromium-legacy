@@ -42,7 +42,7 @@ verify_pep425_tag: [
 #   build/android/pylib/local/emulator/avd.py
 wheel: <
   name: "infra/python/wheels/protobuf-py3"
-  version: "version:3.19.3"
+  version: "version:3.20.0"
 >
 
 # TODO(https://crbug.com/898348): Add in necessary wheels as Python3 versions
@@ -362,6 +362,10 @@ wheel: <
 wheel: <
   name: "infra/python/wheels/pycparser-py2_py3"
   version: "version:2.19"
+>
+wheel: <
+  name: "infra/python/wheels/ecdsa-py2_py3"
+  version: "version:0.17.0"
 >
 
 # Used by:

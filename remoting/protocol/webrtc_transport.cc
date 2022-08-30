@@ -13,8 +13,10 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/abseil_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -32,6 +34,7 @@
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_audio_module.h"
+#include "third_party/abseil-cpp/absl/strings/string_view.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/webrtc/api/audio_codecs/audio_decoder_factory_template.h"
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
@@ -144,7 +147,8 @@ TransportRoute::RouteType CandidateTypeToTransportRouteType(
 // Initializes default parameters for a sender that may be different from
 // WebRTC's defaults.
 void SetDefaultSenderParameters(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+    int video_frame_rate) {
   if (sender->media_type() == cricket::MEDIA_TYPE_VIDEO) {
     webrtc::RtpParameters parameters = sender->GetParameters();
     if (parameters.encodings.empty()) {
@@ -153,7 +157,7 @@ void SetDefaultSenderParameters(
     }
 
     for (auto& encoding : parameters.encodings) {
-      encoding.max_framerate = kTargetFrameRate;
+      encoding.max_framerate = video_frame_rate;
     }
 
     webrtc::RTCError result = sender->SetParameters(parameters);
@@ -250,7 +254,10 @@ class RtcEventLogOutput : public webrtc::RtcEventLogOutput {
   // webrtc::RtcEventLogOutput interface
   bool IsActive() const override { return true; }
   bool Write(const std::string& output) override {
-    event_log_data_.Write(output);
+    return Write(absl::string_view(output));
+  }
+  bool Write(absl::string_view output) override {
+    event_log_data_.Write(base::StringViewToStringPiece(output));
     return true;
   }
 
@@ -745,6 +752,12 @@ void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
   if (video_codec) {
     preferred_video_codec_ = *video_codec;
   }
+  absl::optional<int> frame_rate = session_options().GetInt("Video-Frame-Rate");
+  if (frame_rate) {
+    // Clamp the range to prevent a bad experience in case of a client bug.
+    frame_rate = base::clamp<int>(frame_rate.value(), kTargetFrameRate, 1000);
+    desired_video_frame_rate_ = frame_rate.value();
+  }
 }
 
 void WebrtcTransport::OnAudioTransceiverCreated(
@@ -757,7 +770,7 @@ void WebrtcTransport::OnVideoTransceiverCreated(
   auto sender = transceiver->sender();
   auto [min_bitrate_bps, max_bitrate_bps] = BitratesForConnection();
   SetSenderBitrates(sender, min_bitrate_bps, max_bitrate_bps);
-  SetDefaultSenderParameters(sender);
+  SetDefaultSenderParameters(sender, desired_video_frame_rate_);
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -845,7 +858,7 @@ void WebrtcTransport::OnLocalDescriptionSet(bool success,
   // maximum framerate.
   auto senders = peer_connection()->GetSenders();
   for (const auto& sender : senders) {
-    SetDefaultSenderParameters(sender);
+    SetDefaultSenderParameters(sender, desired_video_frame_rate_);
   }
 }
 

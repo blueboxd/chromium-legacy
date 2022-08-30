@@ -276,12 +276,14 @@ public class GeolocationHeader {
 
             if (!hasGeolocationPermission()) {
                 if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_CHROME_APP);
+                Log.i(TAG, "[crbug/1338183] App permission is missing");
                 return HeaderState.LOCATION_PERMISSION_BLOCKED;
             }
 
             // Only send X-Geo header if the user hasn't disabled geolocation for url.
             if (isLocationDisabledForUrl(profile, uri)) {
                 if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_GOOGLE_DOMAIN);
+                Log.i(TAG, "[crbug/1338183] Site permission is missing");
                 return HeaderState.LOCATION_PERMISSION_BLOCKED;
             }
 
@@ -356,6 +358,7 @@ public class GeolocationHeader {
             long locationAge = Long.MAX_VALUE;
             @HeaderState
             int headerState = geoHeaderStateForUrl(profile, url, true);
+            Log.i(TAG, "[crbug/1338183] headerState: " + headerState);
             if (headerState == HeaderState.HEADER_ENABLED) {
                 locationToAttach = GeolocationTracker.getLastKnownLocation(
                         ContextUtils.getApplicationContext());
@@ -505,6 +508,11 @@ public class GeolocationHeader {
     static void setAppPermissionGrantedForTesting(boolean appPermissionGrantedForTesting) {
         sAppPermissionGrantedForTesting = appPermissionGrantedForTesting;
         sUseAppPermissionGrantedForTesting = true;
+    }
+
+    @VisibleForTesting
+    static long getFirstLocationTimeForTesting() {
+        return sFirstLocationTime;
     }
 
     /** Records a data point for the Geolocation.HeaderSentOrNot histogram. */

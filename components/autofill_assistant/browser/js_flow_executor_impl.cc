@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/js_flow_util.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/parse_jspb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "content/public/browser/browser_context.h"
@@ -128,8 +129,13 @@ void JsFlowExecutorImpl::Start(
     const std::string& js_flow,
     base::OnceCallback<void(const ClientStatus&, std::unique_ptr<base::Value>)>
         callback) {
+  Metrics::RecordJsFlowStartedEvent(
+      Metrics::JsFlowStartedEvent::EXECUTOR_STARTED);
+
   if (callback_) {
     LOG(ERROR) << "Invoked " << __func__ << " while already running";
+    Metrics::RecordJsFlowStartedEvent(
+        Metrics::JsFlowStartedEvent::FAILED_ALREADY_RUNNING);
     std::move(callback).Run(ClientStatus(INVALID_ACTION), nullptr);
     return;
   }
@@ -165,6 +171,9 @@ void JsFlowExecutorImpl::InternalStart(const ClientStatus& status,
       base::StrCat({kLeadingWrapper, *js_flow_, kTrailingWrapper,
                     js_flow_util::GetDevtoolsSourceUrlCommentToAppend(
                         UnexpectedErrorInfoProto::JS_FLOW)}));
+
+  Metrics::RecordJsFlowStartedEvent(
+      Metrics::JsFlowStartedEvent::SCRIPT_STARTED);
 
   // Run the wrapped js_flow in the sandbox and serve potential native action
   // requests as they arrive.

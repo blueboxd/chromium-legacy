@@ -293,12 +293,12 @@ bool ComServerApp::SwapInNewVersion() {
   std::unique_ptr<WorkItemList> list(WorkItem::CreateWorkItemList());
 
   const absl::optional<base::FilePath> versioned_directory =
-      GetVersionedDirectory(updater_scope());
+      GetVersionedDataDirectory(updater_scope());
   if (!versioned_directory)
     return false;
 
   const base::FilePath updater_path =
-      versioned_directory->Append(FILE_PATH_LITERAL("updater.exe"));
+      versioned_directory->Append(GetExecutableRelativePath());
 
   HKEY root = (updater_scope() == UpdaterScope::kSystem) ? HKEY_LOCAL_MACHINE
                                                          : HKEY_CURRENT_USER;

@@ -56,11 +56,11 @@ class DoctypeData {
   bool force_quirks_;
 };
 
-static inline Attribute* FindAttributeInVector(Vector<Attribute>& attributes,
+static inline Attribute* FindAttributeInVector(base::span<Attribute> attributes,
                                                const QualifiedName& name) {
-  for (unsigned i = 0; i < attributes.size(); ++i) {
-    if (attributes.at(i).GetName().Matches(name))
-      return &attributes.at(i);
+  for (Attribute& attr : attributes) {
+    if (attr.GetName().Matches(name))
+      return &attr;
   }
   return nullptr;
 }
@@ -117,6 +117,8 @@ class HTMLToken {
     AtomicString GetName() const { return name_.AsAtomicString(); }
     AtomicString GetValue() const { return value_.AsAtomicString(); }
 
+    const UCharLiteralBuffer<32>& NameBuffer() const { return name_; }
+
     String NameAttemptStaticStringCreation() const {
       return AttemptStaticStringCreation(name_, kLikely8Bit);
     }
@@ -150,7 +152,7 @@ class HTMLToken {
     Range value_range_;
   };
 
-  typedef Vector<Attribute, 10> AttributeList;
+  typedef Vector<Attribute, kAttributePrealloc> AttributeList;
 
   // By using an inline capacity of 256, we avoid spilling over into an malloced
   // buffer approximately 99% of the time based on a non-scientific browse
@@ -159,11 +161,18 @@ class HTMLToken {
   // better-informed inline capacity.
   using DataVector = UCharLiteralBuffer<256>;
 
-  HTMLToken() { Clear(); }
+  HTMLToken() {
+    range_.Clear();
+    range_.start = 0;
+  }
+
   HTMLToken(const HTMLToken&) = delete;
   HTMLToken& operator=(const HTMLToken&) = delete;
 
   void Clear() {
+    if (type_ == kUninitialized)
+      return;
+
     type_ = kUninitialized;
     range_.Clear();
     range_.start = 0;
@@ -194,7 +203,7 @@ class HTMLToken {
     return data_;
   }
 
-  bool IsAll8BitData() const { return data_.Is8Bit(); }
+  ALWAYS_INLINE bool IsAll8BitData() const { return data_.Is8Bit(); }
 
   const DataVector& GetName() const {
     DCHECK(type_ == kStartTag || type_ == kEndTag || type_ == DOCTYPE);
@@ -423,9 +432,9 @@ class HTMLToken {
   }
 
  private:
-  TokenType type_;
+  TokenType type_ = kUninitialized;
   Attribute::Range range_;  // Always starts at zero.
-  int base_offset_;
+  int base_offset_ = 0;
   DataVector data_;
 
   // For StartTag and EndTag

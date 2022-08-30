@@ -142,9 +142,9 @@ media::AudioParameters GetAudioHardwareParams() {
   if (!render_frame)
     return media::AudioParameters::UnavailableDeviceParams();
 
-  return blink::AudioDeviceFactory::GetOutputDeviceInfo(
-             render_frame->GetWebFrame()->GetLocalFrameToken(),
-             media::AudioSinkParameters())
+  return blink::AudioDeviceFactory::GetInstance()
+      ->GetOutputDeviceInfo(render_frame->GetWebFrame()->GetLocalFrameToken(),
+                            media::AudioSinkParameters())
       .output_params();
 }
 
@@ -279,11 +279,11 @@ RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-void RendererBlinkPlatformImpl::SetDisplayThreadPriority(
+void RendererBlinkPlatformImpl::SetCompositingThreadType(
     base::PlatformThreadId thread_id) {
   if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
-    render_thread->render_message_filter()->SetThreadPriority(
-        thread_id, base::ThreadPriority::DISPLAY);
+    render_thread->render_message_filter()->SetThreadType(
+        thread_id, base::ThreadType::kCompositing);
   }
 }
 #endif
@@ -543,7 +543,7 @@ scoped_refptr<media::AudioCapturerSource>
 RendererBlinkPlatformImpl::NewAudioCapturerSource(
     blink::WebLocalFrame* web_frame,
     const media::AudioSourceParameters& params) {
-  return blink::AudioDeviceFactory::NewAudioCapturerSource(
+  return blink::AudioDeviceFactory::GetInstance()->NewAudioCapturerSource(
       web_frame->GetLocalFrameToken(), params);
 }
 
@@ -592,7 +592,7 @@ RendererBlinkPlatformImpl::NewAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
     blink::WebLocalFrame* web_frame,
     const media::AudioSinkParameters& params) {
-  return blink::AudioDeviceFactory::NewAudioRendererSink(
+  return blink::AudioDeviceFactory::GetInstance()->NewAudioRendererSink(
       source_type, web_frame->GetLocalFrameToken(), params);
 }
 
@@ -960,19 +960,13 @@ void RendererBlinkPlatformImpl::CreateServiceWorkerSubresourceLoaderFactory(
     const blink::WebString& client_id,
     std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<base::SequencedTaskRunner> worker_timing_callback_task_runner,
-    base::RepeatingCallback<
-        void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
-        worker_timing_callback) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(service_worker_container_host),
           /*remote_controller=*/mojo::NullRemote(), client_id.Utf8()),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
-      std::move(receiver), std::move(task_runner),
-      std::move(worker_timing_callback_task_runner),
-      std::move(worker_timing_callback));
+      std::move(receiver), std::move(task_runner));
 }
 
 //------------------------------------------------------------------------------

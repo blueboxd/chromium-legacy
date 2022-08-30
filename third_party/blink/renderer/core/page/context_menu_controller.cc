@@ -133,6 +133,13 @@ template <class enumType>
 uint32_t EnumToBitmask(enumType outcome) {
   return 1 << static_cast<uint8_t>(outcome);
 }
+
+absl::optional<uint64_t> GetRendererId(HitTestResult& result) {
+  if (auto* input = DynamicTo<HTMLInputElement>(result.InnerNode()))
+    return input->UniqueRendererFormControlId();
+  return absl::nullopt;
+}
+
 }  // namespace
 
 ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
@@ -552,7 +559,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebString text = plugin->SelectionAsText();
         if (!text.IsEmpty()) {
           data.selected_text = text.Utf8();
-          data.edit_flags |= ContextMenuDataEditFlags::kCanCopy;
+          if (plugin->CanCopy())
+            data.edit_flags |= ContextMenuDataEditFlags::kCanCopy;
         }
         bool plugin_can_edit_text = plugin->CanEditText();
         if (plugin_can_edit_text) {
@@ -751,6 +759,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   data.input_field_type = ComputeInputFieldType(result);
   data.selection_rect = ComputeSelectionRect(selected_frame);
   data.source_type = source_type;
+  data.field_renderer_id = GetRendererId(result);
 
   const bool from_touch = source_type == kMenuSourceTouch ||
                           source_type == kMenuSourceLongPress ||
@@ -758,18 +767,24 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (from_touch && !ShouldShowContextMenuFromTouch(data))
     return false;
 
-  absl::optional<gfx::Point> host_context_menu_location;
-  auto* main_frame =
-      WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(page_->MainFrame()));
-  if (main_frame) {
-    host_context_menu_location =
-        main_frame->FrameWidgetImpl()->GetAndResetContextMenuLocation();
-  }
-
   WebLocalFrameImpl* selected_web_frame =
       WebLocalFrameImpl::FromFrame(selected_frame);
   if (!selected_web_frame || !selected_web_frame->Client())
     return false;
+
+  absl::optional<gfx::Point> host_context_menu_location;
+  if (selected_web_frame->FrameWidgetImpl()) {
+    host_context_menu_location =
+        selected_web_frame->FrameWidgetImpl()->GetAndResetContextMenuLocation();
+  }
+  if (!host_context_menu_location.has_value()) {
+    auto* main_frame =
+        WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(page_->MainFrame()));
+    if (main_frame && main_frame != selected_web_frame) {
+      host_context_menu_location =
+          main_frame->FrameWidgetImpl()->GetAndResetContextMenuLocation();
+    }
+  }
 
   selected_web_frame->ShowContextMenu(
       context_menu_client_receiver_.BindNewEndpointAndPassRemote(

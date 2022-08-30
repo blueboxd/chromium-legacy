@@ -31,6 +31,8 @@ class PasswordStoreBackendMetricsRecorder {
   enum class SuccessStatus { kSuccess, kError, kCancelled };
 
   PasswordStoreBackendMetricsRecorder();
+  // Constructs a new recorder and immediately calls `RecordRequestStatus()` to
+  // indicate a new request is started.
   explicit PasswordStoreBackendMetricsRecorder(BackendInfix backend_name,
                                                MetricInfix metric_name);
   PasswordStoreBackendMetricsRecorder(PasswordStoreBackendMetricsRecorder&&);
@@ -45,15 +47,24 @@ class PasswordStoreBackendMetricsRecorder {
       SuccessStatus success_status,
       absl::optional<ErrorFromPasswordStoreOrAndroidBackend> error) const;
 
-  // Records success, error and API error metrics from clients unenrolled from
-  // the UPM experiment after experiencing errors in the android backend.
-  void RecordMetricsForUnenrolledClients(
-      const absl::optional<AndroidBackendError>& error) const;
-
   // Returns the delta between creating this recorder and calling this method.
   base::TimeDelta GetElapsedTimeSinceCreation() const;
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class StoreBackendRequestStatus {
+    kRequestIssued = 0,
+    kTimeout = 1,
+    kCompleted = 2,
+    kMaxValue = kCompleted
+  };
+
+  // Records a broad status for an ongoing request:
+  // - "PasswordManager.PasswordStoreBackend.<metric_infix_>"
+  // - "PasswordManager.PasswordStore<backend_infix_>.<metric_infix_>"
+  void RecordRequestStatus(StoreBackendRequestStatus request_status) const;
+
   // Records the following metrics:
   // - "PasswordManager.PasswordStore<backend_infix_>.<metric_infix_>.Success"
   // - "PasswordManager.PasswordStoreBackend.<metric_infix_>.Success"
@@ -75,7 +86,9 @@ class PasswordStoreBackendMetricsRecorder {
   // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.APIError"
   void RecordApiErrorCode(int api_error_code) const;
 
+  std::string GetBackendMetricName() const;
   std::string BuildMetricName(base::StringPiece suffix) const;
+  std::string GetOverallMetricName() const;
   std::string BuildOverallMetricName(base::StringPiece suffix) const;
 
   BackendInfix backend_infix_;

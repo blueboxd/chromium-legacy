@@ -335,18 +335,6 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case PHONE_HOME_CITY_AND_NUMBER:
         case PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX:
         case PHONE_HOME_WHOLE_NUMBER:
-        case PHONE_FAX_NUMBER:
-        case PHONE_FAX_CITY_CODE:
-        case PHONE_FAX_COUNTRY_CODE:
-        case PHONE_FAX_CITY_AND_NUMBER:
-        case PHONE_FAX_WHOLE_NUMBER:
-        case ADDRESS_BILLING_LINE1:
-        case ADDRESS_BILLING_LINE2:
-        case ADDRESS_BILLING_APT_NUM:
-        case ADDRESS_BILLING_CITY:
-        case ADDRESS_BILLING_STATE:
-        case ADDRESS_BILLING_ZIP:
-        case ADDRESS_BILLING_COUNTRY:
         case CREDIT_CARD_NAME_FULL:
         case CREDIT_CARD_NUMBER:
         case CREDIT_CARD_EXP_MONTH:
@@ -358,25 +346,10 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case CREDIT_CARD_VERIFICATION_CODE:
         case COMPANY_NAME:
         case FIELD_WITH_DEFAULT_VALUE:
-        case PHONE_BILLING_NUMBER:
-        case PHONE_BILLING_CITY_CODE:
-        case PHONE_BILLING_COUNTRY_CODE:
-        case PHONE_BILLING_CITY_AND_NUMBER:
-        case PHONE_BILLING_WHOLE_NUMBER:
-        case NAME_BILLING_FIRST:
-        case NAME_BILLING_MIDDLE:
-        case NAME_BILLING_LAST:
-        case NAME_BILLING_MIDDLE_INITIAL:
-        case NAME_BILLING_FULL:
-        case NAME_BILLING_SUFFIX:
         case MERCHANT_EMAIL_SIGNUP:
         case MERCHANT_PROMO_CODE:
         case PASSWORD:
         case ACCOUNT_CREATION_PASSWORD:
-        case ADDRESS_BILLING_STREET_ADDRESS:
-        case ADDRESS_BILLING_SORTING_CODE:
-        case ADDRESS_BILLING_DEPENDENT_LOCALITY:
-        case ADDRESS_BILLING_LINE3:
         case NOT_ACCOUNT_CREATION_PASSWORD:
         case USERNAME:
         case USERNAME_AND_EMAIL_ADDRESS:
@@ -402,6 +375,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case BIRTHDATE_DAY:
         case BIRTHDATE_MONTH:
         case BIRTHDATE_YEAR_4_DIGITS:
+        case IBAN_VALUE:
         case MAX_VALID_FIELD_TYPE:
           NOTREACHED() << field_type << " type is not in that group.";
           group = GROUP_AMBIGUOUS;
@@ -3102,6 +3076,33 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   builder.Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
+    const DenseSet<FormType>& form_types,
+    bool data_to_fill_available,
+    bool suggestions_shown,
+    bool edited_autofilled_field,
+    bool suggestion_filled,
+    autofill_assistant::AutofillAssistantIntent intent) {
+  if (!CanLog())
+    return;
+
+  ukm::builders::Autofill_KeyMetrics builder(source_id_);
+  builder.SetFillingReadiness(data_to_fill_available)
+      .SetFillingAssistance(suggestion_filled)
+      .SetFormTypes(FormTypesToBitVector(form_types));
+
+  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
+    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
+
+  if (suggestions_shown)
+    builder.SetFillingAcceptance(suggestion_filled);
+
+  if (suggestion_filled)
+    builder.SetFillingCorrectness(!edited_autofilled_field);
+
+  builder.Record(ukm_recorder_);
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormEvent(
     FormEvent form_event,
     const DenseSet<FormType>& form_types,
@@ -3416,6 +3417,18 @@ void AutofillMetrics::LogPhoneNumberImportParsingResult(
       "Autofill.ProfileImport.PhoneNumberParsingResult",
       static_cast<AutofillMetrics::PhoneNumberImportParsingResult>(
           (with_variation_country_code << 1) | with_app_locale));
+}
+
+// static
+void AutofillMetrics::LogPhoneNumberGrammarMatched(int grammar_id,
+                                                   bool suffix_matched) {
+  // There are 18 phone number grammars.
+  DCHECK(0 <= grammar_id && grammar_id < 18);
+  // Add 1, because UmaHistogramExactLinear is 1-based. Thus, the maximum logged
+  // value becomes 2*17+1 + 1 = 36.
+  base::UmaHistogramExactLinear("Autofill.FieldPrediction.PhoneNumberGrammar",
+                                2 * grammar_id + suffix_matched + 1,
+                                /*exclusive_max=*/37);
 }
 
 void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(

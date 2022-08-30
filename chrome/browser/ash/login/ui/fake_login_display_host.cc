@@ -136,7 +136,7 @@ void FakeLoginDisplayHost::ShowOsInstallScreen() {}
 
 void FakeLoginDisplayHost::ShowGuestTosScreen() {}
 
-void FakeLoginDisplayHost::HideOobeDialog(bool saml_video_timeout) {}
+void FakeLoginDisplayHost::HideOobeDialog(bool saml_page_closed) {}
 
 void FakeLoginDisplayHost::SetShelfButtonsEnabled(bool enabled) {}
 
@@ -189,6 +189,11 @@ WizardContext* FakeLoginDisplayHost::GetWizardContextForTesting() {
 
 bool FakeLoginDisplayHost::IsWebUIStarted() const {
   return wizard_controller_.get();
+}
+
+base::WeakPtr<ash::quick_start::TargetDeviceBootstrapController>
+FakeLoginDisplayHost::GetQuickStartBootstrapController() {
+  return nullptr;
 }
 
 bool FakeLoginDisplayHost::GetKeyboardRemappedPrefValue(

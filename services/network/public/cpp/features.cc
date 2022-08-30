@@ -117,12 +117,12 @@ const base::Feature kMdnsResponderGeneratedNameListing{
 //   of CORB's confirmation sniffers (for HTML, XML and JSON).
 // - Blocking is still done by injecting an empty response rather than erroring
 //   out the network request
-// - See other differences in the "ORB v0.1 vs full ORB differences" section in
-//   https://docs.google.com/document/d/1qUbE2ySi6av3arUEw5DNdFJIKKBbWGRGsXz_ew3S7HQ/edit#heading=h.mptmm5bpjtdn
+// - Other differences and more details can be found in
+//   //services/network/public/cpp/corb/README.md
 //
 // Implementing ORB in Chromium is tracked in https://crbug.com/1178928
 const base::Feature kOpaqueResponseBlockingV01{
-    "OpaqueResponseBlockingV01", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OpaqueResponseBlockingV01", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables preprocessing requests with the Trust Tokens API Fetch flags set,
 // and handling their responses, according to the protocol.
@@ -266,6 +266,9 @@ const base::Feature kFasterSetCookie{"FasterSetCookie",
 const base::Feature kBatchSimpleURLLoader{"BatchSimpleURLLoader",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNetworkServiceMemoryCache{
+    "NetworkServiceMemoryCache", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Do not send TLS client certificates in CORS preflight. Omit all client certs
 // and continue the handshake without sending one if requested.
 const base::Feature kOmitCorsClientCert{"OmitCorsClientCert",
@@ -291,10 +294,6 @@ constexpr base::FeatureParam<std::string> kCacheTransparencyPervasivePayloads{
 // accept-language. https://github.com/Tanych/accept-language
 const base::Feature kReduceAcceptLanguage{"ReduceAcceptLanguage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Disable ResourceScheduler.
-const base::Feature kDisableResourceScheduler{
-    "DisableResourceScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

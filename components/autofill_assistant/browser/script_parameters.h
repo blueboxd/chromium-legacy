@@ -52,7 +52,6 @@ class ScriptParameters {
   // Getters for specific parameters.
   absl::optional<std::string> GetOverlayColors() const;
   absl::optional<std::string> GetPasswordChangeUsername() const;
-  absl::optional<std::string> GetBase64TriggerScriptsResponseProto() const;
   absl::optional<bool> GetRequestsTriggerScript() const;
   absl::optional<bool> GetStartImmediately() const;
   absl::optional<bool> GetEnabled() const;
@@ -67,6 +66,7 @@ class ScriptParameters {
   std::vector<std::string> GetExperiments() const;
   absl::optional<bool> GetDisableRpcSigning() const;
   absl::optional<bool> GetSendAnnotateDomModelVersion() const;
+  absl::optional<bool> GetRunHeadless() const;
 
   // Details parameters.
   absl::optional<bool> GetDetailsShowInitial() const;

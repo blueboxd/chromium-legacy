@@ -89,9 +89,7 @@
 
 using std::string;
 
-namespace net {
-
-namespace test {
+namespace net::test {
 
 class QuicHttpStreamPeer {
  public:
@@ -164,8 +162,7 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override {
     SocketDataProvider* data_provider = mock_data().GetNext();
-    std::unique_ptr<MockUDPClientSocket> socket(
-        new MockUDPClientSocket(data_provider, net_log));
+    auto socket = std::make_unique<MockUDPClientSocket>(data_provider, net_log);
     socket->set_source_host(IPAddress(192, 0, 2, next_source_host_num_++));
     return std::move(socket);
   }
@@ -192,8 +189,7 @@ class TestPortMigrationSocketFactory : public MockClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override {
     SocketDataProvider* data_provider = mock_data().GetNext();
-    std::unique_ptr<MockUDPClientSocket> socket(
-        new MockUDPClientSocket(data_provider, net_log));
+    auto socket = std::make_unique<MockUDPClientSocket>(data_provider, net_log);
     socket->set_source_port(next_source_port_num_++);
     return std::move(socket);
   }
@@ -206,12 +202,12 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
  protected:
   QuicStreamFactoryTestBase(quic::ParsedQuicVersion version,
                             bool client_headers_include_h2_stream_dependency)
-      : host_resolver_(
-            new MockHostResolver(/*default_result=*/MockHostResolverBase::
-                                     RuleResolver::GetLocalhostResult())),
-        ssl_config_service_(new SSLConfigServiceDefaults),
-        socket_factory_(new MockClientSocketFactory),
-        runner_(new TestTaskRunner(context_.mock_clock())),
+      : host_resolver_(std::make_unique<MockHostResolver>(
+            /*default_result=*/MockHostResolverBase::RuleResolver::
+                GetLocalhostResult())),
+        ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()),
+        socket_factory_(std::make_unique<MockClientSocketFactory>()),
+        runner_(base::MakeRefCounted<TestTaskRunner>(context_.mock_clock())),
         version_(version),
         client_maker_(version_,
                       quic::QuicUtils::CreateRandomConnectionId(
@@ -11290,14 +11286,14 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
   Initialize();
 
   std::vector<string> cannoncial_suffixes;
-  cannoncial_suffixes.push_back(string(".c.youtube.com"));
-  cannoncial_suffixes.push_back(string(".googlevideo.com"));
+  cannoncial_suffixes.emplace_back(".c.youtube.com");
+  cannoncial_suffixes.emplace_back(".googlevideo.com");
 
-  for (unsigned i = 0; i < cannoncial_suffixes.size(); ++i) {
+  for (const auto& cannoncial_suffix : cannoncial_suffixes) {
     string r1_host_name("r1");
     string r2_host_name("r2");
-    r1_host_name.append(cannoncial_suffixes[i]);
-    r2_host_name.append(cannoncial_suffixes[i]);
+    r1_host_name.append(cannoncial_suffix);
+    r2_host_name.append(cannoncial_suffix);
 
     url::SchemeHostPort scheme_host_port1(url::kHttpsScheme, r1_host_name, 80);
     // Need to hold onto this through the test, to keep the
@@ -11330,14 +11326,14 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
 TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
   Initialize();
   std::vector<string> cannoncial_suffixes;
-  cannoncial_suffixes.push_back(string(".c.youtube.com"));
-  cannoncial_suffixes.push_back(string(".googlevideo.com"));
+  cannoncial_suffixes.emplace_back(".c.youtube.com");
+  cannoncial_suffixes.emplace_back(".googlevideo.com");
 
-  for (unsigned i = 0; i < cannoncial_suffixes.size(); ++i) {
+  for (const auto& cannoncial_suffix : cannoncial_suffixes) {
     string r3_host_name("r3");
     string r4_host_name("r4");
-    r3_host_name.append(cannoncial_suffixes[i]);
-    r4_host_name.append(cannoncial_suffixes[i]);
+    r3_host_name.append(cannoncial_suffix);
+    r4_host_name.append(cannoncial_suffix);
 
     url::SchemeHostPort scheme_host_port1(url::kHttpsScheme, r3_host_name, 80);
     // Need to hold onto this through the test, to keep the
@@ -11585,7 +11581,9 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCache) {
 
 // With different NetworkIsolationKeys enabled for HttpServerProperties, there
 // should only be one global CryptoCache per NetworkIsolationKey.
-TEST_P(QuicStreamFactoryTest, CryptoConfigCacheWithNetworkIsolationKey) {
+// TODO(https://crbug.com/1335453): The test is flaky.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_CryptoConfigCacheWithNetworkIsolationKey) {
   const char kUserAgentId1[] = "spoon";
   const char kUserAgentId2[] = "fork";
   const char kUserAgentId3[] = "another spoon";
@@ -11695,7 +11693,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCacheMRUWithNetworkIsolationKey) {
   std::vector<NetworkIsolationKey> network_isolation_keys;
   for (int i = 0; i < kNumSessionsToMake; ++i) {
     SchemefulSite site(GURL(base::StringPrintf("https://foo%i.test/", i)));
-    network_isolation_keys.push_back(NetworkIsolationKey(site, site));
+    network_isolation_keys.emplace_back(site, site);
 
     std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
         QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
@@ -11764,7 +11762,7 @@ TEST_P(QuicStreamFactoryTest,
   std::vector<NetworkIsolationKey> network_isolation_keys;
   for (int i = 0; i < kNumSessionsToMake; ++i) {
     SchemefulSite site(GURL(base::StringPrintf("https://foo%i.test/", i)));
-    network_isolation_keys.push_back(NetworkIsolationKey(site, site));
+    network_isolation_keys.emplace_back(site, site);
   }
 
   const quic::QuicServerId kQuicServerId(
@@ -14996,5 +14994,4 @@ TEST_P(QuicStreamFactoryDnsAliasPoolingTest, IPPooling) {
   EXPECT_EQ(expected_dns_aliases2_, stream2->GetDnsAliases());
 }
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

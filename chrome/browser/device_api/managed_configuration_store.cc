@@ -19,11 +19,11 @@ void ManagedConfigurationStore::Initialize() {
 }
 
 bool ManagedConfigurationStore::SetCurrentPolicy(
-    const base::DictionaryValue& current_configuration) {
+    const base::Value::Dict& current_configuration) {
   if (!store_)
     Initialize();
   // Get the previous policies stored in the database.
-  base::DictionaryValue previous_policy;
+  base::Value::Dict previous_policy;
   value_store::ValueStore::ReadResult read_result = store_->Get();
   if (!read_result.status().ok()) {
     LOG(WARNING) << "Failed to read managed configuration for origin "
@@ -31,14 +31,14 @@ bool ManagedConfigurationStore::SetCurrentPolicy(
     // Leave |previous_policy| empty, so that events are generated for every
     // policy in |current_policy|.
   } else {
-    read_result.settings().Swap(&previous_policy);
+    std::swap(read_result.settings(), previous_policy);
   }
 
   std::vector<std::string> removed_keys;
 
   bool store_updated = false;
-  for (auto kv : previous_policy.DictItems()) {
-    if (!current_configuration.FindKey(kv.first))
+  for (auto kv : previous_policy) {
+    if (!current_configuration.Find(kv.first))
       removed_keys.push_back(kv.first);
   }
   value_store::ValueStoreChangeList changes;
@@ -61,7 +61,7 @@ bool ManagedConfigurationStore::SetCurrentPolicy(
   return store_updated;
 }
 
-std::unique_ptr<base::DictionaryValue> ManagedConfigurationStore::Get(
+absl::optional<base::Value::Dict> ManagedConfigurationStore::Get(
     const std::vector<std::string>& keys) {
   if (!store_)
     Initialize();
@@ -69,7 +69,7 @@ std::unique_ptr<base::DictionaryValue> ManagedConfigurationStore::Get(
   auto result = store_->Get(keys);
 
   if (!result.status().ok())
-    return nullptr;
+    return absl::nullopt;
 
   return result.PassSettings();
 }

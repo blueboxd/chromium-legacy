@@ -25,6 +25,7 @@
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
+#include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
@@ -665,7 +666,7 @@ void ApplyNetworkRequestOverrides(
     DCHECK(!agent_host);
     agent_host = RenderFrameDevToolsAgentHost::GetFor(
         WebContentsImpl::FromFrameTreeNode(frame_tree_node)
-            ->GetMainFrame()
+            ->GetPrimaryMainFrame()
             ->frame_tree_node());
   }
   if (!agent_host)
@@ -711,7 +712,7 @@ bool ApplyUserAgentMetadataOverrides(
     DCHECK(!agent_host);
     agent_host = RenderFrameDevToolsAgentHost::GetFor(
         WebContentsImpl::FromFrameTreeNode(frame_tree_node)
-            ->GetMainFrame()
+            ->GetPrimaryMainFrame()
             ->frame_tree_node());
   }
   if (!agent_host)
@@ -1031,6 +1032,17 @@ void FencedFrameCreated(
   if (!agent_host)
     return;
   agent_host->DidCreateFencedFrame(fenced_frame);
+}
+
+void DidCreateProcessForAuctionWorklet(RenderFrameHostImpl* owner,
+                                       base::ProcessId pid) {
+  // TracingHandler lives on the very root, not local root.
+  // TODO(morlovich): This may not be right for fenced frames, though
+  // that should not currently matter.
+  FrameTreeNode* node = owner->GetMainFrame()->frame_tree_node();
+  if (!node)
+    return;
+  DispatchToAgents(node, &protocol::TracingHandler::AddProcess, pid);
 }
 
 void WillStartDragging(FrameTreeNode* main_frame_tree_node,

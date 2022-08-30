@@ -5015,38 +5015,6 @@ TEST_F(GLES2FormatTest, LockDiscardableTextureCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, TexStorage2DImageCHROMIUM) {
-  cmds::TexStorage2DImageCHROMIUM& cmd =
-      *GetBufferAs<cmds::TexStorage2DImageCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
-              static_cast<GLsizei>(13), static_cast<GLsizei>(14));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexStorage2DImageCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.internalFormat);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, SetColorSpaceMetadataCHROMIUM) {
-  cmds::SetColorSpaceMetadataCHROMIUM& cmd =
-      *GetBufferAs<cmds::SetColorSpaceMetadataCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
-              static_cast<GLuint>(13), static_cast<GLsizei>(14));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::SetColorSpaceMetadataCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.shm_id);
-  EXPECT_EQ(static_cast<GLuint>(13), cmd.shm_offset);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.color_space_size);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, WindowRectanglesEXTImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLint data[] = {

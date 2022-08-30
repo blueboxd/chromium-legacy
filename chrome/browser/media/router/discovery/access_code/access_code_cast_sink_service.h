@@ -116,6 +116,7 @@ class AccessCodeCastSinkService : public KeyedService,
   friend class AccessCodeCastSinkServiceFactory;
   friend class AccessCodeCastSinkServiceTest;
   friend class AccessCodeCastHandlerTest;
+  friend class AccessCodeCastIntegrationBrowserTest;
   friend class MockAccessCodeCastSinkService;
   FRIEND_TEST_ALL_PREFIXES(
       AccessCodeCastSinkServiceTest,
@@ -169,6 +170,10 @@ class AccessCodeCastSinkService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            TestChangeNetworkWithRouteActiveExpiration);
 
+  // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
+  // an instance of this service.
+  explicit AccessCodeCastSinkService(Profile* profile);
+
   // Constructor used for testing.
   AccessCodeCastSinkService(
       Profile* profile,
@@ -176,10 +181,6 @@ class AccessCodeCastSinkService : public KeyedService,
       CastMediaSinkServiceImpl* cast_media_sink_service_impl,
       DiscoveryNetworkMonitor* network_monitor,
       PrefService* prefs);
-
-  // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
-  // an instance of this service.
-  explicit AccessCodeCastSinkService(Profile* profile);
 
   void OnAccessCodeValidated(AddSinkResultCallback add_sink_callback,
                              absl::optional<DiscoveryDevice> discovery_device,

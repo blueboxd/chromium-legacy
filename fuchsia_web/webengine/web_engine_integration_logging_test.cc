@@ -13,8 +13,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "fuchsia/base/test/context_provider_test_connector.h"
-#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/webengine/test/context_provider_test_connector.h"
 #include "fuchsia_web/webengine/web_engine_integration_test_base.h"
 
 namespace {
@@ -75,7 +75,7 @@ class WebEngineIntegrationLoggingTest : public WebEngineIntegrationTestBase {
  private:
   // Starts WebEngine without redirecting its logs.
   void StartWebEngineForLoggingTest(base::CommandLine command_line) {
-    web_context_provider_ = cr_fuchsia::ConnectContextProviderForLoggingTest(
+    web_context_provider_ = ConnectContextProviderForLoggingTest(
         web_engine_controller_.NewRequest(), std::move(command_line));
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });

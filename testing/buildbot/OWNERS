@@ -2,7 +2,7 @@
 # run tests and understand the implications of changing these files.
 
 # If you're making changes that affect CQ builders (like adding new tests or
-# compile targets) please get a review from someone in //infra/OWNERS.
+# compile targets) you need a review from a Trooper in //infra/OWNERS.
 file://infra/OWNERS
 
 jam@chromium.org
@@ -20,9 +20,10 @@ per-file chromium.chromiumos.json=svenzheng@chromium.org
 per-file chromium.fyi.json=svenzheng@chromium.org
 per-file chromium.chromiumos.json=lacros-version-skew-roller@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.fyi.json=lacros-version-skew-roller@chops-service-accounts.iam.gserviceaccount.com
-# TODO(crbug.com/1234067) Remove the following 2 lines when the conversion is done.
+# TODO(crbug.com/1234067) Remove the following 3 lines when the conversion is done.
 per-file chromium.fyi.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.chromiumos.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.memory.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 
 # For Lacros skylab tests cros image roller related reviews
 per-file chrome.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
@@ -48,8 +49,8 @@ per-file chromium.mac.json=file://infra/config/groups/ios/OWNERS
 # Fuchsia owners.
 per-file chromium.clang.json=chonggu@google.com
 per-file chromium.fuchsia.fyi.json=chonggu@google.com
+per-file chromium.fuchsia.json=chonggu@google.com
 per-file chromium.fyi.json=chonggu@google.com
-per-file chromium.linux.json=chonggu@google.com
 per-file chromium.perf.fyi.json=chonggu@google.com
 
 # Rust owners

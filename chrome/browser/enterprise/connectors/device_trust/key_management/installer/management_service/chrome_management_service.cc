@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
-#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/linux_key_network_delegate.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mojo_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/rotate_util.h"
@@ -62,24 +62,12 @@ bool CheckBinaryPermissions() {
   return true;
 }
 
-int StartRotation(mojo::PendingRemote<network::mojom::URLLoaderFactory>
-                      remote_url_loader_factory,
-                  const base::CommandLine* command_line) {
-  auto key_rotation_manager =
-      KeyRotationManager::Create(std::make_unique<LinuxKeyNetworkDelegate>(
-          std::move(remote_url_loader_factory)));
-
-  return RotateDeviceTrustKey(std::move(key_rotation_manager), command_line,
-                              chrome::GetChannel())
-             ? kSuccess
-             : kFailure;
-}
-
 }  // namespace
 
 ChromeManagementService::ChromeManagementService()
     : permissions_callback_(base::BindOnce(&CheckBinaryPermissions)),
-      rotation_callback_(base::BindOnce(&StartRotation)) {}
+      rotation_callback_(base::BindOnce(&ChromeManagementService::StartRotation,
+                                        base::Unretained(this))) {}
 
 ChromeManagementService::ChromeManagementService(
     PermissionsCallback permissions_callback,
@@ -97,7 +85,7 @@ int ChromeManagementService::Run(const base::CommandLine* command_line,
   if (!command_line || !command_line->HasSwitch(switches::kRotateDTKey)) {
     SYSLOG(ERROR)
         << "Device trust key rotation failed. Command missing rotate details.";
-    return false;
+    return kFailure;
   }
 
   if (!std::move(permissions_callback_).Run())
@@ -109,17 +97,33 @@ int ChromeManagementService::Run(const base::CommandLine* command_line,
 
   mojo::ScopedMessagePipeHandle pipe = invitation.ExtractMessagePipe(pipe_name);
 
-  auto remote_url_loader_factory =
+  auto pending_remote_url_loader_factory =
       mojo::PendingRemote<network::mojom::URLLoaderFactory>(std::move(pipe), 0);
-
-  if (!remote_url_loader_factory.is_valid()) {
+  if (!pending_remote_url_loader_factory.is_valid()) {
     SYSLOG(ERROR) << "Device trust key rotation failed. Could not "
                      "connect to the browser process.";
     return kFailure;
   }
 
-  return std::move(rotation_callback_)
-      .Run(std::move(remote_url_loader_factory), command_line);
+  remote_url_loader_factory_.Bind(std::move(pending_remote_url_loader_factory));
+  if (!remote_url_loader_factory_.is_bound()) {
+    SYSLOG(ERROR) << "Device trust key rotation failed. Could not "
+                     "connect to the browser process.";
+    return kFailure;
+  }
+
+  return std::move(rotation_callback_).Run(command_line);
+}
+
+int ChromeManagementService::StartRotation(
+    const base::CommandLine* command_line) {
+  auto key_rotation_manager =
+      KeyRotationManager::Create(std::make_unique<MojoKeyNetworkDelegate>(
+          remote_url_loader_factory_.get()));
+  return RotateDeviceTrustKey(std::move(key_rotation_manager), *command_line,
+                              chrome::GetChannel())
+             ? kSuccess
+             : kFailure;
 }
 
 }  // namespace enterprise_connectors

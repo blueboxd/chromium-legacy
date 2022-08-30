@@ -58,6 +58,10 @@ config("xnnpack_config") {
     "src/src",
   ]
 
+  cflags=[
+    "-Wno-unused-function",
+  ]
+
   defines = [
     # Don't enable this without first talking to Chrome Security!
     # XNNPACK runs in the browser process. The hardening and fuzzing needed
@@ -69,7 +73,8 @@ config("xnnpack_config") {
     "XNN_ENABLE_MEMOPT=1",
     "XNN_ENABLE_SPARSE=1",
     "XNN_LOG_LEVEL=0",
-  ]
+    "XNN_LOG_TO_STDIO=0",
+]
 }
 '''.strip()
 

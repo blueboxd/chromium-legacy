@@ -16,6 +16,7 @@ ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {
         'ChromeVoxBackground', '/chromevox/background/classic_background.js');
     await importModule(
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
+    await importModule('CursorRange', '/common/cursors/range.js');
     await importModule(
         'SmartStickyMode', '/chromevox/background/smart_sticky_mode.js');
     this.ssm_ = new SmartStickyMode();
@@ -25,12 +26,12 @@ ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {
   }
 
   assertDidTurnOffForNode(node) {
-    this.ssm_.onCurrentRangeChanged(cursors.Range.fromNode(node));
+    this.ssm_.onCurrentRangeChanged(CursorRange.fromNode(node));
     assertTrue(this.ssm_.didTurnOffStickyMode_);
   }
 
   assertDidNotTurnOffForNode(node) {
-    this.ssm_.onCurrentRangeChanged(cursors.Range.fromNode(node));
+    this.ssm_.onCurrentRangeChanged(CursorRange.fromNode(node));
     assertFalse(this.ssm_.didTurnOffStickyMode_);
   }
 
@@ -46,32 +47,35 @@ ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {
   }
 };
 
-TEST_F('ChromeVoxSmartStickyModeTest', 'PossibleRangeTypes', async function() {
-  const root = await this.runWithLoadedTree(this.relationsDoc);
-  const [p, input, textarea, contenteditable, ul1, ul2] = root.children;
+AX_TEST_F(
+    'ChromeVoxSmartStickyModeTest', 'PossibleRangeTypes', async function() {
+      const root = await this.runWithLoadedTree(this.relationsDoc);
+      const [p, input, textarea, contenteditable, ul1, ul2] = root.children;
 
-  // First, turn on sticky mode and try changing range to various parts of
-  // the document.
-  ChromeVoxBackground.setPref('sticky', true /* value */, true /* announce */);
-  this.assertDidTurnOffForNode(input);
-  this.assertDidTurnOffForNode(textarea);
-  this.assertDidNotTurnOffForNode(p);
-  this.assertDidTurnOffForNode(contenteditable);
-  this.assertDidTurnOffForNode(ul1);
-  this.assertDidNotTurnOffForNode(p);
-  this.assertDidTurnOffForNode(ul2);
-  this.assertDidTurnOffForNode(ul1.firstChild);
-  this.assertDidNotTurnOffForNode(ul1.parent);
-  this.assertDidNotTurnOffForNode(ul2.parent);
-  this.assertDidNotTurnOffForNode(p);
-  this.assertDidTurnOffForNode(ul2.firstChild);
-  this.assertDidNotTurnOffForNode(p);
-  this.assertDidNotTurnOffForNode(contenteditable.parent);
-  this.assertDidTurnOffForNode(contenteditable.find({role: 'heading'}));
-  this.assertDidTurnOffForNode(contenteditable.find({role: 'inlineTextBox'}));
-});
+      // First, turn on sticky mode and try changing range to various parts of
+      // the document.
+      ChromeVoxBackground.setPref(
+          'sticky', true /* value */, true /* announce */);
+      this.assertDidTurnOffForNode(input);
+      this.assertDidTurnOffForNode(textarea);
+      this.assertDidNotTurnOffForNode(p);
+      this.assertDidTurnOffForNode(contenteditable);
+      this.assertDidTurnOffForNode(ul1);
+      this.assertDidNotTurnOffForNode(p);
+      this.assertDidTurnOffForNode(ul2);
+      this.assertDidTurnOffForNode(ul1.firstChild);
+      this.assertDidNotTurnOffForNode(ul1.parent);
+      this.assertDidNotTurnOffForNode(ul2.parent);
+      this.assertDidNotTurnOffForNode(p);
+      this.assertDidTurnOffForNode(ul2.firstChild);
+      this.assertDidNotTurnOffForNode(p);
+      this.assertDidNotTurnOffForNode(contenteditable.parent);
+      this.assertDidTurnOffForNode(contenteditable.find({role: 'heading'}));
+      this.assertDidTurnOffForNode(
+          contenteditable.find({role: 'inlineTextBox'}));
+    });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxSmartStickyModeTest', 'UserPressesStickyModeCommand',
     async function() {
       const root = await this.runWithLoadedTree(this.relationsDoc);
@@ -82,9 +86,9 @@ TEST_F(
       // Mix in calls to turn on / off sticky mode while moving the range
       // around.
       this.assertDidTurnOffForNode(input);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(input);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(input);
       this.assertDidNotTurnOffForNode(input.firstChild);
       this.assertDidNotTurnOffForNode(p);
@@ -97,24 +101,24 @@ TEST_F(
       // Mix in more sticky mode user commands and move to related nodes.
       this.assertDidTurnOffForNode(contenteditable);
       this.assertDidTurnOffForNode(ul2);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(ul2));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(ul2));
       this.assertDidNotTurnOffForNode(ul2);
       this.assertDidNotTurnOffForNode(ul2.firstChild);
       this.assertDidNotTurnOffForNode(contenteditable);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(input));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(ul2);
       this.assertDidNotTurnOffForNode(ul2.firstChild);
       this.assertDidNotTurnOffForNode(contenteditable);
 
       // Finally, verify sticky mode isn't impacted on non-editables.
       this.assertDidNotTurnOffForNode(p);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(p));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(p));
       this.assertDidNotTurnOffForNode(p);
-      this.ssm_.onStickyModeCommand(cursors.Range.fromNode(p));
+      this.ssm_.onStickyModeCommand(CursorRange.fromNode(p));
       this.assertDidNotTurnOffForNode(p);
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxSmartStickyModeTest', 'SmartStickyModeJumpCommands',
     async function() {
       const mockFeedback = this.createMockFeedback();
@@ -152,7 +156,7 @@ TEST_F(
           .replay();
     });
 
-TEST_F(
+AX_TEST_F(
     'ChromeVoxSmartStickyModeTest', 'SmartStickyModeEarcons', async function() {
       const mockFeedback = this.createMockFeedback();
       const root = await this.runWithLoadedTree(`
@@ -175,7 +179,7 @@ TEST_F(
           .replay();
     });
 
-TEST_F('ChromeVoxSmartStickyModeTest', 'ContinuousRead', async function() {
+AX_TEST_F('ChromeVoxSmartStickyModeTest', 'ContinuousRead', async function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
     <p>start</p>

@@ -256,7 +256,7 @@
     <dimen name="recent_tabs_show_history_item_size">60dp</dimen>
     <dimen name="recent_tabs_foreign_session_group_item_height">64dp</dimen>
     <dimen name="recent_tabs_default_group_item_height">48dp</dimen>
-    <dimen name="recent_tabs_count_text_size">11dp</dimen>
+    <dimen name="recent_tabs_count_text_size">10dp</dimen>
 
     <!-- Bookmarks dimensions -->
     <dimen name="bookmark_folder_item_left">16dp</dimen>
@@ -290,6 +290,10 @@
     <dimen name="custom_tabs_shadow_offset">4dp</dimen>
     <dimen name="custom_tabs_outline_width">1dp</dimen>
     <dimen name="custom_tabs_default_corner_radius">16dp</dimen>
+
+    <dimen name="custom_tabs_menu_footer_icon_size">16dp</dimen>
+    <dimen name="custom_tabs_menu_footer_margin_horizontal">8dp</dimen>
+    <dimen name="custom_tabs_menu_footer_margin_vertical">12dp</dimen>
 
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
@@ -435,4 +439,7 @@
     <!-- Section tab dimensions -->
     <dimen name="section_tab_background_corner_radius">60dp</dimen>
     <dimen name="section_tab_bezel_width">2dp</dimen>
+
+    <!-- Price Drop dimensions -->
+    <dimen name="price_drop_spotted_iph_ntp_tabswitcher_y_inset">4dp</dimen>
 </resources>

@@ -10,10 +10,12 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -21,9 +23,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -93,11 +93,7 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
  public:
   AppBrowserControllerBrowserTest()
       : test_system_web_app_installation_(
-            TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp()) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    EnableSystemWebAppsInLacrosForTesting();
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
+            ash::TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp()) {}
   AppBrowserControllerBrowserTest(const AppBrowserControllerBrowserTest&) =
       delete;
   AppBrowserControllerBrowserTest& operator=(
@@ -124,25 +120,25 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
   }
 
   void LaunchMockPopup() {
-    auto params = web_app::CreateSystemWebAppLaunchParams(
+    auto params = ash::CreateSystemWebAppLaunchParams(
         profile(), test_system_web_app_installation_->GetType(),
         display::kInvalidDisplayId);
     EXPECT_TRUE(params.has_value());
     params->disposition = WindowOpenDisposition::NEW_POPUP;
 
-    app_browser_ = web_app::LaunchSystemWebAppImpl(
+    app_browser_ = ash::LaunchSystemWebAppImpl(
         profile(), test_system_web_app_installation_->GetType(),
         test_system_web_app_installation_->GetAppUrl(), *params);
   }
 
   Browser* LaunchMockSWA() {
-    auto params = web_app::CreateSystemWebAppLaunchParams(
+    auto params = ash::CreateSystemWebAppLaunchParams(
         profile(), test_system_web_app_installation_->GetType(),
         display::kInvalidDisplayId);
     EXPECT_TRUE(params.has_value());
     params->disposition = WindowOpenDisposition::NEW_WINDOW;
 
-    return web_app::LaunchSystemWebAppImpl(
+    return ash::LaunchSystemWebAppImpl(
         profile(), test_system_web_app_installation_->GetType(),
         test_system_web_app_installation_->GetAppUrl(), *params);
   }
@@ -173,7 +169,7 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
   GURL tabbed_app_url_;
 
  private:
-  std::unique_ptr<TestSystemWebAppInstallation>
+  std::unique_ptr<ash::TestSystemWebAppInstallation>
       test_system_web_app_installation_;
 };
 
@@ -182,10 +178,12 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
 
   EXPECT_TRUE(app_browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP));
 
-  // No favicons shown for system apps.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // No favicons shown for ash system apps.
   EXPECT_FALSE(
       app_browser_->tab_strip_model()->delegate()->ShouldDisplayFavicon(
           app_browser_->tab_strip_model()->GetActiveWebContents()));
+#endif
 
   // Tabbed PWAs only open URLs within the scope of the app. The manifest is
   // another URL besides |tabbed_app_url_| in scope.
@@ -359,11 +357,7 @@ class AppBrowserControllerChromeUntrustedBrowserTest
  public:
   AppBrowserControllerChromeUntrustedBrowserTest()
       : test_system_web_app_installation_(
-            TestSystemWebAppInstallation::SetUpChromeUntrustedApp()) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    EnableSystemWebAppsInLacrosForTesting();
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
+            ash::TestSystemWebAppInstallation::SetUpChromeUntrustedApp()) {}
 
  protected:
   Browser* InstallAndLaunchMockApp() {
@@ -377,7 +371,7 @@ class AppBrowserControllerChromeUntrustedBrowserTest
   }
 
  private:
-  std::unique_ptr<TestSystemWebAppInstallation>
+  std::unique_ptr<ash::TestSystemWebAppInstallation>
       test_system_web_app_installation_;
 };
 

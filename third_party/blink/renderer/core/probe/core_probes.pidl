@@ -143,6 +143,7 @@ interface CoreProbes {
   void LayerTreeDidChange(LocalFrame*);
   void LayerTreePainted(LocalFrame*);
   void PseudoElementCreated([Keep] PseudoElement*);
+  void TopLayerElementsChanged(Document*);
   void PseudoElementDestroyed([Keep] PseudoElement*);
   void DidCreateAnimation(Document*, unsigned);
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
@@ -178,7 +179,7 @@ interface CoreProbes {
   void ApplyCompilationModeOverride(ExecutionContext*, const ClassicScript&, v8::ScriptCompiler::CachedData** cached_data, v8::ScriptCompiler::CompileOptions*);
   void NodeCreated([Keep] Node* node);
   void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
-  void FileChooserOpened([Keep] LocalFrame* frame, HTMLInputElement* element, bool* intercepted);
+  void FileChooserOpened([Keep] LocalFrame* frame, HTMLInputElement* element, bool multiple, bool* intercepted);
   void PlayerErrorsRaised(ExecutionContext* context, String player_id, const Vector<InspectorPlayerError>& errors);
   void PlayerEventsAdded(ExecutionContext* context, String player_id, const Vector<InspectorPlayerEvent>& events);
   void PlayerMessagesLogged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerMessage>& messages);

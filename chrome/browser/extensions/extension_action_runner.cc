@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -44,6 +45,20 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/origin.h"
+
+namespace {
+
+std::vector<extensions::ExtensionId> GetExtensionIds(
+    std::vector<const extensions::Extension*> extensions) {
+  std::vector<extensions::ExtensionId> extension_ids;
+  extension_ids.reserve(extensions.size());
+  for (auto* extension : extensions) {
+    extension_ids.push_back(extension->id());
+  }
+  return extension_ids;
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -87,44 +102,23 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
     bool grant_tab_permissions) {
   if (grant_tab_permissions) {
     int blocked_actions = GetBlockedActions(extension->id());
-    if (blocked_actions & kRefreshRequiredActionsMask) {
-      const GURL& url = web_contents()->GetLastCommittedURL();
-      // An extension that wants to run but it is currently blocked must have
-      // "on click" access.
-      constexpr SitePermissionsHelper::SiteAccess kExpectedSiteAccess =
-          SitePermissionsHelper::SiteAccess::kOnClick;
-      DCHECK_EQ(
-          kExpectedSiteAccess,
-          SitePermissionsHelper(Profile::FromBrowserContext(browser_context_))
-              .GetSiteAccess(*extension, url));
+    GrantTabPermissions({extension});
 
-      // Display the checkbox so the user has the option to always run the
-      // action on this site.
-      bool show_checkbox = true;
-      ShowBlockedActionBubble(
-          extension, show_checkbox,
-          base::BindOnce(&ExtensionActionRunner::OnBlockedActionBubbleClosed,
-                         weak_factory_.GetWeakPtr(), extension->id(), url,
-                         kExpectedSiteAccess, kExpectedSiteAccess));
-
-      return ExtensionAction::ACTION_NONE;
-    }
-    TabHelper::FromWebContents(web_contents())
-        ->active_tab_permission_granter()
-        ->GrantIfRequested(extension);
-    // If the extension had blocked actions, granting active tab will have
-    // run the extension. Don't execute further since clicking should run
-    // blocked actions *or* the normal extension action, not both.
+    // If the extension had blocked actions before granting tab permissions,
+    // granting active tab will have run the extension. Don't execute further
+    // since clicking should run blocked actions *or* the normal extension
+    // action, not both.
     if (blocked_actions)
       return ExtensionAction::ACTION_NONE;
   }
 
+  // Anything that gets here should have a page or browser action, and not
+  // blocked actions.
   ExtensionAction* extension_action =
       ExtensionActionManager::Get(browser_context_)
           ->GetExtensionAction(*extension);
-
-  // Anything that gets here should have a page or browser action.
   DCHECK(extension_action);
+
   int tab_id = sessions::SessionTabHelper::IdForTab(web_contents()).id();
   if (!extension_action->GetIsVisible(tab_id))
     return ExtensionAction::ACTION_NONE;
@@ -138,30 +132,69 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
   return ExtensionAction::ACTION_NONE;
 }
 
+void ExtensionActionRunner::GrantTabPermissions(
+    const std::vector<const Extension*>& extensions) {
+  bool refresh_required = std::any_of(
+      extensions.begin(), extensions.end(), [this](const Extension* extension) {
+        return GetBlockedActions(extension->id()) & kRefreshRequiredActionsMask;
+      });
+
+  if (!refresh_required) {
+    // Immediately grant permissions to every extension.
+    for (auto* extension : extensions) {
+      TabHelper::FromWebContents(web_contents())
+          ->active_tab_permission_granter()
+          ->GrantIfRequested(extension);
+    }
+    return;
+  }
+
+  // Every extension that wants tab permission is currently blocked and must
+  // have "on click" access.
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  constexpr SitePermissionsHelper::SiteAccess kExpectedSiteAccess =
+      SitePermissionsHelper::SiteAccess::kOnClick;
+  auto permissions =
+      SitePermissionsHelper(Profile::FromBrowserContext(browser_context_));
+  DCHECK(std::all_of(extensions.begin(), extensions.end(),
+                     [url, &permissions](const Extension* extension) {
+                       return permissions.GetSiteAccess(*extension, url) ==
+                              kExpectedSiteAccess;
+                     }));
+
+  // Running the action a single time does not update permissions.
+  constexpr bool update_permissions = false;
+  std::vector<ExtensionId> extension_ids = GetExtensionIds(extensions);
+  ShowReloadPageBubble(
+      extension_ids, update_permissions,
+      base::BindOnce(&ExtensionActionRunner::OnReloadPageBubbleAccepted,
+                     weak_factory_.GetWeakPtr(), extension_ids, url,
+                     kExpectedSiteAccess, kExpectedSiteAccess));
+}
+
 void ExtensionActionRunner::HandlePageAccessModified(
     const Extension* extension,
     SitePermissionsHelper::SiteAccess current_access,
     SitePermissionsHelper::SiteAccess new_access) {
   DCHECK_NE(current_access, new_access);
-
-  // If we are restricting page access, just change permissions.
-  if (new_access == SitePermissionsHelper::SiteAccess::kOnClick) {
-    UpdatePageAccessSettings(extension, current_access, new_access);
-    return;
-  }
-
+  bool revoking_permissions =
+      new_access == SitePermissionsHelper::SiteAccess::kOnClick;
   int blocked_actions = GetBlockedActions(extension->id());
-  // Refresh the page if there are pending actions which mandate a refresh.
-  if (blocked_actions & kRefreshRequiredActionsMask) {
-    // TODO(devlin): The bubble text should make it clear that permissions are
-    // granted only after the user accepts the refresh.
-    // Since the user already changed site access, don't display the checkbox
-    // to always run on site.
-    bool show_checkbox = false;
-    ShowBlockedActionBubble(
-        extension, show_checkbox,
-        base::BindOnce(&ExtensionActionRunner::OnBlockedActionBubbleClosed,
-                       weak_factory_.GetWeakPtr(), extension->id(),
+
+  // Show the reload page dialog if revoking permissions, or increasing
+  // permissions with pending actions that mandate a page refresh. While
+  // revoking permissions doesn't necessarily mandate a page refresh, it is
+  // complicated to determine when an extension has affected the page. Showing a
+  // reload page bubble after the user blocks the extension re enforces the user
+  // confidence on blocking the extension. Also, this scenario should not be
+  // that common and therefore hopefully is not too noisy.
+  if (revoking_permissions || blocked_actions & kRefreshRequiredActionsMask) {
+    constexpr bool update_permissions = true;
+    std::vector<ExtensionId> extension_ids{extension->id()};
+    ShowReloadPageBubble(
+        extension_ids, update_permissions,
+        base::BindOnce(&ExtensionActionRunner::OnReloadPageBubbleAccepted,
+                       weak_factory_.GetWeakPtr(), extension_ids,
                        web_contents()->GetLastCommittedURL(), current_access,
                        new_access));
     return;
@@ -174,8 +207,18 @@ void ExtensionActionRunner::HandlePageAccessModified(
 
 void ExtensionActionRunner::OnActiveTabPermissionGranted(
     const Extension* extension) {
-  if (!ignore_active_tab_granted_ && WantsToRun(extension))
+  if (ignore_active_tab_granted_)
+    return;
+
+  if (WantsToRun(extension)) {
     RunBlockedActions(extension);
+  } else {
+    // TODO(emiliapaz): This is a slight abuse of this observer since it
+    // triggers OnExtensionActionUpdated(), but active tab being granted really
+    // isn't an extension action state change. Consider using the notification
+    // permissions observer.
+    NotifyChange(extension);
+  }
 }
 
 void ExtensionActionRunner::OnWebRequestBlocked(const Extension* extension) {
@@ -365,68 +408,75 @@ void ExtensionActionRunner::LogUMA() const {
   }
 }
 
-void ExtensionActionRunner::ShowBlockedActionBubble(
-    const Extension* extension,
-    bool show_checkbox,
-    base::OnceCallback<void(bool)> callback) {
+void ExtensionActionRunner::ShowReloadPageBubble(
+    const std::vector<ExtensionId>& extension_ids,
+    bool update_permissions,
+    base::OnceClosure callback) {
+  // For testing, simulate the bubble being accepted by directly invoking the
+  // callback, or rejected by skipping the callback.
+  if (accept_bubble_for_testing_.has_value()) {
+    if (*accept_bubble_for_testing_) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback)));
+    }
+    return;
+  }
+
+  // TODO(emiliapaz): Consider showing the dialog as a modal if container
+  // doesn't exist. Currently we get the extension's icon via the action
+  // controller from the container, so the container must exist.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   ExtensionsContainer* const extensions_container =
       browser ? browser->window()->GetExtensionsContainer() : nullptr;
   if (!extensions_container)
     return;
 
-  // For testing, simulate the bubble being accepted by directly invoking the
-  // callback, or rejected by skipping the callback.
-  if (accept_bubble_for_testing_.has_value()) {
-    if (*accept_bubble_for_testing_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(callback), bubble_is_checked_for_testing_));
-    }
-    return;
-  }
-
-  ShowBlockedActionDialog(browser, extension->id(), show_checkbox,
-                          std::move(callback));
+  ShowReloadPageDialog(browser, extension_ids, update_permissions,
+                       std::move(callback));
 }
 
-void ExtensionActionRunner::OnBlockedActionBubbleClosed(
-    const std::string& extension_id,
+// TODO(emiliapaz): Changing user site settings should also trigger the reload
+// page. Once it is implemented, the callback needs to grant user site settings
+// access. Consider separating callback for each purpose (e.g -ForTabPermission,
+// -ForSiteAccessChange, - ForUserSiteSettingChange).
+void ExtensionActionRunner::OnReloadPageBubbleAccepted(
+    const std::vector<ExtensionId>& extension_ids,
     const GURL& page_url,
     SitePermissionsHelper::SiteAccess current_access,
-    SitePermissionsHelper::SiteAccess new_access,
-    bool is_checked) {
-  // Blocked action dialog could have only be shown if the extension's action
-  // was blocked, which means the current site access must be "on click".
-  DCHECK_EQ(current_access, SitePermissionsHelper::SiteAccess::kOnClick);
-
+    SitePermissionsHelper::SiteAccess new_access) {
   // If the web contents have navigated to a different origin, do nothing.
   if (!url::IsSameOriginWith(page_url, web_contents()->GetLastCommittedURL()))
     return;
 
-  const Extension* extension = ExtensionRegistry::Get(browser_context_)
-                                   ->enabled_extensions()
-                                   .GetByID(extension_id);
-  if (!extension)
-    return;
-
-  // If the user selected the checkbox, always grant access to this site. Note
-  // that the checkbox should only be visible if the dialog wasn't triggered
-  // after a site access change (which would be evidenced in `new_access`).
-  if (is_checked) {
-    DCHECK_EQ(current_access, new_access);
-    new_access = SitePermissionsHelper::SiteAccess::kOnSite;
-  }
+  auto* registry = ExtensionRegistry::Get(browser_context_);
+  auto get_extension = [registry](ExtensionId extension_id) {
+    return registry->enabled_extensions().GetByID(extension_id);
+  };
 
   if (current_access != new_access) {
+    // Only a single extension can update its site access since multiple
+    // extensions cannot change their site access at the same time.
+    DCHECK_EQ(int(extension_ids.size()), 1);
+    const Extension* extension = get_extension(extension_ids[0]);
+    // Extension could have been removed while the reload page bubble was open.
+    if (!extension)
+      return;
+
     UpdatePageAccessSettings(extension, current_access, new_access);
   } else {
-    // Ignore the active tab permission being granted because we don't want
-    // to run scripts right before we refresh the page.
-    base::AutoReset<bool> ignore_active_tab(&ignore_active_tab_granted_, true);
-    TabHelper::FromWebContents(web_contents())
-        ->active_tab_permission_granter()
-        ->GrantIfRequested(extension);
+    // Multiple extension and a single extension that doesn't change its site
+    // access are granted one time access.
+    for (const auto& extension_id : extension_ids) {
+      const Extension* extension = get_extension(extension_id);
+      if (!extension)
+        continue;
+
+      base::AutoReset<bool> ignore_active_tab(&ignore_active_tab_granted_,
+                                              true);
+      TabHelper::FromWebContents(web_contents())
+          ->active_tab_permission_granter()
+          ->GrantIfRequested(extension);
+    }
   }
 
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);

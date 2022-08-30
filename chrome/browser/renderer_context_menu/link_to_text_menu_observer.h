@@ -19,7 +19,7 @@ using CompletionCallback = base::OnceClosure;
 
 // A class that implements the menu item for copying selected text and a link
 // to the selected text to the user's clipboard.
-class LinkToTextMenuObserver : public RenderViewContextMenuObserver{
+class LinkToTextMenuObserver : public RenderViewContextMenuObserver {
  public:
   static std::unique_ptr<LinkToTextMenuObserver> Create(
       RenderViewContextMenuProxy* proxy,
@@ -137,7 +137,6 @@ class LinkToTextMenuObserver : public RenderViewContextMenuObserver{
   CompletionCallback completion_callback_;
 
   base::WeakPtrFactory<LinkToTextMenuObserver> weak_ptr_factory_{this};
-
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_LINK_TO_TEXT_MENU_OBSERVER_H_

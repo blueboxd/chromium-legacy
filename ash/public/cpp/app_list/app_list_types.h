@@ -308,19 +308,25 @@ enum class AppListModelStatus {
   kStatusSyncing,  // Syncing apps or installing synced apps.
 };
 
-// Indicate the state of the apps grid reorder animation.
-enum class AppListReorderAnimationStatus {
-  // No reorder animation is active.
+// Indicate the state of animations that affect the entire apps grid (e.g.
+// reorder/sorting, hide continue section). This does not cover smaller
+// animations (e.g. drag and drop, folder open).
+enum class AppListGridAnimationStatus {
+  // No whole-grid animation is active.
   kEmpty,
 
-  // Run the animation that fades out the obsolete layout.
-  kFadeOutAnimation,
+  // Run the animation that fades out the obsolete layout before reordering.
+  kReorderFadeOut,
 
   // After the fade out animation ends and before the fade in animation starts.
-  kIntermediaryState,
+  kReorderIntermediaryState,
 
   // Run the animation that fades in the new layout after reordering.
-  kFadeInAnimation
+  kReorderFadeIn,
+
+  // Run the animation that slides up each row of icons when the continue
+  // section is hidden by the user.
+  kHideContinueSection,
 };
 
 // The UI component the user launched the search result from. Must match

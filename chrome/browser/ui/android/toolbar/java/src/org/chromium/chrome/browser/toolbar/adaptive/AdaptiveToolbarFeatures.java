@@ -16,20 +16,8 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * A utility class for handling feature flags used by {@link AdaptiveToolbarButtonController}.
- *
- * <p>TODO(shaktisahu): This class supports both the data collection and the customization
- * experiment. Cleanup once the former is no longer needed.
  */
 public class AdaptiveToolbarFeatures {
-    /** Adaptive toolbar button is always empty. */
-    public static final String ALWAYS_NONE = "always-none";
-    /** Adaptive toolbar button opens a new tab. */
-    public static final String ALWAYS_NEW_TAB = "always-new-tab";
-    /** Adaptive toolbar button shares the current tab. */
-    public static final String ALWAYS_SHARE = "always-share";
-    /** Adaptive toolbar button opens voice search. */
-    public static final String ALWAYS_VOICE = "always-voice";
-
     /** Finch default group for new tab variation. */
     static final String NEW_TAB = "new-tab";
     /** Finch default group for share variation. */
@@ -42,7 +30,6 @@ public class AdaptiveToolbarFeatures {
     private static final String VARIATION_PARAM_DISABLE_UI = "disable_ui";
     private static final String VARIATION_PARAM_IGNORE_SEGMENTATION_RESULTS =
             "ignore_segmentation_results";
-    private static final String VARIATION_PARAM_SINGLE_VARIANT_MODE = "mode";
     private static final String VARIATION_PARAM_SHOW_UI_ONLY_AFTER_READY =
             "show_ui_only_after_ready";
     @VisibleForTesting
@@ -57,6 +44,11 @@ public class AdaptiveToolbarFeatures {
 
     /** Default value to use in case finch param isn't available for default segment. */
     private static final String DEFAULT_PARAM_VALUE_DEFAULT_SEGMENT = NEW_TAB;
+
+    /**
+     * Default minimum width to show the optional button.
+     */
+    public static final int DEFAULT_MIN_WIDTH_DP = 360;
 
     @AdaptiveToolbarButtonVariant
     private static Integer sButtonVariant;
@@ -106,21 +98,6 @@ public class AdaptiveToolbarFeatures {
     }
 
     /**
-     * Returns whether the adaptive toolbar is enabled in single variant mode. Returns true also to
-     * provide legacy support for feature flags {@code ShareButtonInTopToolbar} and {@code
-     * VoiceButtonInTopToolbar}.
-     *
-     * <p>Must be called with the {@link FeatureList} initialized.
-     */
-    public static boolean isSingleVariantModeEnabled() {
-        if (isCustomizationEnabled()) return false;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR)) {
-            return true;
-        }
-        return isLegacyShareButtonEnabled() || isLegacyVoiceButtonEnabled();
-    }
-
-    /**
      * Returns whether the adaptive toolbar is enabled with segmentation and customization.
      *
      * <p>Must be called with the {@link FeatureList} initialized.
@@ -152,57 +129,11 @@ public class AdaptiveToolbarFeatures {
     }
 
     /**
-     * When the adaptive toolbar is configured in a single button variant mode, returns the {@link
-     * AdaptiveToolbarButtonVariant} being used.
-     *
-     * <p>This methods avoids parsing param strings more than once. Tests need to call {@link
-     * #clearParsedParamsForTesting()} to clear the cached values.
-     *
-     * <p>Must be called with the {@link FeatureList} initialized.
-     *
-     * <p>TODO(shaktisahu): Have a similar method for segmentation.
-     */
-    @AdaptiveToolbarButtonVariant
-    public static int getSingleVariantMode() {
-        assert isSingleVariantModeEnabled();
-        if (sButtonVariant != null) return sButtonVariant;
-        if (isLegacyShareButtonEnabled()) {
-            sButtonVariant = AdaptiveToolbarButtonVariant.SHARE;
-        } else if (isLegacyVoiceButtonEnabled()) {
-            sButtonVariant = AdaptiveToolbarButtonVariant.VOICE;
-        }
-        if (sButtonVariant != null) return sButtonVariant;
-
-        String mode = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
-                VARIATION_PARAM_SINGLE_VARIANT_MODE);
-        switch (mode) {
-            case ALWAYS_NONE:
-                sButtonVariant = AdaptiveToolbarButtonVariant.NONE;
-                break;
-            case ALWAYS_NEW_TAB:
-                sButtonVariant = AdaptiveToolbarButtonVariant.NEW_TAB;
-                break;
-            case ALWAYS_SHARE:
-                sButtonVariant = AdaptiveToolbarButtonVariant.SHARE;
-                break;
-            case ALWAYS_VOICE:
-                sButtonVariant = AdaptiveToolbarButtonVariant.VOICE;
-                break;
-            default:
-                sButtonVariant = AdaptiveToolbarButtonVariant.UNKNOWN;
-                break;
-        }
-        return sButtonVariant;
-    }
-
-    /**
      * Returns the default variant to be shown in segmentation experiment when the backend results
      * are unavailable or not configured.
      */
     @AdaptiveToolbarButtonVariant
     static int getSegmentationDefault() {
-        assert !isSingleVariantModeEnabled();
         assert isCustomizationEnabled();
         if (sButtonVariant != null) return sButtonVariant;
         String defaultSegment = getDefaultSegment();
@@ -266,7 +197,7 @@ public class AdaptiveToolbarFeatures {
 
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2,
-                VARIATION_PARAM_SHOW_UI_ONLY_AFTER_READY, false);
+                VARIATION_PARAM_SHOW_UI_ONLY_AFTER_READY, true);
     }
 
     @VisibleForTesting
@@ -298,33 +229,12 @@ public class AdaptiveToolbarFeatures {
         sShowUiOnlyAfterReadyForTesting = null;
     }
 
-    /**
-     * Returns whether the adaptive toolbar is providing legacy support for the feature flag {@code
-     * VoiceButtonInTopToolbar}.
-     *
-     * <p>Must be called with the {@link FeatureList} initialized.
-     */
-    private static boolean isLegacyShareButtonEnabled() {
-        if (isCustomizationEnabled()) return false;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR)) {
-            return false;
-        }
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR);
-    }
-
-    /**
-     * Returns whether the adaptive toolbar is providing legacy support for the feature flag {@code
-     * ShareButtonInTopToolbar}.
-     *
-     * <p>Must be called with the {@link FeatureList} initialized.
-     */
-    private static boolean isLegacyVoiceButtonEnabled() {
-        if (isCustomizationEnabled()) return false;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR)) {
-            return false;
-        }
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.VOICE_BUTTON_IN_TOP_TOOLBAR);
-    }
-
     private AdaptiveToolbarFeatures() {}
+
+    /** @return The minimum device width below which the toolbar button isn't shown. */
+    public static int getDeviceMinimumWidthForShowingButton() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2,
+                "minimum_width_dp", DEFAULT_MIN_WIDTH_DP);
+    }
 }

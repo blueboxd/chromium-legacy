@@ -17,7 +17,7 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Binder for the Carousel suggestions.
@@ -26,8 +26,7 @@ public final class BaseCarouselSuggestionViewBinder {
     /** @see PropertyModelChangeProcessor.ViewBinder#bind(Object, Object, Object) */
     public static void bind(PropertyModel model, BaseCarouselSuggestionView view, PropertyKey key) {
         if (key == BaseCarouselSuggestionViewProperties.TILES) {
-            final Collection<ListItem> items =
-                    model.get(BaseCarouselSuggestionViewProperties.TILES);
+            final List<ListItem> items = model.get(BaseCarouselSuggestionViewProperties.TILES);
             final SimpleRecyclerViewAdapter adapter = view.getAdapter();
             if (items != null) {
                 adapter.getModelList().set(items);
@@ -63,13 +62,15 @@ public final class BaseCarouselSuggestionViewBinder {
      * @return The requested item spacing, expressed in Pixels.
      */
     static int getItemSpacingPx(@FormFactor int formFactor, @NonNull Resources resources) {
+        int maxTileSpacing = resources.getDimensionPixelOffset(
+                R.dimen.omnibox_suggestion_carousel_spacing_maximum);
         int tileViewPortraitEdgePadding =
                 resources.getDimensionPixelSize(R.dimen.tile_view_padding_edge_portrait);
         switch (formFactor) {
             case FormFactor.PHONE:
                 int screenWidth = resources.getDisplayMetrics().widthPixels;
                 int tileViewWidth = resources.getDimensionPixelOffset(R.dimen.tile_view_width);
-                return Integer.max(-resources.getDimensionPixelOffset(R.dimen.tile_view_padding),
+                return Integer.min(maxTileSpacing,
                         (int) ((screenWidth - tileViewPortraitEdgePadding - tileViewWidth * 4.7)
                                 / 4));
             case FormFactor.TABLET:

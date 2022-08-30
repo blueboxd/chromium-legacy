@@ -173,7 +173,7 @@
   },
   {
     "prefix": "android",
-    "platforms": ["Linux", "Mac", "Win"],
+    "platforms": ["Linux"],
     "bases": ["fullscreen"],
     "args": ["--enable-features=OverlayScrollbar",
              "--enable-threaded-compositing",
@@ -192,7 +192,7 @@
   },
   {
     "prefix": "shared_array_buffer_on_desktop",
-    "platforms": ["Linux", "Mac", "Win"],
+    "platforms": ["Linux"],
     "bases": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
               "external/wpt/wasm/jsapi/memory",
               "fast/workers/worker-atomics-wait.html",
@@ -258,7 +258,7 @@
   },
   {
     "prefix": "scalefactor150",
-    "platforms": ["Linux", "Mac", "Win"],
+    "platforms": ["Linux", "Win"],
     "bases": ["fast/events/synthetic-events",
               "fast/hidpi/static"],
     "args": ["--force-device-scale-factor=1.5"]
@@ -416,7 +416,7 @@
   },
   {
     "prefix": "plz-dedicated-worker",
-    "platforms": ["Linux", "Mac", "Win"],
+    "platforms": ["Linux"],
     "bases": ["external/wpt/content-security-policy/inside-worker",
               "external/wpt/content-security-policy/worker-src",
               "external/wpt/content-security-policy/gen",
@@ -539,6 +539,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
+      "external/wpt/html/infrastructure/urls/terminology-0",
       "external/wpt/navigation-api/navigate-event/cross-window"
     ],
     "args": ["--disable-auto-wpt-origin-isolation",
@@ -598,12 +599,6 @@
               "html/details_summary/color-scheme-validation"],
     "args": ["--force-high-contrast",
              "--enable-blink-features=ForcedColors,ForcedColorsPreserveParentColor"]
-  },
-  {
-    "prefix": "system-color-compute",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-color"],
-    "args": ["--enable-blink-features=CSSSystemColorComputeToSelf"]
   },
   {
     "prefix": "dark-color-scheme",
@@ -705,6 +700,12 @@
     "args": ["--force-color-profile=color-spin-gamma24"]
   },
   {
+    "prefix": "wide-gamut",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [],
+    "args": ["--force-color-profile=display-p3-d65"]
+  },
+  {
     "prefix": "split-cache-by-include-credentials",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/http-cache"],
@@ -732,12 +733,6 @@
              "--enable-features=ClipboardCustomFormats"]
   },
   {
-    "prefix": "legacy-client-hints",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
-    "args": ["--enable-features=AllowClientHintsToThirdParty"]
-  },
-  {
     "prefix": "disable-ua-client-hint",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
@@ -758,8 +753,17 @@
   {
     "prefix": "trust-tokens",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "external/wpt/trust-tokens/end-to-end", "http/tests/loading/trust-tokens", "http/tests/inspector-protocol/trust-tokens" ],
-    "args": [ "--enable-features=TrustTokens" ]
+    "bases": [
+        "external/wpt/trust-tokens/end-to-end",
+        "http/tests/loading/trust-tokens",
+        "http/tests/inspector-protocol/trust-tokens",
+        "wpt_internal/trust-tokens"
+    ],
+    "args": [
+        "--enable-features=TrustTokens",
+        "--enable-blink-features=TrustTokens,TrustTokensAlwaysAllowIssuance",
+        "--additional-trust-token-key-commitments={\"https://web-platform.test:8444\":{\"TrustTokenV3VOPRF\":{\"protocol_version\":\"TrustTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"
+    ]
   },
   {
     "prefix": "weakrefs",
@@ -784,12 +788,6 @@
       "external/wpt/document-policy/experimental-features/document-domain"
     ],
     "args": [ "--enable-features=DisableDocumentDomainByDefault" ]
-  },
-  {
-    "prefix": "subresource-web-bundles-disabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "http/tests/loading/wbn/origin-trial/" ],
-    "args": [ "--disable-blink-features=SubresourceWebBundles" ]
   },
   {
     "prefix": "backface-visibility-interop",
@@ -1075,6 +1073,8 @@
     "bases": [
       "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
       "http/tests/inspector-protocol/target/target-auction-worklet.js",
+      "http/tests/inspector-protocol/timeline/auction-worklet.js",
+      "http/tests/inspector-protocol/timeline/auction-worklet-frame.js",
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
@@ -1086,7 +1086,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/lazyembed"],
     "args": [
-      "--enable-features=AutomaticLazyFrameLoadingToEmbeds,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed",
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:timeout/1000,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed,AutomaticLazyFrameLoadingToAds:timeout/5000",
       "--disable-field-trial-config"
     ]
   },
@@ -1265,12 +1265,19 @@
     ]
   },
   {
-    "prefix": "precompile-inline-scripts",
+    "prefix": "threaded-preload-scanner",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/semantics/scripting-1",
-      "fast/dom/HTMLScriptElement"
+      "fast/dom/HTMLScriptElement",
+      "fast/preloader"
     ],
-    "args": ["--enable-features=PrecompileInlineScripts"]
+    "args": ["--enable-features=ThreadedPreloadScanner,PrecompileInlineScripts"]
+  },
+  {
+    "prefix": "coop-restrict-properties",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "external/wpt/html/cross-origin-opener-policy/tentative/restrict-properties" ],
+    "args": [ "--enable-features=CoopRestrictProperties" ]
   }
 ]

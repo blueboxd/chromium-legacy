@@ -5,6 +5,17 @@
 import SwiftUI
 import ios_chrome_common_ui_colors_swift
 
+/// PreferenceKey to listen to changes of a view's size.
+struct PopupMatchRowSizePreferenceKey: PreferenceKey {
+  static var defaultValue = CGSize.zero
+  // This function determines how to combine the preference values for two
+  // child views. In the absence of any better combination method, just use the
+  // second value.
+  static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+    value = nextValue()
+  }
+}
+
 struct PopupMatchRowView: View {
   enum Colors {
     static let highlightingColor = Color(
@@ -29,6 +40,7 @@ struct PopupMatchRowView: View {
   }
 
   @Environment(\.popupUIVariation) var uiVariation: PopupUIVariation
+  @Environment(\.popupPasteButtonVariation) var pasteButtonVariation: PopupPasteButtonVariation
   @Environment(\.horizontalSizeClass) var sizeClass
 
   let match: PopupMatch
@@ -40,6 +52,7 @@ struct PopupMatchRowView: View {
 
   @State var isPressed = false
   @State var childView = CGSize.zero
+  @State var currentSize = CGSize.zero
 
   var button: some View {
 
@@ -135,7 +148,9 @@ struct PopupMatchRowView: View {
   var body: some View {
     ZStack {
       // This hides system separators when disabling them is not possible.
-      backgroundColor
+      backgroundColor.notifyOnSizeChange { size in
+        currentSize = size
+      }
 
       if shouldDisplayCustomSeparator {
         VStack {
@@ -197,6 +212,35 @@ struct PopupMatchRowView: View {
         if match.isAppendable || match.isTabMatch {
           PopupMatchTrailingButton(match: match, action: trailingButtonHandler)
             .foregroundColor(isHighlighted ? highlightColor : .chromeBlue)
+        } else if match.isClipboardMatch {
+          // Clipboard matches are never appendable or tab matches.
+          #if __IPHONE_16_0
+            if #available(iOS 16.0, *) {
+              let pasteButton: PasteButton = PasteButton(
+                // The clipboard suggestion row is only going to appear for these
+                // types of clipboard content.
+                supportedContentTypes: [.text, .image, .url],
+                payloadAction: { _ in
+                  DispatchQueue.main.async {
+                    // The clipboard content will be retrieved in a later stage by the
+                    // clipboard provider. After the tap on `PasteButton`, later request
+                    // on the same clipboard content won't trigger the permission popup.
+                    selectionHandler()
+                  }
+                }
+              )
+              switch pasteButtonVariation {
+              case .icon:
+                pasteButton
+                  .labelStyle(.iconOnly)
+                  .buttonBorderShape(.capsule)
+              case .iconText:
+                pasteButton
+                  .labelStyle(.titleAndIcon)
+                  .buttonBorderShape(.capsule)
+              }
+            }
+          #endif  // __IPHONE_16_0
         }
         Color.clear.frame(width: trailingMarginForRowContent)
       }
@@ -206,6 +250,7 @@ struct PopupMatchRowView: View {
       .environment(\.layoutDirection, layoutDirection)
     }
     .frame(maxWidth: .infinity, minHeight: Dimensions.minHeight)
+    .preference(key: PopupMatchRowSizePreferenceKey.self, value: self.currentSize)
   }
 
   var backgroundColor: Color {

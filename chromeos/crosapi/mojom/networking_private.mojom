@@ -42,6 +42,52 @@ union PropertiesSuccessOrErrorReturn {
   mojo_base.mojom.Value success_result;
 };
 
+[Stable, Extensible]
+enum CaptivePortalStatus {
+  // The netwok state is unknown.
+  [Default] kUnknown = 0,
+  // The network is not connected.
+  kOffline,
+  // The network is connected and no portal is detected.
+  kOnline,
+  // The network is in one of the following states:
+  // - Connected but no internet is available and no proxy was detected.
+  // - A portal is suspected but no redirect was provided.
+  // - A portal state with a redirect URL.
+  kPortal,
+  // A proxy requiring authentication is detected.
+  kProxyAuthRequired,
+};
+
+// This interface mirrors NetworkingPrivateDelegateObserver. It allows Ash
+// to notify lacros of such events. Lacros, on its turn, will then forward
+// those notifications to its local observers.
+[Stable, Uuid="67b08eef-7f47-43cd-8bf6-ad64f05af13c"]
+interface NetworkingPrivateDelegateObserver {
+  // Notifies observers when properties may have changed for the networks listed
+  // in |network_guids|.
+  OnNetworksChangedEvent@0(array<string> network_guids);
+
+  // Notifies observers that the list of networks changed. |network_guids|
+  // contains the complete list of network guids.
+  OnNetworkListChangedEvent@1(array<string> network_guids);
+
+  // Fired when the list of devices has changed or any device state properties
+  // have changed.
+  [MinVersion=1]
+  OnDeviceStateListChanged@2();
+
+  // Fired when a portal detection for a network completes. Sends the guid of
+  // the network and the corresponding captive portal status.
+  [MinVersion=2]
+  OnPortalDetectionCompleted@3(string networkGuid,
+                               CaptivePortalStatus status);
+
+  // Fired when any certificate list has changed.
+  [MinVersion=3]
+  OnCertificateListsChanged@4();
+};
+
 // This interface mirrors the NetworkingPrivateDelegate from Lacros to Ash to
 // allow the networking.private / networking.onc extensions to be used. Note
 // that this API is stable since years and will rather be deprecated than
@@ -159,4 +205,9 @@ interface NetworkingPrivate {
   // all supported network types except Cellular, which must be requested
   // explicitly.
   RequestScan@20(string type) => (bool scan_requested);
+
+  // Adds a new observer that will be notified by Ash when relevant events
+  // take place.
+  [MinVersion=1]
+  AddObserver@21(pending_remote<NetworkingPrivateDelegateObserver> observer);
 };

@@ -38,6 +38,10 @@
 #include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom.h"
 #include "url/origin.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
+#endif
+
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -79,9 +83,14 @@ class CONTENT_EXPORT ServiceWorkerHost {
 
   void CreateWebTransportConnector(
       mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver);
-  // Used only when EagerCacheStorageSetupForServiceWorkers is disabled.
+  // Used when EagerCacheStorageSetupForServiceWorkers is disabled, or when
+  // setup for eager cache storage has failed.
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
+
+#if !BUILDFLAG(IS_ANDROID)
+  void BindHidService(mojo::PendingReceiver<blink::mojom::HidService> receiver);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   content::ServiceWorkerContainerHost* container_host() {
     return container_host_.get();

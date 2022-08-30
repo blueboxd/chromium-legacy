@@ -151,14 +151,14 @@ int ConfigurableStorageDelegate::GetMaxSourcesPerOrigin() const {
   return max_sources_per_origin_;
 }
 
-int ConfigurableStorageDelegate::GetMaxAttributionsPerOrigin(
+int ConfigurableStorageDelegate::GetMaxReportsPerDestination(
     AttributionReport::ReportType report_type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (report_type) {
     case AttributionReport::ReportType::kEventLevel:
-      return max_event_level_attributions_per_origin_;
+      return max_event_level_reports_per_destination_;
     case AttributionReport::ReportType::kAggregatableAttribution:
-      return max_aggregatable_attributions_per_origin_;
+      return max_aggregatable_reports_per_destination_;
   }
 }
 
@@ -264,16 +264,16 @@ void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
   max_sources_per_origin_ = max;
 }
 
-void ConfigurableStorageDelegate::set_max_attributions_per_origin(
+void ConfigurableStorageDelegate::set_max_reports_per_destination(
     AttributionReport::ReportType report_type,
     int max) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (report_type) {
     case AttributionReport::ReportType::kEventLevel:
-      max_event_level_attributions_per_origin_ = max;
+      max_event_level_reports_per_destination_ = max;
       break;
     case AttributionReport::ReportType::kAggregatableAttribution:
-      max_aggregatable_attributions_per_origin_ = max;
+      max_aggregatable_reports_per_destination_ = max;
       break;
   }
 }
@@ -661,7 +661,8 @@ AttributionTrigger TriggerBuilder::Build() const {
       /*not_filters=*/AttributionFilterData());
 
   return AttributionTrigger(destination_origin_, reporting_origin_,
-                            AttributionFilterData(), debug_key_,
+                            /*filters=*/AttributionFilterData(),
+                            /*not_filters=*/AttributionFilterData(), debug_key_,
                             std::move(event_triggers),
                             aggregatable_trigger_data_, aggregatable_values_);
 }
@@ -763,8 +764,8 @@ bool operator==(const AttributionTrigger::EventTriggerData& a,
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
     return std::make_tuple(t.destination_origin(), t.reporting_origin(),
-                           t.filters(), t.debug_key(), t.event_triggers(),
-                           t.aggregatable_trigger_data(),
+                           t.filters(), t.not_filters(), t.debug_key(),
+                           t.event_triggers(), t.aggregatable_trigger_data(),
                            t.aggregatable_values());
   };
   return tie(a) == tie(b);
@@ -1048,7 +1049,8 @@ std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
   out << "{destination_origin=" << conversion.destination_origin()
       << ",reporting_origin=" << conversion.reporting_origin()
-      << ",filters=" << conversion.filters() << ",debug_key="
+      << ",filters=" << conversion.filters()
+      << ",not_filters=" << conversion.not_filters() << ",debug_key="
       << (conversion.debug_key() ? base::NumberToString(*conversion.debug_key())
                                  : "null")
       << "event_triggers=[";

@@ -61,6 +61,10 @@ content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return web_contents_;
 }
 
+const std::string FakeScriptExecutorDelegate::GetLocale() {
+  return "en-US";
+}
+
 void FakeScriptExecutorDelegate::SetJsFlowLibrary(
     const std::string& js_flow_library) {
   GetJsFlowDevtoolsWrapper()->SetJsFlowLibrary(js_flow_library);
@@ -162,6 +166,10 @@ UserModel* FakeScriptExecutorDelegate::GetUserModel() {
   return user_model_;
 }
 
+UserData* FakeScriptExecutorDelegate::GetUserData() {
+  return user_data_;
+}
+
 void FakeScriptExecutorDelegate::SetOverlayBehavior(
     ConfigureUiStateProto::OverlayBehavior overaly_behavior) {}
 
@@ -174,6 +182,11 @@ bool FakeScriptExecutorDelegate::ShouldShowWarning() {
 std::vector<std::string>*
 FakeScriptExecutorDelegate::GetCurrentBrowseDomainsList() {
   return &browse_domains_;
+}
+
+void FakeScriptExecutorDelegate::OnActionsResponseReceived(
+    const RoundtripNetworkStats& network_stats) {
+  roundtrip_network_stats_ = network_stats;
 }
 
 }  // namespace autofill_assistant

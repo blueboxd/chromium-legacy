@@ -6,9 +6,7 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 
-namespace net {
-
-namespace extras {
+namespace net::extras {
 
 PreloadDecoder::BitReader::BitReader(const uint8_t* bytes, size_t num_bits)
     : bytes_(bytes), num_bits_(num_bits), num_bytes_((num_bits + 7) / 8) {}
@@ -183,7 +181,7 @@ PreloadDecoder::PreloadDecoder(const uint8_t* huffman_tree,
       bit_reader_(trie, trie_bits),
       trie_root_position_(trie_root_position) {}
 
-PreloadDecoder::~PreloadDecoder() {}
+PreloadDecoder::~PreloadDecoder() = default;
 
 bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
   size_t bit_offset = trie_root_position_;
@@ -308,6 +306,4 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
   NOTREACHED();
 }
 
-}  // namespace extras
-
-}  // namespace net
+}  // namespace net::extras

@@ -11,8 +11,8 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/network/cellular_esim_profile_handler.h"
-#include "chromeos/network/managed_cellular_pref_handler.h"
+#include "chromeos/ash/components/network/cellular_esim_profile_handler.h"
+#include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -245,8 +245,8 @@ void EuiccStatusUploader::MaybeUploadStatus() {
     return;
   }
 
-  const base::Value* last_uploaded_pref =
-      local_state_->Get(kLastUploadedEuiccStatusPref);
+  const base::Value& last_uploaded_pref =
+      local_state_->GetValue(kLastUploadedEuiccStatusPref);
   auto current_state = GetCurrentEuiccStatus();
 
   // Force send the status if reset request was received.
@@ -269,7 +269,7 @@ void EuiccStatusUploader::MaybeUploadStatus() {
 
   retry_timer_.reset();
 
-  if (!last_uploaded_pref || *last_uploaded_pref != current_state) {
+  if (last_uploaded_pref != current_state) {
     UploadStatus(std::move(current_state));
   }
 }

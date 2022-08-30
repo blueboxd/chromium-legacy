@@ -9,18 +9,21 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/json/values_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -28,6 +31,8 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/mock_component_updater_service.h"
+#include "components/component_updater/pref_names.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,13 +41,13 @@ namespace component_updater {
 namespace {
 
 constexpr char kErrorHistogramName[] = "SoftwareReporter.ConfigurationErrors";
-constexpr char kExperimentTag[] = "experiment_tag";
 constexpr char kMissingTag[] = "missing_tag";
 
 using safe_browsing::SwReporterInvocation;
 using safe_browsing::SwReporterInvocationSequence;
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Contains;
 using ::testing::ReturnRef;
 
 using Events = update_client::UpdateClient::Observer::Events;
@@ -56,7 +61,9 @@ class SwReporterInstallerTest : public ::testing::Test {
             &SwReporterInstallerTest::SwReporterComponentReady,
             base::Unretained(this))),
         default_version_("1.2.3"),
-        default_path_(L"C:\\full\\path\\to\\download") {}
+        default_path_(L"C:\\full\\path\\to\\download") {
+    RegisterPrefsForSwReporter(test_prefs_.registry());
+  }
 
   SwReporterInstallerTest(const SwReporterInstallerTest&) = delete;
   SwReporterInstallerTest& operator=(const SwReporterInstallerTest&) = delete;
@@ -85,17 +92,38 @@ class SwReporterInstallerTest : public ::testing::Test {
   }
 
   void CreateFeatureWithParams(const base::FieldTrialParams& params) {
-    scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         safe_browsing::kChromeCleanupDistributionFeature, params);
   }
 
-  void ExpectAttributesWithTag(const SwReporterInstallerPolicy& policy,
-                               const std::string& tag) {
+  void DisableFeature() {
+    scoped_feature_list_.InitAndDisableFeature(
+        safe_browsing::kChromeCleanupDistributionFeature);
+  }
+
+  void SetReporterCohortPrefs(const std::string& name,
+                              base::Time selection_time) {
+    test_prefs_.SetUserPref(prefs::kSwReporterCohort, base::Value(name));
+    test_prefs_.SetUserPref(prefs::kSwReporterCohortSelectionTime,
+                            base::TimeToValue(selection_time));
+  }
+
+  // Expects the "tag" attribute will include any of the values in "tags".
+  // Returns the value of the attribute or the empty string if not found.
+  std::string ExpectAttributesWithTagIn(const SwReporterInstallerPolicy& policy,
+                                        const std::vector<std::string>& tags) {
     update_client::InstallerAttributes attributes =
         policy.GetInstallerAttributes();
     EXPECT_EQ(1U, attributes.size());
-    EXPECT_EQ(tag, attributes["tag"]);
+    std::string tag = attributes["tag"];
+    EXPECT_THAT(tags, Contains(tag));
+    return tag;
+  }
+
+  // Expects the "tag" attribute will be `tag`.
+  void ExpectAttributesWithTag(const SwReporterInstallerPolicy& policy,
+                               const std::string& tag) {
+    ExpectAttributesWithTagIn(policy, {tag});
   }
 
   void ExpectEmptyAttributes(const SwReporterInstallerPolicy& policy) const {
@@ -208,6 +236,7 @@ class SwReporterInstallerTest : public ::testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histograms_;
+  TestingPrefServiceSimple test_prefs_;
 
   // |ComponentReady| asserts that it is run on the UI thread, so we must
   // create test threads before calling it.
@@ -228,50 +257,123 @@ class SwReporterInstallerTest : public ::testing::Test {
 };
 
 TEST_F(SwReporterInstallerTest, MissingManifest) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
-  ExpectEmptyAttributes(policy);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
   policy.ComponentReady(default_version_, default_path_,
                         base::Value(base::Value::Type::DICTIONARY));
   ExpectLaunchError(kMissingPromptSeed);
 }
 
-TEST_F(SwReporterInstallerTest, MissingTag) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+TEST_F(SwReporterInstallerTest, MissingTagRandomCohort) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
   CreateFeatureWithoutTag();
-  ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
+  std::string tag = ExpectAttributesWithTagIn(policy, {"canary", "stable"});
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 0);
+  // Randomly assigned tag should be written to prefs.
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), tag);
 }
 
 TEST_F(SwReporterInstallerTest, InvalidTag) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
   CreateFeatureWithTag("tag with invalid whitespace chars");
   ExpectAttributesWithTag(policy, kMissingTag);
   histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
+  // Invalid tag should NOT be written to prefs.
+  EXPECT_TRUE(test_prefs_.GetString(prefs::kSwReporterCohort).empty());
 }
 
 TEST_F(SwReporterInstallerTest, TagTooLong) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
   std::string tag_too_long(500, 'x');
   CreateFeatureWithTag(tag_too_long);
   ExpectAttributesWithTag(policy, kMissingTag);
   histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
+  // Invalid tag should NOT be written to prefs.
+  EXPECT_TRUE(test_prefs_.GetString(prefs::kSwReporterCohort).empty());
 }
 
-TEST_F(SwReporterInstallerTest, EmptyTag) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+TEST_F(SwReporterInstallerTest, EmptyTagRandomCohort) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
   CreateFeatureWithTag("");
-  ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
+  std::string tag = ExpectAttributesWithTagIn(policy, {"canary", "stable"});
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 0);
+  // Randomly assigned tag should be written to prefs.
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), tag);
 }
 
 TEST_F(SwReporterInstallerTest, ValidTag) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
-  CreateFeatureWithTag(kExperimentTag);
-  ExpectAttributesWithTag(policy, kExperimentTag);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  CreateFeatureWithTag("experiment_tag");
+  ExpectAttributesWithTag(policy, "experiment_tag");
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 0);
+  // Tag from feature param should NOT be written to prefs.
+  EXPECT_TRUE(test_prefs_.GetString(prefs::kSwReporterCohort).empty());
+}
+
+TEST_F(SwReporterInstallerTest, TagFeatureDisabledRandomCohort) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  DisableFeature();
+  std::string tag = ExpectAttributesWithTagIn(policy, {"canary", "stable"});
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 0);
+  // Randomly assigned tag should be written to prefs.
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), tag);
+}
+
+TEST_F(SwReporterInstallerTest, TagFromCohortPref) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  SetReporterCohortPrefs("canary", base::Time::Now());
+  // Make sure if the policy generates a random value, the result will be
+  // distinguishable from the cohort.
+  policy.SetRandomReporterCohortForTesting("invalid");
+  DisableFeature();
+  ExpectAttributesWithTag(policy, "canary");
+}
+
+TEST_F(SwReporterInstallerTest, OldCohortPrefReshuffled) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  SetReporterCohortPrefs("canary", base::Time::Now() - base::Days(40));
+  // Expect "canary" to be ignored because the pref was set >30 days ago. Force
+  // the random result to be "stable" to distinguish it from the pref.
+  policy.SetRandomReporterCohortForTesting("stable");
+  DisableFeature();
+  ExpectAttributesWithTag(policy, "stable");
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), "stable");
+}
+
+TEST_F(SwReporterInstallerTest, TooNewCohortPrefReshuffled) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  SetReporterCohortPrefs("stable", base::Time::Now() + base::Days(2));
+  // Expect "stable" to be ignored because the pref was set >1 day in the
+  // future. Force the random result to be "canary" to distinguish it from the
+  // pref.
+  policy.SetRandomReporterCohortForTesting("canary");
+  DisableFeature();
+  ExpectAttributesWithTag(policy, "canary");
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), "canary");
+}
+
+TEST_F(SwReporterInstallerTest, CohortPrefWithoutTimeReshuffled) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  test_prefs_.SetUserPref(prefs::kSwReporterCohort, base::Value("stable"));
+  // Expect "stable" to be ignored because the kSwReporterCohortSelectionTime
+  // pref is missing. Force the random result to be "canary" to distinguish it
+  // from the kSwReporterCohort pref result.
+  policy.SetRandomReporterCohortForTesting("canary");
+  DisableFeature();
+  ExpectAttributesWithTag(policy, "canary");
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), "canary");
+}
+
+TEST_F(SwReporterInstallerTest, InvalidCohortPrefIgnored) {
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
+  SetReporterCohortPrefs("unknown", base::Time::Now());
+  DisableFeature();
+  std::string tag = ExpectAttributesWithTagIn(policy, {"canary", "stable"});
+  // Randomly assigned tag should be written to prefs.
+  EXPECT_EQ(test_prefs_.GetString(prefs::kSwReporterCohort), tag);
 }
 
 TEST_F(SwReporterInstallerTest, SingleInvocation) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -314,7 +416,7 @@ TEST_F(SwReporterInstallerTest, SingleInvocation) {
 }
 
 TEST_F(SwReporterInstallerTest, MultipleInvocations) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -377,7 +479,7 @@ TEST_F(SwReporterInstallerTest, MultipleInvocations) {
 }
 
 TEST_F(SwReporterInstallerTest, MissingSuffix) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -394,7 +496,7 @@ TEST_F(SwReporterInstallerTest, MissingSuffix) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptySuffix) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -412,7 +514,7 @@ TEST_F(SwReporterInstallerTest, EmptySuffix) {
 }
 
 TEST_F(SwReporterInstallerTest, MissingSuffixAndArgs) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -428,7 +530,7 @@ TEST_F(SwReporterInstallerTest, MissingSuffixAndArgs) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptySuffixAndArgs) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -446,7 +548,7 @@ TEST_F(SwReporterInstallerTest, EmptySuffixAndArgs) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptySuffixAndArgsWithEmptyString) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -464,7 +566,7 @@ TEST_F(SwReporterInstallerTest, EmptySuffixAndArgsWithEmptyString) {
 }
 
 TEST_F(SwReporterInstallerTest, MissingArguments) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -481,7 +583,7 @@ TEST_F(SwReporterInstallerTest, MissingArguments) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptyArguments) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -499,7 +601,7 @@ TEST_F(SwReporterInstallerTest, EmptyArguments) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptyArgumentsWithEmptyString) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -517,7 +619,7 @@ TEST_F(SwReporterInstallerTest, EmptyArgumentsWithEmptyString) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptyManifest) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = "{}";
   policy.ComponentReady(default_version_, default_path_,
@@ -526,7 +628,7 @@ TEST_F(SwReporterInstallerTest, EmptyManifest) {
 }
 
 TEST_F(SwReporterInstallerTest, MissingLaunchParams) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -538,7 +640,7 @@ TEST_F(SwReporterInstallerTest, MissingLaunchParams) {
 }
 
 TEST_F(SwReporterInstallerTest, EmptyLaunchParams) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -551,7 +653,7 @@ TEST_F(SwReporterInstallerTest, EmptyLaunchParams) {
 }
 
 TEST_F(SwReporterInstallerTest, MissingPromptSeed) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -568,7 +670,7 @@ TEST_F(SwReporterInstallerTest, MissingPromptSeed) {
 }
 
 TEST_F(SwReporterInstallerTest, BadSuffix) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -586,7 +688,7 @@ TEST_F(SwReporterInstallerTest, BadSuffix) {
 }
 
 TEST_F(SwReporterInstallerTest, SuffixTooLong) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -607,7 +709,7 @@ TEST_F(SwReporterInstallerTest, SuffixTooLong) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   // This has a string instead of a list for "arguments".
   static constexpr char kTestManifest[] = R"json(
@@ -626,7 +728,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   // This has the invocation parameters as direct children of "launch_params",
   // instead of using a list.
@@ -644,7 +746,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   // This has a list for suffix as well as for arguments.
   static constexpr char kTestManifest[] = R"json(
@@ -663,7 +765,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   // This has an int instead of a bool for prompt.
   static constexpr char kTestManifest[] = R"json(
@@ -683,7 +785,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -696,7 +798,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -709,7 +811,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptSeedIsList) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {
@@ -722,7 +824,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptSeedIsList) {
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptSeedIsInt) {
-  SwReporterInstallerPolicy policy(on_component_ready_callback_);
+  SwReporterInstallerPolicy policy(&test_prefs_, on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = R"json(
       {

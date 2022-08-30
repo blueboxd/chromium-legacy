@@ -32,10 +32,12 @@ import logging
 import optparse
 import re
 
+from collections import defaultdict
+
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
 from blinkpy.common.net.results_fetcher import Build
-from blinkpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command, check_dir_option
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_expectations import SystemConfigurationRemover, TestExpectations
 from blinkpy.web_tests.port import base, factory
@@ -66,7 +68,11 @@ class AbstractRebaseliningCommand(Command):
          '(default is to de-dupe automatically). You can use "blink_tool.py '
          'optimize-baselines" to optimize separately.'))
     results_directory_option = optparse.make_option(
-        '--results-directory', help='Local results directory to use.')
+        '--results-directory',
+        action='callback',
+        callback=check_dir_option,
+        type='string',
+        help='Local results directory to use.')
     suffixes_option = optparse.make_option(
         '--suffixes',
         default=','.join(BASELINE_SUFFIX_LIST),
@@ -336,23 +342,27 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             else:
                 debug_build_steps.add((builder, step))
 
-        build_steps_to_fallback_paths = {}
+        build_steps_to_fallback_paths = defaultdict(dict)
         wpt_build_steps = set()
         for builder, step in list(release_build_steps) + list(
                 debug_build_steps):
             if not self._tool.builders.is_wpt_builder(builder):
+                # Some result db related unit tests set step to None
+                is_legacy_step = step is None or 'blink_web_tests' in step
                 flag_spec_option = self._tool.builders.flag_specific_option(
                     builder, step)
                 port = self._tool.port_factory.get_from_builder_name(builder)
                 port.set_option_default('flag_specific', flag_spec_option)
                 fallback_path = port.baseline_search_path()
                 if fallback_path not in list(
-                        build_steps_to_fallback_paths.values()):
-                    build_steps_to_fallback_paths[builder,
-                                                  step] = fallback_path
+                        build_steps_to_fallback_paths[is_legacy_step].values()):
+                    build_steps_to_fallback_paths[
+                        is_legacy_step][builder, step] = fallback_path
             else:
                 wpt_build_steps.add((builder, step))
-        return set(build_steps_to_fallback_paths) | wpt_build_steps
+        return (set(build_steps_to_fallback_paths[True]) |
+                set(build_steps_to_fallback_paths[False]) |
+                wpt_build_steps)
 
     def baseline_fetch_url_resultdb(self, test_name, build):
         # TODO(preethim): Consider doing QueryArtifacts do a walk of that list for

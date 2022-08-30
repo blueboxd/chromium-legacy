@@ -15,10 +15,12 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/linked_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
+#include "ui/events/event_target.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -51,7 +53,8 @@ using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 
 class WaylandWindow : public PlatformWindow,
                       public PlatformEventDispatcher,
-                      public WmDragHandler {
+                      public WmDragHandler,
+                      public EventTarget {
  public:
   WaylandWindow(const WaylandWindow&) = delete;
   WaylandWindow& operator=(const WaylandWindow&) = delete;
@@ -149,14 +152,6 @@ class WaylandWindow : public PlatformWindow,
 
   bool can_submit_frames() const { return can_submit_frames_; }
 
-  // These are never intended to be used except in unit tests.
-  void set_update_visual_size_immediately(bool update_immediately) {
-    update_visual_size_immediately_ = update_immediately;
-  }
-  void set_apply_pending_state_on_update_visual_size(bool apply_immediately) {
-    apply_pending_state_on_update_visual_size_ = apply_immediately;
-  }
-
   // Remove WaylandOutput associated with WaylandSurface of this window.
   void RemoveEnteredOutput(uint32_t output_id);
 
@@ -210,6 +205,14 @@ class WaylandWindow : public PlatformWindow,
   // PlatformEventDispatcher
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
+
+  // EventTarget:
+  bool CanAcceptEvent(const Event& event) override;
+  EventTarget* GetParentTarget() override;
+  std::unique_ptr<EventTargetIterator> GetChildIterator() const override;
+  EventTargeter* GetEventTargeter() override;
+  void ConvertEventToTarget(const EventTarget* target,
+                            LocatedEvent* event) const override;
 
   // Handles the configuration events coming from the shell objects.
   // The width and height come in DIP of the output that the surface is
@@ -306,6 +309,9 @@ class WaylandWindow : public PlatformWindow,
   // WaylandPopup, if |this| has type of WaylandPopup.
   virtual WaylandPopup* AsWaylandPopup();
 
+  // Returns true if the window's bounds is in screen coordinates.
+  virtual bool IsScreenCoordinatesEnabled() const;
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
   }
@@ -316,6 +322,15 @@ class WaylandWindow : public PlatformWindow,
 
   // Clears the state of the |frame_manager_| when the GPU channel is destroyed.
   void OnChannelDestroyed();
+
+  // These are never intended to be used except in unit tests.
+  void set_update_visual_size_immediately_for_testing(bool update) {
+    update_visual_size_immediately_for_testing_ = update;
+  }
+
+  void set_apply_pending_state_on_update_visual_size_for_testing(bool apply) {
+    apply_pending_state_on_update_visual_size_for_testing_ = apply;
+  }
 
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
@@ -373,8 +388,6 @@ class WaylandWindow : public PlatformWindow,
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
 
-  void UpdateCursorPositionFromEvent(const Event* event);
-
   uint32_t DispatchEventToDelegate(const PlatformEvent& native_event);
 
   // Additional initialization of derived classes.
@@ -391,10 +404,10 @@ class WaylandWindow : public PlatformWindow,
 
   void UpdateCursorShape(scoped_refptr<BitmapCursor> cursor);
 
-  PlatformWindowDelegate* delegate_;
-  WaylandConnection* connection_;
-  WaylandWindow* parent_window_ = nullptr;
-  WaylandWindow* child_window_ = nullptr;
+  raw_ptr<PlatformWindowDelegate> delegate_;
+  raw_ptr<WaylandConnection> connection_;
+  raw_ptr<WaylandWindow> parent_window_ = nullptr;
+  raw_ptr<WaylandWindow> child_window_ = nullptr;
 
   std::unique_ptr<WaylandFrameManager> frame_manager_;
   bool can_submit_frames_ = false;
@@ -466,13 +479,13 @@ class WaylandWindow : public PlatformWindow,
   // visible in |visual_size_px_|, but in some unit tests there will never be
   // any frame updates. This flag causes UpdateVisualSize() to be invoked during
   // SetBounds() in unit tests.
-  bool update_visual_size_immediately_ = false;
+  bool update_visual_size_immediately_for_testing_ = false;
 
   // In a non-test environment, root_surface_->ApplyPendingBounds() is called to
   // send Wayland protocol requests, but in some unit tests there will never be
   // any frame updates. This flag causes root_surface_->ApplyPendingBounds() to
   // be invoked during UpdateVisualSize() in unit tests.
-  bool apply_pending_state_on_update_visual_size_ = false;
+  bool apply_pending_state_on_update_visual_size_for_testing_ = false;
 
   // These bounds attributes below have suffixes that indicate units used.
   // Wayland operates in DIP but the platform operates in physical pixels so

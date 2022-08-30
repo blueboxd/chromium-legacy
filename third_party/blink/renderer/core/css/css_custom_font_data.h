@@ -62,9 +62,7 @@ class CSSCustomFontData final : public CustomFontData {
 
  private:
   CSSCustomFontData(CSSFontFaceSource* source, FallbackVisibility visibility)
-      : font_face_source_(source),
-        fallback_visibility_(visibility),
-        is_loading_(false) {
+      : font_face_source_(source), fallback_visibility_(visibility) {
     if (source)
       is_loading_ = source->IsLoading();
   }
@@ -73,7 +71,7 @@ class CSSCustomFontData final : public CustomFontData {
   // thereby making this reference a Member<>.
   WeakPersistent<CSSFontFaceSource> font_face_source_;
   FallbackVisibility fallback_visibility_;
-  mutable bool is_loading_;
+  mutable bool is_loading_ = false;
 };
 
 }  // namespace blink

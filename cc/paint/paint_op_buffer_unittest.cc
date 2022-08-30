@@ -507,7 +507,7 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
 
 TEST(PaintOpBufferTest, SlowPaths) {
   auto buffer = sk_make_sp<PaintOpBuffer>();
-  EXPECT_EQ(buffer->num_slow_paths(), 0);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 0);
 
   // Op without slow paths
   PaintFlags noop_flags;
@@ -523,13 +523,13 @@ TEST(PaintOpBufferTest, SlowPaths) {
   line_effect_slow.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
 
   buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect_slow);
-  EXPECT_EQ(buffer->num_slow_paths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 1);
 
   // Line effect special case that Skia handles specially.
   PaintFlags line_effect = line_effect_slow;
   line_effect.setStrokeCap(PaintFlags::kButt_Cap);
   buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect);
-  EXPECT_EQ(buffer->num_slow_paths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 1);
 
   // Antialiased convex path is not slow.
   SkPath path;
@@ -537,7 +537,7 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_TRUE(path.isConvex());
   buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, /*antialias=*/true,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->num_slow_paths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 1);
 
   // Concave paths are slow only when antialiased.
   SkPath concave = path;
@@ -545,19 +545,19 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_FALSE(concave.isConvex());
   buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, /*antialias=*/true,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->num_slow_paths(), 2);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 2);
   buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, /*antialias=*/false,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->num_slow_paths(), 2);
+  EXPECT_EQ(buffer->num_slow_paths_up_to_min_for_MSAA(), 2);
 
   // Drawing a record with slow paths into another adds the same
   // number of slow paths as the record.
   auto buffer2 = sk_make_sp<PaintOpBuffer>();
-  EXPECT_EQ(0, buffer2->num_slow_paths());
+  EXPECT_EQ(0, buffer2->num_slow_paths_up_to_min_for_MSAA());
   buffer2->push<DrawRecordOp>(buffer);
-  EXPECT_EQ(2, buffer2->num_slow_paths());
+  EXPECT_EQ(2, buffer2->num_slow_paths_up_to_min_for_MSAA());
   buffer2->push<DrawRecordOp>(buffer);
-  EXPECT_EQ(4, buffer2->num_slow_paths());
+  EXPECT_EQ(4, buffer2->num_slow_paths_up_to_min_for_MSAA());
 }
 
 TEST(PaintOpBufferTest, NonAAPaint) {
@@ -3387,7 +3387,7 @@ TEST_P(PaintFilterSerializationTest, Basic) {
       sk_sp<PaintFilter>{
           new BlurPaintFilter(0.5f, 0.3f, SkTileMode::kRepeat, nullptr)},
       sk_sp<PaintFilter>{new DropShadowPaintFilter(
-          5.f, 10.f, 0.1f, 0.3f, SK_ColorBLUE,
+          5.f, 10.f, 0.1f, 0.3f, SkColors::kBlue,
           DropShadowPaintFilter::ShadowMode::kDrawShadowOnly, nullptr)},
       sk_sp<PaintFilter>{new MagnifierPaintFilter(SkRect::MakeXYWH(5, 6, 7, 8),
                                                   10.5f, nullptr)},
@@ -3408,13 +3408,13 @@ TEST_P(PaintFilterSerializationTest, Basic) {
           SkMatrix::I(), PaintFlags::FilterQuality::kHigh, nullptr)},
       sk_sp<PaintFilter>{new LightingDistantPaintFilter(
           PaintFilter::LightingType::kSpecular, SkPoint3::Make(1, 2, 3),
-          SK_ColorCYAN, 1.1f, 2.2f, 3.3f, nullptr)},
+          SkColors::kCyan, 1.1f, 2.2f, 3.3f, nullptr)},
       sk_sp<PaintFilter>{new LightingPointPaintFilter(
           PaintFilter::LightingType::kDiffuse, SkPoint3::Make(2, 3, 4),
-          SK_ColorRED, 1.2f, 3.4f, 5.6f, nullptr)},
+          SkColors::kRed, 1.2f, 3.4f, 5.6f, nullptr)},
       sk_sp<PaintFilter>{new LightingSpotPaintFilter(
           PaintFilter::LightingType::kSpecular, SkPoint3::Make(100, 200, 300),
-          SkPoint3::Make(400, 500, 600), 1, 2, SK_ColorMAGENTA, 3, 4, 5,
+          SkPoint3::Make(400, 500, 600), 1, 2, SkColors::kMagenta, 3, 4, 5,
           nullptr)},
       sk_sp<PaintFilter>{
           new ImagePaintFilter(CreateDiscardablePaintImage(gfx::Size(100, 100)),

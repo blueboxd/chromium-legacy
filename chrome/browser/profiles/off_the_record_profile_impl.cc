@@ -43,6 +43,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
@@ -95,6 +96,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/preferences.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -237,6 +242,11 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
+  // Records the number of active KeyedServices for SystemProfile right before
+  // shutting them down.
+  if (IsSystemProfile())
+    ProfileMetrics::LogSystemProfileKeyedServicesCount(this);
+
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
@@ -339,7 +349,9 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool OffTheRecordProfileImpl::IsMainProfile() const {
-  return false;
+  return chromeos::BrowserInitParams::Get()->session_type ==
+             crosapi::mojom::SessionType::kGuestSession &&
+         profile_->IsMainProfile();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 

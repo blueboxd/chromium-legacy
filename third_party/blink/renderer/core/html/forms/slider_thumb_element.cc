@@ -337,12 +337,18 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   if (!input || input->IsDisabledFormControl() || !event)
     return;
 
+  auto* thumb = To<SliderThumbElement>(
+      GetTreeScope().getElementById(shadow_element_names::kIdSliderThumb));
+
+  // TODO: Also do this for touchcancel?
   if (event->type() == event_type_names::kTouchend) {
-    // TODO: Also do this for touchcancel?
+    if (!touch_moved_ && thumb)
+      thumb->SetPositionFromPoint(start_point_);
     input->DispatchFormControlChangeEvent();
     event->SetDefaultHandled();
     sliding_direction_ = kNoMove;
     touch_started_ = false;
+    touch_moved_ = false;
     return;
   }
 
@@ -353,8 +359,6 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   }
 
   TouchList* touches = event->targetTouches();
-  auto* thumb = To<SliderThumbElement>(
-      GetTreeScope().getElementById(shadow_element_names::kIdSliderThumb));
   if (!thumb || !touches)
     return;
 
@@ -363,8 +367,9 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
       start_point_ = touches->item(0)->AbsoluteLocation();
       sliding_direction_ = kNoMove;
       touch_started_ = true;
-      thumb->SetPositionFromPoint(touches->item(0)->AbsoluteLocation());
+      touch_moved_ = false;
     } else if (touch_started_) {
+      touch_moved_ = true;
       LayoutPoint current_point = touches->item(0)->AbsoluteLocation();
       if (sliding_direction_ ==
           kNoMove) {  // Still needs to update the direction.

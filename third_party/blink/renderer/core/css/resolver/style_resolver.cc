@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
+#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
@@ -614,7 +615,6 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   // matches one of its containing shadow hosts (see MatchForRelation).
   for (const Element* element = &part_matching_element; element;
        element = element->OwnerShadowHost()) {
-    // Consider the ::part rules for the given scope.
     TreeScope& tree_scope = element->GetTreeScope();
     if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
       ElementRuleCollector::PartRulesScope scope(
@@ -626,17 +626,12 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
       collector.FinishAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
     }
 
-    // If we have now considered the :host/:host() ::part rules in our own tree
-    // scope and the ::part rules in the scope directly above...
-    if (element != &part_matching_element) {
-      // ...then subsequent containing tree scopes require mapping part names
-      // through @exportparts before considering ::part rules. If no parts are
-      // forwarded, the element is now unreachable and we can stop.
-      if (element->HasPartNamesMap())
-        current_names.PushMap(*element->PartNamesMap());
-      else
-        return;
-    }
+    // If the host doesn't forward any parts using exportparts= then the element
+    // is unreachable from any scope further above and we can stop.
+    if (element->HasPartNamesMap())
+      current_names.PushMap(*element->PartNamesMap());
+    else if (element != &part_matching_element)
+      return;
   }
 }
 
@@ -1248,10 +1243,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
 
   CascadeAndApplyMatchedProperties(state, cascade);
 
-  if (collector.MatchedResult().DependsOnContainerQueries())
-    state.Style()->SetDependsOnContainerQueries(true);
-  if (collector.MatchedResult().DependsOnViewportContainerQueries())
+  if (collector.MatchedResult().DependsOnSizeContainerQueries())
+    state.Style()->SetDependsOnSizeContainerQueries(true);
+  if (collector.MatchedResult().DependsOnStaticViewportUnits())
     state.Style()->SetHasStaticViewportUnits();
+  if (collector.MatchedResult().DependsOnDynamicViewportUnits())
+    state.Style()->SetHasDynamicViewportUnits();
   if (collector.MatchedResult().DependsOnRemContainerQueries())
     state.Style()->SetHasRemUnits();
   if (collector.MatchedResult().ConditionallyAffectsAnimations())
@@ -1574,7 +1571,8 @@ Element* StyleResolver::FindContainerForElement(
     Element* element,
     const ContainerSelector& container_selector) {
   auto context = StyleRecalcContext::FromAncestors(*element);
-  return ContainerQueryEvaluator::FindContainer(context, container_selector);
+  return ContainerQueryEvaluator::FindContainer(context.container,
+                                                container_selector);
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -1808,6 +1806,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
   const CachedMatchedProperties* cached_matched_properties =
       key.IsValid() ? matched_properties_cache_.Find(key, state) : nullptr;
 
+  AtomicString pseudo_argument = state.Style()->PseudoArgument();
   if (cached_matched_properties && MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_hit, 1);
@@ -1860,6 +1859,11 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     }
     UpdateFont(state);
   }
+  // This is needed because pseudo_argument is copied to the state.Style() as
+  // part of a raredata field when copying non-inherited values from the cached
+  // result. The argument isn't a style property per se, it represents the
+  // argument to the matching element which should remain unchanged.
+  state.Style()->SetPseudoArgument(pseudo_argument);
 
   return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit, key,
                       cached_matched_properties);
@@ -2100,7 +2104,7 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!rules)
     return;
   for (auto rule : *rules)
-    state.Style()->AddCallbackSelector(rule->SelectorList().SelectorsText());
+    state.Style()->AddCallbackSelector(rule->SelectorsText());
 }
 
 // Font properties are also handled by FontStyleResolver outside the main
@@ -2499,6 +2503,35 @@ Element& StyleResolver::EnsureElementForCanvasFormattedText() {
     canvas_formatted_text_element_ =
         MakeGarbageCollected<Element>(html_names::kSpanTag, &GetDocument());
   return *canvas_formatted_text_element_;
+}
+
+scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
+    Element& element,
+    unsigned index) {
+  const ComputedStyle& base_style = element.ComputedStyleRef();
+  // TODO(crbug.com/1309178): Support tree-scoped fallback name lookup.
+  StyleRulePositionFallback* position_fallback_rule =
+      GetDocument().GetScopedStyleResolver()->PositionFallbackForName(
+          base_style.PositionFallback());
+  if (!position_fallback_rule ||
+      index >= position_fallback_rule->TryRules().size())
+    return nullptr;
+  StyleRuleTry* try_rule = position_fallback_rule->TryRules()[index];
+  StyleResolverState state(GetDocument(), element);
+  state.SetStyle(ComputedStyle::Clone(base_style));
+  const CSSPropertyValueSet& properties = try_rule->Properties();
+  for (unsigned i = 0; i < properties.PropertyCount(); ++i) {
+    CSSPropertyValueSet::PropertyReference property_ref =
+        properties.PropertyAt(i);
+    if (property_ref.Value().IsVariableReferenceValue()) {
+      // TODO(crbug.com/1309178): Resolve var() references.
+      continue;
+    }
+    StyleBuilder::ApplyProperty(
+        property_ref.Name(), state,
+        ScopedCSSValue(property_ref.Value(), &GetDocument()));
+  }
+  return state.TakeStyle();
 }
 
 }  // namespace blink

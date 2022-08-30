@@ -291,16 +291,14 @@ class TestBluetoothDelegate : public BluetoothDelegate {
     prompt_ = prompt.get();
     return std::move(prompt);
   }
-  void ShowDeviceCredentialsPrompt(content::RenderFrameHost* frame,
-                                   const std::u16string& device_identifier,
-                                   CredentialsCallback callback) override {
-    std::move(callback).Run(DeviceCredentialsPromptResult::kCancelled, u"");
-  }
-  void ShowDevicePairConfirmPrompt(content::RenderFrameHost* frame,
-                                   const std::u16string& device_identifier,
-                                   PairConfirmCallback callback) override {
-    std::move(callback).Run(DevicePairConfirmPromptResult::kCancelled);
-  }
+
+  void ShowDevicePairPrompt(content::RenderFrameHost* frame,
+                            const std::u16string& device_identifier,
+                            PairPromptCallback callback,
+                            PairingKind pairing_kind) override {
+    std::move(callback).Run(PairPromptResult(PairPromptStatus::kCancelled));
+  };
+
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       RenderFrameHost* frame,
       const std::string& device_address) override {
@@ -496,7 +494,7 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness,
     // Hook up the test bluetooth delegate.
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
 
-    contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
+    contents()->GetPrimaryMainFrame()->InitializeRenderFrameIfNeeded();
 
     // Navigate to a URL so that WebBluetoothServiceImpl::GetOrigin() returns a
     // valid origin. This is required when checking for Bluetooth permissions.
@@ -505,8 +503,9 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness,
                                                       GURL(kTestURL));
 
     // Simulate a frame connected to a bluetooth service.
-    service_ =
-        contents()->GetMainFrame()->CreateWebBluetoothServiceForTesting();
+    service_ = contents()
+                   ->GetPrimaryMainFrame()
+                   ->CreateWebBluetoothServiceForTesting();
 
     // GetAvailability connects the Web Bluetooth service to the adapter. Call
     // it twice in parallel to exercise what happens when multiple requests to

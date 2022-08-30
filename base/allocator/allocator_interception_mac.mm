@@ -44,8 +44,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-namespace base {
-namespace allocator {
+namespace base::allocator {
 
 bool g_replaced_default_zone = false;
 
@@ -237,9 +236,9 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
 
 bool CanGetContextForCFAllocator() {
 #if BUILDFLAG(IS_IOS)
-  return !base::ios::IsRunningOnOrLater(16, 0, 0);
+  return !base::ios::IsRunningOnOrLater(17, 0, 0);
 #else
-  return !base::mac::IsOSLaterThan12_DontCallThis();
+  return !base::mac::IsOSLaterThan13_DontCallThis();
 #endif
 }
 
@@ -609,5 +608,4 @@ void ReplaceZoneFunctions(ChromeMallocZone* zone,
   }
 }
 
-}  // namespace allocator
-}  // namespace base
+}  // namespace base::allocator

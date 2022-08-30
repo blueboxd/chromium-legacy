@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 public class TabProperties {
     /** IDs for possible types of UI in the tab list. */
     @IntDef({UiType.SELECTABLE, UiType.CLOSABLE, UiType.STRIP, UiType.MESSAGE, UiType.DIVIDER,
-            UiType.NEW_TAB_TILE, UiType.LARGE_MESSAGE})
+            UiType.NEW_TAB_TILE_DEPRECATED, UiType.LARGE_MESSAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UiType {
         int SELECTABLE = 0;
@@ -36,7 +36,7 @@ public class TabProperties {
         int STRIP = 2;
         int MESSAGE = 3;
         int DIVIDER = 4;
-        int NEW_TAB_TILE = 5;
+        int NEW_TAB_TILE_DEPRECATED = 5;
         int LARGE_MESSAGE = 6;
     }
 
@@ -114,6 +114,9 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<TabListMediator.StorePersistedTabDataFetcher>
             STORE_PERSISTED_TAB_DATA_FETCHER = new WritableObjectPropertyKey<>(true);
 
+    public static final WritableObjectPropertyKey<TabListMediator.CouponPersistedTabDataFetcher>
+            COUPON_PERSISTED_TAB_DATA_FETCHER = new WritableObjectPropertyKey<>(true);
+
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             PAGE_INFO_LISTENER = new WritableObjectPropertyKey<>();
 
@@ -138,7 +141,8 @@ public class TabProperties {
             SEARCH_QUERY, PAGE_INFO_LISTENER, PAGE_INFO_ICON_DRAWABLE_ID, CARD_TYPE,
             CONTENT_DESCRIPTION_STRING, CLOSE_BUTTON_DESCRIPTION_STRING,
             SHOPPING_PERSISTED_TAB_DATA_FETCHER, STORE_PERSISTED_TAB_DATA_FETCHER,
-            SHOULD_SHOW_PRICE_DROP_TOOLTIP, GRID_CARD_WIDTH, GRID_CARD_HEIGHT};
+            COUPON_PERSISTED_TAB_DATA_FETCHER, SHOULD_SHOW_PRICE_DROP_TOOLTIP, GRID_CARD_WIDTH,
+            GRID_CARD_HEIGHT};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

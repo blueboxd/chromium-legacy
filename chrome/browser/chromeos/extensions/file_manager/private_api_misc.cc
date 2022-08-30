@@ -16,7 +16,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
@@ -59,9 +59,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
@@ -288,12 +288,12 @@ FileManagerPrivateSetPreferencesFunction::Run() {
         *params->change_info.arc_removable_media_access_enabled);
   }
   if (params->change_info.folder_shortcuts) {
-    std::vector<base::Value> folder_shortcuts;
+    base::Value::List folder_shortcuts;
     for (auto& shortcut : *params->change_info.folder_shortcuts) {
-      folder_shortcuts.push_back(base::Value(shortcut));
+      folder_shortcuts.Append(shortcut);
     }
-    service->Set(ash::prefs::kFilesAppFolderShortcuts,
-                 base::Value(std::move(folder_shortcuts)));
+    service->SetList(ash::prefs::kFilesAppFolderShortcuts,
+                     std::move(folder_shortcuts));
   }
 
   return RespondNow(NoArguments());
@@ -828,7 +828,7 @@ FileManagerPrivateMountCrostiniFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
                      this));
   return RespondLater();
@@ -847,7 +847,7 @@ void FileManagerPrivateMountCrostiniFunction::RestartCallback(
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->MountCrostiniFiles(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::MountCallback,
                      this),
       false);
@@ -887,7 +887,7 @@ FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
           .path();
 
   crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
-      crostini::ContainerId::GetDefault(), path,
+      crostini::DefaultContainerId(), path,
       base::BindOnce(
           [](base::FilePath path, crostini::CrostiniResult result) {
             if (result != crostini::CrostiniResult::SUCCESS) {
@@ -1014,7 +1014,7 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
           profile, render_frame_host());
 
   crostini::CrostiniPackageService::GetForProfile(profile)->GetLinuxPackageInfo(
-      crostini::ContainerId::GetDefault(),
+      crostini::DefaultContainerId(),
       file_system_context->CrackURLInFirstPartyContext(GURL(params->url)),
       base::BindOnce(&FileManagerPrivateInternalGetLinuxPackageInfoFunction::
                          OnGetLinuxPackageInfo,
@@ -1055,7 +1055,7 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
 
   crostini::CrostiniPackageService::GetForProfile(profile)
       ->QueueInstallLinuxPackage(
-          crostini::ContainerId::GetDefault(),
+          crostini::DefaultContainerId(),
           file_system_context->CrackURLInFirstPartyContext(GURL(params->url)),
           base::BindOnce(
               &FileManagerPrivateInternalInstallLinuxPackageFunction::
@@ -1279,12 +1279,12 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetFrameColorFunction::Run() {
   ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
-  auto* color_provider = ash::ColorProvider::Get();
   std::string frame_color = SkColorToHexString(SK_ColorWHITE);
-  if (color_provider) {
+  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get()) {
     frame_color = SkColorToHexString(cros_styles::ResolveColor(
-        cros_styles::ColorName::kBgColor, color_provider->IsDarkModeEnabled(),
-        /*use_debug_color=*/false));
+        cros_styles::ColorName::kBgColor,
+        dark_light_mode_controller->IsDarkModeEnabled(),
+        /*use_debug_colors=*/false));
   }
   return RespondNow(OneArgument(base::Value(frame_color)));
 }
@@ -1336,13 +1336,13 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenWindowFunction::Run() {
           /*show_android_picker_apps=*/false,
           /*volume_filter=*/{});
 
-  web_app::SystemAppLaunchParams launch_params;
+  ash::SystemAppLaunchParams launch_params;
   launch_params.url = files_swa_url;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
-  web_app::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::FILE_MANAGER,
-                                   launch_params);
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::FILE_MANAGER,
+                               launch_params);
 
   return RespondNow(OneArgument(base::Value(true)));
 }

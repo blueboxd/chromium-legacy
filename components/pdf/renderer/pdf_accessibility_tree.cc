@@ -21,7 +21,6 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_features.h"
@@ -250,8 +249,9 @@ std::string GetTextRunCharsAsUTF8(
     int char_index) {
   std::string chars_utf8;
   for (uint32_t i = 0; i < text_run.len; ++i) {
-    base::WriteUnicodeCharacter(chars[char_index + i].unicode_character,
-                                &chars_utf8);
+    base::WriteUnicodeCharacter(
+        static_cast<base_icu::UChar32>(chars[char_index + i].unicode_character),
+        &chars_utf8);
   }
   return chars_utf8;
 }

@@ -237,6 +237,10 @@ void CoreOobeHandler::ToggleSystemInfo() {
   CallJS("cr.ui.Oobe.toggleSystemInfo");
 }
 
+void CoreOobeHandler::LaunchHelpApp(int help_topic_id) {
+  HandleLaunchHelpApp(help_topic_id);
+}
+
 void CoreOobeHandler::OnOobeConfigurationChanged() {
   base::Value configuration(base::Value::Type::DICTIONARY);
   configuration::FilterConfiguration(
@@ -266,6 +270,10 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
 
 void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
     const std::string& demo_config) {
+  CHECK(base::FeatureList::IsEnabled(features::kOobeStartDemoModeForTesting))
+      << "If you see this crash please report in https://crbug.com/1100910. To "
+         "disable the crash run chrome with "
+         "--enable-features=OobeStartDemoModeForTesting";
   DemoSession::DemoModeConfig config;
   if (demo_config == "online") {
     config = DemoSession::DemoModeConfig::kOnline;

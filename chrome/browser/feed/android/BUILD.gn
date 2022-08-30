@@ -187,7 +187,6 @@ android_resources("feed_java_resources") {
     "java/res/layout/follow_management_activity.xml",
     "java/res/layout/follow_management_empty_state.xml",
     "java/res/layout/follow_management_item.xml",
-    "java/res/layout/follow_management_loading_state.xml",
     "java/res/layout/following_empty_state.xml",
     "java/res/layout/new_tab_page_feed_v2_expandable_header.xml",
     "java/res/layout/new_tab_page_multi_feed_header.xml",
@@ -230,10 +229,7 @@ android_library("javatests") {
   testonly = true
 
   sources = [
-    "java/src/org/chromium/chrome/browser/feed/BackToTopBubbleScrollListenerTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedProcessScopeDependencyProviderNativeTest.java",
-    "java/src/org/chromium/chrome/browser/feed/HeaderIphScrollListenerTest.java",
-    "java/src/org/chromium/chrome/browser/feed/RefreshIphScrollListenerTest.java",
     "java/src/org/chromium/chrome/browser/feed/settings/FeedAutoplaySettingsFragmentTest.java",
   ]
 
@@ -249,7 +245,7 @@ android_library("javatests") {
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/xsurface:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/favicon/android:java",
@@ -275,13 +271,9 @@ android_library("javatests") {
   ]
 }
 
-android_library("junit") {
-  testonly = true
-
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
-
+robolectric_library("junit") {
   sources = [
+    "java/src/org/chromium/chrome/browser/feed/BackToTopBubbleScrollListenerTest.java",
     "java/src/org/chromium/chrome/browser/feed/FakeLinearLayoutManager.java",
     "java/src/org/chromium/chrome/browser/feed/FeedFeaturesTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedLoggingParametersTest.java",
@@ -290,8 +282,10 @@ android_library("junit") {
     "java/src/org/chromium/chrome/browser/feed/FeedReliabilityLoggerTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSliceViewTrackerTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedStreamTest.java",
+    "java/src/org/chromium/chrome/browser/feed/HeaderIphScrollListenerTest.java",
     "java/src/org/chromium/chrome/browser/feed/NativeViewListRendererTest.java",
     "java/src/org/chromium/chrome/browser/feed/NtpListContentManagerTest.java",
+    "java/src/org/chromium/chrome/browser/feed/RefreshIphScrollListenerTest.java",
     "java/src/org/chromium/chrome/browser/feed/ScrollTrackerTest.java",
     "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementCoordinatorTest.java",
     "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementMediatorTest.java",
@@ -327,7 +321,7 @@ android_library("junit") {
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/user_education:java",
     "//chrome/browser/xsurface:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/bottomsheet/android:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/theme/android:java_resources",
@@ -346,7 +340,6 @@ android_library("junit") {
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
-    "//third_party/android_deps:robolectric_all_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",

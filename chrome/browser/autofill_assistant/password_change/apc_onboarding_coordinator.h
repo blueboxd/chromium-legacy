@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_APC_ONBOARDING_COORDINATOR_H_
 #define CHROME_BROWSER_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_APC_ONBOARDING_COORDINATOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+struct AssistantOnboardingInformation;
 
 // Abstract interface for an onboarding coordinator.
 class ApcOnboardingCoordinator {
@@ -22,6 +26,10 @@ class ApcOnboardingCoordinator {
   // in `apc_onboarding_controller_impl.cc`.
   static std::unique_ptr<ApcOnboardingCoordinator> Create(
       content::WebContents* web_contents);
+
+  // Returns the information for the consent dialog used in automated
+  // password change flows.
+  static AssistantOnboardingInformation CreateOnboardingInformation();
 
   ApcOnboardingCoordinator() = default;
   virtual ~ApcOnboardingCoordinator() = default;

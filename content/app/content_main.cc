@@ -235,7 +235,7 @@ RunContentProcess(ContentMainParams params,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Lacros is launched with inherited priority. Revert to normal priority
   // before spawning more processes.
-  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::NORMAL);
+  base::PlatformThread::SetCurrentThreadType(base::ThreadType::kDefault);
 #endif
   int exit_code = -1;
   base::debug::GlobalActivityTracker* tracker = nullptr;
@@ -257,7 +257,6 @@ RunContentProcess(ContentMainParams params,
 #if BUILDFLAG(IS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
 #endif
-    base::allocator::InstallDanglingRawPtrChecks();
     base::EnableTerminationOnOutOfMemory();
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

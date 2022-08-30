@@ -69,6 +69,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/mock_client_hints_controller_delegate.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -273,40 +274,39 @@ void StoreString(std::string* result,
   std::move(callback).Run();
 }
 
-int GetInt(const base::DictionaryValue& dict, base::StringPiece key) {
-  absl::optional<int> out = dict.FindIntKey(key);
+int GetInt(const base::Value::Dict& dict, base::StringPiece key) {
+  absl::optional<int> out = dict.FindInt(key);
   EXPECT_TRUE(out.has_value());
   return out.value_or(0);
 }
 
-std::string GetString(const base::DictionaryValue& dict,
-                      base::StringPiece key) {
-  const std::string* out = dict.FindStringKey(key);
+std::string GetString(const base::Value::Dict& dict, base::StringPiece key) {
+  const std::string* out = dict.FindString(key);
   EXPECT_TRUE(out);
   return out ? *out : std::string();
 }
 
-bool GetBoolean(const base::DictionaryValue& dict, base::StringPiece key) {
-  absl::optional<bool> out = dict.FindBoolKey(key);
+bool GetBoolean(const base::Value::Dict& dict, base::StringPiece key) {
+  absl::optional<bool> out = dict.FindBool(key);
   EXPECT_TRUE(out.has_value());
   return out.value_or(false);
 }
 
-bool CheckHeader(const base::DictionaryValue& dict,
+bool CheckHeader(const base::Value::Dict& dict,
                  base::StringPiece header_name,
                  base::StringPiece header_value) {
-  const base::Value* headers = dict.FindListKey("headers");
+  const base::Value::List* headers = dict.FindList("headers");
   if (!headers) {
     ADD_FAILURE();
     return false;
   }
 
-  for (const auto& header : headers->GetListDeprecated()) {
+  for (const auto& header : *headers) {
     if (!header.is_list()) {
       ADD_FAILURE();
       return false;
     }
-    base::Value::ConstListView name_value_pair = header.GetListDeprecated();
+    const base::Value::List& name_value_pair = header.GetList();
     if (name_value_pair.size() != 2u) {
       ADD_FAILURE();
       return false;
@@ -329,20 +329,19 @@ bool CheckHeader(const base::DictionaryValue& dict,
   return false;
 }
 
-bool HasHeader(const base::DictionaryValue& dict,
-               base::StringPiece header_name) {
-  const base::Value* headers = dict.FindListKey("headers");
+bool HasHeader(const base::Value::Dict& dict, base::StringPiece header_name) {
+  const base::Value::List* headers = dict.FindList("headers");
   if (!headers) {
     ADD_FAILURE();
     return false;
   }
 
-  for (const auto& header : headers->GetListDeprecated()) {
+  for (const auto& header : *headers) {
     if (!header.is_list()) {
       ADD_FAILURE();
       return false;
     }
-    base::Value::ConstListView name_value_pair = header.GetListDeprecated();
+    const base::Value::List& name_value_pair = header.GetList();
     if (name_value_pair.size() != 2u) {
       ADD_FAILURE();
       return false;
@@ -977,8 +976,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, GetRunningServiceWorkerInfos) {
   const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
   EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
             running_info.script_url);
-  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
-            running_info.render_process_id);
+  EXPECT_EQ(
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID(),
+      running_info.render_process_id);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, StartWorkerWhileInstalling) {
@@ -1257,7 +1257,7 @@ IN_PROC_BROWSER_TEST_P(UserAgentServiceWorkerBrowserTest, NavigatorUserAgent) {
   // UserAgentReduction OT.
   EXPECT_EQ(
       "DONE",
-      EvalJs(shell()->web_contents()->GetMainFrame(),
+      EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
              base::StrCat({"register('", service_worker_url.spec(), "');"})));
   // Reload the page so that the service worker handles the request.
   ReloadBlockUntilNavigationsComplete(shell(), 1);
@@ -1265,7 +1265,7 @@ IN_PROC_BROWSER_TEST_P(UserAgentServiceWorkerBrowserTest, NavigatorUserAgent) {
   // Fetch the response containing the result of navigator.userAgent from the
   // service worker.
   const std::string navigator_user_agent =
-      EvalJs(shell()->web_contents()->GetMainFrame(),
+      EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
              "fetch('./user_agent_sw').then(response => response.text())")
           .ExtractString();
   EXPECT_EQ(GetExpectedUserAgent(), navigator_user_agent);
@@ -1448,7 +1448,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
   std::string GetTextContent() {
     base::RunLoop run_loop;
     std::string text_content;
-    shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+    shell()->web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
         u"document.body.textContent;",
         base::BindOnce(&StoreString, &text_content, run_loop.QuitClosure()));
     run_loop.Run();
@@ -1941,14 +1941,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
       "text/javascript");
 
-  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
+  absl::optional<base::Value> result = base::JSONReader::Read(
       LoadNavigationPreloadTestPage(page_url, worker_url, "RESOLVED"));
 
   // The page request must be sent only once, since the worker responded with
   // a generated Response.
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
-  base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(result->GetAsDictionary(&dict));
+  base::Value::Dict* dict = result->GetIfDict();
+  ASSERT_TRUE(dict);
   EXPECT_EQ("basic", GetString(*dict, "type"));
   EXPECT_EQ(page_url, GURL(GetString(*dict, "url")));
   EXPECT_EQ(200, GetInt(*dict, "status"));
@@ -1995,14 +1995,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
       "text/javascript");
 
-  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
+  absl::optional<base::Value> result = base::JSONReader::Read(
       LoadNavigationPreloadTestPage(page_url, worker_url, "RESOLVED"));
 
   // The page request must be sent only once, since the worker responded with
   // a generated Response.
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
-  base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(result->GetAsDictionary(&dict));
+  base::Value::Dict* dict = result->GetIfDict();
+  ASSERT_TRUE(dict);
   EXPECT_EQ("basic", GetString(*dict, "type"));
   EXPECT_EQ(page_url, GURL(GetString(*dict, "url")));
   EXPECT_EQ(201, GetInt(*dict, "status"));
@@ -2619,7 +2619,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
                        V8CacheOnCacheStorage) {
   RenderProcessHostBadMojoMessageWaiter rph_kill_waiter(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess());
 
   RegisterAndActivateServiceWorker();
 
@@ -2900,11 +2900,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Extract the headers.
-  EvalJsResult result = EvalJs(shell()->web_contents()->GetMainFrame(),
+  EvalJsResult result = EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
                                "document.body.textContent");
   ASSERT_TRUE(result.error.empty());
-  std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(result.ExtractString()));
+  absl::optional<base::Value> parsed_result =
+      base::JSONReader::Read(result.ExtractString());
+  ASSERT_TRUE(parsed_result);
+  base::Value::Dict* dict = parsed_result->GetIfDict();
   ASSERT_TRUE(dict);
 
   // Default headers are present.
@@ -2954,9 +2956,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 
   // Ensure the service worker did not see a fetch event for the PlzRedirect
   // URL, since throttles should have redirected before interception.
-  base::Value list(base::Value::Type::LIST);
+  base::Value::List list;
   list.Append(redirect_url.spec());
-  EXPECT_EQ(list, EvalJs(shell()->web_contents()->GetMainFrame(), script));
+  EXPECT_EQ(base::Value(std::move(list)),
+            EvalJs(shell()->web_contents()->GetPrimaryMainFrame(), script));
 
   SetBrowserClientForTesting(old_content_browser_client);
 }
@@ -2982,12 +2985,13 @@ IN_PROC_BROWSER_TEST_F(
 
   // Check that there is a controller to check that the test is really testing
   // service worker network fallback.
-  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
+  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
                          "!!navigator.serviceWorker.controller"));
 
   // The injected header should be present.
-  EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
-                                     "document.body.textContent"));
+  EXPECT_EQ("injected value",
+            EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.textContent"));
 
   SetBrowserClientForTesting(old_content_browser_client);
 }
@@ -3017,7 +3021,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
       "/echoheader?Service-Worker-Navigation-Preload&x-injected");
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ("true\ninjected value",
-            EvalJs(shell()->web_contents()->GetMainFrame(),
+            EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
                    "document.body.textContent"));
 
   SetBrowserClientForTesting(old_content_browser_client);
@@ -3313,7 +3317,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
             running_info.script_url);
 
   bool is_in_process =
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID() ==
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID() ==
       running_info.render_process_id;
   if (!IsPageCrossOriginIsolated() && !IsServiceWorkerCrossOriginIsolated())
     EXPECT_TRUE(is_in_process);
@@ -3332,8 +3336,14 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
             process_lock.GetWebExposedIsolationInfo().is_isolated());
 }
 
+#if BUILDFLAG(IS_ANDROID)
+// Flaky on Android, http://crbug.com/1335344.
+#define MAYBE_PostInstallRun DISABLED_PostInstallRun
+#else
+#define MAYBE_PostInstallRun PostInstallRun
+#endif
 IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
-                       PostInstallRun) {
+                       MAYBE_PostInstallRun) {
   StartServerAndNavigateToSetup();
 
   std::string page_path =
@@ -3372,7 +3382,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
             running_info.script_url);
 
   bool is_in_process =
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID() ==
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID() ==
       running_info.render_process_id;
   bool should_be_in_process =
       IsPageCrossOriginIsolated() == IsServiceWorkerCrossOriginIsolated();
@@ -3420,12 +3430,15 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCoopBrowserTest, FreshInstall) {
             running_info.script_url);
 
   bool is_in_process =
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID() ==
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID() ==
       running_info.render_process_id;
   EXPECT_TRUE(is_in_process);
 }
 
-IN_PROC_BROWSER_TEST_P(ServiceWorkerCoopBrowserTest, PostInstallRun) {
+// Sometimes disabled via the macros above
+// ServiceWorkerCrossOriginIsolatedBrowserTest.PostInstallRun, as the tests
+// flake for the same root cause.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerCoopBrowserTest, MAYBE_PostInstallRun) {
   StartServerAndNavigateToSetup();
 
   std::string page_path =
@@ -3462,7 +3475,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCoopBrowserTest, PostInstallRun) {
             running_info.script_url);
 
   bool is_in_process =
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID() ==
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID() ==
       running_info.render_process_id;
   EXPECT_TRUE(is_in_process);
 }
@@ -3681,7 +3694,7 @@ IN_PROC_BROWSER_TEST_F(
       nullptr, gfx::Size());
   EXPECT_TRUE(NavigateToURL(new_shell, url_2));
   RenderFrameHostImpl* rfh_2 = static_cast<RenderFrameHostImpl*>(
-      new_shell->web_contents()->GetMainFrame());
+      new_shell->web_contents()->GetPrimaryMainFrame());
 
   // |rfh_1| and |rfh_2| are in different renderer processes because they are
   // in different tabs.
@@ -3819,6 +3832,65 @@ IN_PROC_BROWSER_TEST_F(
                        loop.QuitClosure()));
     loop.Run();
   }
+}
+
+class ServiceWorkerFencedFrameBrowserTest : public ServiceWorkerBrowserTest {
+ public:
+  ServiceWorkerFencedFrameBrowserTest() = default;
+  ~ServiceWorkerFencedFrameBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+    StartServerAndNavigateToSetup();
+  }
+
+  test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_helper_;
+  }
+
+ private:
+  test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFencedFrameBrowserTest,
+                       AncestorFrameTypeIsStoredInServiceWorker) {
+  WorkerRunningStatusObserver observer(public_context());
+
+  ASSERT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  const GURL kFencedFrameUrl =
+      embedded_test_server()->GetURL("/service_worker/fenced_frame.html");
+
+  RenderFrameHost* fenced_frame = fenced_frame_test_helper().CreateFencedFrame(
+      shell()->web_contents()->GetPrimaryMainFrame(), kFencedFrameUrl);
+
+  // Register the service worker.
+  ASSERT_EQ("ok - service worker registered",
+            EvalJs(fenced_frame, "RegisterServiceWorker()"));
+  observer.WaitUntilRunning();
+
+  // Call backgroundFetch.fetch from the registered service worker, not from
+  // the fenced frame. This will be blocked if the worker is registered in the
+  // fenced frame
+  constexpr char kExpectedError[] =
+      "Failed to execute 'fetch' on 'BackgroundFetchManager': "
+      "backgroundFetch is not allowed in fenced frames.";
+  ASSERT_EQ(kExpectedError,
+            EvalJs(fenced_frame, "backgroundFetchFromServiceWorker()"));
+
+  // Stop service worker to save registration data to storage.
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer.version_id());
+  StopServiceWorker(version.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Call backgroundFetch.fetch from the registered service worker again.
+  // This ensures if restored data in the service worker keeps the info if it
+  // was registered in the fenced frame or not, and the info is used when it
+  // became active again.
+  ASSERT_EQ(kExpectedError,
+            EvalJs(fenced_frame, "backgroundFetchFromServiceWorker()"));
 }
 
 }  // namespace content

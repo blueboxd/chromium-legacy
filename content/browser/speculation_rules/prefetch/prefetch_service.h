@@ -27,10 +27,15 @@ namespace network::mojom {
 class URLLoaderFactory;
 }  // namespace network::mojom
 
+namespace net {
+class IsolationInfo;
+}  // namespace net
+
 namespace content {
 
 class BrowserContext;
 class PrefetchProxyConfigurator;
+class PrefetchServiceDelegate;
 class ServiceWorkerContext;
 
 // Manages all prefetches within a single BrowserContext. Responsible for
@@ -52,6 +57,10 @@ class CONTENT_EXPORT PrefetchService {
   const PrefetchService& operator=(const PrefetchService&) = delete;
 
   BrowserContext* GetBrowserContext() const { return browser_context_; }
+
+  PrefetchServiceDelegate* GetPrefetchServiceDelegate() const {
+    return delegate_.get();
+  }
 
   PrefetchProxyConfigurator* GetPrefetchProxyConfigurator() const {
     return prefetch_proxy_configurator_.get();
@@ -176,6 +185,10 @@ class CONTENT_EXPORT PrefetchService {
       const net::CookieAccessResultList& excluded_cookies);
 
   raw_ptr<BrowserContext> browser_context_;
+
+  // Delegate provided by embedder that controls specific behavior of |this|.
+  // May be nullptr if embedder doesn't provide a delegate.
+  std::unique_ptr<PrefetchServiceDelegate> delegate_;
 
   // The custom proxy configurator for Prefetch Proxy. Only used on prefetches
   // that require the proxy.

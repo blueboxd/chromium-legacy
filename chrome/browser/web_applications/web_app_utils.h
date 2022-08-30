@@ -92,7 +92,7 @@ base::FilePath GetWebAppsTempDirectory(
 // tool/metrics/histograms/histograms.xml: "SystemWebAppProfileCategory".
 std::string GetProfileCategoryForLogging(Profile* profile);
 
-// Returns true if the WebApp should have `web_app::WebAppChromeOsData()`.
+// Returns true if the WebApp should have `WebAppChromeOsData()`.
 bool IsChromeOsDataMandatory();
 
 // Returns true if sync should install web apps locally by default.
@@ -117,9 +117,8 @@ GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
 
 // As above, but returns the extensions handled by the app as a vector of
 // strings.
-std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
-    Profile* profile,
-    const AppId& app_id);
+std::vector<std::u16string> TransformFileExtensionsForDisplay(
+    const std::set<std::string>& extensions);
 
 // Updates the approved or disallowed protocol list for the given app. If
 // necessary, it also updates the protocol registration with the OS.

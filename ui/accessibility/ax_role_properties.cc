@@ -105,8 +105,10 @@ bool IsCellOrTableHeader(const ax::mojom::Role role) {
 
 bool IsChildTreeOwner(const ax::mojom::Role role) {
   switch (role) {
+    case ax::mojom::Role::kEmbeddedObject:
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kIframePresentational:
+    case ax::mojom::Role::kPluginObject:
     case ax::mojom::Role::kPortal:
       return true;
     default:
@@ -547,7 +549,6 @@ bool IsReadOnlySupported(const ax::mojom::Role role) {
     case ax::mojom::Role::kSwitch:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kToggleButton:
     case ax::mojom::Role::kTreeGrid:
       return true;
 

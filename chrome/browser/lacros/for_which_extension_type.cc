@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/lacros/lacros_extensions_util.h"
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 /******** ForWhichExtensionType ********/
@@ -20,8 +22,26 @@ ForWhichExtensionType::~ForWhichExtensionType() = default;
 
 bool ForWhichExtensionType::Matches(
     const extensions::Extension* extension) const {
-  return for_chrome_apps_ ? lacros_extensions_util::IsExtensionApp(extension)
-                          : extension->is_extension();
+  if (for_chrome_apps_)
+    return lacros_extensions_util::IsExtensionApp(extension);
+
+  if (extension->is_extension()) {
+    // QuickOffice extensions do not use file browser handler manifest key
+    // to register their handlers for MS Office files; instead, they use
+    // file_handler manifest key(like the way chrome apps do). We should
+    // always publish quickoffice extensions since they are the default handlers
+    // for MS Office files.
+    if (extension_misc::IsQuickOfficeExtension(extension->id()))
+      return true;
+
+    // For the regular extensions, we should only publish them if they have file
+    // handlers registered using file browser handlers.
+    FileBrowserHandler::List* handler_list =
+        FileBrowserHandler::GetHandlers(extension);
+    return handler_list;
+  }
+
+  return false;
 }
 
 /******** Utilities ********/

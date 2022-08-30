@@ -183,7 +183,7 @@ class FeedStream : public FeedApi,
   base::Time GetLastFetchTime(const StreamType& stream_type) override;
   void SetContentOrder(const StreamType& stream_type,
                        ContentOrder content_order) override;
-  ContentOrder GetContentOrder(const StreamType& stream_type) override;
+  ContentOrder GetContentOrder(const StreamType& stream_type) const override;
   ContentOrder GetContentOrderFromPrefs(const StreamType& stream_type) override;
   void IncrementFollowedFromWebPageMenuCount() override;
 
@@ -354,7 +354,7 @@ class FeedStream : public FeedApi,
     // |UnloadModel()|.
     std::unique_ptr<StreamModel> model;
     int unload_on_detach_sequence_number = 0;
-    ContentIdSet content_ids;
+    ContentHashSet content_ids;
     std::vector<UnreadContentNotifier> unread_content_notifiers;
     std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks;
     std::vector<base::OnceCallback<void(bool)>> refresh_complete_callbacks;

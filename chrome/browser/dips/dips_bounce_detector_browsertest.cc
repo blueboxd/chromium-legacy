@@ -11,7 +11,9 @@
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/dips/dips_utils.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/browser_test.h"
@@ -21,7 +23,10 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom-shared.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
@@ -29,8 +34,15 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #endif
 
+using base::Bucket;
+using blink::mojom::EngagementLevel;
 using content::NavigationHandle;
 using content::WebContents;
+using testing::ElementsAre;
+using testing::Eq;
+using testing::Gt;
+using testing::Pair;
+using ukm::builders::DIPS_Redirect;
 
 namespace {
 
@@ -76,7 +88,7 @@ class CookieAccessObserver : public content::WebContentsObserver {
   }
 
  private:
-  content::RenderFrameHost* const render_frame_host_;
+  const raw_ptr<content::RenderFrameHost> render_frame_host_;
   base::RunLoop run_loop_;
 };
 
@@ -159,7 +171,7 @@ void WCOCallbackLogger::DidFinishNavigation(
   // Android testing produces callbacks for a finished navigation to "blank" at
   // the beginning of a test. These should be ignored here.
   if (FormatURL(navigation_handle->GetURL()) == "blank" ||
-      navigation_handle->GetPreviousMainFrameURL().is_empty()) {
+      navigation_handle->GetPreviousPrimaryMainFrameURL().is_empty()) {
     return;
   }
   log_.push_back(
@@ -202,7 +214,8 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
 
   void CreateImageAndWaitForCookieAccess(const GURL& image_url) {
     WebContents* web_contents = GetActiveWebContents();
-    CookieAccessObserver observer(web_contents, web_contents->GetMainFrame());
+    CookieAccessObserver observer(web_contents,
+                                  web_contents->GetPrimaryMainFrame());
     ASSERT_TRUE(content::ExecJs(web_contents,
                                 content::JsReplace(
                                     R"(
@@ -298,14 +311,13 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 }
 
 void AppendRedirectURL(std::vector<std::string>* urls,
-                       const GURL& prev_url,
-                       NavigationHandle* navigation_handle,
-                       int i,
-                       CookieAccessType access) {
-  if (access != CookieAccessType::kNone)
+                       const DIPSRedirectInfo& redirect,
+                       const DIPSRedirectChainInfo& chain) {
+  if (redirect.access_type != CookieAccessType::kNone) {
     urls->push_back(
-        base::StrCat({FormatURL(navigation_handle->GetRedirectChain()[i]), " (",
-                      CookieAccessTypeToString(access), ")"}));
+        base::StrCat({FormatURL(redirect.url), " (",
+                      CookieAccessTypeToString(redirect.access_type), ")"}));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
@@ -329,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       embedded_test_server()->GetURL("d.test", "/set-cookie?name=value")));
 
   std::vector<std::string> stateful_redirects;
-  bounce_detector()->SetStatefulServerRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirectURL, &stateful_redirects));
 
   // Visit the redirect.
@@ -401,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   content::WebContents* web_contents = GetActiveWebContents();
 
   std::vector<std::string> stateful_redirects;
-  bounce_detector()->SetStatefulServerRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirectURL, &stateful_redirects));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, root_url));
@@ -414,15 +426,13 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 }
 
 void AppendRedirect(std::vector<std::string>* redirects,
-                    const GURL& prev_url,
-                    const GURL& url,
-                    const GURL& next_url,
-                    CookieAccessType access,
-                    DIPSRedirectType type) {
-  if (access != CookieAccessType::kNone)
-    redirects->push_back(
-        base::StrCat({FormatURL(prev_url), " -> ", FormatURL(url), " -> ",
-                      FormatURL(next_url)}));
+                    const DIPSRedirectInfo& redirect,
+                    const DIPSRedirectChainInfo& chain) {
+  if (redirect.access_type != CookieAccessType::kNone) {
+    redirects->push_back(base::StrCat({FormatURL(chain.initial_url), " -> ",
+                                       FormatURL(redirect.url), " -> ",
+                                       FormatURL(chain.final_url)}));
+  }
 }
 
 // Tests that a stateful client-side redirect that occurs in less than
@@ -436,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   content::RenderFrameHost* frame;
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   // Start logging WebContentsObserver callbacks.
@@ -445,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Visit initial page
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait for navigation to finish to initial page
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   // Wait until we can click.
@@ -461,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to interstitial page
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page
@@ -515,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       embedded_test_server()->GetURL("d.test", "/set-cookie?name=value")));
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
@@ -550,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   content::RenderFrameHost* frame;
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   // Start logging WebContentsObserver callbacks.
@@ -564,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page (b.test).
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page.
@@ -625,14 +635,14 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   content::RenderFrameHost* frame;
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   // Visit initial page.
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
   // Wait for navigation to finish to initial page.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks 10 seconds.
@@ -646,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 1.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // simulate mouse click
@@ -667,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 2.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 2.
@@ -682,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 3.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 3.
@@ -729,7 +739,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       embedded_test_server()->GetURL("d.test", "/set-cookie?name=value")));
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
@@ -770,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       embedded_test_server()->GetURL("d.test", "/set-cookie?name=value")));
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
@@ -791,7 +801,21 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
                    "d.test/404")));
 }
 
-using base::Bucket;
+const std::vector<std::string>& GetAllRedirectMetrics() {
+  static const std::vector<std::string> kAllRedirectMetrics = {
+      "ClientBounceDelay",
+      "CookieAccessType",
+      "HasStickyActivation",
+      "InitialAndFinalSitesSame",
+      "RedirectAndFinalSiteSame",
+      "RedirectAndInitialSiteSame",
+      "RedirectChainIndex",
+      "RedirectChainLength",
+      "RedirectType",
+      "SiteEngagementLevel",
+  };
+  return kAllRedirectMetrics;
+}
 
 IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
                        Histograms_BounceCategory_Client) {
@@ -810,20 +834,21 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Set cookies on c.test without of user engagement signal.
   ASSERT_TRUE(NavigateToURLFromRendererWithoutUserGesture(
-      web_contents->GetMainFrame(),
+      web_contents->GetPrimaryMainFrame(),
       embedded_test_server()->GetURL("c.test", "/set-cookie?name=value")));
 
   // Visit initial page.
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
   // Wait for navigation to finish to initial page.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks 10 seconds.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(10)));
   // Navigate to bounce page 1 via "mouse click" and monitor the histograms.
   base::HistogramTester histograms;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   UserActivationObserver observer(web_contents, frame);
   ASSERT_TRUE(content::ExecJs(
       frame, content::JsReplace("window.location.href = $1;", bounce1_url),
@@ -832,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 1.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks by 1 second
@@ -844,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 2.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 2 (c.test).
@@ -875,6 +900,53 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
           Bucket((int)RedirectCategory::kReadWriteCookies_NoEngagement, 1),
           // b.test
           Bucket((int)RedirectCategory::kReadCookies_HasEngagement, 1)));
+
+  // Verify a redirect time metric was recorded for each bounce.
+  histograms.ExpectBucketCount(
+      "Privacy.DIPS.TimeFromNavigationCommitToClientBounce",
+      static_cast<base::HistogramBase::Sample>(
+          base::Seconds(1).InMilliseconds()),
+      /*expected_count=*/2);
+
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> ukm_entries =
+      ukm_recorder.GetEntries("DIPS.Redirect", GetAllRedirectMetrics());
+  ASSERT_EQ(2u, ukm_entries.size());
+
+  EXPECT_THAT(
+      FormatURL(
+          ukm_recorder.GetSourceForSourceId(ukm_entries[0].source_id)->url()),
+      Eq("b.test/title1.html"));
+  EXPECT_THAT(ukm::GetSourceIdType(ukm_entries[0].source_id),
+              Eq(ukm::SourceIdType::NAVIGATION_ID));
+  EXPECT_THAT(
+      ukm_entries[0].metrics,
+      ElementsAre(Pair("ClientBounceDelay", 1),
+                  Pair("CookieAccessType", (int)CookieAccessType::kRead),
+                  Pair("HasStickyActivation", false),
+                  Pair("InitialAndFinalSitesSame", false),
+                  Pair("RedirectAndFinalSiteSame", false),
+                  Pair("RedirectAndInitialSiteSame", false),
+                  Pair("RedirectChainIndex", 0), Pair("RedirectChainLength", 1),
+                  Pair("RedirectType", (int)DIPSRedirectType::kClient),
+                  Pair("SiteEngagementLevel", Gt((int)EngagementLevel::NONE))));
+
+  EXPECT_THAT(
+      FormatURL(
+          ukm_recorder.GetSourceForSourceId(ukm_entries[1].source_id)->url()),
+      Eq("c.test/title1.html"));
+  EXPECT_THAT(ukm::GetSourceIdType(ukm_entries[1].source_id),
+              Eq(ukm::SourceIdType::NAVIGATION_ID));
+  EXPECT_THAT(
+      ukm_entries[1].metrics,
+      ElementsAre(Pair("ClientBounceDelay", 1),
+                  Pair("CookieAccessType", (int)CookieAccessType::kReadWrite),
+                  Pair("HasStickyActivation", false),
+                  Pair("InitialAndFinalSitesSame", false),
+                  Pair("RedirectAndFinalSiteSame", false),
+                  Pair("RedirectAndInitialSiteSame", false),
+                  Pair("RedirectChainIndex", 0), Pair("RedirectChainLength", 1),
+                  Pair("RedirectType", (int)DIPSRedirectType::kClient),
+                  Pair("SiteEngagementLevel", (int)EngagementLevel::NONE)));
 }
 
 IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
@@ -900,6 +972,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Visit the redirect and monitor the histograms.
   base::HistogramTester histograms;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   ASSERT_TRUE(content::NavigateToURLFromRenderer(web_contents, redirect_url,
                                                  final_url));
 
@@ -918,6 +991,65 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
           Bucket((int)RedirectCategory::kNoCookies_NoEngagement, 1),
           // b.test
           Bucket((int)RedirectCategory::kReadCookies_HasEngagement, 1)));
+
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> ukm_entries =
+      ukm_recorder.GetEntries("DIPS.Redirect", GetAllRedirectMetrics());
+  ASSERT_EQ(3u, ukm_entries.size());
+
+  EXPECT_THAT(
+      FormatURL(
+          ukm_recorder.GetSourceForSourceId(ukm_entries[0].source_id)->url()),
+      Eq("a.test/cross-site-with-cookie/b.test/cross-site/c.test/cross-site/"
+         "d.test/title1.html"));
+  EXPECT_THAT(ukm::GetSourceIdType(ukm_entries[0].source_id),
+              Eq(ukm::SourceIdType::REDIRECT_ID));
+  EXPECT_THAT(
+      ukm_entries[0].metrics,
+      ElementsAre(Pair("ClientBounceDelay", 0),
+                  Pair("CookieAccessType", (int)CookieAccessType::kReadWrite),
+                  Pair("HasStickyActivation", false),
+                  Pair("InitialAndFinalSitesSame", false),
+                  Pair("RedirectAndFinalSiteSame", false),
+                  Pair("RedirectAndInitialSiteSame", true),
+                  Pair("RedirectChainIndex", 0), Pair("RedirectChainLength", 3),
+                  Pair("RedirectType", (int)DIPSRedirectType::kServer),
+                  Pair("SiteEngagementLevel", Gt((int)EngagementLevel::NONE))));
+
+  EXPECT_THAT(
+      FormatURL(
+          ukm_recorder.GetSourceForSourceId(ukm_entries[1].source_id)->url()),
+      Eq("b.test/cross-site/c.test/cross-site/d.test/title1.html"));
+  EXPECT_THAT(ukm::GetSourceIdType(ukm_entries[1].source_id),
+              Eq(ukm::SourceIdType::REDIRECT_ID));
+  EXPECT_THAT(
+      ukm_entries[1].metrics,
+      ElementsAre(Pair("ClientBounceDelay", 0),
+                  Pair("CookieAccessType", (int)CookieAccessType::kRead),
+                  Pair("HasStickyActivation", false),
+                  Pair("InitialAndFinalSitesSame", false),
+                  Pair("RedirectAndFinalSiteSame", false),
+                  Pair("RedirectAndInitialSiteSame", false),
+                  Pair("RedirectChainIndex", 1), Pair("RedirectChainLength", 3),
+                  Pair("RedirectType", (int)DIPSRedirectType::kServer),
+                  Pair("SiteEngagementLevel", Gt((int)EngagementLevel::NONE))));
+
+  EXPECT_THAT(
+      FormatURL(
+          ukm_recorder.GetSourceForSourceId(ukm_entries[2].source_id)->url()),
+      Eq("c.test/cross-site/d.test/title1.html"));
+  EXPECT_THAT(ukm::GetSourceIdType(ukm_entries[2].source_id),
+              Eq(ukm::SourceIdType::REDIRECT_ID));
+  EXPECT_THAT(
+      ukm_entries[2].metrics,
+      ElementsAre(Pair("ClientBounceDelay", 0),
+                  Pair("CookieAccessType", (int)CookieAccessType::kNone),
+                  Pair("HasStickyActivation", false),
+                  Pair("InitialAndFinalSitesSame", false),
+                  Pair("RedirectAndFinalSiteSame", false),
+                  Pair("RedirectAndInitialSiteSame", false),
+                  Pair("RedirectChainIndex", 2), Pair("RedirectChainLength", 3),
+                  Pair("RedirectType", (int)DIPSRedirectType::kServer),
+                  Pair("SiteEngagementLevel", (int)EngagementLevel::NONE)));
 }
 
 // This test verifies that a third-party cookie access doesn't cause a client
@@ -942,7 +1074,7 @@ IN_PROC_BROWSER_TEST_F(
   WebContents* web_contents = GetActiveWebContents();
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   // Start logging WebContentsObserver callbacks.
@@ -1002,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   WebContents* web_contents = GetActiveWebContents();
 
   std::vector<std::string> redirects;
-  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+  bounce_detector()->SetRedirectHandlerForTesting(
       base::BindRepeating(&AppendRedirect, &redirects));
 
   // Start logging WebContentsObserver callbacks.

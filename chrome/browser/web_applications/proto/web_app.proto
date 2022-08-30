@@ -8,6 +8,7 @@ import "components/sync/protocol/web_app_specifics.proto";
 import "chrome/browser/ash/system_web_apps/types/system_web_app_data.proto";
 import "chrome/browser/web_applications/proto/web_app_launch_handler.proto";
 import "chrome/browser/web_applications/proto/web_app_share_target.proto";
+import "chrome/browser/web_applications/proto/web_app_tab_strip.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -125,9 +126,7 @@ message ManagementToExternalConfigInfo {
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
 // app_id is the storage key in ModelTypeStore.
 message WebAppProto {
-  reserved "is_in_sync_install", "is_placeholder";
-  reserved 53;
-
+  reserved "handle_links", "is_in_sync_install", "is_placeholder";
   // Synced data. It is replicated across all devices with WEB_APPS.
   //
   // |sync_data.name| and |sync_data.theme_color| are read by a device to
@@ -317,16 +316,7 @@ message WebAppProto {
   // Whether the app should show up in file-open intent and picking surfaces.
   optional bool handles_file_open_intents = 47;
 
-  // This enum should be synced with |HandleLinks| in
-  // third_party/blink/public/mojom/manifest/handle_links.mojom
-  enum HandleLinks {
-    // UNDEFINED if optional |handle_links| is absent.
-    AUTO = 1;
-    PREFERRED = 2;
-    NOT_PREFERRED = 3;
-  }
-
-  optional HandleLinks handle_links = 48;
+  reserved 48;
 
   // Contains the permissions policy that should be applied to the web app.
   repeated WebAppPermissionsPolicy permissions_policy = 49;
@@ -343,8 +333,7 @@ message WebAppProto {
   repeated ManagementToExternalConfigInfo management_to_external_config_info =
       52;
 
-  // Stores whether the app is a placeholder app or not.
-  // optional bool is_placeholder = 53;
+  reserved 53;
 
   // The amount of storage (in bytes) used by the app and its related data.
   optional uint64 app_size_in_bytes = 54;
@@ -352,4 +341,8 @@ message WebAppProto {
 
   // If present, the URL to use to launch the app on the lock screen.
   optional string lock_screen_start_url = 56;
+
+  // Contains customisations to the web app tab strip. Only present when the
+  // display_mode is tabbed.
+  optional proto.TabStrip tab_strip = 57;
 }

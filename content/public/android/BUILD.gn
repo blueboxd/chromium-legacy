@@ -198,11 +198,11 @@ android_library("content_full_java") {
 
   sources = [
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
-    "java/src/org/chromium/content/browser/AppWebMessagePortDescriptor.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BindingManager.java",
     "java/src/org/chromium/content/browser/BrowserContextHandleImpl.java",
+    "java/src/org/chromium/content/browser/ChildProcessConnectionMetrics.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelperImpl.java",
     "java/src/org/chromium/content/browser/ChildProcessRanking.java",
     "java/src/org/chromium/content/browser/ClientDataJsonImpl.java",
@@ -223,6 +223,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/JoystickHandler.java",
     "java/src/org/chromium/content/browser/LauncherThread.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",
+    "java/src/org/chromium/content/browser/MessagePayloadJni.java",
     "java/src/org/chromium/content/browser/MotionEventSynthesizerImpl.java",
     "java/src/org/chromium/content/browser/NfcHost.java",
     "java/src/org/chromium/content/browser/PopupController.java",
@@ -420,7 +421,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ContentMain.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
-    "java/src/org/chromium/content/browser/AppWebMessagePortDescriptor.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BrowserContextHandleImpl.java",
@@ -439,6 +439,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/JavascriptInjectorImpl.java",
     "java/src/org/chromium/content/browser/LauncherThread.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",
+    "java/src/org/chromium/content/browser/MessagePayloadJni.java",
     "java/src/org/chromium/content/browser/NfcHost.java",
     "java/src/org/chromium/content/browser/RenderWidgetHostViewImpl.java",
     "java/src/org/chromium/content/browser/ScreenOrientationProviderImpl.java",
@@ -533,7 +534,6 @@ android_library("content_javatests") {
   ]
 
   sources = [
-    "javatests/src/org/chromium/content/browser/AppWebMessagePortDescriptorTest.java",
     "javatests/src/org/chromium/content/browser/BrowserStartupControllerTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherHelperTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherIntegrationTest.java",
@@ -618,9 +618,10 @@ android_library("content_javatests") {
   data_deps = [ "//net:test_support" ]
 }
 
-junit_binary("content_junit_tests") {
+robolectric_binary("content_junit_tests") {
   sources = [
     "junit/src/org/chromium/content/browser/BindingManagerTest.java",
+    "junit/src/org/chromium/content/browser/ChildProcessConnectionMetricsUnitTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessRankingTest.java",
     "junit/src/org/chromium/content/browser/ScreenOrientationProviderImplTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
@@ -640,6 +641,7 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/sms/SmsProviderGmsTest.java",
     "junit/src/org/chromium/content_public/browser/MessagePayloadTest.java",
   ]
+
   deps = [
     ":content_java",
     "//base:base_java",
@@ -656,9 +658,10 @@ junit_binary("content_junit_tests") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojom:mojom_java",
   ]
-
   data_deps = [ "//testing/buildbot/filters:content_junit_tests_filters" ]
 }

@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">ഹംഗുൽ റോമജ</translation>
 <translation id="112387589102719461">Programmer Dvorak കീബോർഡ് ഉള്ള ഇംഗ്ലീഷ് (യുഎസ്)</translation>
 <translation id="1134697384939541955">Extended കീബോർഡ് ഉള്ള ഇംഗ്ലീഷ് (യുഎസ്)</translation>
+<translation id="1138691154716715755">ഈ മാസത്തിന്റെ ആദ്യം</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> കണ്ടെത്തി.
     <ph name="LINE_BREAK1" />
     ലോക്കൽ സ്‌‌റ്റോറേജിൽ മതിയായ ഇടം ലഭ്യമല്ല. അധികമായി <ph name="FILE_SIZE" /> ആവശ്യമാണ്.
@@ -20,7 +21,6 @@
 <translation id="115443833402798225">ഹംഗുൽ അൻമാറ്റീ</translation>
 <translation id="1155759005174418845">കാറ്റലൻ</translation>
 <translation id="1168100932582989117">Google നാമ സെർവറുകൾ</translation>
-<translation id="1171082344678443012">XZ കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="1172970565351728681">ഏകദേശം <ph name="REMAINING_TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="1173916544412572294"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" />%, വിശദാംശങ്ങൾ</translation>
@@ -30,12 +30,10 @@
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1209796539517632982">യാന്ത്രിക നാമ സെർവറുകൾ</translation>
 <translation id="1210831758834677569">ലാവോ</translation>
-<translation id="1223825810409523901">Chrome വിപുലീകരണം</translation>
 <translation id="1243314992276662751">അപ്‌ലോഡ് ചെയ്യുക</translation>
 <translation id="1249250836236328755">വിഭാഗം</translation>
 <translation id="1254593899333212300">നേരിട്ടുള്ള ഇന്‍റര്‍നെറ്റ് കണക്ഷന്‍</translation>
 <translation id="1272293450992660632">പിൻ മൂല്യങ്ങൾ പൊരുത്തപ്പെടുന്നില്ല.</translation>
-<translation id="127650757582748357">BZIP2 കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="1280820357415527819">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു</translation>
 <translation id="1291603679744561561">സിം ലോക്ക് ചെയ്‌തു</translation>
 <translation id="1293556467332435079">Files</translation>
@@ -81,7 +79,6 @@
 <translation id="166439687370499867">പങ്കിട്ട നെറ്റ്‍വര്‍ക്ക് കോൺഫിഗറേഷനുകൾ മാറ്റാനാകില്ല</translation>
 <translation id="1665611772925418501">ഫയൽ പരിഷ്‌ക്കരിക്കാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="1673103856845176271">സുരക്ഷാ കാരണങ്ങളാൽ ഫയൽ ആക്‌സസ്സുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
-<translation id="16762847117768727">ISO ഇമേജ്</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">സൈക്ലിംഗ്</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ സിപ്പ് ചെയ്യുന്നു...</translation>
@@ -121,11 +118,9 @@
 <translation id="1942765061641586207">ചിത്രത്തിന്റെ റെസല്യൂഷൻ</translation>
 <translation id="1972984168337863910">ഫയലുകളുടെ ഫീഡ്ബാക്ക് പാനലുകൾ വികസിപ്പിക്കുക</translation>
 <translation id="1995337122023280937">ഫയൽ ലൊക്കേഷനിലേക്ക് പോവുക</translation>
-<translation id="1996806196681857869">Z കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="2001796770603320721">ഡ്രൈവിൽ മാനേജ് ചെയ്യുക</translation>
 <translation id="2009067268969781306">ഒരു ഡ്രൈവ് ഫോർമാറ്റ് ചെയ്‌താൽ അതിൽ സൂക്ഷിച്ചിരിക്കുന്ന മുഴുവൻ ഡാറ്റയും ഇല്ലാതാക്കപ്പെടും. ഈ പ്രവൃത്തി പഴയപടിയാക്കാനാകില്ല.</translation>
 <translation id="2025955442973426285">ടിഗ്രിന്യ</translation>
-<translation id="2028997212275086731">RAR ആർക്കൈവ്</translation>
 <translation id="2037845485764049925">റഷ്യൻ</translation>
 <translation id="2044023416777079300">മോഡം രജിസ്‌റ്റർ ചെയ്‌തിട്ടില്ല</translation>
 <translation id="2046702855113914483">റാമെൻ</translation>
@@ -141,6 +136,7 @@
 <translation id="2141347188420181405"><ph name="NETWORK_INDEX" />-ൽ <ph name="NETWORK_COUNT" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
 <translation id="2142680004883808240">ഫൊണറ്റിക് YaZHert കീബോർഡ് ഉള്ള റഷ്യൻ</translation>
 <translation id="2143778271340628265">നേരിട്ടുള്ള പ്രോക്സി ക്രമീകരണം</translation>
+<translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2163152940313951844">അസാധുവായ പ്രതീകം: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">യുഎസ് അന്താരാഷ്ട്ര PC കീബോർഡ് ഉള്ള പോർച്ചുഗീസ്</translation>
 <translation id="2198315389084035571">(ലളിതമാക്കിയ ചൈനീസ്)</translation>
@@ -165,6 +161,7 @@
 <translation id="2377319039870049694">ലിസ്റ്റ് കാഴ്‌ചയിലേക്ക് മാറുക</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> ഫോൾഡറുകൾ Linux ഉപയോഗിച്ച് പങ്കിട്ടു</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ഫയലുകൾ തിരഞ്ഞെടുത്തു</translation>
+<translation id="2387120140441437063">ട്രാഷ് ചെയ്ത ഫയലുകൾ തുറക്കാനാകില്ല. തുറക്കും മുമ്പ് ഫയലുകൾ പുനഃസ്ഥാപിക്കുക.</translation>
 <translation id="2387458720915042159">പ്രോക്‌സി കണക്ഷൻ തരം</translation>
 <translation id="2389832672041313158">ബർമീസ്/മ്യാൻമർ</translation>
 <translation id="2392369802118427583">സജീവമാക്കുക</translation>
@@ -186,7 +183,6 @@
 <translation id="2541377937973966830">ഈ ഫോൾഡറിലെ ഉള്ളടക്കങ്ങൾ വായിക്കാൻ മാത്രമുള്ളതാണ്. ചില ആക്റ്റിവിറ്റികൾക്ക് പിന്തുണയില്ല.</translation>
 <translation id="2542049655219295786">Google പട്ടിക</translation>
 <translation id="2544853746127077729">നെറ്റ്‌വർക്ക്, പരിശോധിച്ചുറപ്പിക്കൽ സർട്ടിഫിക്കറ്റ് നിരസിച്ചു</translation>
-<translation id="2547921442987553570"><ph name="EXTENSION_NAME" />-ൽ ചേർക്കുക</translation>
 <translation id="255937426064304553">യുഎസ് ഇന്റർനാഷണൽ</translation>
 <translation id="2563185590376525700">തവള</translation>
 <translation id="2578394532502990878">തമിഴ് ഉച്ചാരണ ശബ്‌ദം</translation>
@@ -208,10 +204,8 @@
 <translation id="2771816809568414714">ചീസ്</translation>
 <translation id="2781645665747935084">ബെൽജിയൻ</translation>
 <translation id="2782104745158847185">Linux ആപ്പ് ഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിൽ പിഴവ്</translation>
-<translation id="2788520643285360081">7-Zip ആർക്കൈവ്</translation>
 <translation id="2803375539583399270">പിൻ നൽകുക</translation>
 <translation id="2820957248982571256">സ്‌കാൻ ചെയ്യുന്നു...</translation>
-<translation id="2822595620066756134">GZIP കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="2830077785865012357">ചൈനീസ് സുയിൻ</translation>
 <translation id="2843806747483486897">ഡിഫോൾട്ട് മാറ്റുക...</translation>
 <translation id="2850124913210091882">ബാക്കപ്പെടുക്കുക</translation>
@@ -240,7 +234,6 @@
 <translation id="3047197340186497470">ചൈനീസ് ദായി</translation>
 <translation id="3057861065630527966">നിങ്ങളുടെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പ് ചെയ്യുക</translation>
 <translation id="3067790092342515856">Windows ഫയലുകൾ</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> എന്നതുമായി പങ്കിടുക</translation>
 <translation id="3083975830683400843">Chromebit-കൾ</translation>
 <translation id="3085752524577180175">SOCKS ഹോസ്റ്റ്</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
@@ -303,7 +296,6 @@
 <translation id="357479282490346887">ലിത്വാനിയന്‍</translation>
 <translation id="3587482841069643663">എല്ലാം</translation>
 <translation id="3592251141500063301"><ph name="FILE_NAME" /> ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കാനായില്ല</translation>
-<translation id="3593874215226880809">LZIP കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">കനേഡിയന്‍ ഫ്രഞ്ച്</translation>
 <translation id="3606220979431771195">ടർക്കിഷ്-എഫ്</translation>
@@ -316,7 +308,6 @@
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> റദ്ദാക്കുക.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, സജീവമാക്കിയിട്ടില്ല <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, വിശദാംശങ്ങൾ</translation>
 <translation id="3691184985318546178">സിംഹള</translation>
-<translation id="3703620396751288986">ZIP ആർക്കൈവ്</translation>
 <translation id="3726463242007121105">ഈ ഉപകരണത്തിന്റെ ഫയൽസിസ്റ്റം പിന്തുണയ്ക്കാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
 <translation id="3727148787322499904">ഈ ക്രമീകരണം മാറ്റുന്നത് എല്ലാ പങ്കിട്ട നെറ്റ്‌വർക്കുകളെയും ബാധിക്കാനിടയാക്കും</translation>
 <translation id="3737576078404241332">സൈഡ്‌ബാറിൽ നിന്ന് നീക്കം ചെയ്യുക</translation>
@@ -339,7 +330,6 @@
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3855472144336161447">ജർമ്മൻ നിയോ 2</translation>
 <translation id="3858860766373142691">പേര്</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" /> ഉപയോഗിച്ച് പായ്‌ക്കുചെയ്യുക</translation>
 <translation id="3866249974567520381">വിവരണം</translation>
 <translation id="3899991606604168269">ബഹുഭാഷാ കീബോർഡ് ഉള്ള ഫ്രഞ്ച് (കാനഡ)</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
@@ -352,6 +342,7 @@
 <translation id="3971140002794351170">മൊബൈൽ പ്രൊഫൈൽ ഡൗൺലോഡ് ചെയ്യുക, <ph name="NETWORK_COUNT" /> എണ്ണത്തിൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ഇംഗ്ലീഷ് (യുകെ)</translation>
 <translation id="3975895378829046965">ബംഗ്ലാ ഉച്ചാരണ ശബ്‌ദം</translation>
+<translation id="3991446849494482687">ഇത് ഉപകരണത്തിലെ സിം ലോക്ക് ക്രമീകരണവും പ്രവർത്തനരഹിതമാക്കും.</translation>
 <translation id="4002066346123236978">ശീർഷകം</translation>
 <translation id="4017788180641807848">Workman കീബോർഡ് ഉള്ള ഇംഗ്ലീഷ് (യുഎസ്)</translation>
 <translation id="4040753847560036377">PUK തെറ്റാണ്</translation>
@@ -388,6 +379,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, വിശദാംശങ്ങൾ</translation>
 <translation id="4387004326333427325">പരിശോധിച്ചുറപ്പിക്കൽ സർട്ടിഫിക്കറ്റ് വിദൂരമായി നിരസിച്ചു</translation>
 <translation id="4394214039309501350">ബാഹ്യ ലിങ്ക്</translation>
+<translation id="4394980935660306080">ഈ ആഴ്‌ചയുടെ ആദ്യം</translation>
 <translation id="4401287888955153199">എല്ലാം എക്‌സ്ട്രാക്റ്റ് ചെയ്യുക</translation>
 <translation id="4410695710508688828">എക്സ്ട്രാക്റ്റ് ചെയ്യാനായില്ല. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">നിങ്ങളുടെ ഫയലുകൾക്കുള്ള കുറുക്കുവഴി സൃഷ്ടിക്കുക</translation>
@@ -418,7 +410,6 @@
 <translation id="4646813851450205600">Qwerty കീബോർഡ് ഉള്ള ചെക്ക്</translation>
 <translation id="4656777537938206294">ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കുക</translation>
 <translation id="4658782175094886150">മഞ്ഞിൽ നിൽക്കുന്ന വ്യക്തി</translation>
-<translation id="4661996069183330363">TAR ആർക്കൈവ്</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' എന്നതിലെ അംഗങ്ങളുമായി ഈ ഇനങ്ങൾ പങ്കിട്ടില്ലെങ്കിൽ അവർക്ക് അവയിലേക്കുള്ള ആക്‌സസ് ‌നഷ്‌ടമാകും.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">സ്വീഡിഷ്</translation>
@@ -432,6 +423,7 @@
 <translation id="4712283082407695269">"<ph name="PATH" />" തുറക്കുന്നു</translation>
 <translation id="4720185134442950733">മൊബൈൽ ഡാറ്റ നെറ്റ്‌വർക്ക്</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ ബാക്കപ്പുചെയ്‌തു</translation>
+<translation id="4725096204469550614">ഈ വർഷത്തിന്റെ ആദ്യം</translation>
 <translation id="4725511304875193254">പട്ടിക്കുട്ടി</translation>
 <translation id="4737050008115666127">ലാൻഡിംഗ്</translation>
 <translation id="4747271164117300400">മാസിഡോണിയൻ</translation>
@@ -481,6 +473,7 @@
 <translation id="508423945471810158"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ നീക്കുന്നു</translation>
 <translation id="509429900233858213">ഒരു പിശക് സംഭവിച്ചു.</translation>
 <translation id="5098629044894065541">ഹീബ്രു</translation>
+<translation id="5102922915594634436">സമന്വയിപ്പിച്ച ഫോൾഡറുകൾ മാനേജ് ചെയ്യുക</translation>
 <translation id="5109254780565519649">ഒരു പിശക് സംഭവിച്ചു. ചില ഇനങ്ങൾ പുനഃസ്ഥാപിച്ചിരിക്കാനിടയില്ല.</translation>
 <translation id="5110329002213341433">ഇംഗ്ലീഷ് (കാനഡ)</translation>
 <translation id="5123433949759960244">ബാസ്ക്കറ്റ്ബോൾ</translation>
@@ -601,7 +594,6 @@
 <translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> നെറ്റ്‍വർക്ക്, കണക്റ്റ് ചെയ്തിട്ടില്ല</translation>
 <translation id="6074825444536523002">Google ഫോം</translation>
 <translation id="6079871810119356840">Qwerty കീബോർഡ് ഉള്ള ഹംഗേറിയൻ</translation>
-<translation id="6082256976217156453">LZMA കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="6096979789310008754">തിരയൽ ടെക്‌സ്‌റ്റ് മായ്ച്ചു, മുഴുവൻ ഫയലുകളും ഫോൾഡറുകളും കാണിക്കുന്നു.</translation>
 <translation id="610101264611565198"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="FILE_NAME" /> നീക്കുന്നു</translation>
 <translation id="61118516107968648">CSV ടെക്സ്റ്റ്</translation>
@@ -615,14 +607,12 @@
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6170470584681422115">സാന്‍ഡ്‌വിച്ച്‌</translation>
 <translation id="6187719147498869044">ഹംഗേറിയൻ</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> ഉപയോഗിച്ച് തുറക്കുക</translation>
 <translation id="6198252989419008588">PIN മാറ്റുക</translation>
 <translation id="6199801702437275229">സ്‌പെയ്‌സ് വിവരത്തിനായി കാത്തിരിക്കുന്നു...</translation>
 <translation id="6205710420833115353">ചില പ്രവർത്തനങ്ങൾ പ്രതീക്ഷിച്ചതിലും സമയമെടുക്കുന്നു. നിങ്ങൾക്ക് അവ അവസാനിപ്പിക്കണോ?</translation>
 <translation id="6220423280121890987">പഞ്ചാബി</translation>
 <translation id="6224240818060029162">ഡാനിഷ്</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> ഫോർമാറ്റ് ചെയ്യുക</translation>
-<translation id="6224665423283788195">Zstandard കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="6227235786875481728">ഈ ഫയൽ പ്ലേ ചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="6241349547798190358">ഡച്ച് (ബെൽജിയം)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="PHONE_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" />%, കണക്‌റ്റ് ചെയ്യുക</translation>
@@ -631,6 +621,7 @@
 <translation id="6296410173147755564">PUK അസാധുവാണ്</translation>
 <translation id="6312403991423642364">അറിയാത്ത നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="6317608858038767920">ഇഷ്‌ടാനുസൃത nameserver <ph name="INPUT_INDEX" /></translation>
+<translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> ആർക്കൈവ്</translation>
 <translation id="6321303798550928047">കൈവീശുന്നു</translation>
 <translation id="6327785803543103246">വെബ് പ്രോക്‌സി സ്വയമേവ കണ്ടെത്തൽ</translation>
 <translation id="6339145975392024142">യുഎസ് അന്തര്‍ദേശീയ (PC)</translation>
@@ -719,6 +710,7 @@
 <translation id="7075931588889865715">TIS 820-2531 കീബോർഡ് ഉള്ള തായ്</translation>
 <translation id="708278670402572152">സ്‌കാനിംഗ് പ്രവർത്തനക്ഷമമാക്കാൻ വിച്ഛേദിക്കുക</translation>
 <translation id="7086590977277044826">InScript കീബോർഡ് ഉള്ള തമിഴ്</translation>
+<translation id="7088615885725309056">വളരെ പഴയ</translation>
 <translation id="7103992300314999525">മാസഡോണിയൻ</translation>
 <translation id="7106346894903675391">കൂടുതൽ സംഭരണം വാങ്ങുക...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;തിരയൽ ഡ്രൈവ്&lt;/em&gt;</translation>
@@ -783,6 +775,7 @@
 <translation id="7663224033570512922">ഹിന്ദി</translation>
 <translation id="7693909743393669729">ഡ്രൈവ് ഫോർമാറ്റ് ചെയ്യുന്നത് അതിൽ സംഭരിച്ചിരിക്കുന്ന എല്ലാ ഡാറ്റയും മായ്‌ക്കും, ദൃശ്യമാകാത്ത ഭാഗങ്ങൾ ഉൾപ്പെടെ നിലവിലുള്ള എല്ലാ ഭാഗങ്ങളും നീക്കം ചെയ്യും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാനാകില്ല.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ഫോർമാറ്റ് ചെയ്യാനായില്ല</translation>
+<translation id="76959938259365003">ട്രാഷിലുള്ളവ എല്ലാം ഇല്ലാതാക്കാനായില്ല.</translation>
 <translation id="770015031906360009">ഗ്രീക്ക്</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> പകർത്തി.</translation>
 <translation id="7711920809702896782">ചിത്രത്തിന്റെ വിവരം</translation>
@@ -793,6 +786,7 @@
 <translation id="7760449188139285140">ചൈനീസ് വുബി</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7774365994322694683">കിളി</translation>
+<translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" ഓഫ്‌ലൈനിൽ സംരക്ഷിക്കുന്നതിന് നിങ്ങൾ അധികമായി <ph name="TOTAL_FILE_SIZE" /> ഇടം ശൂന്യമാക്കണം:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />ഓഫ്‌ലൈനിൽ ഇനി ആക്‌സസ് ചെയ്യേണ്ടതില്ലാത്ത ഫയലുകൾ അൺപിൻ ചെയ്യുക<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />നിങ്ങളുടെ ഡൗൺലോഡുകളുടെ ഫോൾഡറിൽ നിന്നും ഫയലുകൾ ഇല്ലാതാക്കുക<ph name="MARKUP_5" /></translation>
@@ -936,7 +930,6 @@
 <translation id="8903931173357132290">ഗ്രാജ്വേറ്റ്</translation>
 <translation id="8912078710089354287">വാലാട്ടുന്ന നായ</translation>
 <translation id="8919081441417203123">ഡാനിഷ്</translation>
-<translation id="8965273390142984105">LZOP കംപ്രസ് ചെയ്ത ആർക്കൈവ്</translation>
 <translation id="8965697826696209160">പര്യാപ്‌തമായ ഇടമില്ല.</translation>
 <translation id="8997962250644902079">ചൈനീസ് (പരമ്പരാഗതം) പിൻയിൻ</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, വിശദാംശങ്ങൾ</translation>

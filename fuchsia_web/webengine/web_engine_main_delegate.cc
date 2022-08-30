@@ -15,7 +15,7 @@
 #include "base/strings/string_split.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "fuchsia/base/init_logging.h"
+#include "fuchsia_web/common/init_logging.h"
 #include "fuchsia_web/webengine/browser/web_engine_browser_main.h"
 #include "fuchsia_web/webengine/browser/web_engine_content_browser_client.h"
 #include "fuchsia_web/webengine/common/cors_exempt_headers.h"
@@ -75,7 +75,7 @@ WebEngineMainDelegate::~WebEngineMainDelegate() = default;
 bool WebEngineMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  if (!cr_fuchsia::InitLoggingFromCommandLine(*command_line)) {
+  if (!InitLoggingFromCommandLine(*command_line)) {
     *exit_code = 1;
     return true;
   }

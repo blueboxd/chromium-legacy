@@ -15,6 +15,12 @@ const char kQualificationAppId[] = "{6f0f9a34-a0ab-4a75-a0eb-6eab78d0dc4b}";
 
 const char kNullVersion[] = "0.0.0.0";
 
+#if BUILDFLAG(IS_WIN)
+const char kExecutableName[] = "updater.exe";
+#else
+const char kExecutableName[] = "updater";
+#endif
+
 // Command line arguments.
 // If a command line switch is marked as `needs backward-compatibility`, it
 // means the switch name cannot be changed, and the parser must be able to
@@ -80,6 +86,7 @@ const char kDevOverrideKeyInitialDelay[] = "initial_delay";
 const char kDevOverrideKeyServerKeepAliveSeconds[] = "server_keep_alive";
 const char kDevOverrideKeyCrxVerifierFormat[] = "crx_verifier_format";
 const char kDevOverrideKeyGroupPolicies[] = "group_policies";
+const char kDevOverrideKeyOverinstallTimeout[] = "overinstall_timeout";
 
 // Developer override file name, relative to app data directory.
 const char kDevOverrideFileName[] = "overrides.json";

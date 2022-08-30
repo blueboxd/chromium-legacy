@@ -13,6 +13,37 @@
 
 namespace blink {
 
+namespace {
+
+void LogToConsole(LocalFrame* frame,
+                  mojom::blink::ConsoleMessageLevel level,
+                  const String& message) {
+  if (!RuntimeEnabledFeatures::SoftNavigationHeuristicsLoggingEnabled()) {
+    return;
+  }
+  if (!frame || !frame->IsMainFrame()) {
+    return;
+  }
+  LocalDOMWindow* window = frame->DomWindow();
+  if (!window) {
+    return;
+  }
+  auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kJavaScript, level, message);
+  window->AddConsoleMessage(console_message);
+}
+
+void LogToConsole(ScriptState* script_state,
+                  mojom::blink::ConsoleMessageLevel level,
+                  const String& message) {
+  DCHECK(script_state);
+  ScriptState::Scope scope(script_state);
+  LocalFrame* frame = ToLocalFrameIfNotDetached(script_state->GetContext());
+  LogToConsole(frame, level, message);
+}
+
+}  // namespace
+
 // static
 const char SoftNavigationHeuristics::kSupplementName[] =
     "SoftNavigationHeuristics";
@@ -28,10 +59,22 @@ SoftNavigationHeuristics* SoftNavigationHeuristics::From(
   return heuristics;
 }
 
+void SoftNavigationHeuristics::SetIsTrackingSoftNavigationHeuristicsOnDocument(
+    bool value) const {
+  LocalDOMWindow* window = GetSupplementable();
+  if (!window) {
+    return;
+  }
+  if (Document* document = window->document()) {
+    document->SetIsTrackingSoftNavigationHeuristics(value);
+  }
+}
+
 void SoftNavigationHeuristics::ResetHeuristic() {
   // Reset previously seen indicators and task IDs.
   flag_set_.Clear();
   potential_soft_navigation_task_ids_.clear();
+  SetIsTrackingSoftNavigationHeuristicsOnDocument(false);
 }
 
 void SoftNavigationHeuristics::UserInitiatedClick(ScriptState* script_state) {
@@ -42,6 +85,7 @@ void SoftNavigationHeuristics::UserInitiatedClick(ScriptState* script_state) {
   DCHECK(scheduler->GetTaskAttributionTracker());
   ResetHeuristic();
   scheduler->GetTaskAttributionTracker()->RegisterObserver(this);
+  SetIsTrackingSoftNavigationHeuristicsOnDocument(true);
 }
 
 bool SoftNavigationHeuristics::IsCurrentTaskDescendantOfClickEventHandler(
@@ -62,15 +106,11 @@ bool SoftNavigationHeuristics::IsCurrentTaskDescendantOfClickEventHandler(
 
 // TODO(yoav): We should also reset the heuristic a few seconds after a click
 // event handler is done, to reduce potential cycles.
-void SoftNavigationHeuristics::ClickEventEnded(ScriptState* script_state,
-                                               bool is_cancelled) {
-  if (is_cancelled) {
-    flag_set_.Put(FlagType::kEventCancelled);
-    CheckSoftNavigation(script_state);
-  }
+void SoftNavigationHeuristics::ClickEventEnded(ScriptState* script_state) {
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
   scheduler->GetTaskAttributionTracker()->UnregisterObserver();
+  CheckSoftNavigation(script_state);
 }
 
 bool SoftNavigationHeuristics::SetFlagIfDescendantAndCheck(
@@ -88,32 +128,37 @@ bool SoftNavigationHeuristics::SetFlagIfDescendantAndCheck(
 void SoftNavigationHeuristics::SawURLChange(ScriptState* script_state) {
   if (!SetFlagIfDescendantAndCheck(script_state, FlagType::kURLChange)) {
     ResetHeuristic();
+  } else {
+    LogToConsole(script_state, mojom::blink::ConsoleMessageLevel::kVerbose,
+                 String("URL change."));
   }
 }
 
-void SoftNavigationHeuristics::ModifiedDOM(ScriptState* script_state) {
-  SetFlagIfDescendantAndCheck(script_state, FlagType::kDOMModification);
+void SoftNavigationHeuristics::ModifiedMain(ScriptState* script_state) {
+  if (SetFlagIfDescendantAndCheck(script_state, FlagType::kMainModification)) {
+    LogToConsole(script_state, mojom::blink::ConsoleMessageLevel::kVerbose,
+                 String("Modified main element."));
+  }
+  SetIsTrackingSoftNavigationHeuristicsOnDocument(false);
 }
 
 void SoftNavigationHeuristics::CheckSoftNavigation(ScriptState* script_state) {
-  if (flag_set_ == FlagTypeSet::All()) {
-    ScriptState::Scope scope(script_state);
-    if (LocalFrame* frame =
-            ToLocalFrameIfNotDetached(script_state->GetContext())) {
-      LocalDOMWindow* window = frame->DomWindow();
-      if (window && frame->IsMainFrame()) {
-        ++soft_navigation_count_;
-        ResetHeuristic();
-        if (RuntimeEnabledFeatures::SoftNavigationHeuristicsLoggingEnabled()) {
-          auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kJavaScript,
-              mojom::blink::ConsoleMessageLevel::kInfo,
-              String("A soft navigation has been detected."));
-          window->AddConsoleMessage(console_message);
-          // TODO(yoav): trace event as well.
-        }
-      }
-    }
+  if (flag_set_ != FlagTypeSet::All()) {
+    return;
+  }
+  ScriptState::Scope scope(script_state);
+  LocalFrame* frame = ToLocalFrameIfNotDetached(script_state->GetContext());
+  if (!frame || !frame->IsMainFrame()) {
+    return;
+  }
+  ++soft_navigation_count_;
+  ResetHeuristic();
+  LogToConsole(frame, mojom::blink::ConsoleMessageLevel::kInfo,
+               String("A soft navigation has been detected."));
+  // TODO(yoav): trace event as well.
+  if (LocalFrameClient* frame_client = frame->Client()) {
+    // This notifies UKM about this soft navigation.
+    frame_client->DidObserveSoftNavigation(soft_navigation_count_);
   }
 }
 

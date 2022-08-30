@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -38,7 +39,15 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
+// TODO(https://crbug.com/1338583): enable on android.
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/renderer/core/html_element_attribute_name_lookup_trie.h"  // nogncheck
+#endif
+
 namespace blink {
+
+// Controls whether attribute name lookup uses LookupHTMLAttributeName().
+CORE_EXPORT extern bool g_use_html_attribute_name_lookup;
 
 class CORE_EXPORT AtomicHTMLToken {
   STACK_ALLOCATED();
@@ -73,12 +82,12 @@ class CORE_EXPORT AtomicHTMLToken {
     return FindAttributeInVector(attributes_, attribute_name);
   }
 
-  Vector<Attribute>& Attributes() {
+  Vector<Attribute, kAttributePrealloc>& Attributes() {
     DCHECK(UsesAttributes());
     return attributes_;
   }
 
-  const Vector<Attribute>& Attributes() const {
+  const Vector<Attribute, kAttributePrealloc>& Attributes() const {
     DCHECK(UsesAttributes());
     return attributes_;
   }
@@ -124,7 +133,18 @@ class CORE_EXPORT AtomicHTMLToken {
           name_ = tag_name;
         else
           name_ = token.GetName().AsAtomicString();
-        InitializeAttributes(token.Attributes());
+        const HTMLToken::AttributeList& attributes = token.Attributes();
+
+        // This limit is set fairly arbitrarily; the main point is to avoid
+        // DDoS opportunities or similar with O(n²) behavior by setting lots
+        // of attributes.
+        const int kMinimumNumAttributesToDedupWithHash = 10;
+
+        if (attributes.size() >= kMinimumNumAttributesToDedupWithHash) {
+          InitializeAttributes</*DedupWithHash=*/true>(token.Attributes());
+        } else if (attributes.size()) {
+          InitializeAttributes</*DedupWithHash=*/false>(token.Attributes());
+        }
         break;
       }
       case HTMLToken::kCharacter:
@@ -142,9 +162,7 @@ class CORE_EXPORT AtomicHTMLToken {
   AtomicHTMLToken(HTMLToken::TokenType type,
                   const AtomicString& name,
                   const Vector<Attribute>& attributes = Vector<Attribute>())
-      : type_(type),
-        name_(name),
-        attributes_(attributes) {
+      : type_(type), name_(name), attributes_(attributes) {
     DCHECK(UsesName());
   }
 
@@ -158,8 +176,17 @@ class CORE_EXPORT AtomicHTMLToken {
  private:
   HTMLToken::TokenType type_;
 
-  void InitializeAttributes(const HTMLToken::AttributeList& attributes);
-  QualifiedName NameForAttribute(const HTMLToken::Attribute&) const;
+  // Sets up and deduplicates attributes.
+  //
+  // We can deduplicate attributes in two ways; using a hash table
+  // (DedupWithHash=true) or by simple linear scanning (DedupWithHash=false).
+  // If we don't have many attributes, the linear scan is cheaper than
+  // setting up and searching in a hash table, even though the big-O
+  // complexity is higher. Thus, we use the hash table only if the caller
+  // expects a lot of attributes.
+  template <bool DedupWithHash>
+  ALWAYS_INLINE void InitializeAttributes(
+      const HTMLToken::AttributeList& attributes);
 
   bool UsesName() const;
 
@@ -179,42 +206,66 @@ class CORE_EXPORT AtomicHTMLToken {
 
   bool duplicate_attribute_ = false;
 
-  Vector<Attribute> attributes_;
+  Vector<Attribute, kAttributePrealloc> attributes_;
 };
 
-inline void AtomicHTMLToken::InitializeAttributes(
+template <bool DedupWithHash>
+void AtomicHTMLToken::InitializeAttributes(
     const HTMLToken::AttributeList& attributes) {
   wtf_size_t size = attributes.size();
-  if (!size)
-    return;
 
   // Track which attributes have already been inserted to avoid N^2
   // behavior with repeated linear searches when populating `attributes_`.
-  HashSet<AtomicString> added_attributes;
-  added_attributes.ReserveCapacityForSize(size);
+  std::conditional_t<DedupWithHash, HashSet<AtomicString>, int>
+      added_attributes;
+  if constexpr (DedupWithHash) {
+    added_attributes.ReserveCapacityForSize(size);
+  }
 
-  attributes_.clear();
+  // This is only called once, so `attributes_` should be empty.
+  DCHECK(attributes_.IsEmpty());
   attributes_.ReserveInitialCapacity(size);
   for (const auto& attribute : attributes) {
     if (attribute.NameIsEmpty())
       continue;
 
+#if DCHECK_IS_ON()
     attribute.NameRange().CheckValid();
     attribute.ValueRange().CheckValid();
+#endif
 
-    AtomicString value(attribute.GetValue());
+    QualifiedName name = g_null_name;
+#if !BUILDFLAG(IS_ANDROID)
+    if (g_use_html_attribute_name_lookup) {
+      name = LookupHTMLAttributeName(attribute.NameBuffer().data(),
+                                     attribute.NameBuffer().size());
+    }
+#endif
+    if (name == g_null_name) {
+      name = QualifiedName(g_null_atom, attribute.GetName(), g_null_atom);
+    }
+
+    if constexpr (DedupWithHash) {
+      if (!added_attributes.insert(name.LocalName()).is_new_entry) {
+        duplicate_attribute_ = true;
+        continue;
+      }
+    } else {
+      if (base::Contains(attributes_, name.LocalName(),
+                         &Attribute::LocalName)) {
+        duplicate_attribute_ = true;
+        continue;
+      }
+    }
+
     // The string pointer in |value| is null for attributes with no values, but
     // the null atom is used to represent absence of attributes; attributes with
     // no values have the value set to an empty atom instead.
-    if (value == g_null_atom) {
+    AtomicString value(attribute.GetValue());
+    if (value.IsNull()) {
       value = g_empty_atom;
     }
-    const QualifiedName& name = NameForAttribute(attribute);
-    if (added_attributes.insert(name.LocalName()).is_new_entry) {
-      attributes_.push_back(Attribute(name, value));
-    } else {
-      duplicate_attribute_ = true;
-    }
+    attributes_.UncheckedAppend(Attribute(std::move(name), std::move(value)));
   }
 }
 

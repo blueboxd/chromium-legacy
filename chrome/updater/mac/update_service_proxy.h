@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 
@@ -34,7 +35,8 @@ namespace updater {
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceProxy : public UpdateService {
  public:
-  explicit UpdateServiceProxy(UpdaterScope scope);
+  UpdateServiceProxy(UpdaterScope scope,
+                     const base::TimeDelta& get_version_timeout);
 
   // Overrides for UpdateService.
   void GetVersion(
@@ -53,6 +55,12 @@ class UpdateServiceProxy : public UpdateService {
               PolicySameVersionUpdate policy_same_version_update,
               StateChangeCallback state_update,
               Callback callback) override;
+  void Install(const RegistrationRequest& registration,
+               const std::string& install_data_index,
+               Priority priority,
+               StateChangeCallback state_update,
+               Callback callback) override;
+  void CancelInstalls(const std::string& app_id) override;
   void RunInstaller(const std::string& app_id,
                     const base::FilePath& installer_path,
                     const std::string& install_args,
@@ -72,6 +80,7 @@ class UpdateServiceProxy : public UpdateService {
   SEQUENCE_CHECKER(sequence_checker_);
 
   UpdaterScope scope_;
+  base::TimeDelta get_version_timeout_;
   base::scoped_nsobject<CRUUpdateServiceProxyImpl> client_;
   scoped_refptr<base::SequencedTaskRunner> callback_runner_;
 };

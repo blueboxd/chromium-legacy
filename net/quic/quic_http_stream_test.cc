@@ -87,8 +87,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
-namespace net {
-namespace test {
+namespace net::test {
 namespace {
 
 const char kUploadData[] = "Really nifty data!";
@@ -191,7 +190,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   ReadErrorUploadDataStream& operator=(const ReadErrorUploadDataStream&) =
       delete;
 
-  ~ReadErrorUploadDataStream() override {}
+  ~ReadErrorUploadDataStream() override = default;
 
  private:
   void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
@@ -299,22 +298,20 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  ~QuicHttpStreamTest() {
+  ~QuicHttpStreamTest() override {
     session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
-    for (size_t i = 0; i < writes_.size(); i++) {
-      delete writes_[i].packet;
+    for (auto& write : writes_) {
+      delete write.packet;
     }
   }
 
   // Adds a packet to the list of expected writes.
   void AddWrite(std::unique_ptr<quic::QuicReceivedPacket> packet) {
-    writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
+    writes_.emplace_back(SYNCHRONOUS, packet.release());
   }
 
-  void AddWrite(IoMode mode, int rv) {
-    writes_.push_back(PacketToWrite(mode, rv));
-  }
+  void AddWrite(IoMode mode, int rv) { writes_.emplace_back(mode, rv); }
 
   // Returns the packet to be written at position |pos|.
   quic::QuicReceivedPacket* GetWrite(size_t pos) { return writes_[pos].packet; }
@@ -346,10 +343,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         base::make_span(mock_writes_.get(), writes_.size()));
     socket_data_->set_printer(&printer_);
 
-    std::unique_ptr<MockUDPClientSocket> socket(
-        new MockUDPClientSocket(socket_data_.get(), NetLog::Get()));
+    auto socket = std::make_unique<MockUDPClientSocket>(socket_data_.get(),
+                                                        NetLog::Get());
     socket->Connect(peer_addr_);
-    runner_ = new TestTaskRunner(&clock_);
+    runner_ = base::MakeRefCounted<TestTaskRunner>(&clock_);
     send_algorithm_ = new quic::test::MockSendAlgorithm();
     EXPECT_CALL(*send_algorithm_, InRecovery()).WillRepeatedly(Return(false));
     EXPECT_CALL(*send_algorithm_, InSlowStart()).WillRepeatedly(Return(false));
@@ -2801,5 +2798,4 @@ TEST_P(QuicHttpStreamTest, GetAcceptChViaAlps) {
   histogram_tester.ExpectTotalCount("Net.QuicSession.AcceptChForOrigin", 1);
 }
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

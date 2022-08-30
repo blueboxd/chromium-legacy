@@ -13,7 +13,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
-
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -26,17 +25,13 @@ import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-
 import androidx.test.filters.MediumTest;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.chromium.base.Callback;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.test.util.Batch;
@@ -73,13 +68,13 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
-
-import java.lang.ref.WeakReference;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for the {@link TabSwitcher} on tablet
@@ -237,7 +232,7 @@ public class TabSwitcherTabletTest {
                 .check(matches(isDisplayed()));
 
         // Exit switcher.
-        exitSwitcherPolishWithTabClick(0);
+        exitSwitcherWithTabClick(0);
 
         // Assert tablet toolbar shows and switcher toolbar is gone.
         onView(allOf(withId(R.id.tab_switcher_toolbar),
@@ -259,7 +254,7 @@ public class TabSwitcherTabletTest {
                                                     .getScrimCoordinator();
         assertTrue(scrimCoordinator.isShowingScrim());
 
-        exitSwitcherPolishWithTabClick(0);
+        exitSwitcherWithTabClick(0);
         assertFalse(scrimCoordinator.isShowingScrim());
     }
 
@@ -338,7 +333,7 @@ public class TabSwitcherTabletTest {
         setupForThumbnailCheck();
         int oldCount = mTabListDelegate.getBitmapFetchCountForTesting();
         TabUiTestHelper.prepareTabsWithThumbnail(
-                sActivityTestRule, numTabs, numIncognitoTabs, null);
+            sActivityTestRule, numTabs, numIncognitoTabs, null);
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
@@ -372,13 +367,6 @@ public class TabSwitcherTabletTest {
 
     private void exitSwitcherWithTabClick(int index) throws TimeoutException {
         TabUiTestHelper.clickNthCardFromTabSwitcher(sActivityTestRule.getActivity(), index);
-        mLayoutChangedCallbackHelper.waitForCallback(1, 1, CALLBACK_WAIT_TIMEOUT, TimeUnit.SECONDS);
-        assertTrue(mCurrentlyActiveLayout == LayoutType.TAB_SWITCHER);
-    }
-
-    private void exitSwitcherPolishWithTabClick(int index) throws TimeoutException {
-        TabUiTestHelper.clickNthCardFromTabletTabSwitcherPolish(
-                sActivityTestRule.getActivity(), index);
         mLayoutChangedCallbackHelper.waitForCallback(1, 1, CALLBACK_WAIT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue(mCurrentlyActiveLayout == LayoutType.TAB_SWITCHER);
     }

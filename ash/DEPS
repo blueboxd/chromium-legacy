@@ -24,6 +24,7 @@ include_rules = [
   "+components/ui_devtools",
   "+components/url_matcher",
   "+components/vector_icons",
+  "+components/version_info",
   "+components/viz/common",
   "+components/viz/host",
   "+components/wallpaper",
@@ -59,6 +60,7 @@ include_rules = [
   "-chromeos",
   # //ash can use chromeos components that sit below it in the dependency tree.
   "+chromeos/ash/components/human_presence",
+  "+chromeos/ash/components/local_search_service",
   "+chromeos/components/feature_usage",
   "+chromeos/components/quick_answers",
   "+chromeos/components/security_token_pin",
@@ -82,8 +84,8 @@ include_rules = [
   # TODO(https://crbug.com/1164001): remove when chromeos/network have migrated.
   "+chromeos/network",
   # //ash can use the public interfaces of various services.
+  "+chromeos/ash/services/assistant/public/cpp" ,
   "+chromeos/ash/services/assistant/test_support",
-  "+chromeos/services/assistant/public" ,
   "+chromeos/services/bluetooth_config",
   "+chromeos/services/libassistant/public",
   "+chromeos/services/machine_learning/public",

@@ -6,12 +6,7 @@
 
 namespace variations {
 
-const base::FilePath::CharType kVariationsFilename[] =
+const base::FilePath::CharType kCleanExitBeaconFilename[] =
     FILE_PATH_LITERAL("Variations");
-
-const char kExtendedSafeModeTrial[] = "ExtendedVariationsSafeMode5";
-const char kControlGroup[] = "Control5";
-const char kDefaultGroup[] = "Default5";
-const char kEnabledGroup[] = "SignalAndWriteViaFileUtil5";
 
 }  // namespace variations

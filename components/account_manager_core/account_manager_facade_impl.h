@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
@@ -104,6 +105,16 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   FRIEND_TEST_ALL_PREFIXES(
       AccountManagerFacadeImplTest,
       AccessTokenFetcherCanBeCreatedBeforeAccountManagerFacadeInitialization);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
+                           HistogramsForZeroAccountManagerRemoteDisconnections);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
+                           HistogramsForAccountManagerRemoteDisconnection);
+  FRIEND_TEST_ALL_PREFIXES(
+      AccountManagerFacadeImplTest,
+      HistogramsForZeroAccountManagerObserverReceiverDisconnections);
+  FRIEND_TEST_ALL_PREFIXES(
+      AccountManagerFacadeImplTest,
+      HistogramsForAccountManagerObserverReceiverDisconnections);
 
   // Status of the mojo connection.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -167,8 +178,12 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
 
   // Runs `closure` if/when `account_manager_remote_` gets disconnected.
   void RunOnMojoDisconnection(base::OnceClosure closure);
-  // Mojo disconnect handler.
-  void OnMojoError();
+
+  // Mojo disconnect handler for `account_manager_remote_`.
+  void OnAccountManagerRemoteDisconnected();
+
+  // Mojo disconnect handler for `receiver_`.
+  void OnAccountManagerObserverReceiverDisconnected();
 
   bool IsInitialized();
 
@@ -176,6 +191,12 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
 
   // Mojo API version on the remote (Ash) side.
   const uint32_t remote_version_;
+
+  // Number of Mojo pipe disconnections seen by `account_manager_remote_`.
+  int num_remote_disconnections_ = 0;
+
+  // Number of Mojo pipe disconnections seen by `receiver_`.
+  int num_receiver_disconnections_ = 0;
 
   bool is_initialized_ = false;
   std::vector<base::OnceClosure> initialization_callbacks_;
@@ -187,7 +208,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
 
   base::ObserverList<Observer> observer_list_;
 
-  AccountManager* account_manager_for_tests_ = nullptr;
+  raw_ptr<AccountManager> account_manager_for_tests_ = nullptr;
 
   base::WeakPtrFactory<AccountManagerFacadeImpl> weak_factory_{this};
 };

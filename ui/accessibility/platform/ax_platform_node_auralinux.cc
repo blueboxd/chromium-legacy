@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
+#include "base/memory/raw_ptr.h"
 
 #include <dlfcn.h>
 #include <stdint.h>
@@ -125,7 +126,7 @@ typedef struct _AXPlatformNodeAuraLinuxClass AXPlatformNodeAuraLinuxClass;
 
 struct _AXPlatformNodeAuraLinuxObject {
   AtkObject parent;
-  AXPlatformNodeAuraLinux* m_object;
+  raw_ptr<AXPlatformNodeAuraLinux> m_object;
 };
 
 struct _AXPlatformNodeAuraLinuxClass {
@@ -1013,10 +1014,11 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
     return 0;
 
   std::u16string text = obj->GetHypertext();
-  int32_t text_length = text.length();
+  size_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
-  int32_t limited_offset = base::clamp(offset, 0, text_length);
+  offset = std::max(offset, 0);
+  size_t limited_offset = std::min(static_cast<size_t>(offset), text_length);
 
   base_icu::UChar32 code_point;
   base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,
@@ -4343,8 +4345,8 @@ AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
   text_unicode_adjustments_.emplace();
 
   std::u16string text = GetHypertext();
-  int32_t text_length = text.size();
-  for (int32_t i = 0; i < text_length; i++) {
+  size_t text_length = text.size();
+  for (size_t i = 0; i < text_length; i++) {
     base_icu::UChar32 code_point;
     size_t original_i = i;
     base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &i, &code_point);
@@ -5230,12 +5232,21 @@ std::vector<ax::mojom::Action> AXPlatformNodeAuraLinux::GetSupportedActions()
     const {
   static const base::NoDestructor<std::vector<ax::mojom::Action>>
       kActionsThatCanBeExposedViaAtkAction{
-          {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement}};
+          {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement,
+           ax::mojom::Action::kScrollUp, ax::mojom::Action::kScrollDown,
+           ax::mojom::Action::kScrollLeft, ax::mojom::Action::kScrollRight,
+           ax::mojom::Action::kScrollForward,
+           ax::mojom::Action::kScrollBackward}};
   std::vector<ax::mojom::Action> supported_actions;
 
   // The default action, if it exists, must be listed at index 0.
   if (HasDefaultActionVerb())
     supported_actions.push_back(ax::mojom::Action::kDoDefault);
+
+  // Users expect to be able to bring a context menu on any object via e.g.
+  // right click, so we make the context menu action available to any object
+  // unconditionally.
+  supported_actions.push_back(ax::mojom::Action::kShowContextMenu);
 
   for (const auto& item : *kActionsThatCanBeExposedViaAtkAction) {
     if (HasAction(item))

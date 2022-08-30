@@ -143,8 +143,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
 
     @Override
     public void showLayout(int layoutType, boolean animate) {
-        if (layoutType == LayoutType.TAB_SWITCHER && mOverviewLayout == null
-                && TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(mHost.getContext())) {
+        if (layoutType == LayoutType.TAB_SWITCHER && mOverviewLayout == null) {
             try {
                 if (!mStartSurfaceSupplier.hasValue()) {
                     final ViewGroup containerView = mCreateStartSurfaceCallable.call();

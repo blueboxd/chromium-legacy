@@ -24,9 +24,7 @@
 #include "net/tools/transport_security_state_generator/spki_hash.h"
 #include "third_party/boringssl/src/include/openssl/x509v3.h"
 
-namespace net {
-
-namespace transport_security_state {
+namespace net::transport_security_state {
 
 namespace {
 
@@ -357,8 +355,7 @@ bool ParseJSON(base::StringPiece json,
       return false;
     }
 
-    std::unique_ptr<TransportSecurityStateEntry> entry(
-        new TransportSecurityStateEntry());
+    auto entry = std::make_unique<TransportSecurityStateEntry>();
     const std::string* maybe_hostname = parsed.FindStringKey(kNameJSONKey);
     if (!maybe_hostname) {
       LOG(ERROR) << "Could not extract the hostname for entry "
@@ -441,7 +438,7 @@ bool ParseJSON(base::StringPiece json,
     std::string report_uri =
         maybe_report_uri ? *maybe_report_uri : std::string();
 
-    std::unique_ptr<Pinset> pinset(new Pinset(name, report_uri));
+    auto pinset = std::make_unique<Pinset>(name, report_uri);
 
     const base::Value* pinset_static_hashes_list =
         parsed.FindListKey("static_spki_hashes");
@@ -476,6 +473,4 @@ bool ParseJSON(base::StringPiece json,
   return true;
 }
 
-}  // namespace transport_security_state
-
-}  // namespace net
+}  // namespace net::transport_security_state

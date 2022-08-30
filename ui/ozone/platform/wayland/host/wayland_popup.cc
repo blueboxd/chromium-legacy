@@ -86,14 +86,28 @@ bool WaylandPopup::CreateShellPopup() {
   }
 
   parent_window()->set_child_window(this);
-  InitializeAuraShellSurface();
+  UpdateDecoration();
   return true;
 }
 
-void WaylandPopup::InitializeAuraShellSurface() {
+void WaylandPopup::UpdateDecoration() {
   DCHECK(shell_popup_);
-  if (!connection()->zaura_shell() || aura_surface_)
+
+  // If the surface is already decorated early return.
+  if (!connection()->zaura_shell() || aura_surface_ ||
+      decorated_via_aura_popup_) {
     return;
+  }
+
+  // Decorate the surface using the newer protocol. Relies on Ash >= M105.
+  if (shell_popup_->SupportsDecoration()) {
+    decorated_via_aura_popup_ = true;
+    shell_popup_->Decorate();
+    return;
+  }
+
+  // Decorate the frame using the older protocol. Can be removed once Lacros >=
+  // M107.
   aura_surface_.reset(zaura_shell_get_aura_surface(
       connection()->zaura_shell()->wl_object(), root_surface()->surface()));
   if (shadow_type_ == PlatformWindowShadowType::kDrop) {
@@ -132,6 +146,7 @@ void WaylandPopup::Hide() {
   if (shell_popup_) {
     parent_window()->set_child_window(nullptr);
     shell_popup_.reset();
+    decorated_via_aura_popup_ = false;
   }
   connection()->ScheduleFlush();
 }
@@ -173,8 +188,11 @@ void WaylandPopup::SetBoundsInPixels(const gfx::Rect& bounds_dip) {
 }
 
 void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
+  gfx::Rect pending_bounds_dip(bounds_dip);
+  if (pending_bounds_dip.IsEmpty())
+    pending_bounds_dip.set_size(GetBoundsInDIP().size());
   set_pending_bounds_dip(wl::TranslateBoundsToTopLevelCoordinates(
-      bounds_dip, parent_window()->GetBoundsInDIP()));
+      pending_bounds_dip, parent_window()->GetBoundsInDIP()));
 }
 
 void WaylandPopup::HandleSurfaceConfigure(uint32_t serial) {

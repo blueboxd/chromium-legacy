@@ -20,6 +20,7 @@
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/vulkan/buildflags.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
@@ -48,7 +49,7 @@ std::unique_ptr<CompositorGpuThread> CompositorGpuThread::Create(
   // that instead of enabling/disabling DrDc based on the extension.
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE)
     DCHECK(gl::GLSurfaceEGL::GetGLDisplayEGL()
-               ->IsANGLEContextVirtualizationSupported());
+               ->ext->b_EGL_ANGLE_context_virtualization);
 #endif
 
   scoped_refptr<VulkanContextProvider> vulkan_context_provider;
@@ -128,6 +129,15 @@ CompositorGpuThread::GetSharedContextState() {
   // GL resources with the contexts created on gpu main thread.
   auto context =
       gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
+
+  if (!context && !features::UseGles2ForOopR()) {
+    LOG(ERROR) << "Failed to create GLES3 context, fallback to GLES2.";
+    attribs.client_major_es_version = 2;
+    attribs.client_minor_es_version = 0;
+    context =
+        gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
+  }
+
   if (!context) {
     LOG(ERROR) << "Failed to create shared context";
     return nullptr;
@@ -181,8 +191,7 @@ CompositorGpuThread::GetSharedContextState() {
 bool CompositorGpuThread::Initialize() {
   // Setup thread options.
   base::Thread::Options thread_options(base::MessagePumpType::DEFAULT, 0);
-  if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
-    thread_options.priority = base::ThreadPriority::DISPLAY;
+  thread_options.thread_type = base::ThreadType::kCompositing;
   StartWithOptions(std::move(thread_options));
 
   // Wait until thread is started and Init() is executed in order to return

@@ -46,6 +46,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemV
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
@@ -98,7 +99,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
     private final boolean mIsSeparateActivity;
     private final boolean mIsIncognito;
     private final boolean mIsScrollToLoadDisabled;
-    private final boolean mShouldShowClearData;
+    private final boolean mShouldShowClearDataIfAvailable;
     private final String mHostName;
     private final Supplier<Tab> mTabSupplier;
     private HistoryAdapter mHistoryAdapter;
@@ -117,8 +118,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
      * @param isIncognito Whether the incognito tab model is currently selected.
      * @param shouldShowPrivacyDisclaimers Whether the privacy disclaimers should be shown, if
      *         available.
-     * @param shouldShowClearData Whether the the clear history data button should be shown, if
-     *         available.
+     * @param shouldShowClearDataIfAvailable Whether the the clear history data button should be
+     *         shown, if available.
      * @param hostName The hostName to retrieve history entries for, or null for all hosts.
      * @param selectionDelegate A class responsible for handling list item selection, null for
      *         unselectable items.
@@ -127,19 +128,20 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
      * @param toggleViewFactory Function that provides a toggle view container for the given parent
      *         ViewGroup. This toggle is used to switch between the Journeys UI and the regular
      *         history UI and is thus controlled by our parent component.
+     * @param historyProvider Provider of methods for querying and managing browsing history.
      */
     public HistoryContentManager(@NonNull Activity activity, @NonNull Observer observer,
             boolean isSeparateActivity, boolean isIncognito, boolean shouldShowPrivacyDisclaimers,
-            boolean shouldShowClearData, @Nullable String hostName,
+            boolean shouldShowClearDataIfAvailable, @Nullable String hostName,
             @Nullable SelectionDelegate<HistoryItem> selectionDelegate,
             @Nullable Supplier<Tab> tabSupplier, boolean showHistoryToggle,
-            Function<ViewGroup, ViewGroup> toggleViewFactory) {
+            Function<ViewGroup, ViewGroup> toggleViewFactory, HistoryProvider historyProvider) {
         mActivity = activity;
         mObserver = observer;
         mIsSeparateActivity = isSeparateActivity;
         mIsIncognito = isIncognito;
         mShouldShowPrivacyDisclaimers = shouldShowPrivacyDisclaimers;
-        mShouldShowClearData = shouldShowClearData;
+        mShouldShowClearDataIfAvailable = shouldShowClearDataIfAvailable;
         mHostName = hostName;
         mIsScrollToLoadDisabled = ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                 || ChromeAccessibilityUtil.isHardwareKeyboardAttached(
@@ -168,8 +170,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
         // explicitly redirects to use regular profile for Incognito case.
         Profile profile = Profile.getLastUsedRegularProfile();
         mHistoryAdapter = new HistoryAdapter(this,
-                sProviderForTests != null ? sProviderForTests : new BrowsingHistoryBridge(profile),
-                showHistoryToggle, toggleViewFactory);
+                sProviderForTests != null ? sProviderForTests : historyProvider, showHistoryToggle,
+                toggleViewFactory);
 
         // Create a recycler view.
         mRecyclerView =
@@ -333,10 +335,11 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
 
     /**
      * @return True if the clear history data button should be shown.
-     * Note that this may return true even if we are not showing the button.
      */
-    boolean getShouldShowClearDataIfAvailable() {
-        return mShouldShowClearData;
+    boolean getShouldShowClearData() {
+        return mShouldShowClearDataIfAvailable
+                && UserPrefs.get(Profile.getLastUsedRegularProfile())
+                           .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);
     }
 
     /**
@@ -367,7 +370,6 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
         }
     }
 
-    @VisibleForTesting
     Intent getOpenUrlIntent(GURL url, Boolean isIncognito, boolean createNewTab) {
         // Construct basic intent.
         Intent viewIntent = createOpenUrlIntent(url, mActivity);

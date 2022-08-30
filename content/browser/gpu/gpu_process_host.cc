@@ -304,6 +304,7 @@ static const char* const kSwitchNames[] = {
 #endif
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     switches::kHardwareVideoDecodeFrameRate,
+    switches::kMaxChromeOSDecoderThreads,
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     switches::kLacrosEnablePlatformHevc,
@@ -896,8 +897,7 @@ bool GpuProcessHost::Init() {
     // WGL needs to create its own window and pump messages on it.
     options.message_pump_type = base::MessagePumpType::UI;
 #endif
-    if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
-      options.priority = base::ThreadPriority::DISPLAY;
+    options.thread_type = base::ThreadType::kCompositing;
     in_process_gpu_thread_->StartWithOptions(std::move(options));
   } else if (!LaunchGpuProcess()) {
     return false;

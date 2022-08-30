@@ -41,6 +41,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
-#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -56,7 +56,6 @@
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
-#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -193,6 +192,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   }
   void SetCodeCacheHost(
       mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) override;
+  WebString OriginCalculationDebugInfo() const override {
+    return origin_calculation_debug_info_;
+  }
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
 
@@ -354,9 +356,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                     WebFrameLoadType,
                                     HistoryNavigationType,
                                     CommitReason commit_reason);
-
-  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
-  TakePendingWorkerTimingReceiver(int request_id);
 
   const KURL& WebBundlePhysicalUrl() const { return web_bundle_physical_url_; }
 
@@ -532,6 +531,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // conversion.
   std::unique_ptr<PolicyContainer> policy_container_;
 
+  // The permissions policy to be applied to the window at initialization time.
+  const absl::optional<ParsedPermissionsPolicy> initial_permissions_policy_;
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
@@ -539,7 +541,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString referrer_;
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
-  absl::optional<WebOriginPolicy> origin_policy_;
   const scoped_refptr<const SecurityOrigin> requestor_origin_;
   const KURL unreachable_url_;
   const KURL pre_redirect_url_for_failed_navigations_;
@@ -577,8 +578,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       content_security_notifier_;
 
   const scoped_refptr<SecurityOrigin> origin_to_commit_;
+
+  // Information about how `origin_to_commit_` was calculated, to help debug if
+  // it differs from the origin calculated on the browser side.
+  // TODO(https://crbug.com/1220238): Remove this.
+  AtomicString origin_calculation_debug_info_;
+
   blink::BlinkStorageKey storage_key_;
-  const network::mojom::WebSandboxFlags sandbox_flags_;
   WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;
@@ -700,9 +706,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // reporting url. `nullptr` otherwise.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
   mojom::blink::FencedFrameReportingPtr fenced_frame_reporting_;
-
-  // Whether the document should be anonymous or not.
-  const bool anonymous_ = false;
 
   // Both of these bits must be true to commit preloaded data to the parser when
   // features::kEarlyBodyLoad is enabled.

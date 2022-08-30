@@ -15,12 +15,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
-#include "chromeos/network/cellular_connection_handler.h"
-#include "chromeos/network/cellular_esim_installer.h"
-#include "chromeos/network/cellular_esim_profile.h"
-#include "chromeos/network/cellular_inhibitor.h"
-#include "chromeos/network/hermes_metrics_util.h"
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/cellular_connection_handler.h"
+#include "chromeos/ash/components/network/cellular_esim_installer.h"
+#include "chromeos/ash/components/network/cellular_esim_profile.h"
+#include "chromeos/ash/components/network/cellular_inhibitor.h"
+#include "chromeos/ash/components/network/hermes_metrics_util.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
@@ -281,8 +281,7 @@ void Euicc::OnRequestPendingProfilesResult(
   mojom::ESimOperationResult operation_result;
 
   if (status != HermesResponseStatus::kSuccess) {
-    NET_LOG(ERROR) << "Request Pending events failed status="
-                   << static_cast<int>(status);
+    NET_LOG(ERROR) << "Request Pending events failed status=" << status;
     metrics_result = RequestPendingProfilesResult::kHermesRequestFailed;
     operation_result = mojom::ESimOperationResult::kFailure;
   } else {

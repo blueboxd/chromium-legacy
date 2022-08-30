@@ -193,7 +193,7 @@ bool IsTransportSocketPoolStalled(HttpNetworkSession* session) {
 std::string GetHeaders(const base::Value& params) {
   if (!params.is_dict())
     return "";
-  const base::Value* header_list = params.FindListKey("headers");
+  const base::Value::List* header_list = params.GetDict().FindList("headers");
   if (!header_list)
     return "";
   std::string headers;
@@ -1576,7 +1576,7 @@ TEST_F(HttpNetworkTransactionTest, ReuseConnection) {
     "hello", "world"
   };
 
-  for (int i = 0; i < 2; ++i) {
+  for (const auto* expected_response_data : kExpectedResponseData) {
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL("http://www.example.org/");
@@ -1603,7 +1603,7 @@ TEST_F(HttpNetworkTransactionTest, ReuseConnection) {
     std::string response_data;
     rv = ReadTransaction(&trans, &response_data);
     EXPECT_THAT(rv, IsOk());
-    EXPECT_EQ(kExpectedResponseData[i], response_data);
+    EXPECT_EQ(expected_response_data, response_data);
   }
 }
 
@@ -2086,7 +2086,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   if (write_failure) {
     ASSERT_FALSE(read_failure);
     data1_writes.push_back(*write_failure);
-    data1_reads.push_back(MockRead(ASYNC, OK));
+    data1_reads.emplace_back(ASYNC, OK);
   } else {
     ASSERT_TRUE(read_failure);
     if (use_spdy) {
@@ -2094,10 +2094,10 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
       if (chunked_upload)
         data1_writes.push_back(CreateMockWrite(spdy_request_body));
     } else {
-      data1_writes.push_back(MockWrite(kHttpRequest));
+      data1_writes.emplace_back(kHttpRequest);
       if (chunked_upload) {
-        data1_writes.push_back(MockWrite("6\r\nfoobar\r\n"));
-        data1_writes.push_back(MockWrite("0\r\n\r\n"));
+        data1_writes.emplace_back("6\r\nfoobar\r\n");
+        data1_writes.emplace_back("0\r\n\r\n");
       }
     }
     data1_reads.push_back(*read_failure);
@@ -2116,19 +2116,18 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
       data2_writes.push_back(CreateMockWrite(spdy_request_body, seq++, ASYNC));
     data2_reads.push_back(CreateMockRead(spdy_response, seq++, ASYNC));
     data2_reads.push_back(CreateMockRead(spdy_data, seq++, ASYNC));
-    data2_reads.push_back(MockRead(ASYNC, OK, seq++));
+    data2_reads.emplace_back(ASYNC, OK, seq++);
   } else {
     int seq = 0;
-    data2_writes.push_back(
-        MockWrite(ASYNC, kHttpRequest, strlen(kHttpRequest), seq++));
+    data2_writes.emplace_back(ASYNC, kHttpRequest, strlen(kHttpRequest), seq++);
     if (chunked_upload) {
-      data2_writes.push_back(MockWrite(ASYNC, "6\r\nfoobar\r\n", 11, seq++));
-      data2_writes.push_back(MockWrite(ASYNC, "0\r\n\r\n", 5, seq++));
+      data2_writes.emplace_back(ASYNC, "6\r\nfoobar\r\n", 11, seq++);
+      data2_writes.emplace_back(ASYNC, "0\r\n\r\n", 5, seq++);
     }
-    data2_reads.push_back(
-        MockRead(ASYNC, kHttpResponse, strlen(kHttpResponse), seq++));
-    data2_reads.push_back(MockRead(ASYNC, kHttpData, strlen(kHttpData), seq++));
-    data2_reads.push_back(MockRead(ASYNC, OK, seq++));
+    data2_reads.emplace_back(ASYNC, kHttpResponse, strlen(kHttpResponse),
+                             seq++);
+    data2_reads.emplace_back(ASYNC, kHttpData, strlen(kHttpData), seq++);
+    data2_reads.emplace_back(ASYNC, OK, seq++);
   }
   SequencedSocketData data2(data2_reads, data2_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
@@ -5937,14 +5936,14 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
 // schemes, based on the path of the URL being requests.
 class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
  public:
-  SameProxyWithDifferentSchemesProxyResolver() {}
+  SameProxyWithDifferentSchemesProxyResolver() = default;
 
   SameProxyWithDifferentSchemesProxyResolver(
       const SameProxyWithDifferentSchemesProxyResolver&) = delete;
   SameProxyWithDifferentSchemesProxyResolver& operator=(
       const SameProxyWithDifferentSchemesProxyResolver&) = delete;
 
-  ~SameProxyWithDifferentSchemesProxyResolver() override {}
+  ~SameProxyWithDifferentSchemesProxyResolver() override = default;
 
   static constexpr uint16_t kProxyPort = 10000;
 
@@ -11170,16 +11169,6 @@ TEST_F(HttpNetworkTransactionTest, ResetStateForRestart) {
   response->response_time = base::Time::Now();
   response->was_cached = true;  // (Wouldn't ever actually be true...)
 
-  { // Setup state for response_.vary_data
-    HttpRequestInfo request;
-    std::string temp("HTTP/1.1 200 OK\nVary: foo, bar\n\n");
-    std::replace(temp.begin(), temp.end(), '\n', '\0');
-    scoped_refptr<HttpResponseHeaders> headers(new HttpResponseHeaders(temp));
-    request.extra_headers.SetHeader("Foo", "1");
-    request.extra_headers.SetHeader("bar", "23");
-    EXPECT_TRUE(response->vary_data.Init(request, *headers.get()));
-  }
-
   // Cause the above state to be reset.
   trans.ResetStateForRestart();
 
@@ -11191,7 +11180,6 @@ TEST_F(HttpNetworkTransactionTest, ResetStateForRestart) {
   EXPECT_FALSE(response->headers);
   EXPECT_FALSE(response->was_cached);
   EXPECT_EQ(0U, response->ssl_info.cert_status);
-  EXPECT_FALSE(response->vary_data.is_valid());
 }
 
 // Test HTTPS connections to a site with a bad certificate
@@ -12781,10 +12769,10 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
       },
   };
 
-  for (size_t i = 0; i < std::size(tests); ++i) {
+  for (const auto& test : tests) {
     session_deps_.proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixed(
-            tests[i].proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
+            test.proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupIdTests(&session_deps_));
 
@@ -12797,8 +12785,8 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupIdTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_id,
+              GroupIdTransactionHelper(test.url, session.get()));
+    EXPECT_EQ(test.expected_group_id,
               transport_conn_pool->last_group_id_received());
     EXPECT_TRUE(transport_conn_pool->socket_requested());
   }
@@ -12839,10 +12827,10 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
       },
   };
 
-  for (size_t i = 0; i < std::size(tests); ++i) {
+  for (const auto& test : tests) {
     session_deps_.proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixed(
-            tests[i].proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
+            test.proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupIdTests(&session_deps_));
 
@@ -12858,8 +12846,8 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupIdTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_id,
+              GroupIdTransactionHelper(test.url, session.get()));
+    EXPECT_EQ(test.expected_group_id,
               http_proxy_pool->last_group_id_received());
   }
 }
@@ -12917,17 +12905,17 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
       },
   };
 
-  for (size_t i = 0; i < std::size(tests); ++i) {
+  for (const auto& test : tests) {
     session_deps_.proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixed(
-            tests[i].proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
+            test.proxy_server, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupIdTests(&session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
 
     ProxyServer proxy_server(
-        ProxyUriToProxyServer(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
+        ProxyUriToProxyServer(test.proxy_server, ProxyServer::SCHEME_HTTP));
     ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupIdTransportSocketPool* socks_conn_pool =
         new CaptureGroupIdTransportSocketPool(&dummy_connect_job_params_);
@@ -12939,8 +12927,8 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupIdTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_id,
+              GroupIdTransactionHelper(test.url, session.get()));
+    EXPECT_EQ(test.expected_group_id,
               socks_conn_pool->last_group_id_received());
   }
 }
@@ -15929,8 +15917,8 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
       // kProxyChallenge uses Proxy-Connection: close which means that the
       // socket is closed and a new one will be created for the next request.
       if (read_write_round.read.data == kProxyChallenge.data) {
-        mock_reads.push_back(std::vector<MockRead>());
-        mock_writes.push_back(std::vector<MockWrite>());
+        mock_reads.emplace_back();
+        mock_writes.emplace_back();
       }
 
       if (read_write_round.extra_read) {
@@ -16762,9 +16750,9 @@ TEST_F(HttpNetworkTransactionTest, SSLWriteCertError) {
     ERR_CERT_AUTHORITY_INVALID,
     ERR_CERT_DATE_INVALID,
   };
-  for (size_t i = 0; i < std::size(kErrors); i++) {
-    CheckErrorIsPassedBack(kErrors[i], ASYNC);
-    CheckErrorIsPassedBack(kErrors[i], SYNCHRONOUS);
+  for (int error : kErrors) {
+    CheckErrorIsPassedBack(error, ASYNC);
+    CheckErrorIsPassedBack(error, SYNCHRONOUS);
   }
 }
 
@@ -17633,6 +17621,164 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
   EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_TRUE(response->ssl_info.cert);
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+}
+
+TEST_F(HttpNetworkTransactionTest,
+       Response421WithStreamingBodyWithNonNullSource) {
+  const std::string ip_addr = "1.2.3.4";
+  IPAddress ip;
+  ASSERT_TRUE(ip.AssignFromIPLiteral(ip_addr));
+  IPEndPoint peer_addr = IPEndPoint(ip, 443);
+
+  session_deps_.host_resolver = std::make_unique<MockCachingHostResolver>();
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", ip_addr);
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  const std::string request_body = "hello";
+  spdy::SpdySerializedFrame req1 = spdy_util_.ConstructChunkedSpdyPost({}, 0);
+  spdy::SpdySerializedFrame req1_body =
+      spdy_util_.ConstructSpdyDataFrame(1, request_body, /*fin=*/true);
+  spdy::SpdySerializedFrame rst =
+      spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL);
+  MockWrite writes1[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req1_body, 1),
+      CreateMockWrite(rst, 4),
+  };
+
+  spdy::Http2HeaderBlock response_headers;
+  response_headers[spdy::kHttp2StatusHeader] = "421";
+  spdy::SpdySerializedFrame resp1 =
+      spdy_util_.ConstructSpdyReply(1, std::move(response_headers));
+  MockRead reads1[] = {CreateMockRead(resp1, 2), MockRead(ASYNC, 0, 3)};
+
+  MockConnect connect1(ASYNC, OK, peer_addr);
+  SequencedSocketData data1(connect1, reads1, writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  AddSSLSocketData();
+
+  SpdyTestUtil spdy_util2;
+  spdy::SpdySerializedFrame req2 = spdy_util2.ConstructChunkedSpdyPost({}, 0);
+  spdy::SpdySerializedFrame req2_body =
+      spdy_util2.ConstructSpdyDataFrame(1, request_body, /*fin=*/true);
+  MockWrite writes2[] = {
+      CreateMockWrite(req2, 0),
+      CreateMockWrite(req2_body, 1),
+  };
+
+  spdy::Http2HeaderBlock resp2_headers;
+  resp2_headers[spdy::kHttp2StatusHeader] = "200";
+  spdy::SpdySerializedFrame resp2 =
+      spdy_util2.ConstructSpdyReply(1, std::move(resp2_headers));
+  spdy::SpdySerializedFrame resp2_body(
+      spdy_util2.ConstructSpdyDataFrame(1, true));
+  MockRead reads2[] = {CreateMockRead(resp2, 2), CreateMockRead(resp2_body, 3),
+                       MockRead(ASYNC, 0, 4)};
+
+  MockConnect connect2(ASYNC, OK, peer_addr);
+  SequencedSocketData data2(connect2, reads2, writes2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  AddSSLSocketData();
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request;
+  ChunkedUploadDataStream upload_data_stream(0, /*has_null_source=*/false);
+  upload_data_stream.AppendData(request_body.data(), request_body.size(),
+                                /*is_done=*/true);
+  request.method = "POST";
+  request.url = GURL("https://www.example.org");
+  request.load_flags = 0;
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request.upload_data_stream = &upload_data_stream;
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  std::string response_data;
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  EXPECT_TRUE(response->ssl_info.cert);
+  ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+}
+
+TEST_F(HttpNetworkTransactionTest, Response421WithStreamingBodyWithNullSource) {
+  const std::string ip_addr = "1.2.3.4";
+  IPAddress ip;
+  ASSERT_TRUE(ip.AssignFromIPLiteral(ip_addr));
+  IPEndPoint peer_addr = IPEndPoint(ip, 443);
+
+  session_deps_.host_resolver = std::make_unique<MockCachingHostResolver>();
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", ip_addr);
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  const std::string request_body = "hello";
+  spdy::SpdySerializedFrame req1 = spdy_util_.ConstructChunkedSpdyPost({}, 0);
+  spdy::SpdySerializedFrame req1_body =
+      spdy_util_.ConstructSpdyDataFrame(1, request_body, /*fin=*/true);
+  spdy::SpdySerializedFrame rst =
+      spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL);
+  MockWrite writes1[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req1_body, 1),
+      CreateMockWrite(rst, 5),
+  };
+
+  spdy::Http2HeaderBlock response_headers;
+  response_headers[spdy::kHttp2StatusHeader] = "421";
+  spdy::SpdySerializedFrame resp1 =
+      spdy_util_.ConstructSpdyReply(1, std::move(response_headers));
+  spdy::SpdySerializedFrame resp1_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads1[] = {CreateMockRead(resp1, 2), CreateMockRead(resp1_body, 3),
+                       MockRead(ASYNC, 0, 4)};
+
+  MockConnect connect1(ASYNC, OK, peer_addr);
+  SequencedSocketData data1(connect1, reads1, writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  AddSSLSocketData();
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request;
+  ChunkedUploadDataStream upload_data_stream(0, /*has_null_source=*/true);
+  upload_data_stream.AppendData(request_body.data(), request_body.size(),
+                                /*is_done=*/true);
+  request.method = "POST";
+  request.url = GURL("https://www.example.org");
+  request.load_flags = 0;
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request.upload_data_stream = &upload_data_stream;
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  std::string response_data;
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 421", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  EXPECT_TRUE(response->ssl_info.cert);
+  ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 

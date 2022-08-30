@@ -488,12 +488,18 @@ class CrossSiteDocumentBlockingImgElementTest
   CrossSiteDocumentBlockingImgElementTest() {
     switch (GetParam().mode) {
       case TestMode::kWithCORBProtectionSniffing:
-        scoped_feature_list_.InitAndEnableFeature(
-            network::features::kCORBProtectionSniffing);
+        scoped_feature_list_.InitWithFeatures(
+            /* enabled_features= */ {network::features::
+                                         kCORBProtectionSniffing},
+            /* disabled_features= */ {
+                network::features::kOpaqueResponseBlockingV01});
         break;
       case TestMode::kWithoutCORBProtectionSniffing:
-        scoped_feature_list_.InitAndDisableFeature(
-            network::features::kCORBProtectionSniffing);
+        scoped_feature_list_.InitWithFeatures(
+            /* enabled_features= */ {},
+            /* disabled_features= */ {
+                network::features::kCORBProtectionSniffing,
+                network::features::kOpaqueResponseBlockingV01});
         break;
       case TestMode::kWithORBv01:
         scoped_feature_list_.InitAndEnableFeature(
@@ -762,6 +768,29 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   EXPECT_EQ("", interceptor.response_body());
 }
 
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       FledgeAuctionOnlySignalsNotReadableFromFetch) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Navigate to the test page while request interceptor is active.
+  // Note that even same origin requests are blocked.
+  GURL resource_url("http://foo.com/interest_group/auction_only.json");
+  RequestInterceptor interceptor(resource_url);
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("http://foo.com/title1.html")));
+
+  // Issue the request that will be intercepted.
+  const char kScriptTemplate[] = "fetch($1)";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, resource_url),
+                     content::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+  interceptor.WaitForRequestCompletion();
+
+  // Verify that X-FLEDGE-Auction-Only blocked the response before it
+  // reached the renderer process.
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+            interceptor.completion_status().error_code);
+  EXPECT_EQ("", interceptor.response_body());
+}
+
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AllowCorsFetches) {
   embedded_test_server()->StartAcceptingConnections();
   GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
@@ -812,8 +841,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
   // Fetch a same-origin resource.
   GURL resource_url("http://foo.com/site_isolation/nosniff.html");
-  EXPECT_EQ(url::Origin::Create(resource_url),
-            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_EQ(
+      url::Origin::Create(resource_url),
+      shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin());
   FetchHistogramsFromChildProcesses();
   base::HistogramTester histograms;
   std::string fetch_result =
@@ -847,9 +877,10 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
   ASSERT_TRUE(ExecJs(shell(), "var popup = window.open('title1.html')"));
   WebContents* popup = popup_observer.GetWebContents();
   EXPECT_TRUE(WaitForLoadStop(popup));
-  EXPECT_EQ(initial_url, popup->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
-            popup->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_EQ(initial_url, popup->GetPrimaryMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(
+      shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin(),
+      popup->GetPrimaryMainFrame()->GetLastCommittedOrigin());
 
   // Navigate the popup to about:blank. Note that we didn't directly
   // window.open() to about:blank because otherwise the about:blank page will
@@ -860,9 +891,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
     nav_observer.Wait();
     EXPECT_EQ(2, popup->GetController().GetEntryCount());
     EXPECT_EQ(GURL(url::kAboutBlankURL),
-              popup->GetMainFrame()->GetLastCommittedURL());
-    EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
-              popup->GetMainFrame()->GetLastCommittedOrigin());
+              popup->GetPrimaryMainFrame()->GetLastCommittedURL());
+    EXPECT_EQ(shell()
+                  ->web_contents()
+                  ->GetPrimaryMainFrame()
+                  ->GetLastCommittedOrigin(),
+              popup->GetPrimaryMainFrame()->GetLastCommittedOrigin());
   }
 
   // Verify that CORB doesn't block same-origin request from the popup.
@@ -881,11 +915,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
   ASSERT_TRUE(ExecJs(shell(), "popup.history.back()"));
   back_observer.WaitForNavigationFinished();
   EXPECT_EQ(GURL(url::kAboutBlankURL),
-            popup->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
-            popup->GetMainFrame()->GetLastCommittedOrigin());
+            popup->GetPrimaryMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(
+      shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin(),
+      popup->GetPrimaryMainFrame()->GetLastCommittedOrigin());
   EXPECT_EQ(url::Origin::Create(resource_url),
-            popup->GetMainFrame()->GetLastCommittedOrigin());
+            popup->GetPrimaryMainFrame()->GetLastCommittedOrigin());
 
   // Verify that CORB doesn't block same-origin request from the popup.
   {
@@ -1667,6 +1702,31 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingWebBundleTest,
   EXPECT_EQ(0, interceptor.completion_status().error_code);
   EXPECT_EQ("broken png", interceptor.response_body())
       << "PNG in a same-origin webbundle should not be blocked";
+}
+
+IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingWebBundleTest,
+                       FledgeAuctionOnlySignalsNotReadableFromFetchWebBundle) {
+  https_server()->StartAcceptingConnections();
+
+  // Navigate to the test page while request interceptor is active.
+  // Note that even same origin requests are blocked.
+  GURL subresource_url(
+      "https://foo.com/interest_group/auction_only_in_bundle.json");
+  RequestInterceptor interceptor(subresource_url);
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://foo.com/interest_group/auction_only.html")));
+
+  // Issue the request that will be intercepted.
+  const char kScriptTemplate[] = "fetch($1)";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, subresource_url),
+                     content::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+  interceptor.WaitForRequestCompletion();
+
+  // Verify that X-FLEDGE-Auction-Only blocked the response before it
+  // reached the renderer process.
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+            interceptor.completion_status().error_code);
+  EXPECT_EQ("", interceptor.response_body());
 }
 
 }  // namespace content

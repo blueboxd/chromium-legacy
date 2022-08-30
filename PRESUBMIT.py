@@ -1085,6 +1085,8 @@ _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS = [
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]',
     r'^tools[\\/]perf[\\/]',
     r'^tools[\\/]traceline[\\/]svgui[\\/]startup-release.json',
+    # vscode configuration files allow comments
+    r'^tools[\\/]vscode[\\/]',
 ]
 
 # These are not checked on the public chromium-presubmit trybot.
@@ -1153,6 +1155,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/zip.pydeps',
     'build/android/incremental_install/generate_android_manifest.pydeps',
     'build/android/incremental_install/write_installer_json.pydeps',
+    'build/android/pylib/results/presentation/test_results_presentation.pydeps',
     'build/android/resource_sizes.pydeps',
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
@@ -2380,9 +2383,9 @@ def CheckSpamLogging(input_api, output_api):
             r"^courgette[\\/]courgette_minimal_tool\.cc$",
             r"^courgette[\\/]courgette_tool\.cc$",
             r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
-            r"^fuchsia[\\/]base[\\/]init_logging.cc$",
-            r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
+            r"^fuchsia_web[\\/]common[\\/]init_logging.cc$",
             r"^fuchsia_web[\\/]runners[\\/]common[\\/]web_component.cc$",
+            r"^fuchsia_web[\\/]shell[\\/]web_engine_shell.cc$",
             r"^headless[\\/]app[\\/]headless_shell\.cc$",
             r"^ipc[\\/]ipc_logging\.cc$",
             r"^native_client_sdk[\\/]",
@@ -4663,31 +4666,33 @@ def ChecksCommon(input_api, output_api):
             ],
             non_inclusive_terms=_NON_INCLUSIVE_TERMS))
 
-    for f in input_api.AffectedFiles():
-        path, name = input_api.os_path.split(f.LocalPath())
-        if name == 'PRESUBMIT.py':
-            full_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                               path)
-            test_file = input_api.os_path.join(path, 'PRESUBMIT_test.py')
-            if f.Action() != 'D' and input_api.os_path.exists(test_file):
-                # The PRESUBMIT.py file (and the directory containing it) might
-                # have been affected by being moved or removed, so only try to
-                # run the tests if they still exist.
-                use_python3 = False
-                with open(f.LocalPath()) as fp:
-                    use_python3 = any(
-                        line.startswith('USE_PYTHON3 = True')
-                        for line in fp.readlines())
+    presubmit_py_filter = lambda f: input_api.FilterSourceFile(
+        f, files_to_check=[r'PRESUBMIT\.py$'])
+    for f in input_api.AffectedFiles(include_deletes=False,
+                                     file_filter=presubmit_py_filter):
+        full_path = input_api.os_path.dirname(f.AbsoluteLocalPath())
+        test_file = input_api.os_path.join(full_path, 'PRESUBMIT_test.py')
+        # The PRESUBMIT.py file (and the directory containing it) might have
+        # been affected by being moved or removed, so only try to run the tests
+        # if they still exist.
+        if not input_api.os_path.exists(test_file):
+            continue
 
-                results.extend(
-                    input_api.canned_checks.RunUnitTestsInDirectory(
-                        input_api,
-                        output_api,
-                        full_path,
-                        files_to_check=[r'^PRESUBMIT_test\.py$'],
-                        run_on_python2=not use_python3,
-                        run_on_python3=use_python3,
-                        skip_shebang_check=True))
+        use_python3 = False
+        with open(f.LocalPath()) as fp:
+            use_python3 = any(
+                line.startswith('USE_PYTHON3 = True')
+                for line in fp.readlines())
+
+        results.extend(
+            input_api.canned_checks.RunUnitTestsInDirectory(
+                input_api,
+                output_api,
+                full_path,
+                files_to_check=[r'^PRESUBMIT_test\.py$'],
+                run_on_python2=not use_python3,
+                run_on_python3=use_python3,
+                skip_shebang_check=True))
     return results
 
 
@@ -5874,7 +5879,7 @@ def CheckMPArchApiUsage(input_api, output_api):
         'IsMainFrame',
     ]
     concerning_blink_frame_methods = [
-        'IsCrossOriginToMainFrame',
+        'IsCrossOriginToNearestMainFrame',
     ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
@@ -6011,3 +6016,67 @@ def CheckPythonShebang(input_api, output_api):
                 "Please use '#!/usr/bin/env python/2/3' as the shebang of %s" %
                 file))
     return result
+
+
+def CheckBatchAnnotation(input_api, output_api):
+    """Checks that tests have either @Batch or @DoNotBatch annotation. If this
+    is not an instrumentation test, disregard."""
+
+    batch_annotation = input_api.re.compile(r'^\s*@Batch')
+    do_not_batch_annotation = input_api.re.compile(r'^\s*@DoNotBatch')
+    robolectric_test = input_api.re.compile(r'[rR]obolectric')
+    test_class_declaration = input_api.re.compile(r'^\s*public\sclass.*Test')
+    uiautomator_test = input_api.re.compile(r'[uU]i[aA]utomator')
+
+    missing_annotation_errors = []
+    extra_annotation_errors = []
+
+    def _FilterFile(affected_file):
+        return input_api.FilterSourceFile(
+            affected_file,
+            files_to_skip=input_api.DEFAULT_FILES_TO_SKIP,
+            files_to_check=[r'.*Test\.java$'])
+
+    for f in input_api.AffectedSourceFiles(_FilterFile):
+        batch_matched = None
+        do_not_batch_matched = None
+        is_instrumentation_test = True
+        for line in f.NewContents():
+            if robolectric_test.search(line) or uiautomator_test.search(line):
+                # Skip Robolectric and UiAutomator tests.
+                is_instrumentation_test = False
+                break
+            if not batch_matched:
+                batch_matched = batch_annotation.search(line)
+            if not do_not_batch_matched:
+                do_not_batch_matched = do_not_batch_annotation.search(line)
+            test_class_declaration_matched = test_class_declaration.search(
+                line)
+            if test_class_declaration_matched:
+                break
+        if (is_instrumentation_test and
+            not batch_matched and
+            not do_not_batch_matched):
+          missing_annotation_errors.append(str(f.LocalPath()))
+        if (not is_instrumentation_test and
+            (batch_matched or
+             do_not_batch_matched)):
+          extra_annotation_errors.append(str(f.LocalPath()))
+
+    results = []
+
+    if missing_annotation_errors:
+        results.append(
+            output_api.PresubmitPromptWarning(
+                """
+Instrumentation tests should use either @Batch or @DoNotBatch. If tests are not
+safe to run in batch, please use @DoNotBatch with reasons.
+""", missing_annotation_errors))
+    if extra_annotation_errors:
+        results.append(
+            output_api.PresubmitPromptWarning(
+                """
+Robolectric tests do not need a @Batch or @DoNotBatch annotations.
+""", extra_annotation_errors))
+
+    return results

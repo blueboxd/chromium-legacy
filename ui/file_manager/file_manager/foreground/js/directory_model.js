@@ -16,8 +16,12 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {EntriesChangedEvent} from '../../externs/entries_changed_event.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {PropStatus, State} from '../../externs/ts/state.js';
+import {Store} from '../../externs/ts/store.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
+import {changeDirectory} from '../../state/actions.js';
+import {getStore} from '../../state/store.js';
 
 import {constants} from './constants.js';
 import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, DriveSearchContentScanner, FileFilter, FileListContext, GuestOsMounter, LocalSearchContentScanner, MediaViewContentScanner, RecentContentScanner} from './directory_contents.js';
@@ -116,7 +120,7 @@ export class DirectoryModel extends EventTarget {
         this.onWatcherDirectoryChanged_.bind(this));
     // For non-watchable directory (e.g. FakeEntry), we need to subscribe to
     // the IOTask and manually refresh.
-    if (util.isRecentsFilterV2Enabled()) {
+    if (util.isRecentsFilterV2Enabled() || util.isTrashEnabled()) {
       chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
           this.updateFileListAfterIOTask_.bind(this));
     }
@@ -129,6 +133,46 @@ export class DirectoryModel extends EventTarget {
 
     /** @private {FilesAppDirEntry} */
     this.myFilesEntry_ = null;
+
+    /** @private {!Store} */
+    this.store_ = getStore();
+    this.store_.subscribe(this);
+  }
+
+  /** @param {!State} state latest state from the store. */
+  onStateChanged(state) {
+    const currentEntry = this.getCurrentDirEntry();
+    const currentURL = currentEntry ? currentEntry.toURL() : null;
+    let newURL = state.currentDirectory ? state.currentDirectory.key : null;
+
+    // If the directory is the same, ignore it.
+    if (currentURL === newURL) {
+      return;
+    }
+
+    // When something changed the current directory status to STARTED, Here we
+    // initiate the actual change and will update to SUCCESS at the end.
+    if (state.currentDirectory.status == PropStatus.STARTED) {
+      newURL = /** @type {string} */ (newURL);
+      const entry =
+          state.allEntries[newURL] ? state.allEntries[newURL].entry : null;
+
+      if (!entry) {
+        // TODO(lucmult): Fix potential race condition in this await/then.
+        util.urlToEntry(newURL).then((entry) => {
+          if (!entry) {
+            console.error(`Failed to find the new directory key ${newURL}`);
+            return;
+          }
+          // Initiate the directory change.
+          this.changeDirectoryEntry(/** @type {!DirectoryEntry} */ (entry));
+        });
+        return;
+      }
+
+      // Initiate the directory change.
+      this.changeDirectoryEntry(/** @type {!DirectoryEntry} */ (entry));
+    }
   }
 
   /**
@@ -691,14 +735,16 @@ export class DirectoryModel extends EventTarget {
 
     // Retrieve metadata information for the newly selected directory.
     const currentEntry = this.currentDirContents_.getDirectoryEntry();
-    if (this.volumeManager_.getLocationInfo(assert(currentEntry))
-            .isDriveBased) {
-      chrome.fileManagerPrivate.pollDriveHostedFilePinStates();
-    }
-    if (currentEntry && !util.isFakeEntry(assert(currentEntry))) {
-      this.metadataModel_.get(
-          [currentEntry],
-          constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+    if (currentEntry) {
+      const locationInfo = this.volumeManager_.getLocationInfo(currentEntry);
+      if (locationInfo && locationInfo.isDriveBased) {
+        chrome.fileManagerPrivate.pollDriveHostedFilePinStates();
+      }
+      if (!util.isFakeEntry(currentEntry)) {
+        this.metadataModel_.get(
+            [currentEntry],
+            constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+      }
     }
 
     // Clear the table, and start scanning.
@@ -1174,6 +1220,11 @@ export class DirectoryModel extends EventTarget {
       event.newDirEntry = dirEntry;
       event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
       this.dispatchEvent(event);
+      if (util.isFilesAppExperimental()) {
+        // Notify the Store that the new directory has successfully changed.
+        this.store_.dispatch(
+            changeDirectory({to: dirEntry, status: PropStatus.SUCCESS}));
+      }
     });
   }
 
@@ -1640,12 +1691,14 @@ export class DirectoryModel extends EventTarget {
     /** @type {!Set<!chrome.fileManagerPrivate.IOTaskType>} */
     const eventTypesRequireRefresh = new Set([
       chrome.fileManagerPrivate.IOTaskType.DELETE,
+      chrome.fileManagerPrivate.IOTaskType.EMPTY_TRASH,
       chrome.fileManagerPrivate.IOTaskType.MOVE,
     ]);
     /** @type {!Set<?VolumeManagerCommon.RootType>} */
-    const rootTypesRequireRefresh =
-        new Set([VolumeManagerCommon.RootType.RECENT]);
-
+    const rootTypesRequireRefresh = new Set([
+      VolumeManagerCommon.RootType.RECENT,
+      VolumeManagerCommon.RootType.TRASH,
+    ]);
     const currentRootType = this.getCurrentRootType();
     if (!rootTypesRequireRefresh.has(currentRootType)) {
       return;

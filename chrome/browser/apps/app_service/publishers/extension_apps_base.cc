@@ -319,7 +319,7 @@ content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
   if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     RunExtensionEnableFlow(
         app_id,
-        base::BindOnce(&ExtensionAppsBase::ExtensionWasEnabled,
+        base::BindOnce(&ExtensionAppsBase::LaunchAppWithIntentMojom,
                        weak_factory_.GetWeakPtr(), app_id, event_flags,
                        std::move(intent), launch_source, std::move(window_info),
                        CallbackWrapper(std::move(callback))));
@@ -423,6 +423,13 @@ void ExtensionAppsBase::LoadIcon(const std::string& app_id,
                         std::move(callback));
 }
 
+void ExtensionAppsBase::Launch(const std::string& app_id,
+                               int32_t event_flags,
+                               LaunchSource launch_source,
+                               WindowInfoPtr window_info) {
+  // TODO(crbug.com/1253250): Add the implementation.
+}
+
 void ExtensionAppsBase::LaunchAppWithParams(AppLaunchParams&& params,
                                             LaunchCallback callback) {
   auto app_id = params.app_id;
@@ -470,23 +477,6 @@ void ExtensionAppsBase::Connect(
   subscribers_.Add(std::move(subscriber));
 }
 
-void ExtensionAppsBase::LoadIcon(const std::string& app_id,
-                                 apps::mojom::IconKeyPtr icon_key,
-                                 apps::mojom::IconType icon_type,
-                                 int32_t size_hint_in_dip,
-                                 bool allow_placeholder_icon,
-                                 LoadIconCallback callback) {
-  if (icon_key) {
-    LoadIconFromExtension(
-        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip, profile_,
-        app_id, static_cast<IconEffects>(icon_key->icon_effects),
-        IconValueToMojomIconValueCallback(std::move(callback)));
-    return;
-  }
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
-}
-
 void ExtensionAppsBase::Launch(const std::string& app_id,
                                int32_t event_flags,
                                apps::mojom::LaunchSource launch_source,
@@ -498,7 +488,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
 
   if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     RunExtensionEnableFlow(
-        app_id, base::BindOnce(&ExtensionAppsBase::Launch,
+        app_id, base::BindOnce(&ExtensionAppsBase::LaunchMojom,
                                weak_factory_.GetWeakPtr(), app_id, event_flags,
                                launch_source, std::move(window_info)));
     return;
@@ -839,7 +829,14 @@ void ExtensionAppsBase::ConvertVector(
   }
 }
 
-void ExtensionAppsBase::ExtensionWasEnabled(
+void ExtensionAppsBase::LaunchMojom(const std::string& app_id,
+                                    int32_t event_flags,
+                                    apps::mojom::LaunchSource launch_source,
+                                    apps::mojom::WindowInfoPtr window_info) {
+  Launch(app_id, event_flags, std::move(launch_source), std::move(window_info));
+}
+
+void ExtensionAppsBase::LaunchAppWithIntentMojom(
     const std::string& app_id,
     int32_t event_flags,
     apps::mojom::IntentPtr intent,

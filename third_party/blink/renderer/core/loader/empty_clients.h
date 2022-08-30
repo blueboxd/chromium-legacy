@@ -113,6 +113,13 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetOverscrollBehavior(LocalFrame& frame,
                              const cc::OverscrollBehavior&) override {}
   void BeginLifecycleUpdates(LocalFrame& main_frame) override {}
+  void RegisterForDeferredCommitObservation(DeferredCommitObserver*) override {}
+  void UnregisterFromDeferredCommitObservation(
+      DeferredCommitObserver*) override {}
+  void OnDeferCommitsChanged(
+      bool,
+      cc::PaintHoldingReason,
+      absl::optional<cc::PaintHoldingCommitTrigger>) override {}
   bool StartDeferringCommits(LocalFrame& main_frame,
                              base::TimeDelta timeout,
                              cc::PaintHoldingReason reason) override;
@@ -382,7 +389,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     // should define their own subclass of LocalFrameClient or
     // EmptyLocalFrameClient and override the CreateURLLoaderFactory method.
     // See also https://crbug.com/891872.
-    NOTREACHED();
+    // We use CHECK(false) instead of NOTREACHED() here to catch errors on
+    // clusterfuzz and production.
+    CHECK(false);
     return nullptr;
   }
 

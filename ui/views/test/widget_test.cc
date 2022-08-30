@@ -12,6 +12,11 @@
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/widget/root_view.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/test_timeouts.h"
+#endif
+
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     !BUILDFLAG(IS_CHROMECAST)
 #include "ui/views/test/test_desktop_screen_ozone.h"
@@ -217,14 +222,21 @@ WidgetActivationWaiter::WidgetActivationWaiter(Widget* widget, bool active)
     observed_ = true;
     return;
   }
-  widget->AddObserver(this);
+  widget_observation_.Observe(widget);
 }
 
 WidgetActivationWaiter::~WidgetActivationWaiter() = default;
 
 void WidgetActivationWaiter::Wait() {
-  if (!observed_)
+  if (!observed_) {
+#if BUILDFLAG(IS_MAC)
+    // Some tests waiting on widget creation + activation are flaky due to
+    // timeout. crbug.com/1327590.
+    const base::test::ScopedRunLoopTimeout increased_run_timeout(
+        FROM_HERE, TestTimeouts::action_max_timeout());
+#endif
     run_loop_.Run();
+  }
 }
 
 void WidgetActivationWaiter::OnWidgetActivationChanged(Widget* widget,
@@ -233,27 +245,23 @@ void WidgetActivationWaiter::OnWidgetActivationChanged(Widget* widget,
     return;
 
   observed_ = true;
-  widget->RemoveObserver(this);
+  widget_observation_.Reset();
   if (run_loop_.running())
     run_loop_.Quit();
 }
 
-WidgetDestroyedWaiter::WidgetDestroyedWaiter(Widget* widget) : widget_(widget) {
-  widget->AddObserver(this);
+WidgetDestroyedWaiter::WidgetDestroyedWaiter(Widget* widget) {
+  widget_observation_.Observe(widget);
 }
 
-WidgetDestroyedWaiter::~WidgetDestroyedWaiter() {
-  if (widget_)
-    widget_->RemoveObserver(this);
-}
+WidgetDestroyedWaiter::~WidgetDestroyedWaiter() = default;
 
 void WidgetDestroyedWaiter::Wait() {
   run_loop_.Run();
 }
 
 void WidgetDestroyedWaiter::OnWidgetDestroyed(Widget* widget) {
-  widget->RemoveObserver(this);
-  widget_ = nullptr;
+  widget_observation_.Reset();
   run_loop_.Quit();
 }
 

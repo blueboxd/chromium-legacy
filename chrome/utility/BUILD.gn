@@ -39,9 +39,11 @@ static_library("utility") {
     "//chrome/common:mojo_bindings",
     "//chrome/services/qrcode_generator",
     "//chrome/services/speech/buildflags",
+    "//components/heap_profiling/in_process",
     "//components/metrics:child_call_stack_profile_builder",
     "//components/mirroring/service:mirroring_service",
     "//components/paint_preview/buildflags",
+    "//components/password_manager/services/csv_password:lib",
     "//components/safe_browsing:buildflags",
     "//components/search_engines",
     "//components/services/language_detection",
@@ -181,8 +183,8 @@ static_library("utility") {
       "//chrome/services/file_util",
       "//chrome/services/sharing",
       "//chromeos/ash/components/assistant:buildflags",
-      "//chromeos/components/local_search_service:local_search_service",
-      "//chromeos/components/local_search_service/public/mojom",
+      "//chromeos/ash/components/local_search_service",
+      "//chromeos/ash/components/local_search_service/public/mojom",
       "//chromeos/services/tts",
       "//chromeos/services/tts/public/mojom",
     ]
@@ -190,7 +192,7 @@ static_library("utility") {
     if (enable_cros_libassistant) {
       deps += [
         "//chromeos/ash/services/assistant/audio_decoder:lib",
-        "//chromeos/services/assistant/public/mojom",
+        "//chromeos/ash/services/assistant/public/mojom",
         "//chromeos/services/libassistant",
         "//chromeos/services/libassistant/public/mojom",
       ]

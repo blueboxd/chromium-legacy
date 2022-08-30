@@ -36,7 +36,6 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
-#include "third_party/blink/public/mojom/manifest/handle_links.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -105,33 +104,6 @@ WebAppProto::CaptureLinks CaptureLinksToProto(
       return WebAppProto_CaptureLinks_NEW_CLIENT;
     case blink::mojom::CaptureLinks::kExistingClientNavigate:
       return WebAppProto_CaptureLinks_EXISTING_CLIENT_NAVIGATE;
-  }
-}
-
-blink::mojom::HandleLinks ProtoToHandleLinks(
-    WebAppProto::HandleLinks handle_links) {
-  switch (handle_links) {
-    case WebAppProto_HandleLinks_AUTO:
-      return blink::mojom::HandleLinks::kAuto;
-    case WebAppProto_HandleLinks_PREFERRED:
-      return blink::mojom::HandleLinks::kPreferred;
-    case WebAppProto_HandleLinks_NOT_PREFERRED:
-      return blink::mojom::HandleLinks::kNotPreferred;
-  }
-}
-
-WebAppProto::HandleLinks HandleLinksToProto(
-    blink::mojom::HandleLinks handle_links) {
-  switch (handle_links) {
-    case blink::mojom::HandleLinks::kUndefined:
-      NOTREACHED();
-      [[fallthrough]];
-    case blink::mojom::HandleLinks::kAuto:
-      return WebAppProto_HandleLinks_AUTO;
-    case blink::mojom::HandleLinks::kPreferred:
-      return WebAppProto_HandleLinks_PREFERRED;
-    case blink::mojom::HandleLinks::kNotPreferred:
-      return WebAppProto_HandleLinks_NOT_PREFERRED;
   }
 }
 
@@ -242,20 +214,20 @@ WebAppFileHandlerProto::LaunchType LaunchTypeToProto(
 
 WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
   switch (type) {
-    case web_app::WebAppManagementProto::WEBAPPMANAGEMENT_UNSPECIFIED:
+    case WebAppManagementProto::WEBAPPMANAGEMENT_UNSPECIFIED:
       NOTREACHED();
       [[fallthrough]];
-    case web_app::WebAppManagementProto::SYSTEM:
+    case WebAppManagementProto::SYSTEM:
       return WebAppManagement::Type::kSystem;
-    case web_app::WebAppManagementProto::POLICY:
+    case WebAppManagementProto::POLICY:
       return WebAppManagement::Type::kPolicy;
-    case web_app::WebAppManagementProto::SUBAPP:
+    case WebAppManagementProto::SUBAPP:
       return WebAppManagement::Type::kSubApp;
-    case web_app::WebAppManagementProto::WEBAPPSTORE:
+    case WebAppManagementProto::WEBAPPSTORE:
       return WebAppManagement::Type::kWebAppStore;
-    case web_app::WebAppManagementProto::SYNC:
+    case WebAppManagementProto::SYNC:
       return WebAppManagement::Type::kSync;
-    case web_app::WebAppManagementProto::DEFAULT:
+    case WebAppManagementProto::DEFAULT:
       return WebAppManagement::Type::kDefault;
   }
 }
@@ -263,17 +235,37 @@ WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
 WebAppManagementProto WebAppManagementToProto(WebAppManagement::Type type) {
   switch (type) {
     case WebAppManagement::Type::kSystem:
-      return web_app::WebAppManagementProto::SYSTEM;
+      return WebAppManagementProto::SYSTEM;
     case WebAppManagement::Type::kPolicy:
-      return web_app::WebAppManagementProto::POLICY;
+      return WebAppManagementProto::POLICY;
     case WebAppManagement::Type::kSubApp:
-      return web_app::WebAppManagementProto::SUBAPP;
+      return WebAppManagementProto::SUBAPP;
     case WebAppManagement::Type::kWebAppStore:
-      return web_app::WebAppManagementProto::WEBAPPSTORE;
+      return WebAppManagementProto::WEBAPPSTORE;
     case WebAppManagement::Type::kSync:
-      return web_app::WebAppManagementProto::SYNC;
+      return WebAppManagementProto::SYNC;
     case WebAppManagement::Type::kDefault:
-      return web_app::WebAppManagementProto::DEFAULT;
+      return WebAppManagementProto::DEFAULT;
+  }
+}
+
+proto::TabStrip::Visibility TabStripVisibilityToProto(
+    TabStrip::Visibility visibility) {
+  switch (visibility) {
+    case TabStrip::Visibility::kAuto:
+      return proto::TabStrip_Visibility_AUTO;
+    case TabStrip::Visibility::kAbsent:
+      return proto::TabStrip_Visibility_ABSENT;
+  }
+}
+
+TabStrip::Visibility ProtoToTabStripVisibility(
+    proto::TabStrip::Visibility visibility) {
+  switch (visibility) {
+    case proto::TabStrip_Visibility_AUTO:
+      return TabStrip::Visibility::kAuto;
+    case proto::TabStrip_Visibility_ABSENT:
+      return TabStrip::Visibility::kAbsent;
   }
 }
 
@@ -617,11 +609,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   else
     local_data->clear_capture_links();
 
-  if (web_app.handle_links() != blink::mojom::HandleLinks::kUndefined)
-    local_data->set_handle_links(HandleLinksToProto(web_app.handle_links()));
-  else
-    local_data->clear_handle_links();
-
   if (!web_app.manifest_url().is_empty())
     local_data->set_manifest_url(web_app.manifest_url().spec());
 
@@ -676,6 +663,31 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         DCHECK(url.is_valid());
         management_config_proto->add_install_urls(url.spec());
       }
+    }
+  }
+
+  if (web_app.tab_strip()) {
+    TabStrip tab_strip = web_app.tab_strip().value();
+
+    auto* mutable_tab_strip = local_data->mutable_tab_strip();
+    if (absl::holds_alternative<TabStrip::Visibility>(tab_strip.home_tab)) {
+      mutable_tab_strip->set_home_tab_visibility(TabStripVisibilityToProto(
+          absl::get<TabStrip::Visibility>(tab_strip.home_tab)));
+    }
+
+    if (absl::holds_alternative<TabStrip::Visibility>(
+            tab_strip.new_tab_button)) {
+      mutable_tab_strip->set_new_tab_button_visibility(
+          TabStripVisibilityToProto(absl::get<TabStrip::Visibility>(
+              web_app.tab_strip().value().new_tab_button)));
+    } else {
+      auto* mutable_new_tab_button_params =
+          mutable_tab_strip->mutable_new_tab_button_params();
+      absl::optional<GURL> url = absl::get<blink::Manifest::NewTabButtonParams>(
+                                     tab_strip.new_tab_button)
+                                     .url;
+      if (url)
+        mutable_new_tab_button_params->set_url(url.value().spec());
     }
   }
 
@@ -1167,11 +1179,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   else
     web_app->SetCaptureLinks(blink::mojom::CaptureLinks::kUndefined);
 
-  if (local_data.has_handle_links())
-    web_app->SetHandleLinks(ProtoToHandleLinks(local_data.handle_links()));
-  else
-    web_app->SetHandleLinks(blink::mojom::HandleLinks::kUndefined);
-
   if (local_data.has_manifest_url()) {
     GURL manifest_url(local_data.manifest_url());
     if (manifest_url.is_empty() || !manifest_url.is_valid()) {
@@ -1237,8 +1244,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetPermissionsPolicy(policy);
   }
 
-  base::flat_map<WebAppManagement::Type, WebApp::ExternalManagementConfig>
-      management_to_external_config;
+  WebApp::ExternalConfigMap management_to_external_config;
   for (const auto& management_proto :
        local_data.management_to_external_config_info()) {
     WebApp::ExternalManagementConfig config;
@@ -1259,6 +1265,27 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         std::move(config));
   }
   web_app->SetWebAppManagementExternalConfigMap(management_to_external_config);
+
+  if (local_data.has_tab_strip()) {
+    TabStrip tab_strip;
+    if (local_data.tab_strip().has_home_tab_visibility()) {
+      tab_strip.home_tab = ProtoToTabStripVisibility(
+          local_data.tab_strip().home_tab_visibility());
+    }
+
+    if (local_data.tab_strip().has_new_tab_button_visibility()) {
+      tab_strip.new_tab_button = ProtoToTabStripVisibility(
+          local_data.tab_strip().new_tab_button_visibility());
+    } else {
+      blink::Manifest::NewTabButtonParams new_tab_button_params;
+      if (local_data.tab_strip().new_tab_button_params().has_url()) {
+        new_tab_button_params.url =
+            GURL(local_data.tab_strip().new_tab_button_params().url());
+      }
+      tab_strip.new_tab_button = new_tab_button_params;
+    }
+    web_app->SetTabStrip(std::move(tab_strip));
+  }
 
   if (local_data.has_app_size_in_bytes()) {
     web_app->SetAppSizeInBytes(local_data.app_size_in_bytes());

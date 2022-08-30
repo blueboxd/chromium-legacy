@@ -43,12 +43,22 @@ void UserNoteInstance::InitializeHighlightIfNeeded(base::OnceClosure callback) {
   }
 }
 
+void UserNoteInstance::OnNoteSelected() {
+  if (!agent_)
+    return;
+  agent_->ScrollIntoView();
+}
+
 void UserNoteInstance::DidFinishAttachment(const gfx::Rect& rect) {
   is_initialized_ = true;
   rect_ = rect;
 
   DCHECK(did_finish_attachment_callback_);
   std::move(did_finish_attachment_callback_).Run();
+}
+
+void UserNoteInstance::OnWebHighlightFocused() {
+  parent_manager_->OnWebHighlightFocused(model_->id());
 }
 
 void UserNoteInstance::OnNoteDetached() {

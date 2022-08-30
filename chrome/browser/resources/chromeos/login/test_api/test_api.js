@@ -238,7 +238,7 @@ class GaiaScreenTester extends ScreenElementApi {
     super('gaia-signin');
     this.signinFrame = new PolymerElementApi(this, '#signin-frame-dialog');
     this.gaiaDialog = new PolymerElementApi(this.signinFrame, '#gaiaDialog');
-    this.gaiaLoading = new PolymerElementApi(this, '#gaia-loading');
+    this.gaiaLoading = new PolymerElementApi(this, '#step-loading');
   }
 
   /**
@@ -583,6 +583,10 @@ class OobeApiProvider {
 
     this.loginAsGuest = function() {
       chrome.send('OobeTestApi.loginAsGuest');
+    };
+
+    this.showGaiaDialog = function() {
+      chrome.send('OobeTestApi.showGaiaDialog');
     };
   }
 }

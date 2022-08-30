@@ -23,6 +23,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/link_fragment.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/test/test_layout_provider.h"
 #include "ui/views/test/test_views.h"
@@ -370,7 +371,9 @@ TEST_F(StyledLabelInWidgetTest, Color) {
   styled()->Layout();
 
   // The code below is not prepared to deal with dark mode.
-  widget()->GetNativeTheme()->set_use_dark_colors(false);
+  auto* const native_theme = widget()->GetNativeTheme();
+  native_theme->set_use_dark_colors(false);
+  native_theme->NotifyOnNativeThemeUpdated();
 
   auto* container = widget()->GetContentsView();
   // Obtain the default text color for a label.
@@ -385,8 +388,9 @@ TEST_F(StyledLabelInWidgetTest, Color) {
 
   ASSERT_EQ(3u, styled()->children().size());
   EXPECT_EQ(SK_ColorBLUE, LabelAt(styled(), 0)->GetEnabledColor());
-  EXPECT_EQ(kDefaultLinkColor,
-            LabelAt(styled(), 1, Link::kViewClassName)->GetEnabledColor());
+  EXPECT_EQ(
+      kDefaultLinkColor,
+      LabelAt(styled(), 1, LinkFragment::kViewClassName)->GetEnabledColor());
   EXPECT_EQ(kDefaultTextColor, LabelAt(styled(), 2)->GetEnabledColor());
 
   // Test adjusted color readability.

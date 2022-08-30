@@ -281,8 +281,7 @@ bool LoginScreenTestApi::IsKioskDefaultMessageShown() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi test_api(lock_screen_test.contents_view());
   return test_api.kiosk_default_message() &&
-         test_api.kiosk_default_message()->GetWidget() &&
-         test_api.kiosk_default_message()->GetWidget()->IsVisible();
+         test_api.kiosk_default_message()->GetVisible();
 }
 
 // static
@@ -550,6 +549,21 @@ int LoginScreenTestApi::GetUsersCount() {
   LockContentsView::TestApi lock_contents_test(
       lock_screen_test.contents_view());
   return lock_contents_test.users().size();
+}
+
+// static
+bool LoginScreenTestApi::FocusKioskDefaultMessage() {
+  if (!IsKioskDefaultMessageShown()) {
+    ADD_FAILURE() << "Kiosk default message is not visible.";
+    return false;
+  }
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi test_api(lock_screen_test.contents_view());
+  auto event_generator = MakeAshEventGenerator();
+  event_generator->MoveMouseTo(
+      test_api.kiosk_default_message()->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  return true;
 }
 
 // static

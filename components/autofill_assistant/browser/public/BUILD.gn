@@ -14,7 +14,9 @@ static_library("public") {
     "autofill_assistant.h",
     "autofill_assistant_factory.h",
     "external_action_delegate.h",
-    "external_script_controller.h",
+    "headless_script_controller.h",
+    "rectf.cc",
+    "rectf.h",
     "runtime_manager.cc",
     "runtime_manager.h",
     "runtime_manager_impl.cc",
@@ -26,21 +28,31 @@ static_library("public") {
   deps = [
     ":proto",
     "//base",
+    "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
+    "//components/autofill_assistant/browser/public/password_change/proto:proto",
     "//components/version_info:channel",
     "//content/public/browser",
   ]
 }
 
 proto_library("proto") {
-  proto_in_dir = "//components/autofill_assistant/"
+  proto_in_dir = "//"
   sources = [ "external_action.proto" ]
+  link_deps = [
+    "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
+    "//components/autofill_assistant/browser/public/password_change/proto:proto",
+  ]
 }
 
 # Java protos are only used for testing.
 if (is_android) {
   proto_java_library("proto_java") {
-    proto_path = "//components/autofill_assistant/browser/public"
-    sources = [ "$proto_path/external_action.proto" ]
+    proto_path = "//"
+    sources = [ "external_action.proto" ]
+    deps = [
+      "//components/autofill_assistant/browser/public/fast_checkout/proto:proto_java",
+      "//components/autofill_assistant/browser/public/password_change/proto:proto_java",
+    ]
   }
 }
 
@@ -49,8 +61,8 @@ static_library("unit_test_support") {
   sources = [
     "mock_autofill_assistant.cc",
     "mock_autofill_assistant.h",
-    "mock_external_script_controller.cc",
-    "mock_external_script_controller.h",
+    "mock_headless_script_controller.cc",
+    "mock_headless_script_controller.h",
     "mock_runtime_manager.cc",
     "mock_runtime_manager.h",
   ]

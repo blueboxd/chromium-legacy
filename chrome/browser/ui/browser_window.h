@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
+#include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -102,10 +103,11 @@ class WebContentsModalDialogHost;
 }
 
 enum class ShowTranslateBubbleResult {
-  // The translate bubble was successfully shown.
+  // The Full Page Translate bubble was successfully shown.
   SUCCESS,
 
-  // The various reasons for which the translate bubble could fail to be shown.
+  // The various reasons for which the Full Page Translate bubble could fail to
+  // be shown.
   BROWSER_WINDOW_NOT_VALID,
   BROWSER_WINDOW_MINIMIZED,
   BROWSER_WINDOW_NOT_ACTIVE,
@@ -451,7 +453,7 @@ class BrowserWindow : public ui::BaseWindow {
       share::ShareAttempt attempt) = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-  // Shows the translate bubble.
+  // Shows the Full Page Translate bubble.
   //
   // |is_user_gesture| is true when the bubble is shown on the user's deliberate
   // action.
@@ -462,6 +464,14 @@ class BrowserWindow : public ui::BaseWindow {
       const std::string& target_language,
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
+
+  // Shows the Partial Translate bubble.
+  virtual void ShowPartialTranslateBubble(
+      PartialTranslateBubbleModel::ViewState view_state,
+      const std::string& source_language,
+      const std::string& target_language,
+      const std::u16string& text_selection,
+      translate::TranslateErrors::Type error_type) = 0;
 
   // Shows the one-click sign in confirmation UI. |email| holds the full email
   // address of the account that has signed in.
@@ -609,10 +619,6 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows an Incognito history disclaimer dialog.
   virtual void ShowIncognitoHistoryDisclaimerDialog() = 0;
-
-  virtual bool IsSideSearchPanelVisible() const = 0;
-  virtual void MaybeRestoreSideSearchStatePerWindow(
-      const std::map<std::string, std::string>& extra_data) = 0;
 
  protected:
   friend class BrowserCloseManager;

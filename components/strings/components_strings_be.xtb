@@ -176,6 +176,7 @@
 <translation id="1391289752476847787">Акцыі і аблігацыі</translation>
 <translation id="139305205187523129">Хост "<ph name="HOST_NAME" />" не адправіў ніякіх даных.</translation>
 <translation id="1405567553485452995">Светла-зялёны</translation>
+<translation id="1406500794671479665">Ідзе спраўджанне...</translation>
 <translation id="1407135791313364759">Адкрыць усе</translation>
 <translation id="1408787208417187241">Тры скабы зверху</translation>
 <translation id="1413407968866574823">Экшн-гульні і платформеры</translation>
@@ -258,7 +259,6 @@
 <translation id="1583429793053364125">Падчас паказу вэб-старонкі нешта пайшло не так.</translation>
 <translation id="1586541204584340881">Якія пашырэнні вы ўсталявалі.</translation>
 <translation id="1588438908519853928">Звычайны</translation>
-<translation id="1589050138437146318">Усталяваць ARCore?</translation>
 <translation id="1592005682883173041">Доступ да лакальных даных</translation>
 <translation id="1594030484168838125">Выбраць</translation>
 <translation id="1596296697375291157">Трылеры, крымінальныя і дэтэктыўныя фільмы</translation>
@@ -334,11 +334,6 @@
 <translation id="1757773103848038814">Монашырынны шрыфт</translation>
 <translation id="1763864636252898013">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />: аперацыйная сістэма прылады не давярае сертыфікату бяспекі гэтага дамена. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Паспрабаваць запусціць дыягностыку сеткі Windows<ph name="END_LINK" />.</translation>
-<translation id="1772163372082567643">Сервер, на які вы пераходзіце (<ph name="ORIGIN" />), мае загаловак, які патрабуе,
-    каб на ўсе запыты да сервера распаўсюджвалася палітыка крыніцы. Аднак
-    фармат загалоўка няправільны, што не дазваляе браўзеру
-    выканаць запыт сайта "<ph name="SITE" />". Палітыкі крыніцы могуць выкарыстоўвацца
-    аператарамі сайтаў для наладжвання бяспекі і іншых уласцівасцей сайта.</translation>
 <translation id="1774592222195216949"><ph name="BEGIN_LINK" />Даведацца больш пра рэжым інкогніта ў браўзеры Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Адкрытыя ўкладкі з'явяцца тут</translation>
@@ -383,7 +378,6 @@
 <translation id="1908217026282415406">Выкарыстоўванне і рух камеры</translation>
 <translation id="191374271204266022">Скапіраваць як JSON</translation>
 <translation id="1914326953223720820">Сэрвіс распакоўвання архіваў</translation>
-<translation id="1915697529809968049">Выкарыстоўваць Touch ID замест CVC?</translation>
 <translation id="1916770123977586577">Каб прымяніць змененыя налады гэтага сайта, абнавіце гэту старонку</translation>
 <translation id="1919345977826869612">Рэклама</translation>
 <translation id="1919367280705858090">Дапамога пры асобных паведамленнях аб памылцы</translation>
@@ -627,7 +621,7 @@
 <translation id="259821504105826686">Фатаграфічнае і лічбавае мастацтва</translation>
 <translation id="2601150049980261779">Фільмы пра каханне</translation>
 <translation id="2604589665489080024">Поп-музыка</translation>
-<translation id="2610561535971892504">Капіруецца адным націсканнем</translation>
+<translation id="2610561535971892504">Капіруецца адным дотыкам</translation>
 <translation id="2617988307566202237">Chrome <ph name="BEGIN_EMPHASIS" />не будзе захоўваць<ph name="END_EMPHASIS" /> наступную інфармацыю:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />вашу гісторыю прагляду сайтаў;
@@ -835,6 +829,7 @@
 <translation id="3226387218769101247">Мініяцюры</translation>
 <translation id="3227137524299004712">Мікрафон</translation>
 <translation id="3229041911291329567">Звесткі пра версію прылады і браўзера</translation>
+<translation id="3229277193950731405">Скапіраваць радок з версіяй</translation>
 <translation id="323107829343500871">Увядзіце CVC-код карткі <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Заўсёды выяўляць важнае змесціва на гэтым сайце</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />. Каб наладзіць выгляд браўзера, націсніце Tab, затым Enter</translation>
@@ -1109,8 +1104,6 @@
 <translation id="3987940399970879459">Менш за 1 МБ</translation>
 <translation id="3990250421422698716">Велічыня зруху</translation>
 <translation id="3992684624889376114">Пра гэту старонку</translation>
-<translation id="3996311196211510766">Сайт "<ph name="ORIGIN" />" патрабуе, каб на ўсе запыты да яго распаўсюджвалася
-    палітыка крыніцы, але гэту палітыку зараз прымяніць нельга.</translation>
 <translation id="4006465311664329701">Спосабы аплаты, прапановы і адрасы, якія выкарыстоўваюць Google Pay</translation>
 <translation id="4009243425692662128">Змесціва старонак, якія вы друкуеце, перасылаецца для аналізу ў Google Cloud або староннія сэрвісы (напрыклад, для праверкі на наяўнасць канфідэнцыяльных даных).</translation>
 <translation id="4010758435855888356">Дазволіць доступ да сховішча?</translation>
@@ -1128,7 +1121,6 @@
 <translation id="4072486802667267160">Адбылася памылка апрацоўкi вашага заказу. Паўтарыце спробу.</translation>
 <translation id="4073797364926776829">Праглядзець картку</translation>
 <translation id="4075732493274867456">Кліент і сервер не падтрымліваюць агульную версію пратакола SLL або набор шыфраў.</translation>
-<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Канфігурацыяй проксі зададзена выкарыстоўваць URL-адрас сцэнарыя .pac, а не фіксаваныя проксі-серверы.</translation>
 <translation id="4082393374666368382">Налады – Кіраванне</translation>
 <translation id="4087296516249690906">Кнопка "Стварыць падзею". Каб хутка стварыць новую падзею ў Google Календары, націсніце Enter</translation>
@@ -1175,11 +1167,6 @@
 <translation id="4202554117186904723">Пяты рулон</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Праверыць канфігурацыю брандмаўэра і антывіруса.<ph name="END_LINK" /></translation>
 <translation id="4209092469652827314">Вялікі</translation>
-<translation id="4209166701302774460">Сервер, на які вы пераходзіце (<ph name="ORIGIN" />), патрабуе, каб
-    на ўсе запыты да яго распаўсюджвалася палітыка крыніцы. Аднак ён не змог
-    даставіць палітыку, што не дазваляе браўзеру выканаць запыт
-    сайта "<ph name="SITE" />". Палітыкі крыніцы могуць выкарыстоўвацца аператарамі
-    сайтаў для наладжвання бяспекі і іншых уласцівасцей сайта.</translation>
 <translation id="4210602799576081649">Тэрмін дзеяння кода спраўджання скончыўся. Запытайце новы код.</translation>
 <translation id="421066178035138955">Выкарыстоўваць даныя і прылады віртуальнай рэальнасці</translation>
 <translation id="4213305257324635756">Анімацыйныя фільмы</translation>
@@ -1207,7 +1194,6 @@
     &lt;p&gt;Калі праблему вырашыць не ўдалося, звярніцеся да ўладальніка вэб-сайта.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Паспрабаваць запусціць дыягностыку сеткі<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">Сайт можа запытваць дазвол на выкарыстанне і перамяшчэнне камеры</translation>
-<translation id="4234495348042597185"><ph name="BEGIN_LINK" />Перайсці на сайт <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Сапраўдны</translation>
 <translation id="4250431568374086873">Ваша падключэнне да гэтага сайта не цалкам бяспечнае</translation>
 <translation id="4250680216510889253">Не</translation>
@@ -1306,7 +1292,6 @@
 <translation id="4506176782989081258">Памылка праверкі: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Звярнуцца да сістэмнага адміністратара.</translation>
 <translation id="450710068430902550">Абагульванне з адміністратарам</translation>
-<translation id="4508814173490746936">Не ўдалося выкарыстаць Touch ID</translation>
 <translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Каб перакласці гэту старонку ў Перакладчыку Google, націсніце Tab, затым Enter</translation>
 <translation id="4510487217173779431">Chou4 (канверт)</translation>
 <translation id="4514308731478712184">Выключыць функцыю "Шляхі карыстальніка"</translation>
@@ -1411,7 +1396,6 @@
 <translation id="4796594887379589189">Ідэнтыфікатар уліковага запісу задання</translation>
 <translation id="4798078619018708837">Каб абнавіць даныя карткі, увядзіце дату заканчэння тэрміну дзеяння і код CVC з карткі <ph name="CREDIT_CARD" />. Пасля вашага пацвярджэння даныя карткі з Уліковага запісу Google будуць абагулены з гэтым сайтам.</translation>
 <translation id="4800132727771399293">Праверце тэрмін дзеяння і код CVC, затым паўтарыце спробу.</translation>
-<translation id="480334179571489655">Памылка палітыкі крыніцы</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4809079943450490359">Інструкцыі ад адміністратара прылады:</translation>
 <translation id="4812751092864334025">Нацельныя тэхналогіі</translation>
@@ -1806,7 +1790,6 @@
 <translation id="5901630391730855834">Жоўты</translation>
 <translation id="5903264686717710770">Назва:</translation>
 <translation id="5904360430676679685">Сям'я і адносіны</translation>
-<translation id="5905445707201418379">Заблакіравана згодна з палітыкай крыніцы "<ph name="ORIGIN" />".</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (сінхранізавана)</translation>
 <translation id="59174027418879706">Уключана</translation>
 <translation id="5919090499915321845">B10</translation>
@@ -1973,14 +1956,15 @@
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6391700400718590966">Быў закрыты аркуш, які паказваецца пры адсутнасці супадзення ўліковых даных для бяспечных плацяжоў</translation>
 <translation id="6393956493820063117">Палітыка, зададзеная адміністратарам, блакіруе магчымасць устаўляць сюды элементы з сайта <ph name="ORIGIN_NAME" /></translation>
+<translation id="6394852772105848029">Гэты сайт спрабуе адкрыць праграму <ph name="APP_NAME" /></translation>
 <translation id="6398277657359595425">Рыдае</translation>
 <translation id="6398765197997659313">Выключыць поўнаэкранны рэжым</translation>
 <translation id="6401136357288658127">Гэта палітыка састарэла – выкарыстоўвайце замест яе "<ph name="NEW_POLICY" />".</translation>
 <translation id="6404511346730675251">Змяніце закладку</translation>
+<translation id="6405181733356710802">Перайсці ў праграму <ph name="APP_NAME" />?</translation>
 <translation id="6406765186087300643">C0 (канверт)</translation>
 <translation id="6410264514553301377">Увядзіце тэрмін дзеяння і код CVC з карткі <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium можа дапамагчы абараніць ваш Уліковы запіс Google і змяніць ваш пароль.</translation>
-<translation id="6423385022588644828">Калі выкарыстоўваць Touch ID, пацвярджаць карткі можна будзе хутчэй</translation>
 <translation id="6425092077175753609">Матэрыял</translation>
 <translation id="6427730057873428458">Згіб "вароты"</translation>
 <translation id="6428450836711225518">Спраўдзіце свой нумар тэлефона</translation>
@@ -2673,7 +2657,6 @@
 <translation id="830498451218851433">Згіб напалову</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Усталяваныя праграмы, і як часта яны выкарыстоўваліся</translation>
-<translation id="8317207217658302555">Абнавіць ARCore?</translation>
 <translation id="831997045666694187">Вечар</translation>
 <translation id="8321476692217554900">апавяшчэнні</translation>
 <translation id="8332188693563227489">Доступ да хоста <ph name="HOST_NAME" /> забаронены</translation>
@@ -2750,7 +2733,6 @@
 <translation id="8559762987265718583">Памылка прыватнага падключэння да дамена <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />: дата і час на вашай прыладзе (<ph name="DATE_AND_TIME" />) няправільныя.</translation>
 <translation id="8564182942834072828">Асобныя дакументы, неразабраныя копіі</translation>
 <translation id="8564985650692024650">Chromium рэкамендуе скінуць пароль <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, калі вы карысталіся ім на іншых сайтах.</translation>
-<translation id="8574899947864779331">Выкарыстоўваць Touch ID для хутчэйшага пацвярджэння картак</translation>
 <translation id="8576310925653847813">Дамашнія кінатэатры</translation>
 <translation id="8577348305244205642">Віртуальная картка недаступная</translation>
 <translation id="858637041960032120">Дадайце нумар тэлефона</translation>
@@ -2906,7 +2888,6 @@
 <translation id="9039213469156557790">Акрамя таго, на гэтай старонцы ёсць іншыя рэсурсы, якія не з'яўляюцца бяспечнымі: яны могуць быць прагледжаны іншымі падчас перадачы, а таксама могуць быць мадыфікаваны зламыснікам з мэтай змяніць паводзіны старонкі.</translation>
 <translation id="9040464167025094690">Кнопка "Знайсці прыладу". Каб знайсці сваю прыладу ва Уліковым запісе Google, націсніце Enter</translation>
 <translation id="9042617223719777575">Вялікая ёмістасць</translation>
-<translation id="9044359186343685026">Выкарыстоўваць Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />.–.<ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Вы спрабавалі трапіць на дамен <ph name="DOMAIN" />, але сервер выдаў несапраўдны сертыфікат.</translation>
 <translation id="9050666287014529139">Фраза-пароль</translation>

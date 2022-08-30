@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 """Provides a base class for test running."""
 
+import subprocess
+
 from abc import ABC, abstractmethod
 from argparse import Namespace
-from typing import List
+from typing import List, Optional
 
 from common import read_package_paths
 
@@ -13,10 +15,15 @@ from common import read_package_paths
 class TestRunner(ABC):
     """Base class that handles running a test."""
 
-    def __init__(self, out_dir: str, test_args: Namespace) -> None:
+    def __init__(self,
+                 out_dir: str,
+                 test_args: Namespace,
+                 packages: List[str],
+                 target_id: Optional[str] = None) -> None:
+        self._target_id = target_id
         self._out_dir = out_dir
         self._test_args = test_args
-        self._packages = self._get_packages()
+        self._packages = packages
         self._package_paths = None
 
     @property
@@ -26,10 +33,6 @@ class TestRunner(ABC):
             A list of package names needed for the test.
         """
         return self._packages
-
-    @abstractmethod
-    def _get_packages(self) -> List[str]:
-        """Retrieve the names of packages needed for the test."""
 
     def get_package_paths(self) -> List[str]:
         """Retrieve the path to the .far files for packages.
@@ -47,8 +50,8 @@ class TestRunner(ABC):
         return self._package_paths
 
     @abstractmethod
-    def run_test(self):
+    def run_test(self) -> subprocess.Popen:
         """
         Returns:
-            A subprocess.CompletedProcess object from running the test command.
+            A subprocess.Popen object that ran the test command.
         """

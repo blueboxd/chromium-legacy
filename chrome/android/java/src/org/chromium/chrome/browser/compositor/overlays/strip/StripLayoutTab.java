@@ -113,6 +113,20 @@ public class StripLayoutTab implements VirtualView {
                 }
             };
 
+    /** A property for animations to use for changing the drawX of the tab. */
+    public static final FloatProperty<StripLayoutTab> DRAW_X =
+            new FloatProperty<StripLayoutTab>("drawX") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setDrawX(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getDrawX();
+                }
+            };
+
     // Behavior Constants
     private static final float VISIBILITY_FADE_CLOSE_BUTTON_PERCENTAGE = 0.99f;
 
@@ -144,6 +158,7 @@ public class StripLayoutTab implements VirtualView {
     private float mIdealX;
     private float mTabOffsetX;
     private float mTabOffsetY;
+    private float mTrailingMargin;
 
     // Actual draw parameters
     private float mDrawX;
@@ -598,6 +613,23 @@ public class StripLayoutTab implements VirtualView {
      */
     public float getOffsetY() {
         return mTabOffsetY;
+    }
+
+    /**
+     * This is used to help calculate the tab's position and is not used for rendering.
+     * @param trailingMargin The trailing margin of the tab (used for margins around tab groups
+     *                       when reordering, etc.).
+     */
+    public void setTrailingMargin(float trailingMargin) {
+        mTrailingMargin = trailingMargin;
+    }
+
+    /**
+     * This is used to help calculate the tab's position and is not used for rendering.
+     * @return The trailing margin of the tab.
+     */
+    public float getTrailingMargin() {
+        return mTrailingMargin;
     }
 
     /**

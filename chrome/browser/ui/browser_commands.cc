@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
@@ -114,6 +115,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -686,13 +688,12 @@ void NewWindow(Browser* browser) {
   if (browser->app_controller()) {
     const web_app::AppId app_id = browser->app_controller()->app_id();
 
-    auto launch_container =
-        apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    auto launch_container = apps::LaunchContainer::kLaunchContainerWindow;
 
     auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
     if (provider && provider->registrar().GetAppEffectiveDisplayMode(app_id) ==
                         blink::mojom::DisplayMode::kBrowser) {
-      launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+      launch_container = apps::LaunchContainer::kLaunchContainerTab;
     }
     apps::AppLaunchParams params = apps::AppLaunchParams(
         app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
@@ -787,13 +788,13 @@ bool CanResetZoom(content::WebContents* contents) {
 }
 
 void SelectNextTab(Browser* browser,
-                   TabStripModel::UserGestureDetails gesture_detail) {
+                   TabStripUserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectNextTab"));
   browser->tab_strip_model()->SelectNextTab(gesture_detail);
 }
 
 void SelectPreviousTab(Browser* browser,
-                       TabStripModel::UserGestureDetails gesture_detail) {
+                       TabStripUserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectPrevTab"));
   browser->tab_strip_model()->SelectPreviousTab(gesture_detail);
 }
@@ -810,7 +811,7 @@ void MoveTabPrevious(Browser* browser) {
 
 void SelectNumberedTab(Browser* browser,
                        int index,
-                       TabStripModel::UserGestureDetails gesture_detail) {
+                       TabStripUserGestureDetails gesture_detail) {
   int visible_count = 0;
   for (int i = 0; i < browser->tab_strip_model()->count(); i++) {
     if (browser->tab_strip_model()->IsTabCollapsed(i)) {
@@ -826,7 +827,7 @@ void SelectNumberedTab(Browser* browser,
 }
 
 void SelectLastTab(Browser* browser,
-                   TabStripModel::UserGestureDetails gesture_detail) {
+                   TabStripUserGestureDetails gesture_detail) {
   for (int i = browser->tab_strip_model()->count() - 1; i >= 0; i--) {
     if (!browser->tab_strip_model()->IsTabCollapsed(i)) {
       base::RecordAction(UserMetricsAction("SelectLastTab"));
@@ -1408,7 +1409,7 @@ void RouteMediaInvokedFromAppMenu(Browser* browser) {
     return;
 
   dialog_controller->ShowMediaRouterDialog(
-      media_router::MediaRouterDialogOpenOrigin::APP_MENU);
+      media_router::MediaRouterDialogActivationLocation::APP_MENU);
 }
 
 void CutCopyPaste(Browser* browser, int command_id) {

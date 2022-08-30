@@ -203,7 +203,12 @@ FrameTree::FrameTree(
                               blink::FrameOwnerElementType::kNone,
                               blink::FramePolicy())),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
-      load_progress_(0.0) {}
+      load_progress_(0.0),
+      fenced_frames_impl_(
+          blink::features::IsFencedFramesEnabled()
+              ? absl::optional<blink::features::FencedFramesImplementationType>(
+                    blink::features::kFencedFramesImplementationTypeParam.Get())
+              : absl::nullopt) {}
 
 FrameTree::~FrameTree() {
   is_being_destroyed_ = true;
@@ -659,7 +664,7 @@ double FrameTree::GetLoadProgress() {
   return root_->current_frame_host()->GetPage().load_progress();
 }
 
-bool FrameTree::IsLoading() const {
+bool FrameTree::IsLoadingIncludingInnerFrameTrees() const {
   for (const FrameTreeNode* node :
        const_cast<FrameTree*>(this)->CollectNodesForIsLoading()) {
     if (node->IsLoading())
@@ -794,12 +799,12 @@ void FrameTree::DidStartLoadingNode(FrameTreeNode& node,
   if (was_previously_loading)
     return;
 
-  root()->render_manager()->SetIsLoading(IsLoading());
+  root()->render_manager()->SetIsLoading(IsLoadingIncludingInnerFrameTrees());
   delegate_->DidStartLoading(&node, should_show_loading_ui);
 }
 
 void FrameTree::DidStopLoadingNode(FrameTreeNode& node) {
-  if (IsLoading())
+  if (IsLoadingIncludingInnerFrameTrees())
     return;
 
   root()->render_manager()->SetIsLoading(false);

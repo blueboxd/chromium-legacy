@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
 
+#include <string>
+
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace safe_browsing {
 
@@ -54,8 +59,21 @@ enum PromptTypeHistogramValue {
 // versions will be downloaded. When not enabled, default versions will be used.
 extern const base::Feature kChromeCleanupDistributionFeature;
 
-// Returns the correct SRT download URL for the current field trial.
-GURL GetSRTDownloadURL();
+// A "tag" value to be sent with the component update request in
+// SwReporterInstallerPolicy, controlling which version of the reporter
+// component is served.
+extern const base::FeatureParam<std::string> kReporterDistributionTagParam;
+
+// A path component corresponding to the tag set by
+// kReporterDistributionTagParam, used to format the download url for the
+// matching version of the cleaner.
+extern const base::FeatureParam<std::string> kCleanerDownloadGroupParam;
+
+// Returns the correct SRT download URL, based on the current platform and
+// download group. The download group is taken from
+// `kChromeCleanupDistributionFeature` or from `prefs` if the feature is
+// disabled.
+GURL GetSRTDownloadURL(PrefService* prefs);
 
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);

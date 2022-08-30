@@ -20,8 +20,9 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-    !BUILDFLAG(IS_CHROMECAST)
+#if (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #include "ui/display/screen.h"
 #endif
 
@@ -163,8 +164,8 @@ class DesktopWidgetTestInteractive : public DesktopWidgetTest {
   // DesktopWidgetTest
   void SetUp() override;
 
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-    !BUILDFLAG(IS_CHROMECAST)
+#if (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
   void TearDown() override;
   std::unique_ptr<display::Screen> screen_;
 #endif
@@ -263,9 +264,11 @@ class WidgetActivationWaiter : public WidgetObserver {
   // views::WidgetObserver override:
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
-  base::RunLoop run_loop_;
   bool observed_;
   bool active_;
+
+  base::RunLoop run_loop_;
+  base::ScopedObservation<Widget, WidgetObserver> widget_observation_{this};
 };
 
 // Use in tests to wait for a widget to be destroyed.
@@ -286,8 +289,8 @@ class WidgetDestroyedWaiter : public WidgetObserver {
   // views::WidgetObserver
   void OnWidgetDestroyed(Widget* widget) override;
 
-  raw_ptr<Widget> widget_;
   base::RunLoop run_loop_;
+  base::ScopedObservation<Widget, WidgetObserver> widget_observation_{this};
 };
 
 // Helper class to wait for a Widget to become visible. This will add a failure

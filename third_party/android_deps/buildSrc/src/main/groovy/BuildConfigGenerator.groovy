@@ -56,7 +56,6 @@ class BuildConfigGenerator extends DefaultTask {
         com_ibm_icu_icu4j: '//third_party/icu4j:icu4j_java',
         com_almworks_sqlite4java_sqlite4java: '//third_party/sqlite4java:sqlite4java_java',
         junit_junit: '//third_party/junit:junit',
-        org_bouncycastle_bcprov_jdk15on: '//third_party/bouncycastle:bouncycastle_java',
         org_hamcrest_hamcrest_core: '//third_party/hamcrest:hamcrest_core_java',
         org_hamcrest_hamcrest_integration: '//third_party/hamcrest:hamcrest_integration_java',
         org_hamcrest_hamcrest_library: '//third_party/hamcrest:hamcrest_library_java',
@@ -610,9 +609,7 @@ class BuildConfigGenerator extends DefaultTask {
         addPreconditionsOverrideTreatment(sb, dependencyId)
 
         if (dependencyId.startsWith('org_robolectric')) {
-            // Skip platform checks since it depends on
-            // accessibility_test_framework_java which requires_android.
-            sb.append('  bypass_platform_checks = true\n')
+            sb.append('  is_robolectric = true\n')
         }
         if (dependencyExtension == 'aar' &&
                 (dependencyId.startsWith('androidx') || dependencyId.startsWith('com_android_support'))) {
@@ -659,7 +656,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  ignore_aidl = true\n')
                 break
             case 'androidx_test_uiautomator_uiautomator':
-                sb.append('  deps = [":androidx_test_runner_java"]\n')
+                sb.append('  deps += [":androidx_test_runner_java"]\n')
                 break
             case 'androidx_mediarouter_mediarouter':
                 sb.append('  # https://crbug.com/1000382\n')

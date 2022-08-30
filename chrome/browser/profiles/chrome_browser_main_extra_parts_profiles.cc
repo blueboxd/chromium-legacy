@@ -65,7 +65,6 @@
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/last_tab_standing_tracker_factory.h"
 #include "chrome/browser/permissions/permission_auditing_service_factory.h"
-#include "chrome/browser/persisted_state_db/persisted_state_db_content.pb.h"
 #include "chrome/browser/persisted_state_db/profile_proto_db_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
@@ -118,6 +117,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/commerce/core/proto/persisted_state_db_content.pb.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/permissions/features.h"
@@ -137,17 +137,15 @@
 #include "chrome/browser/android/reading_list/reading_list_notification_service_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/thin_webview/chrome_thin_webview_initializer.h"
-#include "chrome/browser/commerce/merchant_viewer/merchant_signal_db_content.pb.h"
 #include "chrome/browser/commerce/merchant_viewer/merchant_viewer_data_manager_factory.h"
-#include "chrome/browser/commerce/subscriptions/commerce_subscription_db_content.pb.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
+#include "components/commerce/core/proto/merchant_signal_db_content.pb.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
-#include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
-#include "chrome/browser/commerce/coupons/coupon_db_content.pb.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service_factory.h"
@@ -160,13 +158,16 @@
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "components/commerce/core/proto/cart_db_content.pb.h"
+#include "components/commerce/core/proto/coupon_db_content.pb.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
+#include "chrome/browser/ash/system_extensions/api/window_management/cros_window_management_context_factory.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #else
@@ -202,11 +203,16 @@
 #include "apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/platform_apps/api/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/platform_apps/browser_context_keyed_service_factories.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/adjustments/web_app_adjustments.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/extensions/chromeos_browser_context_keyed_service_factories.h"
+#endif
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -277,6 +283,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   chrome_apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_apps::api::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+#if BUILDFLAG(IS_CHROMEOS)
+  chromeos_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+#endif
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -548,8 +557,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   SupervisedUserServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::SystemExtensionsProvider::IsEnabled())
+  if (base::FeatureList::IsEnabled(ash::features::kSystemExtensions)) {
     ash::SystemExtensionsProviderFactory::GetInstance();
+    ash::CrosWindowManagementContextFactory::GetInstance();
+  }
 #endif
   TabRestoreServiceFactory::GetInstance();
   safe_browsing::TailoredSecurityServiceFactory::GetInstance();
@@ -579,6 +590,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   web_app::WebAppMetricsFactory::GetInstance();
   web_app::WebAppProviderFactory::GetInstance();
   web_app::WebAppAdjustmentsFactory::GetInstance();
+  // TODO(crbug.com/1321984): SystemWebAppManagerFactory is instantiated on WML
+  // and ChromeOS currently. Move it under the IS_CHROMEOS_ASH guard (compile it
+  // out).
+  ash::SystemWebAppManagerFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
   webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();

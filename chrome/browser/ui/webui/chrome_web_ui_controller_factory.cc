@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/device_log_ui.h"
-#include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 #include "chrome/browser/ui/webui/download_internals/download_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
@@ -214,6 +213,7 @@
 #include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "ash/webui/system_extensions_internals_ui/url_constants.h"
 #include "base/system/sys_info.h"
+#include "build/config/chromebox_for_meetings/buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/device_sync/device_sync_client_factory.h"
@@ -265,6 +265,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/launcher_internals/launcher_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_internals/multidevice_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
@@ -344,7 +345,7 @@
 #include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
 #endif
 
-#if BUILDFLAG(USE_NSS_CERTS) && defined(USE_AURA)
+#if BUILDFLAG(ENABLE_WEBUI_CERTIFICATE_VIEWER)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
@@ -751,8 +752,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<CrashesUI>;
   if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
     return &NewWebUI<chromeos::DeviceLogUI>;
-  if (url.host_piece() == chrome::kChromeUIDomainReliabilityInternalsHost)
-    return &NewWebUI<DomainReliabilityInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIDownloadInternalsHost)
     return &NewWebUI<DownloadInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFlagsHost &&
@@ -983,6 +982,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewComponentUI<ash::HelpAppUI, ash::ChromeHelpAppUIDelegate>;
   if (url.host_piece() == chrome::kChromeUIHumanPresenceInternalsHost)
     return &NewWebUI<chromeos::HumanPresenceInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUIManageMirrorSyncHost &&
+      ash::features::IsDriveFsMirroringEnabled()) {
+    return &NewWebUI<chromeos::ManageMirrorSyncUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<chromeos::cellular_setup::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceInternalsHost)
@@ -1099,8 +1102,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::VmUI>;
   }
   if (url.host_piece() ==
-          ash::personalization_app::kChromeUIPersonalizationAppHost &&
-      chromeos::features::IsWallpaperWebUIEnabled()) {
+      ash::personalization_app::kChromeUIPersonalizationAppHost) {
     return &NewWebUI<ash::personalization_app::PersonalizationAppUI>;
   }
   if (url.host_piece() == ash::kChromeUISystemExtensionsInternalsHost &&
@@ -1184,10 +1186,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUITabModalConfirmDialogHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
 #endif
-#if BUILDFLAG(USE_NSS_CERTS) && defined(USE_AURA)
+#if BUILDFLAG(ENABLE_WEBUI_CERTIFICATE_VIEWER)
   if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
-#endif  // USE_NSS_CERTS && USE_AURA
+#endif  // ENABLE_WEBUI_CERTIFICATE_VIEWER
 
   if (url.host_piece() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
@@ -1258,10 +1260,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWebAppSettingsPage) &&
-      url.host_piece() == chrome::kChromeUIWebAppSettingsHost) {
+  if (url.host_piece() == chrome::kChromeUIWebAppSettingsHost)
     return &NewWebUI<WebAppSettingsUI>;
-  }
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;
@@ -1539,56 +1539,73 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
   return std::vector<GURL>{
       GURL(chrome::kChromeUIUntrustedCroshURL),
       GURL(ash::file_manager::kChromeUIFileManagerUntrustedURL),
-      GURL(chrome::kChromeUIUntrustedTerminalURL), GURL(chrome::kOsUIAboutURL),
+      GURL(chrome::kChromeUIUntrustedTerminalURL),
+      GURL(chrome::kOsUIAboutURL),
       GURL(chrome::kChromeUIAccountManagerErrorURL),
       GURL(chrome::kOsUIAccountManagerErrorURL),
       GURL(chrome::kChromeUIAccountMigrationWelcomeURL),
       GURL(chrome::kOsUIAccountMigrationWelcomeURL),
       GURL(chrome::kChromeUIAddSupervisionURL),
       GURL(chrome::kOsUIAddSupervisionURL),
-      GURL(chrome::kChromeUIAppDisabledURL), GURL(chrome::kOsUIAppDisabledURL),
+      GURL(chrome::kChromeUIAppDisabledURL),
+      GURL(chrome::kOsUIAppDisabledURL),
       GURL(chrome::kChromeUIArcGraphicsTracingURL),
       GURL(chrome::kChromeUIArcOverviewTracingURL),
       GURL(chrome::kChromeUIArcPowerControlURL),
       GURL(chrome::kChromeUIAssistantOptInURL),
       GURL(chrome::kChromeUIBluetoothPairingURL),
-      GURL(chrome::kOsUIComponentsURL), GURL(chrome::kChromeUICrashesUrl),
-      GURL(chrome::kOsUICrashesURL), GURL(chrome::kOsUICreditsURL),
+      GURL(chrome::kOsUIComponentsURL),
+      GURL(chrome::kChromeUICrashesUrl),
+      GURL(chrome::kOsUICrashesURL),
+      GURL(chrome::kOsUICreditsURL),
       GURL(chrome::kChromeUIBorealisCreditsURL),
       GURL(chrome::kChromeUICrostiniCreditsURL),
       GURL(chrome::kChromeUICrostiniInstallerUrl),
       GURL(chrome::kChromeUICrostiniUpgraderUrl),
-      GURL(chrome::kChromeUICryptohomeURL), GURL(chrome::kOsUIDeviceLogURL),
+      GURL(chrome::kChromeUICryptohomeURL),
+      GURL(chrome::kOsUIDeviceLogURL),
       GURL(chrome::kChromeUIDiagnosticsAppURL),
       GURL(chrome::kChromeUIDriveInternalsUrl),
       GURL(chrome::kOsUIDriveInternalsURL),
-      GURL(chrome::kChromeUIEmojiPickerURL), GURL(chrome::kOsUIEmojiPickerURL),
+      GURL(chrome::kChromeUIEmojiPickerURL),
+      GURL(chrome::kOsUIEmojiPickerURL),
       GURL(ash::file_manager::kChromeUIFileManagerURL),
-      GURL(chrome::kChromeUIFlagsURL), GURL(chrome::kOsUIFlagsURL),
-      GURL(chrome::kOsUIGpuURL), GURL(chrome::kOsUIHistogramsURL),
+      GURL(chrome::kChromeUIFlagsURL),
+      GURL(chrome::kOsUIFlagsURL),
+      GURL(chrome::kOsUIGpuURL),
+      GURL(chrome::kOsUIHistogramsURL),
+      GURL(chrome::kChromeUIHumanPresenceInternalsURL),
       GURL(chrome::kChromeUIIntenetConfigDialogURL),
       GURL(chrome::kChromeUIIntenetDetailDialogURL),
       GURL(chrome::kOsUIInvalidationsURL),
       GURL(chrome::kChromeUILockScreenNetworkURL),
       GURL(chrome::kChromeUILockScreenStartReauthURL),
+      GURL(chrome::kChromeUIManageMirrorSyncURL),
       GURL(chrome::kChromeUIMultiDeviceSetupUrl),
-      GURL(chrome::kChromeUINetworkUrl), GURL(chrome::kOsUINetworkURL),
-      GURL(chrome::kChromeUIOSCreditsURL), GURL(chrome::kChromeUIPowerUrl),
+      GURL(chrome::kChromeUINetworkUrl),
+      GURL(chrome::kOsUINetworkURL),
+      GURL(chrome::kChromeUIOSCreditsURL),
+      GURL(chrome::kChromeUIPowerUrl),
       GURL(chrome::kChromeUIPrintManagementUrl),
       GURL(ash::multidevice::kChromeUIProximityAuthURL),
-      GURL(chrome::kOsUIRestartURL), GURL(chrome::kChromeUIScanningAppURL),
-      GURL(chrome::kOsUIScanningAppURL), GURL(chrome::kChromeUISetTimeURL),
-      GURL(chrome::kChromeUIOSSettingsURL), GURL(chrome::kOsUISettingsURL),
-      GURL(chrome::kOsUISettingsURL), GURL(chrome::kOsUISignInInternalsURL),
-      GURL(chrome::kChromeUISlowURL), GURL(chrome::kChromeUISmbShareURL),
-      GURL(chrome::kOsUISyncInternalsURL), GURL(chrome::kOsUISysInternalsUrl),
-      GURL(chrome::kOsUITermsURL), GURL(chrome::kChromeUIUserImageURL),
-      GURL(chrome::kOsUIVersionURL), GURL(chrome::kChromeUIVmUrl),
-      GURL(chrome::kOsUISystemURL), GURL(chrome::kOsUIHelpAppURL),
-      // The CL to land this didn't land yet. Once landed they need to be moved
-      // to Lacros. However  - as the refactor might precede this, there is no
-      // TODO for it.
-      GURL(chrome::kChromeUICertificateManagerDialogURL)};
+      GURL(chrome::kOsUIRestartURL),
+      GURL(chrome::kChromeUIScanningAppURL),
+      GURL(chrome::kOsUIScanningAppURL),
+      GURL(chrome::kChromeUISetTimeURL),
+      GURL(chrome::kChromeUIOSSettingsURL),
+      GURL(chrome::kOsUISettingsURL),
+      GURL(chrome::kOsUISettingsURL),
+      GURL(chrome::kOsUISignInInternalsURL),
+      GURL(chrome::kChromeUISlowURL),
+      GURL(chrome::kChromeUISmbShareURL),
+      GURL(chrome::kOsUISyncInternalsURL),
+      GURL(chrome::kOsUISysInternalsUrl),
+      GURL(chrome::kOsUITermsURL),
+      GURL(chrome::kChromeUIUserImageURL),
+      GURL(chrome::kOsUIVersionURL),
+      GURL(chrome::kChromeUIVmUrl),
+      GURL(chrome::kOsUISystemURL),
+      GURL(chrome::kOsUIHelpAppURL)};
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::vector<GURL>{GURL(chrome::kChromeUIAboutURL),
                            GURL(chrome::kChromeUIComponentsUrl),

@@ -36,6 +36,7 @@ import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://re
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
@@ -214,13 +215,13 @@ class SettingsLockScreenElement extends SettingsLockScreenElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kLockScreenV2,
-          chromeos.settings.mojom.Setting.kChangeAuthPinV2,
+          Setting.kLockScreenV2,
+          Setting.kChangeAuthPinV2,
         ]),
       },
     };
@@ -284,7 +285,15 @@ class SettingsLockScreenElement extends SettingsLockScreenElementBase {
       target.checked = !target.checked;
       return;
     }
-    this.setLockScreenEnabled(this.authToken.token, target.checked);
+    this.setLockScreenEnabled(
+        this.authToken.token, target.checked, (success) => {
+          if (!success) {
+            target.checked = !target.checked;
+            const authTokenInvalid = new CustomEvent(
+                'auth-token-invalid', {bubbles: true, composed: true});
+            this.dispatchEvent(authTokenInvalid);
+          }
+        });
   }
 
   /**

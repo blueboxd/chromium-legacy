@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Romaja hangul</translation>
 <translation id="112387589102719461">Inglés (EUA) con teclado Dvorak para programadores</translation>
 <translation id="1134697384939541955">Inglés (EUA) con teclado ampliado</translation>
+<translation id="1138691154716715755">Máis cedo este mes</translation>
 <translation id="1148097584170732637">Atopáronse <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Non hai espazo suficiente no almacenamento local. Precísase un espazo adicional de <ph name="FILE_SIZE" />.
@@ -20,7 +21,6 @@
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Catalán</translation>
 <translation id="1168100932582989117">Servidores de nomes de Google</translation>
-<translation id="1171082344678443012">Arquivo comprimido mediante XZ</translation>
 <translation id="1172970565351728681">Tempo restante aproximado: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Cambiar o nome</translation>
 <translation id="1173916544412572294">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, batería do teléfono ao <ph name="BATTERY_STATUS" /> %, detalles</translation>
@@ -30,12 +30,10 @@
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1209796539517632982">Servidores de nomes automáticos</translation>
 <translation id="1210831758834677569">Laosiano</translation>
-<translation id="1223825810409523901">Extensión de Chrome</translation>
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="1249250836236328755">Xénero</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
 <translation id="1272293450992660632">Os valores dos PIN non coinciden.</translation>
-<translation id="127650757582748357">Arquivo comprimido BZIP2</translation>
 <translation id="1280820357415527819">Buscando redes de telefonía móbil</translation>
 <translation id="1291603679744561561">SIM bloqueada</translation>
 <translation id="1293556467332435079">Ficheiros</translation>
@@ -81,7 +79,6 @@
 <translation id="166439687370499867">Non se permite cambiar a configuración da rede compartida</translation>
 <translation id="1665611772925418501">Non se puido modificar o ficheiro.</translation>
 <translation id="1673103856845176271">Non se puido acceder ao ficheiro por motivos de seguranza.</translation>
-<translation id="16762847117768727">Imaxe ISO</translation>
 <translation id="169515659049020177">Maiús</translation>
 <translation id="1715848075824334077">En bicicleta</translation>
 <translation id="1722487484194605434">Comprimindo <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
@@ -121,11 +118,9 @@
 <translation id="1942765061641586207">Resolución da imaxe</translation>
 <translation id="1972984168337863910">Despregar paneis de comentarios de ficheiros</translation>
 <translation id="1995337122023280937">Ir á localización do ficheiro</translation>
-<translation id="1996806196681857869">Arquivo comprimido mediante Z</translation>
 <translation id="2001796770603320721">Xestionar contido en Drive</translation>
 <translation id="2009067268969781306">Ao formatar unha unidade, eliminaranse todos os datos que conteña. Esta acción non se pode desfacer.</translation>
 <translation id="2025955442973426285">Tigriña</translation>
-<translation id="2028997212275086731">Arquivo RAR</translation>
 <translation id="2037845485764049925">Ruso</translation>
 <translation id="2044023416777079300">O módem non está rexistrado</translation>
 <translation id="2046702855113914483">Ramen</translation>
@@ -141,6 +136,7 @@
 <translation id="2141347188420181405">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, bloqueada polo administrador, detalles</translation>
 <translation id="2142680004883808240">Ruso con teclado YaZHert fonético</translation>
 <translation id="2143778271340628265">Configuración manual do proxy</translation>
+<translation id="2148716181193084225">Hoxe</translation>
 <translation id="2163152940313951844">Carácter non válido: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugués con teclado internacional estadounidense (PC)</translation>
 <translation id="2198315389084035571">Chinés simplificado</translation>
@@ -165,6 +161,7 @@
 <translation id="2377319039870049694">Cambiar á vista de lista</translation>
 <translation id="2377590462528165447">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ficheiros seleccionados</translation>
+<translation id="2387120140441437063">Non se poden abrir os ficheiros que se atopan na papeleira. Para facelo, antes tes que restauralos.</translation>
 <translation id="2387458720915042159">Tipo de conexión mediante proxy</translation>
 <translation id="2389832672041313158">Birmano (Myanmar)</translation>
 <translation id="2392369802118427583">Activar</translation>
@@ -186,7 +183,6 @@
 <translation id="2541377937973966830">O contido deste cartafol é só de lectura. Non se admiten algunhas actividades.</translation>
 <translation id="2542049655219295786">Táboa de Google</translation>
 <translation id="2544853746127077729">A rede rexeitou o certificado de autenticación</translation>
-<translation id="2547921442987553570">Engadir a <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Internacional dos EUA</translation>
 <translation id="2563185590376525700">Ra</translation>
 <translation id="2578394532502990878">Támil (fonético)</translation>
@@ -208,10 +204,8 @@
 <translation id="2771816809568414714">Queixo</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2782104745158847185">Produciuse un erro ao instalar a aplicación Linux</translation>
-<translation id="2788520643285360081">Arquivo 7-Zip</translation>
 <translation id="2803375539583399270">Introduce o PIN</translation>
 <translation id="2820957248982571256">Buscando…</translation>
-<translation id="2822595620066756134">Arquivo comprimido GZIP</translation>
 <translation id="2830077785865012357">Chinés (zhuyin)</translation>
 <translation id="2843806747483486897">Cambiar acción predeterminada...</translation>
 <translation id="2850124913210091882">Copia de seguranza</translation>
@@ -240,7 +234,6 @@
 <translation id="3047197340186497470">Chinés (Dayi)</translation>
 <translation id="3057861065630527966">Crea unha copia de seguranza das túas fotos e vídeos</translation>
 <translation id="3067790092342515856">Ficheiros de Windows</translation>
-<translation id="3078461028045006476">Compartir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3104793765551262433">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, bloqueada polo administrador, detalles</translation>
@@ -303,7 +296,6 @@
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3587482841069643663">Todos</translation>
 <translation id="3592251141500063301">Non se puido facer que <ph name="FILE_NAME" /> estivese dispoñible sen conexión</translation>
-<translation id="3593874215226880809">Arquivo comprimido LZIP</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">Francés canadense</translation>
 <translation id="3606220979431771195">Turco F</translation>
@@ -316,7 +308,6 @@
 <translation id="3689865792480713551">Cancelar esta actividade: <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, desactivada, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, detalles</translation>
 <translation id="3691184985318546178">Cingalés</translation>
-<translation id="3703620396751288986">Arquivo ZIP</translation>
 <translation id="3726463242007121105">Este dispositivo non se pode abrir debido a que o seu sistema de ficheiros non é compatible.</translation>
 <translation id="3727148787322499904">Ao cambiar esta opción de configuración, veranse afectadas todas as redes compartidas</translation>
 <translation id="3737576078404241332">Quitar da barra lateral</translation>
@@ -339,7 +330,6 @@
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3855472144336161447">Neo 2 alemán</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="386548886866354912">Comprimir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descrición</translation>
 <translation id="3899991606604168269">Francés (Canadá) con teclado multilingüe</translation>
 <translation id="3901991538546252627">Conectando con <ph name="NAME" /></translation>
@@ -352,6 +342,7 @@
 <translation id="3971140002794351170">Descargar perfil para móbiles, rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inglés (Reino Unido)</translation>
 <translation id="3975895378829046965">Bengalí (fonético)</translation>
+<translation id="3991446849494482687">Tamén se desactivará no dispositivo a opción de configuración de bloqueo da SIM.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4017788180641807848">Inglés (EUA) con teclado Workman</translation>
 <translation id="4040753847560036377">O PUK é incorrecto</translation>
@@ -388,6 +379,7 @@
 <translation id="4380245540200674032">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, xestionada polo teu administrador, detalles</translation>
 <translation id="4387004326333427325">Certificado de autenticación rexeitado de forma remota</translation>
 <translation id="4394214039309501350">Ligazón externa</translation>
+<translation id="4394980935660306080">Máis cedo esta semana</translation>
 <translation id="4401287888955153199">Extraer todo</translation>
 <translation id="4410695710508688828">Produciuse un erro durante a extracción. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Crea un atallo para acceder aos teus ficheiros</translation>
@@ -418,7 +410,6 @@
 <translation id="4646813851450205600">Checo con teclado QWERTY</translation>
 <translation id="4656777537938206294">Activa o acceso sen conexión a estes ficheiros</translation>
 <translation id="4658782175094886150">Persoa na neve</translation>
-<translation id="4661996069183330363">Arquivo TAR</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" perderán o acceso a menos que estes elementos se compartan con eles.</translation>
 <translation id="467809019005607715">Presentacións de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
@@ -432,6 +423,7 @@
 <translation id="4712283082407695269">Abrindo <ph name="PATH" /></translation>
 <translation id="4720185134442950733">Rede de datos móbiles</translation>
 <translation id="4724850507808590449">Creouse unha copia de seguranza de <ph name="FILE_COUNT" /> fotos</translation>
+<translation id="4725096204469550614">Máis cedo este ano</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Aterraxe</translation>
 <translation id="4747271164117300400">Macedonio</translation>
@@ -481,6 +473,7 @@
 <translation id="508423945471810158">Movendo <ph name="NUMBER_OF_ITEMS" /> elementos a <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Produciuse un erro.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
+<translation id="5102922915594634436">Xestionar cartafoles sincronizados</translation>
 <translation id="5109254780565519649">Produciuse un erro. Pode que non se restaurasen algúns elementos.</translation>
 <translation id="5110329002213341433">Inglés (Canadá)</translation>
 <translation id="5123433949759960244">Baloncesto</translation>
@@ -600,7 +593,6 @@
 <translation id="6055907707645252013">Rede de tipo <ph name="NETWORK_TYPE" />, non conectada</translation>
 <translation id="6074825444536523002">Formulario de Google</translation>
 <translation id="6079871810119356840">Húngaro con teclado QWERTY</translation>
-<translation id="6082256976217156453">Arquivo comprimido mediante LZMA</translation>
 <translation id="6096979789310008754">Texto de busca borrado, mostrando todos os ficheiros e cartafoles.</translation>
 <translation id="610101264611565198">Movendo <ph name="FILE_NAME" /> a <ph name="FOLDER_NAME" /></translation>
 <translation id="61118516107968648">Texto en formato CSV</translation>
@@ -614,14 +606,12 @@
 <translation id="6165508094623778733">Máis información</translation>
 <translation id="6170470584681422115">Sándwich</translation>
 <translation id="6187719147498869044">Húngaro</translation>
-<translation id="6189412234224385711">Abrir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6199801702437275229">Esperando pola información do espazo...</translation>
 <translation id="6205710420833115353">Algunhas accións tardan máis do esperado. Queres cancelalas?</translation>
 <translation id="6220423280121890987">Panxabí</translation>
 <translation id="6224240818060029162">Dinamarqués</translation>
 <translation id="6224253798271602650">Formatar o <ph name="DRIVE_NAME" /></translation>
-<translation id="6224665423283788195">Arquivo comprimido mediante Zstandard</translation>
 <translation id="6227235786875481728">Non se puido reproducir este ficheiro.</translation>
 <translation id="6241349547798190358">Neerlandés (Bélxica)</translation>
 <translation id="6267547857941397424">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, batería do teléfono ao <ph name="BATTERY_STATUS" /> %, conectar</translation>
@@ -630,6 +620,7 @@
 <translation id="6296410173147755564">O PUK non é válido</translation>
 <translation id="6312403991423642364">Erro de rede descoñecido</translation>
 <translation id="6317608858038767920">Servidor de nomes personalizado <ph name="INPUT_INDEX" /></translation>
+<translation id="6320212353742551423">Arquivo <ph name="ARCHIVE_TYPE" /></translation>
 <translation id="6321303798550928047">Saudando coa man</translation>
 <translation id="6327785803543103246">Detección automática do proxy web</translation>
 <translation id="6339145975392024142">Internacional dos EUA (PC)</translation>
@@ -718,6 +709,7 @@
 <translation id="7075931588889865715">Tailandés con teclado TIS 820-2531</translation>
 <translation id="708278670402572152">Desconectar a rede para activar a busca</translation>
 <translation id="7086590977277044826">Támil con teclado InScript</translation>
+<translation id="7088615885725309056">Anterior</translation>
 <translation id="7103992300314999525">Macedonio</translation>
 <translation id="7106346894903675391">Comprar máis almacenamento...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;": &lt;em&gt;buscar en Drive&lt;/em&gt;</translation>
@@ -782,6 +774,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Cando se formata unha unidade, bórranse todos os datos que contén e quítanse todas as súas particións, incluídas as invisibles. Esta acción non se pode desfacer.</translation>
 <translation id="7695430100978772476">Non se puido formatar <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Non se puido baleirar a papeleira.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7705251383879779343">Copiouse <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">Información da imaxe</translation>
@@ -792,6 +785,7 @@
 <translation id="7760449188139285140">Chinés (Wubi)</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7774365994322694683">Paxaro</translation>
+<translation id="7781829728241885113">Onte</translation>
 <translation id="7788080748068240085">Para gardar "<ph name="FILE_NAME" />" sen conexión, debes liberar <ph name="TOTAL_FILE_SIZE" /> adicionais de espazo:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />deixa de fixar ficheiros que xa non precises para acceder a eles sen conexión<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />elimina ficheiros do cartafol Descargas<ph name="MARKUP_5" /></translation>
@@ -935,7 +929,6 @@
 <translation id="8903931173357132290">Persoa graduada</translation>
 <translation id="8912078710089354287">Can movendo o rabo</translation>
 <translation id="8919081441417203123">Danés</translation>
-<translation id="8965273390142984105">Arquivo comprimido LZOP</translation>
 <translation id="8965697826696209160">Non hai espazo suficiente.</translation>
 <translation id="8997962250644902079">Chinés tradicional (Pinyin)</translation>
 <translation id="9003940392834790328">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, xestionada polo teu administrador, detalles</translation>

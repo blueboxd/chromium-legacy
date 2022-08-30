@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
+class CrosWindow;
+class CrosScreen;
 class ScriptPromiseResolver;
 
 class CrosWindowManagement
@@ -50,8 +52,14 @@ class CrosWindowManagement
   void WindowsCallback(ScriptPromiseResolver* resolver,
                        WTF::Vector<mojom::blink::CrosWindowInfoPtr> windows);
 
+  ScriptPromise getScreens(ScriptState* script_state);
+  void ScreensCallback(ScriptPromiseResolver* resolver,
+                       WTF::Vector<mojom::blink::CrosScreenInfoPtr> screens);
+
   // mojom::blink::CrosWindowManagementObserver
   void DispatchStartEvent() override;
+
+  const HeapVector<Member<CrosWindow>>& windows();
 
  private:
   void BindWindowManagerStartObserverImpl(
@@ -62,6 +70,10 @@ class CrosWindowManagement
   HeapMojoReceiver<mojom::blink::CrosWindowManagementStartObserver,
                    CrosWindowManagement>
       receiver_;
+
+  HeapVector<Member<CrosWindow>> windows_;
+
+  HeapVector<Member<CrosScreen>> screens_;
 };
 
 }  // namespace blink

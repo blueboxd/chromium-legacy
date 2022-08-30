@@ -189,6 +189,20 @@ void AwAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
   NOTIMPLEMENTED();
 }
 
+bool AwAutofillClient::IsTouchToFillCreditCardSupported() {
+  return false;
+}
+
+bool AwAutofillClient::ShowTouchToFillCreditCard(
+    base::WeakPtr<autofill::TouchToFillDelegate> delegate) {
+  NOTREACHED();
+  return false;
+}
+
+void AwAutofillClient::HideTouchToFillCreditCard() {
+  NOTREACHED();
+}
+
 void AwAutofillClient::ShowAutofillPopup(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
@@ -301,7 +315,7 @@ void AwAutofillClient::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
+void AwAutofillClient::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
   NOTIMPLEMENTED();
 }
 

@@ -102,7 +102,7 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
       state_path_, otr_state_path_, base_cache_path);
   DCHECK(directories_created);
 
-  // Bring up the policy system before creating |prefs_|.
+  // Bring up the policy system before creating `prefs_`.
   BrowserPolicyConnectorIOS* connector =
       GetApplicationContext()->GetBrowserPolicyConnector();
   DCHECK(connector);
@@ -208,7 +208,8 @@ ChromeBrowserStateImpl::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
 }
 
-PrefService* ChromeBrowserStateImpl::GetPrefs() {
+sync_preferences::PrefServiceSyncable*
+ChromeBrowserStateImpl::GetSyncablePrefs() {
   DCHECK(prefs_);  // Should explicitly be initialized.
   return prefs_.get();
 }

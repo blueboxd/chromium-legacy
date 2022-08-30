@@ -9,8 +9,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
-namespace net {
-namespace features {
+namespace net::features {
 
 const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -108,6 +107,9 @@ const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbExtraTimeAbsolute{
 
 const base::FeatureParam<int> kUseDnsHttpsSvcbExtraTimePercent{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbExtraTimePercent", 0};
+
+const base::Feature kUseDnsHttpsSvcbAlpn{"UseDnsHttpsSvcbAlpn",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -213,6 +215,11 @@ const base::FeatureParam<int> kCertDualVerificationTrialImpl{
 const base::FeatureParam<int> kCertDualVerificationTrialCacheSize{
     &kCertDualVerificationTrialFeature, "cachesize", 0};
 #endif /* BUILDFLAG(IS_MAC) */
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) && \
+    BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+const base::FeatureParam<bool> kCertDualVerificationTrialUseCrs{
+    &kCertDualVerificationTrialFeature, "use_crs", false};
+#endif
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -301,6 +308,9 @@ const base::Feature kStaticKeyPinningEnforcement(
 const base::Feature kCookieDomainRejectNonASCII{
     "CookieDomainRejectNonASCII", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBlockSetCookieHeader{"BlockSetCookieHeader",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Read as much of the net::URLRequest as there is space in the Mojo data pipe.
 const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers2",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -318,5 +328,4 @@ const base::FeatureParam<int>
         &kOptimizeNetworkBuffers, "filter_source_stream_buffer_size",
         32 * 1024};
 
-}  // namespace features
-}  // namespace net
+}  // namespace net::features

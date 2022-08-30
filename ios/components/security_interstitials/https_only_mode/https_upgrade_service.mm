@@ -17,6 +17,14 @@ void HttpsUpgradeService::SetHttpsPortForTesting(
   use_fake_https_for_testing_ = use_fake_https_for_testing;
 }
 
+int HttpsUpgradeService::GetHttpsPortForTesting() const {
+  return https_port_for_testing_;
+}
+
+bool HttpsUpgradeService::IsUsingFakeHttpsForTesting() const {
+  return use_fake_https_for_testing_;
+}
+
 bool HttpsUpgradeService::IsFakeHTTPSForTesting(const GURL& url) const {
   return url.IntPort() == https_port_for_testing_;
 }
@@ -28,6 +36,10 @@ bool HttpsUpgradeService::IsLocalhost(const GURL& url) const {
     return url.host() == "localhost";
   }
   return net::IsLocalhost(url);
+}
+
+void HttpsUpgradeService::SetFallbackHttpPortForTesting(int http_port) {
+  http_port_for_testing_ = http_port;
 }
 
 GURL HttpsUpgradeService::GetUpgradedHttpsUrl(const GURL& http_url) const {
@@ -51,4 +63,33 @@ GURL HttpsUpgradeService::GetUpgradedHttpsUrl(const GURL& http_url) const {
     replacements.SetSchemeStr(url::kHttpsScheme);
   }
   return http_url.ReplaceComponents(replacements);
+}
+
+GURL HttpsUpgradeService::GetHttpUrl(const GURL& url) const {
+  if (use_fake_https_for_testing_) {
+    DCHECK_EQ(url::kHttpScheme, url.scheme());
+  } else {
+    DCHECK_EQ(url::kHttpsScheme, url.scheme());
+  }
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url::kHttpScheme);
+
+  // This needs to be in scope when ReplaceComponents() is called:
+  const std::string port_str = base::NumberToString(http_port_for_testing_);
+  if (http_port_for_testing_) {
+    // We'll only get here in tests. Tests should always have a non-default
+    // port on the input text.
+    DCHECK(!url.port().empty());
+    replacements.SetPortStr(port_str);
+  }
+  return url.ReplaceComponents(replacements);
+}
+
+base::TimeDelta HttpsUpgradeService::GetFallbackDelay() const {
+  return fallback_delay_;
+}
+
+void HttpsUpgradeService::SetFallbackDelayForTesting(base::TimeDelta delay) {
+  fallback_delay_ = delay;
 }

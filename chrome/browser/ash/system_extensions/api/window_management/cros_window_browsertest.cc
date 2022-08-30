@@ -4,6 +4,10 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -16,12 +20,12 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,8 +38,12 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/aura/window.h"
+#include "ui/display/test/display_manager_test_api.h"
 
 namespace ash {
+class AshTestBase;
+class Shelf;
+class ShelfWidget;
 
 namespace {
 
@@ -182,7 +190,7 @@ class CrosWindowBrowserTest : public InProcessBrowserTest {
     feature_list_.InitAndEnableFeature(features::kSystemExtensions);
 
     installation_ =
-        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
   }
   ~CrosWindowBrowserTest() override = default;
 
@@ -197,6 +205,7 @@ class CrosWindowBrowserTest : public InProcessBrowserTest {
         "BlinkExtensionChromeOS,BlinkExtensionChromeOSWindowManagement");
   }
 
+ protected:
   void RunTest(base::StringPiece test_code) {
     // Initialize embedded test server.
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -240,8 +249,7 @@ class CrosWindowBrowserTest : public InProcessBrowserTest {
                      kPostTestStart));
   }
 
- protected:
-  std::unique_ptr<web_app::TestSystemWebAppInstallation> installation_;
+  std::unique_ptr<TestSystemWebAppInstallation> installation_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -269,6 +277,42 @@ class CrosWindowExtensionBrowserTest : public InProcessBrowserTest {
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosScreenPropertiesTest) {
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+      .UpdateDisplay("0+0-1280x720,1280+600-1920x1080");
+
+  gfx::Rect shelf_bounds =
+      AshTestBase::GetPrimaryShelf()->shelf_widget()->GetVisibleShelfBounds();
+
+  std::string test_code = content::JsReplace(R"(
+async function cros_test() {
+  let screens = await chromeos.windowManagement.getScreens();
+
+  assert_equals(screens.length, 2);
+
+  assert_equals(screens[0].width, 1280);
+  assert_equals(screens[0].availWidth, 1280);
+  assert_equals(screens[0].height, 720);
+  assert_equals(screens[0].availHeight, 720 - $1);
+  assert_equals(screens[0].left, 0);
+  assert_equals(screens[0].top, 0);
+
+  assert_equals(screens[1].width, 1920);
+  assert_equals(screens[1].availWidth, 1920);
+  assert_equals(screens[1].height, 1080);
+  assert_equals(screens[1].availHeight, 1080 - $1);
+  assert_equals(screens[1].left, 1280);
+
+  // TODO(b/236793342): Uncomment when DisplayManagerTestApi::UpdateDisplay
+  // correctly updates y bounds of display.
+  // assert_equals(screens[1].top, 600);
+}
+  )",
+                                             shelf_bounds.height());
+
+  RunTest(test_code);
+}
 
 IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosWindowMoveTo) {
   const char test_code[] = R"(
@@ -626,6 +670,26 @@ async function cros_test() {
   RunTest(test_code);
 }
 
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CacheGetWindowsReturnsProperty) {
+  const char test_code[] = R"(
+async function cros_test() {
+  let returnedWindows = await chromeos.windowManagement.getWindows();
+  assert_array_equals(chromeos.windowManagement.windows, returnedWindows);
+
+  let windows = chromeos.windowManagement.windows;
+  await chromeos.windowManagement.getWindows();
+
+  // TODO(b/232866765): Change to assert_array_equals() once we update the
+  // cache.
+  windows.forEach((window, index) => {
+    assert_not_equals(window, chromeos.windowManagement.windows[index]);
+  });
+}
+  )";
+
+  RunTest(test_code);
+}
+
 IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosWindowSWACrashTest) {
   // Finish installation of Sample SWA.
   installation_->WaitForAppInstall();
@@ -635,8 +699,7 @@ IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosWindowSWACrashTest) {
       installation_->GetAppUrl());
   navigation_observer.StartWatchingNewWebContents();
 
-  web_app::LaunchSystemWebAppAsync(browser()->profile(),
-                                   installation_->GetType());
+  ash::LaunchSystemWebAppAsync(browser()->profile(), installation_->GetType());
 
   navigation_observer.Wait();
 
@@ -763,8 +826,8 @@ async function cros_test() {
 }
 
 IN_PROC_BROWSER_TEST_F(CrosWindowExtensionBrowserTest, StartEvent) {
-  auto* provider = SystemExtensionsProvider::Get(browser()->profile());
-  auto& install_manager = provider->install_manager();
+  auto& provider = SystemExtensionsProvider::Get(browser()->profile());
+  auto& install_manager = provider.install_manager();
 
   // TODO(b/230811571): Rather than using the console to wait for the
   // observer to get called, we should add support for running async functions

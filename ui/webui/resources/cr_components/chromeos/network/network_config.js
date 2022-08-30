@@ -529,6 +529,11 @@ Polymer({
     }
   },
 
+  /** @private */
+  getHiddenNetworkMigrationEnabled() {
+    return loadTimeData.getBoolean('enableHiddenNetworkMigration');
+  },
+
   /**
    * @param {boolean} connect If true, connect after save.
    * @private
@@ -560,6 +565,15 @@ Polymer({
     }
     const propertiesToSet = this.getPropertiesToSet_();
     if (this.managedProperties_.source === mojom.OncSource.kNone) {
+      if (this.getHiddenNetworkMigrationEnabled()) {
+        // Note: Set hidden SSID mode of new WiFi networks to disabled to avoid
+        // unintentionally marking networks as hidden if not in range or
+        // misspelled, etc.
+        if (this.mojoType_ === mojom.NetworkType.kWiFi) {
+          propertiesToSet.typeConfig.wifi.hiddenSsid =
+              chromeos.networkConfig.mojom.HiddenSsidMode.kDisabled;
+        }
+      }
       if (!this.autoConnect_) {
         // Note: Do not set autoConnect to true, the connection manager will do
         // that on a successful connection (unless set to false here).

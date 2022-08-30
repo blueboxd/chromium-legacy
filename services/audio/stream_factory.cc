@@ -133,8 +133,11 @@ void StreamFactory::CreateOutputStream(
 
   // This is required for multizone audio playback on Cast devices.
   // See //chromecast/media/cast_audio_manager.h for more information.
+  //
+  // TODO(crbug.com/1336055): Determine if this condition should instead be
+  // ENABLE_CAST_RECEIVER && !IS_FUCHSIA.
   const std::string device_id_or_group_id =
-#if BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
       (::media::AudioDeviceDescription::IsCommunicationsDevice(
            output_device_id) ||
        group_id.is_empty())
@@ -218,7 +221,7 @@ void StreamFactory::CreateLoopbackStream(
     TRACE_EVENT_BEGIN0("audio", "Start Loopback Worker");
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_NONE;
-    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    options.thread_type = base::ThreadType::kRealtimeAudio;
     if (loopback_worker_thread_.StartWithOptions(std::move(options))) {
       task_runner = loopback_worker_thread_.task_runner();
       TRACE_EVENT_END1("audio", "Start Loopback Worker", "success", true);

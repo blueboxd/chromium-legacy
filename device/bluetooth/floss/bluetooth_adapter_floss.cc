@@ -131,9 +131,7 @@ void BluetoothAdapterFloss::RemoveAdapter() {
 }
 
 void BluetoothAdapterFloss::PopulateInitialDevices() {
-  FlossDBusManager::Get()->GetAdapterClient()->GetBondedDevices(
-      base::BindOnce(&BluetoothAdapterFloss::OnGetBondedDevices,
-                     weak_ptr_factory_.GetWeakPtr()));
+  FlossDBusManager::Get()->GetAdapterClient()->GetBondedDevices();
 }
 
 void BluetoothAdapterFloss::ClearAllDevices() {
@@ -202,7 +200,9 @@ std::string BluetoothAdapterFloss::GetName() const {
 }
 
 std::string BluetoothAdapterFloss::GetSystemName() const {
-  return std::string();
+  // TODO(b/238230098): Floss should expose system information, i.e. stack name
+  // and version.
+  return "Floss";
 }
 
 void BluetoothAdapterFloss::SetName(const std::string& name,
@@ -387,24 +387,6 @@ void BluetoothAdapterFloss::OnStopDiscovery(
 
   DCHECK_GE(NumDiscoverySessions(), 0);
   std::move(callback).Run(false, UMABluetoothDiscoverySessionOutcome::SUCCESS);
-}
-
-void BluetoothAdapterFloss::OnGetBondedDevices(
-    const absl::optional<std::vector<FlossDeviceId>>& ret,
-    const absl::optional<Error>& error) {
-  if (error.has_value()) {
-    LOG(ERROR) << "Error on GetBondedDevices: " << error->name;
-    return;
-  }
-
-  if (!ret.has_value()) {
-    LOG(ERROR) << "Error on GetBondedDevices: No return value";
-    return;
-  }
-
-  for (const auto& device_id : *ret) {
-    AdapterFoundDevice(device_id);
-  }
 }
 
 void BluetoothAdapterFloss::OnGetConnectionState(

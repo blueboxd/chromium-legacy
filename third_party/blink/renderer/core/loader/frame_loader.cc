@@ -257,19 +257,6 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container) {
   navigation_params->url = KURL(g_empty_string);
   navigation_params->frame_policy =
       frame_->Owner() ? frame_->Owner()->GetFramePolicy() : FramePolicy();
-  navigation_params->anonymous = InitialEmptyDocumentAnonymous();
-
-  // An interesting edge case to consider: A document has:
-  // CSP: sandbox allow-popups allow-popups-to-escape-sandbox
-  // It opens a blank popup.
-  //
-  // The popup's main frame doesn't inherit sandbox. However the initial empty
-  // document inherits sandbox from the opener, through inherited CSP.
-  navigation_params->sandbox_flags = PendingEffectiveSandboxFlags();
-  for (const auto& csp :
-       policy_container->GetPolicies().content_security_policies) {
-    navigation_params->sandbox_flags |= csp->sandbox;
-  }
 
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
@@ -1068,44 +1055,6 @@ void FrameLoader::CommitNavigation(
     extra_data = document_loader_->TakeExtraData();
   }
 
-  // Fenced frame reporting metadata persists across same-origin navigations
-  // initiated from inside the fenced frame. Embedder-initiated navigations
-  // use a unique origin (in `FencedFrame::Navigate`), so the requestor is
-  // always considered cross-origin by the check (in MPArch).
-  bool is_requestor_same_origin =
-      !navigation_params->requestor_origin.IsNull() &&
-      navigation_params->requestor_origin.IsSameOriginWith(
-          WebSecurityOrigin::Create(navigation_params->url));
-  if (is_requestor_same_origin) {
-    for (const WebNavigationParams::RedirectInfo& redirect :
-         navigation_params->redirects) {
-      is_requestor_same_origin &=
-          navigation_params->requestor_origin.IsSameOriginWith(
-              WebSecurityOrigin::Create(redirect.new_url));
-    }
-  }
-  if (is_requestor_same_origin) {
-    const mojom::blink::FencedFrameReportingPtr& old_fenced_frame_reporting =
-        document_loader_->FencedFrameReporting();
-    // TODO(crbug.com/1342301): When we disable FF self urn navigations, add
-    // this DCHECK:
-    // DCHECK(!navigation_params->fenced_frame_reporting);
-    // and remove the condition from the `if` below.
-    if (old_fenced_frame_reporting &&
-        !navigation_params->fenced_frame_reporting) {
-      navigation_params->fenced_frame_reporting.emplace();
-      for (const auto& [destination, event_type_url] :
-           old_fenced_frame_reporting->metadata) {
-        base::flat_map<WebString, WebURL> data;
-        for (const auto& [event_type, url] : event_type_url) {
-          data.emplace(event_type, url);
-        }
-        navigation_params->fenced_frame_reporting->metadata.emplace(
-            destination, std::move(data));
-      }
-    }
-  }
-
   // Create the OldDocumentInfoForCommit for the old document (that might be in
   // another FrameLoader) and save it in ScopedOldDocumentInfoForCommitCapturer,
   // so that the old document can access it and fill in the information as it
@@ -1123,8 +1072,7 @@ void FrameLoader::CommitNavigation(
     // for kRegular commits. Skip them here, too, to ensure we match
     // start/commit message pairs.
     if (commit_reason == CommitReason::kRegular) {
-      frame_->GetFrameScheduler()->DidStartProvisionalLoad(
-          frame_->IsMainFrame());
+      frame_->GetFrameScheduler()->DidStartProvisionalLoad();
       probe::DidStartProvisionalLoad(frame_);
     }
 
@@ -1197,12 +1145,6 @@ void FrameLoader::CommitNavigation(
     policy_container = PolicyContainer::CreateFromWebPolicyContainer(
         std::move(navigation_params->policy_container));
   }
-  // Synchronous navigation to about:blank is not driven by the browser process
-  // and happens after committing an initial empty document. Here, we make sure
-  // it is computed the same way as it was when creating the initial empty
-  // document.
-  if (navigation_params->is_synchronous_commit_for_bug_778318)
-    navigation_params->anonymous = InitialEmptyDocumentAnonymous();
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
@@ -1226,7 +1168,7 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   progress_tracker_->ProgressStarted();
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad();
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
   TakeObjectSnapshot();
@@ -1754,40 +1696,6 @@ FrameLoader::PendingEffectiveSandboxFlags() const {
   } else {
     return frame_->OpenerSandboxFlags();
   }
-}
-
-bool FrameLoader::InitialEmptyDocumentAnonymous() const {
-  Frame* parent = frame_->Tree().Parent();
-  // Top-level FrameTreeNode is never anonymous.
-  if (!parent)
-    return false;
-  // Provisional frame may be created under a remote parent. The value doesn't
-  // really matter, because the provisional frame is an implementation artifact.
-  // It is not visible. This could be removed after provisional frames being
-  // cleaned up. See https://crbug.com/578349.
-  if (frame_->IsProvisional()) {
-    return true;
-  }
-  // During a navigation inside a crashed frame, the browser process may create
-  // a speculative RenderFrame. This will commit an initial empty document under
-  // a remote frame. The real navigation will commit immediately after it.
-  // See https://crbug.com/756790
-  // There are no good way to determine whether this artifact document should be
-  // considered anonymous or not. The "anonymous" flag is pushed by the browser
-  // process during navigation and there are no local/remote replication.
-  // This is used only to reflect `window.isAnonymouslyFramed`.
-  //
-  // TODO(https://crbug.com/1325733) Adding "anonymous" inside
-  // PolicyContainerPolicies would allow the browser process to push a value
-  // here. Consider doing it, if this is worth it.
-  if (!parent->IsLocalFrame()) {
-    return true;
-  }
-
-  // An document should be anonymous when its parent is anonymous. See:
-  // https://wicg.github.io/anonymous-iframe/#initial-window-anonymous
-  return parent->DomWindow()->ToLocalDOMWindow()->isAnonymouslyFramed() ||
-         frame_->Owner()->Anonymous();
 }
 
 void FrameLoader::ModifyRequestForCSP(

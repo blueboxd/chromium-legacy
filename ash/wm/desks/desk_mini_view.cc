@@ -93,6 +93,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
   desk_name_view->AddObserver(this);
   desk_name_view->set_controller(this);
   desk_name_view->SetText(desk_->name());
+  desk_name_view->SetAccessibleName(desk_->name());
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -218,7 +219,7 @@ void DeskMiniView::UpdateBorderColor() {
   auto* color_provider = AshColorProvider::Get();
   if ((owner_bar_->dragged_item_over_bar() &&
        IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) ||
-      IsViewHighlighted()) {
+      desk_preview_->IsViewHighlighted()) {
     desk_preview_->SetBorderColor(color_provider->GetControlsLayerColor(
         AshColorProvider::ControlsLayerType::kFocusRingColor));
   } else if (!desk_->is_active() ||
@@ -253,13 +254,9 @@ void DeskMiniView::OpenContextMenu(ui::MenuSourceType source) {
       DesksController::Get()->GetCombineDesksTargetName(desk_));
 
   // Only show the combine desks context menu option if there are app windows in
-  // the desk, or if the desk is active and there are windows that should be
-  // visible on all desks.
+  // the desk, or if there are windows that should be visible on all desks.
   context_menu_->SetCombineDesksMenuItemVisibility(ContainsAppWindows(desk_));
 
-  // Only show the combine desks context menu option if there are app windows in
-  // the desk.
-  context_menu_->SetCombineDesksMenuItemVisibility(desk_->ContainsAppWindows());
   context_menu_->ShowContextMenuForView(
       this,
       base::i18n::IsRTL() ? desk_preview_->GetBoundsInScreen().bottom_right()
@@ -270,6 +267,28 @@ void DeskMiniView::OpenContextMenu(ui::MenuSourceType source) {
 void DeskMiniView::MaybeCloseContextMenu() {
   if (context_menu_)
     context_menu_->MaybeCloseMenu();
+}
+
+void DeskMiniView::OnRemovingDesk(DeskCloseType close_type) {
+  if (!desk_)
+    return;
+
+  auto* controller = DesksController::Get();
+  if (!controller->CanRemoveDesks())
+    return;
+
+  // We want to avoid the possibility of getting triggered multiple times. We
+  // therefore hide the buttons and mark ourselves (including children) as no
+  // longer processing events.
+  SetCanProcessEventsWithinSubtree(false);
+
+  if (features::IsDesksCloseAllEnabled())
+    desk_action_view_->SetVisible(false);
+  else
+    close_desk_button_->SetVisible(false);
+
+  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton,
+                         close_type);
 }
 
 const char* DeskMiniView::GetClassName() const {
@@ -390,55 +409,6 @@ void DeskMiniView::OnDeskNameChanged(const std::u16string& new_name) {
   desk_preview_->SetAccessibleName(new_name);
 
   Layout();
-}
-
-views::View* DeskMiniView::GetView() {
-  return this;
-}
-
-void DeskMiniView::MaybeActivateHighlightedView() {
-  DesksController::Get()->ActivateDesk(desk(),
-                                       DesksSwitchSource::kMiniViewButton);
-}
-
-void DeskMiniView::MaybeCloseHighlightedView(bool primary_action) {
-  // The primary action (Ctrl + W) is to remove the desk and not close the
-  // windows (combine the desk with one on the right or left). The secondary
-  // action (Ctrl + Shift + W) is to close the desk and all its applications.
-  OnRemovingDesk(primary_action ? DeskCloseType::kCombineDesks
-                                : DeskCloseType::kCloseAllWindowsAndWait);
-}
-
-void DeskMiniView::MaybeSwapHighlightedView(bool right) {
-  const int old_index = owner_bar_->GetMiniViewIndex(this);
-  DCHECK_NE(old_index, -1);
-
-  const bool mirrored = owner_bar_->GetMirrored();
-  // If mirrored, flip the swap direction.
-  int new_index = mirrored ^ right ? old_index + 1 : old_index - 1;
-  if (new_index < 0 ||
-      new_index == static_cast<int>(owner_bar_->mini_views().size())) {
-    return;
-  }
-
-  auto* desks_controller = DesksController::Get();
-  desks_controller->ReorderDesk(old_index, new_index);
-  desks_controller->UpdateDesksDefaultNames();
-}
-
-bool DeskMiniView::MaybeActivateHighlightedViewOnOverviewExit(
-    OverviewSession* overview_session) {
-  MaybeActivateHighlightedView();
-  return true;
-}
-
-void DeskMiniView::OnViewHighlighted() {
-  UpdateBorderColor();
-  owner_bar_->ScrollToShowMiniViewIfNecessary(this);
-}
-
-void DeskMiniView::OnViewUnhighlighted() {
-  UpdateBorderColor();
 }
 
 void DeskMiniView::ContentsChanged(views::Textfield* sender,
@@ -589,30 +559,6 @@ void DeskMiniView::OnViewBlurred(views::View* observed_view) {
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 }
 
-void DeskMiniView::OnRemovingDesk(DeskCloseType close_type) {
-  if (!desk_)
-    return;
-
-  auto* controller = DesksController::Get();
-  if (!controller->CanRemoveDesks())
-    return;
-
-  // We want to avoid the possibility of getting triggered multiple times. We
-  // therefore hide the buttons and mark ourselves (including children) as no
-  // longer processing events.
-  SetCanProcessEventsWithinSubtree(false);
-
-  if (features::IsDesksCloseAllEnabled())
-    desk_action_view_->SetVisible(false);
-  else
-    close_desk_button_->SetVisible(false);
-
-  desk_preview_->OnRemovingDesk();
-
-  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton,
-                         close_type);
-}
-
 void DeskMiniView::OnContextMenuClosed() {
   is_context_menu_open_ = false;
   UpdateDeskButtonVisibility();
@@ -633,7 +579,7 @@ void DeskMiniView::LayoutDeskNameView(const gfx::Rect& preview_bounds) {
   // from the size calculations so that the focus UI is aligned.
   views::FocusRing* focus_ring = views::FocusRing::Get(desk_name_view_);
   const int focus_ring_length =
-      focus_ring->halo_thickness() - focus_ring->halo_inset();
+      focus_ring->GetHaloThickness() - focus_ring->GetHaloInset();
   const int min_width = std::min(preview_bounds.width() - focus_ring_length,
                                  kMinDeskNameViewWidth);
   const int max_width = std::max(preview_bounds.width() - focus_ring_length,

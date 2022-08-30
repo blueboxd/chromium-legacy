@@ -232,6 +232,7 @@ constexpr char XRSession::kPlanesFeatureNotSupported[];
 constexpr char XRSession::kDepthSensingFeatureNotSupported[];
 constexpr char XRSession::kRawCameraAccessFeatureNotSupported[];
 constexpr char XRSession::kCannotCancelHitTestSource[];
+constexpr char XRSession::kCannotReportPoses[];
 
 class XRSession::XRSessionResizeObserverDelegate final
     : public ResizeObserver::Delegate {
@@ -362,6 +363,8 @@ XRSession::XRSession(
   recommended_framebuffer_scale_ =
       base::clamp(device_config->default_framebuffer_scale,
                   kMinDefaultFramebufferScale, kMaxDefaultFramebufferScale);
+
+  UpdateViews(device_config->views);
 
   DVLOG(2) << __func__
            << ": supports_viewport_scaling_=" << supports_viewport_scaling_;
@@ -2100,11 +2103,6 @@ void XRSession::OnMojoSpaceReset() {
   }
 }
 
-void XRSession::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
-  DCHECK(display_info);
-  SetXRDisplayInfo(std::move(display_info));
-}
-
 void XRSession::OnExitPresent() {
   DVLOG(2) << __func__ << ": immersive()=" << immersive()
            << " waiting_for_shutdown_=" << waiting_for_shutdown_;
@@ -2203,11 +2201,6 @@ bool XRSession::RemoveHitTestSource(
   DCHECK_HIT_TEST_SOURCES();
 
   return true;
-}
-
-void XRSession::SetXRDisplayInfo(
-    device::mojom::blink::VRDisplayInfoPtr display_info) {
-  UpdateViews(display_info->views);
 }
 
 const HeapVector<Member<XRViewData>>& XRSession::views() {

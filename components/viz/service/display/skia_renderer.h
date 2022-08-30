@@ -112,7 +112,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   class ScopedSkImageBuilder;
   class ScopedYUVSkImageBuilder;
 
-  void ClearCanvas(SkColor color);
+  void ClearCanvas(SkColor4f color);
   void ClearFramebuffer();
 
   // Callers should init an SkAutoCanvasRestore before calling this function.
@@ -289,10 +289,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   }
 
   // Interface used for drawing. Common among different draw modes.
-  sk_sp<SkSurface> root_surface_;
-  raw_ptr<SkCanvas> root_canvas_ = nullptr;
-  raw_ptr<SkCanvas> current_canvas_ = nullptr;
-  raw_ptr<SkSurface> current_surface_ = nullptr;
+  raw_ptr<SkCanvas, DanglingUntriaged> current_canvas_ = nullptr;
 
   class FrameResourceGpuCommandsCompletedFence;
   scoped_refptr<FrameResourceGpuCommandsCompletedFence>
@@ -327,7 +324,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   std::vector<SkMatrix> batched_cdt_matrices_;
 
   // Specific for SkDDL.
-  const raw_ptr<SkiaOutputSurface> skia_output_surface_;
+  const raw_ptr<SkiaOutputSurface, DanglingUntriaged> skia_output_surface_;
 
   const bool is_using_raw_draw_;
 

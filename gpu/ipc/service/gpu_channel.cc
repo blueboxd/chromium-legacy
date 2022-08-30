@@ -42,7 +42,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -549,7 +548,6 @@ GpuChannel::GpuChannel(
       task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       share_group_(share_group),
-      image_manager_(new gles2::ImageManager()),
       is_gpu_host_(is_gpu_host),
       filter_(base::MakeRefCounted<GpuChannelMessageFilter>(
           this,
@@ -760,7 +758,8 @@ mojom::GpuChannel& GpuChannel::GetGpuChannelForTesting() {
   return *filter_;
 }
 
-ImageDecodeAcceleratorStub* GpuChannel::GetImageDecodeAcceleratorStub() const {
+ImageDecodeAcceleratorStub*
+GpuChannel::GetImageDecodeAcceleratorStubForTesting() const {
   DCHECK(filter_);
   return filter_->image_decode_accelerator_stub();
 }
@@ -1082,10 +1081,12 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
       if (!manager->gpu_memory_buffer_factory())
         return nullptr;
 
+      // TODO(b/220336463): plumb the right color space.
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()
           ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
-                                          plane, client_id_, surface_handle);
+                                          gfx::ColorSpace(), plane, client_id_,
+                                          surface_handle);
     }
   }
 }

@@ -11,10 +11,10 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
@@ -208,7 +208,7 @@ namespace ui {
 
 namespace {
 
-typedef std::unordered_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
+typedef base::flat_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
 // Set of all AXPlatformNodeWin objects that were the target of an
 // alert event.
 base::LazyInstance<AXPlatformNodeWinSet>::Leaky g_alert_targets =
@@ -469,6 +469,18 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAControllerForArray() {
 
     if (IsValidUiaRelationTarget(view_popup_node_win))
       platform_node_list.push_back(view_popup_node_win);
+  }
+
+  // The aria-errormessage attribute (mapped to the kErrormessageId) is expected
+  // to be exposed through the ControllerFor property on UIA:
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-errormessage.
+  if (HasIntAttribute(ax::mojom::IntAttribute::kErrormessageId)) {
+    AXPlatformNodeWin* error_message_node_win =
+        static_cast<AXPlatformNodeWin*>(GetFromUniqueId(
+            GetIntAttribute(ax::mojom::IntAttribute::kErrormessageId)));
+
+    if (IsValidUiaRelationTarget(error_message_node_win))
+      platform_node_list.push_back(error_message_node_win);
   }
 
   return CreateUIAElementsSafeArray(platform_node_list);
@@ -4561,9 +4573,11 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
     return E_INVALIDARG;
 
   AXPosition start_position =
-      start_node->HypertextOffsetToEndpoint(selections->startOffset);
+      start_node->HypertextOffsetToEndpoint(selections->startOffset)
+          ->AsDomSelectionPosition();
   AXPosition end_position =
-      end_node->HypertextOffsetToEndpoint(selections->endOffset);
+      end_node->HypertextOffsetToEndpoint(selections->endOffset)
+          ->AsDomSelectionPosition();
   if (!start_position->IsNullPosition() || end_position->IsNullPosition())
     return E_INVALIDARG;
 
@@ -7273,6 +7287,10 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       case ax::mojom::Role::kLabelText:
       case ax::mojom::Role::kListBoxOption:
       case ax::mojom::Role::kListItem:
+      // Treat the root of a MathML tree as content/control so that it is seen
+      // by UIA clients. The remainder of the tree remains as text for now until
+      // UIA mappings for MathML are defined (https://crbug.com/1260585).
+      case ax::mojom::Role::kMathMLMath:
       case ax::mojom::Role::kMeter:
       case ax::mojom::Role::kProgressIndicator:
       case ax::mojom::Role::kRow:
@@ -7362,20 +7380,15 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
     return true;
 
   auto role = GetRole();
-  if (HasPresentationalChildren(role))
-    return true;
-
   switch (role) {
-    // Other elements that are expected by UIA to hide their children without
-    // having "Children Presentational: True".
-    //
+    // Even though a node with  role kButton has presentational children, it
+    // should only hide its children from UIA when it has a single text node
+    // (to avoid having its name announced twice). This is because buttons can
+    // have complex structures and they shouldn't hide their subtree.
+    case ax::mojom::Role::kButton:
     // TODO(bebeaudr): We might be able to remove ax::mojom::Role::kLink once
     // http://crbug.com/1054514 is fixed. Links should not have to hide their
     // children.
-    // TODO(virens): |kPdfActionableHighlight| needs to follow a fix similar to
-    // links. At present Pdf highlghts have text nodes as children. But, we may
-    // enable pdf highlights to have complex children like links based on user
-    // feedback.
     case ax::mojom::Role::kLink:
       // Links with a single text-only child should hide their subtree.
       if (GetChildCount() == 1) {
@@ -7383,10 +7396,16 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
         return only_child && only_child->IsText();
       }
       return false;
+    // TODO(virens): |kPdfActionableHighlight| needs to follow a fix similar to
+    // links. At present Pdf highlights have text nodes as children. But, we may
+    // enable pdf highlights to have complex children like links based on user
+    // feedback.
     case ax::mojom::Role::kPdfActionableHighlight:
       return true;
     default:
-      return false;
+      // UIA expects nodes that have "Children Presentational: True" to hide
+      // their children.
+      return HasPresentationalChildren(role);
   }
 }
 

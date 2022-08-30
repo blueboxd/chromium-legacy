@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.util.Size;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
@@ -51,6 +52,7 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CouponPersistedTabData;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tab.state.StorePersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -123,8 +125,8 @@ class TabListMediator {
         /**
          * @see TabContentManager#getTabThumbnailWithCallback
          */
-        void getTabThumbnailWithCallback(
-                int tabId, Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache);
+        void getTabThumbnailWithCallback(int tabId, Size thumbnailSize, Callback<Bitmap> callback,
+                boolean forceUpdate, boolean writeToCache);
     }
 
     /**
@@ -247,6 +249,28 @@ class TabListMediator {
     }
 
     /**
+     * Asynchronously acquire {@link CouponPersistedTabData}
+     */
+    static class CouponPersistedTabDataFetcher {
+        protected Tab mTab;
+
+        /**
+         * @param tab {@link Tab} {@link CouponPersistedTabData} will be acquired for.
+         */
+        CouponPersistedTabDataFetcher(Tab tab) {
+            mTab = tab;
+        }
+
+        /**
+         * Asynchronously acquire {@link CouponPersistedTabData}
+         * @param callback {@link Callback} to pass {@link CouponPersistedTabData} back in
+         */
+        public void fetch(Callback<CouponPersistedTabData> callback) {
+            CouponPersistedTabData.from(mTab, (res) -> { callback.onResult(res); });
+        }
+    }
+
+    /**
      * The object to set to {@link TabProperties#THUMBNAIL_FETCHER} for the TabGridViewBinder to
      * obtain the thumbnail asynchronously.
      */
@@ -266,14 +290,14 @@ class TabListMediator {
             mWriteToCache = writeToCache;
         }
 
-        void fetch(Callback<Bitmap> callback) {
+        void fetch(Callback<Bitmap> callback, Size thumbnailSize) {
             Callback<Bitmap> forking = (bitmap) -> {
                 if (sBitmapCallbackForTesting != null) sBitmapCallbackForTesting.onResult(bitmap);
                 callback.onResult(bitmap);
             };
             sFetchCountForTesting++;
             mThumbnailProvider.getTabThumbnailWithCallback(
-                    mId, forking, mForceUpdate, mWriteToCache);
+                    mId, thumbnailSize, forking, mForceUpdate, mWriteToCache);
         }
     }
 
@@ -919,6 +943,8 @@ class TabListMediator {
                     TabModel tabModel = mTabModelSelector.getCurrentModel();
                     int curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
                     if (curPosition == TabModel.INVALID_TAB_INDEX) {
+                        // Model is uninitialized if reordering from tab strip before opening GTS.
+                        if (mModel.size() == 0) return;
                         // Sync TabListModel with updated TabGroupModelFilter.
                         int indexToUpdate = mModel.indexOfNthTabCard(
                                 filter.indexOf(tabModel.getTabAt(tabModelOldIndex)));
@@ -1694,7 +1720,14 @@ class TabListMediator {
             } else {
                 mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
             }
+            if (CouponUtilities.isCouponsOnTabsEnabled() && isUngroupedTab(pseudoTab.getId())) {
+                mModel.get(index).model.set(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER,
+                        new CouponPersistedTabDataFetcher(pseudoTab.getTab()));
+            } else {
+                mModel.get(index).model.set(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER, null);
+            }
         } else {
+            mModel.get(index).model.set(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER, null);
             mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
             mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
         }
@@ -1786,8 +1819,6 @@ class TabListMediator {
                 return;
             }
             index = mModel.lastIndexForMessageItemFromType(itemIdentifier);
-        } else if (uiType == UiType.NEW_TAB_TILE) {
-            index = mModel.getIndexForNewTabTile();
         }
 
         if (index == TabModel.INVALID_TAB_INDEX) return;
@@ -1800,8 +1831,6 @@ class TabListMediator {
         if (uiType == UiType.MESSAGE || uiType == UiType.LARGE_MESSAGE) {
             return mModel.get(index).type == uiType
                     && mModel.get(index).model.get(MESSAGE_TYPE) == itemIdentifier;
-        } else if (uiType == UiType.NEW_TAB_TILE) {
-            return mModel.get(index).type == uiType;
         }
 
         return false;

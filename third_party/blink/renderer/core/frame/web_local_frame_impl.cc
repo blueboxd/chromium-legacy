@@ -152,6 +152,7 @@
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -176,6 +177,7 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/events/after_print_event.h"
 #include "third_party/blink/renderer/core/events/before_print_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -589,6 +591,64 @@ class PaintPreviewContext : public PrintContext {
     canvas->drawPicture(builder->EndRecording(property_tree_state.Unalias()));
     return true;
   }
+};
+
+// Android WebView requires hit testing results on every touch event. This
+// pushes the hit test result to the callback that is registered.
+class TouchStartEventListener : public NativeEventListener {
+ public:
+  explicit TouchStartEventListener(
+      base::RepeatingCallback<void(const blink::WebHitTestResult&)> callback)
+      : callback_(std::move(callback)) {}
+
+  void Invoke(ExecutionContext*, Event* event) override {
+    auto* touch_event = DynamicTo<TouchEvent>(event);
+    if (!touch_event)
+      return;
+    const auto* native_event = touch_event->NativeEvent();
+    if (!native_event)
+      return;
+
+    DCHECK_EQ(WebInputEvent::Type::kTouchStart,
+              native_event->Event().GetType());
+    const auto& web_touch_event =
+        static_cast<const WebTouchEvent&>(native_event->Event());
+
+    if (web_touch_event.touches_length != 1u)
+      return;
+
+    LocalDOMWindow* dom_window = event->currentTarget()->ToLocalDOMWindow();
+    CHECK(dom_window);
+
+    WebGestureEvent tap_event(
+        WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
+        base::TimeTicks::Now(), WebGestureDevice::kTouchscreen);
+    // GestureTap is only ever from a touchscreen.
+    tap_event.SetPositionInWidget(
+        web_touch_event.touches[0].PositionInWidget());
+    tap_event.SetPositionInScreen(
+        web_touch_event.touches[0].PositionInScreen());
+    tap_event.SetFrameScale(web_touch_event.FrameScale());
+    tap_event.SetFrameTranslate(web_touch_event.FrameTranslate());
+    tap_event.data.tap.tap_count = 1;
+    tap_event.data.tap.height = tap_event.data.tap.width =
+        std::max(web_touch_event.touches[0].radius_x,
+                 web_touch_event.touches[0].radius_y);
+
+    HitTestResult result =
+        dom_window->GetFrame()
+            ->GetEventHandler()
+            .HitTestResultForGestureEvent(
+                tap_event, HitTestRequest::kReadOnly | HitTestRequest::kActive)
+            .GetHitTestResult();
+
+    result.SetToShadowHostIfInRestrictedShadowRoot();
+
+    callback_.Run(result);
+  }
+
+ private:
+  base::RepeatingCallback<void(const blink::WebHitTestResult&)> callback_;
 };
 
 // WebFrame -------------------------------------------------------------------
@@ -1332,7 +1392,8 @@ void WebLocalFrameImpl::RemoveSpellingMarkers() {
 void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
     const WebVector<WebString>& words) {
   Vector<String> converted_words;
-  converted_words.Append(words.data(), SafeCast<wtf_size_t>(words.size()));
+  converted_words.Append(words.data(),
+                         base::checked_cast<wtf_size_t>(words.size()));
   GetFrame()->RemoveSpellingMarkersUnderWords(converted_words);
 }
 
@@ -2172,14 +2233,21 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
           policy_container_remote.InitWithNewEndpointAndPassReceiver();
 
   FramePolicy frame_policy = owner_element->GetFramePolicy();
-  // Documents create iframes, iframes host new documents. Both are associated
-  // with sandbox flags. They are required to be stricter or equal as we go
-  // down. The iframe owner element only returns the additional restrictions
-  // defined in the HTMLIFrameElement's sanbox attribute. It needs to be
-  // combined with the document's sandbox flags to get the frame's sandbox
-  // policy right.
-  frame_policy.sandbox_flags |=
-      GetFrame()->GetDocument()->GetExecutionContext()->GetSandboxFlags();
+
+  // The initial empty document's policy container is inherited from its parent.
+  mojom::blink::PolicyContainerPoliciesPtr policy_container_data =
+      GetFrame()->DomWindow()->GetPolicyContainer()->GetPolicies().Clone();
+
+  // The frame sandbox flags and the initial empty document's sandbox flags
+  // are restricted by the parent document's sandbox flags and the iframe's
+  // sandbox attribute. It is the union of:
+  //  - The parent's sandbox flags which are contained in
+  //    policy_container_data and were cloned from the parent's document policy
+  //    container above.
+  //  - The iframe's sandbox attribute which is contained in frame_policy, from
+  //    the owner element's frame policy.
+  policy_container_data->sandbox_flags |= frame_policy.sandbox_flags;
+  frame_policy.sandbox_flags = policy_container_data->sandbox_flags;
 
   // FIXME: Using subResourceAttributeName as fallback is not a perfect
   // solution. subResourceAttributeName returns just one attribute name. The
@@ -2195,9 +2263,11 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   if (!webframe_child)
     return nullptr;
 
-  // Inherit policy container from parent.
-  mojom::blink::PolicyContainerPoliciesPtr policy_container_data =
-      GetFrame()->DomWindow()->GetPolicyContainer()->GetPolicies().Clone();
+  // The initial empty document's anonymous bit is the union of:
+  // - its parent's anonymous bit.
+  // - its frame's anonymous attribute.
+  policy_container_data->is_anonymous |= owner_element->Anonymous();
+
   std::unique_ptr<PolicyContainer> policy_container =
       std::make_unique<PolicyContainer>(std::move(policy_container_remote),
                                         std::move(policy_container_data));
@@ -2674,33 +2744,13 @@ void WebLocalFrameImpl::ShowContextMenu(
   params.selection_rect =
       LocalRootFrameWidget()->BlinkSpaceToEnclosedDIPs(data.selection_rect);
 
-#if BUILDFLAG(IS_ANDROID)
-  // The Samsung Email app relies on the context menu being shown after the
-  // javascript onselectionchanged is triggered.
-  // See crbug.com/729488
-  GetFrame()
-      ->GetTaskRunner(TaskType::kInternalDefault)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(&WebLocalFrameImpl::ShowDeferredContextMenu,
-                    WrapWeakPersistent(this), std::move(client), params));
-#else
-  ShowDeferredContextMenu(std::move(client), params);
-#endif
-
-  if (Client())
-    Client()->UpdateContextMenuDataForTesting(data, host_context_menu_location);
-}
-
-void WebLocalFrameImpl::ShowDeferredContextMenu(
-    mojo::PendingAssociatedRemote<mojom::blink::ContextMenuClient> client,
-    const UntrustworthyContextMenuParams& params) {
-  // The local frame may become detached before the object is GC'ed. So, this
-  // method needs to check if GetFrame() returns a nullptr.
   if (!GetFrame())
     return;
   GetFrame()->GetLocalFrameHostRemote().ShowContextMenu(std::move(client),
                                                         params);
+
+  if (Client())
+    Client()->UpdateContextMenuDataForTesting(data, host_context_menu_location);
 }
 
 bool WebLocalFrameImpl::IsAllowedToDownload() const {
@@ -2882,6 +2932,18 @@ void WebLocalFrameImpl::SetSessionStorageArea(
         session_storage_area) {
   CoreInitializer::GetInstance().SetSessionStorageArea(
       *GetFrame(), std::move(session_storage_area));
+}
+
+void WebLocalFrameImpl::AddHitTestOnTouchStartCallback(
+    base::RepeatingCallback<void(const blink::WebHitTestResult&)> callback) {
+  TouchStartEventListener* touch_start_event_listener =
+      MakeGarbageCollected<TouchStartEventListener>(std::move(callback));
+  AddEventListenerOptionsResolved options;
+  options.setPassive(true);
+  options.SetPassiveSpecified(true);
+  options.setCapture(true);
+  GetFrame()->DomWindow()->addEventListener(
+      event_type_names::kTouchstart, touch_start_event_listener, &options);
 }
 
 void WebLocalFrameImpl::SetTargetToCurrentHistoryItem(const WebString& target) {

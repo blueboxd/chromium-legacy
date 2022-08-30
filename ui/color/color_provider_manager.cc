@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,9 +22,13 @@ namespace ui {
 
 namespace {
 
+// Cache at most 5 ColorProviders to prevent unbounded storage from user_color.
+constexpr size_t kCacheSize = 5;
+
 class GlobalManager : public ColorProviderManager {
  public:
-  GlobalManager() = default;
+  explicit GlobalManager(size_t cache_size = kCacheSize)
+      : ColorProviderManager(cache_size) {}
   GlobalManager(const GlobalManager&) = delete;
   GlobalManager& operator=(const GlobalManager&) = delete;
   ~GlobalManager() override = default;
@@ -55,6 +58,7 @@ ColorProviderManager::Key::Key()
           ContrastMode::kNormal,
           SystemTheme::kDefault,
           FrameType::kChromium,
+          absl::nullopt,
           nullptr) {}
 
 ColorProviderManager::Key::Key(
@@ -62,12 +66,14 @@ ColorProviderManager::Key::Key(
     ContrastMode contrast_mode,
     SystemTheme system_theme,
     FrameType frame_type,
+    absl::optional<SkColor> user_color,
     scoped_refptr<ThemeInitializerSupplier> custom_theme)
     : color_mode(color_mode),
       contrast_mode(contrast_mode),
       elevation_mode(ElevationMode::kLow),
       system_theme(system_theme),
       frame_type(frame_type),
+      user_color(user_color),
       custom_theme(std::move(custom_theme)) {}
 
 ColorProviderManager::Key::Key(const Key&) = default;
@@ -77,7 +83,8 @@ ColorProviderManager::Key& ColorProviderManager::Key::operator=(const Key&) =
 
 ColorProviderManager::Key::~Key() = default;
 
-ColorProviderManager::ColorProviderManager() {
+ColorProviderManager::ColorProviderManager(size_t cache_size)
+    : color_providers_(cache_size) {
   ResetColorProviderInitializerList();
 }
 
@@ -98,10 +105,10 @@ ColorProviderManager& ColorProviderManager::Get() {
 }
 
 // static
-ColorProviderManager& ColorProviderManager::GetForTesting() {
+ColorProviderManager& ColorProviderManager::GetForTesting(size_t cache_size) {
   absl::optional<GlobalManager>& manager = GetGlobalManager();
   if (!manager.has_value())
-    manager.emplace();
+    manager.emplace(cache_size);
   return manager.value();
 }
 
@@ -118,7 +125,7 @@ void ColorProviderManager::ResetColorProviderInitializerList() {
 
 void ColorProviderManager::ResetColorProviderCache() {
   if (!color_providers_.empty())
-    color_providers_.clear();
+    color_providers_.Clear();
 }
 
 void ColorProviderManager::AppendColorProviderInitializer(
@@ -131,7 +138,7 @@ void ColorProviderManager::AppendColorProviderInitializer(
 }
 
 ColorProvider* ColorProviderManager::GetColorProviderFor(Key key) {
-  auto iter = color_providers_.find(key);
+  auto iter = color_providers_.Get(key);
   if (iter == color_providers_.end()) {
     auto provider = std::make_unique<ColorProvider>();
     DCHECK(initializer_list_);
@@ -139,7 +146,7 @@ ColorProvider* ColorProviderManager::GetColorProviderFor(Key key) {
       initializer_list_->Notify(provider.get(), key);
 
     provider->GenerateColorMap();
-    iter = color_providers_.emplace(key, std::move(provider)).first;
+    iter = color_providers_.Put(key, std::move(provider));
   }
   ColorProvider* provider = iter->second.get();
   DCHECK(provider);

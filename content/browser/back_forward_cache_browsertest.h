@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_logging_settings.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -146,7 +147,7 @@ class BackForwardCacheBrowserTest
   void StartRecordingEvents(RenderFrameHostImpl* rfh);
 
   void MatchEventList(RenderFrameHostImpl* rfh,
-                      base::ListValue list,
+                      base::Value list,
                       base::Location location = base::Location::Current());
 
   // Creates a minimal HTTPS server, accessible through https_server().
@@ -198,6 +199,17 @@ class BackForwardCacheBrowserTest
 
   bool IsUnloadAllowedToEnterBackForwardCache();
 
+  // Adds a blocklisted feature to the document to prevent caching. Currently
+  // this means adding a plugin. We expect that plugins will never become
+  // cacheable, so this should be stable (at least until plugins cease to
+  // exist). If you need the feature to be sticky, then
+  // `RenderFrameHostImpl::UseDummyStickyBackForwardCacheDisablingFeatureForTesting`
+  // provides that.
+  [[nodiscard]] bool AddBlocklistedFeature(RenderFrameHost* rfh);
+  // Check that the document was not restored for the reason added by
+  // `AddBlocklistedFeature`.
+  void ExpectNotRestoredDueToBlocklistedFeature(base::Location location);
+
   base::HistogramTester histogram_tester_;
 
   bool same_site_back_forward_cache_enabled_ = true;
@@ -246,6 +258,7 @@ class BackForwardCacheBrowserTest
   content::ContentMockCertVerifier mock_cert_verifier_;
 
   base::test::ScopedFeatureList feature_list_;
+  logging::ScopedVmoduleSwitches vmodule_switches_;
 
   FrameTreeVisualizer visualizer_;
   std::vector<base::Bucket> expected_outcomes_;
@@ -318,7 +331,7 @@ class PageLifecycleStateManagerTestDelegate
       const blink::mojom::PageLifecycleState& new_state) override;
   void OnDeleted() override;
 
-  raw_ptr<PageLifecycleStateManager> manager_;
+  raw_ptr<PageLifecycleStateManager, DanglingUntriaged> manager_;
   base::OnceClosure store_in_back_forward_cache_sent_;
   base::OnceClosure store_in_back_forward_cache_ack_received_;
   base::OnceClosure restore_from_back_forward_cache_sent_;

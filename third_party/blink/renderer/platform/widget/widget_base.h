@@ -52,13 +52,13 @@ struct ScreenInfos;
 namespace blink {
 class ImeEventGuard;
 class LayerTreeView;
+class PageScheduler;
 class WidgetBaseClient;
 class WidgetInputHandlerManager;
 class WidgetCompositor;
 
 namespace scheduler {
-class WebAgentGroupScheduler;
-class WebRenderWidgetSchedulingState;
+class WidgetScheduler;
 }
 
 // This class is the foundational class for all widgets that blink creates.
@@ -93,7 +93,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // The `frame_widget_input_handler` must be invalidated when the WidgetBase is
   // destroyed/invalidated.
   void InitializeCompositing(
-      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+      PageScheduler& page_scheduler,
       const display::ScreenInfos& screen_infos,
       const cc::LayerTreeSettings* settings,
       base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
@@ -106,6 +106,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // Shutdown the compositor.
   void Shutdown();
+
+  void DidFirstVisuallyNonEmptyPaint();
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink, begin producing frames from the
@@ -149,8 +151,10 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       const cc::CompositorCommitData& commit_data) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
   void OnDeferMainFrameUpdatesChanged(bool) override;
-  void OnDeferCommitsChanged(bool defer_status,
-                             cc::PaintHoldingReason reason) override;
+  void OnDeferCommitsChanged(
+      bool defer_status,
+      cc::PaintHoldingReason reason,
+      absl::optional<cc::PaintHoldingCommitTrigger> trigger) override;
   void DidBeginMainFrame() override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
@@ -179,8 +183,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
-  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
-      const;
+  scheduler::WidgetScheduler* WidgetScheduler();
 
   mojom::blink::WidgetHost* GetWidgetHostRemote() { return widget_host_.get(); }
 
@@ -437,8 +440,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   std::unique_ptr<LayerTreeView> layer_tree_view_;
   scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
-  std::unique_ptr<scheduler::WebRenderWidgetSchedulingState>
-      render_widget_scheduling_state_;
+  scoped_refptr<scheduler::WidgetScheduler> widget_scheduler_;
   bool has_focus_ = false;
   WidgetBaseInputHandler input_handler_{this};
   scoped_refptr<WidgetCompositor> widget_compositor_;

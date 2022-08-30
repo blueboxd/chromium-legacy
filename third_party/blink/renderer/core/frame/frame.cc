@@ -199,7 +199,7 @@ bool Frame::IsOutermostMainFrame() const {
   return IsMainFrame() && !IsInFencedFrameTree();
 }
 
-bool Frame::IsCrossOriginToMainFrame() const {
+bool Frame::IsCrossOriginToNearestMainFrame() const {
   DCHECK(GetSecurityContext());
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();
@@ -208,7 +208,7 @@ bool Frame::IsCrossOriginToMainFrame() const {
 }
 
 bool Frame::IsCrossOriginToOutermostMainFrame() const {
-  return IsCrossOriginToMainFrame() || IsInFencedFrameTree();
+  return IsCrossOriginToNearestMainFrame() || IsInFencedFrameTree();
 }
 
 bool Frame::IsCrossOriginToParentOrOuterDocument() const {
@@ -351,8 +351,7 @@ void Frame::RenderFallbackContentWithResourceTiming(
   DOMWindowPerformance::performance(*local_dom_window)
       ->AddResourceTimingWithUnparsedServerTiming(
           std::move(timing), server_timing_value,
-          html_names::kObjectTag.LocalName(), mojo::NullReceiver(),
-          local_dom_window);
+          html_names::kObjectTag.LocalName(), local_dom_window);
   RenderFallbackContent();
 }
 
@@ -412,39 +411,6 @@ absl::optional<mojom::blink::FencedFrameMode> Frame::GetFencedFrameMode()
           ->GetFramePolicy()
           .fenced_frame_mode;
   }
-}
-
-bool Frame::IsInShadowDOMOpaqueAdsFencedFrameTree() const {
-  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
-  if (!ff_impl)
-    return false;
-
-  switch (ff_impl.value()) {
-    case blink::features::FencedFramesImplementationType::kMPArch:
-      return false;
-    case blink::features::FencedFramesImplementationType::kShadowDOM: {
-      Frame* top = &Tree().Top(FrameTreeBoundary::kFenced);
-      return top->Owner() && top->Owner()->GetFramePolicy().is_fenced &&
-             top->Owner()->GetFramePolicy().fenced_frame_mode ==
-                 mojom::blink::FencedFrameMode::kOpaqueAds;
-    }
-  }
-  return false;
-}
-
-bool Frame::IsInMPArchOpaqueAdsFencedFrameTree() const {
-  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
-  if (!ff_impl)
-    return false;
-
-  switch (ff_impl.value()) {
-    case blink::features::FencedFramesImplementationType::kMPArch:
-      return GetPage() && GetPage()->FencedFrameMode() ==
-                              mojom::blink::FencedFrameMode::kOpaqueAds;
-    case blink::features::FencedFramesImplementationType::kShadowDOM:
-      return false;
-  }
-  return false;
 }
 
 void Frame::SetOwner(FrameOwner* owner) {

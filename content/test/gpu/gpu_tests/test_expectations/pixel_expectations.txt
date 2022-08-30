@@ -295,6 +295,9 @@ crbug.com/1300550 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanv
 # Flakes on gpu-fyi-try-chromeos-kevin and Fuchsia x64, produces notably different image.
 crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner [ Failure ]
 
+# Flakes on gpu-fyi-try-chromeos-amd64-generic, times out.
+crbug.com/1338173 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRoundedCorner [ Failure ]
+
 # Flaky hang.
 crbug.com/1218288 [ fuchsia-board-astro ] Pixel_PrecisionRoundedCorner [ Failure ]
 crbug.com/1136875 [ fuchsia-board-qemu-x64 ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
@@ -410,7 +413,19 @@ crbug.com/1307787 [ linux skia-renderer-vulkan ] Pixel_VulkanSwiftShader_WebGPUI
 # Vulkan Swiftshader WebGPU interop - missing source image
 crbug.com/1307787 [ linux skia-renderer-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 
+# Flakes on Android
 crbug.com/1203317 [ android android-shield-android-tv no-passthrough ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+crbug.com/1203317 [ android android-pixel-2 no-passthrough ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+crbug.com/1203317 [ android android-pixel-6 android-chromium ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+
+crbug.com/1287249 [ android android-pixel-6 passthrough skia-renderer-vulkan android-chromium ] Pixel_Video_MP4_FourColors_Rot_180 [ Failure ]
+
+# Flakes on Mac Release (Intel)
+crbug.com/982292 [ mac release intel-0x3e9b ] Pixel_BackgroundImage [ RetryOnFailure ]
+crbug.com/982292 [ mac release intel-0x3e9b ] Pixel_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
+
+# Flaking on Linux FYI Release (AMD RX 5500 XT)
+crbug.com/1340081 [ linux release amd-0x7340 ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

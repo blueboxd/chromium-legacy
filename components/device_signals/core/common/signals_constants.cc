@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,6 +144,10 @@ namespace errors {
 // to be collected.
 const char kConsentRequired[] = "CONSENT_REQUIRED";
 
+// Returned when the user does not represent the current browser user, or is
+// not managed.
+const char kInvalidUser[] = "INVALID_USER";
+
 // Returned when the user is not affiliated with the organization managing the
 // browser.
 const char kUnaffiliatedUser[] = "UNAFFILIATED_USER";
@@ -154,6 +158,10 @@ const char kUnsupported[] = "UNSUPPORTED";
 // Returned when the signals collection code in unable to get a reference to
 // the SystemSignalsService.
 const char kMissingSystemService[] = "MISSING_SYSTEM_SERVICE";
+
+// Returned when the signals aggregation response is missing a
+// bundle/sub-response struct that was expected by a specific use-case.
+const char kMissingBundle[] = "MISSING_BUNDLE";
 
 }  // namespace errors
 

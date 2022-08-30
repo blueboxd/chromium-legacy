@@ -68,15 +68,6 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   static get properties() {
     return {
       /**
-       * Whether the clusters are in the side panel.
-       */
-      inSidePanel: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false,
-      },
-
-      /**
        * The current query for which related clusters are requested and shown.
        */
       query: {
@@ -122,7 +113,6 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   // Properties
   //============================================================================
 
-  inSidePanel: boolean;
   query: string;
   private callbackRouter_: PageCallbackRouter;
   private headerText_: string;
@@ -133,7 +123,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   private placeholderText_: string;
   private result_: QueryResult;
   private showSpinner_: boolean;
-  private visitsToBeRemoved_: Array<URLVisit>;
+  private visitsToBeRemoved_: URLVisit[];
 
   //============================================================================
   // Overridden methods
@@ -222,7 +212,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
    * Called with `event` received from a visit requesting to be removed. `event`
    * may contain the related visits of the said visit, if applicable.
    */
-  private onRemoveVisits_(event: CustomEvent<Array<URLVisit>>) {
+  private onRemoveVisits_(event: CustomEvent<URLVisit[]>) {
     // Return early if there is a pending remove request.
     if (this.visitsToBeRemoved_.length) {
       return;
@@ -287,7 +277,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
    * loaded before the user ever gets a chance to see this button.
    */
   private getLoadMoreButtonHidden_(
-      _result: QueryResult, _resultClusters: Array<Cluster>,
+      _result: QueryResult, _resultClusters: Cluster[],
       _resultCanLoadMore: Time): boolean {
     return !this.result_ || this.result_.clusters.length === 0 ||
         !this.result_.canLoadMore;
@@ -337,7 +327,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
     });
     this.showSpinner_ = false;
 
-    if (this.inSidePanel) {
+    if (loadTimeData.getBoolean('inSidePanel')) {
       this.pageHandler_.showSidePanelUI();
     }
   }
@@ -360,7 +350,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
    * Called with the original remove params when the last accepted request to
    * browser to remove visits succeeds.
    */
-  private onVisitsRemoved_(removedVisits: Array<URLVisit>) {
+  private onVisitsRemoved_(removedVisits: URLVisit[]) {
     // Show the confirmation toast once done removing one visit only; since a
     // confirmation dialog was not shown prior to the action.
     if (removedVisits.length === 1) {

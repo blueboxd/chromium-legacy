@@ -50,9 +50,9 @@ const char* const kNameserversIPv4[] = {
 
 #if BUILDFLAG(IS_CHROMEOS)
 const char* const kNameserversIPv6[] = {
-    NULL,
+    nullptr,
     "2001:DB8:0::42",
-    NULL,
+    nullptr,
     "::FFFF:129.144.52.38",
 };
 #endif
@@ -107,7 +107,7 @@ void InitializeResState(res_state res) {
 void CloseResState(res_state res) {
 #if BUILDFLAG(IS_CHROMEOS)
   for (int i = 0; i < res->nscount; ++i) {
-    if (res->_u._ext.nsaddrs[i] != NULL)
+    if (res->_u._ext.nsaddrs[i] != nullptr)
       free(res->_u._ext.nsaddrs[i]);
   }
 #endif
@@ -196,8 +196,7 @@ TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
       base::test::TaskEnvironment::MainThreadType::IO,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
-  std::unique_ptr<internal::DnsConfigServicePosix> service(
-      new internal::DnsConfigServicePosix());
+  auto service = std::make_unique<internal::DnsConfigServicePosix>();
   // Call WatchConfig() which also tests ReadConfig().
   service->WatchConfig(base::BindRepeating(&DummyConfigCallback));
   service.reset();

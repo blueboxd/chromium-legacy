@@ -8,24 +8,24 @@
 #include <limits.h>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "media/gpu/test/video_frame_helpers.h"
-#include "media/gpu/test/video_player/frame_renderer.h"
 
 namespace media {
 namespace test {
 
-class FrameRenderer;
+class FrameRendererDummy;
 class Video;
-class VideoDecoderClient;
-struct VideoDecoderClientConfig;
+class DecoderWrapper;
+struct DecoderWrapperConfig;
 
 // Default timeout used when waiting for events.
 constexpr base::TimeDelta kDefaultEventWaitTimeout = base::Seconds(30);
@@ -34,7 +34,6 @@ enum class VideoPlayerState : size_t {
   kUninitialized = 0,
   kIdle,
   kDecoding,
-  kDestroyed,
 };
 
 enum class VideoPlayerEvent : size_t {
@@ -65,8 +64,8 @@ class VideoPlayer {
   // |frame_processors| will not be owned by the video player. The caller should
   // guarantee they outlive the video player.
   static std::unique_ptr<VideoPlayer> Create(
-      const VideoDecoderClientConfig& config,
-      std::unique_ptr<FrameRenderer> frame_renderer,
+      const DecoderWrapperConfig& config,
+      std::unique_ptr<FrameRendererDummy> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors = {});
 
   // Wait until all frame processors have finished processing. Returns whether
@@ -85,22 +84,13 @@ class VideoPlayer {
   bool Initialize(const Video* video);
   // Play the video asynchronously.
   void Play();
-  // Play the video asynchronously. Automatically pause decoding when the
-  // specified |event| occurred |event_count| times.
-  void PlayUntil(VideoPlayerEvent event, size_t event_count = 1);
+  // Play the video asynchronously. Automatically pause decoding when |event|
+  // occurs.
+  void PlayUntil(VideoPlayerEvent event);
   // Reset the decoder to the beginning of the video stream.
   void Reset();
   // Flush the decoder.
   void Flush();
-
-  // Get current media time.
-  base::TimeDelta GetCurrentTime() const;
-  // Get the current frame number.
-  size_t GetCurrentFrame() const;
-  // Get the current state of the video player.
-  VideoPlayerState GetState() const;
-  // Get the frame renderer associated with the video player.
-  FrameRenderer* GetFrameRenderer() const;
 
   // Wait for an event to occur the specified number of times. All events that
   // occurred since last calling this function will be taken into account. All
@@ -127,34 +117,30 @@ class VideoPlayer {
   VideoPlayer();
 
   bool CreateDecoderClient(
-      const VideoDecoderClientConfig& config,
-      std::unique_ptr<FrameRenderer> frame_renderer,
+      const DecoderWrapperConfig& config,
+      std::unique_ptr<FrameRendererDummy> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors);
-  void Destroy();
 
   // Notify the video player an event has occurred (e.g. frame decoded). Returns
   // whether the decoder client should continue decoding frames.
   bool NotifyEvent(VideoPlayerEvent event);
 
-  const Video* video_ = nullptr;
   VideoPlayerState video_player_state_ = VideoPlayerState::kUninitialized;
-  std::unique_ptr<VideoDecoderClient> decoder_client_;
+  std::unique_ptr<DecoderWrapper> decoder_client_;
 
   // The timeout used when waiting for events.
   base::TimeDelta event_timeout_ = kDefaultEventWaitTimeout;
   mutable base::Lock event_lock_;
   base::ConditionVariable event_cv_;
 
-  std::vector<VideoPlayerEvent> video_player_events_ GUARDED_BY(event_lock_);
-  size_t video_player_event_counts_[static_cast<size_t>(
-      VideoPlayerEvent::kNumEvents)] GUARDED_BY(event_lock_);
-  // The next event ID to start at, when waiting for events.
-  size_t event_id_ GUARDED_BY(event_lock_);
+  // NotifyEvent() will store events here for WaitForEvent() to process.
+  base::queue<VideoPlayerEvent> video_player_events_ GUARDED_BY(event_lock_);
 
-  // Automatically pause decoding once the video player has seen the specified
-  // number of events occur.
-  std::pair<VideoPlayerEvent, size_t> play_until_{
-      VideoPlayerEvent::kNumEvents, std::numeric_limits<size_t>::max()};
+  size_t video_player_event_counts_[static_cast<size_t>(
+      VideoPlayerEvent::kNumEvents)] GUARDED_BY(event_lock_){};
+
+  // Set by PlayUntil() to automatically pause decoding once this event occurs.
+  absl::optional<VideoPlayerEvent> play_until_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

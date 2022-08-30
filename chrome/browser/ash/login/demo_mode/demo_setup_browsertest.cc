@@ -47,9 +47,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -84,6 +87,8 @@ const test::UIPath kDemoPreferencesScreen = {kDemoPrefsId};
 const test::UIPath kDemoPreferencesCountry = {kDemoPrefsId, "countrySelect"};
 const test::UIPath kDemoPreferencesCountrySelect = {kDemoPrefsId,
                                                     "countrySelect", "select"};
+const test::UIPath kDemoPreferencesRetailerStoreId = {kDemoPrefsId,
+                                                      "retailerIdInput"};
 const test::UIPath kDemoPreferencesNext = {kDemoPrefsId, "nextButton"};
 
 const test::UIPath kNetworkScreen = {kNetworkId};
@@ -557,6 +562,44 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   SelectFranceAndFinishSetup();
 }
 
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OnlineSetupFlowSuccessWithRetailerAndStoreId) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  TriggerDemoModeOnWelcomeScreen();
+
+  const std::string expectedRetailerStoreId = "ABC-1234";
+
+  test::OobeJS().TypeIntoPath(expectedRetailerStoreId,
+                              kDemoPreferencesRetailerStoreId);
+  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  EXPECT_EQ(expectedRetailerStoreId, WizardController::default_controller()
+                                         ->demo_setup_controller()
+                                         ->get_retailer_store_id_input());
+
+  UseOnlineModeOnNetworkScreen();
+
+  AcceptTermsAndExpectDemoSetupProgress();
+
+  EXPECT_EQ("admin-us@cros-demo-mode.com",
+            DemoSetupController::GetSubOrganizationEmail());
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
+
+  EXPECT_EQ("ABC", g_browser_process->local_state()->GetString(
+                       prefs::kDemoModeRetailerId));
+  EXPECT_EQ("1234", g_browser_process->local_state()->GetString(
+                        prefs::kDemoModeStoreId));
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
@@ -696,14 +739,10 @@ class OfflineDemoSetupTest : public DemoSetupArcSupportedTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1150349): Flaky on ChromeOS ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_NextDisabledOnNetworkScreen DISABLED_NextDisabledOnNetworkScreen
-#else
-#define MAYBE_NextDisabledOnNetworkScreen NextDisabledOnNetworkScreen
-#endif
+// crbug.com/1340651 Disable the test due to flakiness. Note that the test is
+// also disabled for ASAN, see crbug.com/1150349 for more information.
 IN_PROC_BROWSER_TEST_F(OfflineDemoSetupTest,
-                       MAYBE_NextDisabledOnNetworkScreen) {
+                       DISABLED_NextDisabledOnNetworkScreen) {
   SimulateNetworkDisconnected();
 
   TriggerDemoModeOnWelcomeScreen();
@@ -908,8 +947,9 @@ class DemoSetupProgressStepsTest : public DemoSetupArcSupportedTest {
   }
 };
 
+// crbug.com/1341073 Disable due to flakiness.
 IN_PROC_BROWSER_TEST_F(DemoSetupProgressStepsTest,
-                       SetupProgessStepsDisplayCorrectly) {
+                       DISABLED_SetupProgessStepsDisplayCorrectly) {
   SimulateNetworkConnected();
   TriggerDemoModeOnWelcomeScreen();
   test::OobeJS().ClickOnPath(kDemoPreferencesNext);
@@ -990,15 +1030,10 @@ class DemoSetupVariantCountryCodeRegionTest : public DemoSetupArcSupportedTest {
   }
 };
 
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
-  DISABLED_VariantCountryCodeRegionDefaultCountryIsSet
-#else
-#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
-  VariantCountryCodeRegionDefaultCountryIsSet
-#endif
+// crbug.com/1340982 Disable due to flakiness. Note that this test is also
+// disabled with ASAN, see crbug.com/1150349 for more information.
 IN_PROC_BROWSER_TEST_F(DemoSetupVariantCountryCodeRegionTest,
-                       MAYBE_VariantCountryCodeRegionDefaultCountryIsSet) {
+                       DISABLED_VariantCountryCodeRegionDefaultCountryIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -1039,15 +1074,10 @@ class DemoSetupVirtualSetRegionCodeTest : public DemoSetupArcSupportedTest {
   }
 };
 
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet \
-  DISABLED_VirtualSetCountryCodeRegionPlaceholderIsSet
-#else
-#define MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet \
-  VirtualSetCountryCodeRegionPlaceholderIsSet
-#endif
+// crbug.com/1340618 Disable the test due to flakiness. Note that the test is
+// also disabled for ASAN, see crrev.com/c/3227288 for more information.
 IN_PROC_BROWSER_TEST_F(DemoSetupVirtualSetRegionCodeTest,
-                       MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet) {
+                       DISABLED_VirtualSetCountryCodeRegionPlaceholderIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -1101,6 +1131,58 @@ IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
   // test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
   SelectFranceAndFinishSetup();
+}
+
+/**
+ * Test case of Blazey specific device.
+ */
+class DemoSetupBlazeyDeviceTest : public DemoSetupArcSupportedTest {
+ public:
+  ~DemoSetupBlazeyDeviceTest() override = default;
+
+  DemoSetupBlazeyDeviceTest() {
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             "us");
+    feature_list_.InitAndEnableFeature(chromeos::features::kCloudGamingDevice);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(crbug.com/1342461): Flaky on release bots.
+#if defined(ADDRESS_SANITIZER) || defined(NDEBUG)
+#define MAYBE_DeviceIsBlazeyEnabledDevice DISABLED_DeviceIsBlazeyEnabledDevice
+#else
+#define MAYBE_DeviceIsBlazeyEnabledDevice DeviceIsBlazeyEnabledDevice
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupBlazeyDeviceTest,
+                       MAYBE_DeviceIsBlazeyEnabledDevice) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  TriggerDemoModeOnWelcomeScreen();
+
+  // Expect active "OK" button when entering the preference screen.
+  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+  test::OobeJS().ExpectElementValue("US", kDemoPreferencesCountrySelect);
+  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  UseOnlineModeOnNetworkScreen();
+
+  AcceptTermsAndExpectDemoSetupProgress();
+
+  // Verify the email corresponds to US.
+  EXPECT_EQ("admin-us-blazey@cros-demo-mode.com",
+            DemoSetupController::GetSubOrganizationEmail());
+
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
 }  // namespace

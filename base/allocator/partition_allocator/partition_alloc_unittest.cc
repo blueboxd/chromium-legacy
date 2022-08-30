@@ -97,7 +97,7 @@ bool IsLargeMemoryDevice() {
   //
   // Set to 4GiB, since we have 2GiB Android devices where tests flakily fail
   // (e.g. Nexus 5X, crbug.com/1191195).
-  return base::SysInfo::AmountOfPhysicalMemory() >= 4000LL * 1024 * 1024;
+  return base::SysInfo::AmountOfPhysicalMemory() >= 4000ULL * 1024 * 1024;
 }
 
 bool SetAddressSpaceLimit() {
@@ -284,8 +284,10 @@ class PartitionAllocTest : public testing::TestWithParam<bool> {
           PartitionOptions::Cookie::kAllowed,
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
           PartitionOptions::BackupRefPtr::kEnabled,
+          PartitionOptions::BackupRefPtrZapping::kEnabled,
 #else
           PartitionOptions::BackupRefPtr::kDisabled,
+          PartitionOptions::BackupRefPtrZapping::kDisabled,
 #endif
           PartitionOptions::UseConfigurablePool::kNo,
     });
@@ -295,6 +297,7 @@ class PartitionAllocTest : public testing::TestWithParam<bool> {
         PartitionOptions::Quarantine::kDisallowed,
         PartitionOptions::Cookie::kDisallowed,
         PartitionOptions::BackupRefPtr::kDisabled,
+        PartitionOptions::BackupRefPtrZapping::kDisabled,
         PartitionOptions::UseConfigurablePool::kNo,
     });
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
@@ -2565,7 +2568,7 @@ TEST_P(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_FALSE(stats->is_direct_map);
       EXPECT_EQ(slot_size, stats->bucket_slot_size);
       EXPECT_EQ(0u, stats->active_bytes);
-      EXPECT_EQ(1u, stats->active_count);
+      EXPECT_EQ(0u, stats->active_count);
       EXPECT_EQ(slot_size, stats->resident_bytes);
       EXPECT_EQ(slot_size, stats->decommittable_bytes);
       EXPECT_EQ(0u, stats->num_full_slot_spans);
@@ -4100,6 +4103,7 @@ TEST_P(PartitionAllocTest, CrossPartitionRootRealloc) {
       PartitionOptions::Quarantine::kDisallowed,
       PartitionOptions::Cookie::kAllowed,
       PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::BackupRefPtrZapping::kDisabled,
       PartitionOptions::UseConfigurablePool::kNo,
   });
 
@@ -4305,6 +4309,7 @@ TEST_P(PartitionAllocTest, ConfigurablePool) {
         PartitionOptions::Quarantine::kDisallowed,
         PartitionOptions::Cookie::kAllowed,
         PartitionOptions::BackupRefPtr::kDisabled,
+        PartitionOptions::BackupRefPtrZapping::kDisabled,
         PartitionOptions::UseConfigurablePool::kIfAvailable,
     });
     root->UncapEmptySlotSpanMemoryForTesting();
@@ -4338,6 +4343,7 @@ TEST_P(PartitionAllocTest, EmptySlotSpanSizeIsCapped) {
       PartitionOptions::Quarantine::kDisallowed,
       PartitionOptions::Cookie::kAllowed,
       PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::BackupRefPtrZapping::kDisabled,
       PartitionOptions::UseConfigurablePool::kNo,
   });
 
@@ -4394,6 +4400,7 @@ TEST_P(PartitionAllocTest, IncreaseEmptySlotSpanRingSize) {
       PartitionOptions::Quarantine::kDisallowed,
       PartitionOptions::Cookie::kAllowed,
       PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::BackupRefPtrZapping::kDisabled,
       PartitionOptions::UseConfigurablePool::kIfAvailable,
   });
   root.UncapEmptySlotSpanMemoryForTesting();

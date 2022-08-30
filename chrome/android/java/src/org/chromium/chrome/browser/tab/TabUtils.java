@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.util.Size;
 import android.view.Display;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
@@ -33,11 +34,29 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.url.GURL;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Collection of utility methods that operates on Tab.
  */
 public class TabUtils {
     private static final String REQUEST_DESKTOP_SCREEN_WIDTH_PARAM = "screen_width_dp";
+
+    /**
+     * Define the callers of NavigationControllerImpl#setUseDesktopUserAgent.
+     */
+    @IntDef({UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION,
+            UseDesktopUserAgentCaller.LOAD_IF_NEEDED, UseDesktopUserAgentCaller.RELOAD,
+            UseDesktopUserAgentCaller.RELOAD_IGNORING_CACHE, UseDesktopUserAgentCaller.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UseDesktopUserAgentCaller {
+        int ON_MENU_OR_KEYBOARD_ACTION = 0;
+        int LOAD_IF_NEEDED = 1;
+        int RELOAD = 2;
+        int RELOAD_IGNORING_CACHE = 3;
+        int OTHER = 4;
+    }
 
     // Do not instantiate this class.
     private TabUtils() {}
@@ -93,20 +112,72 @@ public class TabUtils {
      * @param tab The tab to be switched the user agent.
      * @param switchToDesktop Whether switching the user agent to desktop.
      * @param forcedByUser Whether this was triggered by users action.
+     * @param caller The caller of this method.
      */
-    public static void switchUserAgent(Tab tab, boolean switchToDesktop, boolean forcedByUser) {
+    public static void switchUserAgent(Tab tab, boolean switchToDesktop, boolean forcedByUser,
+            @UseDesktopUserAgentCaller int caller) {
         final boolean reloadOnChange = !tab.isNativePage();
         tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                switchToDesktop, reloadOnChange);
+                switchToDesktop, reloadOnChange, caller);
         if (forcedByUser) {
             @TabUserAgent
             int tabUserAgent = switchToDesktop ? TabUserAgent.DESKTOP : TabUserAgent.MOBILE;
-            if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL)
-                    && isDesktopSiteGlobalEnabled(Profile.fromWebContents(tab.getWebContents()))
-                            == switchToDesktop) {
+            if (isDesktopSiteGlobalEnabled(Profile.fromWebContents(tab.getWebContents()))
+                    == switchToDesktop) {
                 tabUserAgent = TabUserAgent.DEFAULT;
             }
             CriticalPersistedTabData.from(tab).setUserAgent(tabUserAgent);
+        }
+    }
+
+    /**
+     * Get UseDesktopUserAgent setting from webContents.
+     * @param webContents The webContents used to retrieve UseDesktopUserAgent setting.
+     * @return Whether the webContents is set to use desktop user agent.
+     */
+    public static boolean isUsingDesktopUserAgent(WebContents webContents) {
+        return webContents != null
+                && webContents.getNavigationController().getUseDesktopUserAgent();
+    }
+
+    /**
+     * Get tabUserAgent from the tab, which represents the tab level RDS setting.
+     * @param tab The tab used to retrieve tabUserAgent.
+     * @return The tab level RDS setting.
+     */
+    public static @TabUserAgent int getTabUserAgent(Tab tab) {
+        @TabUserAgent
+        int tabUserAgent = CriticalPersistedTabData.from(tab).getUserAgent();
+        WebContents webContents = tab.getWebContents();
+        boolean currentRequestDesktopSite = isUsingDesktopUserAgent(webContents);
+        // TabUserAgent.UNSET means this is a pre-existing tab from an earlier build. In this case
+        // we set the TabUserAgent bit based on last committed entry's user agent. If webContents is
+        // null, this method is triggered too early, and we cannot read the last committed entry's
+        // user agent yet. We will skip for now and let the following call set the TabUserAgent bit.
+        if (webContents != null && tabUserAgent == TabUserAgent.UNSET) {
+            if (currentRequestDesktopSite) {
+                tabUserAgent = TabUserAgent.DESKTOP;
+            } else {
+                tabUserAgent = TabUserAgent.DEFAULT;
+            }
+            CriticalPersistedTabData.from(tab).setUserAgent(tabUserAgent);
+        }
+        return tabUserAgent;
+    }
+
+    /**
+     * Read Request Desktop Site ContentSettings.
+     * @param profile The profile used to retrieve ContentSettings.
+     * @param webContents The webContents used to retrieve Url for site level setting.
+     * @return Whether Request Desktop Site is enabled in ContentSettings.
+     */
+    public static boolean readRequestDesktopSiteContentSettings(
+            Profile profile, WebContents webContents) {
+        if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)) {
+            return webContents != null
+                    && TabUtils.isDesktopSiteEnabled(profile, webContents.getVisibleUrl());
+        } else {
+            return TabUtils.isDesktopSiteGlobalEnabled(profile);
         }
     }
 

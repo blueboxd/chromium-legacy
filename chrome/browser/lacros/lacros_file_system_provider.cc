@@ -51,12 +51,26 @@ LacrosFileSystemProvider::LacrosFileSystemProvider() : receiver_{this} {
 }
 LacrosFileSystemProvider::~LacrosFileSystemProvider() = default;
 
-void LacrosFileSystemProvider::DeprecatedForwardOperation(
+void LacrosFileSystemProvider::DeprecatedDeprecatedForwardOperation(
     const std::string& provider,
     int32_t histogram_value,
     const std::string& event_name,
     std::vector<base::Value> args) {
-  ForwardOperation(provider, histogram_value, event_name, std::move(args),
+  DeprecatedForwardOperation(provider, histogram_value, event_name,
+                             std::move(args), base::DoNothing());
+}
+
+void LacrosFileSystemProvider::DeprecatedForwardOperation(
+    const std::string& provider,
+    int32_t histogram_value,
+    const std::string& event_name,
+    std::vector<base::Value> args,
+    ForwardOperationCallback callback) {
+  base::Value::List list;
+  for (auto& value : args) {
+    list.Append(std::move(value));
+  }
+  ForwardOperation(provider, histogram_value, event_name, std::move(list),
                    base::DoNothing());
 }
 
@@ -64,7 +78,7 @@ void LacrosFileSystemProvider::ForwardOperation(
     const std::string& provider,
     int32_t histogram_value,
     const std::string& event_name,
-    std::vector<base::Value> args,
+    base::Value::List args,
     ForwardOperationCallback callback) {
   Profile* main_profile = GetMainProfile();
   if (!main_profile) {
@@ -161,4 +175,9 @@ void LacrosFileSystemProvider::OnExtensionUnloaded(
       ->ExtensionUnloaded(
           extension->id(),
           reason == extensions::UnloadedExtensionReason::PROFILE_SHUTDOWN);
+}
+
+void LacrosFileSystemProvider::OnShutdown(
+    extensions::ExtensionRegistry* registry) {
+  extension_observation_.Reset();
 }

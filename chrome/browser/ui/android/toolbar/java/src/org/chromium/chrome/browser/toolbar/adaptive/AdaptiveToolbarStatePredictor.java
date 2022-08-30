@@ -31,6 +31,7 @@ public class AdaptiveToolbarStatePredictor {
     private static final String ADAPTIVE_TOOLBAR_SEGMENTATION_KEY = "adaptive_toolbar";
 
     private static Pair<Boolean, Integer> sSegmentationResultsForTesting;
+    private static Integer sToolbarStateForTesting;
 
     @Nullable
     private final AndroidPermissionDelegate mAndroidPermissionDelegate;
@@ -87,14 +88,16 @@ public class AdaptiveToolbarStatePredictor {
      * @param callback The callback containing the result.
      */
     public void recomputeUiState(Callback<UiState> callback) {
+        if (sToolbarStateForTesting != null) {
+            UiState uiState = new UiState(isValidSegment(sToolbarStateForTesting),
+                    sToolbarStateForTesting, sToolbarStateForTesting, sToolbarStateForTesting);
+            callback.onResult(uiState);
+            return;
+        }
+
         // Early return if the feature isn't enabled.
         if (!AdaptiveToolbarFeatures.isCustomizationEnabled()) {
-            boolean canShowUi = AdaptiveToolbarFeatures.isSingleVariantModeEnabled();
-            @AdaptiveToolbarButtonVariant
-            int toolbarButtonState = AdaptiveToolbarFeatures.isSingleVariantModeEnabled()
-                    ? AdaptiveToolbarFeatures.getSingleVariantMode()
-                    : AdaptiveToolbarButtonVariant.UNKNOWN;
-            callback.onResult(new UiState(canShowUi, toolbarButtonState,
+            callback.onResult(new UiState(false, AdaptiveToolbarButtonVariant.UNKNOWN,
                     AdaptiveToolbarButtonVariant.UNKNOWN, AdaptiveToolbarButtonVariant.UNKNOWN));
             return;
         }
@@ -240,5 +243,11 @@ public class AdaptiveToolbarStatePredictor {
     @VisibleForTesting
     public static void setSegmentationResultsForTesting(Pair<Boolean, Integer> results) {
         sSegmentationResultsForTesting = results;
+    }
+
+    /** For testing only. */
+    @VisibleForTesting
+    public static void setToolbarStateForTesting(Integer toolbarState) {
+        sToolbarStateForTesting = toolbarState;
     }
 }

@@ -70,12 +70,12 @@ class FileBackgroundIO : public disk_cache::BackgroundIO {
 // The specialized controller that keeps track of current operations.
 class FileInFlightIO : public disk_cache::InFlightIO {
  public:
-  FileInFlightIO() {}
+  FileInFlightIO() = default;
 
   FileInFlightIO(const FileInFlightIO&) = delete;
   FileInFlightIO& operator=(const FileInFlightIO&) = delete;
 
-  ~FileInFlightIO() override {}
+  ~FileInFlightIO() override = default;
 
   // These methods start an asynchronous operation. The arguments have the same
   // semantics of the File asynchronous operations, with the exception that the
@@ -118,8 +118,8 @@ void FileBackgroundIO::Write() {
 
 void FileInFlightIO::PostRead(disk_cache::File *file, void* buf, size_t buf_len,
                           size_t offset, disk_cache::FileIOCallback *callback) {
-  scoped_refptr<FileBackgroundIO> operation(
-      new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
+  auto operation = base::MakeRefCounted<FileBackgroundIO>(
+      file, buf, buf_len, offset, callback, this);
   file->AddRef();  // Balanced on OnOperationComplete()
 
   base::ThreadPool::PostTask(
@@ -132,8 +132,8 @@ void FileInFlightIO::PostRead(disk_cache::File *file, void* buf, size_t buf_len,
 void FileInFlightIO::PostWrite(disk_cache::File* file, const void* buf,
                            size_t buf_len, size_t offset,
                            disk_cache::FileIOCallback* callback) {
-  scoped_refptr<FileBackgroundIO> operation(
-      new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
+  auto operation = base::MakeRefCounted<FileBackgroundIO>(
+      file, buf, buf_len, offset, callback, this);
   file->AddRef();  // Balanced on OnOperationComplete()
 
   base::ThreadPool::PostTask(
@@ -157,7 +157,7 @@ void FileInFlightIO::OnOperationComplete(disk_cache::BackgroundIO* operation,
 }
 
 // A static object that will broker all async operations.
-FileInFlightIO* s_file_operations = NULL;
+FileInFlightIO* s_file_operations = nullptr;
 
 // Returns the current FileInFlightIO.
 FileInFlightIO* GetFileInFlightIO() {
@@ -171,7 +171,7 @@ FileInFlightIO* GetFileInFlightIO() {
 void DeleteFileInFlightIO() {
   DCHECK(s_file_operations);
   delete s_file_operations;
-  s_file_operations = NULL;
+  s_file_operations = nullptr;
 }
 
 }  // namespace
@@ -285,8 +285,7 @@ void File::DropPendingIO() {
   DeleteFileInFlightIO();
 }
 
-File::~File() {
-}
+File::~File() = default;
 
 base::PlatformFile File::platform_file() const {
   return base_file_.GetPlatformFile();

@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/built_in_backend_to_android_backend_migrator.h"
+#include "base/memory/raw_ptr.h"
 
 #include "base/barrier_callback.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "components/password_manager/core/browser/password_form.h"
+#include "base/trace_event/trace_event.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -21,6 +25,8 @@ namespace password_manager {
 
 namespace {
 
+using sync_util::IsPasswordSyncEnabled;
+
 // Threshold for the next migration attempt. This is needed in order to prevent
 // clients from spamming GMS Core API.
 constexpr base::TimeDelta kMigrationThreshold = base::Days(1);
@@ -29,11 +35,6 @@ bool IsMigrationNeeded(PrefService* prefs) {
   return features::kMigrationVersion.Get() >
          prefs->GetInteger(
              prefs::kCurrentMigrationVersionToGoogleMobileServices);
-}
-
-bool IsBlacklistedFormWithValues(const PasswordForm& form) {
-  return form.blocked_by_user &&
-         (!form.username_value.empty() || !form.password_value.empty());
 }
 
 }  // namespace
@@ -97,12 +98,10 @@ class BuiltInBackendToAndroidBackendMigrator::MigrationMetricsReporter {
 BuiltInBackendToAndroidBackendMigrator::BuiltInBackendToAndroidBackendMigrator(
     PasswordStoreBackend* built_in_backend,
     PasswordStoreBackend* android_backend,
-    PrefService* prefs,
-    PasswordStoreBackend::SyncDelegate* sync_delegate)
+    PrefService* prefs)
     : built_in_backend_(built_in_backend),
       android_backend_(android_backend),
-      prefs_(prefs),
-      sync_delegate_(sync_delegate) {
+      prefs_(prefs) {
   DCHECK(built_in_backend_);
   DCHECK(android_backend_);
   base::UmaHistogramBoolean(
@@ -134,9 +133,13 @@ void BuiltInBackendToAndroidBackendMigrator::StartMigrationIfNecessary() {
   }
 }
 
+void BuiltInBackendToAndroidBackendMigrator::OnSyncServiceInitialized(
+    syncer::SyncService* sync_service) {
+  sync_service_ = sync_service;
+}
+
 void BuiltInBackendToAndroidBackendMigrator::UpdateMigrationVersionInPref() {
-  if (IsMigrationNeeded(prefs_) &&
-      sync_delegate_->IsSyncingPasswordsEnabled()) {
+  if (IsMigrationNeeded(prefs_) && IsPasswordSyncEnabled(sync_service_)) {
     // TODO(crbug.com/1302299): Drop metadata and only then update pref.
   }
   prefs_->SetInteger(prefs::kCurrentMigrationVersionToGoogleMobileServices,
@@ -156,29 +159,23 @@ void BuiltInBackendToAndroidBackendMigrator::PrepareForMigration() {
 
   metrics_reporter_ = std::make_unique<MigrationMetricsReporter>(
       IsMigrationNeeded(prefs_) ? "InitialMigration" : "RollingMigration");
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords",
+                                    "UnifiedPasswordManagerMigration", this);
 
   // Migrate local-only data, the synced passwords should otherwise be
   // identical. Update calls don't fail because they would add a password in
   // the rare case that it doesn't exist in the target backend.
   if (IsMigrationNeeded(prefs_)) {
-    if (sync_delegate_->IsSyncingPasswordsEnabled()) {
+    if (IsPasswordSyncEnabled(sync_service_)) {
       // Sync is enabled. Migrate non-syncable data from the built-in backend
       // to android backend.
-      // During the migration username and password values are also cleaned up
-      // from the blacklisted entries stored in the built in backend.
-      auto callback_chain = base::BindOnce(
+      built_in_backend_->GetAllLoginsAsync(base::BindOnce(
           &BuiltInBackendToAndroidBackendMigrator::MigrateNonSyncableData,
-          weak_ptr_factory_.GetWeakPtr(), android_backend_);
-      callback_chain = base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
-                                          RemoveBlacklistedFormsWithValues,
-                                      weak_ptr_factory_.GetWeakPtr(),
-                                      base::Unretained(built_in_backend_),
-                                      std::move(callback_chain));
-      built_in_backend_->GetAllLoginsAsync(std::move(callback_chain));
+          weak_ptr_factory_.GetWeakPtr(), android_backend_));
       return;
-    }
-    if (prefs_->GetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange) &&
-        !features::ManagesLocalPasswordsInUnifiedPasswordManager()) {
+    } else if (prefs_->GetBoolean(
+                   prefs::kRequiresMigrationAfterSyncStatusChange) &&
+               !features::ManagesLocalPasswordsInUnifiedPasswordManager()) {
       // Sync was disabled, while the local GMS storage is not supported.
       // Migrate non-syncable data that is associated with a previously
       // synced account from the android backend to the built-in backend.
@@ -191,7 +188,23 @@ void BuiltInBackendToAndroidBackendMigrator::PrepareForMigration() {
     }
   }
 
-  RunRollingMigration();
+  auto barrier_callback = base::BarrierCallback<BackendAndLoginsResults>(
+      2, base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
+                            MigratePasswordsBetweenAndroidAndBuiltInBackends,
+                        weak_ptr_factory_.GetWeakPtr()));
+
+  auto bind_backend_to_logins = [](PasswordStoreBackend* backend,
+                                   LoginsResultOrError result) {
+    return BackendAndLoginsResults(backend, std::move(result));
+  };
+
+  built_in_backend_->GetAllLoginsAsync(
+      base::BindOnce(bind_backend_to_logins,
+                     base::Unretained(built_in_backend_))
+          .Then(barrier_callback));
+  android_backend_->GetAllLoginsAsync(
+      base::BindOnce(bind_backend_to_logins, base::Unretained(android_backend_))
+          .Then(barrier_callback));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::MigrateNonSyncableData(
@@ -226,45 +239,6 @@ void BuiltInBackendToAndroidBackendMigrator::MigrateNonSyncableData(
   }
 
   std::move(callbacks_chain).Run();
-}
-
-void BuiltInBackendToAndroidBackendMigrator::RunRollingMigration() {
-  auto barrier_callback = base::BarrierCallback<BackendAndLoginsResults>(
-      2, base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
-                            MigratePasswordsBetweenAndroidAndBuiltInBackends,
-                        weak_ptr_factory_.GetWeakPtr()));
-
-  auto bind_backend_to_logins = [](PasswordStoreBackend* backend,
-                                   LoginsResultOrError result) {
-    return BackendAndLoginsResults(backend, std::move(result));
-  };
-
-  auto builtin_backend_callback_chain =
-      base::BindOnce(bind_backend_to_logins,
-                     base::Unretained(built_in_backend_))
-          .Then(barrier_callback);
-
-  // Cleanup blacklisted forms in the built in backend before binding.
-  builtin_backend_callback_chain = base::BindOnce(
-      &BuiltInBackendToAndroidBackendMigrator::RemoveBlacklistedFormsWithValues,
-      weak_ptr_factory_.GetWeakPtr(), base::Unretained(built_in_backend_),
-      std::move(builtin_backend_callback_chain));
-
-  built_in_backend_->GetAllLoginsAsync(
-      std::move(builtin_backend_callback_chain));
-
-  auto android_backend_callback_chain =
-      base::BindOnce(bind_backend_to_logins, base::Unretained(android_backend_))
-          .Then(barrier_callback);
-
-  // Cleanup blacklisted forms in the android backend before binding.
-  android_backend_callback_chain = base::BindOnce(
-      &BuiltInBackendToAndroidBackendMigrator::RemoveBlacklistedFormsWithValues,
-      weak_ptr_factory_.GetWeakPtr(), base::Unretained(android_backend_),
-      std::move(android_backend_callback_chain));
-
-  android_backend_->GetAllLoginsAsync(
-      std::move(android_backend_callback_chain));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::
@@ -512,6 +486,8 @@ void BuiltInBackendToAndroidBackendMigrator::MigrationFinished(
   metrics_reporter_.reset();
   prefs_->SetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange, false);
   non_syncable_data_migration_in_progress_ = false;
+  TRACE_EVENT_NESTABLE_ASYNC_END0("passwords",
+                                  "UnifiedPasswordManagerMigration", this);
 }
 
 bool BuiltInBackendToAndroidBackendMigrator::ShouldMigrateNonSyncableData() {
@@ -521,32 +497,7 @@ bool BuiltInBackendToAndroidBackendMigrator::ShouldMigrateNonSyncableData() {
   // non-syncable data (e.g. after enrolling into the experiment).
   return IsMigrationNeeded(prefs_) &&
          (prefs_->GetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange) ||
-          sync_delegate_->IsSyncingPasswordsEnabled());
-}
-
-void BuiltInBackendToAndroidBackendMigrator::RemoveBlacklistedFormsWithValues(
-    PasswordStoreBackend* backend,
-    LoginsOrErrorReply result_callback,
-    LoginsResultOrError logins_or_error) {
-  if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
-    std::move(result_callback).Run(std::move(logins_or_error));
-    return;
-  }
-
-  auto& forms = absl::get<LoginsResult>(logins_or_error);
-
-  LoginsResult clean_forms;
-  clean_forms.reserve(forms.size());
-
-  for (std::unique_ptr<PasswordForm>& form : forms) {
-    if (IsBlacklistedFormWithValues(*form)) {
-      RemoveLoginFromBackend(backend, *form, base::DoNothing());
-      continue;
-    }
-    clean_forms.push_back(std::move(form));
-  }
-
-  std::move(result_callback).Run(std::move(clean_forms));
+          IsPasswordSyncEnabled(sync_service_));
 }
 
 }  // namespace password_manager

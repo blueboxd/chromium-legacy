@@ -100,7 +100,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
         std::move(pending_media_drm_storage));
 
     // The created object will be destroyed on connection error.
-    new MediaDrmStorageImpl(rfh, pref_service_.get(),
+    new MediaDrmStorageImpl(*rfh, pref_service_.get(),
                             std::move(get_origin_id_cb),
                             std::move(allow_empty_cb), std::move(receiver));
 
@@ -122,9 +122,9 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
 
     // Verify the origin dictionary is created.
-    const base::Value* storage_dict =
-        pref_service_->GetDictionary(prefs::kMediaDrmStorage);
-    EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
+    const base::Value::Dict& storage_dict =
+        pref_service_->GetValueDict(prefs::kMediaDrmStorage);
+    EXPECT_TRUE(storage_dict.Find(kTestOrigin));
 
     DCHECK(*origin_id);
     return media_drm_storage;
@@ -290,9 +290,9 @@ TEST_F(MediaDrmStorageImplTest, OnProvisioned) {
   base::RunLoop().RunUntilIdle();
 
   // Verify the origin dictionary is created.
-  const base::Value* storage_dict =
-      pref_service_->GetDictionary(prefs::kMediaDrmStorage);
-  EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
+  const base::Value::Dict& storage_dict =
+      pref_service_->GetValueDict(prefs::kMediaDrmStorage);
+  EXPECT_TRUE(storage_dict.Find(kTestOrigin));
 }
 
 TEST_F(MediaDrmStorageImplTest, OnProvisioned_Twice) {

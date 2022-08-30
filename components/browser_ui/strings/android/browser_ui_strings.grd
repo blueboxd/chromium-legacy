@@ -262,9 +262,6 @@
       <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR_LIMIT=20]">
         Add
       </message>
-      <message name="IDS_CHANGE" desc="Prompt for the user to change something. [CHAR_LIMIT=20]">
-        Change
-      </message>
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR_LIMIT=20]">
         Share
       </message>
@@ -370,6 +367,10 @@
       </message>
       <message name="IDS_ACCESSIBILITY_SECURITY_BTN_DANGEROUS" desc="Content description for the security icon for dangerous pages.">
         This page is dangerous
+      </message>
+
+      <message name="IDS_CONCAT_TWO_STRINGS_WITH_PERIODS" desc="This string concatenates two other strings. In the English language, this particular concatenation is done via a period and a whitespace after the first string, and a period after the second string. For example: '1 compromised password. 2 weak passwords.'">
+        <ph name="TYPE_1">%1$s<ex>2 compromised passwords</ex></ph>. <ph name="TYPE_2">%2$s<ex>7 weak passwords</ex></ph>.
       </message>
 
       <!-- Cookie controls UI -->
@@ -596,8 +597,14 @@
       <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_TITLE" desc="The title of the 'Ad personalization' section in Page Info.">
         Ad personalization
       </message>
-      <message name="IDS_PAGE_AD_PERSONALIZATION_DESCRIPTION" desc="Description of a section in PageInfo that shows information on how the current site is using ad personalization APIs from the Privacy Sandbox.">
+      <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_AND_INTEREST_GROUP_DESCRIPTION" desc="The description label that explains to the user that the current site has accessed the Topics API and joined the user to an interest group. The label is located in 'Ad personalization' subpage in page info bubble.">
+        This site defines interests other sites can use to show you ads. This site also gets your interests from Chrome to show you more relevant ads.
+      </message>
+      <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_DESCRIPTION"  desc="The description label that explains to the user that the current site has accessed the Topics API. The label is located in 'Ad personalization' subpage in page info bubble.">
         This site gets your interests from Chrome to show you more relevant ads
+      </message>
+      <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_INTEREST_GROUP_DESCRIPTION" desc="The description label that explains to the user that the current site has joined the user to an interest group. The label is located in 'Ad personalization' subpage in page info bubble.">
+        This site defines interests other sites can use to show you ads
       </message>
       <message name="IDS_PAGE_INFO_AD_MANAGE_INTERESTS" desc="The button label of the 'Manage interests' button in Page Info. The button opens a settings page to manage interests for the site.">
         Manage interests
@@ -933,6 +940,11 @@
       </message>
       <message name="IDS_PAGE_ZOOM_PREVIEW_TEXT_ITEM" desc="Sample text displayed to user in settings to see/test a desired zoom level." translateable="false">
         Even with eyes protected by the green spectacles Dorothy and her friends were at first dazzled by the
+      </message>
+
+      <!-- Search resumption module strings -->
+      <message name="IDS_SEARCH_RESUMPTION_MODULE_TITLE" desc="Title of the search resumption module on NTP or Start surface.">
+        Suggested searches based on your last tab
       </message>
     </messages>
   </release>

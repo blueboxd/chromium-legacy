@@ -45,22 +45,13 @@
 
 namespace {
 // The width of the modules.
-const int kModuleWidthCompact = 343;
-const int kModuleWidthRegular = 382;
+const int kModuleWidth = 343;
 
 // The height of the modules;
 const int kModuleHeight = 139;
 
 // The spacing between the modules.
 const float kModuleVerticalSpacing = 16.0f;
-
-// Returns the module width depending on the horizontal trait collection.
-CGFloat GetModuleWidthForHorizontalTraitCollection(
-    UITraitCollection* traitCollection) {
-  return traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular
-             ? kModuleWidthRegular
-             : kModuleWidthCompact;
-}
 }  // namespace
 
 @interface ContentSuggestionsViewController () <
@@ -87,22 +78,17 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
     ContentSuggestionsReturnToRecentTabView* returnToRecentTabTile;
 // The WhatsNew view.
 @property(nonatomic, strong) ContentSuggestionsWhatsNewView* whatsNewView;
-// StackView holding all of |mostVisitedViews|.
+// StackView holding all of `mostVisitedViews`.
 @property(nonatomic, strong) UIStackView* mostVisitedStackView;
 // Module Container for the Most Visited Tiles.
 @property(nonatomic, strong)
     ContentSuggestionsModuleContainer* mostVisitedModuleContainer;
-// Width Anchor of the Most Visited Tiles container.
-@property(nonatomic, strong)
-    NSLayoutConstraint* mostVisitedContainerWidthAnchor;
 // List of all of the Most Visited views.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedTileView*>* mostVisitedViews;
 // Module Container for the Shortcuts.
 @property(nonatomic, strong)
     ContentSuggestionsModuleContainer* shortcutsModuleContainer;
-// Width Anchor of the Shortcuts container.
-@property(nonatomic, strong) NSLayoutConstraint* shortcutsContainerWidthAnchor;
 // StackView holding all of `shortcutsViews`.
 @property(nonatomic, strong) UIStackView* shortcutsStackView;
 // List of all of the Shortcut views.
@@ -229,7 +215,7 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
     }
     CGFloat width =
         IsContentSuggestionsUIModuleRefreshEnabled()
-            ? GetModuleWidthForHorizontalTraitCollection(self.traitCollection)
+            ? kModuleWidth
             : MostVisitedTilesContentHorizontalSpace(self.traitCollection);
     CGFloat height =
         IsContentSuggestionsUIModuleRefreshEnabled()
@@ -237,10 +223,8 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
             : MostVisitedCellSize(
                   self.traitCollection.preferredContentSizeCategory)
                   .height;
-    self.mostVisitedContainerWidthAnchor =
-        [parentView.widthAnchor constraintEqualToConstant:width];
     [NSLayoutConstraint activateConstraints:@[
-      self.mostVisitedContainerWidthAnchor,
+      [parentView.widthAnchor constraintEqualToConstant:width],
       [parentView.heightAnchor constraintGreaterThanOrEqualToConstant:height]
     ]];
     [self populateMostVisitedModule];
@@ -284,7 +268,7 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
     }
     CGFloat width =
         IsContentSuggestionsUIModuleRefreshEnabled()
-            ? GetModuleWidthForHorizontalTraitCollection(self.traitCollection)
+            ? kModuleWidth
             : MostVisitedTilesContentHorizontalSpace(self.traitCollection);
     CGFloat height =
         IsContentSuggestionsUIModuleRefreshEnabled()
@@ -292,10 +276,8 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
             : MostVisitedCellSize(
                   self.traitCollection.preferredContentSizeCategory)
                   .height;
-    self.shortcutsContainerWidthAnchor =
-        [parentView.widthAnchor constraintEqualToConstant:width];
     [NSLayoutConstraint activateConstraints:@[
-      self.shortcutsContainerWidthAnchor,
+      [parentView.widthAnchor constraintEqualToConstant:width],
       [parentView.heightAnchor constraintGreaterThanOrEqualToConstant:height]
     ]];
   }
@@ -316,20 +298,6 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
              ntp_home::FakeOmniboxAccessibilityID() &&
          touch.view.superview.accessibilityIdentifier !=
              ntp_home::FakeOmniboxAccessibilityID();
-}
-
-#pragma mark - UITraitEnvironment
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (IsContentSuggestionsUIModuleRefreshEnabled() &&
-      previousTraitCollection.horizontalSizeClass !=
-          self.traitCollection.horizontalSizeClass) {
-    self.shortcutsContainerWidthAnchor.constant =
-        GetModuleWidthForHorizontalTraitCollection(self.traitCollection);
-    self.mostVisitedContainerWidthAnchor.constant =
-        GetModuleWidthForHorizontalTraitCollection(self.traitCollection);
-  }
 }
 
 #pragma mark - ContentSuggestionsConsumer
@@ -591,11 +559,11 @@ CGFloat GetModuleWidthForHorizontalTraitCollection(
   }
 }
 
-// Add the elements in |mostVisitedViews| into |verticalStackView|, constructing
-// |verticalStackView| beforehand if it has not been yet.
+// Add the elements in `mostVisitedViews` into `verticalStackView`, constructing
+// `verticalStackView` beforehand if it has not been yet.
 - (void)populateMostVisitedModule {
   // If viewDidLoad has been called before the first valid Most Visited Tiles
-  // are available, construct |mostVisitedStackView|.
+  // are available, construct `mostVisitedStackView`.
   if (!IsContentSuggestionsUIModuleRefreshEnabled() && self.verticalStackView &&
       !self.mostVisitedStackView) {
     self.mostVisitedStackView = [[UIStackView alloc] init];

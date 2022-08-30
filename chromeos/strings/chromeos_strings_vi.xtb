@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> luồng, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Đã có tính năng mới, hãy sử dụng phím Mũi tên lên để tìm hiểu thêm.</translation>
 <translation id="1059913517121127803">Không thể bắt đầu quét</translation>
+<translation id="1062407476771304334">Thay thế</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Đã phát hiện thấy tường lửa</translation>
 <translation id="1075811647922107217">Kích thước trang</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Đang mở cửa sổ cập nhật chương trình cơ sở cho các thiết bị bên ngoài. Có <ph name="NUM_UPDATES" /> bản cập nhật</translation>
+<translation id="1145516343487477149">Tìm bài viết trợ giúp và câu trả lời cho các câu hỏi phổ biến về Chromebook</translation>
+<translation id="1165039591588034296">Lỗi</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> này do <ph name="MANAGER" /> quản lý.</translation>
 <translation id="1175951029573070619">Trung bình (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Xóa</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> quản lý thiết bị này và có thể giám sát hoạt động của bạn.</translation>
 <translation id="147809995039451286">Không thể tải xuống bản cập nhật</translation>
 <translation id="1478594628797167447">Máy quét</translation>
+<translation id="1483493594462132177">Gửi</translation>
 <translation id="1491076385728777984">Cập nhật chương trình cơ sở trên <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> quản lý người dùng này và có thể quản lý từ xa các tùy chọn cài đặt cũng như giám sát hoạt động của người dùng.</translation>
 <translation id="150962533380566081">PUK không hợp lệ.</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Không thể tải hình ảnh. Kiểm tra kết nối mạng của bạn hoặc thử tải lại hình ảnh.</translation>
 <translation id="1751249301761991853">Cá nhân</translation>
 <translation id="1753496554272155572">Thoát chế độ xem trước hình nền</translation>
+<translation id="1755556344721611131">Ứng dụng chẩn đoán</translation>
 <translation id="175763766237925754">Tốt (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Tắt giao diện tối</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tắt chế độ tối</translation>
+<translation id="1881188606372070653">Nếu bạn muốn yêu cầu thay đổi nội dung vì lý do pháp lý, hãy truy cập <ph name="BEGIN_LINK1" />trang Trợ giúp pháp lý<ph name="END_LINK1" />. Một số thông tin về tài khoản và hệ thống có thể được gửi đến Google. Chúng tôi sẽ dùng thông tin mà bạn cung cấp để giúp khắc phục các vấn đề kỹ thuật, đồng thời cải thiện các dịch vụ theo <ph name="BEGIN_LINK2" />Chính sách quyền riêng tư<ph name="END_LINK2" /> và <ph name="BEGIN_LINK3" />Điều khoản dịch vụ<ph name="END_LINK3" /> của chúng tôi.</translation>
 <translation id="1887850431809612466">Hiệu chỉnh phần cứng</translation>
+<translation id="1904932688895783618">Dưới đây là một số tài nguyên hữu ích khác:</translation>
 <translation id="1905710495812624430">Đã vượt quá số lần thử tối đa được phép.</translation>
 <translation id="1908234395526491708">Không gửi được yêu cầu UDP</translation>
 <translation id="1932611479324127242">Tắt hẳn pin</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Thử các bước khắc phục vấn đề</translation>
 <translation id="2016848882344942759">--không nhãn trắng--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Vui lòng kết nối mạng và tải lại trang để xem trình bảo vệ màn hình.</translation>
 <translation id="2080070583977670716">Chế độ cài đặt khác</translation>
 <translation id="2085089206770112532">Giảm độ sáng màn hình</translation>
 <translation id="2105810540595158374">Thiết bị là tay điều khiển trò chơi.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Bật chế độ tối</translation>
 <translation id="2177831236093724629">Tìm thấy <ph name="LINK_BEGIN" />thành phần không hợp lệ<ph name="LINK_END" />. Để đảm bảo xác định được tất cả thành phần hợp lệ, hãy cập nhật Chrome OS lên phiên bản mới nhất.</translation>
 <translation id="2180197493692062006">Đã xảy ra lỗi. Hãy thử mở lại ứng dụng.</translation>
+<translation id="2182088270354640012">Cảm ơn bạn đã phản hồi. Ý kiến phản hồi của bạn giúp cải thiện Chrome OS và sẽ được nhóm Chrome OS xem xét. Do số lượng báo cáo được gửi đến là rất lớn, nên bạn sẽ không nhận được thư trả lời trực tiếp.</translation>
 <translation id="2209788852729124853">Đặt lại Bộ đếm lưu lượng truy cập</translation>
 <translation id="2212733584906323460">Độ phân giải tên</translation>
 <translation id="2217935453350629363">Tốc độ hiện tại</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Chẩn đoán kết nối</translation>
 <translation id="3084958266922136097">Tắt trình bảo vệ màn hình</translation>
 <translation id="3091839911843451378">Không thành công – Đã dừng</translation>
+<translation id="3096753366938912951">Đặt phần nắp lên bề mặt phẳng</translation>
 <translation id="3102119246920354026">Bộ nhớ đệm</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Thiết bị đã được kết nối.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Đang tìm máy quét</translation>
 <translation id="3246869037381808805">Các lệnh in quá 1 ngày sẽ bị xóa</translation>
 <translation id="3268178239013324452">Không thành công – Cửa máy in đang mở</translation>
+<translation id="3275729367986477355">Hình đại diện</translation>
 <translation id="3283504360622356314">{0,plural, =1{Chỉnh sửa tệp}other{Chỉnh sửa các tệp}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Hướng khoá</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Thay đổi hình nền</translation>
 <translation id="360565022852130722">Mạng Wi-Fi được bảo mật bằng giao thức yếu WEP 802.1x</translation>
 <translation id="3606583719724308068">Đường kết nối đến các trang web HTTPS có độ trễ cao</translation>
+<translation id="361575905210396100">Cảm ơn bạn đã phản hồi</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
 <translation id="3632579075709132555">Bật/tắt Màn hình bảo vệ quyền riêng tư</translation>
+<translation id="3643198267586205643">Cập nhật hệ điều hành</translation>
 <translation id="3643810137582748570">Bỏ qua việc hiệu chỉnh</translation>
 <translation id="3651050199673793219">Chọn đơn vị nhiệt độ</translation>
 <translation id="3678765385266369662">Chọn cách tắt tính năng Chống ghi (Write Protect)</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Khóa</translation>
 <translation id="38114475217616659">Xóa toàn bộ lịch sử</translation>
 <translation id="3820172043799983114">Mã PIN không hợp lệ.</translation>
+<translation id="3824259034819781947">Đính kèm tệp</translation>
 <translation id="3838338534323494292">Mật khẩu mới</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3856304145690230735">Con quay hồi chuyển ở chân đế</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Cường độ tín hiệu</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="473775607612524610">Cập nhật</translation>
+<translation id="4740255236714854844">Đặt mặt đáy lên bề mặt phẳng</translation>
 <translation id="4744944742468440486">Thông tin liên quan đến nội dung bạn chọn</translation>
 <translation id="4751272708893364980">Xem nhật ký RMA</translation>
 <translation id="4773299976671772492">Đã dừng</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Để được trợ giúp thêm, hãy truy cập <ph name="BEGIN_LINK" />Trung tâm trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Thuật toán nén</translation>
 <translation id="4794140124556169553">Việc chạy quá trình kiểm tra CPU có thể ảnh hưởng đến hiệu suất của hệ thống</translation>
+<translation id="4800589996161293643">Cộng đồng Chromebook</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="4808449224298348341">Đã hủy lệnh in <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Giao diện sáng</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Hiện ảnh, thời gian, thông tin thời tiết và nội dung phương tiện khi màn hình ở trạng thái rảnh</translation>
 <translation id="5039804452771397117">Cho phép</translation>
+<translation id="5044978354634658544">Cắm USB</translation>
 <translation id="5049856988445523908">Đã khóa SIM (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Tên nhóm</translation>
 <translation id="5051044138948155788">Đây là trang duy nhất. Thao tác này sẽ đưa bạn đến màn hình bắt đầu quét.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Tình trạng pin</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="5179530508336824319">Hãy bật chế độ chống ghi (write-protect) để tiếp tục sang màn hình tiếp theo. Truy cập trang hỗ trợ của nhà sản xuất thiết bị để xem hướng dẫn.</translation>
+<translation id="5181140330217080051">Đang tải xuống</translation>
 <translation id="5190187232518914472">Hồi tưởng lại những kỷ niệm đáng nhớ của bạn. Để thêm hoặc chỉnh sửa album, hãy chuyển đến <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
 Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translation>
 <translation id="5212593641110061691">Tin vắn tắt</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="522307662484862935">Không bao gồm địa chỉ email</translation>
 <translation id="5227902338748591677">Lịch áp dụng giao diện tối</translation>
 <translation id="5234764350956374838">Bỏ qua</translation>
 <translation id="5252456968953390977">Đang chuyển vùng</translation>
@@ -526,6 +545,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5620281292257375798">Chỉ sử dụng nội bộ</translation>
 <translation id="5649768706273821470">Nghe</translation>
 <translation id="5655283760733841251">Tăng độ sáng đèn bàn phím</translation>
+<translation id="5659593005791499971">Email</translation>
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Gia đình</translation>
@@ -538,6 +558,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="5784136236926853061">Yêu cầu HTTP có độ trễ cao</translation>
 <translation id="578753362485952307">Nếu bạn đang làm lại bo mạch chủ để dùng trong một thiết bị khác, hãy xem <ph name="LINK_BEGIN" />quy trình làm lại<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Thành công</translation>
 <translation id="5832805196449965646">Thêm người</translation>
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5843706793424741864">Độ F</translation>
@@ -599,6 +620,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6284632978374966585">Bật giao diện tối</translation>
 <translation id="6295178529664209245">Tiếp tục sửa chữa?</translation>
 <translation id="6302401976930124515">Đã hủy quá trình kiểm tra <ph name="TEST_NAME" /></translation>
+<translation id="631063167932043783">Ứng dụng Explore</translation>
 <translation id="6319207335391420837">Cập nhật chương trình cơ sở cho <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Bật trình bảo vệ màn hình</translation>
 <translation id="6325525973963619867">Lỗi</translation>
@@ -610,6 +632,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6379086450106841622">Màn hình cảm ứng</translation>
 <translation id="6381741036071372448">Kiểm tra bàn phím</translation>
 <translation id="6388847657025262518">Khay nạp tài liệu của máy quét bị kẹt. Hãy kiểm tra khay nạp rồi thử lại.</translation>
+<translation id="6394634179843537518">Thêm tệp</translation>
 <translation id="6410257289063177456">Tệp hình ảnh</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -626,6 +649,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6516990319416533844">Để kiểm tra tốc độ sạc pin, hãy để pin tiêu hao trong khoảng thời gian ngắn</translation>
 <translation id="6517239166834772319">Khám phá</translation>
 <translation id="6527081081771465939">Giao thức bảo mật Wi-Fi không xác định</translation>
+<translation id="6535178685492749208">Bạn chưa kết nối mạng. Ý kiến phản hồi sẽ được gửi sau.</translation>
 <translation id="65587193855025101">Mặt phẳng</translation>
 <translation id="6564646048574748301">Không thành công – Không thể kết nối với máy in</translation>
 <translation id="6566314079205407217">Chế độ quét nhiều trang</translation>
@@ -643,6 +667,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6659594942844771486">Thẻ</translation>
 <translation id="6692996468359469499">Nhận thông tin liên quan đến lựa chọn của bạn</translation>
 <translation id="6704062477274546131">Phân giải DNS</translation>
+<translation id="6721744718589119342">Chúng tôi có thể gửi email cho bạn để hỏi thêm thông tin hoặc để cập nhật thông tin cho bạn</translation>
 <translation id="6723839937902243910">Nguồn</translation>
 <translation id="6723847290197874913">Đèn nền bàn phím</translation>
 <translation id="672609503628871915">Xem tính năng mới</translation>
@@ -703,10 +728,12 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7297226631177386107">Không thể kết nối với các trang web HTTPS qua tường lửa</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Hỏi chuyên gia trong diễn đàn trợ giúp Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Hãy nhấn phím Tìm kiếm + Phím cách để xem kết quả trong Google Tìm kiếm.</translation>
 <translation id="7343649194310845056">Thiết bị mạng</translation>
 <translation id="7359657277149375382">Loại tệp</translation>
+<translation id="73631062356239394">Chia sẻ dữ liệu chẩn đoán</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">Tắt giao diện sáng</translation>
@@ -737,15 +764,18 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7657530360897961171">Lỗi sửa chữa <ph name="DEVICE_TYPE" /></translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665800271478495366">Thay đổi hình đại diện</translation>
+<translation id="7682274994254393134">Bắt đầu sửa chữa</translation>
 <translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="7701040980221191251">Không có</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Số chu kỳ</translation>
 <translation id="7747039790905080783">Khóa được chia sẻ trước</translation>
 <translation id="7762130827864645708">Bạn đã thay đổi mật khẩu thành công. Hãy sử dụng mật khẩu mới từ giờ trở đi.</translation>
+<translation id="7762839321248874531">Gửi <ph name="BEGIN_LINK1" />thông tin về hệ thống và ứng dụng<ph name="END_LINK1" /> cũng như <ph name="BEGIN_LINK2" />các chỉ số<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Khớp hậu tố tên miền</translation>
 <translation id="7769672763586021400">ID kiểu máy</translation>
 <translation id="7784116172884276937">Không có máy chủ DNS nào được thiết lập</translation>
+<translation id="779591286616261875">Gửi báo cáo mới</translation>
 <translation id="7799817062559422778">Chế độ sáng</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
@@ -812,6 +842,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8382302752385457774">Nhãn trắng</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> này do doanh nghiệp quản lý</translation>
 <translation id="8398927464629426868">Tốc độ sạc hoặc xả pin hiện tại của thiết bị</translation>
+<translation id="8420955526972171689">Chạy các bài kiểm tra và khắc phục sự cố phần cứng</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Bàn phím tích hợp sẵn</translation>
 <translation id="8431300646573772016">ChromeOS có gì mới</translation>
@@ -897,6 +928,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="9082718469794970195">Dùng video này</translation>
 <translation id="9087578468327036362">Báo lỗi truy vấn này</translation>
 <translation id="9088306295921699330">Mức sử dụng hiện tại</translation>
+<translation id="9092255287806472980">Ý kiến phản hồi của bạn giúp cải thiện Chrome OS và sẽ được nhóm của chúng tôi xem xét. Do nhận được số lượng lớn báo cáo nên chúng tôi sẽ không thể gửi thư trả lời cho bạn.</translation>
 <translation id="9095775724867566971">PluginVm</translation>
 <translation id="90977145661420967">Bạn cần phải tháo rời thiết bị</translation>
 <translation id="9098156406873149060">Giữ lại dữ liệu người dùng</translation>
@@ -911,6 +943,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="9149391708638971077">Chạy quá trình Kiểm tra bộ nhớ</translation>
 <translation id="9173638680043580060">Còn chưa đầy 1 phút</translation>
 <translation id="917720651393141712">Kiểm tra</translation>
+<translation id="9188992814426075118">Bàn phím có thể tự động khớp với hình nền của bạn</translation>
 <translation id="9204237731135241582">Không thể kết nối với cổng vào từ các ứng dụng Android</translation>
 <translation id="9211490828691860325">Tất cả các không gian làm việc</translation>
 <translation id="922179502584117429">Phiên bản <ph name="VERSION_NUMBER" /> này đã lỗi thời</translation>

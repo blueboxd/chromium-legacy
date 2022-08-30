@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -55,10 +55,6 @@ using session_manager::SessionState;
 using user_manager::User;
 using user_manager::UserList;
 using user_manager::UserManager;
-
-// TODO(b/228873153): Remove after figuring out the root cause of the bug
-#undef ENABLED_VLOG_LEVEL
-#define ENABLED_VLOG_LEVEL 1
 
 namespace {
 
@@ -284,7 +280,7 @@ void SessionControllerClientImpl::EmitAshInitialized() {
   // purely by emitting D-Bus signals, and thus has to be run whenever Ash is
   // started so Ash (DetachableBaseHandler in particular) gets the proper view
   // of the current detachable base state.
-  chromeos::SessionManagerClient::Get()->EmitAshInitialized();
+  ash::SessionManagerClient::Get()->EmitAshInitialized();
 }
 
 PrefService* SessionControllerClientImpl::GetSigninScreenPrefService() {
@@ -414,8 +410,7 @@ void SessionControllerClientImpl::DoLockScreen() {
   if (!CanLockScreen())
     return;
 
-  VLOG(1) << "b/228873153 : Requesting screen lock from "
-             "SessionControllerClientImpl";
+  VLOG(1) << "Requesting screen lock from SessionControllerClientImpl";
   ash::SessionManagerClient::Get()->RequestLockScreen();
 }
 

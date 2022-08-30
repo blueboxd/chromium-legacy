@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> trådar, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Det finns en ny funktion. Tryck på uppåtpilen om du vill läsa mer.</translation>
 <translation id="1059913517121127803">Det gick inte att börja söka</translation>
+<translation id="1062407476771304334">Ersätt</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Brandvägg hittades</translation>
 <translation id="1075811647922107217">Sidstorlek</translation>
@@ -15,6 +16,8 @@
 <translation id="1124772482545689468">Användare</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Fönstret Uppdatera firmware för externa enheter är öppet. <ph name="NUM_UPDATES" /> uppdateringar är tillgängliga.</translation>
+<translation id="1145516343487477149">Hitta hjälpartiklar och svar på vanliga frågor om Chromebook</translation>
+<translation id="1165039591588034296">Fel</translation>
 <translation id="1175697296044146566">Denna <ph name="DEVICE_TYPE" /> hanteras av <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Genomsnittlig (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ta bort</translation>
@@ -64,6 +67,7 @@
 <translation id="1476467821656042872">Den här enheten hanteras av <ph name="MANAGER" />, som kan ha möjlighet att övervaka din aktivitet.</translation>
 <translation id="147809995039451286">Det gick inte att ladda ned uppdateringen</translation>
 <translation id="1478594628797167447">Skanner</translation>
+<translation id="1483493594462132177">Skicka</translation>
 <translation id="1491076385728777984">Firmware uppdateras på <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> hanterar denna användare och kan fjärrhantera inställningar och övervaka användaraktivitet.</translation>
 <translation id="150962533380566081">Ogiltig PUK-kod.</translation>
@@ -82,7 +86,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kör laddningstest</translation>
 <translation id="1631385268983122904">Sätt inte tillbaka batteriet i enheten än</translation>
-<translation id="1639239467298939599">Profilen läses in</translation>
+<translation id="1639239467298939599">Läser in</translation>
 <translation id="1641857168437328880">Dokumentmatare (ensidig)</translation>
 <translation id="1643449475550628585">Byt bakgrundsbild varje dag</translation>
 <translation id="1644574205037202324">Historik</translation>
@@ -100,6 +104,7 @@
 <translation id="1745577949879301685">Det gick inte att läsa in bilder. Kontrollera nätverksanslutningen eller testa att läsa in bilderna igen.</translation>
 <translation id="1751249301761991853">Personligt</translation>
 <translation id="1753496554272155572">Stäng förhandsgranskning av bakgrund</translation>
+<translation id="1755556344721611131">Appen Diagnostik</translation>
 <translation id="175763766237925754">Bra (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -116,7 +121,9 @@
 <translation id="1871569928317311284">Inaktivera mörkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Inaktivera mörkt läge</translation>
+<translation id="1881188606372070653">Besök sidan för <ph name="BEGIN_LINK1" />juridisk hjälp<ph name="END_LINK1" /> om du vill begära innehållsändringar av juridiska skäl. Vissa konto- och systemuppgifter kan skickas till Google. Vi använder informationen du ger oss till att lösa tekniska problem och förbättra våra tjänster, i enlighet med vår <ph name="BEGIN_LINK2" />integritetspolicy<ph name="END_LINK2" /> och våra <ph name="BEGIN_LINK3" />användarvillkor<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Revision av maskinvara</translation>
+<translation id="1904932688895783618">Här är några andra användbara resurser:</translation>
 <translation id="1905710495812624430">Du har försökt för många gånger.</translation>
 <translation id="1908234395526491708">Misslyckade UDP-förfrågningar</translation>
 <translation id="1932611479324127242">Inaktivera batteriet</translation>
@@ -131,6 +138,7 @@
 <translation id="2016697457005847575">Testa felsökningsstegen</translation>
 <translation id="2016848882344942759">–ingen vit etikett–</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Anslut till ett nätverk och läs in sidan igen för att se skärmsläckaren.</translation>
 <translation id="2080070583977670716">Fler inställningar</translation>
 <translation id="2085089206770112532">Tangenten som minskar skärmens ljusstyrka</translation>
 <translation id="2105810540595158374">Enheten är en spelkontroll.</translation>
@@ -147,6 +155,7 @@
 <translation id="2163937499206714165">Aktivera mörkt läge</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Komponenter som inte uppfyller kraven<ph name="LINK_END" /> hittades. Uppdatera Chrome OS till den senaste versionen för att säkerställa att alla komponenter som uppfyller kraven identifieras.</translation>
 <translation id="2180197493692062006">Något gick fel. Testa att öppna appen igen.</translation>
+<translation id="2182088270354640012">Tack för din feedback! Din feedback hjälper oss att förbättra Chrome OS och kommer att granskas av teamet bakom Chrome OS-teamet. Vi får många rapporter och därför får du inget direktsvar.</translation>
 <translation id="2209788852729124853">Återställ trafikräknare</translation>
 <translation id="2212733584906323460">Namnmatchning</translation>
 <translation id="2217935453350629363">Nuvarande hastighet</translation>
@@ -232,6 +241,7 @@
 <translation id="3083667275341675831">Anslutningsdiagnostik</translation>
 <translation id="3084958266922136097">Inaktivera skärmsläckare</translation>
 <translation id="3091839911843451378">Misslyckades – skrivaren har stannat</translation>
+<translation id="3096753366938912951">Placera locket på en plan yta</translation>
 <translation id="3102119246920354026">Cacheminne</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Enheten är ansluten.</translation>
@@ -249,6 +259,7 @@
 <translation id="3226405216343213872">Söker efter skannrar</translation>
 <translation id="3246869037381808805">Utskriftsjobb som är äldre än 1 dagar tas bort</translation>
 <translation id="3268178239013324452">Misslyckades – luckan är öppen</translation>
+<translation id="3275729367986477355">Avatarbild</translation>
 <translation id="3283504360622356314">{0,plural, =1{Redigera fil}other{Redigera filer}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Nyckelriktning</translation>
@@ -289,9 +300,11 @@
 <translation id="3604713164406837697">Ändra bakgrund</translation>
 <translation id="360565022852130722">wifi-nätverket använder det svaga säkerhetsprotokollet WEP 802.1x</translation>
 <translation id="3606583719724308068">Hög fördröjning till HTTPS-webbplatser</translation>
+<translation id="361575905210396100">Tack för din feedback</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3621202678540785336">Ingång</translation>
 <translation id="3632579075709132555">Tangenten som aktiverar och inaktiverar sekretesskärmen</translation>
+<translation id="3643198267586205643">Uppdatera operativsystemet</translation>
 <translation id="3643810137582748570">Hoppa över kalibrering</translation>
 <translation id="3651050199673793219">Välj en temperaturenhet</translation>
 <translation id="3678765385266369662">Välj hur du vill stänga av skrivskyddet</translation>
@@ -306,6 +319,7 @@
 <translation id="3784455785234192852">Lås</translation>
 <translation id="38114475217616659">Rensa all historik</translation>
 <translation id="3820172043799983114">Ogiltig pinkod</translation>
+<translation id="3824259034819781947">Bifoga filer</translation>
 <translation id="3838338534323494292">Nytt lösenord</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3856304145690230735">Gyroskop i bas</translation>
@@ -409,6 +423,7 @@
 <translation id="469379815867856270">Signalstyrka</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
 <translation id="473775607612524610">Uppdatera</translation>
+<translation id="4740255236714854844">Placera basen på en plan yta</translation>
 <translation id="4744944742468440486">Information om det som är markerat</translation>
 <translation id="4751272708893364980">Se RMA-loggar</translation>
 <translation id="4773299976671772492">Har stoppats</translation>
@@ -418,6 +433,7 @@
 <translation id="4793710386569335688">Besök <ph name="BEGIN_LINK" />hjälpcentret<ph name="END_LINK" /> om du vill ha mer hjälp.</translation>
 <translation id="4793756956024303490">Komprimeringsalgoritm</translation>
 <translation id="4794140124556169553">Systemet kan bli långsammare när du kör ett CPU-test</translation>
+<translation id="4800589996161293643">Community för Chromebook</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4808449224298348341">Utskriftsjobbet <ph name="DOCUMENT_TITLE" /> har avbrutits</translation>
 <translation id="4809927044794281115">Ljust tema</translation>
@@ -456,6 +472,7 @@
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Visa foton, tid, väder och medieinformation på skärmen vid inaktivitet.</translation>
 <translation id="5039804452771397117">Tillåt</translation>
+<translation id="5044978354634658544">Sätta i USB-enheten</translation>
 <translation id="5049856988445523908">SIM-kortet är låst (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Gruppnamn</translation>
 <translation id="5051044138948155788">Det här är den enda sidan. Du kommer till startskärmen för att skanna.</translation>
@@ -470,11 +487,13 @@
 <translation id="5168185087976003268">Batterinivå</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="5179530508336824319">Aktivera skrivskydd för att fortsätta till nästa skärm. Du hittar anvisningar på enhetstillverkarens supportsida.</translation>
+<translation id="5181140330217080051">Nedladdning</translation>
 <translation id="5190187232518914472">Återupplev dina favoritminnen. Öppna <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" /> om du vill lägga till eller redigera album.</translation>
 <translation id="5212543919916444558">Det finns inget på skärmen som jag kan hjälpa till med.
 Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logga ut</translation>
+<translation id="522307662484862935">Inkludera inte e-postadress</translation>
 <translation id="5227902338748591677">Schema för mörkt tema</translation>
 <translation id="5234764350956374838">Stäng</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -526,6 +545,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5620281292257375798">Endast internt</translation>
 <translation id="5649768706273821470">Lyssna</translation>
 <translation id="5655283760733841251">Tangenten som ökar ljusstyrkan på tangentbordet</translation>
+<translation id="5659593005791499971">E-post</translation>
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familj</translation>
@@ -538,6 +558,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="57838592816432529">Stäng av ljudet</translation>
 <translation id="5784136236926853061">Hög HTTP-latens</translation>
 <translation id="578753362485952307">Om du återanvänder ett moderkort i en annan enhet öppnar du <ph name="LINK_BEGIN" />flödet för återanvändning<ph name="LINK_END" />.</translation>
+<translation id="5790085346892983794">Klart</translation>
 <translation id="5832805196449965646">Lägg till person</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -599,6 +620,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6284632978374966585">Aktivera mörkt tema</translation>
 <translation id="6295178529664209245">Vill du fortsätta med reparationen?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />-testet har avbrutits</translation>
+<translation id="631063167932043783">Appen Utforska</translation>
 <translation id="6319207335391420837">Uppdatera firmware på <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Slå på skärmsläckare</translation>
 <translation id="6325525973963619867">Misslyckades</translation>
@@ -610,6 +632,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6379086450106841622">Pekskärm</translation>
 <translation id="6381741036071372448">Testa tangentbordet</translation>
 <translation id="6388847657025262518">Skannerns dokumentmatare är blockerad. Kontrollera mataren och försök igen.</translation>
+<translation id="6394634179843537518">Lägg till en fil</translation>
 <translation id="6410257289063177456">Bildfiler</translation>
 <translation id="641081527798843608">Ämnesmatchning</translation>
 <translation id="6423239382391657905">Öppen VPN</translation>
@@ -626,6 +649,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6516990319416533844">Om du vill testa batteriets laddningshastighet låter du det laddas ur under en kortare period</translation>
 <translation id="6517239166834772319">Utforska</translation>
 <translation id="6527081081771465939">Okänt säkerhetsprotokoll för wifi</translation>
+<translation id="6535178685492749208">Du är offline. Din feedback skickas senare.</translation>
 <translation id="65587193855025101">Flatbädd</translation>
 <translation id="6564646048574748301">Misslyckades – skrivaren kan inte nås</translation>
 <translation id="6566314079205407217">Skanning av flera sidor</translation>
@@ -643,6 +667,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6692996468359469499">Få information utifrån det du markerar</translation>
 <translation id="6704062477274546131">DNS-matchning</translation>
+<translation id="6721744718589119342">Det kan hända att vi kontaktar dig via e-post för mer information eller uppdateringar</translation>
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6723847290197874913">Tangentbordets bakgrundsbelysning</translation>
 <translation id="672609503628871915">Kolla nyheterna</translation>
@@ -703,10 +728,12 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7297226631177386107">Det gick inte att ansluta till HTTPS-webbplatser genom brandvägg</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Fråga experterna på hjälpforumet för Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />: <ph name="RESULT_TEXT" />. Om du trycker på Sök och blanksteg visas resultatet på Google Sök.</translation>
 <translation id="7343649194310845056">Nätverksenheter</translation>
 <translation id="7359657277149375382">Filtyp</translation>
+<translation id="73631062356239394">Dela diagnostikdata</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">Inaktivera ljust tema</translation>
@@ -737,15 +764,18 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7657530360897961171">Fel vid reparation av <ph name="DEVICE_TYPE" /></translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665800271478495366">Byt avatar</translation>
+<translation id="7682274994254393134">Påbörja reparationen</translation>
 <translation id="7690294790491645610">Bekräfta det nya lösenordet</translation>
 <translation id="7701040980221191251">Inga</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Antal cykler</translation>
 <translation id="7747039790905080783">I förväg delad nyckel</translation>
 <translation id="7762130827864645708">Lösenordet har bytts. Använd det nya lösenordet i fortsättningen.</translation>
+<translation id="7762839321248874531">Skicka <ph name="BEGIN_LINK1" />system- och appinformation<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />statistik<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Matchning av domänsuffix</translation>
 <translation id="7769672763586021400">Modell-id</translation>
 <translation id="7784116172884276937">Inga DNS-servrar har konfigurerats</translation>
+<translation id="779591286616261875">Skicka ny rapport</translation>
 <translation id="7799817062559422778">Ljust läge</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -812,6 +842,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="8382302752385457774">Vitskyltning</translation>
 <translation id="8395584934117017006">Denna <ph name="DEVICE_TYPE" /> är företagshanterad</translation>
 <translation id="8398927464629426868">Hur fort enheten laddas eller laddas ur för närvarande</translation>
+<translation id="8420955526972171689">Kör tester och felsök vid problem med maskinvara</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Internt tangentbord</translation>
 <translation id="8431300646573772016">Nyheter i Chrome OS</translation>
@@ -897,6 +928,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="9082718469794970195">Använd den här videon</translation>
 <translation id="9087578468327036362">Rapportera sökfrågan</translation>
 <translation id="9088306295921699330">Nuvarande användning</translation>
+<translation id="9092255287806472980">Din feedback hjälper oss att förbättra Chrome OS och kommer att granskas av vårt team. Vi får många rapporter och därför kan vi inte svara på dem.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Du behöver ta isär enheten</translation>
 <translation id="9098156406873149060">Behåll användaruppgifter</translation>
@@ -911,6 +943,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="9149391708638971077">Kör minnestest</translation>
 <translation id="9173638680043580060">Mindre än en minut kvar</translation>
 <translation id="917720651393141712">Testa</translation>
+<translation id="9188992814426075118">Tangentbordet kan matcha bakgrunden automatiskt</translation>
 <translation id="9204237731135241582">Det gick inte att kontakta gateway från Android-appar</translation>
 <translation id="9211490828691860325">Alla skrivbord</translation>
 <translation id="922179502584117429">Nuvarande version <ph name="VERSION_NUMBER" /> är inte uppdaterad</translation>

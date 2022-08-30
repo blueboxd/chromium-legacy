@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/service/client_service_map.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
@@ -259,9 +258,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
 
   // Gets the VertexArrayManager for this context.
   VertexArrayManager* GetVertexArrayManager() override;
-
-  // Gets the ImageManager for this context.
-  ImageManager* GetImageManagerForTest() override;
 
   // Returns false if there are no pending queries.
   bool HasPendingQueries() const override;
@@ -562,7 +558,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
 
   // The GLApi to make the gl calls on.
-  raw_ptr<gl::GLApi> api_ = nullptr;
+  raw_ptr<gl::GLApi, DanglingUntriaged> api_ = nullptr;
 
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
@@ -583,7 +579,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   bool bind_generates_resource_;
 
   // Mappings from client side IDs to service side IDs for shared objects
-  raw_ptr<PassthroughResources> resources_ = nullptr;
+  raw_ptr<PassthroughResources, DanglingUntriaged> resources_ = nullptr;
 
   // Mappings from client side IDs to service side IDs for per-context objects
   ClientServiceMap<GLuint, GLuint> framebuffer_id_map_;
@@ -592,7 +588,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   ClientServiceMap<GLuint, GLuint> vertex_array_id_map_;
 
   // Mailboxes
-  raw_ptr<MailboxManager> mailbox_manager_ = nullptr;
+  raw_ptr<MailboxManager, DanglingUntriaged> mailbox_manager_ = nullptr;
 
   std::unique_ptr<GpuFenceManager> gpu_fence_manager_;
 

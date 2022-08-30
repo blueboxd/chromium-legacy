@@ -152,7 +152,7 @@ class PrerenderManager::SearchPrerenderTask {
     return prerendered_search_terms_;
   }
 
-  void MaybeAppendUrlEntry(content::WebContents& web_contents) const {
+  void OnActivated(content::WebContents& web_contents) const {
     if (!search_prerender_handle_) {
       return;
     }
@@ -165,6 +165,12 @@ class PrerenderManager::SearchPrerenderTask {
         SearchPrefetchServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents.GetBrowserContext()));
     if (!search_prefetch_service) {
+      return;
+    }
+
+    if (SearchPrefetchUpgradeToPrerenderIsEnabled()) {
+      search_prefetch_service->OnPrerenderedRequestUsed(
+          prerendered_search_terms_, web_contents.GetLastCommittedURL());
       return;
     }
 
@@ -332,26 +338,11 @@ void PrerenderManager::StartPrerenderSearchSuggestion(
   TemplateURLRef::SearchTermsArgs& search_terms_args =
       *(match.search_terms_args);
   const std::u16string& search_terms = search_terms_args.search_terms;
-  // Do not re-prerender the same search result.
-  if (search_prerender_task_) {
-    // TODO(https://crbug.com/1278634): re-prerender the search result if the
-    // prerendered content has been removed.
-    if (search_prerender_task_->prerendered_search_terms() == search_terms) {
-      return;
-    }
 
-    base::UmaHistogramEnumeration(
-        internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
-        PrerenderPredictionStatus::kCancelled);
-    search_prerender_task_.reset();
-  }
-
-  // web_contents() owns the instance that stores this callback, so it is safe
-  // to call std::ref.
-  base::RepeatingCallback<bool(const GURL&)> url_match_predicate =
-      base::BindRepeating(&IsSearchDestinationMatch,
-                          search_terms_args.search_terms,
-                          std::ref(*web_contents()));
+  // If the caller does not want to prerender a new result, this does not need
+  // to do anything.
+  if (!ResetSearchPrerenderTaskIfNecessary(search_terms))
+    return;
 
   GURL prerender_url = match.destination_url;
   // Skip changing the prerender URL in tests as they may not have Profile or
@@ -386,22 +377,39 @@ void PrerenderManager::StartPrerenderSearchSuggestion(
     }
     DCHECK(!search_terms_args.is_prefetch);
   }
-  std::unique_ptr<content::PrerenderHandle> prerender_handle =
-      web_contents()->StartPrerendering(
-          prerender_url, content::PrerenderTriggerType::kEmbedder,
-          prerender_utils::kDefaultSearchEngineMetricSuffix,
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          std::move(url_match_predicate));
 
-  if (prerender_handle) {
-    search_prerender_task_ = std::make_unique<SearchPrerenderTask>(
-        search_terms, std::move(prerender_handle));
+  StartPrerenderSearchResultInternal(search_terms, prerender_url);
+}
+
+void PrerenderManager::StartPrerenderSearchResult(
+    const std::u16string& search_terms,
+    const GURL& prerendering_url) {
+  DCHECK(SearchPrefetchUpgradeToPrerenderIsEnabled());
+
+  // If the caller does not want to prerender a new result, this does not need
+  // to do anything.
+  if (!ResetSearchPrerenderTaskIfNecessary(search_terms))
+    return;
+  StartPrerenderSearchResultInternal(search_terms, prerendering_url);
+}
+
+void PrerenderManager::StopPrerenderSearchResult(
+    const std::u16string& search_terms) {
+  if (search_prerender_task_ &&
+      search_prerender_task_->prerendered_search_terms() == search_terms) {
+    // TODO(https://crbug.com/1295170): Record
+    // PrerenderPredictionStatus::kCancelled here. And double check if we update
+    // kNotStarted.
+    search_prerender_task_.reset();
   }
 }
 
 bool PrerenderManager::HasSearchResultPagePrerendered() const {
   return !!search_prerender_task_;
+}
+
+base::WeakPtr<PrerenderManager> PrerenderManager::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 const std::u16string PrerenderManager::GetPrerenderSearchTermForTesting()
@@ -452,13 +460,54 @@ void PrerenderManager::ResetPrerenderHandlesOnPrimaryPageChanged(
       search_prerender_task_->RecordLifeTimeMetric();
     }
 
-    if (prerender_utils::ShouldUpdateCacheEntryManually() &&
-        is_search_destination_match &&
+    if (is_search_destination_match &&
         navigation_handle->IsPrerenderedPageActivation()) {
-      search_prerender_task_->MaybeAppendUrlEntry(*web_contents());
+      search_prerender_task_->OnActivated(*web_contents());
     }
 
     search_prerender_task_.reset();
+  }
+}
+
+bool PrerenderManager::ResetSearchPrerenderTaskIfNecessary(
+    const std::u16string& search_terms) {
+  if (!search_prerender_task_)
+    return true;
+
+  // Do not re-prerender the same search result.
+  // TODO(https://crbug.com/1278634): re-prerender the search result if the
+  // prerendered content has been removed.
+  if (search_prerender_task_->prerendered_search_terms() == search_terms) {
+    return false;
+  }
+
+  base::UmaHistogramEnumeration(
+      internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
+      PrerenderPredictionStatus::kCancelled);
+  search_prerender_task_.reset();
+  return true;
+}
+
+void PrerenderManager::StartPrerenderSearchResultInternal(
+    const std::u16string& search_terms,
+    const GURL& prerendering_url) {
+  // web_contents() owns the instance that stores this callback, so it is safe
+  // to call std::ref.
+  base::RepeatingCallback<bool(const GURL&)> url_match_predicate =
+      base::BindRepeating(&IsSearchDestinationMatch, search_terms,
+                          std::ref(*web_contents()));
+
+  std::unique_ptr<content::PrerenderHandle> prerender_handle =
+      web_contents()->StartPrerendering(
+          prerendering_url, content::PrerenderTriggerType::kEmbedder,
+          prerender_utils::kDefaultSearchEngineMetricSuffix,
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
+                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          std::move(url_match_predicate));
+
+  if (prerender_handle) {
+    search_prerender_task_ = std::make_unique<SearchPrerenderTask>(
+        search_terms, std::move(prerender_handle));
   }
 }
 

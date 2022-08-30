@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForTabs;
@@ -43,8 +42,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.Manual;
 import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -75,6 +72,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -97,9 +95,8 @@ import java.util.Set;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 // NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
-        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION + ","
-                + ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION})
+        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION})
+@EnableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_DISABLE_ONLINE_DETECTION})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchManagerTest extends ContextualSearchInstrumentationBase {
@@ -210,45 +207,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         closePanel();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
         assertNoWebContents();
-    }
-
-    /**
-     * Tests that a live request that fails (for an invalid URL) does a failover to a
-     * normal priority request once the user triggers the failover by opening the panel.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "https://crbug.com/1140413")
-    public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
-            throws Exception {
-        // Test fails with out-of-process network service. crbug.com/1071721
-        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess2")) return;
-
-        mFakeServer.reset();
-        mFakeServer.setLowPriorityPathInvalid();
-        mFakeServer.setActuallyLoadALiveSerp();
-        simulateResolveSearch("search");
-        assertLoadedLowPriorityInvalidUrl();
-        Assert.assertTrue(mFakeServer.didAttemptLoadInvalidUrl());
-
-        // we should not automatically issue a new request.
-        Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
-
-        // Fake a navigation error if offline.
-        // When connected to the Internet this error may already have happened due to actually
-        // trying to load the invalid URL.  But on test bots that are not online we need to
-        // fake that a navigation happened with an error. See crbug.com/682953 for details.
-        if (!mManager.isOnline()) {
-            boolean isFailure = true;
-            fakeContentViewDidNavigate(isFailure);
-        }
-
-        // Once the bar opens, we make a new request at normal priority.
-        expandPanelAndAssert();
-        waitForNormalPriorityUrlLoaded();
-        Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
 
     /**
@@ -514,7 +472,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1315416")
     public void testTapWithoutLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving an English word should NOT trigger translation.
         simulateResolveSearch("search");
@@ -524,13 +481,8 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     }
 
     /**
-     * Tests the Translate Caption on a resolve gesture.
-     * This test is disabled because it relies on the network and a live search result,
-     * which would be flaky for bots.
-     * TODO(donnd) Load a fake SERP into the panel to trigger SERP-translation and similar
-     * features.
+     * Tests the Translate Caption on a resolve gesture forces a translation.
      */
-    @Manual(message = "Useful for manual testing when a network is connected.")
     @Test
     @LargeTest
     @Feature({"ContextualSearch"})
@@ -543,26 +495,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         Assert.assertTrue("Translation was not forced with the current request URL: "
                         + mManager.getRequest().getSearchUrl(),
                 mManager.getRequest().isTranslationForced());
-
-        // Wait for the translate caption to be shown in the Bar.
-        int waitFactor = 5; // We need to wait an extra long time for the panel content to render.
-        CriteriaHelper.pollUiThread(() -> {
-            ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
-            Criteria.checkThat(barControl, Matchers.notNullValue());
-            Criteria.checkThat(barControl.getCaptionVisible(), Matchers.is(true));
-            Criteria.checkThat(barControl.getCaptionText(), Matchers.notNullValue());
-            Criteria.checkThat(
-                    barControl.getCaptionText().toString(), Matchers.not(Matchers.isEmptyString()));
-        }, 3000 * waitFactor, DEFAULT_POLLING_INTERVAL * waitFactor);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testTranslationsFeatureCanResolveLongpressGesture() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
-
-        Assert.assertTrue(mPolicy.canResolveLongpress());
     }
 
     //============================================================================================
@@ -677,7 +609,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "https://crbug.com/1291558")
     public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
             throws Exception {
         // Skip when this experimental feature is enabled since it's not yet planned past Beta.
@@ -715,8 +646,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         Assert.assertEquals(0.f, imageControl.getCustomImageVisibilityPercentage(), 0);
 
         // Go back to peeking.
-        swipePanelDown();
-        waitForPanelToPeek();
+        peekPanel();
 
         // Assert that the quick action data is showing.
         Assert.assertTrue(barControl.getCaptionVisible());
@@ -947,8 +877,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testAllInternalStatesVisitedResolvingLongpress(@EnabledFeature int enabledFeature)
             throws Exception {
-        if (!mPolicy.canResolveLongpress()) return;
-
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper

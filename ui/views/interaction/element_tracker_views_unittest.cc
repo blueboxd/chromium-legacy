@@ -106,7 +106,9 @@ class ElementEventWatcher {
   const ElementEventType event_type_;
   ui::ElementTracker::Subscription subscription_;
   int event_count_ = 0;
-  raw_ptr<View> last_view_ = nullptr;
+  // TODO(crbug.com/1298696): views_unittests breaks with MTECheckedPtr
+  // enabled. Triage.
+  raw_ptr<View, DegradeToNoOpWhenMTE> last_view_ = nullptr;
 };
 
 ElementTrackerViews::ViewList ElementsToViews(

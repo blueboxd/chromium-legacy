@@ -37,9 +37,22 @@ _CONFIG = [
             'gfx::ICCProfile',
             'gfx::RadToDeg',
 
-            # absl optional constructs.
-            'absl::optional',
+            # absl
+            'absl::FunctionRef',
+            'absl::MakeInt128',
+            'absl::MakeUint128',
+            'absl::get',
+            'absl::get_if',
+            'absl::holds_alternative',
             'absl::in_place',
+            'absl::int128',
+            'absl::make_optional',
+            'absl::nullopt',
+            'absl::nullopt_t',
+            'absl::optional',
+            'absl::uint128',
+            'absl::variant',
+            'absl::visit',
 
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
@@ -47,6 +60,7 @@ _CONFIG = [
             'base::SampleMetadataScope',
             'base::AutoReset',
             'base::Contains',
+            'base::ConditionVariable',
             'base::CpuReductionExperimentFilter',
             'base::ValuesEquivalent',
             'base::Days',
@@ -75,10 +89,12 @@ _CONFIG = [
             'base::Nanoseconds',
             'base::OptionalFromPtr',
             'base::OptionalOrNullptr',
+            'base::PassKey',
             'base::PlatformThread',
             'base::PlatformThreadId',
             'base::RefCountedData',
             'base::RunLoop',
+            'base::HashingLRUCache',
             'base::ReadOnlySharedMemoryMapping',
             'base::ReadOnlySharedMemoryRegion',
             'base::RemoveChars',
@@ -110,23 +126,21 @@ _CONFIG = [
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
             'base::bit_cast',
-            'absl::in_place',
-            'absl::make_optional',
             'base::make_span',
-            'absl::nullopt',
-            'absl::nullopt_t',
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::span',
             'logging::GetVlogLevel',
             'logging::SetLogItems',
-            'base::PassKey',
 
             # //base/allocator/partition_allocator/partition_alloc_constants.h
             'partition_alloc::internal::kAlignment',
 
             # //base/task/bind_post_task.h
             'base::BindPostTask',
+
+            # //base/bind.h
+            'base::IgnoreResult',
 
             # //base/bits.h
             'base::bits::.+',
@@ -651,6 +665,7 @@ _CONFIG = [
             # serialization. Please keep alphabetized.
             'ui::CanHaveInlineTextBoxChildren',
             'ui::IsCellOrTableHeader',
+            'ui::IsChildTreeOwner',
             'ui::IsClickable',
             'ui::IsComboBox',
             'ui::IsContainerWithSelectableChildren',
@@ -676,19 +691,6 @@ _CONFIG = [
             'base::mac::(CFToNSCast|NSToCFCast)',
             'base::mac::Is(AtMost|AtLeast)?OS.+',
             'base::(scoped_nsobject|ScopedCFTypeRef)',
-
-            # absl::variant and getters:
-            'absl::get',
-            'absl::get_if',
-            'absl::holds_alternative',
-            'absl::variant',
-            'absl::visit',
-
-            # 128-bit absl types
-            'absl::MakeInt128',
-            'absl::MakeUint128',
-            'absl::int128',
-            'absl::uint128',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -1441,6 +1443,7 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/core/exported/',
+            'third_party/blink/renderer/core/frame/',
             'third_party/blink/renderer/core/input/',
         ],
         'allowed': [
@@ -1639,7 +1642,7 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webaudio/realtime_audio_worklet_thread.cc',
             'third_party/blink/renderer/modules/webaudio/semi_realtime_audio_worklet_thread.cc',
         ],
-        'allowed': ['base::ThreadPriority'],
+        'allowed': ['base::ThreadType'],
     },
     {
         'paths': [

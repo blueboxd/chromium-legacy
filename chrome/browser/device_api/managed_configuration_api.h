@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 class Profile;
@@ -48,8 +49,7 @@ class ManagedConfigurationAPI : public KeyedService {
   void GetOriginPolicyConfiguration(
       const url::Origin& origin,
       const std::vector<std::string>& keys,
-      base::OnceCallback<void(std::unique_ptr<base::DictionaryValue>)>
-          callback);
+      base::OnceCallback<void(absl::optional<base::Value::Dict>)> callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -83,7 +83,7 @@ class ManagedConfigurationAPI : public KeyedService {
 
   // Sends an operation to set the configured value on FILE thread.
   void PostStoreConfiguration(const url::Origin& origin,
-                              base::DictionaryValue configuration);
+                              base::Value::Dict configuration);
   void InformObserversIfConfigurationChanged(const url::Origin& origin,
                                              bool changed);
 

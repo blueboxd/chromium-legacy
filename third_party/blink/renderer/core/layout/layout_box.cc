@@ -178,7 +178,7 @@ LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
     max_char_width = font.PrimaryFont()->MaxCharWidth();
 
   // For text inputs, IE adds some extra width.
-  if (max_char_width > 0.f)
+  if (max_char_width > char_width)
     float_result += max_char_width - char_width;
 
   LayoutUnit result(ceilf(float_result));
@@ -188,14 +188,21 @@ LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
             shadow_element_names::kIdSpinButton));
     if (LayoutBox* spin_box =
             spin_button ? spin_button->GetLayoutBox() : nullptr) {
+      const Length& logical_width = spin_box->StyleRef().LogicalWidth();
       result += spin_box->BorderAndPaddingLogicalWidth();
       // Since the width of spin_box is not calculated yet,
       // spin_box->LogicalWidth() returns 0. Use the computed logical
       // width instead.
-      result += spin_box->StyleRef().LogicalWidth().Value();
+      if (logical_width.IsPercent()) {
+        if (logical_width.Value() != 100.f) {
+          result +=
+              result * logical_width.Value() / (100 - logical_width.Value());
+        }
+      } else {
+        result += logical_width.Value();
+      }
     }
   }
-
   return result;
 }
 
@@ -496,6 +503,7 @@ void LayoutBox::WillBeDestroyed() {
 
   if (IsOutOfFlowPositioned())
     LayoutBlock::RemovePositionedObject(this);
+
   RemoveFromPercentHeightContainer();
   if (IsOrthogonalWritingModeRoot() && !DocumentBeingDestroyed())
     UnmarkOrthogonalWritingModeRoot();
@@ -508,6 +516,8 @@ void LayoutBox::WillBeDestroyed() {
         .GetFrame()
         ->GetInputMethodController()
         .LayoutObjectWillBeDestroyed(*this);
+    if (IsFixedPositioned())
+      GetFrameView()->RemoveFixedPositionObject(*this);
   }
 
   SetSnapContainer(nullptr);
@@ -592,42 +602,57 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     // When a layout hint happens and an object's position style changes, we
     // have to do a layout to dirty the layout tree using the old position
     // value now.
-    if (diff.NeedsFullLayout() && Parent() &&
-        old_style->GetPosition() != new_style.GetPosition()) {
-      if (!old_style->HasOutOfFlowPosition() &&
-          new_style.HasOutOfFlowPosition()) {
-        // We're about to go out of flow. Before that takes place, we need to
-        // mark the current containing block chain for preferred widths
-        // recalculation.
-        SetNeedsLayoutAndIntrinsicWidthsRecalc(
-            layout_invalidation_reason::kStyleChange);
+    if (diff.NeedsFullLayout() && Parent()) {
+      bool will_move_out_of_ifc = false;
+      if (old_style->GetPosition() != new_style.GetPosition()) {
+        if (!old_style->HasOutOfFlowPosition() &&
+            new_style.HasOutOfFlowPosition()) {
+          // We're about to go out of flow. Before that takes place, we need to
+          // mark the current containing block chain for preferred widths
+          // recalculation.
+          SetNeedsLayoutAndIntrinsicWidthsRecalc(
+              layout_invalidation_reason::kStyleChange);
 
-        // Grid placement is different for out-of-flow elements, so if the
-        // containing block is a grid, dirty the grid's placement. The converse
-        // (going from out of flow to in flow) is handled in
-        // LayoutBox::UpdateGridPositionAfterStyleChange.
-        LayoutBlock* containing_block = ContainingBlock();
-        if (containing_block && containing_block->IsLayoutNGGrid())
-          containing_block->SetGridPlacementDirty(true);
+          // Grid placement is different for out-of-flow elements, so if the
+          // containing block is a grid, dirty the grid's placement. The
+          // converse (going from out of flow to in flow) is handled in
+          // LayoutBox::UpdateGridPositionAfterStyleChange.
+          LayoutBlock* containing_block = ContainingBlock();
+          if (containing_block && containing_block->IsLayoutNGGrid())
+            containing_block->SetGridPlacementDirty(true);
 
-        if (IsInLayoutNGInlineFormattingContext() &&
-            FirstInlineFragmentItemIndex()) {
           // Out of flow are not part of |NGFragmentItems|, and that further
-          // changes including destruction cannot be tracked. Mark it is moved
-          // out from this IFC.
-          NGFragmentItems::LayoutObjectWillBeMoved(*this);
-          ClearFirstInlineFragmentItemIndex();
+          // changes including destruction cannot be tracked. We need to mark it
+          // is moved out from this IFC.
+          will_move_out_of_ifc = true;
+        } else {
+          MarkContainerChainForLayout();
         }
-      } else {
-        MarkContainerChainForLayout();
+
+        if (old_style->GetPosition() == EPosition::kStatic)
+          SetShouldDoFullPaintInvalidation();
+        else if (new_style.HasOutOfFlowPosition())
+          Parent()->SetChildNeedsLayout();
+        if (IsFloating() && !IsOutOfFlowPositioned() &&
+            new_style.HasOutOfFlowPosition())
+          RemoveFloatingOrPositionedChildFromBlockLists();
       }
-      if (old_style->GetPosition() == EPosition::kStatic)
-        SetShouldDoFullPaintInvalidation();
-      else if (new_style.HasOutOfFlowPosition())
-        Parent()->SetChildNeedsLayout();
-      if (IsFloating() && !IsOutOfFlowPositioned() &&
-          new_style.HasOutOfFlowPosition())
-        RemoveFloatingOrPositionedChildFromBlockLists();
+
+      bool will_become_inflow = false;
+      if ((old_style->IsFloating() || old_style->HasOutOfFlowPosition()) &&
+          !new_style.IsFloating() && !new_style.HasOutOfFlowPosition()) {
+        // As a float or OOF, this object may have been part of an inline
+        // formatting context, but that's definitely no longer the case.
+        will_become_inflow = true;
+        will_move_out_of_ifc = true;
+      }
+
+      if (will_move_out_of_ifc && FirstInlineFragmentItemIndex()) {
+        NGFragmentItems::LayoutObjectWillBeMoved(*this);
+        ClearFirstInlineFragmentItemIndex();
+      }
+      if (will_become_inflow)
+        SetIsInLayoutNGInlineFormattingContext(false);
     }
     // FIXME: This branch runs when !oldStyle, which means that layout was never
     // called so what's the point in invalidating the whole view that we never
@@ -655,20 +680,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (HasReflection() && !HasLayer())
     SetHasReflection(false);
 
-  if (old_style) {
-    bool was_float_or_oof =
-        old_style->IsFloating() || old_style->HasOutOfFlowPosition();
-    if (IsFloatingOrOutOfFlowPositioned()) {
-      if (!was_float_or_oof) {
-        if (auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent()))
-          parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
-      }
-    } else if (was_float_or_oof && !IsInline()) {
-      // As a float or OOF, this object may have been part of an inline
-      // formatting context, but that's definitely no longer the case.
-      SetIsInLayoutNGInlineFormattingContext(false);
-    }
-  }
+  auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent());
+  if (IsFloatingOrOutOfFlowPositioned() && old_style &&
+      !old_style->IsFloating() && !old_style->HasOutOfFlowPosition() &&
+      parent_flow_block)
+    parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
 
   const ComputedStyle& new_style = StyleRef();
   if (NeedsLayout() && old_style)
@@ -717,15 +733,25 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       Parent()->StyleRef().IsDisplayFlexibleOrGridBox())
     ClearOverrideSize();
 
-  if (LayoutMultiColumnSpannerPlaceholder* placeholder = SpannerPlaceholder())
-    placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
-
   UpdateBackgroundAttachmentFixedStatusAfterStyleChange();
 
   if (old_style) {
-    LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
-    if (flow_thread && flow_thread != this)
-      flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
+    // Regular column content (i.e. non-spanners) have a hook into the flow
+    // thread machinery before (StyleWillChange()) and after (here in
+    // StyleDidChange()) the style has changed. Column spanners, on the other
+    // hand, only have a hook here. The LayoutMultiColumnSpannerPlaceholder code
+    // will do all the necessary things, including removing it as a spanner, if
+    // it should no longer be one. Therefore, make sure that we skip
+    // FlowThreadDescendantStyleDidChange() in such cases, as that might trigger
+    // a duplicate flow thread insertion notification, if the spanner no longer
+    // is a spanner.
+    if (LayoutMultiColumnSpannerPlaceholder* placeholder =
+            SpannerPlaceholder()) {
+      placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
+    } else if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {
+      if (flow_thread != this)
+        flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
+    }
 
     UpdateScrollSnapMappingAfterStyleChange(*old_style);
 
@@ -753,6 +779,19 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     if (IsInLayoutNGInlineFormattingContext() && IsAtomicInlineLevel() &&
         old_style->Direction() != new_style.Direction()) {
       SetNeedsCollectInlines();
+    }
+  }
+
+  if (LocalFrameView* frame_view = View()->GetFrameView()) {
+    bool new_style_is_fixed_position =
+        StyleRef().GetPosition() == EPosition::kFixed;
+    bool old_style_is_fixed_position =
+        old_style && old_style->GetPosition() == EPosition::kFixed;
+    if (new_style_is_fixed_position != old_style_is_fixed_position) {
+      if (new_style_is_fixed_position && Layer())
+        frame_view->AddFixedPositionObject(*this);
+      else
+        frame_view->RemoveFixedPositionObject(*this);
     }
   }
 
@@ -2412,13 +2451,12 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
 
 bool LayoutBox::HitTestAllPhases(HitTestResult& result,
                                  const HitTestLocation& hit_test_location,
-                                 const PhysicalOffset& accumulated_offset,
-                                 HitTestFilter hit_test_filter) {
+                                 const PhysicalOffset& accumulated_offset) {
   NOT_DESTROYED();
   if (!MayIntersect(result, hit_test_location, accumulated_offset))
     return false;
   return LayoutObject::HitTestAllPhases(result, hit_test_location,
-                                        accumulated_offset, hit_test_filter);
+                                        accumulated_offset);
 }
 
 bool LayoutBox::HitTestOverflowControl(
@@ -2447,12 +2485,12 @@ bool LayoutBox::HitTestOverflowControl(
 bool LayoutBox::NodeAtPoint(HitTestResult& result,
                             const HitTestLocation& hit_test_location,
                             const PhysicalOffset& accumulated_offset,
-                            HitTestAction action) {
+                            HitTestPhase phase) {
   NOT_DESTROYED();
   if (!MayIntersect(result, hit_test_location, accumulated_offset))
     return false;
 
-  bool should_hit_test_self = IsInSelfHitTestingPhase(action);
+  bool should_hit_test_self = IsInSelfHitTestingPhase(phase);
 
   if (should_hit_test_self &&
       HitTestOverflowControl(result, hit_test_location, accumulated_offset))
@@ -2461,7 +2499,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this) ||
                        ChildPaintBlockedByDisplayLock();
   if (!skip_children && ShouldClipOverflowAlongEitherAxis()) {
-    // PaintLayer::HitTestContentsForFragments checked the fragments'
+    // PaintLayer::HitTestFragmentsWithPhase() checked the fragments'
     // foreground rect for intersection if a layer is self painting,
     // so only do the overflow clip check here for non-self-painting layers.
     if (!HasSelfPaintingLayer() &&
@@ -2478,7 +2516,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
   }
 
   if (!skip_children &&
-      HitTestChildren(result, hit_test_location, accumulated_offset, action)) {
+      HitTestChildren(result, hit_test_location, accumulated_offset, phase)) {
     return true;
   }
 
@@ -2512,7 +2550,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
 bool LayoutBox::HitTestChildren(HitTestResult& result,
                                 const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
-                                HitTestAction action) {
+                                HitTestPhase phase) {
   NOT_DESTROYED();
   for (LayoutObject* child = SlowLastChild(); child;
        child = child->PreviousSibling()) {
@@ -2525,7 +2563,7 @@ bool LayoutBox::HitTestChildren(HitTestResult& result,
       child_accumulated_offset += box->PhysicalLocation(this);
 
     if (child->NodeAtPoint(result, hit_test_location, child_accumulated_offset,
-                           action))
+                           phase))
       return true;
   }
 
@@ -2865,6 +2903,12 @@ PhysicalRect LayoutBox::OverflowClipRect(
     clip_rect = PhysicalBorderBoxRect();
     clip_rect.Contract(BorderBoxOutsets());
     clip_rect.Move(location);
+
+    // Videos need to be pre-snapped so that they line up with the
+    // display_rect and can enable hardware overlays.
+    if (IsVideo())
+      clip_rect = LayoutReplaced::PreSnappedRectForPersistentSizing(clip_rect);
+
     if (HasNonVisibleOverflow()) {
       const auto overflow_clip = GetOverflowClipAxes();
       if (overflow_clip != kOverflowClipBothAxis) {

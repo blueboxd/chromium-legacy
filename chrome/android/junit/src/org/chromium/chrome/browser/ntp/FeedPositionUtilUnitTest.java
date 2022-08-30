@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -49,6 +50,9 @@ public class FeedPositionUtilUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        LibraryLoader.getInstance().setLibrariesLoadedForNativeTests();
+        Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
+
         Profile.setLastUsedProfileForTesting(mProfile);
         SegmentationPlatformServiceFactory.setForTests(mSegmentationPlatformService);
         when(mSegmentationPlatformService.getCachedSegmentResult(FEED_USER_SEGMENT_KEY))

@@ -317,28 +317,36 @@ void SetupFragmentBuilderForFragmentation(
       !space.IsInitialColumnBalancingPass()) {
     bool requires_content_before_breaking =
         space.RequiresContentBeforeBreaking();
-    // Pass an "infinite" intrinsic size to see how the block-size is
-    // constrained. If it doesn't affect the block size, it means that we can
-    // tell before layout how much more space this node needs.
-    LayoutUnit max_block_size = ComputeBlockSizeForFragment(
-        space, node.Style(), builder->BorderPadding(), LayoutUnit::Max(),
-        builder->InitialBorderBoxSize().inline_size);
-    DCHECK(space.HasKnownFragmentainerBlockSize());
+    // We're now going to figure out if the (remainder of the) node is
+    // guaranteed to fit in the fragmentainer, and make some decisions based on
+    // that. We'll skip this for tables, because table sizing is complicated,
+    // since captions are not part of the "table box", and any specified
+    // block-size pertains to the table box, while the captions are on the
+    // outside of the "table box", but still part of the fragment.
+    if (!node.IsTable()) {
+      // Pass an "infinite" intrinsic size to see how the block-size is
+      // constrained. If it doesn't affect the block size, it means that we can
+      // tell before layout how much more space this node needs.
+      LayoutUnit max_block_size = ComputeBlockSizeForFragment(
+          space, node.Style(), builder->BorderPadding(), LayoutUnit::Max(),
+          builder->InitialBorderBoxSize().inline_size);
+      DCHECK(space.HasKnownFragmentainerBlockSize());
 
-    DCHECK(!builder->BfcBlockOffset());
-    LayoutUnit space_left =
-        FragmentainerSpaceAtBfcStart(space) - space.ExpectedBfcBlockOffset();
+      DCHECK(!builder->BfcBlockOffset());
+      LayoutUnit space_left =
+          FragmentainerSpaceAtBfcStart(space) - space.ExpectedBfcBlockOffset();
 
-    LayoutUnit previously_consumed_block_size;
-    if (previous_break_token) {
-      previously_consumed_block_size =
-          previous_break_token->ConsumedBlockSize();
-    }
+      LayoutUnit previously_consumed_block_size;
+      if (previous_break_token) {
+        previously_consumed_block_size =
+            previous_break_token->ConsumedBlockSize();
+      }
 
-    if (max_block_size - previously_consumed_block_size <= space_left) {
-      builder->SetIsKnownToFitInFragmentainer(true);
-      if (builder->MustStayInCurrentFragmentainer())
-        requires_content_before_breaking = true;
+      if (max_block_size - previously_consumed_block_size <= space_left) {
+        builder->SetIsKnownToFitInFragmentainer(true);
+        if (builder->MustStayInCurrentFragmentainer())
+          requires_content_before_breaking = true;
+      }
     }
     builder->SetRequiresContentBeforeBreaking(requires_content_before_breaking);
   }
@@ -375,7 +383,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
   // up with negative values here.
   desired_block_size = desired_block_size.ClampNegativeToZero();
 
-  LayoutUnit intrinsic_block_size = builder->IntrinsicBlockSize();
+  LayoutUnit desired_intrinsic_block_size = builder->IntrinsicBlockSize();
 
   LayoutUnit final_block_size = desired_block_size;
 
@@ -383,7 +391,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     builder->SetDidBreakSelf();
 
   if (is_past_end) {
-    final_block_size = intrinsic_block_size = LayoutUnit();
+    final_block_size = LayoutUnit();
   } else if (builder->FoundColumnSpanner()) {
     // There's a column spanner (or more) inside. This means that layout got
     // interrupted and thus hasn't reached the end of this block yet. We're
@@ -403,8 +411,9 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     // more content, but the specified height is 100px, so distribute what we
     // haven't already consumed (100px - 20px = 80px) over two columns. We get
     // two fragments for #container after the spanner, each 40px tall.
-    final_block_size = std::min(final_block_size, intrinsic_block_size) -
-                       trailing_border_padding;
+    final_block_size =
+        std::min(final_block_size, desired_intrinsic_block_size) -
+        trailing_border_padding;
   } else if (space_left != kIndefiniteSize && desired_block_size > space_left &&
              space.HasBlockFragmentation()) {
     // We're taller than what we have room for. We don't want to use more than
@@ -419,17 +428,19 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     //
     // There is a last-resort breakpoint before trailing border and padding, so
     // first check if we can break there and still make progress.
-    DCHECK_GE(intrinsic_block_size, trailing_border_padding);
+    DCHECK_GE(desired_intrinsic_block_size, trailing_border_padding);
     DCHECK_GE(desired_block_size, trailing_border_padding);
 
     LayoutUnit subtractable_border_padding;
     if (desired_block_size > trailing_border_padding)
       subtractable_border_padding = trailing_border_padding;
 
+    LayoutUnit modified_intrinsic_block_size = std::max(
+        space_left, desired_intrinsic_block_size - subtractable_border_padding);
+    builder->SetIntrinsicBlockSize(modified_intrinsic_block_size);
     final_block_size =
         std::min(desired_block_size - subtractable_border_padding,
-                 std::max(space_left,
-                          intrinsic_block_size - subtractable_border_padding));
+                 modified_intrinsic_block_size);
 
     // We'll only need to break inside if we need more space after any
     // unbreakable content that we may have forcefully fitted here.
@@ -545,7 +556,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     if (space.BlockFragmentationType() == kFragmentColumn &&
         !space.IsInitialColumnBalancingPass())
       builder->PropagateSpaceShortage(desired_block_size - space_left);
-    if (desired_block_size <= intrinsic_block_size) {
+    if (desired_block_size <= desired_intrinsic_block_size) {
       // We only want to break inside if there's a valid class C breakpoint [1].
       // That is, we need a non-zero gap between the last child (outer block-end
       // edge) and this container (inner block-end edge). We've just found that

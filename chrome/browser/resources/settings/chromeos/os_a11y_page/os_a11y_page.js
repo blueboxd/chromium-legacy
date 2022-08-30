@@ -14,6 +14,7 @@ import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared_css.js';
 import './manage_a11y_page.js';
+import './text_to_speech_page.js';
 import './switch_access_subpage.js';
 import './tts_subpage.js';
 
@@ -21,6 +22,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
@@ -92,7 +94,19 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
           if (routes.MANAGE_ACCESSIBILITY) {
             map.set(routes.MANAGE_ACCESSIBILITY.path, '#subpage-trigger');
           }
+          if (routes.TEXT_TO_SPEECH) {
+            map.set(routes.TEXT_TO_SPEECH.path, '#text-to-speech-page-trigger');
+          }
           return map;
+        },
+      },
+
+      /** @private */
+      isAccessibilityOSSettingsVisibilityEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilityOSSettingsVisibilityEnabled');
         },
       },
 
@@ -109,14 +123,14 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kA11yQuickSettings,
-          chromeos.settings.mojom.Setting.kGetImageDescriptionsFromGoogle,
-          chromeos.settings.mojom.Setting.kLiveCaption,
+          Setting.kA11yQuickSettings,
+          Setting.kGetImageDescriptionsFromGoogle,
+          Setting.kLiveCaption,
         ]),
       },
     };
@@ -144,11 +158,11 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
 
   /**
    * Overridden from DeepLinkingBehavior.
-   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @param {!Setting} settingId
    * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
-    if (settingId === chromeos.settings.mojom.Setting.kLiveCaption) {
+    if (settingId === Setting.kLiveCaption) {
       afterNextRender(this, () => {
         const captionsSubpage = /** @type {?SettingsCaptionsElement} */ (
             this.shadowRoot.querySelector('settings-captions'));
@@ -198,6 +212,11 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
   /** @private */
   onManageAccessibilityFeaturesTap_() {
     Router.getInstance().navigateTo(routes.MANAGE_ACCESSIBILITY);
+  }
+
+  /** @private */
+  onTextToSpeechTap_() {
+    Router.getInstance().navigateTo(routes.TEXT_TO_SPEECH);
   }
 }
 

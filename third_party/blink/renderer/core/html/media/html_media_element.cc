@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "cc/layers/layer.h"
 #include "media/base/logging_override_if_enabled.h"
@@ -122,7 +123,6 @@
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
-#include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -172,18 +172,6 @@ enum class MediaControlsShow {
   kMaxValue = kUserExplicitlyDisabled,
 };
 
-// These values are used for the Media.MediaElement.ContentTypeResult histogram.
-// Do not reorder.
-enum class ContentTypeParseableResult {
-  kIsSupportedParseable = 0,
-  kMayBeSupportedParseable,
-  kIsNotSupportedParseable,
-  kIsSupportedNotParseable,
-  kMayBeSupportedNotParseable,
-  kIsNotSupportedNotParseable,
-  kMaxValue = kIsNotSupportedNotParseable,
-};
-
 // The state of the HTMLMediaElement when ProgressEventTimerFired is invoked.
 // These values are histogrammed, so please only add values to the end.
 enum class ProgressEventTimerState {
@@ -214,34 +202,6 @@ void RecordProgressEventTimerState(ProgressEventTimerState state) {
 }
 
 static const base::TimeDelta kStalledNotificationInterval = base::Seconds(3);
-
-void ReportContentTypeResultToUMA(String content_type,
-                                  MIMETypeRegistry::SupportsType result) {
-  ParsedContentType parsed_content_type(content_type);
-  ContentTypeParseableResult uma_result =
-      ContentTypeParseableResult::kIsNotSupportedNotParseable;
-  switch (result) {
-    case MIMETypeRegistry::kIsSupported:
-      uma_result = parsed_content_type.IsValid()
-                       ? ContentTypeParseableResult::kIsSupportedParseable
-                       : ContentTypeParseableResult::kIsSupportedNotParseable;
-      break;
-    case MIMETypeRegistry::kMayBeSupported:
-      uma_result =
-          parsed_content_type.IsValid()
-              ? ContentTypeParseableResult::kMayBeSupportedParseable
-              : ContentTypeParseableResult::kMayBeSupportedNotParseable;
-      break;
-    case MIMETypeRegistry::kIsNotSupported:
-      uma_result =
-          parsed_content_type.IsValid()
-              ? ContentTypeParseableResult::kIsNotSupportedParseable
-              : ContentTypeParseableResult::kIsNotSupportedNotParseable;
-      break;
-  }
-  base::UmaHistogramEnumeration("Media.MediaElement.ContentTypeParseable",
-                                uma_result);
-}
 
 String UrlForLoggingMedia(const KURL& url) {
   static const unsigned kMaximumURLLengthForLogging = 128;
@@ -455,12 +415,11 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   if (type == "application/octet-stream")
     return MIMETypeRegistry::kIsNotSupported;
 
-  // Check if stricter parsing of |contentType| will cause problems.
-  // TODO(jrummell): Either switch to ParsedContentType or remove this UMA,
-  // depending on the results reported.
+  // |contentType| could be handled using ParsedContentType, but there are
+  // still a lot of sites using codec strings that don't work with the
+  // stricter parsing rules.
   MIMETypeRegistry::SupportsType result =
       MIMETypeRegistry::SupportsMediaMIMEType(type, type_codecs);
-  ReportContentTypeResultToUMA(content_type.Raw(), result);
   return result;
 }
 
@@ -4593,7 +4552,7 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
     scoped_refptr<WebAudioSourceProviderImpl> provider) {
-  MutexLocker locker(provide_input_lock);
+  base::AutoLock locker(provide_input_lock);
 
   if (web_audio_source_provider_ && provider != web_audio_source_provider_)
     web_audio_source_provider_->SetClient(nullptr);
@@ -4605,7 +4564,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
 
 void HTMLMediaElement::AudioSourceProviderImpl::SetClient(
     AudioSourceProviderClient* client) {
-  MutexLocker locker(provide_input_lock);
+  base::AutoLock locker(provide_input_lock);
 
   if (client)
     client_ = MakeGarbageCollected<HTMLMediaElement::AudioClientImpl>(client);
@@ -4621,8 +4580,9 @@ void HTMLMediaElement::AudioSourceProviderImpl::ProvideInput(
     int frames_to_process) {
   DCHECK(bus);
 
-  MutexTryLocker try_locker(provide_input_lock);
-  if (!try_locker.Locked() || !web_audio_source_provider_ || !client_.Get()) {
+  base::AutoTryLock try_locker(provide_input_lock);
+  if (!try_locker.is_acquired() || !web_audio_source_provider_ ||
+      !client_.Get()) {
     bus->Zero();
     return;
   }

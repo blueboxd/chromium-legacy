@@ -114,6 +114,7 @@ class ScriptExecutor : public ActionDelegate,
   void Run(const UserData* user_data, RunScriptCallback callback);
 
   const UserData* GetUserData() const override;
+  UserData* GetMutableUserData() const override;
   UserModel* GetUserModel() const override;
 
   // Override ScriptExecutorDelegate::NavigationListener
@@ -277,6 +278,8 @@ class ScriptExecutor : public ActionDelegate,
   bool MustUseBackendData() const override;
   void MaybeSetPreviousAction(
       const ProcessedActionProto& processed_action) override;
+  absl::optional<std::string> GetIntent() const override;
+  const std::string GetLocale() const override;
 
  private:
   // TODO(b/220079189): remove this friend declaration.
@@ -361,6 +364,10 @@ class ScriptExecutor : public ActionDelegate,
   // Returns the current ActionData, or nullptr if there is no current action.
   Action::ActionData* GetCurrentActionData();
 
+  // Creates new TriggerContext from |delegate_|'s TriggerContext and
+  // |additional_context_|.
+  TriggerContext GetMergedTriggerContext() const;
+
   const std::string script_path_;
   std::unique_ptr<TriggerContext> additional_context_;
   std::string last_global_payload_;
@@ -386,6 +393,8 @@ class ScriptExecutor : public ActionDelegate,
       ActionProto::ACTION_INFO_NOT_SET;
   absl::optional<DomObjectFrameStack> last_focused_element_;
   std::unique_ptr<ElementAreaProto> touchable_element_area_;
+
+  std::unique_ptr<content::WebContents> web_contents_for_js_execution_;
 
   // Steps towards the requirements for calling |on_expected_navigation_done_|
   // to be fulfilled.

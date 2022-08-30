@@ -66,7 +66,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
       : session_(std::make_unique<HttpNetworkSession>(session_params,
                                                       session_context)) {}
 
-  ~TestTransactionFactory() override {}
+  ~TestTransactionFactory() override = default;
 
   // HttpTransactionFactory methods
   int CreateTransaction(RequestPriority priority,
@@ -88,9 +88,8 @@ class TestTransactionFactory : public HttpTransactionFactory {
 class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
  protected:
   QuicEndToEndTest()
-      : host_resolver_impl_(CreateResolverImpl()),
-        host_resolver_(std::move(host_resolver_impl_)),
-        ssl_config_service_(new SSLConfigServiceDefaults),
+      : host_resolver_(CreateResolverImpl()),
+        ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()),
         proxy_resolution_service_(
             ConfiguredProxyResolutionService::CreateDirect()),
         auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()) {
@@ -124,8 +123,8 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
 
   // Creates a mock host resolver in which test.example.com
   // resolves to localhost.
-  static MockHostResolver* CreateResolverImpl() {
-    MockHostResolver* resolver = new MockHostResolver();
+  static std::unique_ptr<MockHostResolver> CreateResolverImpl() {
+    auto resolver = std::make_unique<MockHostResolver>();
     resolver->rules()->AddRule("test.example.com", "127.0.0.1");
     return resolver;
   }
@@ -214,7 +213,6 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
   }
 
   QuicContext quic_context_;
-  std::unique_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;

@@ -82,6 +82,7 @@ import org.chromium.url.GURL;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@SuppressWarnings("DoNotMock") // Mocks GURL.
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://m.a.xyz/signin", mock(GURL.class), "Ana", "m.a.xyz",
@@ -104,6 +105,7 @@ public class PasswordCheckControllerTest {
             "PasswordManager.BulkCheck.PasswordCheckReferrerAndroid2";
     private static final String PASSWORD_CHECK_USER_ACTION_HISTOGRAM =
             "PasswordManager.BulkCheck.UserActionAndroid";
+    private static final boolean USE_LAST_VALID_AUTH = true;
 
     @Rule
     public final JniMocker mJniMocker = new JniMocker();
@@ -645,7 +647,7 @@ public class PasswordCheckControllerTest {
             return true;
         })
                 .when(mReauthenticatorBridge)
-                .reauthenticate(notNull());
+                .reauthenticate(notNull(), eq(USE_LAST_VALID_AUTH));
         // There is a auto change button, a user clicks it.
         mMediator.onChangePasswordWithScriptButtonClick(BOB);
         verify(mDelegate, never()).onAutomatedPasswordChangeStarted(eq(BOB));
@@ -679,7 +681,7 @@ public class PasswordCheckControllerTest {
             return true;
         })
                 .when(mReauthenticatorBridge)
-                .reauthenticate(notNull());
+                .reauthenticate(notNull(), eq(USE_LAST_VALID_AUTH));
         // There is a auto change button, a user clicks it.
         mMediator.onChangePasswordWithScriptButtonClick(BOB);
         verify(mDelegate).onAutomatedPasswordChangeStarted(eq(BOB));

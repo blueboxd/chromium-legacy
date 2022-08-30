@@ -171,6 +171,7 @@ class AutocompleteProvider
     TYPE_VOICE_SUGGEST = 1 << 15,
     TYPE_HISTORY_FUZZY = 1 << 16,
     TYPE_OPEN_TAB = 1 << 17,
+    TYPE_HISTORY_CLUSTER_PROVIDER = 1 << 18,
   };
 
   explicit AutocompleteProvider(Type type);
@@ -217,17 +218,22 @@ class AutocompleteProvider
 
   // Advises the provider to stop processing.  This may be called even if the
   // provider is already done.  If the provider caches any results, it should
-  // clear the cache based on the value of |clear_cached_results|.  Normally,
+  // clear the cache based on the value of `clear_cached_results`.  Normally,
   // once this is called, the provider should not send more notifications to
   // the controller.
   //
-  // If |user_inactivity_timer| is true, Stop() is being called because it's
+  // If `user_inactivity_timer` is true, Stop() is being called because it's
   // been a long time since the user started the current query, and returning
   // further asynchronous results would normally just be disruptive.  Most
   // providers should still stop processing in this case, but continuing is
   // legal if there's a good reason the user is likely to want even long-
   // delayed asynchronous results, e.g. the user has explicitly invoked a
   // keyword extension and the extension is still processing the request.
+  //
+  // The default implementation sets `done_` to true and clears `matches_` if
+  // `clear_cached_results` is true. Overridden functions must call
+  // `AutocompleteProvider::Stop()` with the same arguments passed to the
+  // function unless there is a good and well-documented reason not to do so.
   virtual void Stop(bool clear_cached_results, bool due_to_user_inactivity);
 
   // Returns the enum equivalent to the name of this provider.
@@ -276,7 +282,14 @@ class AutocompleteProvider
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
 
-  // Returns whether the provider is done processing the query.
+  // Returns whether the provider is done processing the last `Start()` request.
+  // Should not be set true for `StartPrefetch()` requests in order to remain
+  // consistent with `AutocompleteController::done()`; i.e., if `done_` is false
+  // for any provider, then the `AutocompleteController::done_` must also be
+  // false. This ensures the controller can determine when each provider
+  // finishes processing async requests. Should be true after either `Stop()` or
+  // `Start()` with `AutocompleteInput.want_asynchronous_matches` set to false
+  // are called.
   bool done() const { return done_; }
 
   // Returns this provider's type.
@@ -349,6 +362,7 @@ class AutocompleteProvider
 
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
+  friend class FakeAutocompleteProvider;
   FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            DemoteOnDeviceSearchSuggestions);

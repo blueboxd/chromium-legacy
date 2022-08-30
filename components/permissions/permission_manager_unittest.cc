@@ -314,11 +314,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
 #if BUILDFLAG(IS_ANDROID)
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         GetDefaultProtectedMediaIdentifierPermissionStatus());
-  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
-                        PermissionStatus::DENIED);
-#else
-  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
-                        PermissionStatus::ASK);
 #endif
 }
 
@@ -337,14 +332,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   SetPermission(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        PermissionStatus::GRANTED);
-
-  SetPermission(ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
-                        PermissionStatus::DENIED);
-#else
-  SetPermission(ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
                         PermissionStatus::GRANTED);
 #endif
 }

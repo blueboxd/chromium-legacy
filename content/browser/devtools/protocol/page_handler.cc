@@ -181,26 +181,11 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
   *top_controls_visible_height = *frame.metadata().top_controls_visible_height;
 }
 
-Response AssureTopLevelActiveFrame(RenderFrameHost* host) {
-  if (!host)
-    return Response::ServerError(kErrorNotAttached);
-
-  if (host->GetParentOrOuterDocument())
-    return Response::ServerError(kCommandIsOnlyAvailableAtTopTarget);
-
-  if (!host->IsActive())
-    return Response::ServerError(kErrorInactivePage);
-
-  return Response::Success();
-}
-
 template <typename ProtocolCallback>
 bool CanExecuteGlobalCommands(
-    RenderFrameHost* host,
+    PageHandler* page_handler,
     const std::unique_ptr<ProtocolCallback>& callback) {
-  if (!host)
-    return true;
-  Response response = AssureTopLevelActiveFrame(host);
+  Response response = page_handler->AssureTopLevelActiveFrame();
   if (!response.IsError())
     return true;
   callback->sendFailure(response);
@@ -393,7 +378,10 @@ Response PageHandler::Disable() {
     video_consumer_->StopCapture();
 
   if (!pending_dialog_.is_null()) {
-    WebContentsImpl* web_contents = GetWebContents();
+    // Only a top level frame can have a dialog.
+    DCHECK(!AssureTopLevelActiveFrame().IsError());
+
+    WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
     // Leave dialog hanging if there is a manager that can take care of it,
     // cancel and send ack otherwise.
     bool has_dialog_manager =
@@ -423,7 +411,7 @@ Response PageHandler::Crash() {
 }
 
 Response PageHandler::Close() {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -435,7 +423,7 @@ Response PageHandler::Close() {
 void PageHandler::Reload(Maybe<bool> bypassCache,
                          Maybe<std::string> script_to_evaluate_on_load,
                          std::unique_ptr<ReloadCallback> callback) {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError()) {
     callback->sendFailure(response);
     return;
@@ -711,7 +699,7 @@ static const char* TransitionTypeName(ui::PageTransition type) {
 Response PageHandler::GetNavigationHistory(
     int* current_index,
     std::unique_ptr<NavigationEntries>* entries) {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -733,7 +721,7 @@ Response PageHandler::GetNavigationHistory(
 }
 
 Response PageHandler::NavigateToHistoryEntry(int entry_id) {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -753,7 +741,7 @@ static bool ReturnTrue(NavigationEntry* entry) {
 }
 
 Response PageHandler::ResetNavigationHistory() {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -765,7 +753,7 @@ Response PageHandler::ResetNavigationHistory() {
 void PageHandler::CaptureSnapshot(
     Maybe<std::string> format,
     std::unique_ptr<CaptureSnapshotCallback> callback) {
-  if (!CanExecuteGlobalCommands(host_, callback))
+  if (!CanExecuteGlobalCommands(this, callback))
     return;
   std::string snapshot_format = format.fromMaybe(kMhtml);
   if (snapshot_format != kMhtml) {
@@ -787,7 +775,7 @@ void PageHandler::CaptureScreenshot(
     callback->sendFailure(Response::InternalError());
     return;
   }
-  if (!CanExecuteGlobalCommands(host_, callback))
+  if (!CanExecuteGlobalCommands(this, callback))
     return;
   if (clip.isJust()) {
     if (clip.fromJust()->GetWidth() == 0) {
@@ -945,7 +933,7 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
                                       Maybe<int> max_width,
                                       Maybe<int> max_height,
                                       Maybe<int> every_nth_frame) {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
   RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
@@ -1011,7 +999,7 @@ Response PageHandler::ScreencastFrameAck(int session_id) {
 
 Response PageHandler::HandleJavaScriptDialog(bool accept,
                                              Maybe<std::string> prompt_text) {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -1055,7 +1043,7 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
   if (!browser_context)
     return Response::ServerError("Could not fetch browser context");
 
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
   if (!browser_handler_)
@@ -1066,7 +1054,7 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
 
 void PageHandler::GetAppManifest(
     std::unique_ptr<GetAppManifestCallback> callback) {
-  if (!CanExecuteGlobalCommands(host_, callback))
+  if (!CanExecuteGlobalCommands(this, callback))
     return;
   ManifestManagerHost::GetOrCreateForPage(host_->GetPage())
       ->RequestManifestDebugInfo(base::BindOnce(&PageHandler::GotManifest,
@@ -1287,7 +1275,7 @@ void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
 }
 
 Response PageHandler::StopLoading() {
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -1299,7 +1287,7 @@ Response PageHandler::StopLoading() {
 Response PageHandler::SetWebLifecycleState(const std::string& state) {
   // Inactive pages(e.g., a prerendered or back-forward cached page) should not
   // affect the state.
-  Response response = AssureTopLevelActiveFrame(host_);
+  Response response = AssureTopLevelActiveFrame();
   if (response.IsError())
     return response;
 
@@ -1544,7 +1532,7 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
     case PrerenderHost::FinalStatus::kSslCertificateError:
       return Page::PrerenderFinalStatusEnum::SslCertificateError;
     case PrerenderHost::FinalStatus::kStop:
-      return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
+      return Page::PrerenderFinalStatusEnum::Stop;
     case PrerenderHost::FinalStatus::kTriggerBackgrounded:
       return Page::PrerenderFinalStatusEnum::TriggerBackgrounded;
     case PrerenderHost::FinalStatus::kTriggerDestroyed:
@@ -1967,6 +1955,19 @@ Response PageHandler::AddCompilationCache(const std::string& url,
   if (allow_unsafe_operations_)
     return Response::FallThrough();
   return Response::ServerError("Permission denied");
+}
+
+Response PageHandler::AssureTopLevelActiveFrame() {
+  if (!host_)
+    return Response::ServerError(kErrorNotAttached);
+
+  if (host_->GetParentOrOuterDocument())
+    return Response::ServerError(kCommandIsOnlyAvailableAtTopTarget);
+
+  if (!host_->IsActive())
+    return Response::ServerError(kErrorInactivePage);
+
+  return Response::Success();
 }
 
 void PageHandler::BackForwardCacheNotUsed(

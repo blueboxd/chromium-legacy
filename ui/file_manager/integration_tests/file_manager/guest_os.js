@@ -23,7 +23,7 @@ testcase.notListedWithoutFlag = async () => {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // Check that we have no Guest OS entries.
-  const query = '#directory-tree [root-type-icon=guest_os]';
+  const query = '#directory-tree [root-type-icon=bruschetta]';
   await remoteCall.waitForElementsCount(appId, [query], 0);
 };
 
@@ -58,7 +58,7 @@ testcase.listUpdatedWhenGuestsChanged = async () => {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // We'll use this query a lot to check how many guests we have.
-  const query = '#directory-tree [root-type-icon=guest_os]';
+  const query = '#directory-tree [root-type-icon=android_files]';
 
   const names = ['Etcetera', 'Electra'];
   const ids = [];
@@ -66,9 +66,9 @@ testcase.listUpdatedWhenGuestsChanged = async () => {
   for (const name of names) {
     // Add a guest...
     ids.push(await sendTestMessage(
-        {name: 'registerMountableGuest', displayName: name}));
+        {name: 'registerMountableGuest', displayName: name, vmType: 'arcvm'}));
 
-    // ...and it should show up
+    // ...and it should show up.
     await remoteCall.waitForElement(
         appId, `#directory-tree [entry-label="${name}"]`);
   }
@@ -86,7 +86,8 @@ testcase.listUpdatedWhenGuestsChanged = async () => {
 
   // Then add them back for good measure.
   for (const name of names) {
-    await sendTestMessage({name: 'registerMountableGuest', displayName: name});
+    await sendTestMessage(
+        {name: 'registerMountableGuest', displayName: name, vmType: 'arcvm'});
   }
   await remoteCall.waitForElementsCount(appId, [query], names.length);
 };
@@ -99,33 +100,51 @@ testcase.listUpdatedWhenGuestsChanged = async () => {
 testcase.mountGuestSuccess = async () => {
   const guestName = 'JennyAnyDots';
   // Start off with one guest.
-  const id = await sendTestMessage(
-      {name: 'registerMountableGuest', displayName: guestName, canMount: true});
+  const guestId = await sendTestMessage({
+    name: 'registerMountableGuest',
+    displayName: guestName,
+    canMount: true,
+    vmType: 'bruschetta'
+  });
   // Open the files app.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // Wait for our guest to appear and click it.
-  const query = '#directory-tree [root-type-icon=guest_os]';
-  await remoteCall.waitAndClickElement(appId, query);
+  const placeholderQuery = '#directory-tree [root-type-icon=bruschetta]';
+  const volumeQuery =
+      `.tree-item[volume-type-for-testing="guest_os"][entry-label="${
+          guestName}"]`;
+  await remoteCall.waitAndClickElement(appId, placeholderQuery);
 
   // Wait until it's loaded.
   await remoteCall.waitForElement(
       appId, `#breadcrumbs[path="My files/${guestName}"]`);
 
-  // We should have a volume in the sidebar
+  // We should have a volume in the sidebar.
+  await remoteCall.waitForElement(appId, volumeQuery);
   await remoteCall.waitForElement(
-      appId,
-      `.tree-item[volume-type-for-testing="guest_os"][entry-label="${
-          guestName}"]`);
+      appId, '#directory-tree [volume-type-icon=bruschetta]');
 
-  // We should no longer have a fake
-  await remoteCall.waitForElementsCount(appId, [query], 0);
+  // We should no longer have a fake.
+  await remoteCall.waitForElementsCount(appId, [placeholderQuery], 0);
 
-  // And the volume should be focused in the main window
+  // And the volume should be focused in the main window.
   await remoteCall.waitForElement(
       appId, `#list-container[scan-completed="${guestName}"]`);
 
-  // It should not be read-only
+  // It should not be read-only.
   await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
+
+  // Unmount the volume.
+  await sendTestMessage({
+    name: 'unmountGuest',
+    guestId: guestId,
+  });
+
+  // We should have our fake back.
+  await remoteCall.waitForElementsCount(appId, [placeholderQuery], 1);
+
+  // And no more volume.
+  await remoteCall.waitForElementsCount(appId, [volumeQuery], 0);
 };

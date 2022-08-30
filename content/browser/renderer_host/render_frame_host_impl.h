@@ -41,7 +41,7 @@
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
-#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
@@ -202,9 +202,6 @@ namespace features {
 // non-legacy implementation of BrowsingContextState.
 CONTENT_EXPORT extern const base::Feature
     kDisableFrameNameUpdateOnNonCurrentRenderFrameHost;
-
-// Feature to evict when accessibility events occur while in back/forward cache.
-CONTENT_EXPORT extern const base::Feature kEvictOnAXEvents;
 }  // namespace features
 
 namespace content {
@@ -242,7 +239,6 @@ class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
-class SensorProviderProxyImpl;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -479,16 +475,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& data,
       IsClipboardPasteContentAllowedCallback callback);
 
-  // This is called when accessibility events arrive from renderer to browser.
-  // This could cause eviction if the page is in back/forward cache. Returns
-  // true if the eviction happens, and otherwise calls
-  // |RenderFrameHost::IsInactiveAndDisallowActivation()| and returns the value
-  // from there. This is only called when the flag to evict on accessibility
-  // events is on. When the flag is off, we do not evict the entry and keep
-  // processing the events, thus do not call this function.
-  bool IsInactiveAndDisallowActivationForAXEvents(
-      const std::vector<ui::AXEvent>& events);
-
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
 
@@ -509,6 +495,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       BackForwardCacheCanStoreDocumentResultWithTree& can_store);
 
   // Only for testing sticky WebBackForwardCacheDisablingFeature.
+  // This is implemented solely in the browser and should only be used when
+  // stickiness is required, otherwise
+  // BackForwardCacheBrowserTest::AddBlocklistedFeature should be used.
   void UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
 
   // Returns the current WebPreferences for the WebContents associated with this
@@ -544,6 +533,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int opt_request_id,
       base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
                               int hit_node_id)> opt_callback) override;
+  // Return true if this is the root -- there are no parent frames of any kind.
   bool AccessibilityIsMainFrame() override;
   WebContentsAccessibility* AccessibilityGetWebContentsAccessibility() override;
 
@@ -557,10 +547,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(
-      int previous_routing_id,
+      const absl::optional<blink::FrameToken>& previous_frame_token,
       const absl::optional<blink::FrameToken>& opener_frame_token,
-      int parent_routing_id,
-      int previous_sibling_routing_id);
+      const absl::optional<blink::FrameToken>& parent_frame_token,
+      const absl::optional<blink::FrameToken>& previous_sibling_frame_token);
 
   // Deletes the RenderFrame in the renderer process.
   // Postcondition: |IsPendingDeletion()| is true.
@@ -743,23 +733,24 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const url::Origin& ComputeTopFrameOrigin(
       const url::Origin& frame_origin) const;
 
-  // Computes the IsolationInfo for this frame to `destination`. Set `anonymous`
-  // to true if the navigation will be loaded as anonymous document (note that
-  // the navigation might be committing an anonymous document even if the
-  // document currently loaded in this RFH is not anonymous, and vice versa).
+  // Computes the IsolationInfo for this frame to `destination`. Set
+  // `is_anonymous` to true if the navigation will be loaded as anonymous
+  // document (note that the navigation might be committing an anonymous
+  // document even if the document currently loaded in this RFH is not
+  // anonymous, and vice versa).
   net::IsolationInfo ComputeIsolationInfoForNavigation(const GURL& destination,
-                                                       bool anonymous);
+                                                       bool is_anonymous);
 
   // Computes the IsolationInfo for this frame to |destination|.
   net::IsolationInfo ComputeIsolationInfoForNavigation(const GURL& destination);
 
   // Computes the IsolationInfo that should be used for subresources, if
   // |main_world_origin_for_url_loader_factory| is committed to this frame. The
-  // boolean `anonymous` specifies whether this frame will commit an anonymous
-  // document.
+  // boolean `is_anonymous` specifies whether this frame will commit an
+  // anonymous document.
   net::IsolationInfo ComputeIsolationInfoForSubresourcesForPendingCommit(
       const url::Origin& main_world_origin_for_url_loader_factory,
-      bool anonymous);
+      bool is_anonymous);
 
   // Computes site_for_cookies for this frame. A non-empty result denotes which
   // domains are considered first-party to the top-level site when resources are
@@ -1272,6 +1263,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool CreateWebUI(const GURL& dest_url, int entry_bindings);
 
   // Destroys WebUI instance and resets related data.
+  // This indirectly calls content's embedders and may have arbitrary side
+  // effect, like deleting `this`.
   void ClearWebUI();
 
   // Returns the Mojo ImageDownloader service.
@@ -1881,7 +1874,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return required_csp_.get();
   }
 
-  bool anonymous() const { return anonymous_; }
+  bool IsAnonymous() const override;
 
   bool is_fenced_frame_opaque_url() const {
     return is_fenced_frame_opaque_url_;
@@ -2419,7 +2412,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder() const;
 
   // Computes the nonce to be used for isolation info and storage key.
-  absl::optional<base::UnguessableToken> ComputeNonce(bool anonymous);
+  absl::optional<base::UnguessableToken> ComputeNonce(bool is_anonymous);
 
   // Return the frame immediately preceding this RenderFrameHost in its parent's
   // children, or nullptr if there is no such node.
@@ -2555,6 +2548,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
+      const std::vector<blink::ParsedPermissionsPolicyDeclaration>&
+          permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       const base::UnguessableToken& devtools_navigation_token);
   virtual void SendCommitFailedNavigation(
@@ -2708,7 +2703,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   net::IsolationInfo ComputeIsolationInfoInternal(
       const url::Origin& frame_origin,
       net::IsolationInfo::RequestType request_type,
-      bool anonymous);
+      bool is_anonymous);
 
   // Returns whether or not this RenderFrameHost is a descendant of |ancestor|.
   // This is equivalent to check that |ancestor| is reached by iterating on
@@ -3661,9 +3656,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // IdleManager which provides Idle status.
   std::unique_ptr<IdleManagerImpl> idle_manager_;
 
-  // SensorProvider proxy which acts as a gatekeeper to the real SensorProvider.
-  std::unique_ptr<SensorProviderProxyImpl> sensor_provider_proxy_;
-
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_registry_;
 
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
@@ -4190,15 +4182,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // stored when the frame commits the navigation.
   network::mojom::ContentSecurityPolicyPtr required_csp_;
 
-  // Whether the current document is loaded inside an anonymous iframe. Updated
-  // on every cross-document navigation.
-  bool anonymous_ = false;
-
   // Indicates whether the fenced frame is navigated to an opaque url. This flag
   // can only change when the embedder navigates the fenced frame. Any
-  // subsequent navigation from within the fenced frame tree will keep the same
-  // flag. Note that this flag is only relevant for fenced frames based on
-  // MPArch.
+  // subsequent navigation from the fenced frame root will keep the same flag.
+  // Note that this flag is only relevant for fenced frames based on MPArch.
   bool is_fenced_frame_opaque_url_ = false;
 
   // The PolicyContainerHost for the current document, containing security

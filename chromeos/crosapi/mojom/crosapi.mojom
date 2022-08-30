@@ -10,11 +10,13 @@ import "chromeos/crosapi/mojom/account_manager.mojom";
 import "chromeos/crosapi/mojom/app_service.mojom";
 import "chromeos/crosapi/mojom/app_window_tracker.mojom";
 import "chromeos/crosapi/mojom/arc.mojom";
+import "chromeos/crosapi/mojom/audio_service.mojom";
 import "chromeos/crosapi/mojom/authentication.mojom";
 import "chromeos/crosapi/mojom/automation.mojom";
 import "chromeos/crosapi/mojom/browser_app_instance_registry.mojom";
 import "chromeos/crosapi/mojom/browser_version.mojom";
 import "chromeos/crosapi/mojom/cert_database.mojom";
+import "chromeos/crosapi/mojom/cert_provisioning.mojom";
 import "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom";
 import "chromeos/crosapi/mojom/clipboard.mojom";
 import "chromeos/crosapi/mojom/clipboard_history.mojom";
@@ -28,6 +30,7 @@ import "chromeos/crosapi/mojom/document_scan.mojom";
 import "chromeos/crosapi/mojom/download_controller.mojom";
 import "chromeos/crosapi/mojom/drive_integration_service.mojom";
 import "chromeos/crosapi/mojom/echo_private.mojom";
+import "chromeos/crosapi/mojom/emoji_picker.mojom";
 import "chromeos/crosapi/mojom/extension_info_private.mojom";
 import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/field_trial.mojom";
@@ -55,6 +58,7 @@ import "chromeos/crosapi/mojom/networking_private.mojom";
 import "chromeos/crosapi/mojom/power.mojom";
 import "chromeos/crosapi/mojom/network_settings_service.mojom";
 import "chromeos/crosapi/mojom/prefs.mojom";
+import "chromeos/crosapi/mojom/printing_metrics.mojom";
 import "chromeos/crosapi/mojom/remoting.mojom";
 import "chromeos/crosapi/mojom/resource_manager.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
@@ -113,8 +117,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 83
-// Next method id: 86
+// Next version: 87
+// Next method id: 91
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -122,6 +126,10 @@ interface Crosapi {
   // Added in M91.
   [MinVersion=18]
   BindAutomationDeprecated@23(pending_receiver<Automation> receiver);
+
+  // Binds the audio devices service which provides audio info to Lacros
+  [MinVersion=82] BindAudioService@85(
+      pending_receiver<AudioService> receiver);
 
   // Binds the authenticate profile handler service which allows authentication
   // of profiles by Ash.
@@ -184,6 +192,12 @@ interface Crosapi {
   // client applications.
   // Added in M89.
   [MinVersion=7] BindCertDatabase@12(pending_receiver<CertDatabase> receiver);
+
+  // Binds the CertProvisioning interface for implementing certificate
+  // provisioning UI.
+  // Added in M102.
+  [MinVersion=83]
+  BindCertProvisioning@86(pending_receiver<CertProvisioning> receiver);
 
   // Binds the chrome app publisher service, which allows Lacros to connect its
   // Chrome apps to the app service.
@@ -257,6 +271,9 @@ interface Crosapi {
   // confirm the device is a ChromeOS device.
   [MinVersion=71] BindEchoPrivate@74(
       pending_receiver<EchoPrivate> receiver);
+
+  // EmojiPicker is a service to allow lacros to open the system emoji picker.
+  [MinVersion=85] BindEmojiPicker@89(pending_receiver<EmojiPicker> receiver);
 
   // ExtensionInfoPrivate is a service that allows trusted extensions in Lacros
   // to get and set system properties. Implemented in Ash.
@@ -466,6 +483,10 @@ interface Crosapi {
   // Added in M93.
   [MinVersion=35] BindPower@40(pending_receiver<Power> receiver);
 
+  // Binds the PrintingMetrics interface for chrome.printingMetrics API.
+  [MinVersion=86] BindPrintingMetrics@90(
+      pending_receiver<PrintingMetrics> receiver);
+
   // Binds the Resource Manager interface for querying resource status.
   // Added in M93.
   [MinVersion=36] BindResourceManager@41(
@@ -537,9 +558,6 @@ interface Crosapi {
   [MinVersion=79] BindVpnService@82(
       pending_receiver<VpnService> receiver);
 
-  // Binds the service to allow lacros-chrome to set the chromeos wallpaper.
-  [MinVersion=82] BindWallpaper@85(pending_receiver<Wallpaper> receiver);
-
   // Binds the web page info factory interface which allows ash to request web
   // page info from Lacros.
   // Added in M93.
@@ -558,6 +576,9 @@ interface Crosapi {
   // Added in M101.
   [MinVersion=69]
   BindWebAppService@72(pending_receiver<WebAppService> receiver);
+
+  // Binds the service to allow lacros-chrome to set the chromeos wallpaper.
+  [MinVersion=84] BindWallpaper@87(pending_receiver<Wallpaper> receiver);
 
   // Passes generic browser information such as version, etc into ash in
   // |browser_info| during startup.
@@ -809,8 +830,8 @@ enum OpenUrlFrom {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 44
-// Next id: 44
+// Next version: 48
+// Next id: 48
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1085,6 +1106,24 @@ struct BrowserInitParams {
   // value for that extension.
   [MinVersion=43]
   map<crosapi.mojom.PolicyNamespace, mojo_base.mojom.Value>? device_account_component_policy@43;
+
+  // Ash-chrome versioning information
+  // Example: 105.0.5124.0
+  [MinVersion=44]
+  string? ash_chrome_version@44;
+
+  // Tells lacros whether ash uses CUPS (Common Unix Printing System) for
+  // printing. This corresponds to the USE_CUPS flag being enabled in ash.
+  [MinVersion=45]
+  bool use_cups_for_printing@45;
+
+  // Tells lacros whether ash uses floss for bluetooth.
+  [MinVersion=46]
+  bool use_floss_bluetooth@46;
+
+  // Tells lacros whether the currently logged in user is the device owner.
+  [MinVersion=47]
+  bool is_current_user_device_owner@47;
 };
 
 // Parameters to specify OpenUrl behavior.
@@ -1132,7 +1171,7 @@ struct OpenUrlParams {
 // has accidentally become a kitchen sink for different features. This was not
 // intentional.
 //
-// Next MinVersion: 69.
+// Next MinVersion: 70.
 // Next ID: 19
 //
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
@@ -1251,8 +1290,11 @@ interface BrowserService {
   // Opens lacros with a full restore (all previously open windows from the
   // previous lacros session). This must be called before a browser has been
   // created as this will update the state of the last opened profiles.
+  // If `skip_crash_restore` is true full restore will restore the previous
+  // session, bypassing the typical crash restore flow (i.e. the crash restore
+  // bubble anchored to the browser's app menu button).
   [MinVersion=64]
-  OpenForFullRestore@15();
+  OpenForFullRestore@15([MinVersion=69] bool skip_crash_restore);
 
   // The old UpdateComponentPolicy method.
   [MinVersion=67]

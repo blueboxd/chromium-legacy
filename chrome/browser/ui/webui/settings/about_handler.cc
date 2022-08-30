@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -49,6 +50,8 @@
 #include "v8/include/v8-version-string.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/fwupd/firmware_update_manager.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/i18n/time_formatting.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -63,8 +66,8 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -294,6 +297,11 @@ void AboutHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "getFirmwareUpdateCount",
+      base::BindRepeating(&AboutHandler::HandleGetFirmwareUpdateCount,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "openOsHelpPage", base::BindRepeating(&AboutHandler::HandleOpenOsHelpPage,
                                             base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -370,10 +378,12 @@ void AboutHandler::OnJavascriptAllowed() {
   policy_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
       g_browser_process->policy_service(),
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+#if BUILDFLAG(IS_CHROMEOS)
   policy_registrar_->Observe(
       policy::key::kDeviceAutoUpdateDisabled,
       base::BindRepeating(&AboutHandler::OnDeviceAutoUpdatePolicyChanged,
                           base::Unretained(this)));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void AboutHandler::OnJavascriptDisallowed() {
@@ -492,7 +502,7 @@ void AboutHandler::HandleOpenOsHelpPage(const base::Value::List& args) {
 }
 
 void AboutHandler::HandleSetChannel(const base::Value::List& args) {
-  DCHECK(args.size() == 2);
+  DCHECK_EQ(2U, args.size());
 
   if (!CanChangeChannel(profile_)) {
     LOG(WARNING) << "Non-owner tried to change release track.";
@@ -530,6 +540,17 @@ void AboutHandler::OnGetVersionInfoReady(
     std::string callback_id,
     std::unique_ptr<base::DictionaryValue> version_info) {
   ResolveJavascriptCallback(base::Value(callback_id), *version_info);
+}
+
+void AboutHandler::HandleGetFirmwareUpdateCount(const base::Value::List& args) {
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kFirmwareUpdaterApp));
+  CHECK_EQ(1U, args.size());
+  const std::string& callback_id = args[0].GetString();
+  auto* firmware_update_manager = ash::FirmwareUpdateManager::Get();
+  size_t update_count = firmware_update_manager->GetUpdateCount();
+  DCHECK_LT(update_count, std::numeric_limits<int>::max());
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(static_cast<int>(update_count)));
 }
 
 void AboutHandler::HandleGetRegulatoryInfo(const base::Value::List& args) {
@@ -634,7 +655,7 @@ void AboutHandler::HandleGetEndOfLifeInfo(const base::Value::List& args) {
 
 void AboutHandler::OnGetEndOfLifeInfo(
     std::string callback_id,
-    chromeos::UpdateEngineClient::EolInfo eol_info) {
+    ash::UpdateEngineClient::EolInfo eol_info) {
   base::Value response(base::Value::Type::DICTIONARY);
   if (!eol_info.eol_date.is_null()) {
     bool has_eol_passed = eol_info.eol_date <= clock_->Now();

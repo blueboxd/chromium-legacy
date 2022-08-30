@@ -122,7 +122,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   // to execute the script because WebUI has a default CSP policy denying
   // "eval()", which is what EvalJs uses under the hood.
   bool ExecJsInWebUI(const std::string& script) {
-    return ExecJs(shell()->web_contents()->GetMainFrame(), script,
+    return ExecJs(shell()->web_contents()->GetPrimaryMainFrame(), script,
                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1);
   }
 
@@ -147,7 +147,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   MockAttributionManager* manager() { return manager_; }
 
  private:
-  raw_ptr<MockAttributionManager> manager_;
+  raw_ptr<MockAttributionManager, DanglingUntriaged> manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Execute script to ensure the page has loaded correctly, executing similarly
   // to ExecJsInWebUI().
-  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
+  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
                          "document.body.innerHTML.search('Attribution "
                          "Reporting API Internals') >= 0;",
                          EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
@@ -874,7 +874,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   const AttributionTrigger trigger(
       url::Origin::Create(GURL("https://d.test")),
       url::Origin::Create(GURL("https://r.test")),
-      AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
+      /*filters=*/AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
+      /*not_filters=*/AttributionFilterData::CreateForTesting({{"g", {"h"}}}),
       /*debug_key=*/1,
       {
           AttributionTrigger::EventTriggerData(
@@ -925,9 +926,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[0].children[4].innerText === "https://r.test" &&
             table.children[0].children[5].innerText === "1" &&
             table.children[0].children[6].innerText === '{ "a": [  "b" ]}' &&
-            table.children[0].children[7].innerText === $2 &&
-            table.children[0].children[8].innerText === $3 &&
-            table.children[0].children[9].innerText === '{ "a": 123, "b": 456}') {
+            table.children[0].children[7].innerText === '{ "g": [  "h" ]}' &&
+            table.children[0].children[8].innerText === $2 &&
+            table.children[0].children[9].innerText === $3 &&
+            table.children[0].children[10].innerText === '{ "a": 123, "b": 456}') {
           obs.disconnect();
           document.title = $1;
         }

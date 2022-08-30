@@ -20,17 +20,16 @@ namespace {
 
 class DefaultClientSocketFactory : public ClientSocketFactory {
  public:
-  DefaultClientSocketFactory() {}
+  DefaultClientSocketFactory() = default;
 
   // Note: This code never runs, as the factory is defined as a Leaky singleton.
-  ~DefaultClientSocketFactory() override {}
+  ~DefaultClientSocketFactory() override = default;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       NetLog* net_log,
       const NetLogSource& source) override {
-    return std::unique_ptr<DatagramClientSocket>(
-        new UDPClientSocket(bind_type, net_log, source));
+    return std::make_unique<UDPClientSocket>(bind_type, net_log, source);
   }
 
   std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(

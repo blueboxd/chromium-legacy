@@ -30,6 +30,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +95,7 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason), (override));
   MOCK_METHOD(void, ExecuteCommand, (int), (override));
   MOCK_METHOD(void,
-              OpenPromoCodeOfferDetailsURL,
+              OnPromoCodeSuggestionsFooterSelected,
               (const GURL& url),
               (override));
 
@@ -664,7 +665,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateMerchantPromoCodeSuggestionsFooter) {
   const GURL gurl{"https://example.com/"};
   absl::variant<std::string, GURL> payload(absl::in_place_type<GURL>, gurl);
-  EXPECT_CALL(autofill_client_, OpenPromoCodeOfferDetailsURL(gurl));
+  EXPECT_CALL(autofill_client_, OnPromoCodeSuggestionsFooterSelected(gurl));
   external_delegate_->DidAcceptSuggestion(
       u"baz foo", POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS, payload, 0);
 }

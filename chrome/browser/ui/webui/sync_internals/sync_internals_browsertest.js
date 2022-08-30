@@ -319,8 +319,12 @@ TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
   ]);
 
   // Select the first list item and verify the search tab remains selected.
-  document.querySelector('#sync-results-list').getListItemByIndex(0).selected =
-      true;
+  const firstItem =
+      document.querySelector('#sync-results-list').querySelector('li');
+  assertFalse(firstItem.hasAttribute('selected'));
+  firstItem.click();
+  // Verify that this selected the item.
+  assertTrue(firstItem.hasAttribute('selected'));
   assertTrue(searchTab.hasAttribute('selected'));
 });
 
@@ -344,8 +348,8 @@ TEST_F('SyncInternalsWebUITest', 'NodeBrowserTest', function() {
 
   // Check the type root and expand it.
   const typeRoot = tree.items[0];
-  assertFalse(typeRoot.expanded);
-  typeRoot.expanded = true;
+  assertFalse(typeRoot.hasAttribute('expanded'));
+  typeRoot.toggleAttribute('expanded', true);
   assertEquals(1, typeRoot.items.length);
 
   // An actual sync node.  The child of the type root.
@@ -353,7 +357,8 @@ TEST_F('SyncInternalsWebUITest', 'NodeBrowserTest', function() {
 
   // Verify that selecting it affects the details view.
   assertTrue(document.querySelector('#node-details').hasAttribute('hidden'));
-  leaf.selected = true;
+  tree.selectedItem = leaf;
+  assertTrue(leaf.hasAttribute('selected'));
   assertFalse(document.querySelector('#node-details').hasAttribute('hidden'));
 });
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
@@ -32,6 +33,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -370,28 +372,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   DCHECK(root_recorder_);
 
   current_paint_.emplace(&root_recorder_.value());
-
-  if (!debug_settings_->show_overdraw_feedback)
-    return current_paint_->recorder()->getCanvas();
-
-  DCHECK(!overdraw_surface_recorder_);
-  DCHECK(debug_settings_->show_overdraw_feedback);
-
-  nway_canvas_.emplace(characterization_.width(), characterization_.height());
-  nway_canvas_->addCanvas(current_paint_->recorder()->getCanvas());
-
-  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
-      gfx::Size(characterization_.width(), characterization_.height()),
-      characterization_.colorType(),
-      /*mipmap=*/false, characterization_.refColorSpace(),
-      /*is_root_render_pass=*/false, /*is_overlay=*/false);
-  if (characterization.isValid()) {
-    overdraw_surface_recorder_.emplace(characterization);
-    overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
-    nway_canvas_->addCanvas(&overdraw_canvas_.value());
-  }
-
-  return &nway_canvas_.value();
+  return current_paint_->recorder()->getCanvas();
 }
 
 void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
@@ -624,12 +605,45 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   return current_paint_->recorder()->getCanvas();
 }
 
+SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  DCHECK(debug_settings_->show_overdraw_feedback);
+  DCHECK(current_paint_);
+  DCHECK(!overdraw_surface_recorder_);
+
+  nway_canvas_.emplace(characterization_.width(), characterization_.height());
+  nway_canvas_->addCanvas(current_paint_->recorder()->getCanvas());
+
+  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
+      gfx::Size(characterization_.width(), characterization_.height()),
+      characterization_.colorType(),
+      /*mipmap=*/false, characterization_.refColorSpace(),
+      /*is_root_render_pass=*/false, /*is_overlay=*/false);
+  if (characterization.isValid()) {
+    overdraw_surface_recorder_.emplace(characterization);
+    overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
+    nway_canvas_->addCanvas(&overdraw_canvas_.value());
+  }
+
+  return &nway_canvas_.value();
+}
+
 void SkiaOutputSurfaceImpl::EndPaint(
     base::OnceClosure on_finished,
     base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
   auto ddl = current_paint_->recorder()->detach();
+
+  sk_sp<SkDeferredDisplayList> overdraw_ddl;
+  if (overdraw_surface_recorder_) {
+    overdraw_ddl = overdraw_surface_recorder_->detach();
+    DCHECK(overdraw_ddl);
+    overdraw_canvas_.reset();
+    overdraw_surface_recorder_.reset();
+    nway_canvas_.reset();
+  }
 
   // If the current paint mailbox is empty, we are painting a frame, otherwise
   // we are painting a render pass. impl_on_gpu_ is released on the GPU thread
@@ -638,14 +652,6 @@ void SkiaOutputSurfaceImpl::EndPaint(
   if (current_paint_->mailbox().IsZero()) {
     // Draw on the root render pass.
     current_buffer_modified_ = true;
-    sk_sp<SkDeferredDisplayList> overdraw_ddl;
-    if (overdraw_surface_recorder_) {
-      overdraw_ddl = overdraw_surface_recorder_->detach();
-      DCHECK(overdraw_ddl);
-      overdraw_canvas_.reset();
-      overdraw_surface_recorder_.reset();
-    }
-    nway_canvas_.reset();
 
     auto task = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
@@ -660,9 +666,9 @@ void SkiaOutputSurfaceImpl::EndPaint(
     auto task = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
         base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
-        std::move(ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, std::move(on_finished),
-        std::move(return_release_fence_cb));
+        std::move(ddl), std::move(overdraw_ddl),
+        std::move(images_in_current_paint_), resource_sync_tokens_,
+        std::move(on_finished), std::move(return_release_fence_cb));
     EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
                    /*make_current=*/true, /*need_framebuffer=*/false);
   }
@@ -852,13 +858,15 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
   auto context_lost_callback =
       base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
+  auto schedule_gpu_task = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::ScheduleOrRetainGpuTask, weak_ptr_);
 
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
       dependency_, renderer_settings_, gpu_task_scheduler_->GetSequenceId(),
       display_compositor_controller_->controller_on_gpu(),
       std::move(did_swap_buffer_complete_callback),
       std::move(buffer_presented_callback), std::move(context_lost_callback),
-      std::move(vsync_callback_runner));
+      std::move(schedule_gpu_task), std::move(vsync_callback_runner));
   if (!impl_on_gpu_) {
     *result = false;
   } else {
@@ -1250,6 +1258,13 @@ void SkiaOutputSurfaceImpl::ContextLost() {
   gr_context_thread_safe_.reset();
   for (auto& observer : observers_)
     observer.OnContextLost();
+}
+
+void SkiaOutputSurfaceImpl::ScheduleOrRetainGpuTask(
+    base::OnceClosure callback,
+    std::vector<gpu::SyncToken> tokens) {
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback),
+                                               std::move(tokens));
 }
 
 gfx::Rect SkiaOutputSurfaceImpl::GetCurrentFramebufferDamage() const {

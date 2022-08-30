@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BaseAction, BaseStore} from '../lib/base_store.js';
+import {State} from '../externs/ts/state.js';
+import {BaseStore} from '../lib/base_store.js';
 
+import {Action} from './actions.js';
 import {rootReducer} from './reducers.js';
-import {State} from './state.js';
 
 /**
  * Files app's Store type.
  *
  * It enforces the types for the State and the Actions managed by Files app.
  */
-export type Store = BaseStore<State, BaseAction>;
+export type Store = BaseStore<State, Action>;
 
 /**
  * Store singleton instance.
@@ -28,7 +29,8 @@ let store: null|Store = null;
  */
 export function getStore(): Store {
   if (!store) {
-    store = new BaseStore<State, BaseAction>({}, rootReducer);
+    store =
+        new BaseStore<State, Action>({allEntries: {}} as State, rootReducer);
   }
 
   return store;

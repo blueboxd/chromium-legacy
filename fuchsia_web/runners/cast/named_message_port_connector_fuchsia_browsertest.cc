@@ -10,9 +10,9 @@
 #include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 #include "components/cast/message_port/test_message_port_receiver.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/test/fit_adapter.h"
-#include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia_web/common/test/fit_adapter.h"
+#include "fuchsia_web/common/test/frame_test_util.h"
+#include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "fuchsia_web/runners/cast/create_web_message.h"
 #include "fuchsia_web/runners/cast/named_message_port_connector_fuchsia.h"
 #include "fuchsia_web/webengine/test/frame_for_test.h"
@@ -26,8 +26,7 @@ using CastMessagePort = std::unique_ptr<cast_api_bindings::MessagePort>;
 
 namespace {
 
-class NamedMessagePortConnectorFuchsiaTest
-    : public cr_fuchsia::WebEngineBrowserTest {
+class NamedMessagePortConnectorFuchsiaTest : public WebEngineBrowserTest {
  public:
   NamedMessagePortConnectorFuchsiaTest() {
     set_test_server_root(base::FilePath("fuchsia_web/runners/cast/testdata"));
@@ -43,9 +42,8 @@ class NamedMessagePortConnectorFuchsiaTest
  protected:
   // BrowserTestBase implementation.
   void SetUpOnMainThread() override {
-    cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
-    frame_ = cr_fuchsia::FrameForTest::Create(
-        context(), fuchsia::web::CreateFrameParams());
+    WebEngineBrowserTest::SetUpOnMainThread();
+    frame_ = FrameForTest::Create(context(), fuchsia::web::CreateFrameParams());
     frame_.navigation_listener().SetBeforeAckHook(base::BindRepeating(
         &NamedMessagePortConnectorFuchsiaTest::OnBeforeAckHook,
         base::Unretained(this)));
@@ -77,7 +75,7 @@ class NamedMessagePortConnectorFuchsiaTest
   }
 
   std::unique_ptr<base::RunLoop> navigate_run_loop_;
-  cr_fuchsia::FrameForTest frame_;
+  FrameForTest frame_;
   std::unique_ptr<NamedMessagePortConnectorFuchsia> connector_;
 };
 
@@ -103,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorFuchsiaTest, EndToEnd) {
       base::Unretained(&received_port_name), base::Unretained(&received_port),
       base::Unretained(&receive_port_run_loop)));
 
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  EXPECT_TRUE(LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
   frame_.navigation_listener().RunUntilUrlEquals(test_url);
 
@@ -123,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorFuchsiaTest, EndToEnd) {
   EXPECT_TRUE(received_port->CanPostMessage());
 
   // Ensure that the MessagePort is dropped when navigating away.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  EXPECT_TRUE(LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), "about:blank"));
 
   test_receiver.RunUntilDisconnected();
@@ -158,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorFuchsiaTest, MultiplePorts) {
       base::Unretained(&received_ports),
       base::Unretained(&receive_port_run_loop)));
 
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  EXPECT_TRUE(LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
   receive_port_run_loop.Run();
 

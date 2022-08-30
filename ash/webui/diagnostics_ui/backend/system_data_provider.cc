@@ -16,9 +16,9 @@
 #include "base/i18n/time_formatting.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
+#include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
-#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -350,18 +350,8 @@ void SystemDataProvider::PowerChanged(
 
 void SystemDataProvider::BindInterface(
     mojo::PendingReceiver<mojom::SystemDataProvider> pending_receiver) {
-  DCHECK(!ReceiverIsBound());
-  receiver_.Bind(std::move(pending_receiver));
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &SystemDataProvider::OnBoundInterfaceDisconnect, base::Unretained(this)));
-}
-
-bool SystemDataProvider::ReceiverIsBound() {
-  return receiver_.is_bound();
-}
-
-void SystemDataProvider::OnBoundInterfaceDisconnect() {
   receiver_.reset();
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void SystemDataProvider::SetBatteryChargeStatusTimerForTesting(

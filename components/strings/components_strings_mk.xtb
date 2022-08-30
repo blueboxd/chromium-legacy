@@ -176,6 +176,7 @@
 <translation id="1391289752476847787">Акции и обврзници</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> не испрати податоци.</translation>
 <translation id="1405567553485452995">Светлозелена</translation>
+<translation id="1406500794671479665">Се проверува…</translation>
 <translation id="1407135791313364759">Отвори ги сите</translation>
 <translation id="1408787208417187241">Тројно спојување горе</translation>
 <translation id="1413407968866574823">Игри со акција и со платформи</translation>
@@ -258,7 +259,6 @@
 <translation id="1583429793053364125">Нешто тргна наопаку при прикажувањето на оваа веб-страница.</translation>
 <translation id="1586541204584340881">кои екстензии сте ги инсталирале</translation>
 <translation id="1588438908519853928">Нормален</translation>
-<translation id="1589050138437146318">Да се инсталира ARCore?</translation>
 <translation id="1592005682883173041">Локален пристап до податоците</translation>
 <translation id="1594030484168838125">Избери</translation>
 <translation id="1596296697375291157">Трилери, крими и мистерии</translation>
@@ -334,11 +334,6 @@
 <translation id="1757773103848038814">Фонт Monospace</translation>
 <translation id="1763864636252898013">Серверот не може да докаже дека е <ph name="DOMAIN" />; oперативниот систем на уредот не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Обидете се да извршите дијагностика на мрежата на Windows<ph name="END_LINK" />.</translation>
-<translation id="1772163372082567643">Серверот каде што сте упатени, <ph name="ORIGIN" />, поставил наслов
-    со кој се бара примена на правило за потекло за сите барања до него. Но,
-    насловот е лошо форматиран, што го спречува прелистувачот да го исполни
-    вашето барање за <ph name="SITE" />. Операторите на сајтови може да ги користат правилата за потекло
-     за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="1774592222195216949"><ph name="BEGIN_LINK" />Дознајте повеќе за „Инкогнито“ во Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Отворените картички се појавуваат тука</translation>
@@ -383,7 +378,6 @@
 <translation id="1908217026282415406">Користење и движење на камерата</translation>
 <translation id="191374271204266022">Копирај како JSON</translation>
 <translation id="1914326953223720820">Услуга за отпакување</translation>
-<translation id="1915697529809968049">Да се користи Touch ID наместо CVC?</translation>
 <translation id="1916770123977586577">За да ги примените изменетите поставки на страницава, вчитајте ја повторно</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919367280705858090">Добивање помош околу конкретна порака за грешка</translation>
@@ -835,6 +829,7 @@
 <translation id="3226387218769101247">Сликички</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3229041911291329567">Информации за верзијата за уредот и прелистувачот</translation>
+<translation id="3229277193950731405">Копирај ја низата на верзијата</translation>
 <translation id="323107829343500871">Внесете го CVC за <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Секогаш откривај важна содржина на оваа локација</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да го приспособите изгледот на прелистувачот</translation>
@@ -1110,8 +1105,6 @@
 <translation id="3987940399970879459">Помалку од 1 MB</translation>
 <translation id="3990250421422698716">Офсет превиткување</translation>
 <translation id="3992684624889376114">За оваа страница</translation>
-<translation id="3996311196211510766">Сајтот <ph name="ORIGIN" /> побарал да се применува правило за потекло
-     за сите барања до него, но ова правило не може да се примени во моментов.</translation>
 <translation id="4006465311664329701">Начини на плаќање, понуди и адреси преку Google Pay</translation>
 <translation id="4009243425692662128">Содржините на страниците што ги печатите се испраќаат на Google Cloud или трети страни за анализа. На пример, можеби ќе се скенираат за да се провери дали содржат чувствителни податоци.</translation>
 <translation id="4010758435855888356">Да се дозволи пристап до капацитетот?</translation>
@@ -1129,7 +1122,6 @@
 <translation id="4072486802667267160">Настана грешка при обработката на вашата нарачка. Обидете се повторно.</translation>
 <translation id="4073797364926776829">Прикажи картичка</translation>
 <translation id="4075732493274867456">Клиентот и серверот не ја поддржуваат верзијата на заедничкиот SSL-протокол или пакетот за шифрирање.</translation>
-<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Конфигурацијата на прокси е поставена да користи URL на скрипта .pac, а не фиксни прокси-сервери.</translation>
 <translation id="4082393374666368382">Поставки - Управување</translation>
 <translation id="4087296516249690906">Копче за создавање настан, притиснете го копчето Enter за да набрзина создадете нов настан во „Календар на Google“</translation>
@@ -1176,11 +1168,6 @@
 <translation id="4202554117186904723">Петта ролна</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Да ги проверите заштитниот ѕид и антивирусните конфигурации<ph name="END_LINK" /></translation>
 <translation id="4209092469652827314">Голем</translation>
-<translation id="4209166701302774460">Серверот каде што сте упатени, <ph name="ORIGIN" />, побарал
-    да се применува правило за потекло за сите барања до него. Но, сега не успеа
-    да испорача правило, што го спречува прелистувачот да го исполни вашето барање
-    за <ph name="SITE" />. Операторите на сајтови може да ги користат правилата за потекло
-    за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="4210602799576081649">Кодот за потврда истече, побарајте нов код</translation>
 <translation id="421066178035138955">да ги користи уредите и податоците за виртуелна реалност</translation>
 <translation id="4213305257324635756">Анимирани филмови</translation>
@@ -1208,7 +1195,6 @@
     &lt;p&gt;Ако сѐ уште ја гледате грешкава, контактирајте со сопственикот на веб-сајтот.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Обидете се да извршите дијагностика на мрежата<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">Може да прашува за да ја користи и преместува камерата</translation>
-<translation id="4234495348042597185"><ph name="BEGIN_LINK" />Продолжете на <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Важечки</translation>
 <translation id="4250431568374086873">Врската со овој сајт не е потполно безбедна</translation>
 <translation id="4250680216510889253">Не</translation>
@@ -1307,7 +1293,6 @@
 <translation id="4506176782989081258">Грешка при проверката: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Да контактирате со системскиот администратор</translation>
 <translation id="450710068430902550">Споделување со администратор</translation>
-<translation id="4508814173490746936">Не може да се користи Touch ID</translation>
 <translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да ја преведете страницава со „Преведи на Google“</translation>
 <translation id="4510487217173779431">Chou4 (плик)</translation>
 <translation id="4514308731478712184">Исклучи ги „Патувања“</translation>
@@ -1412,7 +1397,6 @@
 <translation id="4796594887379589189">ID на работен налог</translation>
 <translation id="4798078619018708837">Внесете ги рокот на важност и CVC за <ph name="CREDIT_CARD" /> за да ги ажурирате деталите за картичката. Откако ќе потврдите, деталите за картичката од вашата сметка на Google ќе се споделат со сајтов.</translation>
 <translation id="4800132727771399293">Проверете го датумот на истекување на КВК и обидете се повторно</translation>
-<translation id="480334179571489655">Грешка на правилото за потекло</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4809079943450490359">Упатства од администраторот на уредот:</translation>
 <translation id="4812751092864334025">Технологија на уреди за носење</translation>
@@ -1807,7 +1791,6 @@
 <translation id="5901630391730855834">Жолта боја</translation>
 <translation id="5903264686717710770">Наслов:</translation>
 <translation id="5904360430676679685">Семејство и односи</translation>
-<translation id="5905445707201418379">Блокирано согласно правилото за потекло на <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизирани)</translation>
 <translation id="59174027418879706">Овозможено</translation>
 <translation id="5919090499915321845">B10</translation>
@@ -1974,14 +1957,15 @@
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6391700400718590966">Листот што означува дека нема акредитив што се совпаѓа за акредитивот за безбедно плаќање е затворен</translation>
 <translation id="6393956493820063117">Лепењето од <ph name="ORIGIN_NAME" /> на локацијава е блокирано со правило на администраторот</translation>
+<translation id="6394852772105848029">Сајтов сака да ја отвори апликацијата <ph name="APP_NAME" /></translation>
 <translation id="6398277657359595425">Гласно плачење</translation>
 <translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6401136357288658127">Правилово е неподдржано. Наместо него, треба да го користите правилото <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
+<translation id="6405181733356710802">Сакате да продолжите кон <ph name="APP_NAME" />?</translation>
 <translation id="6406765186087300643">C0 (плик)</translation>
 <translation id="6410264514553301377">Внесете ги датумот на истекување и CVC за <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium може да ви помогне да ја заштитите сметката на Google и да ја промените лозинката.</translation>
-<translation id="6423385022588644828">Отсега, потврдувајте ги картичките побрзо со Touch ID</translation>
 <translation id="6425092077175753609">Материјален</translation>
 <translation id="6427730057873428458">Превиткување како брошура</translation>
 <translation id="6428450836711225518">Потврдете го телефонскиот број</translation>
@@ -2673,7 +2657,6 @@
 <translation id="830498451218851433">Превиткување на половина</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Инсталирани апликации и колку често се користат</translation>
-<translation id="8317207217658302555">Да се ажурира ARCore?</translation>
 <translation id="831997045666694187">Приквечер</translation>
 <translation id="8321476692217554900">известувања</translation>
 <translation id="8332188693563227489">Пристапот до <ph name="HOST_NAME" /> беше одбиен</translation>
@@ -2750,10 +2733,9 @@
 <translation id="8559762987265718583">Не може да се воспостави приватна врска до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> бидејќи датумот и времето на вашиот уред (<ph name="DATE_AND_TIME" />) се погрешни.</translation>
 <translation id="8564182942834072828">Одделни документи/неподредени примероци</translation>
 <translation id="8564985650692024650">Chromium препорачува ресетирање на лозинката за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ако повторно сте ја употребиле на други сајтови.</translation>
-<translation id="8574899947864779331">Користете Touch ID за побрзо потврдување на картичките</translation>
 <translation id="8576310925653847813">Системи за домашно кино</translation>
 <translation id="8577348305244205642">Виртуелната картичка не е достапна</translation>
-<translation id="858637041960032120">Додајте телефонски број</translation>
+<translation id="858637041960032120">Додај телефонски број</translation>
 <translation id="8589998999637048520">Најдобар квалитет</translation>
 <translation id="8600271352425265729">Само овојпат</translation>
 <translation id="860043288473659153">Име на сопственикот на картичката</translation>
@@ -2906,7 +2888,6 @@
 <translation id="9039213469156557790">Понатаму, страницава опфаќа други ресурси што не се безбедни. Нив може да ги гледаат други лица при преносот и може да ги менува напаѓач за да го смени однесувањето на страницата.</translation>
 <translation id="9040464167025094690">Копче „Најди го мојот уред“, притиснете Enter за да отидете на „Најди го мојот уред“ во сметката на Google</translation>
 <translation id="9042617223719777575">Голем капацитет</translation>
-<translation id="9044359186343685026">Користи Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Се обидовте да го добиете <ph name="DOMAIN" />, но серверот даде неважечки сертификат.</translation>
 <translation id="9050666287014529139">Пристапна фраза</translation>

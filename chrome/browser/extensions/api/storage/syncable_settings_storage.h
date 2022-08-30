@@ -54,7 +54,7 @@ class SyncableSettingsStorage : public value_store::ValueStore {
                   const std::string& key,
                   const base::Value& value) override;
   WriteResult Set(WriteOptions options,
-                  const base::DictionaryValue& values) override;
+                  const base::Value::Dict& values) override;
   WriteResult Remove(const std::string& key) override;
   WriteResult Remove(const std::vector<std::string>& keys) override;
   WriteResult Clear() override;
@@ -94,13 +94,13 @@ class SyncableSettingsStorage : public value_store::ValueStore {
   // in sync yet.
   // Returns any error when trying to sync, or absl::nullopt on success.
   absl::optional<syncer::ModelError> SendLocalSettingsToSync(
-      std::unique_ptr<base::DictionaryValue> local_state);
+      base::Value::Dict local_state);
 
   // Overwrites local state with sync state.
   // Returns any error when trying to sync, or absl::nullopt on success.
   absl::optional<syncer::ModelError> OverwriteLocalSettingsWithSync(
       std::unique_ptr<base::DictionaryValue> sync_state,
-      std::unique_ptr<base::DictionaryValue> local_state);
+      base::Value::Dict local_state);
 
   // Called when an Add/Update/Remove comes from sync.
   syncer::SyncError OnSyncAdd(const std::string& key,

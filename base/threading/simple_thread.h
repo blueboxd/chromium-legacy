@@ -57,12 +57,14 @@ namespace base {
 
 // This is the base SimpleThread.  You can derive from it and implement the
 // virtual Run method, or you can use the DelegateSimpleThread interface.
+// SimpleThread should not be used to run a MessagePump, `base::Thread` must be
+// used for that.
 class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
  public:
   struct BASE_EXPORT Options {
    public:
     Options() = default;
-    explicit Options(ThreadPriority priority_in) : priority(priority_in) {}
+    explicit Options(ThreadType thread_type) : thread_type(thread_type) {}
     ~Options() = default;
 
     // Allow copies.
@@ -72,7 +74,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
     // A custom stack size, or 0 for the system default.
     size_t stack_size = 0;
 
-    ThreadPriority priority = ThreadPriority::NORMAL;
+    ThreadType thread_type = ThreadType::kDefault;
 
     // If false, the underlying thread's PlatformThreadHandle will not be kept
     // around and as such the SimpleThread instance will not be Join()able and
@@ -196,7 +198,7 @@ class BASE_EXPORT DelegateSimpleThreadPool
  public:
   typedef DelegateSimpleThread::Delegate Delegate;
 
-  DelegateSimpleThreadPool(const std::string& name_prefix, int num_threads);
+  DelegateSimpleThreadPool(const std::string& name_prefix, size_t num_threads);
 
   DelegateSimpleThreadPool(const DelegateSimpleThreadPool&) = delete;
   DelegateSimpleThreadPool& operator=(const DelegateSimpleThreadPool&) = delete;
@@ -213,17 +215,14 @@ class BASE_EXPORT DelegateSimpleThreadPool
 
   // It is safe to AddWork() any time, before or after Start().
   // Delegate* should always be a valid pointer, NULL is reserved internally.
-  void AddWork(Delegate* work, int repeat_count);
-  void AddWork(Delegate* work) {
-    AddWork(work, 1);
-  }
+  void AddWork(Delegate* work, size_t repeat_count = 1);
 
   // We implement the Delegate interface, for running our internal threads.
   void Run() override;
 
  private:
   const std::string name_prefix_;
-  int num_threads_;
+  size_t num_threads_;
   std::vector<DelegateSimpleThread*> threads_;
   base::queue<Delegate*> delegates_;
   base::Lock lock_;            // Locks delegates_

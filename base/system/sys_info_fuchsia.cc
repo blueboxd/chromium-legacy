@@ -5,6 +5,7 @@
 #include "base/system/sys_info.h"
 
 #include <fuchsia/buildinfo/cpp/fidl.h>
+#include <fuchsia/hwinfo/cpp/fidl.h>
 #include <sys/statvfs.h>
 #include <zircon/syscalls.h>
 
@@ -90,12 +91,12 @@ int64_t GetAmountOfTotalDiskSpaceAndVolumePath(const FilePath& path,
 }  // namespace
 
 // static
-int64_t SysInfo::AmountOfPhysicalMemoryImpl() {
+uint64_t SysInfo::AmountOfPhysicalMemoryImpl() {
   return zx_system_get_physmem();
 }
 
 // static
-int64_t SysInfo::AmountOfAvailablePhysicalMemoryImpl() {
+uint64_t SysInfo::AmountOfAvailablePhysicalMemoryImpl() {
   // TODO(https://crbug.com/986608): Implement this.
   NOTIMPLEMENTED_LOG_ONCE();
   return 0;
@@ -107,7 +108,7 @@ int SysInfo::NumberOfProcessors() {
 }
 
 // static
-int64_t SysInfo::AmountOfVirtualMemory() {
+uint64_t SysInfo::AmountOfVirtualMemory() {
   return 0;
 }
 
@@ -204,6 +205,16 @@ std::string SysInfo::CPUModelName() {
 // static
 size_t SysInfo::VMAllocationGranularity() {
   return getpagesize();
+}
+
+SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
+  const auto product_info = GetProductInfo();
+
+  return {
+      .manufacturer =
+          product_info.has_manufacturer() ? product_info.manufacturer() : "",
+      .model = product_info.has_model() ? product_info.model() : "",
+  };
 }
 
 }  // namespace base

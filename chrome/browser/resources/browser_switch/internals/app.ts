@@ -133,7 +133,7 @@ class BrowserSwitchInternalsAppElement extends
   /**
    * Takes the json from the url checker and makes it readable.
    */
-  urlOutputText(decision: Decision): Array<string> {
+  urlOutputText(decision: Decision): string[] {
     let opensIn = '';
     const altBrowserName = getAltBrowserName();
     const browserName = getBrowserName();
@@ -180,7 +180,7 @@ class BrowserSwitchInternalsAppElement extends
     return [opensIn, reason];
   }
 
-  checkUrl_(url: string) {
+  private checkUrl_(url: string) {
     if (!url) {
       this.urlCheckerOutput_ = [];
       return;

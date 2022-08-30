@@ -40,7 +40,7 @@
 #include "base/containers/adapters.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "media/base/media_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -333,6 +333,14 @@ void StatusAreaWidget::HandleLocaleChange() {
     status_area_widget_delegate_->AddChildView(tray_button);
   }
   EnsureTrayOrder();
+}
+
+void StatusAreaWidget::NotifyAnyBubbleVisibilityChanged(
+    views::Widget* bubble_widget,
+    bool visible) {
+  for (auto* tray_button : tray_buttons_) {
+    tray_button->OnAnyBubbleVisibilityChanged(bubble_widget, visible);
+  }
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {

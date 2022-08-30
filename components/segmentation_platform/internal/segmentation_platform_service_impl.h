@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
@@ -105,8 +106,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   void UnregisterOnDemandSegmentSelectionCallback(
       CallbackId callback_id,
       const std::string& segmentation_key) override;
-  void OnTrigger(TriggerType trigger,
-                 const TriggerContext& trigger_context) override;
+  void OnTrigger(std::unique_ptr<TriggerContext> trigger_context) override;
   void EnableMetrics(bool signal_collection_allowed) override;
   ServiceProxy* GetServiceProxy() override;
   bool IsPlatformInitialized() override;
@@ -133,7 +133,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // Callback to run after on-demand segment selection.
   void OnSegmentSelectionForTrigger(
       const std::string& segmentation_key,
-      const TriggerContext& trigger_context,
+      std::unique_ptr<TriggerContext> trigger_context,
       const SegmentSelectionResult& selected_segment);
 
   std::unique_ptr<ModelProviderFactory> model_provider_factory_;
@@ -183,6 +183,9 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // For metrics only:
   const base::Time creation_time_;
   base::Time init_time_;
+
+  // For caching any method calls that were received before initialization.
+  base::circular_deque<base::OnceClosure> pending_actions_;
 
   base::WeakPtrFactory<SegmentationPlatformServiceImpl> weak_ptr_factory_{this};
 };

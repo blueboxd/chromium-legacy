@@ -21,14 +21,16 @@
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/power_scheduler/power_mode_voter.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/widget_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/elastic_overscroll_controller.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
@@ -188,14 +190,17 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
         frame_widget_input_handler,
     bool never_composited,
     ThreadScheduler* compositor_thread_scheduler,
-    AgentGroupScheduler& agent_group_scheduler,
+    scoped_refptr<scheduler::WidgetScheduler> widget_scheduler,
     bool uses_input_handler,
     bool allow_scroll_resampling) {
+  DCHECK(widget_scheduler);
   scoped_refptr<WidgetInputHandlerManager> manager =
       new WidgetInputHandlerManager(
           std::move(widget), std::move(frame_widget_input_handler),
-          never_composited, compositor_thread_scheduler, agent_group_scheduler,
-          allow_scroll_resampling);
+          never_composited, compositor_thread_scheduler,
+          std::move(widget_scheduler), allow_scroll_resampling);
+
+  manager->DidNavigate();
   if (uses_input_handler)
     manager->InitInputHandler();
 
@@ -216,19 +221,16 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
         frame_widget_input_handler,
     bool never_composited,
     ThreadScheduler* compositor_thread_scheduler,
-    AgentGroupScheduler& agent_group_thread_scheduler,
+    scoped_refptr<scheduler::WidgetScheduler> widget_scheduler,
     bool allow_scroll_resampling)
     : widget_(std::move(widget)),
       frame_widget_input_handler_(std::move(frame_widget_input_handler)),
 
-      widget_scheduler_(agent_group_thread_scheduler.GetMainThreadScheduler()
-                            .CreateWidgetScheduler()),
-      main_thread_scheduler_(
-          &agent_group_thread_scheduler.GetMainThreadScheduler()),
+      widget_scheduler_(std::move(widget_scheduler)),
       input_event_queue_(base::MakeRefCounted<MainThreadEventQueue>(
           this,
           widget_scheduler_->InputTaskRunner(),
-          main_thread_scheduler_,
+          widget_scheduler_,
           /*allow_raf_aligned_input=*/!never_composited)),
       main_thread_task_runner_(widget_scheduler_->InputTaskRunner()),
       compositor_thread_default_task_runner_(
@@ -250,6 +252,11 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
             compositor_thread_default_task_runner_);
   }
 #endif
+}
+
+void WidgetInputHandlerManager::DidFirstVisuallyNonEmptyPaint() {
+  suppressing_input_events_state_ &=
+      ~static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted);
 }
 
 void WidgetInputHandlerManager::InitInputHandler() {
@@ -370,7 +377,7 @@ void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
 }
 
 void WidgetInputHandlerManager::DidAnimateForInput() {
-  main_thread_scheduler_->DidAnimateForInputOnCompositorThread();
+  widget_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
 void WidgetInputHandlerManager::DidStartScrollingViewport() {
@@ -461,10 +468,10 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
 void WidgetInputHandlerManager::LogInputTimingUMA() {
   if (!have_emitted_uma_) {
     InitialInputTiming lifecycle_state = InitialInputTiming::kBeforeLifecycle;
-    if (!(renderer_deferral_state_ &
-          (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates)) {
-      if (renderer_deferral_state_ &
-          (unsigned)RenderingDeferralBits::kDeferCommits) {
+    if (!(suppressing_input_events_state_ &
+          (unsigned)SuppressingInputEventsBits::kDeferMainFrameUpdates)) {
+      if (suppressing_input_events_state_ &
+          (unsigned)SuppressingInputEventsBits::kDeferCommits) {
         lifecycle_state = InitialInputTiming::kBeforeCommit;
       } else {
         lifecycle_state = InitialInputTiming::kAfterCommit;
@@ -477,7 +484,7 @@ void WidgetInputHandlerManager::LogInputTimingUMA() {
 
 void WidgetInputHandlerManager::DispatchScrollGestureToCompositor(
     std::unique_ptr<WebGestureEvent> event) {
-  DCHECK(base::FeatureList::IsEnabled(features::kScrollUnification));
+  DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
   std::unique_ptr<WebCoalescedInputEvent> web_scoped_gesture_event =
       std::make_unique<WebCoalescedInputEvent>(std::move(event),
                                                ui::LatencyInfo());
@@ -492,7 +499,7 @@ void WidgetInputHandlerManager::DispatchScrollGestureToCompositor(
 void WidgetInputHandlerManager::
     HandleInputEventWithLatencyOnInputHandlingThread(
         std::unique_ptr<WebCoalescedInputEvent> event) {
-  DCHECK(base::FeatureList::IsEnabled(features::kScrollUnification));
+  DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
   DCHECK(input_handler_proxy_);
   input_handler_proxy_->HandleInputEventWithLatencyInfo(
       std::move(event), nullptr, base::DoNothing());
@@ -515,7 +522,7 @@ void WidgetInputHandlerManager::DispatchEvent(
     LogInputTimingUMA();
 
   // Drop input if we are deferring a rendering pipeline phase, unless it's a
-  // move event.
+  // move event, or we are waiting for first visually non empty paint.
   // We don't want users interacting with stuff they can't see, so we drop it.
   // We allow moves because we need to keep the current pointer location up
   // to date. Tests and other code can allow pre-commit input through the
@@ -523,7 +530,15 @@ void WidgetInputHandlerManager::DispatchEvent(
   // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
   // it seems, because they sometimes crash on seeing a scroll update/end
   // without a begin. Scrolling, pinch-zoom etc. don't seem dangerous.
-  if (renderer_deferral_state_ && !allow_pre_commit_input_ && !event_is_move) {
+
+  uint16_t suppress_input = suppressing_input_events_state_;
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kDropInputEventsBeforeFirstPaint)) {
+    suppress_input &=
+        ~static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted);
+  }
+
+  if (suppress_input && !allow_pre_commit_input_ && !event_is_move) {
     if (callback) {
       std::move(callback).Run(
           mojom::blink::InputEventResultSource::kMainThread, ui::LatencyInfo(),
@@ -672,17 +687,18 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
 }
 
 void WidgetInputHandlerManager::DidNavigate() {
-  renderer_deferral_state_ = 0;
+  suppressing_input_events_state_ =
+      static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted);
   have_emitted_uma_ = false;
 }
 
 void WidgetInputHandlerManager::OnDeferMainFrameUpdatesChanged(bool status) {
   if (status) {
-    renderer_deferral_state_ |=
-        static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
+    suppressing_input_events_state_ |= static_cast<uint16_t>(
+        SuppressingInputEventsBits::kDeferMainFrameUpdates);
   } else {
-    renderer_deferral_state_ &=
-        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
+    suppressing_input_events_state_ &= ~static_cast<uint16_t>(
+        SuppressingInputEventsBits::kDeferMainFrameUpdates);
   }
 }
 
@@ -690,11 +706,11 @@ void WidgetInputHandlerManager::OnDeferCommitsChanged(
     bool status,
     cc::PaintHoldingReason reason) {
   if (status && reason == cc::PaintHoldingReason::kFirstContentfulPaint) {
-    renderer_deferral_state_ |=
-        static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+    suppressing_input_events_state_ |=
+        static_cast<uint16_t>(SuppressingInputEventsBits::kDeferCommits);
   } else {
-    renderer_deferral_state_ &=
-        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+    suppressing_input_events_state_ &=
+        ~static_cast<uint16_t>(SuppressingInputEventsBits::kDeferCommits);
   }
 }
 
@@ -892,12 +908,12 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   mojom::blink::InputEventResultState ack_state =
       InputEventDispositionToAck(event_disposition);
   if (ack_state == mojom::blink::InputEventResultState::kConsumed) {
-    main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-        event->Event(), scheduler::WebThreadScheduler::InputEventState::
+    widget_scheduler_->DidHandleInputEventOnCompositorThread(
+        event->Event(), scheduler::WidgetScheduler::InputEventState::
                             EVENT_CONSUMED_BY_COMPOSITOR);
   } else if (MainThreadEventQueue::IsForwardedAndSchedulerKnown(ack_state)) {
-    main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-        event->Event(), scheduler::WebThreadScheduler::InputEventState::
+    widget_scheduler_->DidHandleInputEventOnCompositorThread(
+        event->Event(), scheduler::WidgetScheduler::InputEventState::
                             EVENT_FORWARDED_TO_MAIN_THREAD);
   }
 

@@ -26,9 +26,11 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
+#include "content/browser/aggregation_service/aggregation_service_storage.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_sql.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/browser/aggregation_service/public_key_parsing_utils.h"
+#include "content/common/aggregatable_report.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
@@ -204,12 +206,13 @@ testing::AssertionResult SharedInfoEqual(
 }
 
 AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+    mojom::AggregationServiceMode aggregation_mode) {
   return AggregatableReportRequest::Create(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
-                 {AggregationServicePayloadContents::HistogramContribution{
-                     .bucket = 123, .value = 456}},
+                 {mojom::AggregatableReportHistogramContribution(
+                     /*bucket=*/123,
+                     /*value=*/456)},
                  aggregation_mode),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
@@ -277,18 +280,18 @@ absl::optional<PublicKeyset> ReadAndParsePublicKeys(const base::FilePath& file,
     return absl::nullopt;
   }
 
-  base::JSONReader::ValueWithError value_with_error =
+  auto value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(contents);
-  if (!value_with_error.value) {
+  if (!value_with_error.has_value()) {
     if (error_msg) {
       *error_msg =
           base::StrCat({"Failed to parse \"", contents,
-                        "\" as JSON: ", value_with_error.error_message});
+                        "\" as JSON: ", value_with_error.error().message});
     }
     return absl::nullopt;
   }
 
-  std::vector<PublicKey> keys = GetPublicKeys(*value_with_error.value);
+  std::vector<PublicKey> keys = GetPublicKeys(*value_with_error);
   if (keys.empty()) {
     if (error_msg) {
       *error_msg =
@@ -359,8 +362,8 @@ TestAggregationServiceStorageContext::TestAggregationServiceStorageContext(
 TestAggregationServiceStorageContext::~TestAggregationServiceStorageContext() =
     default;
 
-const base::SequenceBound<content::AggregationServiceKeyStorage>&
-TestAggregationServiceStorageContext::GetKeyStorage() {
+const base::SequenceBound<content::AggregationServiceStorage>&
+TestAggregationServiceStorageContext::GetStorage() {
   return storage_;
 }
 
@@ -373,14 +376,12 @@ std::ostream& operator<<(
   }
 }
 
-std::ostream& operator<<(
-    std::ostream& out,
-    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+std::ostream& operator<<(std::ostream& out,
+                         mojom::AggregationServiceMode aggregation_mode) {
   switch (aggregation_mode) {
-    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+    case mojom::AggregationServiceMode::kTeeBased:
       return out << "kTeeBased";
-    case AggregationServicePayloadContents::AggregationMode::
-        kExperimentalPoplar:
+    case mojom::AggregationServiceMode::kExperimentalPoplar:
       return out << "kExperimentalPoplar";
   }
 }

@@ -65,14 +65,6 @@ void FakeConciergeClient::RemoveVmObserver(VmObserver* observer) {
   vm_observer_list_.RemoveObserver(observer);
 }
 
-void FakeConciergeClient::AddContainerObserver(ContainerObserver* observer) {
-  container_observer_list_.AddObserver(observer);
-}
-
-void FakeConciergeClient::RemoveContainerObserver(ContainerObserver* observer) {
-  container_observer_list_.RemoveObserver(observer);
-}
-
 void FakeConciergeClient::AddDiskImageObserver(DiskImageObserver* observer) {
   disk_image_observer_list_.AddObserver(observer);
 }
@@ -87,10 +79,6 @@ bool FakeConciergeClient::IsVmStartedSignalConnected() {
 
 bool FakeConciergeClient::IsVmStoppedSignalConnected() {
   return is_vm_stopped_signal_connected_;
-}
-
-bool FakeConciergeClient::IsContainerStartupFailedSignalConnected() {
-  return is_container_startup_failed_signal_connected_;
 }
 
 bool FakeConciergeClient::IsDiskImageProgressSignalConnected() {
@@ -363,14 +351,6 @@ void FakeConciergeClient::ResizeDiskImage(
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeConciergeClient::SetVmId(
-    const vm_tools::concierge::SetVmIdRequest& request,
-    DBusMethodCallback<vm_tools::concierge::SetVmIdResponse> callback) {
-  set_vm_id_call_count_++;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), set_vm_id_response_));
-}
-
 void FakeConciergeClient::ReclaimVmMemory(
     const vm_tools::concierge::ReclaimVmMemoryRequest& request,
     DBusMethodCallback<vm_tools::concierge::ReclaimVmMemoryResponse> callback) {
@@ -462,9 +442,6 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   detach_usb_device_response_.emplace();
   detach_usb_device_response_->set_success(true);
-
-  set_vm_id_response_.emplace();
-  set_vm_id_response_->set_success(true);
 }
 
 }  // namespace ash

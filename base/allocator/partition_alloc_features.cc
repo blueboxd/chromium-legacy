@@ -11,11 +11,19 @@
 namespace base {
 namespace features {
 
-// When set, instead of crashing when encountering a dangling raw_ptr, the
-// signatures of the two stacktraces are logged. This is meant to be used only
-// by Chromium developers. See /docs/dangling_ptr.md
-const BASE_EXPORT Feature kPartitionAllocDanglingPtrRecord{
-    "PartitionAllocDanglingPtrRecord", FEATURE_DISABLED_BY_DEFAULT};
+const BASE_EXPORT Feature kPartitionAllocDanglingPtr{
+    "PartitionAllocDanglingPtr", FEATURE_DISABLED_BY_DEFAULT};
+constexpr FeatureParam<DanglingPtrMode>::Option kDanglingPtrModeOption[] = {
+    {DanglingPtrMode::kCrash, "crash"},
+    {DanglingPtrMode::kLogSignature, "log_signature"},
+};
+const base::FeatureParam<DanglingPtrMode> kDanglingPtrModeParam{
+    &kPartitionAllocDanglingPtr,
+    "mode",
+    DanglingPtrMode::kCrash,
+    &kDanglingPtrModeOption,
+};
+
 #if defined(PA_ALLOW_PCSCAN)
 // If enabled, PCScan is turned on by default for all partitions that don't
 // disable it explicitly.
@@ -55,7 +63,8 @@ const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing{
 
 const Feature kPartitionAllocBackupRefPtr {
   "PartitionAllocBackupRefPtr",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || \
+    (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
       FEATURE_ENABLED_BY_DEFAULT
 #else
       FEATURE_DISABLED_BY_DEFAULT
@@ -79,6 +88,7 @@ const base::FeatureParam<BackupRefPtrEnabledProcesses>
 constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
     {BackupRefPtrMode::kDisabled, "disabled"},
     {BackupRefPtrMode::kEnabled, "enabled"},
+    {BackupRefPtrMode::kEnabledWithoutZapping, "enabled-without-zapping"},
     {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
      "disabled-but-2-way-split"},
     {BackupRefPtrMode::kDisabledButSplitPartitions3Way,

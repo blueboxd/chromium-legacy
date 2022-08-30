@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
-#include "third_party/blink/renderer/core/style/quotes_data.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
@@ -76,6 +75,7 @@
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/text/quotes_data.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
@@ -175,6 +175,32 @@ Vector<AtomicString>& ComputedStyle::EnsureVariableNamesCache() const {
 void ComputedStyle::ClearVariableNamesCache() const {
   if (cached_data_)
     cached_data_->variable_names_.reset();
+}
+
+const ComputedStyle* ComputedStyle::AddCachedPositionFallbackStyle(
+    scoped_refptr<const ComputedStyle> style,
+    unsigned index) const {
+  EnsurePositionFallbackStyleCache(index + 1)[index] = std::move(style);
+  return (*cached_data_->position_fallback_styles_)[index].get();
+}
+
+const ComputedStyle* ComputedStyle::GetCachedPositionFallbackStyle(
+    unsigned index) const {
+  if (!cached_data_ || !cached_data_->position_fallback_styles_ ||
+      index >= cached_data_->position_fallback_styles_->size())
+    return nullptr;
+  return (*cached_data_->position_fallback_styles_)[index].get();
+}
+
+PositionFallbackStyleCache& ComputedStyle::EnsurePositionFallbackStyleCache(
+    unsigned ensure_size) const {
+  if (!cached_data_ || !cached_data_->position_fallback_styles_) {
+    EnsureCachedData().position_fallback_styles_ =
+        std::make_unique<PositionFallbackStyleCache>();
+  }
+  if (cached_data_->position_fallback_styles_->size() < ensure_size)
+    cached_data_->position_fallback_styles_->resize(ensure_size);
+  return *cached_data_->position_fallback_styles_;
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
@@ -1202,7 +1228,8 @@ void ComputedStyle::UpdateIsStackingContextWithoutContainment(
   if (is_document_element || is_in_top_layer || is_svg_stacking ||
       StyleType() == kPseudoIdBackdrop || HasTransformRelatedProperty() ||
       HasStackingGroupingProperty(BoxReflect()) ||
-      HasViewportConstrainedPosition() || GetPosition() == EPosition::kSticky ||
+      GetPosition() == EPosition::kFixed ||
+      GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
       /* TODO(882625): This becomes unnecessary when will-change correctly takes
       into account active animations. */
@@ -2694,8 +2721,9 @@ bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
 bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
   return RuntimeEnabledFeatures::LayoutNGEnabled() &&
          IsContainerForSizeContainerQueries() &&
-         !InsideFragmentationContextWithNondeterministicEngine() &&
          !element.ShouldForceLegacyLayout() &&
+         (RuntimeEnabledFeatures::LayoutNGPrintingEnabled() ||
+          !element.GetDocument().Printing()) &&
          (!element.IsSVGElement() ||
           To<SVGElement>(element).IsOutermostSVGSVGElement());
 }

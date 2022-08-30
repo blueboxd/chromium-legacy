@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -129,7 +128,6 @@ void RelaunchLast(Profile* profile) {
 
 }  // namespace
 
-LaunchedAppInfo::LaunchedAppInfo() = default;
 LaunchedAppInfo::~LaunchedAppInfo() = default;
 LaunchedAppInfo::LaunchedAppInfo(const std::string& package_name,
                                  const std::u16string& visible_name,
@@ -186,8 +184,16 @@ void EcheAppManagerFactory::ShowNotification(
 }
 
 // static
-void EcheAppManagerFactory::CloseEche(Profile* profile) {
-  CloseBubble();
+void EcheAppManagerFactory::CloseNotification(
+    base::WeakPtr<EcheAppManagerFactory> weak_ptr,
+    Profile* profile,
+    const std::string& notification_id) {
+  if (!weak_ptr->notification_controller_) {
+    weak_ptr->notification_controller_ =
+        std::make_unique<EcheAppNotificationController>(
+            profile, base::BindRepeating(&RelaunchLast));
+  }
+  weak_ptr->notification_controller_->CloseNotification(notification_id);
 }
 
 // static
@@ -262,8 +268,9 @@ KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
       device_sync_client, multidevice_setup_client, secure_channel_client,
       std::move(presence_monitor_client),
       base::BindRepeating(&EcheAppManagerFactory::LaunchEcheApp, profile),
-      base::BindRepeating(&EcheAppManagerFactory::CloseEche, profile),
       base::BindRepeating(&EcheAppManagerFactory::ShowNotification,
+                          weak_ptr_factory_.GetWeakPtr(), profile),
+      base::BindRepeating(&EcheAppManagerFactory::CloseNotification,
                           weak_ptr_factory_.GetWeakPtr(), profile));
 }
 

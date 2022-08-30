@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/parser/container_query_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -63,12 +64,14 @@ struct SameSizeAsStyleRuleBase final
 
 ASSERT_SIZE(StyleRuleBase, SameSizeAsStyleRuleBase);
 
-CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet) const {
-  return CreateCSSOMWrapper(parent_sheet, nullptr);
+CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
+                                           CSSStyleSheet* parent_sheet) const {
+  return CreateCSSOMWrapper(position_hint, parent_sheet, nullptr);
 }
 
-CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSRule* parent_rule) const {
-  return CreateCSSOMWrapper(nullptr, parent_rule);
+CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
+                                           CSSRule* parent_rule) const {
+  return CreateCSSOMWrapper(position_hint, nullptr, parent_rule);
 }
 
 void StyleRuleBase::Trace(Visitor* visitor) const {
@@ -261,14 +264,15 @@ StyleRuleBase* StyleRuleBase::Copy() const {
   return nullptr;
 }
 
-CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
+CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
+                                           CSSStyleSheet* parent_sheet,
                                            CSSRule* parent_rule) const {
   CSSRule* rule = nullptr;
   StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
   switch (GetType()) {
     case kStyle:
-      rule =
-          MakeGarbageCollected<CSSStyleRule>(To<StyleRule>(self), parent_sheet);
+      rule = MakeGarbageCollected<CSSStyleRule>(To<StyleRule>(self),
+                                                parent_sheet, position_hint);
       break;
     case kPage:
       rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),
@@ -351,17 +355,36 @@ unsigned StyleRule::AverageSizeInBytes() {
          CSSPropertyValueSet::AverageSizeInBytes();
 }
 
-StyleRule::StyleRule(CSSSelectorList selector_list,
+StyleRule::StyleRule(base::PassKey<StyleRule>,
+                     CSSSelectorVector& selector_vector,
+                     size_t flattened_size,
                      CSSPropertyValueSet* properties)
-    : StyleRuleBase(kStyle),
-      selector_list_(std::move(selector_list)),
-      properties_(properties) {}
+    : StyleRuleBase(kStyle), properties_(properties) {
+  CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray(),
+                                       flattened_size);
+}
 
-StyleRule::StyleRule(CSSSelectorList selector_list,
+StyleRule::StyleRule(base::PassKey<StyleRule>,
+                     CSSSelectorVector& selector_vector,
+                     size_t flattened_size,
                      CSSLazyPropertyParser* lazy_property_parser)
+    : StyleRuleBase(kStyle), lazy_property_parser_(lazy_property_parser) {
+  CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray(),
+                                       flattened_size);
+}
+
+// NOTE: Currently, this move constructor leaves the other object fully intact,
+// since there's no benefit in not doing so.
+StyleRule::StyleRule(base::PassKey<StyleRule>,
+                     CSSSelectorVector& selector_vector,
+                     size_t flattened_size,
+                     StyleRule&& other)
     : StyleRuleBase(kStyle),
-      selector_list_(std::move(selector_list)),
-      lazy_property_parser_(lazy_property_parser) {}
+      properties_(other.properties_),
+      lazy_property_parser_(other.lazy_property_parser_) {
+  CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray(),
+                                       flattened_size);
+}
 
 const CSSPropertyValueSet& StyleRule::Properties() const {
   if (!properties_) {
@@ -371,10 +394,26 @@ const CSSPropertyValueSet& StyleRule::Properties() const {
   return *properties_;
 }
 
-StyleRule::StyleRule(const StyleRule& o)
-    : StyleRuleBase(o),
-      selector_list_(o.selector_list_.Copy()),
-      properties_(o.Properties().MutableCopy()) {}
+StyleRule::StyleRule(const StyleRule& other, size_t flattened_size)
+    : StyleRuleBase(kStyle), properties_(other.Properties().MutableCopy()) {
+  for (unsigned i = 0; i < flattened_size; ++i) {
+    new (&SelectorArray()[i]) CSSSelector(other.SelectorArray()[i]);
+  }
+}
+
+StyleRule::~StyleRule() {
+  // Clean up any RareData that the selectors may be owning.
+  CSSSelector* selector = SelectorArray();
+  for (;;) {
+    bool is_last = selector->IsLastInSelectorList();
+    selector->~CSSSelector();
+    if (is_last) {
+      break;
+    } else {
+      ++selector;
+    }
+  }
+}
 
 MutableCSSPropertyValueSet& StyleRule::MutableProperties() {
   // Ensure properties_ is initialized.
@@ -508,6 +547,14 @@ StyleRuleScope::StyleRuleScope(const StyleRuleScope& other)
 void StyleRuleScope::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(style_scope_);
   StyleRuleGroup::TraceAfterDispatch(visitor);
+}
+
+void StyleRuleScope::SetPreludeText(const ExecutionContext* execution_context,
+                                    String value) {
+  auto* parser_context =
+      MakeGarbageCollected<CSSParserContext>(*execution_context);
+  Vector<CSSParserToken, 32> tokens = CSSTokenizer(value).TokenizeToEOF();
+  style_scope_ = StyleScope::Parse(tokens, parser_context, nullptr);
 }
 
 StyleRuleGroup::StyleRuleGroup(RuleType type,

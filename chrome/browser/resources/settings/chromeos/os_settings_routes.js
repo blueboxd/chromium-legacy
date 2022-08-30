@@ -36,6 +36,7 @@ import {Route} from '../router.js';
  *   BLUETOOTH: !Route,
  *   BLUETOOTH_DEVICES: !Route,
  *   BLUETOOTH_DEVICE_DETAIL: !Route,
+ *   BLUETOOTH_SAVED_DEVICES: !Route,
  *   BRUSCHETTA_DETAILS: !Route,
  *   BRUSCHETTA_SHARED_USB_DEVICES: !Route,
  *   CHANGE_PICTURE: !Route,
@@ -94,6 +95,7 @@ import {Route} from '../router.js';
  *   STYLUS: !Route,
  *   SYNC: !Route,
  *   SYNC_ADVANCED: !Route,
+ *   TEXT_TO_SPEECH: !Route,
  * }}
  */
 export let OsSettingsRoutes;

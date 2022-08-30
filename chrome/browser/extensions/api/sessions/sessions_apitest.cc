@@ -19,7 +19,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,7 +26,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -112,27 +110,20 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
     const base::Value::Dict device = utils::ToDictionary(device_value);
     EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "info"));
     EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "deviceName"));
-    const std::unique_ptr<base::ListValue> sessions =
+    const base::Value::List sessions =
         api_test_utils::GetList(device, "sessions");
-    EXPECT_EQ(num_sessions, sessions->GetListDeprecated().size());
+    EXPECT_EQ(num_sessions, sessions.size());
     // Because this test is hurried, really there are only ever 0 or 1
     // sessions, and if 1, that will be a Window. Grab it.
     if (num_sessions == 0)
       continue;
-    const base::Value::Dict session =
-        utils::ToDictionary(sessions->GetListDeprecated()[0]);
+    const base::Value::Dict session = utils::ToDictionary(sessions[0]);
     const base::Value::Dict window = api_test_utils::GetDict(session, "window");
     // Only the tabs are interesting.
-    const std::unique_ptr<base::ListValue> tabs =
-        api_test_utils::GetList(window, "tabs");
-    if (!tabs) {
-      return testing::AssertionFailure()
-             << "window dictionary does not contain a tabs list entry";
-    }
-    EXPECT_EQ(std::size(kTabIDs), tabs->GetListDeprecated().size());
-    for (size_t j = 0; j < tabs->GetListDeprecated().size(); ++j) {
-      const base::Value::Dict tab =
-          utils::ToDictionary(tabs->GetListDeprecated()[j]);
+    const base::Value::List tabs = api_test_utils::GetList(window, "tabs");
+    EXPECT_EQ(std::size(kTabIDs), tabs.size());
+    for (size_t j = 0; j < tabs.size(); ++j) {
+      const base::Value::Dict tab = utils::ToDictionary(tabs[j]);
       EXPECT_FALSE(tab.contains("id"));  // sessions API does not give tab IDs
       EXPECT_EQ(static_cast<int>(j), api_test_utils::GetInteger(tab, "index"));
       EXPECT_EQ(0, api_test_utils::GetInteger(tab, "windowId"));
@@ -351,27 +342,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreInIncognito) {
           CreateFunction<SessionsRestoreFunction>(true).get(), "[\"1\"]",
           CreateIncognitoBrowser()),
       "Can not restore sessions in incognito mode."));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreNonEditableTabstrip) {
-  CreateSessionModels();
-
-  // Set up a browser with a non-editable tabstrip, simulating one in the midst
-  // of a tab dragging session.
-  std::unique_ptr<TestBrowserWindow> browser_window =
-      std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(browser()->profile(), true);
-  params.type = Browser::TYPE_NORMAL;
-  params.window = browser_window.get();
-  std::unique_ptr<Browser> browser =
-      std::unique_ptr<Browser>(Browser::Create(params));
-  browser_window->SetIsTabStripEditable(false);
-
-  EXPECT_TRUE(base::MatchPattern(
-      utils::RunFunctionAndReturnError(
-          CreateFunction<SessionsRestoreFunction>(true).get(), "[\"1\"]",
-          browser.get()),
-      tabs_constants::kTabStripNotEditableError));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {

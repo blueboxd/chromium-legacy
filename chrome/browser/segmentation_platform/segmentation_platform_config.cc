@@ -11,9 +11,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/segmentation_platform/default_model/feed_user_segment.h"
-#include "chrome/browser/segmentation_platform/default_model/low_user_engagement_model.h"
-#include "chrome/browser/segmentation_platform/default_model/price_tracking_action_model.h"
+#include "components/commerce/core/commerce_feature_list.h"
+#include "components/segmentation_platform/embedder/default_model/feed_user_segment.h"
+#include "components/segmentation_platform/embedder/default_model/low_user_engagement_model.h"
+#include "components/segmentation_platform/embedder/default_model/price_tracking_action_model.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/model_provider.h"
@@ -24,9 +25,9 @@
 #include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/segmentation_platform/default_model/chrome_start_model_android.h"
-#include "chrome/browser/segmentation_platform/default_model/query_tiles_model.h"
 #include "chrome/browser/ui/android/start_surface/start_surface_android.h"
 #include "components/query_tiles/switches.h"
+#include "components/segmentation_platform/embedder/default_model/query_tiles_model.h"
 #endif
 
 namespace segmentation_platform {
@@ -48,7 +49,7 @@ constexpr int kFeedUserSegmentUnknownSelectionTTLDays = 14;
 
 #if BUILDFLAG(IS_ANDROID)
 
-constexpr int kAdaptiveToolbarDefaultSelectionTTLDays = 28;
+constexpr int kAdaptiveToolbarDefaultSelectionTTLDays = 56;
 
 constexpr int kChromeStartDefaultSelectionTTLDays = 30;
 constexpr int kChromeStartDefaultUnknownTTLDays = 7;
@@ -159,14 +160,16 @@ bool IsEnabledContextualPageActions() {
     return false;
 
   return base::FeatureList::IsEnabled(
-      features::kContextualPageActionPriceTracking);
+             features::kContextualPageActionPriceTracking) &&
+         base::FeatureList::IsEnabled(commerce::kShoppingList);
 }
 
 std::unique_ptr<Config> GetConfigForContextualPageActions() {
   auto config = std::make_unique<Config>();
   config->segmentation_key = kContextualPageActionsKey;
   if (base::FeatureList::IsEnabled(
-          features::kContextualPageActionPriceTracking)) {
+          features::kContextualPageActionPriceTracking) &&
+      base::FeatureList::IsEnabled(commerce::kShoppingList)) {
     config->segment_ids.push_back(
         SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
   }

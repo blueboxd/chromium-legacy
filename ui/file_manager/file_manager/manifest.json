@@ -138,20 +138,12 @@
         "gslides"
       ]
     },
-    "open-web-drive-office-word": {
+    "handle-office": {
       "extensions": [
         "doc",
-        "docx"
-      ]
-    },
-    "open-web-drive-office-excel": {
-      "extensions": [
+        "docx",
         "xls",
-        "xlsx"
-      ]
-    },
-    "open-web-drive-office-powerpoint": {
-      "extensions": [
+        "xlsx",
         "ppt",
         "pptx"
       ]
@@ -189,8 +181,9 @@
     "common/js/files_app_state.js",
     "common/js/filtered_volume_manager.js",
     "common/js/lru_cache.js",
-    "common/js/metrics.js",
+    "common/js/icon_util.js",
     "common/js/importer_common.js",
+    "common/js/metrics.js",
     "common/js/metrics_base.js",
     "common/js/mock_chrome.js",
     "common/js/notifications_browser_proxy.js",

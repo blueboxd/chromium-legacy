@@ -42,7 +42,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/cpu_utils.h"
@@ -606,11 +605,6 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     return false;
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
-
-  // Ignore certificate requests - the host currently has no client certificate
-  // support, so ignoring certificate requests allows connecting to servers that
-  // request, but don't require, a certificate (optional client authentication).
-  net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   signal_parent_ = cmd_line->HasSwitch(kSignalParentSwitchName);
 
@@ -1333,6 +1327,7 @@ bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   absl::optional<bool> host_username_match_required =
       policies->FindBoolKey(policy::key::kRemoteAccessHostMatchUsername);
   if (!host_username_match_required.has_value())
@@ -1340,6 +1335,7 @@ bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
 
   host_username_match_required_ = host_username_match_required.value();
   ApplyUsernamePolicy();
+#endif
   return false;
 }
 

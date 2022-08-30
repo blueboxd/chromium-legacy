@@ -1133,6 +1133,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        GPUMemoryForSmallLayerHistogramTest) {
   base::HistogramTester histogram_tester;
   SetClientNameForMetrics("Renderer");
+  host_impl_->SetDownsampleMetricsForTesting(false);
   // With default tile size being set to 256 * 256, the following layer needs
   // one tile only which costs 256 * 256 * 4 / 1024 = 256KB memory.
   TestGPUMemoryForTilings(gfx::Size(200, 200));
@@ -1146,6 +1147,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        GPUMemoryForLargeLayerHistogramTest) {
   base::HistogramTester histogram_tester;
   SetClientNameForMetrics("Renderer");
+  host_impl_->SetDownsampleMetricsForTesting(false);
   // With default tile size being set to 256 * 256, the following layer needs
   // 4 tiles which cost 256 * 256 * 4 * 4 / 1024 = 1024KB memory.
   TestGPUMemoryForTilings(gfx::Size(500, 500));
@@ -5869,8 +5871,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollBeforeMouseMove) {
 
   const float kDistanceToTriggerThumb =
       vert_scrollbar->ComputeThumbQuadRect().height() +
-      SingleScrollbarAnimationControllerThinning::
-          kMouseMoveDistanceToTriggerExpand;
+      scrollbar_controller
+          ->GetScrollbarAnimationController(ScrollbarOrientation::VERTICAL)
+          .MouseMoveDistanceToTriggerExpand();
 
   // Move the mouse near the thumb while its at the viewport top.
   auto near_thumb_at_top = gfx::Point(295, kDistanceToTriggerThumb - 1);
@@ -5924,9 +5927,10 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   settings.scrollbar_fade_duration = base::Milliseconds(300);
   settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
 
+  const int thumb_thickness = 15;
   gfx::Size viewport_size(300, 200);
   gfx::Size content_size(1000, 1000);
-  gfx::Size scrollbar_size(gfx::Size(15, viewport_size.height()));
+  gfx::Size scrollbar_size(gfx::Size(thumb_thickness, viewport_size.height()));
 
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDeviceScaleFactor(device_scale_factor);
@@ -5934,7 +5938,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   LayerImpl* root_scroll = OuterViewportScrollLayer();
   // The scrollbar is on the left side.
   auto* scrollbar = AddLayer<SolidColorScrollbarLayerImpl>(
-      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL, 15, 0, true);
+      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL,
+      thumb_thickness, 0, true);
   SetupScrollbarLayer(root_scroll, scrollbar);
   scrollbar->SetBounds(scrollbar_size);
   TouchActionRegion touch_action_region;
@@ -5949,28 +5954,31 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
           root_scroll->element_id());
 
   const float kMouseMoveDistanceToTriggerFadeIn =
-      ScrollbarAnimationController::kMouseMoveDistanceToTriggerFadeIn;
+      scrollbar_animation_controller
+          ->GetScrollbarAnimationController(ScrollbarOrientation::VERTICAL)
+          .MouseMoveDistanceToTriggerFadeIn();
 
   const float kMouseMoveDistanceToTriggerExpand =
-      SingleScrollbarAnimationControllerThinning::
-          kMouseMoveDistanceToTriggerExpand;
+      scrollbar_animation_controller
+          ->GetScrollbarAnimationController(ScrollbarOrientation::VERTICAL)
+          .MouseMoveDistanceToTriggerExpand();
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 1));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerFadeIn + 1, 1));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbarThumb(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand - 1, 10));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand, 10));
   EXPECT_TRUE(scrollbar_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_TRUE(scrollbar_animation_controller->MouseIsNearScrollbarThumb(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 100));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerFadeIn + 1, 100));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbarThumb(
@@ -6283,7 +6291,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // The background is default to transparent. If the background is opaque, we
   // would fill the frame with background colour when no layers are contributing
   // quads. This means we would end up with 0 quad.
-  EXPECT_EQ(host_impl_->active_tree()->background_color(), SK_ColorTRANSPARENT);
+  EXPECT_EQ(host_impl_->active_tree()->background_color(),
+            SkColors::kTransparent);
 
   {
     TestFrameData frame;
@@ -10726,7 +10735,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   void SetupActiveTreeLayers() {
-    host_impl_->active_tree()->set_background_color(SK_ColorGRAY);
+    host_impl_->active_tree()->set_background_color(SkColors::kGray);
     LayerImpl* root = SetupDefaultRootLayer(viewport_size_);
     child_ = AddLayer<BlendStateCheckLayer>(host_impl_->active_tree(),
                                             host_impl_->resource_provider());
@@ -11098,7 +11107,7 @@ class FakeLayerWithQuads : public LayerImpl {
         render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-    SkColor gray = SkColorSetRGB(100, 100, 100);
+    SkColor4f gray = SkColors::kGray;
     gfx::Rect quad_rect(bounds());
     gfx::Rect visible_quad_rect(quad_rect);
     auto* my_quad =
@@ -11148,7 +11157,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, LayersFreeTextures) {
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   SetupDefaultRootLayer(gfx::Size(10, 10));
-  host_impl_->active_tree()->set_background_color(SK_ColorWHITE);
+  host_impl_->active_tree()->set_background_color(SkColors::kWhite);
   UpdateDrawProperties(host_impl_->active_tree());
 
   // Verify one quad is drawn when transparent background set is not set.
@@ -11172,7 +11181,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   host_impl_->SetFullViewportDamage();
 
   // Verify no quads are drawn when transparent background is set.
-  host_impl_->active_tree()->set_background_color(SK_ColorTRANSPARENT);
+  host_impl_->active_tree()->set_background_color(SkColors::kTransparent);
   host_impl_->SetFullViewportDamage();
   args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
@@ -11191,7 +11200,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   host_impl_->SetFullViewportDamage();
 
   // Verify no quads are drawn when semi-transparent background is set.
-  host_impl_->active_tree()->set_background_color(SkColorSetARGB(5, 255, 0, 0));
+  host_impl_->active_tree()->set_background_color({1.0f, 0.0f, 0.0f, 0.1f});
   host_impl_->SetFullViewportDamage();
   host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
@@ -15914,11 +15923,14 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   settings.scrollbar_fade_duration = base::Milliseconds(300);
   settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
 
+  const int thumb_thickness = 15;
   gfx::Size viewport_size(300, 200);
   gfx::Size content_size(1000, 1000);
   gfx::Size child_layer_size(250, 150);
-  gfx::Size scrollbar_size_1(gfx::Size(15, viewport_size.height()));
-  gfx::Size scrollbar_size_2(gfx::Size(15, child_layer_size.height()));
+  gfx::Size scrollbar_size_1(
+      gfx::Size(thumb_thickness, viewport_size.height()));
+  gfx::Size scrollbar_size_2(
+      gfx::Size(thumb_thickness, child_layer_size.height()));
 
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDeviceScaleFactor(1);
@@ -15932,7 +15944,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
 
   // scrollbar_1 on root scroll.
   auto* scrollbar_1 = AddLayer<SolidColorScrollbarLayerImpl>(
-      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL, 15, 0, true);
+      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL,
+      thumb_thickness, 0, true);
   SetupScrollbarLayer(root_scroll, scrollbar_1);
   scrollbar_1->SetBounds(scrollbar_size_1);
   TouchActionRegion touch_action_region;
@@ -15950,16 +15963,19 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   EXPECT_TRUE(scrollbar_1_animation_controller);
 
   const float kMouseMoveDistanceToTriggerFadeIn =
-      ScrollbarAnimationController::kMouseMoveDistanceToTriggerFadeIn;
+      scrollbar_1_animation_controller
+          ->GetScrollbarAnimationController(ScrollbarOrientation::VERTICAL)
+          .MouseMoveDistanceToTriggerFadeIn();
 
   const float kMouseMoveDistanceToTriggerExpand =
-      SingleScrollbarAnimationControllerThinning::
-          kMouseMoveDistanceToTriggerExpand;
+      scrollbar_1_animation_controller
+          ->GetScrollbarAnimationController(ScrollbarOrientation::VERTICAL)
+          .MouseMoveDistanceToTriggerExpand();
 
   // Mouse moves close to the scrollbar, goes over the scrollbar, and
   // moves back to where it was.
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerFadeIn + 1, 0));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -15968,7 +15984,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand + 1, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -15977,7 +15993,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -15994,7 +16010,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -16003,7 +16019,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand + 1, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -16012,7 +16028,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerFadeIn + 1, 0));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -16022,7 +16038,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
 
   // scrollbar_2 on child.
   auto* scrollbar_2 = AddLayer<SolidColorScrollbarLayerImpl>(
-      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL, 15, 0, true);
+      host_impl_->active_tree(), ScrollbarOrientation::VERTICAL,
+      thumb_thickness, 0, true);
   LayerImpl* child =
       AddScrollableLayer(root_scroll, gfx::Size(100, 100), child_layer_size);
   child->SetOffsetToTransformParent(gfx::Vector2dF(50, 50));
@@ -16060,7 +16077,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       ScrollbarOrientation::VERTICAL));
 
   GetInputHandler().MouseMoveAt(
-      gfx::Point(64 + kMouseMoveDistanceToTriggerExpand, 50));
+      gfx::Point(50 + thumb_thickness + kMouseMoveDistanceToTriggerExpand, 50));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_FALSE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(
@@ -16074,7 +16091,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   EXPECT_FALSE(scrollbar_2_animation_controller->MouseIsOverScrollbarThumb(
       ScrollbarOrientation::VERTICAL));
   GetInputHandler().MouseMoveAt(
-      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
+      gfx::Point(thumb_thickness + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(
       ScrollbarOrientation::VERTICAL));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(

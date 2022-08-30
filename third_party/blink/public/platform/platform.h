@@ -49,7 +49,6 @@
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
-#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
@@ -124,7 +123,6 @@ class BrowserInterfaceBrokerProxy;
 class MediaInspectorContext;
 class ThreadSafeBrowserInterfaceBrokerProxy;
 class Thread;
-struct ThreadCreationParams;
 class URLLoaderThrottle;
 class UserMetricsAction;
 class WebAudioBus;
@@ -134,7 +132,6 @@ class WebDedicatedWorker;
 class WebDedicatedWorkerHostFactoryClient;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
-class WebMediaCapabilitiesClient;
 class WebPublicSuffixList;
 class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
@@ -368,13 +365,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Threads -------------------------------------------------------
 
-  // Most of threading functionality has moved to blink::Thread. The functions
-  // in Platform are deprecated; use the counterpart in blink::Thread as noted
-  // below.
-
-  // DEPRECATED: Use Thread::CreateThread() instead.
-  std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
-
   // The two compositor-related functions below are called by the embedder.
   // TODO(yutak): Perhaps we should move these to somewhere else?
 
@@ -394,11 +384,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // This is called after the compositor thread is created, so the embedder
-  // can initiate an IPC to change its thread priority (on Linux we can't
-  // increase the nice value, so we need to ask the browser process). This
-  // function is only called from the main thread (where InitializeCompositor-
-  // Thread() is called).
-  virtual void SetDisplayThreadPriority(base::PlatformThreadId) {}
+  // can initiate an IPC to change its thread type (on Linux we can't increase
+  // the nice value, so we need to ask the browser process). This function is
+  // only called from the main thread (where InitializeCompositor- Thread() is
+  // called).
+  virtual void SetCompositingThreadType(base::PlatformThreadId) {}
 #endif
 
   // Returns a blame context for attributing top-level work which does not
@@ -725,12 +715,7 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebString& client_id,
       std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<base::SequencedTaskRunner>
-          worker_timing_callback_task_runner,
-      base::RepeatingCallback<
-          void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
-          worker_timing_callback);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // WebCrypto ----------------------------------------------------------
 
@@ -751,12 +736,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Using a more narrowly defined scope when possible is also generally better
   // for security.
   virtual ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
-
-  // Media Capabilities --------------------------------------------------
-
-  virtual WebMediaCapabilitiesClient* MediaCapabilitiesClient() {
-    return nullptr;
-  }
 
   // Media Log -----------------------------------------------------------
 

@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
@@ -723,6 +724,8 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
   HashSet<String> unique_names;
   *class_names = std::make_unique<protocol::Array<String>>();
   Node* parent_node = NodeForId(node_id);
+  if (!parent_node)
+    return Response::ServerError("No suitable node with given id found");
   auto* parent_element = DynamicTo<Element>(parent_node);
   if (!parent_element && !parent_node->IsDocumentNode() &&
       !parent_node->IsDocumentFragment())
@@ -809,6 +812,21 @@ Response InspectorDOMAgent::querySelectorAll(
   return Response::Success();
 }
 
+Response InspectorDOMAgent::getTopLayerElements(
+    std::unique_ptr<protocol::Array<int>>* result) {
+  if (!document_)
+    return Response::ServerError("DOM agent hasn't been enabled");
+
+  *result = std::make_unique<protocol::Array<int>>();
+  for (auto element : document_->TopLayerElements()) {
+    int node_id = PushNodePathToFrontend(element);
+    if (node_id)
+      (*result)->emplace_back(node_id);
+  }
+
+  return Response::Success();
+}
+
 int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
                                               NodeToIdMap* node_map) {
   DCHECK(node_to_push);  // Invalid input
@@ -837,9 +855,12 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
   }
 
   for (int i = path.size() - 1; i >= 0; --i) {
-    int node_id = node_map->at(path.at(i).Get());
-    DCHECK(node_id);
-    PushChildNodesToFrontend(node_id);
+    auto it = node_map->find(path.at(i).Get());
+    if (it != node_map->end()) {
+      int node_id = it->value;
+      DCHECK(node_id);
+      PushChildNodesToFrontend(node_id);
+    }
   }
   it = node_map->find(node_to_push);
   return it != node_map->end() ? it->value : 0;
@@ -1653,7 +1674,7 @@ InspectorDOMAgent::GetContainerQueryingDescendants(Element* container) {
 bool InspectorDOMAgent::ContainerQueriedByElement(Element* container,
                                                   Element* element) {
   const ComputedStyle* style = element->GetComputedStyle();
-  if (!style || !style->DependsOnContainerQueries())
+  if (!style || !style->DependsOnSizeContainerQueries())
     return false;
 
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
@@ -2333,6 +2354,10 @@ void InspectorDOMAgent::PseudoElementCreated(PseudoElement* pseudo_element) {
                                     document_node_to_id_map_.Get()));
 }
 
+void InspectorDOMAgent::TopLayerElementsChanged() {
+  GetFrontend()->topLayerElementsUpdated();
+}
+
 void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   int pseudo_element_id = BoundNodeId(pseudo_element);
   if (!pseudo_element_id)
@@ -2342,7 +2367,10 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   Element* parent = pseudo_element->ParentOrShadowHostElement();
   DCHECK(parent);
   int parent_id = BoundNodeId(parent);
-  DCHECK(parent_id);
+  // Since the pseudo element tree created for a document transition is destroyed with in-order
+  // traversal, the parent node (::page-transition) are destroyed before its children
+  // (::page-transition-container).
+  DCHECK(parent_id || IsTransitionPseudoElement(pseudo_element->GetPseudoId()));
 
   Unbind(pseudo_element);
   GetFrontend()->pseudoElementRemoved(parent_id, pseudo_element_id);

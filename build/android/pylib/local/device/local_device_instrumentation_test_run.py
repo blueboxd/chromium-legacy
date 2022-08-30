@@ -26,6 +26,7 @@ from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
 from devil.android.sdk import shared_prefs
+from devil.android.sdk import version_codes
 from devil.android import logcat_monitor
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
@@ -288,7 +289,8 @@ class LocalDeviceInstrumentationTestRun(
                            instant_app=self._test_instance.test_apk_as_instant))
 
       steps.extend(
-          install_helper(apk) for apk in self._test_instance.additional_apks)
+          install_helper(apk, instant_app=self._test_instance.IsApkInstant(apk))
+          for apk in self._test_instance.additional_apks)
 
       # We'll potentially need the package names later for setting app
       # compatibility workarounds.
@@ -382,6 +384,10 @@ class LocalDeviceInstrumentationTestRun(
               shared_pref, setting)
 
       @trace_event.traced
+      def approve_app_links(dev):
+        self._ToggleAppLinks(dev, 'STATE_APPROVED')
+
+      @trace_event.traced
       def set_vega_permissions(dev):
         # Normally, installation of VrCore automatically grants storage
         # permissions. However, since VrCore is part of the system image on
@@ -423,8 +429,8 @@ class LocalDeviceInstrumentationTestRun(
             dev, self._test_instance.timeout_scale)
 
       steps += [
-          set_debug_app, edit_shared_prefs, push_test_data, create_flag_changer,
-          set_vega_permissions, DismissCrashDialogs
+          set_debug_app, edit_shared_prefs, approve_app_links, push_test_data,
+          create_flag_changer, set_vega_permissions, DismissCrashDialogs
       ]
 
       def bind_crash_handler(step, dev):
@@ -506,6 +512,9 @@ class LocalDeviceInstrumentationTestRun(
       for pref_to_restore in self._shared_prefs_to_restore:
         pref_to_restore.Commit(force_commit=True)
 
+      # If we've force approved app links for a package, undo that now.
+      self._ToggleAppLinks(dev, 'STATE_NO_RESPONSE')
+
       # Context manager exit handlers are applied in reverse order
       # of the enter handlers.
       for context in reversed(self._context_managers[str(dev)]):
@@ -515,6 +524,24 @@ class LocalDeviceInstrumentationTestRun(
         # pylint: enable=no-member
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
+
+  def _ToggleAppLinks(self, dev, state):
+    # The set-app-links command was added in Android 12 (sdk = 31). The
+    # restrictions that require us to set the app links were also added in
+    # Android 12, so doing nothing on earlier Android versions is fine.
+    if dev.build_version_sdk < version_codes.S:
+      return
+
+    package = self._test_instance.approve_app_links_package
+    domain = self._test_instance.approve_app_links_domain
+
+    if not package or not domain:
+      return
+
+    cmd = [
+        'pm', 'set-app-links', '--package', package, state, domain
+    ]
+    dev.RunShellCommand(cmd, check_return=True)
 
   def _CreateFlagChangerIfNeeded(self, device):
     if str(device) not in self._flag_changers:
@@ -1105,7 +1132,7 @@ class LocalDeviceInstrumentationTestRun(
       if logmon:
         logmon.Close()
       if logcat_file and logcat_file.Link():
-        logging.info('Logcat saved to %s', logcat_file.Link())
+        logging.critical('Logcat saved to %s', logcat_file.Link())
 
   def _SaveTraceData(self, trace_device_file, device, test_class):
     trace_host_file = self._env.trace_output

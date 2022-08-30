@@ -17,7 +17,28 @@ struct Feature;
 
 namespace features {
 
-extern const BASE_EXPORT Feature kPartitionAllocDanglingPtrRecord;
+// See /docs/dangling_ptr.md
+//
+// Usage:
+// --enable-features=PartitionAllocDanglingPtr:mode/crash
+// --enable-features=PartitionAllocDanglingPtr:mode/log_signature
+extern const BASE_EXPORT Feature kPartitionAllocDanglingPtr;
+enum class DanglingPtrMode {
+  // Crash immediately after detecting a dangling raw_ptr.
+  kCrash,  // (default)
+
+  // Log the signature of every occurrences without crashing. It is used by
+  // bots.
+  // Format "[DanglingSignature]\t<1>\t<2>"
+  // 1. The function who freed the memory while it was still referenced.
+  // 2. The function who released the raw_ptr reference.
+  kLogSignature,
+
+  // Note: This will be extended with a single shot DumpWithoutCrashing.
+};
+extern const BASE_EXPORT base::FeatureParam<DanglingPtrMode>
+    kDanglingPtrModeParam;
+
 #if defined(PA_ALLOW_PCSCAN)
 extern const BASE_EXPORT Feature kPartitionAllocPCScan;
 #endif  // defined(PA_ALLOW_PCSCAN)
@@ -49,6 +70,9 @@ enum class BackupRefPtrMode {
   // partitions (if enabled in Renderer at all).
   // This entails splitting the main partition.
   kEnabled,
+
+  // Same as kEnabled but without zapping quarantined objects.
+  kEnabledWithoutZapping,
 
   // BRP is disabled, but the main partition is split out, as if BRP was enabled
   // in the "previous slot" mode.

@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -83,6 +84,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetReferrerString(original->ReferrerString());
   request->SetReferrerPolicy(original->GetReferrerPolicy());
   request->SetMode(original->Mode());
+  request->SetTargetAddressSpace(original->TargetAddressSpace());
   request->SetCredentials(original->Credentials());
   request->SetCacheMode(original->CacheMode());
   request->SetRedirect(original->Redirect());
@@ -117,9 +119,10 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
 static bool AreAnyMembersPresent(const RequestInit* init) {
   return init->hasMethod() || init->hasHeaders() || init->hasBody() ||
          init->hasReferrer() || init->hasReferrerPolicy() || init->hasMode() ||
-         init->hasCredentials() || init->hasCache() || init->hasRedirect() ||
-         init->hasIntegrity() || init->hasKeepalive() || init->hasPriority() ||
-         init->hasSignal() || init->hasTrustToken();
+         init->hasTargetAddressSpace() || init->hasCredentials() ||
+         init->hasCache() || init->hasRedirect() || init->hasIntegrity() ||
+         init->hasKeepalive() || init->hasPriority() || init->hasSignal() ||
+         init->hasDuplex() || init->hasTrustToken();
 }
 
 static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
@@ -463,6 +466,23 @@ Request* Request::CreateRequestWithRequestOrString(
     request->SetCredentials(network::mojom::CredentialsMode::kSameOrigin);
   }
 
+  // The following code performs the following steps:
+  // - "Let |targetAddressSpace| be |init|'s targetAddressSpace member if it is
+  // present, and |unknown| otherwise."
+  if (init->hasTargetAddressSpace()) {
+    if (init->targetAddressSpace() == "local") {
+      request->SetTargetAddressSpace(network::mojom::IPAddressSpace::kLocal);
+    } else if (init->targetAddressSpace() == "private") {
+      request->SetTargetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
+    } else if (init->targetAddressSpace() == "public") {
+      request->SetTargetAddressSpace(network::mojom::IPAddressSpace::kPublic);
+    } else if (init->targetAddressSpace() == "unknown") {
+      request->SetTargetAddressSpace(network::mojom::IPAddressSpace::kUnknown);
+    }
+  } else {
+    request->SetTargetAddressSpace(network::mojom::IPAddressSpace::kUnknown);
+  }
+
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
   if (init->hasCache()) {
     auto&& cache = init->cache();
@@ -578,10 +598,6 @@ Request* Request::CreateRequestWithRequestOrString(
 
     request->SetTrustTokenParams(std::move(params));
   }
-  if (init->hasAllowHTTP1ForStreamingUpload()) {
-    request->SetAllowHTTP1ForStreamingUpload(
-        init->allowHTTP1ForStreamingUpload());
-  }
 
   // "Let |r| be a new Request object associated with |request| and a new
   // Headers object whose guard is "request"."
@@ -681,12 +697,24 @@ Request* Request::CreateRequestWithRequestOrString(
       return nullptr;
   }
 
-  // "If |body| is non-null and |body|’s source is null, then:"
+  // "If `inputOrInitBody` is non-null and `inputOrInitBody`’s source is null,
+  // then:"
   if (body && body->IsMadeFromReadableStream()) {
+    // "If `initBody` is non-null and `init["duplex"]` does not exist, then
+    // throw a TypeError."
+    if (!init_body.IsEmpty() && !init_body->IsNull() && !init->hasDuplex()) {
+      exception_state.ThrowTypeError(
+          "The `duplex` member must be specified for a request with a "
+          "streaming body");
+      return nullptr;
+    }
+
     // "If |this|’s request’s mode is neither "same-origin" nor "cors", then
     // throw a TypeError."
     if (request->Mode() != network::mojom::RequestMode::kSameOrigin &&
-        request->Mode() != network::mojom::RequestMode::kCors) {
+        request->Mode() != network::mojom::RequestMode::kCors &&
+        request->Mode() !=
+            network::mojom::RequestMode::kCorsWithForcedPreflight) {
       exception_state.ThrowTypeError(
           "If request is made from ReadableStream, mode should be"
           "\"same-origin\" or \"cors\"");
@@ -951,6 +979,20 @@ String Request::integrity() const {
 
 bool Request::keepalive() const {
   return request_->Keepalive();
+}
+String Request::targetAddressSpace() const {
+  switch (request_->TargetAddressSpace()) {
+    case network::mojom::IPAddressSpace::kLocal:
+      return "local";
+    case network::mojom::IPAddressSpace::kPrivate:
+      return "private";
+    case network::mojom::IPAddressSpace::kPublic:
+      return "public";
+    case network::mojom::IPAddressSpace::kUnknown:
+      return "unknown";
+  }
+  NOTREACHED();
+  return "unknown";
 }
 
 bool Request::isHistoryNavigation() const {

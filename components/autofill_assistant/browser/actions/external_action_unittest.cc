@@ -4,13 +4,20 @@
 
 #include "components/autofill_assistant/browser/actions/external_action.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/time/time.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_test_base.h"
-#include "components/autofill_assistant/browser/external_action_extension_test.pb.h"
+#include "components/autofill_assistant/browser/mock_user_model.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,6 +25,7 @@
 namespace autofill_assistant {
 namespace {
 
+using ::autofill::ServerFieldType;
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::ElementsAre;
@@ -25,12 +33,42 @@ using ::testing::Eq;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::UnorderedElementsAre;
 using ::testing::WithArgs;
+
+namespace {
+
+constexpr char kCreditCardNumber[] = "4111111111111111";
+constexpr char kProfileName[] = "SHIPPING";
+constexpr char kFirstName[] = "John";
+constexpr char kLastName[] = "Doe";
+constexpr char kEmail[] = "jd@example.com";
+constexpr char kAddressLine1[] = "Erika-Mann-Str. 33";
+constexpr char kAddressCity[] = "Munich";
+constexpr char kAddressZip[] = "80636";
+constexpr int64_t kInstrumentId = 123;
+constexpr char kServerId[] = "server id";
+constexpr autofill::CreditCard::RecordType kRecordType =
+    autofill::CreditCard::RecordType::LOCAL_CARD;
+}  // namespace
 
 class ExternalActionTest : public WaitForDomTestBase {
  public:
   ExternalActionTest() = default;
+
+  void SetUp() override {
+    mock_user_model_ = std::make_unique<MockUserModel>();
+    ON_CALL(mock_action_delegate_, GetUserModel)
+        .WillByDefault(Return(GetMockUserModel()));
+    user_data_ = std::make_unique<UserData>();
+    ON_CALL(mock_action_delegate_, GetMutableUserData)
+        .WillByDefault(Return(user_data_.get()));
+    ON_CALL(mock_action_delegate_, GetLocale).WillByDefault(Return(locale_));
+    base::Time fake_now;
+    if (base::Time::FromUTCString("2022-07-01 00:00:00", &fake_now))
+      test_clock_.SetNow(fake_now);
+  }
 
  protected:
   void Run() {
@@ -44,19 +82,26 @@ class ExternalActionTest : public WaitForDomTestBase {
     action_->ProcessAction(callback_.Get());
   }
 
+  MockUserModel* GetMockUserModel() { return mock_user_model_.get(); }
+
   base::MockCallback<Action::ProcessActionCallback> callback_;
   ExternalActionProto proto_;
   std::unique_ptr<ExternalAction> action_;
+
+ private:
+  const std::string locale_ = "en-US";
+  std::unique_ptr<UserData> user_data_;
+  std::unique_ptr<MockUserModel> mock_user_model_;
+  autofill::TestAutofillClock test_clock_;
 };
 
 external::Result MakeResult(bool success) {
   external::Result result;
   result.set_success(success);
-  testing::TestResultExtension test_extension_proto;
-  test_extension_proto.set_text("test text");
 
-  *result.mutable_result_info()->MutableExtension(
-      testing::test_result_extension) = std::move(test_extension_proto);
+  external::ResultInfo dummy_result_info;
+  *result.mutable_result_info() = dummy_result_info;
+
   return result;
 }
 
@@ -75,12 +120,8 @@ TEST_F(ExternalActionTest, Success) {
           });
   Run();
   EXPECT_THAT(returned_processed_action_proto->status(), Eq(ACTION_APPLIED));
-  EXPECT_TRUE(returned_processed_action_proto->has_external_action_result());
-  EXPECT_THAT(returned_processed_action_proto->external_action_result()
-                  .result_info()
-                  .GetExtension(testing::test_result_extension)
-                  .text(),
-              Eq("test text"));
+  ASSERT_TRUE(returned_processed_action_proto->external_action_result()
+                  .has_result_info());
 }
 
 TEST_F(ExternalActionTest, ExternalFailure) {
@@ -99,11 +140,8 @@ TEST_F(ExternalActionTest, ExternalFailure) {
   EXPECT_THAT(returned_processed_action_proto->status(),
               Eq(UNKNOWN_ACTION_STATUS));
   EXPECT_TRUE(returned_processed_action_proto->has_external_action_result());
-  EXPECT_THAT(returned_processed_action_proto->external_action_result()
-                  .result_info()
-                  .GetExtension(testing::test_result_extension)
-                  .text(),
-              Eq("test text"));
+  ASSERT_TRUE(returned_processed_action_proto->external_action_result()
+                  .has_result_info());
 }
 
 TEST_F(ExternalActionTest, FailsIfProtoExtensionInfoNotSet) {
@@ -166,6 +204,113 @@ TEST_F(ExternalActionTest, ExternalActionWithoutInterrupts) {
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   Run();
+}
+
+TEST_F(ExternalActionTest, ExternalActionWithSelectedProfileAndCreditCard) {
+  proto_.mutable_info();
+  proto_.set_allow_interrupt(false);
+
+  base::Time credit_card_exp_date =
+      autofill::AutofillClock::Now() + base::Days(31);
+  base::Time::Exploded credit_card_exp_date_exploded;
+  credit_card_exp_date.UTCExplode(&credit_card_exp_date_exploded);
+
+  // Result proto
+  external::Result result = MakeResult(/* success= */ true);
+
+  // Credit card proto
+  auto credit_card_proto = std::make_unique<external::CreditCardProto>();
+  (*credit_card_proto->mutable_values())[ServerFieldType::CREDIT_CARD_NUMBER] =
+      kCreditCardNumber;
+  (*credit_card_proto
+        ->mutable_values())[ServerFieldType::CREDIT_CARD_EXP_MONTH] =
+      base::NumberToString(credit_card_exp_date_exploded.month);
+  (*credit_card_proto
+        ->mutable_values())[ServerFieldType::CREDIT_CARD_EXP_4_DIGIT_YEAR] =
+      base::NumberToString(credit_card_exp_date_exploded.year);
+  credit_card_proto->set_record_type(kRecordType);
+  credit_card_proto->set_instrument_id(kInstrumentId);
+  credit_card_proto->set_server_id(kServerId);
+  result.set_allocated_selected_credit_card(credit_card_proto.get());
+  credit_card_proto.release();
+
+  // Profile proto
+  auto profile_proto = std::make_unique<external::ProfileProto>();
+  (*profile_proto->mutable_values())[ServerFieldType::NAME_FIRST] = kFirstName;
+  (*profile_proto->mutable_values())[ServerFieldType::NAME_LAST] = kLastName;
+  (*profile_proto->mutable_values())[ServerFieldType::EMAIL_ADDRESS] = kEmail;
+  (*profile_proto->mutable_values())[ServerFieldType::ADDRESS_HOME_LINE1] =
+      kAddressLine1;
+  (*profile_proto->mutable_values())[ServerFieldType::ADDRESS_HOME_CITY] =
+      kAddressCity;
+  (*profile_proto->mutable_values())[ServerFieldType::ADDRESS_HOME_ZIP] =
+      kAddressZip;
+  (result.mutable_selected_profiles())->insert({kProfileName, *profile_proto});
+
+  EXPECT_CALL(mock_action_delegate_, RequestExternalAction)
+      .WillOnce(
+          [&result](const ExternalActionProto& external_action,
+                    base::OnceCallback<void(
+                        ExternalActionDelegate::DomUpdateCallback)>
+                        start_dom_checks_callback,
+                    base::OnceCallback<void(const external::Result& result)>
+                        end_action_callback) {
+            std::move(start_dom_checks_callback).Run(base::DoNothing());
+            std::move(end_action_callback).Run(result);
+          });
+  EXPECT_CALL(mock_action_delegate_, WaitForDom).Times(0);
+  std::unique_ptr<autofill::CreditCard> credit_card;
+  EXPECT_CALL(*GetMockUserModel(),
+              SetSelectedCreditCard(::testing::NotNull(), _))
+      .WillOnce([&credit_card](std::unique_ptr<autofill::CreditCard> cc, auto) {
+        credit_card = std::move(cc);
+      });
+  std::unique_ptr<autofill::AutofillProfile> autofill_profile;
+  EXPECT_CALL(*GetMockUserModel(),
+              SetSelectedAutofillProfile(kProfileName, ::testing::NotNull(), _))
+      .WillOnce([&autofill_profile](
+                    auto, std::unique_ptr<autofill::AutofillProfile> ap, auto) {
+        autofill_profile = std::move(ap);
+      });
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+
+  Run();
+
+  // Verify credit card data
+  EXPECT_EQ(credit_card->expiration_month(),
+            credit_card_exp_date_exploded.month);
+  EXPECT_EQ(credit_card->expiration_year(), credit_card_exp_date_exploded.year);
+  EXPECT_EQ(base::UTF16ToUTF8(credit_card->number()), kCreditCardNumber);
+  EXPECT_EQ(credit_card->record_type(), kRecordType);
+  EXPECT_EQ(credit_card->instrument_id(), kInstrumentId);
+  EXPECT_EQ(credit_card->server_id(), kServerId);
+
+  // Verify profile data
+  EXPECT_EQ(
+      base::UTF16ToUTF8(autofill_profile->GetInfo(
+          ServerFieldType::NAME_FIRST, mock_action_delegate_.GetLocale())),
+      kFirstName);
+  EXPECT_EQ(base::UTF16ToUTF8(autofill_profile->GetInfo(
+                ServerFieldType::NAME_LAST, mock_action_delegate_.GetLocale())),
+            kLastName);
+  EXPECT_EQ(
+      base::UTF16ToUTF8(autofill_profile->GetInfo(
+          ServerFieldType::EMAIL_ADDRESS, mock_action_delegate_.GetLocale())),
+      kEmail);
+  EXPECT_EQ(base::UTF16ToUTF8(
+                autofill_profile->GetInfo(ServerFieldType::ADDRESS_HOME_LINE1,
+                                          mock_action_delegate_.GetLocale())),
+            kAddressLine1);
+  EXPECT_EQ(base::UTF16ToUTF8(
+                autofill_profile->GetInfo(ServerFieldType::ADDRESS_HOME_CITY,
+                                          mock_action_delegate_.GetLocale())),
+            kAddressCity);
+  EXPECT_EQ(base::UTF16ToUTF8(
+                autofill_profile->GetInfo(ServerFieldType::ADDRESS_HOME_ZIP,
+                                          mock_action_delegate_.GetLocale())),
+            kAddressZip);
 }
 
 TEST_F(ExternalActionTest, DoesNotStartWaitForDomIfDomChecksAreNotRequested) {

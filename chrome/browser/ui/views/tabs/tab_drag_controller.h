@@ -92,7 +92,7 @@ class TabDragController : public views::WidgetObserver {
   // |tab_strip|.
   // NOTE: this returns false if the TabDragController is in the process of
   // finishing the drag.
-  static bool IsAttachedTo(const TabDragContext* tab_strip);
+  static bool IsAttachedTo(const TabDragContextBase* tab_strip);
 
   // Returns true if there is a drag underway.
   static bool IsActive();
@@ -125,12 +125,6 @@ class TabDragController : public views::WidgetObserver {
   // move message loop.
   bool is_dragging_window() const {
     return current_state_ == DragState::kDraggingWindow;
-  }
-
-  // Returns true if the nested move loop end was requested and we are waiting
-  // it to actually happen.
-  bool is_waiting_to_stop() const {
-    return current_state_ == DragState::kWaitingToStop;
   }
 
   // Returns the tab group being dragged, if any. Will only return a value if
@@ -182,14 +176,12 @@ class TabDragController : public views::WidgetObserver {
     // a regular drag and drop session is running (i.e. no window is being
     // dragged).  The dragged tabs are detached immediately (with one exception;
     // see |attached_context_hidden_|'s comment), but |attached_context_| stays
-    // valid.  On platforms where this state is used, the kDraggingWindow,
-    // kWaitingToDragTabs, and kWaitingToStop states are not used.
+    // valid.  On platforms where this state is used, the kDraggingWindow and
+    // kWaitingToDragTabs states are not used.
     kDraggingUsingSystemDragAndDrop,
     // The session is waiting for the nested move loop to exit to transition
     // to kDraggingTabs.  Not used on all platforms.
     kWaitingToDragTabs,
-    // The session is waiting for the nested move loop to exit to end the drag.
-    kWaitingToStop,
     // The drag session has completed or been canceled.
     kStopped
   };
@@ -658,10 +650,6 @@ class TabDragController : public views::WidgetObserver {
 
   // The selection model of |attached_context_| before the tabs were attached.
   ui::ListSelectionModel selection_model_before_attach_;
-
-  // Initial x-coordinates of the tabs when the drag started. Only used for
-  // touch mode.
-  std::vector<int> initial_tab_positions_;
 
   // What should occur during ConinueDragging when a tab is attempted to be
   // detached.

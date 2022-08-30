@@ -34,9 +34,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
-#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/common/content_switches.h"
@@ -128,13 +128,11 @@ void OobeBaseTest::CreatedBrowserMainParts(
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
-  // UpdateEngineClientStubImpl have logic that simulates state changes
+  // UpdateEngineClientDesktopFake has logic that simulates state changes
   // based on timer. It is nice simulation for chromeos-on-linux, but
   // may lead to flakiness in debug/*SAN tests.
   // Set up FakeUpdateEngineClient that does not have any timer-based logic.
-  update_engine_client_ = new FakeUpdateEngineClient;
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-      std::unique_ptr<UpdateEngineClient>(update_engine_client_));
+  update_engine_client_ = UpdateEngineClient::InitializeFakeForTest();
 }
 
 void OobeBaseTest::SetUpOnMainThread() {

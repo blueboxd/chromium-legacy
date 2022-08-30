@@ -51,7 +51,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/widget_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/widget_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_renderer_scheduler_state.pbzero.h"
@@ -204,6 +204,19 @@ bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
       static_cast<const WebMouseWheelEvent&>(web_input_event);
   return mouse_event.dispatch_type ==
          blink::WebInputEvent::DispatchType::kBlocking;
+}
+
+const char* InputEventStateToString(
+    WidgetScheduler::InputEventState input_event_state) {
+  switch (input_event_state) {
+    case WidgetScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR:
+      return "event_consumed_by_compositor";
+    case WidgetScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD:
+      return "event_forwarded_to_main_thread";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 }  // namespace
@@ -567,9 +580,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   mbi_compositor_task_runner_per_agent_scheduling_group =
       base::FeatureList::IsEnabled(
           kMbiCompositorTaskRunnerPerAgentSchedulingGroup);
-
-  can_defer_begin_main_frame_during_loading =
-      base::FeatureList::IsEnabled(features::kDeferBeginMainFrameDuringLoading);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
@@ -639,9 +649,10 @@ std::unique_ptr<Thread> MainThreadSchedulerImpl::CreateMainThread() {
   return std::make_unique<MainThread>(this);
 }
 
-std::unique_ptr<WebWidgetScheduler>
+scoped_refptr<WidgetScheduler>
 MainThreadSchedulerImpl::CreateWidgetScheduler() {
-  return std::make_unique<WidgetScheduler>(this);
+  return base::MakeRefCounted<WidgetSchedulerImpl>(
+      this, &render_widget_scheduler_signals_);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -834,11 +845,6 @@ scoped_refptr<base::sequence_manager::TaskQueue>
 MainThreadSchedulerImpl::NewTaskQueueForTest() {
   return sequence_manager_->CreateTaskQueue(
       base::sequence_manager::TaskQueue::Spec("test"));
-}
-
-std::unique_ptr<WebRenderWidgetSchedulingState>
-MainThreadSchedulerImpl::NewRenderWidgetSchedulingState() {
-  return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();
 }
 
 void MainThreadSchedulerImpl::OnShutdownTaskQueue(
@@ -1148,7 +1154,7 @@ bool MainThreadSchedulerImpl::ShouldPrioritizeInputEvent(
 
 void MainThreadSchedulerImpl::DidHandleInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event,
-    InputEventState event_state) {
+    WidgetScheduler::InputEventState event_state) {
   TRACE_EVENT0(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
       "MainThreadSchedulerImpl::DidHandleInputEventOnCompositorThread");
@@ -1166,14 +1172,9 @@ void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
       helper_.NowTicks() + base::Milliseconds(kFlingEscalationLimitMillis);
 }
 
-void MainThreadSchedulerImpl::DidRunBeginMainFrame() {
-  base::AutoLock lock(any_thread_lock_);
-  any_thread().last_main_frame_time = base::TimeTicks::Now();
-}
-
 void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event,
-    InputEventState input_event_state) {
+    WidgetScheduler::InputEventState input_event_state) {
   base::AutoLock lock(any_thread_lock_);
   base::TimeTicks now = helper_.NowTicks();
 
@@ -1195,7 +1196,8 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
   any_thread().user_model.DidStartProcessingInputEvent(type, now);
   any_thread().have_seen_input_since_navigation = true;
 
-  if (input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR)
+  if (input_event_state ==
+      WidgetScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR)
     any_thread().user_model.DidFinishProcessingInputEvent(now);
 
   switch (type) {
@@ -1230,7 +1232,8 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       // If we see events for an established gesture, we can lock it to the
       // appropriate thread as the gesture can no longer be cancelled.
       any_thread().last_gesture_was_compositor_driven =
-          input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+          input_event_state ==
+          WidgetScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       any_thread().awaiting_touch_start_response = false;
       any_thread().default_gesture_prevented = false;
       break;
@@ -1256,13 +1259,15 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       // Consider mouse movement with the left button held down (see
       // ShouldPrioritizeInputEvent) similarly to a touch gesture.
       any_thread().last_gesture_was_compositor_driven =
-          input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+          input_event_state ==
+          WidgetScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       any_thread().awaiting_touch_start_response = false;
       break;
 
     case blink::WebInputEvent::Type::kMouseWheel:
       any_thread().last_gesture_was_compositor_driven =
-          input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+          input_event_state ==
+          WidgetScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       any_thread().awaiting_touch_start_response = false;
       // If the event was sent to the main thread, assume the default gesture is
       // prevented until we see evidence otherwise.
@@ -1963,10 +1968,11 @@ void MainThreadSchedulerImpl::DispatchRequestBeginMainFrameNotExpected(
       success && has_tasks;
 }
 
-void MainThreadSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
+void MainThreadSchedulerImpl::DidStartProvisionalLoad(
+    bool is_outermost_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::DidStartProvisionalLoad");
-  if (is_main_frame) {
+  if (is_outermost_main_frame) {
     base::AutoLock lock(any_thread_lock_);
     ResetForNavigationLocked();
   }
@@ -1975,14 +1981,14 @@ void MainThreadSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
 void MainThreadSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     bool is_reload,
-    bool is_main_frame) {
+    bool is_outermost_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::DidCommitProvisionalLoad");
   main_thread_only().has_navigated = true;
 
   // If this either isn't a history inert commit or it's a reload then we must
   // reset the task cost estimators.
-  if (is_main_frame && (!is_web_history_inert_commit || is_reload)) {
+  if (is_outermost_main_frame && (!is_web_history_inert_commit || is_reload)) {
     RAILMode old_rail_mode;
     RAILMode new_rail_mode;
     {
@@ -2023,18 +2029,6 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   main_thread_only().have_reported_blocking_intervention_since_navigation =
       false;
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
-
-  UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
-                           base::saturated_cast<base::HistogramBase::Sample>(
-                               main_thread_only().page_schedulers.size()));
-
-  size_t frame_count = 0;
-  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    frame_count += page_scheduler->FrameCount();
-  }
-  UMA_HISTOGRAM_COUNTS_100(
-      "RendererScheduler.WebFramesPerScheduler",
-      base::saturated_cast<base::HistogramBase::Sample>(frame_count));
 }
 
 void MainThreadSchedulerImpl::SetTopLevelBlameContext(
@@ -2075,16 +2069,6 @@ MainThreadSchedulerImpl::GetPendingUserInputInfo(
     bool include_continuous) const {
   base::AutoLock lock(any_thread_lock_);
   return any_thread().pending_input_monitor.Info(include_continuous);
-}
-
-bool MainThreadSchedulerImpl::DontDeferBeginMainFrame() const {
-  if (!scheduling_settings().can_defer_begin_main_frame_during_loading)
-    return true;
-
-  base::AutoLock lock(any_thread_lock_);
-  return IsAnyMainFrameWaitingForFirstContentfulPaint() ||
-         (base::TimeTicks::Now() - any_thread().last_main_frame_time) >
-             features::kRecentBeginMainFrameCutoff.Get();
 }
 
 void MainThreadSchedulerImpl::RunIdleTask(Thread::IdleTask task,

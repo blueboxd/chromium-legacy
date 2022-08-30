@@ -5,9 +5,9 @@
 
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "builders", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -17,8 +17,8 @@ ci.defaults.set(
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.ANDROID,
 )
@@ -246,7 +246,7 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
     tree_closing = True,
 )
 
@@ -392,6 +392,8 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 6 * time.hour,
+    free_space = builders.free_space.high,
+    ssd = True,
 )
 
 ci.builder(
@@ -420,7 +422,7 @@ ci.builder(
         short_name = "x86",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
     tree_closing = True,
 )
 
@@ -509,7 +511,7 @@ ci.builder(
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
     tree_closing = True,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
     ssd = True,
 )
 
@@ -578,7 +580,7 @@ ci.thin_tester(
     ),
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
-    execution_timeout = 12 * time.hour,
+    execution_timeout = 15 * time.hour,
     triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
@@ -754,7 +756,7 @@ ci.builder(
     ),
     executable = "recipe:binary_size_generator_tot",
     ssd = True,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
 )
 
 ci.builder(
@@ -869,7 +871,7 @@ ci.builder(
     notifies = ["cronet"],
     sheriff_rotations = args.ignore_default(None),
     os = os.ANDROID,
-    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
 )
 
 ci.builder(

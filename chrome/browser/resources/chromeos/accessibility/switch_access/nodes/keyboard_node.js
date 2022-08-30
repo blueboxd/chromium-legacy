@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {EventGenerator} from '/common/event_generator.js';
+import {RectUtil} from '/common/rect_util.js';
 import {AutoScanManager} from '/switch_access/auto_scan_manager.js';
 import {Navigator} from '/switch_access/navigator.js';
 import {BackButtonNode} from '/switch_access/nodes/back_button_node.js';
@@ -223,7 +224,7 @@ export class KeyboardRootNode extends BasicRootNode {
    * @private
    */
   static findAndSetChildren_(root) {
-    const childConstructor = (node) => new KeyboardNode(node, root);
+    const childConstructor = node => new KeyboardNode(node, root);
     const interestingChildren =
         root.automationNode.findAll({role: chrome.automation.RoleType.BUTTON});
     /** @type {!Array<!SAChildNode>} */

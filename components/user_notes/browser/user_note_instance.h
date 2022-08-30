@@ -51,8 +51,14 @@ class UserNoteInstance : public blink::mojom::AnnotationAgentHost {
   // Marked virtual for tests to override.
   virtual void InitializeHighlightIfNeeded(base::OnceClosure callback);
 
+  void OnNoteSelected();
+
   // blink::mojom::AnnotationAgentHost implementation.
   void DidFinishAttachment(const gfx::Rect& rect) override;
+
+  // TODO(corising) and TODO(bokan): add the following method to
+  // AnnotationAgentHost interface once the caller is implemented in Blink.
+  void OnWebHighlightFocused();
 
   // TODO(gujen) and TODO(bokan): add the following method to the
   // AnnotationAgentHost interface so it's called when a note becomes detached.

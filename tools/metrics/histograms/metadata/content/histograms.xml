@@ -171,7 +171,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
-    expires_after="2022-10-09">
+    expires_after="2022-12-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -191,14 +191,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default autoplay setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default cookies setting at profile open.</summary>
@@ -221,14 +221,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultJavaScriptSetting"
-    enum="ContentSetting" expires_after="2022-10-23">
+    enum="ContentSetting" expires_after="2022-12-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default JavaScript setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default location setting at profile open.</summary>
@@ -259,7 +259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultNotificationsSetting"
-    enum="ContentSetting" expires_after="2022-10-23">
+    enum="ContentSetting" expires_after="2022-12-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default notification setting at profile open.</summary>
@@ -273,12 +273,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultRequestDesktopSiteSetting"
-    enum="ContentSetting" expires_after="2022-10-23">
+    enum="ContentSetting" expires_after="2022-12-25">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
     The request desktop site content setting at profile open. Recorded for
-    Android only.
+    Android and iOS only.
   </summary>
 </histogram>
 
@@ -585,7 +585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2022-10-30">
+    enum="StrongPopupBlockerAction" expires_after="2023-01-01">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -988,24 +988,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.SessionDuration" units="ms"
-    expires_after="2022-10-01">
-  <owner>edchin@google.com</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The amount of time a user spends in the feed in a single session. A session
-    is measured only by user interactions or user scrolling events in the feed.
-    Two events are considered as being within the same session if they are at
-    most 5 minutes apart from each other. A series of events is likely to
-    constitute a single session. A user opening the feed but having no
-    interaction and not scrolling is not considered a session. A user tapping an
-    article then quickly returning to the feed is considered within the same
-    session. The time between sessions by definition will be longer than 5
-    minutes.
-  </summary>
-</histogram>
-
 <histogram name="ContentSuggestions.Feed.Task.DelayTime" units="ms"
     expires_after="2020-10-01">
   <owner>carlosk@chromium.org</owner>
@@ -1023,28 +1005,6 @@ chromium-metrics-reviews@google.com.
   <owner>feed@chromium.org</owner>
   <summary>
     How long it took from the task starting to when it finished executing.
-  </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.TimeBetweenInteractions" units="ms"
-    expires_after="2022-10-01">
-  <owner>edchin@google.com</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The amount of time between user interactions or user scrolling in the feed.
-  </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.TimeBetweenSessions" units="ms"
-    expires_after="2022-10-01">
-  <owner>edchin@google.com</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The amount of time between user feed sessions, as defined in
-    |ContentSuggestions.Feed.SessionDuration|. This is by definition longer than
-    5 minutes.
   </summary>
 </histogram>
 

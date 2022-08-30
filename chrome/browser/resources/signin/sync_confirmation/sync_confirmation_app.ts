@@ -50,30 +50,10 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
         value: false,
       },
 
-      isNewDesignModalDialog_: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value() {
-          return loadTimeData.getBoolean('isModalDialog') &&
-              loadTimeData.getBoolean('isNewDesign');
-        }
-      },
-
-      isNewDesign_: {
+      isModalDialog_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('isNewDesign');
-        }
-      },
-
-      highlightColor_: {
-        type: String,
-        value() {
-          if (!loadTimeData.valueExists('highlightColor')) {
-            return '';
-          }
-
-          return loadTimeData.getString('highlightColor');
+          return loadTimeData.getBoolean('isModalDialog');
         }
       },
 
@@ -81,34 +61,13 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
         type: Boolean,
         value: false,
       },
-
-      syncForced_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('syncForced');
-        }
-      },
-
-      syncOptionalClass_: {
-        type: String,
-        value() {
-          if (loadTimeData.getBoolean('syncForced')) {
-            return '';
-          }
-          return 'sync-optional';
-        },
-      },
     };
   }
 
   private accountImageSrc_: string;
   private anyButtonClicked_: boolean;
-  private isNewDesignModalDialog_: boolean;
-  private isNewDesign_: boolean;
-  private highlightColor_: string;
+  private isModalDialog_: boolean;
   private showEnterpriseBadge_: boolean;
-  private syncForced_: boolean;
-  private syncOptionalClass_: string;
   private syncConfirmationBrowserProxy_: SyncConfirmationBrowserProxy =
       SyncConfirmationBrowserProxyImpl.getInstance();
 
@@ -124,7 +83,7 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
     this.anyButtonClicked_ = true;
     this.syncConfirmationBrowserProxy_.confirm(
         this.getConsentDescription_(),
-        this.getConsentConfirmation_(e.composedPath() as Array<HTMLElement>));
+        this.getConsentConfirmation_(e.composedPath() as HTMLElement[]));
   }
 
   private onUndo_() {
@@ -136,7 +95,7 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
     this.anyButtonClicked_ = true;
     this.syncConfirmationBrowserProxy_.goToSettings(
         this.getConsentDescription_(),
-        this.getConsentConfirmation_(e.composedPath() as Array<HTMLElement>));
+        this.getConsentConfirmation_(e.composedPath() as HTMLElement[]));
   }
 
   /**
@@ -144,7 +103,7 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
    *     element.
    * @return The text of the consent confirmation element.
    */
-  private getConsentConfirmation_(path: Array<HTMLElement>): string {
+  private getConsentConfirmation_(path: HTMLElement[]): string {
     for (const element of path) {
       if (element.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
           element.hasAttribute('consent-confirmation')) {

@@ -149,6 +149,43 @@ source_set("signin_util_internal") {
   ]
 }
 
+source_set("trusted_vault") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "trusted_vault_client_backend.h",
+    "trusted_vault_client_backend.mm",
+    "trusted_vault_configuration.h",
+    "trusted_vault_configuration.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/sync/driver",
+    "//ios/public/provider/chrome/browser/signin:signin_sso_api",
+  ]
+  frameworks = [
+    "UIKit.framework",
+    "Foundation.framework",
+  ]
+}
+
+source_set("trusted_vault_factory") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "trusted_vault_client_backend_factory.h",
+    "trusted_vault_client_backend_factory.mm",
+  ]
+  deps = [
+    ":trusted_vault",
+    "//base",
+    "//components/keyed_service/ios",
+    "//ios/chrome/browser:application_context",
+    "//ios/chrome/browser/browser_state",
+    "//ios/public/provider/chrome/browser/signin:trusted_vault_api",
+  ]
+  frameworks = [ "Foundation.framework" ]
+}
+
 source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -160,6 +197,7 @@ source_set("test_support") {
   ]
   deps = [
     ":signin",
+    ":trusted_vault",
     "//base",
     "//components/image_fetcher/core:test_support",
     "//components/keyed_service/core",

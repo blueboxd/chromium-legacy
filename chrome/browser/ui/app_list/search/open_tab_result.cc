@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/search/open_tab_result.h"
 
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
-#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -66,18 +66,17 @@ OpenTabResult::OpenTabResult(Profile* profile,
   // result.
   TokenizedStringMatch string_match;
   TokenizedString title(match_.description);
-  string_match.Calculate(query, title);
-  set_relevance(string_match.relevance());
+  set_relevance(string_match.Calculate(query, title));
 
   UpdateText();
   UpdateIcon();
-  if (ash::ColorProvider::Get())
-    ash::ColorProvider::Get()->AddObserver(this);
+  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get())
+    dark_light_mode_controller->AddObserver(this);
 }
 
 OpenTabResult::~OpenTabResult() {
-  if (ash::ColorProvider::Get())
-    ash::ColorProvider::Get()->RemoveObserver(this);
+  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get())
+    dark_light_mode_controller->RemoveObserver(this);
 }
 
 void OpenTabResult::Open(int event_flags) {

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
@@ -39,7 +40,8 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
                                        const gfx::Insets& insets,
                                        float scale_factor,
                                        int32_t panel_transform,
-                                       int32_t logical_transform) = 0;
+                                       int32_t logical_transform,
+                                       const std::string& label) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -68,6 +70,7 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   gfx::Size logical_size() const;
   gfx::Size physical_size() const { return physical_size_; }
   gfx::Insets insets() const;
+  const std::string& label() const;
 
   // Tells if the output has already received physical screen dimensions in the
   // global compositor space.
@@ -116,8 +119,8 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   // Size of the output in physical pixels.
   gfx::Size physical_size_;
 
-  Delegate* delegate_ = nullptr;
-  WaylandConnection* connection_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
+  raw_ptr<WaylandConnection> connection_ = nullptr;
 };
 
 }  // namespace ui

@@ -30,8 +30,7 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
   PasswordStoreBackendMigrationDecorator(
       std::unique_ptr<PasswordStoreBackend> built_in_backend,
       std::unique_ptr<PasswordStoreBackend> android_backend,
-      PrefService* prefs,
-      SyncDelegate* sync_delegate);
+      PrefService* prefs);
   PasswordStoreBackendMigrationDecorator(
       const PasswordStoreBackendMigrationDecorator&) = delete;
   PasswordStoreBackendMigrationDecorator(
@@ -73,7 +72,7 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
     const raw_ptr<PrefService> prefs_ = nullptr;
 
     // Set when sync_service is already initialized and can be interacted with.
-    raw_ptr<syncer::SyncService> sync_service_ = nullptr;
+    raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
     // Cached value of the configured password sync setting. Updated when the
     // user is changing sync settings, and may from
@@ -151,9 +150,7 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
 
   const raw_ptr<PrefService> prefs_ = nullptr;
 
-  // |sync_delegate| lives inside |android_backend|. So it should always be
-  // destroyed before |android_backend_|.
-  const raw_ptr<SyncDelegate> sync_delegate_;
+  raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
   std::unique_ptr<BuiltInBackendToAndroidBackendMigrator> migrator_;
 

@@ -110,13 +110,12 @@ const char* const kNonUpdatedHeaderPrefixes[] = {
 };
 
 bool ShouldUpdateHeader(base::StringPiece name) {
-  for (size_t i = 0; i < std::size(kNonUpdatedHeaders); ++i) {
-    if (base::EqualsCaseInsensitiveASCII(name, kNonUpdatedHeaders[i]))
+  for (const auto* header : kNonUpdatedHeaders) {
+    if (base::EqualsCaseInsensitiveASCII(name, header))
       return false;
   }
-  for (size_t i = 0; i < std::size(kNonUpdatedHeaderPrefixes); ++i) {
-    if (base::StartsWith(name, kNonUpdatedHeaderPrefixes[i],
-                         base::CompareCase::INSENSITIVE_ASCII))
+  for (const auto* prefix : kNonUpdatedHeaderPrefixes) {
+    if (base::StartsWith(name, prefix, base::CompareCase::INSENSITIVE_ASCII))
       return false;
   }
   return true;
@@ -887,18 +886,18 @@ void HttpResponseHeaders::AddNonCacheableHeaders(HeaderSet* result) const {
 }
 
 void HttpResponseHeaders::AddHopByHopHeaders(HeaderSet* result) {
-  for (size_t i = 0; i < std::size(kHopByHopResponseHeaders); ++i)
-    result->insert(std::string(kHopByHopResponseHeaders[i]));
+  for (const auto* header : kHopByHopResponseHeaders)
+    result->insert(std::string(header));
 }
 
 void HttpResponseHeaders::AddCookieHeaders(HeaderSet* result) {
-  for (size_t i = 0; i < std::size(kCookieResponseHeaders); ++i)
-    result->insert(std::string(kCookieResponseHeaders[i]));
+  for (const auto* header : kCookieResponseHeaders)
+    result->insert(std::string(header));
 }
 
 void HttpResponseHeaders::AddChallengeHeaders(HeaderSet* result) {
-  for (size_t i = 0; i < std::size(kChallengeResponseHeaders); ++i)
-    result->insert(std::string(kChallengeResponseHeaders[i]));
+  for (const auto* header : kChallengeResponseHeaders)
+    result->insert(std::string(header));
 }
 
 void HttpResponseHeaders::AddHopContentRangeHeaders(HeaderSet* result) {
@@ -906,8 +905,8 @@ void HttpResponseHeaders::AddHopContentRangeHeaders(HeaderSet* result) {
 }
 
 void HttpResponseHeaders::AddSecurityStateHeaders(HeaderSet* result) {
-  for (size_t i = 0; i < std::size(kSecurityStateHeaders); ++i)
-    result->insert(std::string(kSecurityStateHeaders[i]));
+  for (const auto* header : kSecurityStateHeaders)
+    result->insert(std::string(header));
 }
 
 void HttpResponseHeaders::GetMimeTypeAndCharset(std::string* mime_type,
@@ -1373,8 +1372,8 @@ bool HttpResponseHeaders::GetContentRangeFor206(
 
 base::Value HttpResponseHeaders::NetLogParams(
     NetLogCaptureMode capture_mode) const {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  base::Value headers(base::Value::Type::LIST);
+  base::Value::Dict dict;
+  base::Value::List headers;
   headers.Append(NetLogStringValue(GetStatusLine()));
   size_t iterator = 0;
   std::string name;
@@ -1384,8 +1383,8 @@ base::Value HttpResponseHeaders::NetLogParams(
         ElideHeaderValueForNetLog(capture_mode, name, value);
     headers.Append(NetLogStringValue(base::StrCat({name, ": ", log_value})));
   }
-  dict.SetKey("headers", std::move(headers));
-  return dict;
+  dict.Set("headers", std::move(headers));
+  return base::Value(std::move(dict));
 }
 
 bool HttpResponseHeaders::IsChunkEncoded() const {

@@ -300,7 +300,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
                               base::Unretained(this))),
       current_scale_(/*AddedToWidget() set the right DPI*/ 1.0f) {
   views::InstallRectHighlightPathGenerator(this);
-  observation_.Observe(this->model());
+  model_->SetDelegate(this);
 
   // TODO(pkasting): Use bespoke file-scope subclasses for some of these child
   // views to localize functionality and simplify this class.
@@ -445,7 +445,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
     // TODO(shaktisahu): Make DragDownloadItem work with a model.
     DragDownloadItem(model_->download(), file_icon,
                      widget ? widget->GetNativeView() : nullptr);
-    RecordDownloadShelfDragInfo(DownloadShelfDragInfo::DRAG_STARTED);
+    RecordDownloadShelfDragInfo(DownloadDragInfo::DRAG_STARTED);
   }
   return true;
 }
@@ -508,7 +508,7 @@ void DownloadItemView::OnDownloadUpdated() {
   // One example of this is if the file gets removed.
   if (!has_download_completion_been_logged_ &&
       model_->GetState() == download::DownloadItem::COMPLETE) {
-    RecordDownloadShelfDragInfo(DownloadShelfDragInfo::DOWNLOAD_COMPLETE);
+    RecordDownloadShelfDragInfo(DownloadDragInfo::DOWNLOAD_COMPLETE);
     has_download_completion_been_logged_ = true;
   }
 }
@@ -540,7 +540,8 @@ void DownloadItemView::OnDownloadOpened() {
   shelf_->AutoClose();
 }
 
-void DownloadItemView::OnDownloadDestroyed() {
+void DownloadItemView::OnDownloadDestroyed(const ContentId& id) {
+  context_menu_.OnDownloadDestroyed();
   shelf_->RemoveDownloadView(this);  // This will delete us!
 }
 

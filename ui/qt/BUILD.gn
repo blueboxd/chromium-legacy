@@ -8,7 +8,7 @@ import("//ui/qt/qt.gni")
 
 assert(use_qt)
 assert(is_linux)
-assert(!is_chromecast)
+assert(!is_castos)
 
 pkg_config("qt5_config") {
   packages = [
@@ -88,7 +88,9 @@ component("qt") {
   deps = [
     ":qt_interface",
     "//base",
+    "//printing/buildflags",
     "//skia",
+    "//ui/base/ime/linux",
     "//ui/color",
     "//ui/color:mixers",
     "//ui/gfx",

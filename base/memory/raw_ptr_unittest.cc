@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_alloc_support.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
@@ -18,6 +19,7 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr_asan_service.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -81,74 +83,8 @@ static_assert(
 // this namespace calls the correct functions from this namespace.
 namespace {
 
-static int g_wrap_raw_ptr_cnt = INT_MIN;
-static int g_release_wrapped_ptr_cnt = INT_MIN;
-static int g_get_for_dereference_cnt = INT_MIN;
-static int g_get_for_extraction_cnt = INT_MIN;
-static int g_get_for_comparison_cnt = INT_MIN;
-static int g_wrapped_ptr_swap_cnt = INT_MIN;
-static int g_pointer_to_member_operator_cnt = INT_MIN;
-
-static void ClearCounters() {
-  g_wrap_raw_ptr_cnt = 0;
-  g_release_wrapped_ptr_cnt = 0;
-  g_get_for_dereference_cnt = 0;
-  g_get_for_extraction_cnt = 0;
-  g_get_for_comparison_cnt = 0;
-  g_wrapped_ptr_swap_cnt = 0;
-  g_pointer_to_member_operator_cnt = 0;
-}
-
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-using CountingSuperClass =
-    base::internal::BackupRefPtrImpl</*AllowDangling=*/false>;
-#elif defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-using CountingSuperClass = base::internal::MTECheckedPtrImpl<
-    base::internal::MTECheckedPtrImplPartitionAllocSupport>;
-#else
-using CountingSuperClass = base::internal::RawPtrNoOpImpl;
-#endif
-struct RawPtrCountingImpl : public CountingSuperClass {
-  using Super = CountingSuperClass;
-
-  template <typename T>
-  static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
-    ++g_wrap_raw_ptr_cnt;
-    return Super::WrapRawPtr(ptr);
-  }
-
-  template <typename T>
-  static ALWAYS_INLINE void ReleaseWrappedPtr(T* ptr) {
-    ++g_release_wrapped_ptr_cnt;
-    Super::ReleaseWrappedPtr(ptr);
-  }
-
-  template <typename T>
-  static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
-    ++g_get_for_dereference_cnt;
-    return Super::SafelyUnwrapPtrForDereference(wrapped_ptr);
-  }
-
-  template <typename T>
-  static ALWAYS_INLINE T* SafelyUnwrapPtrForExtraction(T* wrapped_ptr) {
-    ++g_get_for_extraction_cnt;
-    return Super::SafelyUnwrapPtrForExtraction(wrapped_ptr);
-  }
-
-  template <typename T>
-  static ALWAYS_INLINE T* UnsafelyUnwrapPtrForComparison(T* wrapped_ptr) {
-    ++g_get_for_comparison_cnt;
-    return Super::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
-  }
-
-  static ALWAYS_INLINE void IncrementSwapCountForTest() {
-    ++g_wrapped_ptr_swap_cnt;
-  }
-
-  static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {
-    ++g_pointer_to_member_operator_cnt;
-  }
-};
+using RawPtrCountingImpl =
+    base::internal::RawPtrCountingImplWrapperForTest<base::DefaultRawPtrImpl>;
 
 template <typename T>
 using CountingRawPtr = raw_ptr<T, RawPtrCountingImpl>;
@@ -174,7 +110,7 @@ struct Derived : Base1, Base2 {
 
 class RawPtrTest : public Test {
  protected:
-  void SetUp() override { ClearCounters(); }
+  void SetUp() override { RawPtrCountingImpl::ClearCounters(); }
 };
 
 // Use this instead of std::ignore, to prevent the instruction from getting
@@ -196,9 +132,9 @@ TEST_F(RawPtrTest, NullExtractNoDereference) {
   // No dereference hence shouldn't crash.
   int* raw = ptr;
   std::ignore = raw;
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, NullCmpExplicit) {
@@ -208,9 +144,9 @@ TEST_F(RawPtrTest, NullCmpExplicit) {
   EXPECT_FALSE(ptr != nullptr);
   EXPECT_FALSE(nullptr != ptr);
   // No need to unwrap pointer, just compare against 0.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, NullCmpBool) {
@@ -218,9 +154,9 @@ TEST_F(RawPtrTest, NullCmpBool) {
   EXPECT_FALSE(ptr);
   EXPECT_TRUE(!ptr);
   // No need to unwrap pointer, just compare against 0.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 void FuncThatAcceptsBool(bool b) {}
@@ -245,9 +181,9 @@ TEST_F(RawPtrTest, BoolOpNotCast) {
   std::ignore = IsValidNoCast2(ptr);
   FuncThatAcceptsBool(!ptr);
   // No need to unwrap pointer, just compare against 0.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 bool IsValidWithCast(CountingRawPtr<int> ptr) {
@@ -263,67 +199,67 @@ TEST_F(RawPtrTest, CastNotBoolOp) {
   [[maybe_unused]] bool is_valid = ptr;
   is_valid = IsValidWithCast(ptr);
   FuncThatAcceptsBool(ptr);
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 3);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 3);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, StarDereference) {
   int foo = 42;
   CountingRawPtr<int> ptr = &foo;
   EXPECT_EQ(*ptr, 42);
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 1);
 }
 
 TEST_F(RawPtrTest, ArrowDereference) {
   MyStruct foo = {42};
   CountingRawPtr<MyStruct> ptr = &foo;
   EXPECT_EQ(ptr->x, 42);
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 1);
 }
 
 TEST_F(RawPtrTest, Delete) {
   CountingRawPtr<int> ptr = new int(42);
   delete ptr;
   // The pointer was extracted using implicit cast before passing to |delete|.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, ClearAndDelete) {
   CountingRawPtr<int> ptr(new int);
   ptr.ClearAndDelete();
-  EXPECT_EQ(g_wrap_raw_ptr_cnt, 1);
-  EXPECT_EQ(g_release_wrapped_ptr_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrap_raw_ptr_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::release_wrapped_ptr_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
   // When `MTECheckedPtr` is active, we must unwrap to delete.
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
 #else
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-  EXPECT_EQ(g_wrapped_ptr_swap_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrapped_ptr_swap_cnt, 0);
   EXPECT_EQ(ptr.get(), nullptr);
 }
 
 TEST_F(RawPtrTest, ClearAndDeleteArray) {
   CountingRawPtr<int> ptr(new int[8]);
   ptr.ClearAndDeleteArray();
-  EXPECT_EQ(g_wrap_raw_ptr_cnt, 1);
-  EXPECT_EQ(g_release_wrapped_ptr_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrap_raw_ptr_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::release_wrapped_ptr_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
   // When `MTECheckedPtr` is active, we must unwrap to delete.
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
 #else
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-  EXPECT_EQ(g_wrapped_ptr_swap_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrapped_ptr_swap_cnt, 0);
   EXPECT_EQ(ptr.get(), nullptr);
 }
 
@@ -333,9 +269,9 @@ TEST_F(RawPtrTest, ConstVolatileVoidPtr) {
   EXPECT_EQ(*static_cast<const volatile int32_t*>(ptr), 1234567890);
   // Because we're using a cast, the extraction API kicks in, which doesn't
   // know if the extracted pointer will be dereferenced or not.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, VoidPtr) {
@@ -344,9 +280,9 @@ TEST_F(RawPtrTest, VoidPtr) {
   EXPECT_EQ(*static_cast<int32_t*>(ptr), 1234567890);
   // Because we're using a cast, the extraction API kicks in, which doesn't
   // know if the extracted pointer will be dereferenced or not.
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorEQ) {
@@ -366,9 +302,9 @@ TEST_F(RawPtrTest, OperatorEQ) {
   EXPECT_TRUE(ptr1 == ptr3);
   EXPECT_TRUE(ptr3 == ptr1);
 
-  EXPECT_EQ(g_get_for_comparison_cnt, 12);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 12);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorNE) {
@@ -388,9 +324,9 @@ TEST_F(RawPtrTest, OperatorNE) {
   EXPECT_FALSE(ptr1 != ptr3);
   EXPECT_FALSE(ptr3 != ptr1);
 
-  EXPECT_EQ(g_get_for_comparison_cnt, 12);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 12);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorEQCast) {
@@ -413,9 +349,9 @@ TEST_F(RawPtrTest, OperatorEQCast) {
   EXPECT_TRUE(raw_void_ptr == checked_int_ptr);
   // Make sure that all cases are handled by operator== (faster) and none by the
   // cast operator (slower).
-  EXPECT_EQ(g_get_for_comparison_cnt, 16);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 16);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorEQCastHierarchy) {
@@ -462,9 +398,9 @@ TEST_F(RawPtrTest, OperatorEQCastHierarchy) {
   // Make sure that all cases are handled by operator== (faster) and none by the
   // cast operator (slower).
   // The 4 extractions come from .get() checks, that compare raw addresses.
-  EXPECT_EQ(g_get_for_comparison_cnt, 20);
-  EXPECT_EQ(g_get_for_extraction_cnt, 4);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 20);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorNECast) {
@@ -487,9 +423,9 @@ TEST_F(RawPtrTest, OperatorNECast) {
   EXPECT_FALSE(raw_void_ptr != checked_int_ptr);
   // Make sure that all cases are handled by operator== (faster) and none by the
   // cast operator (slower).
-  EXPECT_EQ(g_get_for_comparison_cnt, 16);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 16);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, OperatorNECastHierarchy) {
@@ -528,9 +464,9 @@ TEST_F(RawPtrTest, OperatorNECastHierarchy) {
   // Make sure that all cases are handled by operator== (faster) and none by the
   // cast operator (slower).
   // The 4 extractions come from .get() checks, that compare raw addresses.
-  EXPECT_EQ(g_get_for_comparison_cnt, 20);
-  EXPECT_EQ(g_get_for_extraction_cnt, 4);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 20);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, Cast) {
@@ -685,9 +621,9 @@ TEST_F(RawPtrTest, UpcastPerformance) {
     checked_base2_ptr = std::move(checked_derived_ptr);
   }
 
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 TEST_F(RawPtrTest, CustomSwap) {
@@ -699,7 +635,7 @@ TEST_F(RawPtrTest, CustomSwap) {
   swap(ptr1, ptr2);
   EXPECT_EQ(ptr1.get(), &foo2);
   EXPECT_EQ(ptr2.get(), &foo1);
-  EXPECT_EQ(g_wrapped_ptr_swap_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::wrapped_ptr_swap_cnt, 1);
 }
 
 TEST_F(RawPtrTest, StdSwap) {
@@ -709,7 +645,7 @@ TEST_F(RawPtrTest, StdSwap) {
   std::swap(ptr1, ptr2);
   EXPECT_EQ(ptr1.get(), &foo2);
   EXPECT_EQ(ptr2.get(), &foo1);
-  EXPECT_EQ(g_wrapped_ptr_swap_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrapped_ptr_swap_cnt, 0);
 }
 
 TEST_F(RawPtrTest, PostIncrementOperator) {
@@ -718,9 +654,9 @@ TEST_F(RawPtrTest, PostIncrementOperator) {
   for (int i = 0; i < 4; ++i) {
     ASSERT_EQ(*ptr++, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 4);
 }
 
 TEST_F(RawPtrTest, PostDecrementOperator) {
@@ -729,9 +665,9 @@ TEST_F(RawPtrTest, PostDecrementOperator) {
   for (int i = 3; i >= 0; --i) {
     ASSERT_EQ(*ptr--, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 4);
 }
 
 TEST_F(RawPtrTest, PreIncrementOperator) {
@@ -740,9 +676,9 @@ TEST_F(RawPtrTest, PreIncrementOperator) {
   for (int i = 0; i < 4; ++i, ++ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 4);
 }
 
 TEST_F(RawPtrTest, PreDecrementOperator) {
@@ -751,9 +687,9 @@ TEST_F(RawPtrTest, PreDecrementOperator) {
   for (int i = 3; i >= 0; --i, --ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 4);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 4);
 }
 
 TEST_F(RawPtrTest, PlusEqualOperator) {
@@ -762,9 +698,23 @@ TEST_F(RawPtrTest, PlusEqualOperator) {
   for (int i = 0; i < 4; i += 2, ptr += 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 2);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 2);
+}
+
+TEST_F(RawPtrTest, PlusEqualOperatorTypes) {
+  int foo[] = {42, 43, 44, 45};
+  CountingRawPtr<int> ptr = foo;
+  ASSERT_EQ(*ptr, 42);
+  ptr += 2;  // Positive literal.
+  ASSERT_EQ(*ptr, 44);
+  ptr -= 2;  // Negative literal.
+  ASSERT_EQ(*ptr, 42);
+  ptr += ptrdiff_t{1};  // ptrdiff_t.
+  ASSERT_EQ(*ptr, 43);
+  ptr += size_t{2};  // size_t.
+  ASSERT_EQ(*ptr, 45);
 }
 
 TEST_F(RawPtrTest, MinusEqualOperator) {
@@ -773,9 +723,23 @@ TEST_F(RawPtrTest, MinusEqualOperator) {
   for (int i = 3; i >= 0; i -= 2, ptr -= 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 2);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 2);
+}
+
+TEST_F(RawPtrTest, MinusEqualOperatorTypes) {
+  int foo[] = {42, 43, 44, 45};
+  CountingRawPtr<int> ptr = &foo[3];
+  ASSERT_EQ(*ptr, 45);
+  ptr -= 2;  // Positive literal.
+  ASSERT_EQ(*ptr, 43);
+  ptr -= -2;  // Negative literal.
+  ASSERT_EQ(*ptr, 45);
+  ptr -= ptrdiff_t{2};  // ptrdiff_t.
+  ASSERT_EQ(*ptr, 43);
+  ptr -= size_t{1};  // size_t.
+  ASSERT_EQ(*ptr, 42);
 }
 
 TEST_F(RawPtrTest, AdvanceString) {
@@ -785,18 +749,18 @@ TEST_F(RawPtrTest, AdvanceString) {
   for (size_t i = 0; i < str.size(); ++i, ++ptr) {
     ASSERT_EQ(*ptr, kChars[i]);
   }
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 5);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 5);
 }
 
 TEST_F(RawPtrTest, AssignmentFromNullptr) {
   CountingRawPtr<int> wrapped_ptr;
   wrapped_ptr = nullptr;
-  EXPECT_EQ(g_wrap_raw_ptr_cnt, 0);
-  EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 0);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::wrap_raw_ptr_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_comparison_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 void FunctionWithRawPtrParameter(raw_ptr<int> actual_ptr, int* expected_ptr) {
@@ -835,61 +799,84 @@ TEST_F(RawPtrTest, SetLookupUsesGetForComparison) {
   int x = 123;
   CountingRawPtr<int> ptr(&x);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   set.emplace(&x);
-  EXPECT_EQ(1, g_wrap_raw_ptr_cnt);
-  EXPECT_EQ(0, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(1, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  // Nothing to compare to yet.
+  EXPECT_EQ(0, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
+  set.emplace(ptr);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  // 1 element to compare to => 2 calls.
+  EXPECT_EQ(2, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  // 2 items to compare to => 4 calls.
+  EXPECT_EQ(4, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
+
+  RawPtrCountingImpl::ClearCounters();
   set.count(&x);
-  EXPECT_EQ(0, g_wrap_raw_ptr_cnt);
-  EXPECT_NE(0, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  // 2 items to compare to => 4 calls.
+  EXPECT_EQ(2, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  // 2 comparisons => 2 extractions. Less than before, because this time a raw
+  // pointer is one side of the comparison.
+  EXPECT_EQ(2, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   set.count(ptr);
-  EXPECT_EQ(0, g_wrap_raw_ptr_cnt);
-  EXPECT_NE(0, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  // 2 items to compare to => 4 calls.
+  EXPECT_EQ(2, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  // 2 comparisons => 4 extractions.
+  EXPECT_EQ(4, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 }
 
 TEST_F(RawPtrTest, ComparisonOperatorUsesGetForComparison) {
   int x = 123;
   CountingRawPtr<int> ptr(&x);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   EXPECT_FALSE(ptr < ptr);
   EXPECT_FALSE(ptr > ptr);
   EXPECT_TRUE(ptr <= ptr);
   EXPECT_TRUE(ptr >= ptr);
-  EXPECT_EQ(0, g_wrap_raw_ptr_cnt);
-  EXPECT_EQ(8, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  // < is used directly, not std::less().
+  EXPECT_EQ(0, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  EXPECT_EQ(8, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   EXPECT_FALSE(ptr < &x);
   EXPECT_FALSE(ptr > &x);
   EXPECT_TRUE(ptr <= &x);
   EXPECT_TRUE(ptr >= &x);
-  EXPECT_EQ(0, g_wrap_raw_ptr_cnt);
-  EXPECT_EQ(4, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  EXPECT_EQ(4, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   EXPECT_FALSE(&x < ptr);
   EXPECT_FALSE(&x > ptr);
   EXPECT_TRUE(&x <= ptr);
   EXPECT_TRUE(&x >= ptr);
-  EXPECT_EQ(0, g_wrap_raw_ptr_cnt);
-  EXPECT_EQ(4, g_get_for_comparison_cnt);
-  EXPECT_EQ(0, g_get_for_extraction_cnt);
-  EXPECT_EQ(0, g_get_for_dereference_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrap_raw_ptr_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::wrapped_ptr_less_cnt);
+  EXPECT_EQ(4, RawPtrCountingImpl::get_for_comparison_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_extraction_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::get_for_dereference_cnt);
 }
 
 // This test checks how the std library handles collections like
@@ -917,7 +904,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // See how many times raw_ptr's destructor is called when std::vector
   // needs to increase its capacity and reallocate the internal vector
   // storage (moving the raw_ptr elements).
-  ClearCounters();
+  RawPtrCountingImpl::ClearCounters();
   size_t number_of_capacity_changes = 0;
   do {
     size_t previous_capacity = vector.capacity();
@@ -930,7 +917,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // support custom trivially relocatable objects) this #if branch can
   // be removed (keeping only the right long-term expectation from the
   // #else branch).
-  EXPECT_NE(0, g_release_wrapped_ptr_cnt);
+  EXPECT_NE(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #else
   // This is the right long-term expectation.
   //
@@ -940,7 +927,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // RawPtrCountingImpl::ReleaseWrappedPtr.  Nevertheless, the spirit of
   // the EXPECT_EQ is correct + the assertion should be true in the
   // long-term.)
-  EXPECT_EQ(0, g_release_wrapped_ptr_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #endif
 
   // Basic smoke test that raw_ptr elements in a vector work okay.
@@ -949,14 +936,14 @@ TEST_F(RawPtrTest, TrivialRelocability) {
     EXPECT_EQ(*elem, x);
   }
 
-  // Verification that g_release_wrapped_ptr_cnt does capture how many
-  // times the destructors are called (e.g. that it is not always
-  // zero).
-  ClearCounters();
+  // Verification that release_wrapped_ptr_cnt does capture how many times the
+  // destructors are called (e.g. that it is not always zero).
+  RawPtrCountingImpl::ClearCounters();
   size_t number_of_cleared_elements = vector.size();
   vector.clear();
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  EXPECT_EQ((int)number_of_cleared_elements, g_release_wrapped_ptr_cnt);
+  EXPECT_EQ((int)number_of_cleared_elements,
+            RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #else
   // TODO(lukasza): !USE_BACKUP_REF_PTR / RawPtrNoOpImpl has a default
   // destructor that doesn't go through
@@ -964,7 +951,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // on `g_release_wrapped_ptr_cnt`.  This #else branch should be
   // deleted once USE_BACKUP_REF_PTR is removed (e.g. once BackupRefPtr
   // ships to the Stable channel).
-  EXPECT_EQ(0, g_release_wrapped_ptr_cnt);
+  EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
   std::ignore = number_of_cleared_elements;
 #endif
 }
@@ -1047,21 +1034,22 @@ void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
 }
 
-static constexpr PartitionOptions kOpts = {
-    PartitionOptions::AlignedAlloc::kDisallowed,
-    PartitionOptions::ThreadCache::kDisabled,
-    PartitionOptions::Quarantine::kDisallowed,
-    PartitionOptions::Cookie::kAllowed,
-    PartitionOptions::BackupRefPtr::kEnabled,
-    PartitionOptions::UseConfigurablePool::kNo,
+static constexpr partition_alloc::PartitionOptions kOpts = {
+    partition_alloc::PartitionOptions::AlignedAlloc::kDisallowed,
+    partition_alloc::PartitionOptions::ThreadCache::kDisabled,
+    partition_alloc::PartitionOptions::Quarantine::kDisallowed,
+    partition_alloc::PartitionOptions::Cookie::kAllowed,
+    partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
+    partition_alloc::PartitionOptions::BackupRefPtrZapping::kEnabled,
+    partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
 };
 
 TEST(BackupRefPtrImpl, Basic) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
   base::CPU cpu;
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   int* raw_ptr1 =
       reinterpret_cast<int*>(allocator.root()->Alloc(sizeof(int), ""));
@@ -1103,8 +1091,8 @@ TEST(BackupRefPtrImpl, Basic) {
 TEST(BackupRefPtrImpl, ZeroSized) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
 
   std::vector<raw_ptr<void>> ptrs;
@@ -1118,8 +1106,8 @@ TEST(BackupRefPtrImpl, ZeroSized) {
 
 TEST(BackupRefPtrImpl, EndPointer) {
   // This test requires a fresh partition with an empty free list.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
 
   // Check multiple size buckets and levels of slot filling.
@@ -1152,8 +1140,8 @@ TEST(BackupRefPtrImpl, EndPointer) {
 }
 
 TEST(BackupRefPtrImpl, QuarantinedBytes) {
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   uint64_t* raw_ptr1 = reinterpret_cast<uint64_t*>(
       allocator.root()->Alloc(sizeof(uint64_t), ""));
@@ -1192,8 +1180,8 @@ TEST(BackupRefPtrImpl, QuarantinedBytes) {
 TEST(BackupRefPtrImpl, ReinterpretCast) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
 
   void* ptr = allocator.root()->Alloc(16, "");
@@ -1212,6 +1200,9 @@ namespace {
 class ScopedInstallDanglingRawPtrChecks {
  public:
   ScopedInstallDanglingRawPtrChecks() {
+    enabled_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kPartitionAllocDanglingPtr, {{"mode", "crash"}}}},
+        {/* disabled_features */});
     old_detected_fn_ = partition_alloc::GetDanglingRawPtrDetectedFn();
     old_dereferenced_fn_ = partition_alloc::GetDanglingRawPtrReleasedFn();
     allocator::InstallDanglingRawPtrChecks();
@@ -1222,6 +1213,7 @@ class ScopedInstallDanglingRawPtrChecks {
   }
 
  private:
+  test::ScopedFeatureList enabled_feature_list_;
   partition_alloc::DanglingRawPtrDetectedFn* old_detected_fn_;
   partition_alloc::DanglingRawPtrReleasedFn* old_dereferenced_fn_;
 };
@@ -1231,8 +1223,8 @@ class ScopedInstallDanglingRawPtrChecks {
 TEST(BackupRefPtrImpl, RawPtrMayDangle) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
@@ -1245,8 +1237,8 @@ TEST(BackupRefPtrImpl, RawPtrMayDangle) {
 TEST(BackupRefPtrImpl, RawPtrNotDangling) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
@@ -1269,8 +1261,8 @@ TEST(BackupRefPtrImpl, RawPtrNotDangling) {
 TEST(BackupRefPtrImpl, DanglingPtrComparison) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
@@ -1306,8 +1298,8 @@ TEST(BackupRefPtrImpl, DanglingPtrComparison) {
 TEST(BackupRefPtrImpl, DanglingPtrAssignment) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
@@ -1339,8 +1331,8 @@ TEST(BackupRefPtrImpl, DanglingPtrAssignment) {
 TEST(BackupRefPtrImpl, DanglingPtrCopyContructor) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
   // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator allocator;
+  partition_alloc::PartitionAllocGlobalInit(HandleOOM);
+  partition_alloc::PartitionAllocator allocator;
   allocator.init(kOpts);
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
@@ -1369,6 +1361,26 @@ struct AsanStruct {
   void func() { ++x; }
 };
 
+#define ASAN_BRP_PROTECTED(x) "MiraclePtr Status: PROTECTED\\n.*" x
+#define ASAN_BRP_MANUAL_ANALYSIS(x) \
+  "MiraclePtr Status: MANUAL ANALYSIS REQUIRED\\n.*" x
+#define ASAN_BRP_NOT_PROTECTED(x) "MiraclePtr Status: NOT PROTECTED\\n.*" x
+
+const char* kAsanBrpProtected_Dereference =
+    ASAN_BRP_PROTECTED("dangling pointer was being dereferenced");
+const char* kAsanBrpMaybeProtected_Extraction = ASAN_BRP_MANUAL_ANALYSIS(
+    "pointer to the same region was extracted from a raw_ptr<T>");
+const char* kAsanBrpNotProtected_Instantiation = ASAN_BRP_NOT_PROTECTED(
+    "pointer to an already freed region was assigned to a raw_ptr<T>");
+const char* kAsanBrpNotProtected_EarlyAllocation = ASAN_BRP_NOT_PROTECTED(
+    "region was allocated before MiraclePtr was activated");
+const char* kAsanBrpNotProtected_NoRawPtrAccess =
+    ASAN_BRP_NOT_PROTECTED("No raw_ptr<T> access to this region was detected");
+
+#undef ASAN_BRP_PROTECTED
+#undef ASAN_BRP_MANUAL_ANALYSIS
+#undef ASAN_BRP_NOT_PROTECTED
+
 TEST(AsanBackupRefPtrImpl, Dereference) {
   if (RawPtrAsanService::GetInstance().mode() !=
       RawPtrAsanService::Mode::kEnabled) {
@@ -1391,13 +1403,13 @@ TEST(AsanBackupRefPtrImpl, Dereference) {
   delete protected_ptr.get();
 
   EXPECT_DEATH_IF_SUPPORTED((*protected_ptr).x = 1,
-                            "dangling pointer was being dereferenced");
+                            kAsanBrpProtected_Dereference);
   EXPECT_DEATH_IF_SUPPORTED((*protected_ptr).func(),
-                            "dangling pointer was being dereferenced");
+                            kAsanBrpProtected_Dereference);
   EXPECT_DEATH_IF_SUPPORTED(++(protected_ptr->x),
-                            "dangling pointer was being dereferenced");
+                            kAsanBrpProtected_Dereference);
   EXPECT_DEATH_IF_SUPPORTED(protected_ptr->func(),
-                            "dangling pointer was being dereferenced");
+                            kAsanBrpProtected_Dereference);
 }
 
 TEST(AsanBackupRefPtrImpl, Extraction) {
@@ -1423,7 +1435,7 @@ TEST(AsanBackupRefPtrImpl, Extraction) {
         AsanStruct* ptr2 = protected_ptr;
         ptr2->x = 1;
       },
-      "pointer to the same region was extracted from a raw_ptr<T>");
+      kAsanBrpMaybeProtected_Extraction);
 }
 
 TEST(AsanBackupRefPtrImpl, Instantiation) {
@@ -1446,7 +1458,7 @@ TEST(AsanBackupRefPtrImpl, Instantiation) {
 
   EXPECT_DEATH_IF_SUPPORTED(
       { [[maybe_unused]] raw_ptr<AsanStruct> protected_ptr2 = ptr; },
-      "pointer to an already freed region was assigned to a raw_ptr<T>");
+      kAsanBrpNotProtected_Instantiation);
 }
 
 TEST(AsanBackupRefPtrImpl, InstantiationInvalidPointer) {
@@ -1490,7 +1502,7 @@ TEST(AsanBackupRefPtrImpl, UserPoisoned) {
   delete ptr;  // Should crash now.
   EXPECT_DEATH_IF_SUPPORTED(
       { [[maybe_unused]] raw_ptr<AsanStruct> protected_ptr2 = ptr; },
-      "pointer to an already freed region was assigned to a raw_ptr<T>");
+      kAsanBrpNotProtected_Instantiation);
 }
 
 TEST(AsanBackupRefPtrImpl, EarlyAllocationDetection) {
@@ -1501,22 +1513,31 @@ TEST(AsanBackupRefPtrImpl, EarlyAllocationDetection) {
     return;
   }
 
-  AsanStruct* ptr1 = new AsanStruct;
+  raw_ptr<AsanStruct> unsafe_ptr = new AsanStruct;
 
   base::RawPtrAsanService::GetInstance().Configure(
       base::EnableDereferenceCheck(true), base::EnableExtractionCheck(true),
       base::EnableInstantiationCheck(true));
 
-  AsanStruct* ptr2 = new AsanStruct;
+  raw_ptr<AsanStruct> safe_ptr = new AsanStruct;
 
-  EXPECT_FALSE(RawPtrAsanService::GetInstance().IsSupportedAllocation(ptr1));
-  EXPECT_TRUE(RawPtrAsanService::GetInstance().IsSupportedAllocation(ptr2));
+  EXPECT_FALSE(
+      RawPtrAsanService::GetInstance().IsSupportedAllocation(unsafe_ptr.get()));
+  EXPECT_TRUE(
+      RawPtrAsanService::GetInstance().IsSupportedAllocation(safe_ptr.get()));
 
-  delete ptr1;
-  delete ptr2;
+  delete safe_ptr.get();
+  delete unsafe_ptr.get();
 
-  EXPECT_FALSE(RawPtrAsanService::GetInstance().IsSupportedAllocation(ptr1));
-  EXPECT_TRUE(RawPtrAsanService::GetInstance().IsSupportedAllocation(ptr2));
+  EXPECT_FALSE(
+      RawPtrAsanService::GetInstance().IsSupportedAllocation(unsafe_ptr.get()));
+  EXPECT_TRUE(
+      RawPtrAsanService::GetInstance().IsSupportedAllocation(safe_ptr.get()));
+
+  EXPECT_DEATH_IF_SUPPORTED({ unsafe_ptr->func(); },
+                            kAsanBrpNotProtected_EarlyAllocation);
+  EXPECT_DEATH_IF_SUPPORTED({ safe_ptr->func(); },
+                            kAsanBrpProtected_Dereference);
 }
 
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
@@ -1642,21 +1663,21 @@ TEST(MTECheckedPtrImpl, AdvancedPointerShiftedAppropriately) {
   // This is unwrapped, but still useful for ensuring that the
   // shift is sized in `uint64_t`s.
   auto original_addr = reinterpret_cast<uintptr_t>(ptr.get());
-  EXPECT_EQ(g_get_for_extraction_cnt, 1);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 1);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 
   ptr += 5;
   EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr.get()) - original_addr,
             5 * sizeof(uint64_t));
-  EXPECT_EQ(g_get_for_extraction_cnt, 2);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 2);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
   delete[] unwrapped_ptr;
 
   EXPECT_DEATH_IF_SUPPORTED(*ptr, "");
 
   // We assert that no visible extraction actually took place.
-  EXPECT_EQ(g_get_for_extraction_cnt, 2);
-  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_extraction_cnt, 2);
+  EXPECT_EQ(RawPtrCountingImpl::get_for_dereference_cnt, 0);
 }
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&

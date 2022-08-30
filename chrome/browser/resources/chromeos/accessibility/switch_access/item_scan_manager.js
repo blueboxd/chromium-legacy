@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {EventGenerator} from '/common/event_generator.js';
+import {RectUtil} from '/common/rect_util.js';
 import {ActionManager} from '/switch_access/action_manager.js';
 import {AutoScanManager} from '/switch_access/auto_scan_manager.js';
 import {FocusRingManager} from '/switch_access/focus_ring_manager.js';
@@ -103,7 +104,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
   /** @override */
   exitKeyboard() {
     this.ignoreFocusInKeyboard_ = false;
-    const isKeyboard = (data) => data.group instanceof KeyboardRootNode;
+    const isKeyboard = data => data.group instanceof KeyboardRootNode;
     // If we are not in the keyboard, do nothing.
     if (!(this.group_ instanceof KeyboardRootNode) &&
         !this.history_.containsDataMatchingPredicate(isKeyboard)) {
@@ -164,7 +165,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
   /** @override */
   moveBackward() {
     if (this.node_.isValidAndVisible()) {
-      this.tryMoving(this.node_.previous, (node) => node.previous, this.node_);
+      this.tryMoving(this.node_.previous, node => node.previous, this.node_);
     } else {
       this.moveToValidNode();
     }
@@ -173,7 +174,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
   /** @override */
   moveForward() {
     if (this.node_.isValidAndVisible()) {
-      this.tryMoving(this.node_.next, (node) => node.next, this.node_);
+      this.tryMoving(this.node_.next, node => node.next, this.node_);
     } else {
       this.moveToValidNode();
     }
@@ -208,7 +209,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
     // Check if the top center is visible as a proxy for occlusion. It's
     // possible that other parts of the window are occluded, but in Chrome we
     // can't drag windows off the top of the screen.
-    this.desktop_.hitTestWithReply(center.x, location.top, (hitNode) => {
+    this.desktop_.hitTestWithReply(center.x, location.top, hitNode => {
       if (AutomationUtil.isDescendantOf(hitNode, node.automationNode)) {
         this.setNode_(node);
       } else if (node.isValidAndVisible()) {
@@ -253,7 +254,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
   restart() {
     const point = Navigator.byPoint.currentPoint;
     SwitchAccess.mode = SAConstants.Mode.ITEM_SCAN;
-    this.desktop_.hitTestWithReply(point.x, point.y, (node) => {
+    this.desktop_.hitTestWithReply(point.x, point.y, node => {
       this.moveTo_(node);
     });
   }
@@ -416,7 +417,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
     new RepeatedTreeChangeHandler(
         chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
         treeChange => this.onTreeChange_(treeChange), {
-          predicate: (treeChange) =>
+          predicate: treeChange =>
               this.group_.findChild(treeChange.target) != null ||
               this.group_.isEquivalentTo(treeChange.target)
         });

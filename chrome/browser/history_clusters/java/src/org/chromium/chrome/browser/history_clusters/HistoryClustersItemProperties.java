@@ -20,18 +20,25 @@ import java.util.List;
 
 class HistoryClustersItemProperties {
     @IntDef({HistoryClustersItemProperties.ItemType.VISIT, ItemType.CLUSTER,
-            ItemType.RELATED_SEARCHES, ItemType.TOGGLE})
+            ItemType.RELATED_SEARCHES, ItemType.TOGGLE, ItemType.PRIVACY_DISCLAIMER,
+            ItemType.CLEAR_BROWSING_DATA})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         int VISIT = 1;
         int CLUSTER = 2;
         int RELATED_SEARCHES = 3;
         int TOGGLE = 4;
+        int PRIVACY_DISCLAIMER = 5;
+        int CLEAR_BROWSING_DATA = 6;
     }
 
     static final WritableObjectPropertyKey<Callback<String>> CHIP_CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<OnClickListener> CLICK_HANDLER =
+            new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<ClusterVisit> CLUSTER_VISIT =
+            new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<OnClickListener> END_BUTTON_CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<Drawable> END_BUTTON_DRAWABLE =
             new WritableObjectPropertyKey<>();
@@ -44,6 +51,7 @@ class HistoryClustersItemProperties {
     static final WritableObjectPropertyKey<CharSequence> URL = new WritableObjectPropertyKey<>();
     static final WritableIntPropertyKey VISIBILITY = new WritableIntPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS = {CHIP_CLICK_HANDLER, CLICK_HANDLER, END_BUTTON_DRAWABLE,
-            ICON_DRAWABLE, LABEL, RELATED_SEARCHES, TITLE, URL, VISIBILITY};
+    static final PropertyKey[] ALL_KEYS = {CHIP_CLICK_HANDLER, CLICK_HANDLER, CLUSTER_VISIT,
+            END_BUTTON_CLICK_HANDLER, END_BUTTON_DRAWABLE, ICON_DRAWABLE, LABEL, RELATED_SEARCHES,
+            TITLE, URL, VISIBILITY};
 }

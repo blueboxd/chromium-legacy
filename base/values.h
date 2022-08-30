@@ -11,6 +11,7 @@
 #include <array>
 #include <initializer_list>
 #include <iosfwd>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -206,13 +207,12 @@ class BASE_EXPORT GSL_OWNER Value {
   using BlobStorage = std::vector<uint8_t>;
 
   using DeprecatedListStorage = std::vector<Value>;
-  using DeprecatedDictStorage = flat_map<std::string, Value>;
   // TODO(https://crbug.com/1291666): Make this private.
   using ListStorage = DeprecatedListStorage;
 
   // Like `DictStorage`, but with std::unique_ptr in the mapped type. This is
-  // due to legacy reasons, and should be replaced with a private version of
-  // DeprecatedDictStorage once no caller relies on stability of pointers
+  // due to legacy reasons, and should be replaced with
+  // flat_map<std::string, Value> once no caller relies on stability of pointers
   // anymore.
   using LegacyDictStorage = flat_map<std::string, std::unique_ptr<Value>>;
 
@@ -302,10 +302,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // Constructor for `Value::Type::LIST`.
   explicit Value(List&& value) noexcept;
 
-  // DEPRECATED: prefer `Value(Dict&&)`.
-  explicit Value(const DeprecatedDictStorage& value);
-  explicit Value(DeprecatedDictStorage&& value);
-
   // DEPRECATED: prefer `Value(List&&)`.
   explicit Value(span<const Value> value);
   explicit Value(ListStorage&& value) noexcept;
@@ -353,6 +349,11 @@ class BASE_EXPORT GSL_OWNER Value {
   // Returns a value for both `Value::Type::DOUBLE` and `Value::Type::INT`,
   // converting the latter to a double.
   double GetDouble() const;
+  // Callers that want to transfer ownership can use std::move() in conjunction
+  // with one of the mutable variants below, e.g.:
+  //   std::string taken_string = std::move(value.GetString());
+  //   base::Value::Dict taken_dict = std::move(value.GetDict());
+  //   base::Value::List taken_list = std::move(value.GetList());
   const std::string& GetString() const;
   std::string& GetString();
   const BlobStorage& GetBlob() const;
@@ -375,6 +376,28 @@ class BASE_EXPORT GSL_OWNER Value {
     // Deleted to prevent accidental copying.
     Dict(const Dict&) = delete;
     Dict& operator=(const Dict&) = delete;
+
+    // Takes move_iterators iterators that return std::pair<std::string, Value>,
+    // and moves their values into a new Dict. Adding all entries at once
+    // results in a faster initial sort operation. Takes move iterators to avoid
+    // having to clone the input.
+    template <class IteratorType>
+    explicit Dict(std::move_iterator<IteratorType> first,
+                  std::move_iterator<IteratorType> last) {
+      // Need to move into a vector first, since `storage_` currently uses
+      // unique_ptrs.
+      std::vector<std::pair<std::string, std::unique_ptr<Value>>> values;
+      for (auto current = first; current != last; ++current) {
+        // With move iterators, no need to call Clone(), but do need to move
+        // to a temporary first, as accessing either field individually will
+        // directly from the iterator will delete the other field.
+        auto value = *current;
+        values.emplace_back(std::move(value.first),
+                            std::make_unique<Value>(std::move(value.second)));
+      }
+      storage_ =
+          flat_map<std::string, std::unique_ptr<Value>>(std::move(values));
+    }
 
     ~Dict();
 
@@ -418,7 +441,7 @@ class BASE_EXPORT GSL_OWNER Value {
     // - if both entries are dictionaries, they will be recursively merged
     // - otherwise, the already-existing entry in this dictionary will be
     //   overwritten with the entry from `dict`.
-    void Merge(const Dict& dict);
+    void Merge(Dict dict);
 
     // Finds the entry corresponding to `key` in this dictionary. Returns
     // nullptr if there is no such entry.
@@ -668,21 +691,12 @@ class BASE_EXPORT GSL_OWNER Value {
 
   // Returns the Values in a list as a view. The mutable overload allows for
   // modification of the underlying values, but does not allow changing the
-  // structure of the list. If this is desired, use `TakeListDeprecated()`,
-  // perform the operations, and return the list back to the Value via move
-  // assignment.
+  // structure of the list.
   //
   // DEPRECATED: prefer direct use `base::Value::List` where possible, or
   // `GetList()` otherwise.
   DeprecatedListView GetListDeprecated();
   DeprecatedConstListView GetListDeprecated() const;
-
-  // Transfers ownership of the underlying list to the caller. Subsequent
-  // calls to `GetListDeprecated()` will return an empty list.
-  //
-  // DEPRECATED: prefer direct use of `base::Value::List` where possible, or
-  // `std::move(value.GetList())` otherwise.
-  DeprecatedListStorage TakeListDeprecated() &&;
 
   // Appends `value` to the end of the list.
   //
@@ -702,8 +716,6 @@ class BASE_EXPORT GSL_OWNER Value {
   void Append(StringPiece16 value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(const char* value);
-  // DEPRECATED: prefer `Value::List::Append()`.
-  void Append(const char16_t* value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(std::string&& value);
 
@@ -996,13 +1008,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // instead.
   dict_iterator_proxy DictItems();
   const_dict_iterator_proxy DictItems() const;
-
-  // Transfers ownership of the underlying dict to the caller. Subsequent
-  // calls to DictItems() will return an empty dict.
-  //
-  // DEPRECATED: prefer direct use of `base::Value::Dict` where possible, or
-  // `std::move(value.GetDict())` otherwise.
-  DeprecatedDictStorage TakeDictDeprecated() &&;
 
   // DEPRECATED: prefer `Value::Dict::size()`.
   size_t DictSize() const;
@@ -1420,8 +1425,6 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
-  explicit ListValue(span<const Value> in_list);
-  explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Convenience forms of `Get()`.  Modifies `out_value` (and returns true)
   // only if the index is valid and the Value at that index can be returned

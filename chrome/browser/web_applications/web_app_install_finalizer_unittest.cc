@@ -69,8 +69,7 @@ class TestInstallManagerObserver : public WebAppInstallManagerObserver {
 
  private:
   bool web_app_manifest_updated_called_ = false;
-  base::ScopedObservation<web_app::WebAppInstallManager,
-                          web_app::WebAppInstallManagerObserver>
+  base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       install_manager_observation_{this};
 };
 
@@ -250,10 +249,9 @@ TEST_F(WebAppInstallFinalizerUnitTest, OnWebAppManifestUpdatedTriggered) {
   FinalizeInstallResult result = AwaitFinalizeInstall(*info, options);
   base::RunLoop runloop;
   finalizer().FinalizeUpdate(
-      *info,
-      base::BindLambdaForTesting(
-          [&](const web_app::AppId& app_id, webapps::InstallResultCode code,
-              web_app::OsHooksErrors os_hooks_errors) { runloop.Quit(); }));
+      *info, base::BindLambdaForTesting(
+                 [&](const AppId& app_id, webapps::InstallResultCode code,
+                     OsHooksErrors os_hooks_errors) { runloop.Quit(); }));
   runloop.Run();
   EXPECT_TRUE(install_manager_observer_->web_app_manifest_updated_called());
 }
@@ -385,10 +383,9 @@ TEST_F(WebAppInstallFinalizerUnitTest, InstallOsHooksDisabledForDefaultApps) {
 
   base::RunLoop runloop;
   finalizer().FinalizeUpdate(
-      *info,
-      base::BindLambdaForTesting([&](const web_app::AppId& app_id,
-                                     webapps::InstallResultCode code,
-                                     web_app::OsHooksErrors os_hooks_errors) {
+      *info, base::BindLambdaForTesting([&](const AppId& app_id,
+                                            webapps::InstallResultCode code,
+                                            OsHooksErrors os_hooks_errors) {
         EXPECT_EQ(webapps::InstallResultCode::kSuccessAlreadyInstalled, code);
         EXPECT_TRUE(os_hooks_errors.none());
         runloop.Quit();
@@ -418,13 +415,13 @@ TEST_F(WebAppInstallFinalizerUnitTest, InstallUrlSetInWebAppDB) {
             GenerateAppId(/*manifest_id=*/absl::nullopt, info->start_url));
 
   const WebApp* installed_app = registrar().GetAppById(result.installed_app_id);
-  EXPECT_EQ(1u, installed_app->management_to_external_config_map()
-                    .at(WebAppManagement::Type::kPolicy)
-                    .install_urls.size());
+  const WebApp::ExternalConfigMap& config_map =
+      installed_app->management_to_external_config_map();
+  auto it = config_map.find(WebAppManagement::kPolicy);
+  EXPECT_NE(it, config_map.end());
+  EXPECT_EQ(1u, it->second.install_urls.size());
   EXPECT_EQ(GURL("https://foo.example/installer"),
-            *installed_app->management_to_external_config_map()
-                 .at(WebAppManagement::Type::kPolicy)
-                 .install_urls.begin());
+            *it->second.install_urls.begin());
 }
 
 }  // namespace web_app

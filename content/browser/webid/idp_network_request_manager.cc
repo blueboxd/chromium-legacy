@@ -40,12 +40,13 @@ using LoginState = IdentityRequestAccount::LoginState;
 // referenced here.
 
 // Path to find the manifest list on the eTLD+1 host.
-constexpr char kManifestListPath[] = "/.well-known/fedcm.json";
+constexpr char kManifestListPath[] = "/.well-known/web-identity";
 
 // manifest list JSON keys
 constexpr char kProviderUrlListKey[] = "provider_urls";
 
 // fedcm.json configuration keys.
+// TODO(crbug.com/1339373): Rename id_token_endpoint to another name.
 constexpr char kTokenEndpointKey[] = "id_token_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
@@ -76,11 +77,7 @@ constexpr char kAccountApprovedClientsKey[] = "approved_clients";
 constexpr char kIdpBrandingIconUrl[] = "url";
 constexpr char kIdpBrandingIconSize[] = "size";
 
-constexpr char kIdTokenKey[] = "id_token";
-
-// Token request body keys
-constexpr char kTokenAccountKey[] = "account_id";
-constexpr char kTokenRequestKey[] = "request";
+constexpr char kTokenKey[] = "token";
 
 // Revoke request body keys.
 constexpr char kClientIdKey[] = "client_id";
@@ -94,10 +91,6 @@ constexpr char kResponseBodyContentType[] = "application/json";
 // 1 MiB is an arbitrary upper bound that should account for any reasonable
 // response size that is a part of this protocol.
 constexpr int maxResponseSizeInKiB = 1024;
-
-// safe_zone_diameter/icon_size as defined in
-// https://www.w3.org/TR/appmanifest/#icon-masks
-constexpr float kMaskableWebIconSafeZoneRatio = 0.8f;
 
 net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
   return net::DefineNetworkTrafficAnnotation("fedcm", R"(
@@ -299,19 +292,10 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
     }
 
     if (brand_icon_minimum_size && brand_icon_ideal_size) {
-      // As only a single bitmap is selected, select a bitmap which works with
-      // a high density display (if the OS supports high density displays).
-      float max_supported_scale = ui::GetScaleForResourceScaleFactor(
-          ui::GetSupportedResourceScaleFactors().back());
-      int minimum_icon_size_px = brand_icon_minimum_size.value() *
-                                 max_supported_scale /
-                                 kMaskableWebIconSafeZoneRatio;
-      int ideal_icon_size_px = brand_icon_ideal_size.value() *
-                               max_supported_scale /
-                               kMaskableWebIconSafeZoneRatio;
       idp_metadata.brand_icon_url =
           blink::ManifestIconSelector::FindBestMatchingSquareIcon(
-              icons, ideal_icon_size_px, minimum_icon_size_px,
+              icons, brand_icon_ideal_size.value(),
+              brand_icon_minimum_size.value(),
               blink::mojom::ManifestImageResource_Purpose::MASKABLE);
     }
   }
@@ -347,6 +331,65 @@ FetchStatus GetParsingError(
     return FetchStatus::kInvalidResponseError;
 
   return FetchStatus::kSuccess;
+}
+
+void OnManifestListParsed(
+    IdpNetworkRequestManager::FetchManifestListCallback callback,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (callback.IsCancelled())
+    return;
+
+  std::set<GURL> urls;
+
+  if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
+    std::move(callback).Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  const base::Value::Dict* dict = result.value->GetIfDict();
+  if (!dict) {
+    std::move(callback).Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  const base::Value::List* list = dict->FindList(kProviderUrlListKey);
+  if (!list) {
+    std::move(callback).Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  for (const auto& value : *list) {
+    const std::string* url = value.GetIfString();
+    if (!url) {
+      std::move(callback).Run(FetchStatus::kInvalidResponseError,
+                              std::set<GURL>());
+      return;
+    }
+    urls.insert(GURL(*url));
+  }
+
+  std::move(callback).Run(FetchStatus::kSuccess, urls);
+}
+
+void OnManifestListLoaded(
+    std::unique_ptr<network::SimpleURLLoader> url_loader,
+    IdpNetworkRequestManager::FetchManifestListCallback callback,
+    std::unique_ptr<std::string> response_body) {
+  if (callback.IsCancelled())
+    return;
+
+  FetchStatus response_error =
+      GetResponseError(url_loader.get(), response_body.get());
+  url_loader.reset();
+
+  if (response_error != FetchStatus::kSuccess) {
+    std::move(callback).Run(response_error, std::set<GURL>());
+    return;
+  }
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce(&OnManifestListParsed, std::move(callback)));
 }
 
 }  // namespace
@@ -401,22 +444,6 @@ IdpNetworkRequestManager::IdpNetworkRequestManager(
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
-GURL IdpNetworkRequestManager::FixupProviderUrl(const GURL& url) {
-  // We accept both "https://idp.example/foo/" and "https://idp.example/foo" as
-  // valid provider url to locate the manifest. Historically, URLs with a
-  // trailing slash indicate a directory while those without a trailing slash
-  // denote a file. However, to give developers more flexibility, we append a
-  // trailing slash if one is not present.
-  GURL target_url = url;
-  if (target_url.path().empty() || target_url.path().back() != '/') {
-    std::string new_path = target_url.path() + '/';
-    GURL::Replacements replacements;
-    replacements.SetPathStr(new_path);
-    target_url = target_url.ReplaceComponents(replacements);
-  }
-  return target_url;
-}
-
 // static
 absl::optional<GURL> IdpNetworkRequestManager::ComputeManifestListUrl(
     const GURL& provider) {
@@ -439,26 +466,23 @@ absl::optional<GURL> IdpNetworkRequestManager::ComputeManifestListUrl(
 
 void IdpNetworkRequestManager::FetchManifestList(
     FetchManifestListCallback callback) {
-  DCHECK(!manifest_list_url_loader_);
-  DCHECK(!manifest_list_callback_);
-
-  manifest_list_callback_ = std::move(callback);
-
   absl::optional<GURL> manifest_list_url =
       IdpNetworkRequestManager::ComputeManifestListUrl(provider_);
 
   if (!manifest_list_url) {
-    OnManifestListLoaded(nullptr);
+    OnManifestListLoaded(nullptr, std::move(callback), nullptr);
     return;
   }
 
-  manifest_list_url_loader_ = CreateUncredentialedUrlLoader(
-      *manifest_list_url, /* send_referrer= */ false,
-      /* follow_redirects= */ true);
-  manifest_list_url_loader_->DownloadToString(
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      CreateUncredentialedUrlLoader(*manifest_list_url,
+                                    /* send_referrer= */ false,
+                                    /* follow_redirects= */ true);
+  network::SimpleURLLoader* url_loader_ptr = url_loader.get();
+  url_loader_ptr->DownloadToString(
       loader_factory_.get(),
-      base::BindOnce(&IdpNetworkRequestManager::OnManifestListLoaded,
-                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&OnManifestListLoaded, std::move(url_loader),
+                     std::move(callback)),
       maxResponseSizeInKiB * 1024);
 }
 
@@ -471,9 +495,8 @@ void IdpNetworkRequestManager::FetchManifest(
 
   idp_manifest_callback_ = std::move(callback);
 
-  GURL target_url = FixupProviderUrl(provider_);
-
-  target_url = target_url.Resolve(IdpNetworkRequestManager::kManifestFilePath);
+  GURL target_url =
+      provider_.Resolve(IdpNetworkRequestManager::kManifestFilePath);
 
   url_loader_ =
       CreateUncredentialedUrlLoader(target_url, /* send_referrer= */ false);
@@ -501,29 +524,6 @@ void IdpNetworkRequestManager::SendAccountsRequest(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      client_id),
       maxResponseSizeInKiB * 1024);
-}
-
-// TODO(majidvp): Should accept request in base::Value form instead of string.
-std::string CreateTokenRequestBody(const std::string& account,
-                                   const std::string& request) {
-  // Given account and id_request creates the following JSON
-  // ```json
-  // {
-  //   "account_id": "1234",
-  //   "request": "nonce=abc987987cba&client_id=89898"
-  //   }
-  // }```
-  base::Value request_data(base::Value::Type::DICTIONARY);
-  request_data.SetStringKey(kTokenAccountKey, account);
-  if (!request.empty())
-    request_data.SetStringKey(kTokenRequestKey, request);
-
-  std::string request_body;
-  if (!base::JSONWriter::Write(request_data, &request_body)) {
-    LOG(ERROR) << "Not able to serialize token request body.";
-    return std::string();
-  }
-  return request_body;
 }
 
 void IdpNetworkRequestManager::SendTokenRequest(const GURL& token_url,
@@ -632,23 +632,6 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
       maxResponseSizeInKiB * 1024);
 }
 
-void IdpNetworkRequestManager::OnManifestListLoaded(
-    std::unique_ptr<std::string> response_body) {
-  FetchStatus response_error =
-      GetResponseError(manifest_list_url_loader_.get(), response_body.get());
-  manifest_list_url_loader_.reset();
-
-  if (response_error != FetchStatus::kSuccess) {
-    std::move(manifest_list_callback_).Run(response_error, std::set<GURL>());
-    return;
-  }
-
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      *response_body,
-      base::BindOnce(&IdpNetworkRequestManager::OnManifestListParsed,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
 void IdpNetworkRequestManager::OnManifestLoaded(
     absl::optional<int> idp_brand_icon_ideal_size,
     absl::optional<int> idp_brand_icon_minimum_size,
@@ -668,43 +651,6 @@ void IdpNetworkRequestManager::OnManifestLoaded(
       base::BindOnce(&IdpNetworkRequestManager::OnManifestParsed,
                      weak_ptr_factory_.GetWeakPtr(), idp_brand_icon_ideal_size,
                      idp_brand_icon_minimum_size));
-}
-
-void IdpNetworkRequestManager::OnManifestListParsed(
-    data_decoder::DataDecoder::ValueOrError result) {
-  std::set<GURL> urls;
-
-  if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
-    std::move(manifest_list_callback_)
-        .Run(FetchStatus::kInvalidResponseError, urls);
-    return;
-  }
-
-  const base::Value::Dict* dict = result.value->GetIfDict();
-  if (!dict) {
-    std::move(manifest_list_callback_)
-        .Run(FetchStatus::kInvalidResponseError, urls);
-    return;
-  }
-
-  const base::Value::List* list = dict->FindList(kProviderUrlListKey);
-  if (!list) {
-    std::move(manifest_list_callback_)
-        .Run(FetchStatus::kInvalidResponseError, urls);
-    return;
-  }
-
-  for (const auto& value : *list) {
-    const std::string* url = value.GetIfString();
-    if (!url) {
-      std::move(manifest_list_callback_)
-          .Run(FetchStatus::kInvalidResponseError, std::set<GURL>());
-      return;
-    }
-    urls.insert(FixupProviderUrl(GURL(*url)));
-  }
-
-  std::move(manifest_list_callback_).Run(FetchStatus::kSuccess, urls);
 }
 
 void IdpNetworkRequestManager::OnManifestParsed(
@@ -822,15 +768,15 @@ void IdpNetworkRequestManager::OnTokenRequestParsed(
   }
 
   auto& response = *result.value;
-  const base::Value* id_token = response.FindKey(kIdTokenKey);
-  bool token_present = id_token && id_token->is_string();
+  const base::Value* token = response.FindKey(kTokenKey);
+  bool token_present = token && token->is_string();
 
   if (!token_present) {
     Fail();
     return;
   }
   std::move(token_request_callback_)
-      .Run(FetchStatus::kSuccess, id_token->GetString());
+      .Run(FetchStatus::kSuccess, token->GetString());
 }
 
 void IdpNetworkRequestManager::OnRevokeResponse(

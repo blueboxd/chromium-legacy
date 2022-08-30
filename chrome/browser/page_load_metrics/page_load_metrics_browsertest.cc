@@ -1569,8 +1569,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
   histogram_tester_->ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
                                       1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1595,8 +1593,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE, 1);
   histogram_tester_->ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
                                       0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
@@ -2622,13 +2618,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ExpectFirstPaintMetricsTotalCount(1);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_InitialForegroundTabChanged DISABLED_InitialForegroundTabChanged
-#else
-#define MAYBE_InitialForegroundTabChanged InitialForegroundTabChanged
-#endif
+// TODO(crbug.com/1336621): Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
-                       MAYBE_InitialForegroundTabChanged) {
+                       DISABLED_InitialForegroundTabChanged) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestURL()));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
@@ -2642,7 +2634,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ASSERT_TRUE(tab_strip);
   ASSERT_EQ(2, tab_strip->count());
   ASSERT_EQ(0, tab_strip->active_index());
-  tab_strip->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  tab_strip->ActivateTabAt(
+      1, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
 
   session_restore_paint_waiter.WaitForForegroundTabs(1);
 
@@ -2723,7 +2717,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
 }
 
 // TODO(crbug.com/1242284): Flaky on Linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1338490): Flaky on lacros.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RestoreForeignSession DISABLED_RestoreForeignSession
 #else
 #define MAYBE_RestoreForeignSession RestoreForeignSession
@@ -2986,6 +2981,35 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   // and the second pageload ("/title1.html") initiated by the link click.
   VerifyNavigationMetrics(
       {url, embedded_test_server()->GetURL("/title1.html")});
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SoftNavigation) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter("waiter");
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  GURL url =
+      embedded_test_server()->GetURL("/page_load_metrics/soft_navigation.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  waiter->Wait();
+
+  waiter->AddPageExpectation(TimingField::kSoftNavigationCountUpdated);
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
+      blink::WebMouseEvent::Button::kLeft, gfx::Point(100, 100));
+
+  waiter->Wait();
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
+
+  VerifyNavigationMetrics({url});
+  int64_t value = GetUKMPageLoadMetric(PageLoad::kSoftNavigationCountName);
+  ASSERT_EQ(value, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
@@ -3480,7 +3504,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPStopsUponInput) {
   ASSERT_EQ(all_frames_value, main_frame_value);
 }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)  // crbug.com/1277391
+// Test is flaky. https://crbug.com/1260953
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_PageLCPAnimatedImage DISABLED_PageLCPAnimatedImage
 #else
 #define MAYBE_PageLCPAnimatedImage PageLCPAnimatedImage

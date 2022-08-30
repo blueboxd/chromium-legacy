@@ -35,6 +35,9 @@ const base::Feature kJourneysLabels{"JourneysLabel",
 const base::Feature kOmniboxAction{"JourneysOmniboxAction",
                                    enabled_by_default_desktop_only};
 
+const base::Feature kOmniboxHistoryClusterProvider{
+    "JourneysOmniboxHistoryClusterProvider", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNonUserVisibleDebug{"JourneysNonUserVisibleDebug",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -52,5 +55,21 @@ const base::Feature kHistoryClustersUseContinueOnShutdown{
     "HistoryClustersUseContinueOnShutdown", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace internal
+
+const base::Feature kJourneysSurveyForHistoryEntrypoint{
+    "JourneysSurveyForHistoryEntrypoint", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<base::TimeDelta>
+    kJourneysSurveyForHistoryEntrypointDelay{
+        &kJourneysSurveyForHistoryEntrypoint, "survey-delay-duration",
+        base::Seconds(8)};
+
+const base::Feature kJourneysSurveyForOmniboxEntrypoint{
+    "JourneysSurveyForOmniboxEntrypoint", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<base::TimeDelta>
+    kJourneysSurveyForOmniboxEntrypointDelay{
+        &kJourneysSurveyForOmniboxEntrypoint, "survey-delay-duration",
+        base::Seconds(8)};
 
 }  // namespace history_clusters

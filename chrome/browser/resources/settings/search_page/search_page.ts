@@ -74,9 +74,9 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   }
 
   prefs: Object;
-  searchEnginesPageTitle_: String;
+  private searchEnginesPageTitle_: String;
   private isActiveSearchEnginesFlagEnabled_: boolean;
-  private searchEngines_: Array<SearchEngine>;
+  private searchEngines_: SearchEngine[];
   private searchEnginesFilter_: string;
   private focusConfig_: Map<string, string>|null;
   private browserProxy_: SearchEnginesBrowserProxy =

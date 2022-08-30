@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/install_from_sync_command.h"
+#include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -106,11 +107,17 @@ void WebAppInstallManager::SetSubsystems(
     WebAppRegistrar* registrar,
     OsIntegrationManager* os_integration_manager,
     WebAppCommandManager* command_manager,
-    WebAppInstallFinalizer* finalizer) {
+    WebAppInstallFinalizer* finalizer,
+    WebAppIconManager* icon_manager,
+    WebAppSyncBridge* sync_bridge,
+    WebAppTranslationManager* translation_manager) {
   registrar_ = registrar;
   os_integration_manager_ = os_integration_manager;
   command_manager_ = command_manager;
   finalizer_ = finalizer;
+  icon_manager_ = icon_manager;
+  sync_bridge_ = sync_bridge;
+  translation_manager_ = translation_manager;
 }
 
 void WebAppInstallManager::LoadWebAppAndCheckManifest(
@@ -220,15 +227,15 @@ void WebAppInstallManager::UninstallFromSync(
   if (!started_)
     return;
 
-  finalizer_->UninstallFromSync(
-      std::move(web_apps),
-      base::BindRepeating(
-          [](RepeatingUninstallCallback callback, const web_app::AppId& app_id,
-             webapps::UninstallResultCode code) {
-            callback.Run(app_id,
-                         code == webapps::UninstallResultCode::kSuccess);
-          },
-          std::move(callback)));
+  for (auto& app_id : web_apps) {
+    command_manager_->ScheduleCommand(std::make_unique<WebAppUninstallCommand>(
+        app_id,
+        url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
+        profile_, os_integration_manager_, sync_bridge_, icon_manager_,
+        registrar_, this, finalizer_, translation_manager_,
+        webapps::WebappUninstallSource::kSync,
+        base::BindOnce(callback, app_id)));
+  }
 }
 
 void WebAppInstallManager::RetryIncompleteUninstalls(
@@ -407,7 +414,7 @@ void WebAppInstallManager::MaybeWriteErrorLog() {
     return;
 
   WriteErrorLog(GetWebAppsRootDirectory(profile_), kWebAppInstallManagerName,
-                base::Value(*error_log_),
+                base::Value(error_log_->Clone()),
                 base::BindOnce(&WebAppInstallManager::OnWriteErrorLog,
                                weak_ptr_factory_.GetWeakPtr()));
 
@@ -427,19 +434,20 @@ void WebAppInstallManager::OnReadErrorLog(Result result,
     return;
 
   ErrorLog early_error_log = std::move(*error_log_);
-  *error_log_ = std::move(error_log).TakeListDeprecated();
+  *error_log_ = std::move(error_log.GetList());
 
   // Appends the `early_error_log` at the end.
-  error_log_->insert(error_log_->end(),
-                     std::make_move_iterator(early_error_log.begin()),
-                     std::make_move_iterator(early_error_log.end()));
+  error_log_->reserve(error_log_->size() + early_error_log.size());
+  for (auto& error : early_error_log) {
+    error_log_->Append(std::move(error));
+  }
 }
 
 void WebAppInstallManager::LogErrorObject(base::Value object) {
   if (!error_log_)
     return;
 
-  error_log_->push_back(std::move(object));
+  error_log_->Append(std::move(object));
   error_log_updated_ = true;
   MaybeWriteErrorLog();
 }

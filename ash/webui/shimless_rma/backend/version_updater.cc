@@ -4,10 +4,10 @@
 
 #include "ash/webui/shimless_rma/backend/version_updater.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine/update_engine.pb.h"
-#include "chromeos/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -51,11 +51,19 @@ bool IsUpdateAllowed() {
 }  // namespace
 
 VersionUpdater::VersionUpdater() {
-  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
+  if (!features::IsShimlessRMAOsUpdateEnabled()) {
+    return;
+  }
+
+  UpdateEngineClient::Get()->AddObserver(this);
 }
 
 VersionUpdater::~VersionUpdater() {
-  DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+  if (!features::IsShimlessRMAOsUpdateEnabled()) {
+    return;
+  }
+
+  UpdateEngineClient::Get()->RemoveObserver(this);
 }
 
 void VersionUpdater::SetOsUpdateStatusCallback(
@@ -119,11 +127,8 @@ void VersionUpdater::CheckOsUpdateAvailable() {
   check_update_available_ = CHECKING;
   // RequestUpdateCheckWithoutApplying() will check if an update is available
   // without installing it.
-  DBusThreadManager::Get()
-      ->GetUpdateEngineClient()
-      ->RequestUpdateCheckWithoutApplying(
-          base::BindOnce(&VersionUpdater::OnRequestUpdateCheck,
-                         weak_ptr_factory_.GetWeakPtr()));
+  UpdateEngineClient::Get()->RequestUpdateCheckWithoutApplying(base::BindOnce(
+      &VersionUpdater::OnRequestUpdateCheck, weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool VersionUpdater::UpdateOs() {
@@ -138,17 +143,14 @@ bool VersionUpdater::UpdateOs() {
   // checked after using RequestUpdateCheckWithoutApplying.
 
   // RequestUpdateCheck will check if an update is available and install it.
-  DBusThreadManager::Get()->GetUpdateEngineClient()->RequestUpdateCheck(
-      base::BindOnce(&VersionUpdater::OnRequestUpdateCheck,
-                     weak_ptr_factory_.GetWeakPtr()));
+  UpdateEngineClient::Get()->RequestUpdateCheck(base::BindOnce(
+      &VersionUpdater::OnRequestUpdateCheck, weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
 bool VersionUpdater::IsUpdateEngineIdle() {
-  return DBusThreadManager::Get()
-             ->GetUpdateEngineClient()
-             ->GetLastStatus()
-             .current_operation() == update_engine::Operation::IDLE;
+  return UpdateEngineClient::Get()->GetLastStatus().current_operation() ==
+         update_engine::Operation::IDLE;
 }
 
 void VersionUpdater::UpdateStatusChanged(
@@ -156,7 +158,7 @@ void VersionUpdater::UpdateStatusChanged(
   if (status.current_operation() == update_engine::UPDATED_NEED_REBOOT) {
     // During RMA there are no other critical processes running so we can
     // automatically reboot.
-    DBusThreadManager::Get()->GetUpdateEngineClient()->RebootAfterUpdate();
+    UpdateEngineClient::Get()->RebootAfterUpdate();
   }
   switch (status.current_operation()) {
     // If IDLE is received when there is a callback it means no update is
@@ -206,7 +208,7 @@ void VersionUpdater::UpdateStatusChanged(
 
 void VersionUpdater::OnRequestUpdateCheck(
     UpdateEngineClient::UpdateCheckResult result) {
-  if (result != chromeos::UpdateEngineClient::UPDATE_RESULT_SUCCESS) {
+  if (result != UpdateEngineClient::UPDATE_RESULT_SUCCESS) {
     LOG(ERROR) << "OS update request failed.";
     ReportUpdateFailure(status_callback_, update_engine::REPORTING_ERROR_EVENT,
                         update_engine::ErrorCode::kDownloadTransferError);

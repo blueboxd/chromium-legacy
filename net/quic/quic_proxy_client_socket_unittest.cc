@@ -68,8 +68,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
-namespace net {
-namespace test {
+namespace net::test {
 
 namespace {
 
@@ -189,7 +188,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         destination_endpoint_(url::kHttpsScheme, kOriginHost, kOriginPort),
         http_auth_cache_(
             false /* key_server_entries_by_network_isolation_key */),
-        host_resolver_(new MockCachingHostResolver()),
+        host_resolver_(std::make_unique<MockCachingHostResolver>()),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()) {
     FLAGS_quic_enable_http3_grease_randomness = false;
     IPAddress ip(192, 0, 2, 33);
@@ -211,10 +210,10 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   }
 
   void Initialize() {
-    std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
-        mock_quic_data_.InitializeAndGetSequencedSocketData(), NetLog::Get()));
+    auto socket = std::make_unique<MockUDPClientSocket>(
+        mock_quic_data_.InitializeAndGetSequencedSocketData(), NetLog::Get());
     socket->Connect(peer_addr_);
-    runner_ = new TestTaskRunner(&clock_);
+    runner_ = base::MakeRefCounted<TestTaskRunner>(&clock_);
     send_algorithm_ = new quic::test::MockSendAlgorithm();
     EXPECT_CALL(*send_algorithm_, InRecovery()).WillRepeatedly(Return(false));
     EXPECT_CALL(*send_algorithm_, InSlowStart()).WillRepeatedly(Return(false));
@@ -355,7 +354,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
         largest_received, smallest_received,
-        /*include_stop_sending=*/false);
+        /*include_stop_sending_if_v99=*/false);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstPacket(
@@ -2006,7 +2005,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
   DeleteSockCallback(const DeleteSockCallback&) = delete;
   DeleteSockCallback& operator=(const DeleteSockCallback&) = delete;
 
-  ~DeleteSockCallback() override {}
+  ~DeleteSockCallback() override = default;
 
   CompletionOnceCallback callback() {
     return base::BindOnce(&DeleteSockCallback::OnComplete,
@@ -2089,5 +2088,4 @@ INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
                          ::testing::ValuesIn(GetTestParams()),
                          ::testing::PrintToStringParamName());
 
-}  // namespace test
-}  // namespace net
+}  // namespace net::test

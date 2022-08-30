@@ -45,6 +45,7 @@
 <translation id="3344973607274501920">‏تعذّر على متصفِّح Chromium التحقُّق من كلمات المرور. يُرجى التحقُّق من اتصال الإنترنت.</translation>
 <translation id="3472200483164753384">‏غير متاح على Chromium Canary</translation>
 <translation id="3567399274263440288">‏للاستفادة إلى أقصى حدّ من Chromium، سجِّل الدخول إلى Chromium باستخدام حسابك على Google.</translation>
+<translation id="3619462831205197427">‏يُرجى تسجيل الدخول إلى هذا الموقع الإلكتروني وحسابك على Google وChromium.</translation>
 <translation id="3639997914391704523">‏يجب تسجيل الدخول إلى حسابك على Google ليتمكّن Chromium من التحقُّق من كلمات المرور.</translation>
 <translation id="3650632991272923014">‏كان <ph name="USER_EMAIL1" /> يستخدم Chromium وتركَ إشارات مرجعية وكلمات مرور وغيرها من الإعدادات مُسجَّلة على هذا الجهاز.</translation>
 <translation id="3805899903892079518">‏لا تتوفر لدى Chromium إمكانية الدخول إلى الصور أو الفيديوهات. تستطيع تفعيل الدخول في إعدادات نظام التشغيل iOS &gt; الخصوصية &gt; الصور.</translation>
@@ -77,7 +78,6 @@
 1. افتح Settings (الإعدادات).
 2. انقر على Default Browser App (تطبيق المتصفِّح التلقائي).
 3. اختَر Chromium.</translation>
-<translation id="6155422572367400359">‏يُرجى تسجيل الدخول إلى هذا الموقع الإلكتروني وحسابك على Google وChromium. يمكنك تفعيل المزامنة لاحقًا.</translation>
 <translation id="6183442264225539303">‏سجِّل الدخول إلى هذا الموقع الإلكتروني وإلى Chromium. يمكنك تفعيل المزامنة لاحقًا.</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>
 <translation id="632825460376924298">‏السماح بتسجيل الدخول إلى Chromium</translation>

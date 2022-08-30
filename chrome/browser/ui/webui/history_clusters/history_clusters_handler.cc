@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
@@ -23,6 +24,8 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -35,10 +38,15 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "ui/base/mojom/window_open_disposition.mojom.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
@@ -46,6 +54,66 @@
 namespace history_clusters {
 
 namespace {
+
+class HistoryClustersSidePanelContextMenu
+    : public ui::SimpleMenuModel,
+      public ui::SimpleMenuModel::Delegate {
+ public:
+  HistoryClustersSidePanelContextMenu(Browser* browser, GURL url)
+      : ui::SimpleMenuModel(this), browser_(browser), url_(url) {
+    AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                        IDS_HISTORY_CLUSTERS_OPEN_IN_NEW_TAB);
+    AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                        IDS_HISTORY_CLUSTERS_OPEN_IN_NEW_WINDOW);
+    AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+                        IDS_HISTORY_CLUSTERS_OPEN_INCOGNITO);
+    AddSeparator(ui::NORMAL_SEPARATOR);
+
+    AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION,
+                        IDS_HISTORY_CLUSTERS_COPY_LINK);
+  }
+  ~HistoryClustersSidePanelContextMenu() override = default;
+
+  void ExecuteCommand(int command_id, int event_flags) override {
+    switch (command_id) {
+      case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
+        content::OpenURLParams params(url_, content::Referrer(),
+                                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+        browser_->OpenURL(params);
+        break;
+      }
+
+      case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW: {
+        content::OpenURLParams params(url_, content::Referrer(),
+                                      WindowOpenDisposition::NEW_WINDOW,
+                                      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+        browser_->OpenURL(params);
+        break;
+      }
+
+      case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD: {
+        content::OpenURLParams params(url_, content::Referrer(),
+                                      WindowOpenDisposition::OFF_THE_RECORD,
+                                      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+        browser_->OpenURL(params);
+        break;
+      }
+      case IDC_CONTENT_CONTEXT_COPYLINKLOCATION: {
+        ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+        scw.WriteText(base::UTF8ToUTF16(url_.spec()));
+        break;
+      }
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  const raw_ptr<Browser> browser_;
+  GURL url_;
+};
 
 // Creates a `mojom::VisitPtr` from a `history_clusters::Visit`.
 mojom::URLVisitPtr VisitToMojom(Profile* profile,
@@ -220,6 +288,27 @@ void HistoryClustersHandler::SetSidePanelUIEmbedder(
   history_clusters_side_panel_embedder_ = side_panel_embedder;
 }
 
+void HistoryClustersHandler::OpenHistoryCluster(
+    const GURL& url,
+    ui::mojom::ClickModifiersPtr click_modifiers) {
+  Browser* browser = chrome::FindLastActive();
+  if (!browser)
+    return;
+
+  // Used to determine if default behavior should be open in current tab or new
+  // tab since it differs for side panel.
+  const bool in_side_panel = history_clusters_side_panel_embedder_ != nullptr;
+
+  WindowOpenDisposition open_location = ui::DispositionFromClick(
+      /*middle_button=*/!in_side_panel, click_modifiers->alt_key,
+      click_modifiers->ctrl_key, click_modifiers->meta_key,
+      click_modifiers->shift_key);
+  content::OpenURLParams params(url, content::Referrer(), open_location,
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                /*is_renderer_initiated=*/false);
+  browser->OpenURL(params);
+}
+
 void HistoryClustersHandler::SetPage(
     mojo::PendingRemote<mojom::Page> pending_page) {
   page_.Bind(std::move(pending_page));
@@ -379,6 +468,49 @@ Profile* HistoryClustersHandler::GetProfile() {
 void HistoryClustersHandler::OnClustersQueryResult(
     mojom::QueryResultPtr query_result) {
   page_->OnClustersQueryResult(std::move(query_result));
+
+  // The user loading their first set of clusters should start the timer for
+  // launching the Journeys survey.
+  LaunchJourneysSurvey();
+}
+
+void HistoryClustersHandler::LaunchJourneysSurvey() {
+  // All the below is to attempt launch a survey, after loading the first set of
+  // clusters.
+  if (survey_launch_attempted_) {
+    return;
+  }
+  survey_launch_attempted_ = true;
+
+  HatsService* hats_service = HatsServiceFactory::GetForProfile(profile_, true);
+  if (!hats_service) {
+    return;
+  }
+
+  auto* logger =
+      history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+          web_contents_->GetPrimaryPage());
+  auto initial_state = logger->initial_state();
+  if (!initial_state) {
+    return;
+  }
+
+  if (*initial_state ==
+          history_clusters::HistoryClustersInitialState::kSameDocument &&
+      base::FeatureList::IsEnabled(kJourneysSurveyForHistoryEntrypoint)) {
+    // Same document navigation basically means clicking over from History.
+    hats_service->LaunchDelayedSurveyForWebContents(
+        kHatsSurveyTriggerJourneysHistoryEntrypoint, web_contents_,
+        kJourneysSurveyForHistoryEntrypointDelay.Get().InMilliseconds());
+  } else if (*initial_state == history_clusters::HistoryClustersInitialState::
+                                   kIndirectNavigation &&
+             base::FeatureList::IsEnabled(
+                 kJourneysSurveyForOmniboxEntrypoint)) {
+    // Indirect navigation basically means from the omnibox.
+    hats_service->LaunchDelayedSurveyForWebContents(
+        kHatsSurveyTriggerJourneysOmniboxEntrypoint, web_contents_,
+        kJourneysSurveyForOmniboxEntrypointDelay.Get().InMilliseconds());
+  }
 }
 
 void HistoryClustersHandler::RecordVisitAction(mojom::VisitAction visit_action,
@@ -412,6 +544,16 @@ void HistoryClustersHandler::RecordToggledVisibility(bool visible) {
   HistoryClustersMetricsLogger::GetOrCreateForPage(
       web_contents_->GetPrimaryPage())
       ->RecordToggledVisibility(visible);
+}
+
+void HistoryClustersHandler::ShowContextMenuForURL(const GURL& url,
+                                                   const gfx::Point& point) {
+  Browser* browser = chrome::FindLastActive();
+  if (history_clusters_side_panel_embedder_) {
+    history_clusters_side_panel_embedder_->ShowContextMenu(
+        point,
+        std::make_unique<HistoryClustersSidePanelContextMenu>(browser, url));
+  }
 }
 
 }  // namespace history_clusters

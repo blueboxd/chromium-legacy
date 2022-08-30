@@ -12,15 +12,24 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/remote_probe_service_strategy.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/telemetry_api_converters.h"
 #include "chrome/common/chromeos/extensions/api/telemetry.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace chromeos {
 
+// TelemetryApiFunctionBase ----------------------------------------------------
+
 TelemetryApiFunctionBase::TelemetryApiFunctionBase()
-    : probe_service_(remote_probe_service_.BindNewPipeAndPassReceiver()) {}
+    : remote_probe_service_strategy_(RemoteProbeServiceStrategy::Create()) {}
+
 TelemetryApiFunctionBase::~TelemetryApiFunctionBase() = default;
+
+mojo::Remote<ash::health::mojom::ProbeService>&
+TelemetryApiFunctionBase::GetRemoteService() {
+  return remote_probe_service_strategy_->GetRemoteService();
+}
 
 // OsTelemetryGetBatteryInfoFunction -------------------------------------------
 
@@ -32,7 +41,7 @@ OsTelemetryGetBatteryInfoFunction::~OsTelemetryGetBatteryInfoFunction() =
 void OsTelemetryGetBatteryInfoFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetBatteryInfoFunction::OnResult, this);
 
-  remote_probe_service_->ProbeTelemetryInfo(
+  GetRemoteService()->ProbeTelemetryInfo(
       {ash::health::mojom::ProbeCategoryEnum::kBattery}, std::move(cb));
 }
 
@@ -73,7 +82,7 @@ OsTelemetryGetCpuInfoFunction::~OsTelemetryGetCpuInfoFunction() = default;
 void OsTelemetryGetCpuInfoFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetCpuInfoFunction::OnResult, this);
 
-  remote_probe_service_->ProbeTelemetryInfo(
+  GetRemoteService()->ProbeTelemetryInfo(
       {ash::health::mojom::ProbeCategoryEnum::kCpu}, std::move(cb));
 }
 
@@ -107,7 +116,7 @@ OsTelemetryGetMemoryInfoFunction::~OsTelemetryGetMemoryInfoFunction() = default;
 void OsTelemetryGetMemoryInfoFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetMemoryInfoFunction::OnResult, this);
 
-  remote_probe_service_->ProbeTelemetryInfo(
+  GetRemoteService()->ProbeTelemetryInfo(
       {ash::health::mojom::ProbeCategoryEnum::kMemory}, std::move(cb));
 }
 
@@ -159,7 +168,7 @@ void OsTelemetryGetOemDataFunction::RunIfAllowed() {
 
   auto cb = base::BindOnce(&OsTelemetryGetOemDataFunction::OnResult, this);
 
-  remote_probe_service_->GetOemData(std::move(cb));
+  GetRemoteService()->GetOemData(std::move(cb));
 }
 
 void OsTelemetryGetOemDataFunction::OnResult(
@@ -176,6 +185,78 @@ void OsTelemetryGetOemDataFunction::OnResult(
   Respond(ArgumentList(api::os_telemetry::GetOemData::Results::Create(result)));
 }
 
+// OsTelemetryGetOsVersionInfoFunction -----------------------------------------
+
+OsTelemetryGetOsVersionInfoFunction::OsTelemetryGetOsVersionInfoFunction() =
+    default;
+OsTelemetryGetOsVersionInfoFunction::~OsTelemetryGetOsVersionInfoFunction() =
+    default;
+
+void OsTelemetryGetOsVersionInfoFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&OsTelemetryGetOsVersionInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {ash::health::mojom::ProbeCategoryEnum::kSystem}, std::move(cb));
+}
+
+void OsTelemetryGetOsVersionInfoFunction::OnResult(
+    ash::health::mojom::TelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->system_result || !ptr->system_result->is_system_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& system_info = ptr->system_result->get_system_info();
+
+  // os_version is an optional value and might not be present.
+  // TODO(b/234338704): check how to test this.
+  if (!system_info->os_info || !system_info->os_info->os_version) {
+    Respond(Error("API internal error"));
+    return;
+  }
+
+  api::os_telemetry::OsVersionInfo result =
+      converters::ConvertPtr<api::os_telemetry::OsVersionInfo>(
+          std::move(system_info->os_info->os_version));
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetOsVersionInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetStatefulPartitionInfoFunction ---------------------------------
+
+OsTelemetryGetStatefulPartitionInfoFunction::
+    OsTelemetryGetStatefulPartitionInfoFunction() = default;
+OsTelemetryGetStatefulPartitionInfoFunction::
+    ~OsTelemetryGetStatefulPartitionInfoFunction() = default;
+
+void OsTelemetryGetStatefulPartitionInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(
+      &OsTelemetryGetStatefulPartitionInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {ash::health::mojom::ProbeCategoryEnum::kStatefulPartition},
+      std::move(cb));
+}
+
+void OsTelemetryGetStatefulPartitionInfoFunction::OnResult(
+    ash::health::mojom::TelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->stateful_partition_result ||
+      !ptr->stateful_partition_result->is_partition_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& stateful_part_info =
+      ptr->stateful_partition_result->get_partition_info();
+
+  api::os_telemetry::StatefulPartitionInfo result =
+      converters::ConvertPtr<api::os_telemetry::StatefulPartitionInfo>(
+          std::move(stateful_part_info));
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetStatefulPartitionInfo::Results::Create(result)));
+}
+
 // OsTelemetryGetVpdInfoFunction -----------------------------------------------
 
 OsTelemetryGetVpdInfoFunction::OsTelemetryGetVpdInfoFunction() = default;
@@ -184,7 +265,7 @@ OsTelemetryGetVpdInfoFunction::~OsTelemetryGetVpdInfoFunction() = default;
 void OsTelemetryGetVpdInfoFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetVpdInfoFunction::OnResult, this);
 
-  remote_probe_service_->ProbeTelemetryInfo(
+  GetRemoteService()->ProbeTelemetryInfo(
       {ash::health::mojom::ProbeCategoryEnum::kCachedVpdData}, std::move(cb));
 }
 

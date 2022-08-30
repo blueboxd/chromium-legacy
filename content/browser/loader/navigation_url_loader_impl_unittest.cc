@@ -238,7 +238,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     url::Origin origin = url::Origin::Create(url);
 
     uint32_t frame_tree_node_id =
-        web_contents_->GetMainFrame()->GetFrameTreeNodeId();
+        web_contents_->GetPrimaryMainFrame()->GetFrameTreeNodeId();
 
     bool is_primary_main_frame = is_main_frame;
     bool is_outermost_main_frame = is_main_frame;
@@ -257,7 +257,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,
-            false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
             absl::nullopt /* devtools_accepted_stream_types */,

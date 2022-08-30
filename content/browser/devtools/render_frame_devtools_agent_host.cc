@@ -155,7 +155,7 @@ bool RenderFrameDevToolsAgentHost::ShouldCreateDevToolsForHost(
 }
 
 // static
-scoped_refptr<DevToolsAgentHost>
+scoped_refptr<RenderFrameDevToolsAgentHost>
 RenderFrameDevToolsAgentHost::CreateForLocalRootOrEmbeddedPageNavigation(
     NavigationRequest* request) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
@@ -170,8 +170,8 @@ RenderFrameDevToolsAgentHost::CreateForLocalRootOrEmbeddedPageNavigation(
 }
 
 // static
-scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::FindForDangling(
-    FrameTreeNode* frame_tree_node) {
+scoped_refptr<RenderFrameDevToolsAgentHost>
+RenderFrameDevToolsAgentHost::FindForDangling(FrameTreeNode* frame_tree_node) {
   return FindAgentHost(frame_tree_node);
 }
 
@@ -250,7 +250,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   SetFrameTreeNode(frame_tree_node);
   ChangeFrameHostAndObservedProcess(frame_host);
   render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
-  if (frame_tree_node->parent()) {
+  if (frame_tree_node->GetFrameType() != FrameType::kPrimaryMainFrame) {
     render_frame_crashed_ = !render_frame_alive_;
   } else {
     WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
@@ -669,7 +669,7 @@ void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
 
 void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
   RenderFrameHostImpl* host =
-      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+      static_cast<RenderFrameHostImpl*>(wc->GetPrimaryMainFrame());
   DCHECK(host);
   SetFrameTreeNode(host->frame_tree_node());
   UpdateFrameHost(host);
@@ -718,7 +718,7 @@ std::string RenderFrameDevToolsAgentHost::GetType() {
   if (IsChildFrame())
     return kTypeFrame;
   if (frame_tree_node_ && frame_tree_node_->IsFencedFrameRoot())
-    return kTypePage;
+    return kTypeFrame;
   if (web_contents() &&
       static_cast<WebContentsImpl*>(web_contents())->IsPortal()) {
     return kTypePage;

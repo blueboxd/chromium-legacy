@@ -363,7 +363,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         viz::SurfaceRange(
             absl::nullopt,
             viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_)),
-        SK_ColorWHITE, false /* stretch_content_to_fill_bounds */);
+        SkColors::kWhite, false /* stretch_content_to_fill_bounds */);
 
     child_support_->SubmitCompositorFrame(child_local_surface_id_,
                                           std::move(frame));
@@ -530,6 +530,15 @@ void SynchronousLayerTreeFrameSink::ReclaimResources(
   client_->ReclaimResources(std::vector<viz::ReturnedResource>(
       std::make_move_iterator(resources.begin()),
       std::make_move_iterator(resources.end())));
+}
+
+void SynchronousLayerTreeFrameSink::
+    OnCompositorFrameTransitionDirectiveProcessed(
+        uint32_t layer_tree_frame_sink_id,
+        uint32_t sequence_id) {
+  if (layer_tree_frame_sink_id != layer_tree_frame_sink_id_)
+    return;
+  client_->OnCompositorFrameTransitionDirectiveProcessed(sequence_id);
 }
 
 void SynchronousLayerTreeFrameSink::SetMemoryPolicy(size_t bytes_limit) {

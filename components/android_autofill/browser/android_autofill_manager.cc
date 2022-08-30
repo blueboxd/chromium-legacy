@@ -64,6 +64,16 @@ void AndroidAutofillManager::FillProfileForm(
   NOTREACHED();
 }
 
+void AndroidAutofillManager::SetProfileFillViaAutofillAssistantIntent(
+    const autofill_assistant::AutofillAssistantIntent intent) {
+  NOTREACHED();
+}
+
+void AndroidAutofillManager::SetCreditCardFillViaAutofillAssistantIntent(
+    const autofill_assistant::AutofillAssistantIntent intent) {
+  NOTREACHED();
+}
+
 void AndroidAutofillManager::OnFormSubmittedImpl(
     const FormData& form,
     bool known_success,

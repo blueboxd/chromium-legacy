@@ -497,7 +497,8 @@ class RecordCacheStorageInstanceClient
 
   void StartWorker(
       blink::mojom::EmbeddedWorkerStartParamsPtr start_params) override {
-    had_cache_storage_ = !!start_params->provider_info->cache_storage;
+    had_cache_storage_ = start_params->provider_info->cache_storage &&
+                         start_params->provider_info->cache_storage.is_valid();
     FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(start_params));
   }
 
@@ -509,14 +510,13 @@ class RecordCacheStorageInstanceClient
 
 // Test that the worker is given a CacheStoragePtr during startup.
 TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      blink::features::kEagerCacheStorageSetupForServiceWorkers);
-
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  // We should set COEP, or cache storage pipe won't be made.
+  pair.second->set_cross_origin_embedder_policy(
+      network::CrossOriginEmbedderPolicy());
   auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // Start the worker.

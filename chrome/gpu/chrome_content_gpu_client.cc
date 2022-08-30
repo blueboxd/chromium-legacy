@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/gpu/browser_exposed_gpu_interfaces.h"
+#include "components/heap_profiling/in_process/heap_profiler_controller.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
@@ -57,16 +58,23 @@ void ChromeContentGpuClient::GpuServiceInitialized() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInProcessGPU) &&
-      ThreadProfiler::ShouldCollectProfilesForChildProcess()) {
-    ThreadProfiler::SetMainThreadTaskRunner(
-        base::ThreadTaskRunnerHandle::Get());
+          switches::kInProcessGPU)) {
+    // The HeapProfilerController should have been created in
+    // ChromeMainDelegate::PostEarlyInitialization.
+    DCHECK_NE(HeapProfilerController::GetProfilingEnabled(),
+              HeapProfilerController::ProfilingEnabled::kNoController);
+    if (ThreadProfiler::ShouldCollectProfilesForChildProcess() ||
+        HeapProfilerController::GetProfilingEnabled() ==
+            HeapProfilerController::ProfilingEnabled::kEnabled) {
+      ThreadProfiler::SetMainThreadTaskRunner(
+          base::ThreadTaskRunnerHandle::Get());
 
-    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
-    content::ChildThread::Get()->BindHostReceiver(
-        collector.InitWithNewPipeAndPassReceiver());
-    metrics::CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
-        std::move(collector));
+      mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
+      content::ChildThread::Get()->BindHostReceiver(
+          collector.InitWithNewPipeAndPassReceiver());
+      metrics::CallStackProfileBuilder::
+          SetParentProfileCollectorForChildProcess(std::move(collector));
+    }
   }
 }
 

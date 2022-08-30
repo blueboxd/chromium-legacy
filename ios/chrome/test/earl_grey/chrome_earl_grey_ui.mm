@@ -28,17 +28,18 @@
 #define EarlGrey [self earlGrey]
 #pragma clang diagnostic pop
 
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearAutofillButton;
 using chrome_test_util::ClearBrowsingDataButton;
 using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::ClearSavedPasswordsButton;
 using chrome_test_util::ConfirmClearBrowsingDataButton;
+using chrome_test_util::SettingsActionButton;
+using chrome_test_util::SettingsDestinationButton;
 using chrome_test_util::SettingsMenuBackButton;
-using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
-using base::test::ios::kWaitForUIElementTimeout;
-using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -168,12 +169,20 @@ class ScopedDisableTimerTracking {
 
 - (void)openSettingsMenu {
   [self openToolsMenu];
-  [self tapToolsMenuButton:SettingsMenuButton()];
+  if ([ChromeEarlGrey isNewOverflowMenuEnabled]) {
+    [self tapToolsMenuButton:SettingsDestinationButton()];
+  } else {
+    [self tapToolsMenuButton:SettingsActionButton()];
+  }
 }
 
 - (void)openSettingsMenuInWindowWithNumber:(int)windowNumber {
   [self openToolsMenuInWindowWithNumber:windowNumber];
-  [self tapToolsMenuButton:SettingsMenuButton()];
+  if ([ChromeEarlGrey isNewOverflowMenuEnabled]) {
+    [self tapToolsMenuButton:SettingsDestinationButton()];
+  } else {
+    [self tapToolsMenuButton:SettingsActionButton()];
+  }
 }
 
 - (void)openNewTabMenu {

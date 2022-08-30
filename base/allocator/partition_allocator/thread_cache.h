@@ -591,8 +591,8 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
   slot_size_remaining_in_16_bytes = std::min(
       slot_size_remaining_in_16_bytes, distance_to_next_cacheline_in_16_bytes);
 
-  static const uint32_t poison_16_bytes[4] = {0xdeadbeef, 0xdeadbeef,
-                                              0xdeadbeef, 0xdeadbeef};
+  static const uint32_t poison_16_bytes[4] = {0xbadbad00, 0xbadbad00,
+                                              0xbadbad00, 0xbadbad00};
   uint32_t* address_aligned = reinterpret_cast<uint32_t*>(address);
 
   for (int i = 0; i < slot_size_remaining_in_16_bytes; i++) {
@@ -610,14 +610,5 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
 }
 
 }  // namespace partition_alloc
-
-namespace base::internal {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::ThreadCache;
-using ::partition_alloc::ThreadCacheRegistry;
-
-}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_THREAD_CACHE_H_

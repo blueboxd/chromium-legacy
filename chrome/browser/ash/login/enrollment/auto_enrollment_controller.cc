@@ -31,9 +31,9 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_sync_observation.h"
+#include "chromeos/ash/components/dbus/userdataauth/install_attributes_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/userdataauth/install_attributes_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -566,12 +566,7 @@ void AutoEnrollmentController::Timeout() {
     ReportTimeoutUMA(AutoEnrollmentControllerTimeoutReport::kTimeoutFRE);
   }
 
-  // Reset state.
-  if (client_) {
-    // Cancelling the `client_` allows it to determine whether
-    // its protocol finished before login was complete.
-    client_.release()->CancelAndDeleteSoon();
-  }
+  client_.reset();
 
   // Make sure to nuke pending `client_` start sequences.
   client_start_weak_factory_.InvalidateWeakPtrs();

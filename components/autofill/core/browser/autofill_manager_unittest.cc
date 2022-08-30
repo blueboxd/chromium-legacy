@@ -76,6 +76,14 @@ class MockAutofillManager : public AutofillManager {
                const FormFieldData& field),
               (override));
   MOCK_METHOD(void,
+              SetProfileFillViaAutofillAssistantIntent,
+              (const autofill_assistant::AutofillAssistantIntent intent),
+              (override));
+  MOCK_METHOD(void,
+              SetCreditCardFillViaAutofillAssistantIntent,
+              (const autofill_assistant::AutofillAssistantIntent intent),
+              (override));
+  MOCK_METHOD(void,
               OnFocusNoLongerOnForm,
               (bool had_interacted_form),
               (override));

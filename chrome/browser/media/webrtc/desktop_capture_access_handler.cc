@@ -290,7 +290,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       content::DesktopMediaID::RegisterNativeWindow(
           content::DesktopMediaID::TYPE_SCREEN,
           primary_root_window_for_testing_
-              ? primary_root_window_for_testing_
+              ? primary_root_window_for_testing_.get()
               : ash::Shell::Get()->GetPrimaryRootWindow());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   const content::DesktopMediaID screen_id = content::DesktopMediaID(
@@ -581,6 +581,8 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio = pending_request.request.audio_type !=
                                 blink::mojom::MediaStreamType::NO_SERVICE;
+  picker_params.exclude_system_audio =
+      pending_request.request.exclude_system_audio;
   picker_params.restricted_by_policy =
       (capture_level != AllowedScreenCaptureLevel::kUnrestricted);
   pending_request.picker->Show(picker_params, std::move(source_lists),

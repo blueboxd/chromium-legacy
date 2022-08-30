@@ -5,16 +5,23 @@
 #include "base/task/sequence_manager/thread_controller.h"
 
 #include "base/check.h"
+#include "base/time/tick_clock.h"
 #include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace sequence_manager {
 namespace internal {
 
-ThreadController::ThreadController()
-    : associated_thread_(AssociatedThreadId::CreateUnbound()) {}
+ThreadController::ThreadController(const TickClock* time_source)
+    : associated_thread_(AssociatedThreadId::CreateUnbound()),
+      time_source_(time_source) {}
 
 ThreadController::~ThreadController() = default;
+
+void ThreadController::SetTickClock(const TickClock* clock) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  time_source_ = clock;
+}
 
 ThreadController::RunLevelTracker::RunLevelTracker(
     const ThreadController& outer)
@@ -33,8 +40,8 @@ void ThreadController::RunLevelTracker::OnRunLoopStarted(State initial_state) {
 
 void ThreadController::RunLevelTracker::OnRunLoopEnded() {
   DCHECK_CALLED_ON_VALID_THREAD(outer_.associated_thread_->thread_checker);
-  // Normally this will occur while kIdle or kInBetweenTasks but it can also
-  // occur while kRunningTask in rare situations where the owning
+  // Normally this will occur while kIdle or kInBetweenWorkItems but it can also
+  // occur while kRunningWorkItem in rare situations where the owning
   // ThreadController is deleted from within a task. Ref.
   // SequenceManagerWithTaskRunnerTest.DeleteSequenceManagerInsideATask. Thus we
   // can't assert anything about the current state other than that it must be
@@ -43,9 +50,9 @@ void ThreadController::RunLevelTracker::OnRunLoopEnded() {
   run_levels_.pop();
 }
 
-void ThreadController::RunLevelTracker::OnTaskStarted() {
+void ThreadController::RunLevelTracker::OnWorkStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(outer_.associated_thread_->thread_checker);
-  // Ignore tasks outside the main run loop.
+  // Ignore work outside the main run loop.
   // The only practical case where this would happen is if a native loop is spun
   // outside the main runloop (e.g. system dialog during startup). We cannot
   // support this because we are not guaranteed to be able to observe its exit
@@ -54,29 +61,29 @@ void ThreadController::RunLevelTracker::OnTaskStarted() {
   if (run_levels_.empty())
     return;
 
-  // Already running a task?
-  if (run_levels_.top().state() == kRunningTask) {
-    // #task-in-task-implies-nested
-    run_levels_.emplace(kRunningTask, true);
+  // Already running a work item?
+  if (run_levels_.top().state() == kRunningWorkItem) {
+    // #work-in-work-implies-nested
+    run_levels_.emplace(kRunningWorkItem, true);
   } else {
-    // Going from kIdle or kInBetweenTasks to kRunningTask.
-    run_levels_.top().UpdateState(kRunningTask);
+    // Going from kIdle or kInBetweenWorkItems to kRunningWorkItem.
+    run_levels_.top().UpdateState(kRunningWorkItem);
   }
 }
 
-void ThreadController::RunLevelTracker::OnTaskEnded() {
+void ThreadController::RunLevelTracker::OnWorkEnded() {
   DCHECK_CALLED_ON_VALID_THREAD(outer_.associated_thread_->thread_checker);
   if (run_levels_.empty())
     return;
 
-  // #done-task-while-not-running-implies-done-nested
-  if (run_levels_.top().state() != kRunningTask)
+  // #done-work-while-not-running-implies-done-nested
+  if (run_levels_.top().state() != kRunningWorkItem)
     run_levels_.pop();
 
   // Whether we exited a nested run-level or not: the current run-level is now
-  // transitioning from kRunningTask to kInBetweenTasks.
-  DCHECK_EQ(run_levels_.top().state(), kRunningTask);
-  run_levels_.top().UpdateState(kInBetweenTasks);
+  // transitioning from kRunningWorkItem to kInBetweenWorkItems.
+  DCHECK_EQ(run_levels_.top().state(), kRunningWorkItem);
+  run_levels_.top().UpdateState(kInBetweenWorkItems);
 }
 
 void ThreadController::RunLevelTracker::OnIdle() {
@@ -84,14 +91,15 @@ void ThreadController::RunLevelTracker::OnIdle() {
   if (run_levels_.empty())
     return;
 
-  // This is similar to the logic in OnTaskStarted().
-  if (run_levels_.top().state() == kRunningTask) {
-    // #task-in-task-implies-nested
-    // While OnIdle() isn't typically thought of as a "task" it is a way to "do
-    // work" and, on platforms like Mac which uses an |idle_work_source_|,
-    // DoIdleWork() can be invoked without DoWork() being first invoked at this
-    // run-level. We need to create a nested kIdle RunLevel or we break
-    // #done-task-while-not-running-implies-done-nested.
+  // This is similar to the logic in OnWorkStarted().
+  if (run_levels_.top().state() == kRunningWorkItem) {
+    // #work-in-work-implies-nested
+    // While OnIdle() isn't typically thought of as a "work item" it is a way
+    // to "do work" and, on platforms like Mac which uses an
+    // |idle_work_source_|, DoIdleWork() can be invoked without DoWork() being
+    // first invoked at this run-level. We need to create a nested kIdle
+    // RunLevel or we break
+    // #done-work-while-not-running-implies-done-nested.
     run_levels_.emplace(kIdle, true);
   } else {
     // Simply going kIdle at the current run-level.
@@ -119,27 +127,21 @@ ThreadController::RunLevelTracker::RunLevel::RunLevel(State initial_state,
 }
 
 ThreadController::RunLevelTracker::RunLevel::~RunLevel() {
-  UpdateState(kIdle);
-  // Intentionally ordered after UpdateState(kIdle), reinstantiates
-  // thread_controller_sample_metadata_ when yielding back to a parent RunLevel
-  // (which is active by definition as it is currently running this one).
-  if (is_nested_) {
-    thread_controller_sample_metadata_.Set(
-        static_cast<int64_t>(++thread_controller_active_id_));
+  if (!was_moved_) {
+    UpdateState(kIdle);
+    // Intentionally ordered after UpdateState(kIdle), reinstantiates
+    // thread_controller_sample_metadata_ when yielding back to a parent
+    // RunLevel (which is active by definition as it is currently running this
+    // one).
+    if (is_nested_) {
+      thread_controller_sample_metadata_.Set(
+          static_cast<int64_t>(++thread_controller_active_id_));
+    }
   }
 }
 
-ThreadController::RunLevelTracker::RunLevel::RunLevel(RunLevel&& other)
-    : state_(std::exchange(other.state_, kIdle)),
-      is_nested_(std::exchange(other.is_nested_, false)),
-      thread_controller_sample_metadata_(
-          other.thread_controller_sample_metadata_),
-      thread_controller_active_id_(other.thread_controller_active_id_) {}
-ThreadController::RunLevelTracker::RunLevel&
-ThreadController::RunLevelTracker::RunLevel::operator=(RunLevel&& other) {
-  state_ = std::exchange(other.state_, kIdle);
-  return *this;
-}
+ThreadController::RunLevelTracker::RunLevel::RunLevel(RunLevel&& other) =
+    default;
 
 void ThreadController::RunLevelTracker::RunLevel::UpdateState(State new_state) {
   // The only state that can be redeclared is idle, anything else should be a
@@ -156,14 +158,14 @@ void ThreadController::RunLevelTracker::RunLevel::UpdateState(State new_state) {
 
   // Change of state.
   if (is_active) {
-    TRACE_EVENT_BEGIN0("base", "ThreadController active");
+    TRACE_EVENT_BEGIN("base", "ThreadController active");
     // Overriding the annotation from the previous RunLevel is intentional. Only
     // the top RunLevel is ever updated, which holds the relevant state.
     thread_controller_sample_metadata_.Set(
         static_cast<int64_t>(++thread_controller_active_id_));
   } else {
     thread_controller_sample_metadata_.Remove();
-    TRACE_EVENT_END0("base", "ThreadController active");
+    TRACE_EVENT_END("base");
     // TODO(crbug.com/1021571): Remove this once fixed.
     PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
   }

@@ -95,8 +95,8 @@ const char* const kChromeSettingsSubPages[] = {
     chrome::kPaymentsSubPage,         chrome::kResetProfileSettingsSubPage,
     chrome::kSearchEnginesSubPage,    chrome::kSyncSetupSubPage,
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-    chrome::kCreateProfileSubPage,    chrome::kImportDataSubPage,
-    chrome::kManageProfileSubPage,    chrome::kPeopleSubPage,
+    chrome::kImportDataSubPage,       chrome::kManageProfileSubPage,
+    chrome::kPeopleSubPage,
 #endif
 };
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -132,6 +132,10 @@ PrefService* ChromeAutocompleteProviderClient::GetPrefs() const {
 
 PrefService* ChromeAutocompleteProviderClient::GetLocalState() {
   return g_browser_process->local_state();
+}
+
+std::string ChromeAutocompleteProviderClient::GetApplicationLocale() const {
+  return g_browser_process->GetApplicationLocale();
 }
 
 const AutocompleteSchemeClassifier&

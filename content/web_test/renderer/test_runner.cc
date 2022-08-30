@@ -23,7 +23,6 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/web_test/common/web_test_constants.h"
@@ -170,33 +169,6 @@ void ConvertAndSet(gin::Arguments* args, blink::WebString* set_param) {
   *set_param = web_test_string_util::V8StringToWebString(
       args->isolate(), result.ToLocalChecked());
 }
-
-class SynchronousResizeModeVisitor : public RenderViewVisitor {
- public:
-  SynchronousResizeModeVisitor() = default;
-
-  bool Visit(RenderView* render_view) override {
-    render_view->GetWebView()->UseSynchronousResizeModeForTesting(true);
-    return true;
-  }
-};
-
-class SetAcceptLanguagesVisitor : public RenderViewVisitor {
- public:
-  explicit SetAcceptLanguagesVisitor(const std::string& accept_languages)
-      : accept_languages_(accept_languages) {}
-
-  bool Visit(RenderView* render_view) override {
-    blink::WebView* view = render_view->GetWebView();
-    blink::RendererPreferences prefs = view->GetRendererPreferences();
-    prefs.accept_languages = accept_languages_;
-    view->SetRendererPreferences(prefs);
-    return true;
-  }
-
- private:
-  const std::string& accept_languages_;
-};
 
 }  // namespace
 
@@ -389,7 +361,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SimulateWebNotificationClick(gin::Arguments* args);
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
   void SimulateWebContentIndexDelete(const std::string& id);
-  void UseUnfortunateSynchronousResizeMode();
   void WaitForPolicyDelegate();
   void WaitUntilDone();
   void WaitUntilExternalURLLoad();
@@ -833,8 +804,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("zoomPageOut", &TestRunnerBindings::ZoomPageOut)
       .SetMethod("setPageZoomFactor", &TestRunnerBindings::SetPageZoomFactor)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
-      .SetMethod("useUnfortunateSynchronousResizeMode",
-                 &TestRunnerBindings::UseUnfortunateSynchronousResizeMode)
       .SetMethod("waitForPolicyDelegate",
                  &TestRunnerBindings::WaitForPolicyDelegate)
       .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
@@ -1283,12 +1252,6 @@ void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
   GetWebFrame()->SetTextDirectionForTesting(direction);
 }
 
-void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {
-  if (invalid_)
-    return;
-  runner_->UseUnfortunateSynchronousResizeMode();
-}
-
 void TestRunnerBindings::EnableAutoResizeMode(int min_width,
                                               int min_height,
                                               int max_width,
@@ -1301,11 +1264,9 @@ void TestRunnerBindings::EnableAutoResizeMode(int min_width,
   if (max_width <= 0 || max_height <= 0)
     return;
 
-  blink::WebView* web_view = GetWebFrame()->View();
-
   gfx::Size min_size(min_width, min_height);
   gfx::Size max_size(max_width, max_height);
-  web_view->EnableAutoResizeForTesting(min_size, max_size);
+  runner_->GetWebTestControlHostRemote()->EnableAutoResize(min_size, max_size);
 }
 
 void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
@@ -1317,14 +1278,8 @@ void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
   if (new_width <= 0 || new_height <= 0)
     return;
 
-  blink::WebFrameWidget* widget = frame_->GetLocalRootWebFrameWidget();
-
   gfx::Size new_size(new_width, new_height);
-  blink::WebView* web_view = GetWebFrame()->View();
-  web_view->DisableAutoResizeForTesting(new_size);
-
-  gfx::Rect window_rect(widget->WindowRect().origin(), new_size);
-  web_view->SetWindowRectSynchronouslyForTesting(window_rect);
+  runner_->GetWebTestControlHostRemote()->DisableAutoResize(new_size);
 }
 
 void TestRunnerBindings::SetMockScreenOrientation(
@@ -2319,15 +2274,14 @@ bool TestRunner::WorkQueue::ProcessWorkItemInternal(
   return false;
 }
 
-void TestRunner::WorkQueue::ReplicateStates(
-    const base::DictionaryValue& values) {
+void TestRunner::WorkQueue::ReplicateStates(const base::Value::Dict& values) {
   states_.ApplyUntrackedChanges(values);
   if (!has_items())
     controller_->FinishTestIfReady();
 }
 
 void TestRunner::WorkQueue::OnStatesChanged() {
-  if (states_.changed_values().DictEmpty())
+  if (states_.changed_values().empty())
     return;
 
   controller_->GetWebTestControlHostRemote()->WorkQueueStatesChanged(
@@ -2405,7 +2359,6 @@ void TestRunner::ResetWebView(blink::WebView* web_view) {
   web_view->DisableAutoResizeForTesting(gfx::Size());
   web_view->SetScreenOrientationOverrideForTesting(
       fake_screen_orientation_impl_.CurrentOrientationType());
-  web_view->UseSynchronousResizeModeForTesting(false);
 }
 
 void TestRunner::ResetWebFrameWidget(blink::WebFrameWidget* web_frame_widget) {
@@ -2529,7 +2482,7 @@ SkBitmap TestRunner::DumpPixelsInRenderer(blink::WebLocalFrame* main_frame) {
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
-    const base::DictionaryValue& changed_values) {
+    const base::Value::Dict& changed_values) {
   if (!test_is_running_)
     return;
 
@@ -2830,7 +2783,7 @@ void TestRunner::ProcessWorkItem(mojom::WorkItemPtr work_item) {
   work_queue_.ProcessWorkItem(std::move(work_item));
 }
 
-void TestRunner::ReplicateWorkQueueStates(const base::DictionaryValue& values) {
+void TestRunner::ReplicateWorkQueueStates(const base::Value::Dict& values) {
   if (!test_is_running_)
     return;
   work_queue_.ReplicateStates(values);
@@ -2981,12 +2934,6 @@ void TestRunner::SetTextSubpixelPositioning(bool value) {
 #endif
 }
 
-void TestRunner::UseUnfortunateSynchronousResizeMode() {
-  // Sets the resize mode on the view of each open window.
-  SynchronousResizeModeVisitor visitor;
-  RenderView::ForEach(&visitor);
-}
-
 void TestRunner::SetMockScreenOrientation(blink::WebView* view,
                                           const std::string& orientation_str) {
   display::mojom::ScreenOrientation orientation;
@@ -3012,23 +2959,8 @@ void TestRunner::DisableMockScreenOrientation(blink::WebView* view) {
   fake_screen_orientation_impl_.SetDisabled(view, true);
 }
 
-std::string TestRunner::GetAcceptLanguages() const {
-  return web_test_runtime_flags_.accept_languages();
-}
-
 void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
-  if (accept_languages == GetAcceptLanguages())
-    return;
-
-  // TODO(danakj): IPC to WebTestControlHost, and have it change the
-  // WebContentsImpl::GetMutableRendererPrefs(). Then have the browser sync that
-  // to the window's RenderViews, instead of using WebTestRuntimeFlags for this.
-  web_test_runtime_flags_.set_accept_languages(accept_languages);
-  OnWebTestRuntimeFlagsChanged();
-
-  // Sets the accept language on the view of each open window.
-  SetAcceptLanguagesVisitor visitor(accept_languages);
-  RenderView::ForEach(&visitor);
+  GetWebTestControlHostRemote()->SetAcceptLanguages(accept_languages);
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -3295,7 +3227,7 @@ void TestRunner::OnWebTestRuntimeFlagsChanged() {
   // web flag changes in SetTestConfiguration().
   if (!test_is_running_)
     return;
-  if (web_test_runtime_flags_.tracked_dictionary().changed_values().DictEmpty())
+  if (web_test_runtime_flags_.tracked_dictionary().changed_values().empty())
     return;
 
   GetWebTestControlHostRemote()->WebTestRuntimeFlagsChanged(

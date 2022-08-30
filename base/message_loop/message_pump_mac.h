@@ -30,6 +30,7 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump.h"
 
 
@@ -82,6 +83,8 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
  public:
   MessagePumpCFRunLoopBase(const MessagePumpCFRunLoopBase&) = delete;
   MessagePumpCFRunLoopBase& operator=(const MessagePumpCFRunLoopBase&) = delete;
+
+  static void InitializeFeatures();
 
   // MessagePump:
   void Run(Delegate* delegate) override;
@@ -158,10 +161,6 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
 
   // The maximum number of run loop modes that can be monitored.
   static constexpr int kNumModes = 4;
-
-  // All sources of delayed work scheduling converge to this, using TimeDelta
-  // avoids querying Now() for key callers.
-  void ScheduleDelayedWorkImpl(TimeDelta delta);
 
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
   // work, but it signals |work_source_| so that delayed work can be performed
@@ -250,9 +249,12 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   CFRunLoopObserverRef enter_exit_observer_;
 
   // (weak) Delegate passed as an argument to the innermost Run call.
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   base::TimerSlack timer_slack_;
+
+  // Time at which `delayed_work_timer_` is set to fire.
+  base::TimeTicks delayed_work_scheduled_at_ = base::TimeTicks::Max();
 
   // The recursion depth of the currently-executing CFRunLoopRun loop on the
   // run loop's thread.  0 if no run loops are running inside of whatever scope

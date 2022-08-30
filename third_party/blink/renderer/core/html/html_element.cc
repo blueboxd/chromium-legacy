@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -176,6 +177,42 @@ HTMLElement* GetParentForDirectionality(const HTMLElement& element,
   // recalc, and delay the check for later for a performance reason.
   SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(element.GetDocument());
   return DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(element));
+}
+
+bool IsDescendentOfMainElement(const Node* node) {
+  DCHECK(node);
+  do {
+    if (IsA<HTMLMainElement>(node)) {
+      return true;
+    }
+    node = node->parentNode();
+  } while (node);
+  return false;
+}
+
+void CheckSoftNavigationHeuristicsTracking(const Document& document,
+                                           const Node* insertion_point) {
+  DCHECK(insertion_point);
+  if (document.IsTrackingSoftNavigationHeuristics() &&
+      IsDescendentOfMainElement(insertion_point)) {
+    LocalDOMWindow* window = document.domWindow();
+    if (!window) {
+      return;
+    }
+    LocalFrame* frame = window->GetFrame();
+    if (!frame || !frame->IsMainFrame()) {
+      return;
+    }
+    ScriptState* script_state = ToScriptStateForMainWorld(frame);
+    if (!script_state) {
+      return;
+    }
+
+    SoftNavigationHeuristics* heuristics =
+        SoftNavigationHeuristics::From(*window);
+    DCHECK(heuristics);
+    heuristics->ModifiedMain(script_state);
+  }
 }
 
 }  // anonymous namespace
@@ -1295,6 +1332,10 @@ void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
         element->UpdateDirectionalityAndDescendant(CachedDirectionality());
     }
   }
+  if (change.IsChildInsertion()) {
+    CheckSoftNavigationHeuristicsTracking(GetDocument(),
+                                          change.sibling_changed);
+  }
 }
 
 bool HTMLElement::HasDirectionAuto() const {
@@ -1773,7 +1814,7 @@ void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
   // <textarea>) or has contentEditable attribute on, we should enter a space or
   // newline even in spatial navigation mode instead of handling it as a "click"
   // action.
-  if (IsTextControl() || HasEditableStyle(*this))
+  if (IsTextControl() || IsEditable(*this))
     return;
   int char_code = event.charCode();
   if (char_code == '\r' || char_code == ' ') {

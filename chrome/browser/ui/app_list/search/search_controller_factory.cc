@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -157,7 +157,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   //   true (the default).
   if (!ash::features::IsProductivityLauncherEnabled() ||
       base::GetFieldTrialParamByFeatureAsBool(
-          ash::features::kProductivityLauncher, "enable_continue", false)) {
+          ash::features::kProductivityLauncher, "enable_continue", true)) {
     size_t zero_state_files_group_id =
         controller->AddGroup(kMaxZeroStateFileResults);
     controller->AddProvider(zero_state_files_group_id,

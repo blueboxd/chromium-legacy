@@ -85,6 +85,7 @@ class Cursor;
 namespace blink {
 class AXObjectCache;
 class ChromeClient;
+class DeferredShapingController;
 class DeferredShapingDisallowScope;
 class DeferredShapingMinimumTopScope;
 class DeferredShapingViewportScope;
@@ -405,6 +406,7 @@ class CORE_EXPORT LocalFrameView final
   // schedule another animation frame here, but the layout tree should not be
   // invalidated.
   void RunPostLifecycleSteps();
+  bool InPostLifecycleSteps() const;
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -503,18 +505,9 @@ class CORE_EXPORT LocalFrameView final
                                bool value) {
     allow_deferred_shaping_ = value;
   }
-  // Disable deferred shaping on this frame persistently.
-  // This function should not be called during laying out.
-  void DisallowDeferredShaping();
-  bool DefaultAllowDeferredShaping() const {
-    return default_allow_deferred_shaping_;
+  DeferredShapingController& GetDeferredShapingController() const {
+    return *deferred_shaping_controller_;
   }
-  // TODO(crbug.com/1259085): Stop using the word 'Lock' for DeferredShaping.
-  void RequestToLockDeferred(Element& element);
-  bool LockDeferredRequested(Element& element) const;
-  void UnregisterShapingDeferredElement(Element& element);
-  size_t ReshapeAllDeferred();
-  void ScheduleReshapeAllDeferred();
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -746,8 +739,7 @@ class CORE_EXPORT LocalFrameView final
   }
   void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
-  // Returns the UKM aggregator for this frame, or this frame's local root if
-  // features::kLocalFrameRootPrePostFCPMetrics is enabled, creating it if
+  // Returns the UKM aggregator for this frame's local root, creating it if
   // necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
   void ResetUkmAggregatorForTesting();
@@ -1052,7 +1044,6 @@ class CORE_EXPORT LocalFrameView final
   bool AnyFrameIsPrintingOrPaintingPreview();
 
   DarkModeFilter& EnsureDarkModeFilter();
-  void ReshapeAllDeferredInternal();
 
   LayoutSize size_;
 
@@ -1061,14 +1052,12 @@ class CORE_EXPORT LocalFrameView final
 
   Member<LocalFrame> frame_;
 
-  TaskHandle reshaping_task_handle_;
-  HeapHashSet<Member<Element>> deferred_to_be_locked_;
+  Member<DeferredShapingController> deferred_shaping_controller_;
   LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
   LayoutUnit current_minimum_top_;
   bool allow_deferred_shaping_ = false;
-  bool default_allow_deferred_shaping_ = true;
-
   bool can_have_scrollbars_;
+  bool in_post_lifecycle_steps_ = false;
 
   bool has_pending_layout_;
   LayoutSubtreeRootList layout_subtree_root_list_;

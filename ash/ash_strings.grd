@@ -1317,6 +1317,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_TITLE" desc="Title of the holding space tray and bubble.">
         Tote
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_TITLE_REBRAND" desc="Title of the holding space tray and bubble when rebranding is enabled.">
+        Quick Files
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_PINNED_TITLE" desc="Title of the pinned files area in the holding space bubble.">
         Pinned files
       </message>
@@ -4562,6 +4565,9 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
         Can't download speech files. Try again later.
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR_REBOOT_REQUIRED" desc="Error message shown when a OS reboot is required to install the Live Caption files.">
+        Restart needed to install speech files.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_DICTATION_BUTTON_TOOLTIP_SODA_DOWNLOADING" desc="A tooltip explaining that speech recognition files are downloading." >
         Downloading speech files

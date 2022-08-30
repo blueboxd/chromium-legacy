@@ -151,11 +151,6 @@ TEST(TrustStoreWin, GetTrust) {
 // - kMultiRootDByD: only has szOID_PKIX_KP_SERVER_AUTH EKU set
 // - kMultiRootEByE: only has szOID_PKIX_KP_CLIENT_AUTH set
 // - kMultiRootCByD: no EKU usages set
-//
-// And the intermediate store as follows:
-//
-// - kMultiRootCByE: only has szOID_PKIX_KP_CLIENT_AUTH set
-// - kMultiRootCByD: only has szOID_PKIX_KP_SERVER_AUTH EKU set
 TEST(TrustStoreWin, GetTrustRestrictedEKU) {
   crypto::ScopedHCERTSTORE root_store(CertOpenStore(
       CERT_STORE_PROV_MEMORY, X509_ASN_ENCODING, NULL, 0, nullptr));
@@ -170,10 +165,6 @@ TEST(TrustStoreWin, GetTrustRestrictedEKU) {
                                            szOID_PKIX_KP_CLIENT_AUTH));
   ASSERT_TRUE(
       AddToStoreWithEKURestriction(root_store.get(), kMultiRootCByD, nullptr));
-  ASSERT_TRUE(AddToStoreWithEKURestriction(
-      intermediate_store.get(), kMultiRootCByE, szOID_PKIX_KP_CLIENT_AUTH));
-  ASSERT_TRUE(AddToStoreWithEKURestriction(
-      intermediate_store.get(), kMultiRootCByD, szOID_PKIX_KP_SERVER_AUTH));
   std::unique_ptr<TrustStoreWin> trust_store_win =
       TrustStoreWin::CreateForTesting(std::move(root_store),
                                       std::move(intermediate_store),
@@ -187,14 +178,56 @@ TEST(TrustStoreWin, GetTrustRestrictedEKU) {
       // trusted.
       {kMultiRootDByD, CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION},
       // Root cert with EKU szOID_PKIX_KP_CLIENT_AUTH does not allow usage of
-      // cert for server auth.
-      {kMultiRootEByE, CertificateTrustType::DISTRUSTED},
-      // Root cert with no EKU usages but is also an intermediate cert that is
-      // allowed for server auth, so we let it be used for path building.
+      // cert for server auth, return UNSPECIFIED.
+      {kMultiRootEByE, CertificateTrustType::UNSPECIFIED},
+      // Root cert with no EKU usages, return UNSPECIFIED.
       {kMultiRootCByD, CertificateTrustType::UNSPECIFIED},
-      // Intermediate cert with EKU szOID_PKIX_KP_CLIENT_AUTH does not allow
-      // usage of cert for server auth.
-      {kMultiRootCByE, CertificateTrustType::DISTRUSTED},
+      // Unknown cert has unspecified trust.
+      {kMultiRootFByE, CertificateTrustType::UNSPECIFIED},
+  };
+  for (const auto& test_data : kTestData) {
+    SCOPED_TRACE(test_data.file_name);
+    auto parsed_cert = ParseCertFromFile(test_data.file_name);
+    ASSERT_TRUE(parsed_cert);
+    CertificateTrust trust =
+        trust_store_win->GetTrust(parsed_cert.get(), nullptr);
+    EXPECT_EQ(test_data.expected_result, trust.type);
+  }
+}
+
+// Repeat the GetTrustRestrictedEKU test but use szOID_ANY_ENHANCED_KEY_USAGE
+// instead of szOID_PKIX_KP_SERVER_AUTH
+TEST(TrustStoreWin, GetTrustRestrictedEKUAnyUsage) {
+  crypto::ScopedHCERTSTORE root_store(CertOpenStore(
+      CERT_STORE_PROV_MEMORY, X509_ASN_ENCODING, NULL, 0, nullptr));
+  crypto::ScopedHCERTSTORE intermediate_store(CertOpenStore(
+      CERT_STORE_PROV_MEMORY, X509_ASN_ENCODING, NULL, 0, nullptr));
+  crypto::ScopedHCERTSTORE disallowed_store(CertOpenStore(
+      CERT_STORE_PROV_MEMORY, X509_ASN_ENCODING, NULL, 0, nullptr));
+
+  ASSERT_TRUE(AddToStoreWithEKURestriction(root_store.get(), kMultiRootDByD,
+                                           szOID_ANY_ENHANCED_KEY_USAGE));
+  ASSERT_TRUE(AddToStoreWithEKURestriction(root_store.get(), kMultiRootEByE,
+                                           szOID_PKIX_KP_CLIENT_AUTH));
+  ASSERT_TRUE(
+      AddToStoreWithEKURestriction(root_store.get(), kMultiRootCByD, nullptr));
+  std::unique_ptr<TrustStoreWin> trust_store_win =
+      TrustStoreWin::CreateForTesting(std::move(root_store),
+                                      std::move(intermediate_store),
+                                      std::move(disallowed_store));
+
+  constexpr struct TestData {
+    base::StringPiece file_name;
+    CertificateTrustType expected_result;
+  } kTestData[] = {
+      // Root cert with EKU szOID_ANY_ENHANCED_KEY_USAGE usage set should be
+      // trusted.
+      {kMultiRootDByD, CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION},
+      // Root cert with EKU szOID_PKIX_KP_CLIENT_AUTH does not allow usage of
+      // cert for server auth, return UNSPECIFIED.
+      {kMultiRootEByE, CertificateTrustType::UNSPECIFIED},
+      // Root cert with no EKU usages, return UNSPECIFIED.
+      {kMultiRootCByD, CertificateTrustType::UNSPECIFIED},
       // Unknown cert has unspecified trust.
       {kMultiRootFByE, CertificateTrustType::UNSPECIFIED},
   };
@@ -224,10 +257,6 @@ TEST(TrustStoreWin, GetTrustRestrictedEKUDuplicateCerts) {
                                            szOID_PKIX_KP_SERVER_AUTH));
   ASSERT_TRUE(
       AddToStoreWithEKURestriction(root_store.get(), kMultiRootDByD, nullptr));
-  ASSERT_TRUE(AddToStoreWithEKURestriction(
-      intermediate_store.get(), kMultiRootCByD, szOID_PKIX_KP_SERVER_AUTH));
-  ASSERT_TRUE(AddToStoreWithEKURestriction(
-      intermediate_store.get(), kMultiRootCByD, szOID_PKIX_KP_SERVER_AUTH));
   std::unique_ptr<TrustStoreWin> trust_store_win =
       TrustStoreWin::CreateForTesting(std::move(root_store),
                                       std::move(intermediate_store),
@@ -237,10 +266,7 @@ TEST(TrustStoreWin, GetTrustRestrictedEKUDuplicateCerts) {
     base::StringPiece file_name;
     CertificateTrustType expected_result;
   } kTestData[] = {
-      {kMultiRootDByD, CertificateTrustType::DISTRUSTED},
-      // Root cert with no EKU usages but is also an intermediate cert that is
-      // allowed for server auth, so we let it be used for path building.
-      {kMultiRootCByD, CertificateTrustType::UNSPECIFIED},
+      {kMultiRootDByD, CertificateTrustType::UNSPECIFIED},
   };
   for (const auto& test_data : kTestData) {
     SCOPED_TRACE(test_data.file_name);
@@ -252,8 +278,7 @@ TEST(TrustStoreWin, GetTrustRestrictedEKUDuplicateCerts) {
   }
 }
 
-// Test that disallowed certs with the right EKU settings will be
-// distrusted.
+// Test that disallowed certs will be distrusted regardless of EKU settings.
 TEST(TrustStoreWin, GetTrustDisallowedCerts) {
   crypto::ScopedHCERTSTORE root_store(CertOpenStore(
       CERT_STORE_PROV_MEMORY, X509_ASN_ENCODING, NULL, 0, nullptr));
@@ -277,9 +302,8 @@ TEST(TrustStoreWin, GetTrustDisallowedCerts) {
     base::StringPiece file_name;
     CertificateTrustType expected_result;
   } kTestData[] = {
-      // dByD in root, also in distrusted but without szOID_PKIX_KP_SERVER_AUTH
-      // set.
-      {kMultiRootDByD, CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION},
+      // dByD in root, distrusted but without szOID_PKIX_KP_SERVER_AUTH set.
+      {kMultiRootDByD, CertificateTrustType::DISTRUSTED},
       // dByD in root, also in distrusted with szOID_PKIX_KP_SERVER_AUTH set.
       {kMultiRootEByE, CertificateTrustType::DISTRUSTED},
   };

@@ -289,10 +289,6 @@ extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsDescription[];
 extern const char kAutofillPreventOverridingPrefilledValuesName[];
 extern const char kAutofillPreventOverridingPrefilledValuesDescription[];
 
-extern const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[];
-extern const char
-    kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[];
-
 extern const char kAutofillSaveAndFillVPAName[];
 extern const char kAutofillSaveAndFillVPADescription[];
 
@@ -1374,9 +1370,6 @@ extern const char kRoundedDisplayDescription[];
 extern const char kMBIModeName[];
 extern const char kMBIModeDescription[];
 
-extern const char kIntensiveWakeUpThrottlingName[];
-extern const char kIntensiveWakeUpThrottlingDescription[];
-
 extern const char kSafetyCheckPermissionsName[];
 extern const char kSafetyCheckPermissionsDescription[];
 
@@ -1590,9 +1583,6 @@ extern const char kTopChromeTouchUiDescription[];
 
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
-
-extern const char kThrottleForegroundTimersName[];
-extern const char kThrottleForegroundTimersDescription[];
 
 extern const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[];

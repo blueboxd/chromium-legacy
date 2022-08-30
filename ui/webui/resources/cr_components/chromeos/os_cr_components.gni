@@ -72,6 +72,7 @@ cr_components_chromeos_auto_imports = [
 ]
 
 cr_components_migrated_imports = [
+  "ui/webui/resources/cr_elements/action_link.css.html",
   "ui/webui/resources/cr_elements/cr_button/cr_button.html",
   "ui/webui/resources/cr_elements/cr_dialog/cr_dialog.html",
   "ui/webui/resources/cr_elements/cr_icon_button/cr_icon_button.html",
@@ -81,6 +82,7 @@ cr_components_migrated_imports = [
   "ui/webui/resources/cr_elements/cr_radio_group/cr_radio_group.html",
   "ui/webui/resources/cr_elements/cr_scrollable_behavior.html",
   "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html",
+  "ui/webui/resources/cr_elements/md_select.css.html",
   "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html",
   "ui/webui/resources/cr_elements/policy/cr_policy_indicator.html",
   "ui/webui/resources/cr_elements/policy/cr_tooltip_icon.html",

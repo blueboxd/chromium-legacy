@@ -32,12 +32,6 @@ namespace floss {
 // powered on (presence and power management is done by |FlossManagerClient|).
 class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
  public:
-  enum class BluetoothTransport {
-    kAuto = 0,
-    kBrEdr = 1,
-    kLe = 2,
-  };
-
   enum class BluetoothDeviceType {
     kUnknown = 0,
     kBredr = 1,
@@ -249,7 +243,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
   // Initialize the adapter client.
   void Init(dbus::Bus* bus,
             const std::string& service_name,
-            const std::string& adapter_path) override;
+            const int adapter_index) override;
 
  protected:
   friend class FlossAdapterClientTest;

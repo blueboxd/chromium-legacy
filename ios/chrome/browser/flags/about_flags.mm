@@ -84,6 +84,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
+#import "ios/chrome/browser/ui/open_in/features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/public/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
@@ -546,6 +547,17 @@ const FeatureEntry::FeatureParam kDmTokenDeletionParam[] = {{"forced", "true"}};
 const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
     {"(Forced)", kDmTokenDeletionParam, std::size(kDmTokenDeletionParam),
      nullptr}};
+
+const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
+    {kOpenInDownloadWithWKDownloadParam, "true"}};
+const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
+    {kOpenInDownloadWithV2Param, "true"}};
+const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
+    {"With WKDownload", kOpenInDownloadWithWKDownload,
+     std::size(kOpenInDownloadWithWKDownload), nullptr},
+    {"With V2", kOpenInDownloadWithV2, std::size(kOpenInDownloadWithV2),
+     nullptr},
+};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -1057,10 +1069,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"omnibox-https-upgrades", flag_descriptions::kOmniboxHttpsUpgradesName,
      flag_descriptions::kOmniboxHttpsUpgradesDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kDefaultTypedNavigationsToHttps)},
-    {"smart-sorting-new-destinations",
-     flag_descriptions::kSmartSortingNewDestinationsName,
-     flag_descriptions::kSmartSortingNewDestinationsDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewDestinations)},
     {"smart-sorting-new-overflow-menu",
      flag_descriptions::kSmartSortingNewOverflowMenuName,
      flag_descriptions::kSmartSortingNewOverflowMenuDescription,
@@ -1074,13 +1082,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableRankingFormulaDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableRankingFormula)},
-    {"autofill-remove-card-expiry-from-downstream-suggestion",
-     flag_descriptions::kAutofillRemoveCardExpiryFromDownstreamSuggestionName,
-     flag_descriptions::
-         kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::
-                            kAutofillRemoveCardExpiryFromDownstreamSuggestion)},
     {"enable-feed-ablation", flag_descriptions::kEnableFeedAblationName,
      flag_descriptions::kEnableFeedAblationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFeedAblation)},
@@ -1189,6 +1190,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-cbd-sign-out", flag_descriptions::kEnableCBDSignOutName,
      flag_descriptions::kEnableCBDSignOutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kEnableCbdSignOut)},
+    {"enable-open-in-download", flag_descriptions::kEnableOpenInDownloadName,
+     flag_descriptions::kEnableOpenInDownloadDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableOpenInDownload,
+                                    kOpenInDownloadVariations,
+                                    "EnableOpenInDownload")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

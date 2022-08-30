@@ -2526,7 +2526,7 @@
   'lacros_all_tast_tests jacuzzi': {
     'modifications': {
       'lacros-arm-generic-rel': {
-        'experiment_percentage': 5,
+        'experiment_percentage': 50,
       },
     },
   },

@@ -4,6 +4,7 @@
 
 #include <shlobj.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include <regstr.h>
 
@@ -13,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -40,7 +42,9 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/win_util.h"
 #include "build/build_config.h"
+#include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
@@ -511,7 +515,7 @@ void Clean(UpdaterScope scope) {
   }
 
   if (scope == UpdaterScope::kUser) {
-    base::win::RegKey(root, REGSTR_PATH_RUN, KEY_READ)
+    base::win::RegKey(root, REGSTR_PATH_RUN, KEY_WRITE)
         .DeleteValue(GetTaskNamePrefix(scope).c_str());
   }
 
@@ -633,6 +637,68 @@ void WaitForUpdaterExit(UpdaterScope /*scope*/) {
   WaitFor(base::BindRepeating([]() { return !IsUpdaterRunning(); }));
 }
 
+// Verify registry entries for all interfaces.
+// IID entries under `Software\Classes\Interface`:
+// * ProxyStubClsid32 entry should point to the OLE automation marshaler
+// * TypeLib entry should be equal to the IID.
+//
+// TypeLib entries under `Software\Classes\TypeLib`:
+// * Read the typelib path under both `win32` and `win64`.
+// * Confirm that the typelib can be loaded using ::LoadTypeLib.
+// * Confirm that the typeinfo for each interface can be loaded from the
+// typelib.
+void VerifyInterfacesRegistryEntries(UpdaterScope scope) {
+  for (const auto is_internal : {true, false}) {
+    for (const auto& iid : GetInterfaces(is_internal)) {
+      const HKEY root = UpdaterScopeToHKeyRoot(scope);
+      const std::wstring iid_reg_path = GetComIidRegistryPath(iid);
+      const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
+      const std::wstring iid_string = base::win::WStringFromGUID(iid);
+
+      std::wstring val;
+      {
+        const auto& path = iid_reg_path + L"\\ProxyStubClsid32";
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &val),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+        EXPECT_EQ(val, L"{00020424-0000-0000-C000-000000000046}");
+      }
+
+      {
+        const auto& path = iid_reg_path + L"\\TypeLib";
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &val),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+        EXPECT_EQ(val, iid_string);
+      }
+
+      const std::wstring typelib_reg_path_win32 =
+          typelib_reg_path + L"\\1.0\\0\\win32";
+      const std::wstring typelib_reg_path_win64 =
+          typelib_reg_path + L"\\1.0\\0\\win64";
+
+      for (const auto& path :
+           {typelib_reg_path_win32, typelib_reg_path_win64}) {
+        std::wstring typelib_path;
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &typelib_path),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+
+        Microsoft::WRL::ComPtr<ITypeLib> type_lib;
+        EXPECT_HRESULT_SUCCEEDED(::LoadTypeLib(typelib_path.c_str(), &type_lib))
+            << ": Typelib path: " << typelib_path;
+
+        Microsoft::WRL::ComPtr<ITypeInfo> type_info;
+        EXPECT_HRESULT_SUCCEEDED(type_lib->GetTypeInfoOfGuid(iid, &type_info))
+            << ": Typelib path: " << typelib_path << ": IID: " << iid_string;
+      }
+    }
+  }
+}
+
 // Tests if the typelibs and some of the public, internal, and
 // legacy interfaces are available. Failure to query these interfaces indicates
 // an issue with typelib registration.
@@ -662,14 +728,75 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
     EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
   }
 
-  // IUpdaterInternal.
-  Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
-  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
-      scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
-                                     : __uuidof(UpdaterInternalUserClass),
-      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
+  {  // IUpdaterInternal.
+    Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
+    ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
+        scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
+                                       : __uuidof(UpdaterInternalUserClass),
+        nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
+    Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
+    EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
+  }
+
+  VerifyInterfacesRegistryEntries(scope);
+}
+
+void ExpectMarshalInterfaceSucceeds(UpdaterScope scope) {
+  // Create proxy/stubs for the IUpdaterInternal interface.
+  // Look up the ProxyStubClsid32.
+  CLSID psclsid = {};
+  EXPECT_HRESULT_SUCCEEDED(
+      ::CoGetPSClsid(__uuidof(IUpdaterInternal), &psclsid));
+  EXPECT_EQ(base::ToUpperASCII(base::win::WStringFromGUID(psclsid)),
+            L"{00020424-0000-0000-C000-000000000046}");
+
+  // Get the proxy/stub factory buffer.
+  Microsoft::WRL::ComPtr<IPSFactoryBuffer> psfb;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::CoGetClassObject(psclsid, CLSCTX_INPROC, 0, IID_PPV_ARGS(&psfb)));
+
+  // Create the interface proxy.
+  Microsoft::WRL::ComPtr<IRpcProxyBuffer> proxy_buffer;
+  Microsoft::WRL::ComPtr<IUpdaterInternal> object;
+  EXPECT_HRESULT_SUCCEEDED(
+      psfb->CreateProxy(nullptr, __uuidof(IUpdaterInternal), &proxy_buffer,
+                        IID_PPV_ARGS_Helper(&object)));
+
+  // Create the interface stub.
+  Microsoft::WRL::ComPtr<IRpcStubBuffer> stub_buffer;
+  EXPECT_HRESULT_SUCCEEDED(
+      psfb->CreateStub(__uuidof(IUpdaterInternal), nullptr, &stub_buffer));
+
+  // Marshal and unmarshal an IUpdaterInternal object.
   Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
-  EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
+  EXPECT_HRESULT_SUCCEEDED(
+      Microsoft::WRL::MakeAndInitialize<UpdaterInternalImpl>(
+          &updater_internal));
+
+  Microsoft::WRL::ComPtr<IStream> stream;
+  EXPECT_HRESULT_SUCCEEDED(::CoMarshalInterThreadInterfaceInStream(
+      __uuidof(IUpdaterInternal), updater_internal.Get(), &stream));
+
+  base::WaitableEvent unmarshal_complete_event;
+
+  base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](Microsoft::WRL::ComPtr<IStream> stream,
+                 base::WaitableEvent& event) {
+                const base::ScopedClosureRunner signal_event(base::BindOnce(
+                    [](base::WaitableEvent& event) { event.Signal(); },
+                    std::ref(event)));
+
+                Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
+                EXPECT_HRESULT_SUCCEEDED(::CoUnmarshalInterface(
+                    stream.Get(), IID_PPV_ARGS(&updater_internal)));
+              },
+              stream, std::ref(unmarshal_complete_event)));
+
+  EXPECT_TRUE(
+      unmarshal_complete_event.TimedWait(TestTimeouts::action_max_timeout()));
 }
 
 void InitializeBundle(UpdaterScope scope,

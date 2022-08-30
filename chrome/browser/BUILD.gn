@@ -4694,6 +4694,10 @@ static_library("browser") {
       "apps/app_discovery_service/result.h",
       "apps/app_discovery_service/test_fetcher.cc",
       "apps/app_discovery_service/test_fetcher.h",
+      "apps/app_preload_service/app_preload_service.cc",
+      "apps/app_preload_service/app_preload_service.h",
+      "apps/app_preload_service/app_preload_service_factory.cc",
+      "apps/app_preload_service/app_preload_service_factory.h",
       "apps/app_provisioning_service/app_provisioning_data_manager.cc",
       "apps/app_provisioning_service/app_provisioning_data_manager.h",
       "apps/app_service/app_icon/arc_activity_adaptive_icon_impl.cc",
@@ -5306,7 +5310,7 @@ static_library("browser") {
     }
 
     if (enable_cros_libassistant) {
-      deps += [ "//chromeos/services/libassistant/public/mojom" ]
+      deps += [ "//chromeos/ash/services/libassistant/public/mojom" ]
     }
   } else {  # Non - Ash.
     sources += [
@@ -5456,6 +5460,8 @@ static_library("browser") {
       "lacros/arc/arc_intent_helper_mojo_lacros.h",
       "lacros/automation_manager_lacros.cc",
       "lacros/automation_manager_lacros.h",
+      "lacros/browser_launcher.cc",
+      "lacros/browser_launcher.h",
       "lacros/browser_service_lacros.cc",
       "lacros/browser_service_lacros.h",
       "lacros/cert/cert_db_initializer.h",
@@ -6403,8 +6409,6 @@ static_library("browser") {
       "download/download_status_updater_linux.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
-      "themes/theme_service_aura_linux.cc",
-      "themes/theme_service_aura_linux.h",
     ]
     deps += [ "//chrome/app/theme:chrome_unscaled_resources_grit" ]
 
@@ -6705,6 +6709,8 @@ static_library("browser") {
       "chrome_browser_main_extra_parts_linux.cc",
       "chrome_browser_main_extra_parts_linux.h",
       "obsolete_system/obsolete_system_linux.cc",
+      "themes/theme_service_aura_linux.cc",
+      "themes/theme_service_aura_linux.h",
     ]
   }
 

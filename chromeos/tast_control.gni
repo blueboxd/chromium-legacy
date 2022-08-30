@@ -10,15 +10,19 @@
 # list and cite a bug.
 tast_disabled_tests_from_chrome_all = [
   # crbug.com/1356506
+  "inputs.PhysicalKeyboardAutocorrect.en_us_1",
   "inputs.PhysicalKeyboardAutocorrect.en_us_2",
   "inputs.VirtualKeyboardAccent",
   "inputs.VirtualKeyboardAccessibility",
   "inputs.VirtualKeyboardAutoShift",
   "inputs.VirtualKeyboardChangeInput.tablet",
+  "inputs.VirtualKeyboardDeadKeys.catalan",
   "inputs.VirtualKeyboardDeadKeys.french",
   "inputs.VirtualKeyboardEnglishSettings",
+  "inputs.VirtualKeyboardFloat.tablet",
   "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_docked",
   "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardGlideTyping.tablet_docked",
   "inputs.VirtualKeyboardHandwriting.docked",
   "inputs.VirtualKeyboardHandwriting.floating",
   "inputs.VirtualKeyboardLoginScreen.tablet",
@@ -66,9 +70,6 @@ tast_disabled_tests_from_chrome_all = [
   "ui.ChromeCrashReporterMetrics.success_breakpad",
   "ui.ChromeCrashReporterMetrics.miss_breakpad",
 
-  # https://crbug.com/1269124: Flaky.
-  "quicksettings.LockScreen.no_battery",
-
   # https://crbug.com/1273485: Flaky.
   "printer.ProxyAdd.epson_software_collate",
   "printer.ProxyAdd.epson_software_uncollated",
@@ -81,9 +82,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1311242
   "policy.ImagesForURLCheck.allowlist",
-
-  # https://crbug.com/1281645
-  "quicksettings.LockScreen",
 
   # https://crbug.com/1282372
   "security.SELinuxFilesARC",
@@ -116,8 +114,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
 
-  # https://crbug.com/1351699
+  # https://crbug.com/1351654
   "ui.ForceRegion",
+  "ui.ForceRegion.lacros",
 
   # https://crbug.com/1306441
   "policy.UserAvatarImage",

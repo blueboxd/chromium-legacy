@@ -2411,14 +2411,6 @@ if (!is_android) {
       ]
     }
 
-    # https://crbug.com/1252812 The intent picker (launch icon) actions
-    # are not working on Lacros. Remove the lacros exclusion when fixed.
-    if (is_chromeos && !is_chromeos_lacros) {
-      sources += [
-        "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
-      ]
-    }
-
     if (build_with_tflite_lib) {
       sources += [ "../browser/permissions/prediction_service_browsertest.cc" ]
       deps += [ "//components/permissions/prediction_service" ]
@@ -2444,6 +2436,7 @@ if (!is_android) {
       deps += [
         ":pdf_extension_test_utils",
         "//components/pdf/browser",
+        "//components/pdf/common",
         "//pdf:features",
         "//pdf/loader",
       ]
@@ -2753,7 +2746,7 @@ if (!is_android) {
 
     if (enable_plugins) {
       sources += [
-        "../browser/chrome_plugin_browsertest.cc",
+        "../browser/plugins/plugin_info_host_impl_browsertest.cc",
         "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
       ]
     }
@@ -3548,6 +3541,7 @@ if (!is_android) {
         "../browser/ash/app_mode/kiosk_app_update_service_browsertest.cc",
         "../browser/ash/app_mode/kiosk_crash_restore_browsertest.cc",
         "../browser/ash/app_mode/web_app/web_kiosk_app_data_browsertest.cc",
+        "../browser/ash/app_mode/web_app/web_kiosk_browser_controller_ash_browsertest.cc",
         "../browser/ash/app_restore/app_restore_arc_test_helper.cc",
         "../browser/ash/app_restore/app_restore_arc_test_helper.h",
         "../browser/ash/app_restore/app_restore_test_util.cc",
@@ -3996,6 +3990,7 @@ if (!is_android) {
         "../browser/ui/views/plugin_vm/plugin_vm_installer_view_browsertest.cc",
         "../browser/ui/views/tabs/tab_scrubber_chromeos_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
+        "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
         "../browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
         "../browser/ui/webui/chromeos/add_supervision/add_supervision_ui_browsertest.cc",
         "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
@@ -4509,6 +4504,10 @@ if (!is_android) {
         "chrome/test/data/perf/frame_rate/content/googleblog/images/bse%e2%80%99s+solar+energy+development+center..jpg",
       ]
 
+      if (enable_library_cdms) {
+        excluded_files += [ "lib.unstripped/libclearkeycdm.so" ]
+      }
+
       # Tests depend on having a Python interpreter present on-device.
       # TODO(crbug.com/1292144): Determine whether a solution can be devised
       # for Fuchsia.
@@ -4709,6 +4708,7 @@ if (is_chromeos_lacros) {
       "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       "../browser/extensions/api/preference/preference_api_lacros_browsertest.cc",
       "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
+      "../browser/lacros/browser_launcher_browsertest.cc",
       "../browser/lacros/browser_service_lacros_browsertest.cc",
       "../browser/lacros/cert/cert_db_initializer_browsertest.cc",
       "../browser/lacros/clipboard_lacros_browsertest.cc",
@@ -4745,6 +4745,7 @@ if (is_chromeos_lacros) {
       "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
+      "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
       "../browser/web_applications/app_service/lacros_web_apps_controller_lacros_browsertest.cc",
     ]
 
@@ -7114,6 +7115,7 @@ test("unit_tests") {
       "../browser/apps/app_discovery_service/app_discovery_service_unittest.cc",
       "../browser/apps/app_discovery_service/game_fetcher_unittest.cc",
       "../browser/apps/app_discovery_service/recommended_arc_app_fetcher_unittest.cc",
+      "../browser/apps/app_preload_service/app_preload_service_unittest.cc",
       "../browser/apps/app_service/file_utils_unittest.cc",
       "../browser/apps/app_service/metrics/app_platform_metrics_service_unittest.cc",
       "../browser/apps/app_service/publishers/arc_apps_unittest.cc",
@@ -10329,6 +10331,10 @@ if (!is_android) {
         "//media/cdm/library_cdm/clear_key_cdm",
         "//third_party/widevine/cdm",
       ]
+
+      if (is_fuchsia) {
+        excluded_files = [ "lib.unstripped/libclearkeycdm.so" ]
+      }
     }
 
     # This target should not require the Chrome executable to run.
@@ -10925,7 +10931,10 @@ if (is_chromeos_ash) {
     use_xvfb = use_xvfb_in_this_config
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    sources = [ "../browser/ash/crosapi/test/file_manager_ash_browsertest.cc" ]
+    sources = [
+      "../browser/ash/crosapi/test/file_manager_ash_browsertest.cc",
+      "../browser/ash/crosapi/test/network_change_ash_browsertest.cc",
+    ]
     deps = [
       ":browser_tests_runner",
       ":test_support_ui",

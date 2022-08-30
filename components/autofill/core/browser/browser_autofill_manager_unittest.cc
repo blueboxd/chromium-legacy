@@ -109,7 +109,6 @@ using testing::UnorderedElementsAre;
 
 namespace autofill {
 
-using features::kAutofillRemoveCardExpiryFromDownstreamSuggestion;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
 
@@ -2373,44 +2372,6 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
                  browser_autofill_manager_->GetPackedCreditCardID(2)),
       Suggestion("Clyde Barrow", amex_card_label, kAmericanExpressCard,
                  browser_autofill_manager_->GetPackedCreditCardID(1)));
-}
-
-// Test that a suggestion does not have label (expiration date) if the
-// suggestion is poped up from a credit card number field.
-TEST_F(BrowserAutofillManagerTest,
-       GetCreditCardSuggestions_NoLabelForCCNumberField) {
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillRemoveCardExpiryFromDownstreamSuggestion);
-
-  personal_data().ClearCreditCards();
-  ASSERT_EQ(0U, personal_data().GetCreditCards().size());
-
-  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
-                          test::kEmptyOrigin);
-  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
-                          "378282246310005" /* American Express */, "04",
-                          "2999", "1");
-  credit_card0.set_guid("00000000-0000-0000-0000-000000000001");
-  personal_data().AddCreditCard(credit_card0);
-
-  ASSERT_EQ(1U, personal_data().GetCreditCards().size());
-
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  // Query by card number field.
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
-
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion(
-          std::string("Amex  ") + test::ObfuscatedCardDigitsAsUTF8("0005"),
-          std::string(), kAmericanExpressCard,
-          browser_autofill_manager_->GetPackedCreditCardID(1)));
 }
 
 TEST_F(BrowserAutofillManagerTest, OnCreditCardFetched_StoreInstrumentId) {
@@ -6232,56 +6193,6 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormSubmittedServerTypes) {
   // filled data.
   FormSubmitted(response_data);
   EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
-}
-
-// Test that we are able to save form data after the possible types have been
-// determined. We do two submissions and verify that only at the second
-// submission are the possible types able to be inferred.
-TEST_P(BrowserAutofillManagerStructuredProfileTest,
-       FormSubmittedPossibleTypesTwoSubmissions) {
-  // Set up our form data.
-  FormData form;
-  std::vector<ServerFieldTypeSet> expected_types;
-  test::CreateTestAddressFormData(&form, &expected_types);
-  FormsSeen(std::vector<FormData>(1, form));
-
-  // Fill the form.
-  const char guid[] = "00000000-0000-0000-0000-000000000001";
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
-                                     &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false);
-
-  personal_data().ClearProfiles();
-  // The default credit card is a Elvis card. It must be removed because name
-  // fields would be detected. However at least one profile or card is needed to
-  // start the upload process, which is why this other card is created.
-  personal_data().ClearCreditCards();
-  CreditCard credit_card;
-  test::SetCreditCardInfo(&credit_card, "Miku Hatsune",
-                          "4234567890654321",  // Visa
-                          "04", "2999", "1");
-  credit_card.set_guid("00000000-0000-0000-0000-000000000007");
-  personal_data().AddCreditCard(credit_card);
-  ASSERT_EQ(0u, personal_data().GetProfiles().size());
-
-  // Simulate form submission. The first submission should not count the data
-  // towards possible types. Therefore we expect all UNKNOWN_TYPE entries.
-  ServerFieldTypeSet type_set;
-  type_set.insert(UNKNOWN_TYPE);
-  std::vector<ServerFieldTypeSet> unknown_types(expected_types.size(),
-                                                type_set);
-  browser_autofill_manager_->SetExpectedSubmittedFieldTypes(unknown_types);
-  FormSubmitted(response_data);
-  ASSERT_EQ(1u, personal_data().GetProfiles().size());
-
-  // The second submission should now have data by which to infer types.
-  browser_autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
-  FormSubmitted(response_data);
-  ASSERT_EQ(1u, personal_data().GetProfiles().size());
 }
 
 // Test that the form signature for an uploaded form always matches the form

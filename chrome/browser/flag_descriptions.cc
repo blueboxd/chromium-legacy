@@ -507,12 +507,6 @@ const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
     "When enabled, Autofill will attempt to fill merchant promo/coupon/gift "
     "code fields when data is available.";
 
-const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[] =
-    "Remove card expiration date from the Autofill card suggestions";
-const char kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[] =
-    "When enabled, card expiration date will no longer be displayed in "
-    "a card suggestion.";
-
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[] =
     "Highlight only changed values in preview mode.";
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[] =
@@ -2448,13 +2442,6 @@ const char kMBIModeDescription[] =
     "Enables independent agent cluster scheduling, via the "
     "AgentSchedulingGroup infrastructure.";
 
-const char kIntensiveWakeUpThrottlingName[] =
-    "Throttle Javascript timers in background.";
-const char kIntensiveWakeUpThrottlingDescription[] =
-    "When enabled, wake ups from DOM Timers are limited to 1 per minute in a "
-    "page that has been hidden for 5 minutes. For additional details, see "
-    "https://www.chromestatus.com/feature/4718288976216064.";
-
 const char kSafetyCheckPermissionsName[] = "Permission Modules on Safety Check";
 const char kSafetyCheckPermissionsDescription[] =
     "When enabled, adds permission modules to Safety Check on desktop. "
@@ -2817,12 +2804,6 @@ const char kThreadedScrollingDescription[] =
     "force all such scroll events to be handled on the main thread. Note that "
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
-
-const char kThrottleForegroundTimersName[] =
-    "Throttle Foreground Timers to 30 Hz";
-const char kThrottleForegroundTimersDescription[] =
-    "On foreground pages, run DOM timers with a non-zero delay on a periodic "
-    "30 Hz tick, instead of as soon as their delay has passed.";
 
 const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
     "Throttle non-visible cross-origin iframes";

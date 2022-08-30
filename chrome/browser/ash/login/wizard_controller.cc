@@ -584,7 +584,7 @@ WizardController::CreateScreens() {
   }
 
   append(std::make_unique<NetworkScreen>(
-      oobe_ui->GetView<NetworkScreenHandler>(),
+      oobe_ui->GetView<NetworkScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
@@ -773,7 +773,7 @@ WizardController::CreateScreens() {
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     append(std::make_unique<ConsolidatedConsentScreen>(
-        oobe_ui->GetView<ConsolidatedConsentScreenHandler>(),
+        oobe_ui->GetView<ConsolidatedConsentScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnConsolidatedConsentScreenExit,
                             weak_factory_.GetWeakPtr())));
 
@@ -2566,7 +2566,7 @@ void WizardController::MaybeTakeTPMOwnership() {
     return;
 
   DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
-  TpmManagerClient::Get()->TakeOwnership(::tpm_manager::TakeOwnershipRequest(),
-                                         base::DoNothing());
+  chromeos::TpmManagerClient::Get()->TakeOwnership(
+      ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
 }
 }  // namespace ash

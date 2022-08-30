@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/deferred_shaping.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -443,37 +444,6 @@ void DisplayLockDocumentState::NotifyPrintingOrPreviewChanged() {
 
   for (auto& context : display_lock_contexts_)
     context->SetShouldUnlockAutoForPrint(printing_);
-}
-
-void DisplayLockDocumentState::UnlockShapingDeferredElements() {
-  if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
-    return;
-  auto* view = document_->View();
-  if (!view)
-    return;
-  size_t count = view->ReshapeAllDeferred();
-  if (count > 0) {
-    UseCounter::Count(document_,
-                      WebFeature::kDeferredShapingReshapedByForceLayout);
-    DEFERRED_SHAPING_VLOG(1)
-        << "Unlocked all " << count << " elements by force-layout.";
-  }
-}
-
-void DisplayLockDocumentState::UnlockShapingDeferredElements(
-    const Node& target,
-    CSSPropertyID property_id) {
-  UnlockShapingDeferredElements();
-}
-
-void DisplayLockDocumentState::UnlockToDetermineWidth(
-    const LayoutObject& object) {
-  UnlockShapingDeferredElements();
-}
-
-void DisplayLockDocumentState::UnlockToDetermineHeight(
-    const LayoutObject& object) {
-  UnlockShapingDeferredElements();
 }
 
 void DisplayLockDocumentState::IssueForcedRenderWarning(Element* element) {

@@ -12,9 +12,9 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/ash/services/libassistant/public/mojom/audio_input_controller.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/platform_delegate.mojom.h"
 #include "chromeos/assistant/internal/libassistant/shared_headers.h"
-#include "chromeos/services/libassistant/public/mojom/audio_input_controller.mojom.h"
-#include "chromeos/services/libassistant/public/mojom/platform_delegate.mojom.h"
 #include "media/base/audio_capturer_source.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -25,6 +25,10 @@ namespace libassistant {
 class AudioInputStream;
 class AudioCapturer;
 
+// AudioInputImpl automatically falls back to libassistant based hotword
+// detection if DSP device id is not available.
+// TODO(b/242776750): Remove this behavior if possible to simplify
+// AudioInputImpl.
 class AudioInputImpl : public assistant_client::AudioInput {
  public:
   explicit AudioInputImpl(const absl::optional<std::string>& device_id);

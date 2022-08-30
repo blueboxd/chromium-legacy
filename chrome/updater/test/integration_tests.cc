@@ -123,7 +123,6 @@ class IntegrationTest : public ::testing::Test {
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
-    WaitForUpdaterExit();
   }
 
   void ExpectCandidateUninstalled() {
@@ -153,6 +152,10 @@ class IntegrationTest : public ::testing::Test {
 #if BUILDFLAG(IS_WIN)
   void ExpectInterfacesRegistered() {
     test_commands_->ExpectInterfacesRegistered();
+  }
+
+  void ExpectMarshalInterfaceSucceeds() {
+    test_commands_->ExpectMarshalInterfaceSucceeds();
   }
 
   void ExpectLegacyUpdate3WebSucceeds(const std::string& app_id,
@@ -551,6 +554,12 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
 }
 
 #if BUILDFLAG(IS_WIN)
+TEST_F(IntegrationTest, MarshalInterface) {
+  Install();
+  ExpectMarshalInterfaceSucceeds();
+  Uninstall();
+}
+
 TEST_F(IntegrationTest, LegacyUpdate3Web) {
   ScopedServer test_server(test_commands_);
   Install();

@@ -97,12 +97,6 @@ const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
 
-const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[] =
-    "Remove card expiration date from the Autofill card suggestions";
-const char kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[] =
-    "When enabled, card expiration date will no longer be displayed in a card "
-    "suggestion";
-
 const char kAutofillSaveCardDismissOnNavigationName[] =
     "Save Card Dismiss on Navigation";
 const char kAutofillSaveCardDismissOnNavigationDescription[] =
@@ -294,6 +288,10 @@ const char kEnableFREUIModuleIOSDescription[] =
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
+
+const char kEnableOpenInDownloadName[] = "Enable Open In download";
+const char kEnableOpenInDownloadDescription[] =
+    "Enable new download for Open In menu (iOS 14.5+).";
 
 const char kEnableUnicornAccountSupportName[] =
     "Enable Unicorn account support";
@@ -623,11 +621,6 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
-
-const char kSmartSortingNewDestinationsName[] =
-    "Smart Sorting new destinations added to the overflow menu.";
-const char kSmartSortingNewDestinationsDescription[] =
-    "Enables smart sorting new destinations added to the overflow menu.";
 
 const char kSmartSortingNewOverflowMenuName[] =
     "Smart Sorting the new Overflow Menu";

@@ -79,6 +79,9 @@ const char kDisableRpcSigningParamaterName[] = "DISABLE_RPC_SIGNING";
 // expect the model to be used.
 const char kSendAnnotateDomModelVersion[] = "SEND_ANNOTATE_DOM_MODEL_VERSION";
 
+// Whether this script does not requires a round trip.
+const char kIsNoRoundTrip[] = "IS_NO_ROUND_TRIP";
+
 // The list of non sensitive script parameters that client requests are allowed
 // to send to the backend i.e., they do not require explicit approval in the
 // autofill-assistant onboarding. Even so, please always reach out to Chrome
@@ -109,6 +112,7 @@ const char kDetailsTotalPriceLabel[] = "DETAILS_TOTAL_PRICE_LABEL";
 const char kDetailsTotalPrice[] = "DETAILS_TOTAL_PRICE";
 const char kRunHeadless[] = "RUN_HEADLESS";
 const char kFieldTrialPrefix[] = "FIELD_TRIAL_";
+const char kUseAssistantUi[] = "USE_ASSISTANT_UI";
 
 ScriptParameters::ScriptParameters(
     const base::flat_map<std::string, std::string>& parameters) {
@@ -265,8 +269,12 @@ absl::optional<bool> ScriptParameters::GetSendAnnotateDomModelVersion() const {
   return GetTypedParameter<bool>(parameters_, kSendAnnotateDomModelVersion);
 }
 
-absl::optional<bool> ScriptParameters::GetRunHeadless() const {
-  return GetTypedParameter<bool>(parameters_, kRunHeadless);
+bool ScriptParameters::GetRunHeadless() const {
+  return GetTypedParameter<bool>(parameters_, kRunHeadless).value_or(false);
+}
+
+bool ScriptParameters::GetUseAssistantUi() const {
+  return GetTypedParameter<bool>(parameters_, kUseAssistantUi).value_or(false);
 }
 
 absl::optional<std::string> ScriptParameters::GetFieldTrialGroup(
@@ -323,6 +331,10 @@ absl::optional<std::string> ScriptParameters::GetDetailsTotalPriceLabel()
 
 absl::optional<std::string> ScriptParameters::GetDetailsTotalPrice() const {
   return GetParameter(kDetailsTotalPrice);
+}
+
+absl::optional<bool> ScriptParameters::GetIsNoRoundtrip() const {
+  return GetTypedParameter<bool>(parameters_, kIsNoRoundTrip);
 }
 
 void ScriptParameters::UpdateDeviceOnlyParameters(

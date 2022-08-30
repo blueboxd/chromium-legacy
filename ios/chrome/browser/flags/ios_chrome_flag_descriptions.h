@@ -83,12 +83,6 @@ extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsDescription[];
 extern const char kAutofillPruneSuggestionsName[];
 extern const char kAutofillPruneSuggestionsDescription[];
 
-// Title and description for the flag to control removing card expiration date
-// from the downstream suggestions.
-extern const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[];
-extern const char
-    kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[];
-
 // Title and description for the flag to control dismissing the Save Card
 // Infobar on Navigation.
 extern const char kAutofillSaveCardDismissOnNavigationName[];
@@ -271,6 +265,10 @@ extern const char kEnableFREUIModuleIOSDescription[];
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
+
+// Title and description for the flag to enable open in download
+extern const char kEnableOpenInDownloadName[];
+extern const char kEnableOpenInDownloadDescription[];
 
 // Title and description for the flag to enable omnibox suggestions scrolling on
 // iPad.
@@ -566,11 +564,6 @@ extern const char kSharedHighlightingIOSDescription[];
 // Autofill field type predictions as placeholder.
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
-
-// Title and description for the flag to enable smart sorting new destinations
-// added to the overflow menu.
-extern const char kSmartSortingNewDestinationsName[];
-extern const char kSmartSortingNewDestinationsDescription[];
 
 // Title and description for the flag to enable smart sorting the new overflow
 // menu.

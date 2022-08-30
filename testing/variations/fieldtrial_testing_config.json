@@ -1708,11 +1708,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_LazyEmbeds3000_20220809",
+                    "name": "Enabled_LazyEmbeds0_20220809",
                     "params": {
                         "allowed_websites": "https://www.youtube.com|/embed,https://www.google.com|/maps/embed",
                         "strategy": "allow_list",
-                        "timeout": "3000"
+                        "timeout": "0"
                     },
                     "enable_features": [
                         "AutomaticLazyFrameLoadingToEmbedUrls",
@@ -1723,11 +1723,11 @@
                     ]
                 },
                 {
-                    "name": "Enabled_LazyEmbeds0_20220809",
+                    "name": "Enabled_LazyEmbeds3000_20220809",
                     "params": {
                         "allowed_websites": "https://www.youtube.com|/embed,https://www.google.com|/maps/embed",
                         "strategy": "allow_list",
-                        "timeout": "0"
+                        "timeout": "3000"
                     },
                     "enable_features": [
                         "AutomaticLazyFrameLoadingToEmbedUrls",
@@ -2455,7 +2455,8 @@
                 "windows",
                 "mac",
                 "chromeos",
-                "chromeos_lacros"
+                "chromeos_lacros",
+                "linux"
             ],
             "experiments": [
                 {
@@ -6831,9 +6832,9 @@
             ],
             "experiments": [
                 {
-                    "name": "32KB_input_stream_20220815",
+                    "name": "4KB_input_stream_20220829",
                     "params": {
-                        "max_input_stream_bytes_available_unknown": "32768"
+                        "max_input_stream_bytes_available_unknown": "4096"
                     },
                     "enable_features": [
                         "OptimizeNetworkBuffers2"
@@ -7131,6 +7132,7 @@
                 {
                     "name": "enabled3_doublekey",
                     "enable_features": [
+                        "EnableDoubleKeyNetworkAnonymizationKey",
                         "ForceIsolationInfoFrameOriginToTopLevelFrame",
                         "PartitionConnectionsByNetworkIsolationKey",
                         "PartitionDomainReliabilityByNetworkIsolationKey",
@@ -7442,7 +7444,6 @@
         {
             "platforms": [
                 "android",
-                "android_weblayer",
                 "android_webview",
                 "chromeos",
                 "chromeos_lacros",
@@ -7452,9 +7453,10 @@
             ],
             "experiments": [
                 {
-                    "name": "FirstScriptLazy_20220609",
+                    "name": "FirstScriptLazy_20220829",
                     "params": {
-                        "compile-strategy": "first-script-lazy"
+                        "compile-strategy": "first-script-lazy",
+                        "inline-script-timeout": "5ms"
                     },
                     "enable_features": [
                         "PrecompileInlineScripts"
@@ -8413,6 +8415,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SendTabToSelfV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ServiceWorkerSkipIgnorableFetchHandler": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledSkipEmptyFetchHandler_20220829",
+                    "params": {
+                        "SkipEmptyFetchHandler": "true"
+                    },
+                    "enable_features": [
+                        "ServiceWorkerSkipIgnorableFetchHandler"
                     ]
                 }
             ]

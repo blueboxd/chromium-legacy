@@ -245,6 +245,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -2702,7 +2703,8 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  GetDisplayLockDocumentState().UnlockShapingDeferredElements(*node);
+  DeferredShapingController::From(*this)->ReshapeDeferred(
+      ReshapeReason::kGeometryApi, *node);
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
@@ -2720,11 +2722,11 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node,
     return;
 
   if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
-    auto& state = GetDisplayLockDocumentState();
+    auto* ds_controller = DeferredShapingController::From(*this);
     if (property_id == CSSPropertyID::kWidth)
-      state.UnlockToDetermineWidth(*node->GetLayoutObject());
+      ds_controller->ReshapeDeferredForWidth(*node->GetLayoutObject());
     else
-      state.UnlockToDetermineHeight(*node->GetLayoutObject());
+      ds_controller->ReshapeDeferredForHeight(*node->GetLayoutObject());
   }
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
@@ -3219,8 +3221,8 @@ void Document::SetPrinting(PrintingState state) {
 
   if (was_printing != is_printing) {
     GetDisplayLockDocumentState().NotifyPrintingOrPreviewChanged();
-    if (View())
-      View()->ReshapeAllDeferred();
+    if (auto* ds_controller = DeferredShapingController::From(*this))
+      ds_controller->ReshapeAllDeferred(ReshapeReason::kPrinting);
 
     // We force the color-scheme to light for printing.
     ColorSchemeChanged();
@@ -4106,10 +4108,10 @@ void Document::SetParsingState(ParsingState parsing_state) {
       parsing_state_ == kFinishedParsing) {
     if (form_controller_ && form_controller_->HasControlStates())
       form_controller_->ScheduleRestore();
-    if (auto* view = View()) {
+    if (auto* ds_controller = DeferredShapingController::From(*this)) {
       PaintTiming& timing = PaintTiming::From(*this);
       if (!timing.FirstContentfulPaint().is_null())
-        view->ReshapeAllDeferred();
+        ds_controller->ReshapeAllDeferred(ReshapeReason::kDomContentLoaded);
     }
   }
 }
@@ -4502,6 +4504,10 @@ CSSStyleSheet& Document::ElementSheet() {
   if (!elem_sheet_)
     elem_sheet_ = CSSStyleSheet::CreateInline(*this, base_url_);
   return *elem_sheet_;
+}
+
+bool Document::InPostLifecycleSteps() const {
+  return View() && View()->InPostLifecycleSteps();
 }
 
 void Document::MaybeHandleHttpRefresh(const String& content,
@@ -6103,23 +6109,21 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
 
 ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
                                                     const AtomicString& site) {
+  if (!GetFrame()) {
+    // Note that in detached frames, resolvers are not able to return a promise.
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSecurityError,
+                          "requestStorageAccessForSite: Cannot be used unless "
+                          "the document is fully active."));
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   // Access the promise first to ensure it is created so that the proper state
   // can be changed when it is resolved or rejected.
   ScriptPromise promise = resolver->Promise();
-
-  if (!GetFrame()) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Must not be called from a detached "
-        "frame."));
-
-    resolver->Reject();
-    return promise;
-  }
 
   const bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(GetFrame());
@@ -6190,13 +6194,6 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
 }
 
 ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-
-  // Access the promise first to ensure it is created so that the proper state
-  // can be changed when it is resolved or rejected.
-  ScriptPromise promise = resolver->Promise();
-
   if (!GetFrame()) {
     FireRequestStorageAccessHistogram(RequestStorageResult::REJECTED_NO_ORIGIN);
 
@@ -6207,6 +6204,13 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                           "requestStorageAccess Cannot be used unless the "
                           "document is fully active."));
   }
+
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // Access the promise first to ensure it is created so that the proper state
+  // can be changed when it is resolved or rejected.
+  ScriptPromise promise = resolver->Promise();
 
   const bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(GetFrame());
@@ -7035,9 +7039,6 @@ void Document::FinishedParsing() {
         metadata_handler->LogUsageMetrics();
       }
     }
-
-    if (frame->GetFrameScheduler())
-      frame->GetFrameScheduler()->OnDomContentLoaded();
 
     if (ShouldMarkFontPerformance())
       FontPerformance::MarkDomContentLoaded();

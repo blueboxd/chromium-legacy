@@ -159,6 +159,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
@@ -1210,6 +1211,8 @@ void Element::scrollIntoView(bool align_to_top) {
 }
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
+  DeferredShapingController::From(GetDocument())
+      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kScrollIntoView);
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
@@ -1610,7 +1613,8 @@ void Element::setScrollLeft(double new_left) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().View()->ReshapeAllDeferred();
+  DeferredShapingController::From(GetDocument())
+      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
 
@@ -1662,7 +1666,8 @@ void Element::setScrollTop(double new_top) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().View()->ReshapeAllDeferred();
+  DeferredShapingController::From(GetDocument())
+      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
 
@@ -2583,7 +2588,7 @@ void Element::showPopUp(ExceptionState& exception_state) {
   document.AddToTopLayer(this);
   // Remove display:none styling:
   GetPopupData()->setVisibilityState(PopupVisibilityState::kTransitioning);
-  PseudoStateChanged(CSSSelector::kPseudoPopupHidden);
+  PseudoStateChanged(CSSSelector::kPseudoPopupOpeningOrOpen);
 
   // Force a style update. This ensures that base property values are set prior
   // to `:open` matching, so that transitions can start on the change to
@@ -2811,7 +2816,7 @@ void Element::PopupHideFinishIfNeeded() {
   if (GetPopupData()) {
     GetPopupData()->setVisibilityState(PopupVisibilityState::kHidden);
     GetPopupData()->setAnimationFinishedListener(nullptr);
-    PseudoStateChanged(CSSSelector::kPseudoPopupHidden);
+    PseudoStateChanged(CSSSelector::kPseudoPopupOpeningOrOpen);
   }
 }
 
@@ -3749,7 +3754,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   if (context)
     context->DetachLayoutTree();
   if (was_shaping_deferred && GetDocument().View())
-    GetDocument().View()->UnregisterShapingDeferredElement(*this);
+    DeferredShapingController::From(GetDocument())->UnregisterDeferred(*this);
 }
 
 void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
@@ -5570,6 +5575,8 @@ void Element::Focus(const FocusParams& params) {
       frame_owner_element->contentDocument()->UnloadStarted())
     return;
 
+  DeferredShapingController::From(GetDocument())
+      ->ReshapeAllDeferred(ReshapeReason::kFocus);
   // Ensure we have clean style (including forced display locks).
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
 
@@ -5855,9 +5862,7 @@ bool Element::IsClickableControl(Node* node) {
 }
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
-  auto& state = GetDocument().GetDisplayLockDocumentState();
-  state.UnlockShapingDeferredElements(*this);
-  if (!state.HasActivatableLocks())
+  if (!GetDocument().GetDisplayLockDocumentState().HasActivatableLocks())
     return false;
 
   HeapVector<Member<Element>> activatable_targets;
@@ -8998,8 +9003,12 @@ void Element::FireToggleActivation(const ToggleTrigger& activation) {
     }
   }
 
+  CSSToggle::State old_value = toggle->Value();
   ChangeToggle(toggle, activation, toggle_specifier);
-  toggle->FireToggleChangeEvent();
+  CSSToggle::State new_value = toggle->Value();
+
+  if (old_value != new_value)
+    toggle->FireToggleChangeEvent();
 }
 
 // Implement https://tabatkins.github.io/css-toggle/#change-a-toggle
@@ -9097,8 +9106,8 @@ void Element::ChangeToggle(CSSToggle* t,
       }
     }
 
-    if (t->StateSet().IsNames()) {
-      const auto& names = t->StateSet().AsNames();
+    if (states.IsNames()) {
+      const auto& names = states.AsNames();
       if (index < names.size()) {
         t->SetValue(State(names[index]));
       } else {

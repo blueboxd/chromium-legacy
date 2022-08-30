@@ -702,16 +702,6 @@ const FeatureEntry::FeatureVariation kMBIModeVariations[] = {
     {"per site instance", kMBIModeEnabledPerSiteInstance,
      std::size(kMBIModeEnabledPerSiteInstance), nullptr}};
 
-const FeatureEntry::FeatureParam kIntensiveWakeUpThrottlingAfter10Seconds[] = {
-    {blink::features::kIntensiveWakeUpThrottling_GracePeriodSeconds_Name,
-     "10"}};
-
-const FeatureEntry::FeatureVariation kIntensiveWakeUpThrottlingVariations[] = {
-    {"10 seconds after a tab is hidden (facilitates testing)",
-     kIntensiveWakeUpThrottlingAfter10Seconds,
-     std::size(kIntensiveWakeUpThrottlingAfter10Seconds), nullptr},
-};
-
 const FeatureEntry::FeatureParam kFencedFramesImplementationTypeShadowDOM[] = {
     {"implementation_type", "shadow_dom"}};
 const FeatureEntry::FeatureParam kFencedFramesImplementationTypeMPArch[] = {
@@ -5605,13 +5595,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kMBIModeVariations,
                                     "MBIMode")},
 
-    {"intensive-wake-up-throttling",
-     flag_descriptions::kIntensiveWakeUpThrottlingName,
-     flag_descriptions::kIntensiveWakeUpThrottlingDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kIntensiveWakeUpThrottling,
-                                    kIntensiveWakeUpThrottlingVariations,
-                                    "IntensiveWakeUpThrottling")},
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"double-tap-to-zoom-in-tablet-mode",
      flag_descriptions::kDoubleTapToZoomInTabletModeName,
@@ -8153,12 +8136,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUpdateHistoryEntryPointsInIncognito)},
 
-    {"throttle-foreground-timers",
-     flag_descriptions::kThrottleForegroundTimersName,
-     flag_descriptions::kThrottleForegroundTimersDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(blink::features::kThrottleForegroundTimers)},
-
     {"align-wakeups", flag_descriptions::kAlignWakeUpsName,
      flag_descriptions::kAlignWakeUpsDescription, kOsAll,
      FEATURE_VALUE_TYPE(base::kAlignWakeUps)},
@@ -8985,14 +8962,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          features::kBrokerFileOperationsOnDiskCacheInNetworkService)},
-
-    {"autofill-remove-card-expiry-from-downstream-suggestion",
-     flag_descriptions::kAutofillRemoveCardExpiryFromDownstreamSuggestionName,
-     flag_descriptions::
-         kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::
-                            kAutofillRemoveCardExpiryFromDownstreamSuggestion)},
 
 #if !BUILDFLAG(IS_CHROMEOS)
     {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,

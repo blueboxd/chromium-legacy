@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -1629,7 +1630,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!page)
     return;
 
-  view->ReshapeAllDeferred();
+  view->GetDeferredShapingController().ReshapeAllDeferred(
+      ReshapeReason::kScrollingApi);
   document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   float x = 0.0f;
@@ -1689,7 +1691,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
-    view->ReshapeAllDeferred();
+    view->GetDeferredShapingController().ReshapeAllDeferred(
+        ReshapeReason::kScrollingApi);
     document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
 
@@ -1738,6 +1741,9 @@ void LocalDOMWindow::moveBy(int x, int y) const {
     return;
   }
 
+  if (IsPictureInPictureWindow())
+    return;
+
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
   if (!page)
@@ -1755,6 +1761,9 @@ void LocalDOMWindow::moveTo(int x, int y) const {
       document()->IsPrerendering()) {
     return;
   }
+
+  if (IsPictureInPictureWindow())
+    return;
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1774,6 +1783,9 @@ void LocalDOMWindow::resizeBy(int x, int y) const {
     return;
   }
 
+  if (IsPictureInPictureWindow())
+    return;
+
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
   if (!page)
@@ -1790,6 +1802,9 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
       document()->IsPrerendering()) {
     return;
   }
+
+  if (IsPictureInPictureWindow())
+    return;
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -2210,8 +2225,11 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
   DCHECK(result.new_window);
 
   result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+  LocalDOMWindow* pip_dom_window =
+      To<LocalDOMWindow>(result.frame->DomWindow());
+  pip_dom_window->SetIsPictureInPictureWindow();
 
-  return result.frame->DomWindow();
+  return pip_dom_window;
 }
 
 void LocalDOMWindow::Trace(Visitor* visitor) const {
@@ -2332,6 +2350,14 @@ Fence* LocalDOMWindow::fence() {
   }
 
   return fence_.Get();
+}
+
+bool LocalDOMWindow::IsPictureInPictureWindow() const {
+  return is_picture_in_picture_window_;
+}
+
+void LocalDOMWindow::SetIsPictureInPictureWindow() {
+  is_picture_in_picture_window_ = true;
 }
 
 }  // namespace blink

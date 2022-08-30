@@ -579,11 +579,6 @@
     "expiry_milestone": 107
   },
   {
-    "name": "autofill-remove-card-expiry-from-downstream-suggestion",
-    "owners": [ "siyua", "siashah" ],
-    "expiry_milestone": 112
-  },
-  {
     "name": "autofill-save-card-dismiss-on-navigation",
     "owners": [ "sczs", "bling-flags@google.com" ],
     "expiry_milestone": 82
@@ -591,7 +586,7 @@
   {
     "name": "autofill-show-manual-fallbacks-in-context-menu",
     "owners": [ "vidhanj", "koerber"],
-    "expiry_milestone": 106
+    "expiry_milestone": 112
   },
   {
     "name": "autofill-type-specific-popup-width",
@@ -2620,6 +2615,11 @@
     "expiry_milestone": 112
   },
   {
+    "name": "enable-open-in-download",
+    "owners": [ "alionadangla", "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "enable-openscreen-cast-streaming-session",
     "owners": [ "jophba", "openscreen-eng" ],
     "expiry_milestone": 120
@@ -3954,11 +3954,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "intensive-wake-up-throttling",
-    "owners": [ "fdoray" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "intent-chip-app-icon",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
     "expiry_milestone": 108
@@ -5171,8 +5166,8 @@
   },
   {
     "name": "password-edit-dialog-with-details",
-    "owners": ["atsvirchkova"],
-    "expiry_milestone": 106
+    "owners": ["atsvirchkova@google.com", "ioanap"],
+    "expiry_milestone": 109
   },
   {
     "name": "password-import",
@@ -6025,11 +6020,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "smart-sorting-new-destinations",
-    "owners": [ "bwwilliams@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 111
-  },
-  {
     "name": "smart-sorting-new-overflow-menu",
     "owners": [ "bwwilliams@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 108
@@ -6264,11 +6254,6 @@
     "name": "third-party-storage-partitioning",
     "owners": [ "miketaylr", "eliason" ],
     "expiry_milestone": 112
-  },
-  {
-    "name": "throttle-foreground-timers",
-    "owners": [ "fdoray", "scheduler-dev" ],
-    "expiry_milestone": 102
   },
   {
     "name": "tint-composited-content",

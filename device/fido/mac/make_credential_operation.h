@@ -22,11 +22,10 @@ namespace mac {
 
 // MakeCredentialOperation implements the authenticatorMakeCredential operation.
 // The operation can be invoked via its |Run| method, which must only be called
-class API_AVAILABLE(macosx(10.12.2))
 // once. It prompts the user for consent via Touch ID and then generates a key
 // pair in the Secure Enclave, with a reference plus metadata persisted in the
 // macOS Keychain.
-class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialOperation : public Operation {
+class API_AVAILABLE(macosx(10.12.2)) COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialOperation : public Operation {
  public:
   using Callback = base::OnceCallback<void(
       CtapDeviceResponseCode,

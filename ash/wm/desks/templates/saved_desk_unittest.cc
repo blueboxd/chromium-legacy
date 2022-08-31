@@ -669,7 +669,7 @@ TEST_F(SavedDeskTest, InvokeAccessibilityAlertOnEnterDeskTemplates) {
   ShowDesksTemplatesGrids();
 
   // Alert for entering templates should be sent.
-  EXPECT_EQ(AccessibilityAlert::DESK_TEMPLATES_MODE_ENTERED,
+  EXPECT_EQ(AccessibilityAlert::SAVED_DESKS_MODE_ENTERED,
             client.last_a11y_alert());
 }
 
@@ -3720,7 +3720,7 @@ TEST_F(SavedDeskTest, NoDuplicateDisplayedName) {
   loop.Run();
 
   desks_storage::DeskModel::GetEntryByUuidResult result =
-      desk_model()->GetEntryByUUID(uuid.AsLowercaseString());
+      desk_model()->GetEntryByUUID(uuid);
 
   EXPECT_EQ(desks_storage::DeskModel::GetEntryByUuidStatus::kOk, result.status);
   // `LocalDeskStorage` does not support

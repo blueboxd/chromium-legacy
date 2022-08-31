@@ -45,6 +45,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/optional_trace_event.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
@@ -3848,11 +3849,13 @@ void RenderFrameHostImpl::DidNavigate(
     const mojom::DidCommitProvisionalLoadParams& params,
     NavigationRequest* navigation_request,
     bool was_within_same_document) {
-  // Keep track of the last committed URL and origin in the RenderFrameHost
-  // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
-  // stay correct even if the render_frame_host later becomes pending deletion.
+  // The `url` and `origin` of the current document are stored in the
+  // RenderFrameHost, because:
+  // - The FrameTreeNode represents the frame.
+  // - The RenderFrameHost represents a document hosted inside the frame.
+  //
   // The URL is set regardless of whether it's for a net error or not.
-  navigation_request->frame_tree_node()->SetCurrentURL(params.url);
+  SetLastCommittedUrl(params.url);
   SetLastCommittedOrigin(params.origin);
 
   // If the navigation was a cross-document navigation and it's not the
@@ -4148,7 +4151,7 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   SetLastCommittedOrigin(new_frame_origin);
 
   SetStorageKey(CalculateStorageKey(
-      new_frame_origin, base::OptionalOrNullptr(isolation_info_.nonce())));
+      new_frame_origin, base::OptionalToPtr(isolation_info_.nonce())));
 
   // Apply private network request policy according to our new origin.
   if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
@@ -6219,15 +6222,12 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
   if (lifecycle_state() != LifecycleStateImpl::kActive)
     return;
 
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager) {
-      manager->OnFindInPageResult(params->request_id, params->match_index,
-                                  params->start_id, params->start_offset,
-                                  params->end_id, params->end_offset);
-    }
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager) {
+    manager->OnFindInPageResult(params->request_id, params->match_index,
+                                params->start_id, params->start_offset,
+                                params->end_id, params->end_offset);
   }
 }
 
@@ -6238,13 +6238,10 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
   if (lifecycle_state() != LifecycleStateImpl::kActive)
     return;
 
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager)
-      manager->OnFindInPageTermination();
-  }
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager)
+    manager->OnFindInPageTermination();
 }
 
 // TODO(crbug.com/1213863): Move this method to content::PageImpl.
@@ -6310,9 +6307,12 @@ bool RenderFrameHostImpl::Reload() {
 
 void RenderFrameHostImpl::SendAccessibilityEventsToManager(
     const AXEventNotificationDetails& details) {
-  if (browser_accessibility_manager_ &&
-      !browser_accessibility_manager_->OnAccessibilityEvents(details)) {
-    // OnAccessibilityEvents returns false in IPC error conditions
+  if (!browser_accessibility_manager_)
+    return;
+
+  DCHECK(delegate_->GetAccessibilityMode().has_mode(ui::kAXModeBasic.mode()));
+  if (!browser_accessibility_manager_->OnAccessibilityEvents(details)) {
+    // OnAccessibilityEvents returns false in IPC error conditions.
     AccessibilityFatalError();
   }
 }
@@ -7175,7 +7175,7 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
 
     target_frame->frame_tree_node()->navigator().NavigateFromFrameProxy(
         target_frame, validated_params_url,
-        base::OptionalOrNullptr(params->initiator_frame_token),
+        base::OptionalToPtr(params->initiator_frame_token),
         GetProcess()->GetID(), params->initiator_origin, GetSiteInstance(),
         content::Referrer(), ui::PAGE_TRANSITION_LINK,
         should_replace_current_entry, download_policy, "GET",
@@ -7192,8 +7192,7 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
                validated_url.possibly_invalid_spec());
 
   frame_tree_node_->navigator().RequestOpenURL(
-      this, validated_url,
-      base::OptionalOrNullptr(params->initiator_frame_token),
+      this, validated_url, base::OptionalToPtr(params->initiator_frame_token),
       GetProcess()->GetID(), params->initiator_origin, params->post_body,
       params->extra_headers, params->referrer.To<content::Referrer>(),
       params->disposition, params->should_replace_current_entry,
@@ -8017,8 +8016,7 @@ void RenderFrameHostImpl::HandleAXEvents(
     }
   }
 
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
-    GetOrCreateBrowserAccessibilityManager();
+  GetOrCreateBrowserAccessibilityManager();
 
   AXEventNotificationDetails details;
   details.ax_tree_id = tree_id;
@@ -8057,8 +8055,7 @@ void RenderFrameHostImpl::HandleAXEvents(
     needs_ax_root_id_ = false;
   }
 
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
-    SendAccessibilityEventsToManager(details);
+  SendAccessibilityEventsToManager(details);
 
   delegate_->AccessibilityEventReceived(details);
 
@@ -8094,13 +8091,10 @@ void RenderFrameHostImpl::HandleAXLocationChanges(
           DisallowActivationReasonId::kAXLocationChange))
     return;
 
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager)
-      manager->OnLocationChanges(changes);
-  }
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager)
+    manager->OnLocationChanges(changes);
 
   // Send the updates to the automation extension API.
   std::vector<AXLocationChangeNotificationDetails> details;
@@ -8427,8 +8421,10 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
 
       // Run beforeunload in this frame and its cross-process descendant
       // frames, in parallel.
-      CheckOrDispatchBeforeUnloadForSubtree(check_subframes_only,
-                                            /*send_ipc=*/true, is_reload);
+      CheckOrDispatchBeforeUnloadForSubtree(
+          check_subframes_only,
+          /*send_ipc=*/true, is_reload,
+          /*no_dispatch_because_avoid_unnecessary_sync=*/nullptr);
     }
   }
 }
@@ -8436,7 +8432,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
 bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     bool subframes_only,
     bool send_ipc,
-    bool is_reload) {
+    bool is_reload,
+    bool* no_dispatch_because_avoid_unnecessary_sync) {
   // Beforeunload is not supported inside fenced frame trees.
   if (IsFencedFrameRoot())
     return false;
@@ -8457,6 +8454,10 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     DCHECK(send_ipc);
     beforeunload_pending_replies_.insert(this);
     SendBeforeUnload(is_reload, GetWeakPtr(), /*for_legacy=*/true);
+  } else if (no_dispatch_because_avoid_unnecessary_sync &&
+             !found_beforeunload && !subframes_only && IsRenderFrameLive() &&
+             IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled()) {
+    *no_dispatch_because_avoid_unnecessary_sync = true;
   }
 
   return found_beforeunload;
@@ -8569,9 +8570,11 @@ void RenderFrameHostImpl::SimulateBeforeUnloadCompleted(bool proceed) {
 }
 
 bool RenderFrameHostImpl::ShouldDispatchBeforeUnload(
-    bool check_subframes_only) {
+    bool check_subframes_only,
+    bool* no_dispatch_because_avoid_unnecessary_sync) {
   return CheckOrDispatchBeforeUnloadForSubtree(
-      check_subframes_only, /*send_ipc=*/false, /*is_reload=*/false);
+      check_subframes_only, /*send_ipc=*/false, /*is_reload=*/false,
+      no_dispatch_because_avoid_unnecessary_sync);
 }
 
 void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
@@ -9711,24 +9714,26 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
                   BackForwardCacheDisable::DisabledReasonId::kScreenReader));
   }
 
-  if (!ax_mode.has_mode(ui::AXMode::kWebContents)) {
+  if (ax_mode.has_mode(ui::AXMode::kWebContents)) {
+    if (!render_accessibility_) {
+      // Render accessibility is not enabled yet, so bind the interface first.
+      GetRemoteAssociatedInterfaces()->GetInterface(&render_accessibility_);
+      DCHECK(render_accessibility_);
+    }
+    render_accessibility_->SetMode(ax_mode.mode());
+  } else {
     // Resetting the Remote signals the renderer to shutdown accessibility
     // in the renderer.
     render_accessibility_.reset();
-
-    if (browser_accessibility_manager_) {
-      browser_accessibility_manager_->DetachFromParentManager();
-      browser_accessibility_manager_.reset();
-    }
-    return;
   }
 
-  if (!render_accessibility_) {
-    // Render accessibility is not enabled yet, so bind the interface first.
-    GetRemoteAssociatedInterfaces()->GetInterface(&render_accessibility_);
+  if (!ax_mode.has_mode(ui::kAXModeBasic.mode()) &&
+      browser_accessibility_manager_) {
+    // Missing either kWebContents and kNativeAPIs, so
+    // BrowserAccessibilityManager is no longer necessary.
+    browser_accessibility_manager_->DetachFromParentManager();
+    browser_accessibility_manager_.reset();
   }
-
-  render_accessibility_->SetMode(ax_mode.mode());
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -9829,6 +9834,14 @@ RenderFrameHostImpl::UpdateAXFocusDeferScope::~UpdateAXFocusDeferScope() {
 
 BrowserAccessibilityManager*
 RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
+  // Never create a BrowserAccessibilityManager unless needed for the AXMode.
+  // At least basic mode is required; it contains kWebContents and KNativeAPIs.
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (!accessibility_mode.has_mode(ui::kAXModeBasic.mode())) {
+    DCHECK(!browser_accessibility_manager_);
+    return nullptr;
+  }
+
   if (browser_accessibility_manager_ ||
       no_create_browser_accessibility_manager_for_testing_)
     return browser_accessibility_manager_.get();
@@ -9840,13 +9853,10 @@ RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
 
 void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
     int request_id) {
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager)
-      manager->ActivateFindInPageResult(request_id);
-  }
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager)
+    manager->ActivateFindInPageResult(request_id);
 }
 
 void RenderFrameHostImpl::InsertVisualStateCallback(
@@ -12048,7 +12058,7 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
 
   url::Origin origin = GetLastCommittedOrigin();
   blink::StorageKey storage_key_to_commit = CalculateStorageKey(
-      origin, base::OptionalOrNullptr(provisional_storage_key.nonce()));
+      origin, base::OptionalToPtr(provisional_storage_key.nonce()));
   SetStorageKey(storage_key_to_commit);
 
   coep_reporter_ = navigation_request->TakeCoepReporter();
@@ -12528,6 +12538,13 @@ void RenderFrameHostImpl::SendBeforeUnload(
       },
       rfh, for_legacy);
   if (for_legacy) {
+    if (frame_tree_node_->navigation_request()) {
+      base::UmaHistogramTimes(
+          "Navigation.NavigationStartToBeforeUnloadForLegacy",
+          base::TimeTicks::Now() - frame_tree_node_->navigation_request()
+                                       ->common_params()
+                                       .navigation_start);
+    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(

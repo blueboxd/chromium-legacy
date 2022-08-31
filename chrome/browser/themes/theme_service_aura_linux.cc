@@ -8,17 +8,20 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "ui/color/system_theme.h"
 #include "ui/gfx/image/image.h"
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/linux_ui_factory.h"
 #include "ui/native_theme/native_theme_aura.h"
 
 namespace {
 
 class SystemThemeLinux : public CustomThemeSupplier {
  public:
-  explicit SystemThemeLinux(PrefService* pref_service);
+  SystemThemeLinux(PrefService* pref_service, ui::SystemTheme system_theme);
 
   SystemThemeLinux(const SystemThemeLinux&) = delete;
   SystemThemeLinux& operator=(const SystemThemeLinux&) = delete;
@@ -30,16 +33,21 @@ class SystemThemeLinux : public CustomThemeSupplier {
   bool GetDisplayProperty(int id, int* result) const override;
   gfx::Image GetImageNamed(int id) const override;
   bool HasCustomImage(int id) const override;
+  ui::NativeTheme* GetNativeTheme() const override;
 
  private:
   ~SystemThemeLinux() override;
 
   // This pointer is not owned by us.
   const raw_ptr<PrefService> pref_service_;
+  const ui::SystemTheme system_theme_;
 };
 
-SystemThemeLinux::SystemThemeLinux(PrefService* pref_service)
-    : CustomThemeSupplier(ThemeType::kNativeX11), pref_service_(pref_service) {}
+SystemThemeLinux::SystemThemeLinux(PrefService* pref_service,
+                                   ui::SystemTheme system_theme)
+    : CustomThemeSupplier(ThemeType::kNativeX11),
+      pref_service_(pref_service),
+      system_theme_(system_theme) {}
 
 void SystemThemeLinux::StartUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, true);
@@ -50,12 +58,12 @@ void SystemThemeLinux::StartUsingTheme() {
 void SystemThemeLinux::StopUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, false);
   // Have the former theme notify its observers of change.
-  if (auto* linux_ui = ui::LinuxUi::instance())
-    linux_ui->GetNativeTheme(nullptr)->NotifyOnNativeThemeUpdated();
+  if (auto* linux_ui = ui::GetLinuxUi(system_theme_))
+    linux_ui->GetNativeTheme()->NotifyOnNativeThemeUpdated();
 }
 
 bool SystemThemeLinux::GetColor(int id, SkColor* color) const {
-  if (auto* linux_ui = ui::LinuxUi::instance()) {
+  if (auto* linux_ui = ui::GetLinuxUi(system_theme_)) {
     return linux_ui->GetColor(
         id, color, pref_service_->GetBoolean(prefs::kUseCustomChromeFrame));
   }
@@ -63,7 +71,7 @@ bool SystemThemeLinux::GetColor(int id, SkColor* color) const {
 }
 
 bool SystemThemeLinux::GetDisplayProperty(int id, int* result) const {
-  if (auto* linux_ui = ui::LinuxUi::instance())
+  if (auto* linux_ui = ui::GetLinuxUi(system_theme_))
     return linux_ui->GetDisplayProperty(id, result);
   return false;
 }
@@ -76,6 +84,14 @@ bool SystemThemeLinux::HasCustomImage(int id) const {
   return false;
 }
 
+ui::NativeTheme* SystemThemeLinux::GetNativeTheme() const {
+  if (auto* linux_ui = ui::GetLinuxUi(system_theme_)) {
+    if (auto* native_theme = linux_ui->GetNativeTheme())
+      return native_theme;
+  }
+  return CustomThemeSupplier::GetNativeTheme();
+}
+
 SystemThemeLinux::~SystemThemeLinux() = default;
 
 }  // namespace
@@ -83,12 +99,7 @@ SystemThemeLinux::~SystemThemeLinux() = default;
 ThemeServiceAuraLinux::~ThemeServiceAuraLinux() = default;
 
 ui::SystemTheme ThemeServiceAuraLinux::GetDefaultSystemTheme() const {
-#if defined(IS_LINUX)
-  // TODO(https://crbug.com/1317782): Add QT theme preference.
-  return ShouldUseSystemThemeForProfile(profile()) ? ui::SystemTheme::kGtk
-                                                   : ui::SystemTheme::kDefault;
-#endif
-  return ui::SystemTheme::kDefault;
+  return GetSystemThemeForProfile(profile());
 }
 
 void ThemeServiceAuraLinux::UseTheme(ui::SystemTheme system_theme) {
@@ -96,17 +107,22 @@ void ThemeServiceAuraLinux::UseTheme(ui::SystemTheme system_theme) {
     UseDefaultTheme();
     return;
   }
-#if BUILDFLAG(IS_LINUX)
-  if (ui::LinuxUi::instance()) {
-    SetCustomDefaultTheme(new SystemThemeLinux(profile()->GetPrefs()));
+  if (ui::GetLinuxUi(system_theme)) {
+    SetCustomDefaultTheme(
+        new SystemThemeLinux(profile()->GetPrefs(), system_theme));
   }
-#else
-  UseDefaultTheme();
-#endif
 }
 
 void ThemeServiceAuraLinux::UseSystemTheme() {
-  SetCustomDefaultTheme(new SystemThemeLinux(profile()->GetPrefs()));
+  if (UsingSystemTheme())
+    return;
+  if (auto* linux_ui = ui::LinuxUi::instance()) {
+    if (auto* native_theme = linux_ui->GetNativeTheme()) {
+      UseTheme(native_theme->system_theme());
+      return;
+    }
+  }
+  ThemeService::UseSystemTheme();
 }
 
 bool ThemeServiceAuraLinux::IsSystemThemeDistinctFromDefaultTheme() const {
@@ -132,8 +148,15 @@ void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
 }
 
 // static
-bool ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
+ui::SystemTheme ThemeServiceAuraLinux::GetSystemThemeForProfile(
     const Profile* profile) {
-  return !profile || (!profile->IsChild() &&
-                      profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
+#if BUILDFLAG(IS_LINUX)
+  // TODO(https://crbug.com/1317782): Add QT theme preference.
+  bool use_system_theme =
+      !profile || (!profile->IsChild() &&
+                   profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
+  if (use_system_theme)
+    return ui::SystemTheme::kGtk;
+#endif
+  return ui::SystemTheme::kDefault;
 }

@@ -622,7 +622,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskAutolaunchScreen>(
-      oobe_ui->GetView<KioskAutolaunchScreenHandler>(),
+      oobe_ui->GetView<KioskAutolaunchScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LocaleSwitchScreen>(
@@ -634,7 +634,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<SyncConsentScreen>(
-      oobe_ui->GetView<SyncConsentScreenHandler>(),
+      oobe_ui->GetView<SyncConsentScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ArcTermsOfServiceScreen>(
@@ -796,7 +796,7 @@ WizardController::CreateScreens() {
 
   if (switches::IsRevenBranding()) {
     append(std::make_unique<HWDataCollectionScreen>(
-        oobe_ui->GetView<HWDataCollectionScreenHandler>(),
+        oobe_ui->GetView<HWDataCollectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnHWDataCollectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }

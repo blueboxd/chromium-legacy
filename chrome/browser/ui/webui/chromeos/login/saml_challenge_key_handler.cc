@@ -12,7 +12,7 @@
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -55,12 +55,9 @@ bool AreContextAwareAccessSignalsEnabledForUrl(const GURL& url,
   if (!prefs || !prefs->HasPrefPath(kContextAwareAccessSignalsAllowlistPref))
     return false;
 
-  if (!ash::ProfileHelper::IsRegularProfile(profile) &&
-      !prefs->IsManagedPreference(kContextAwareAccessSignalsAllowlistPref))
-    return false;
-
-  return UrlMatchesPattern(
-      url, prefs->GetValueList(kContextAwareAccessSignalsAllowlistPref));
+  return prefs->IsManagedPreference(kContextAwareAccessSignalsAllowlistPref) &&
+         UrlMatchesPattern(
+             url, prefs->GetValueList(kContextAwareAccessSignalsAllowlistPref));
 }
 }  // namespace
 
@@ -103,7 +100,7 @@ void SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl(const GURL& url) {
       base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl,
                      weak_factory_.GetWeakPtr(), url));
 
-  const base::ListValue* patterns = nullptr;
+  const base::Value::List* patterns = nullptr;
   switch (status) {
     case CrosSettingsProvider::TRUSTED:
       if (!settings->GetList(kDeviceWebBasedAttestationAllowedUrls,
@@ -120,7 +117,7 @@ void SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl(const GURL& url) {
       break;
   }
 
-  if (!patterns || !UrlMatchesPattern(url, patterns->GetList())) {
+  if (!patterns || !UrlMatchesPattern(url, *patterns)) {
     ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
         attestation::TpmChallengeKeyResultCode::
             kDeviceWebBasedAttestationUrlError));

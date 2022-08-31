@@ -717,6 +717,9 @@ extern const char kEnableLensStandaloneFlagId[];
 extern const char kEnableLensStandaloneName[];
 extern const char kEnableLensStandaloneDescription[];
 
+extern const char kEnableRegionSearchOnPdfViewerName[];
+extern const char kEnableRegionSearchOnPdfViewerDescription[];
+
 extern const char kEnableManagedConfigurationWebApiName[];
 extern const char kEnableManagedConfigurationWebApiDescription[];
 
@@ -947,6 +950,9 @@ extern const char kIncognitoNtpRevampDescription[];
 
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
+
+extern const char kInfobarScrollOptimizationName[];
+extern const char kInfobarScrollOptimizationDescription[];
 
 extern const char kInitialNavigationEntryName[];
 extern const char kInitialNavigationEntryDescription[];
@@ -2234,6 +2240,9 @@ extern const char kStrictSiteIsolationDescription[];
 extern const char kStylusWritingToInputName[];
 extern const char kStylusWritingToInputDescription[];
 
+extern const char kSyncAndroidLimitNTPPromoImpressionsName[];
+extern const char kSyncAndroidLimitNTPPromoImpressionsDescription[];
+
 extern const char kSyncAndroidPromosWithAlternativeTitleName[];
 extern const char kSyncAndroidPromosWithAlternativeTitleDescription[];
 
@@ -3446,6 +3455,9 @@ extern const char kWakeOnWifiAllowedDescription[];
 
 extern const char kWebAppsCrosapiName[];
 extern const char kWebAppsCrosapiDescription[];
+
+extern const char kWelcomeScreenName[];
+extern const char kWelcomeScreenDescription[];
 
 extern const char kWifiConnectMacAddressRandomizationName[];
 extern const char kWifiConnectMacAddressRandomizationDescription[];

@@ -94,7 +94,6 @@
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_trichrome_reclient',
       'android-11-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
       'android-12-x64-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
-      'android-12l-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
       'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols_reclient',
       'android-binary-size-generator': 'android_binary_size_reclient',
@@ -951,7 +950,7 @@
       'android-11-x86-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
       'android-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-12-x64-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome',
-      'android-12l-x86-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
+      'android-12l-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-arm64-all-targets-dbg': 'android_debug_trybot_compile_only_arm64_fastbuild',
       'android-asan': 'android_clang_asan_release_trybot',
       'android-bfcache-rel': 'android_release_trybot',
@@ -1075,6 +1074,7 @@
       'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
       'linux-lacros-rel': 'lacros_on_linux_release_trybot',
       'linux-lacros-rel-code-coverage': 'lacros_on_linux_release_trybot_coverage',
+      'linux-lacros-tester-rel-reviver': 'lacros_on_linux_release_trybot',
     },
 
     'tryserver.chromium.codesearch': {
@@ -1136,7 +1136,7 @@
       'gpu-try-linux-nvidia-rel': 'gpu_tests_release_trybot',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
-      'linux-1mbu-compile-fyi-rel': 'release_trybot',
+      'linux-1mbu-compile-fyi-rel': 'release_trybot_reclient',
       'linux-annotator-rel': 'release_trybot',
       'linux-autofill-assistant': 'autofill_assistant_release_trybot',
       'linux-bfcache-rel': 'release_bot_blink',
@@ -1151,7 +1151,6 @@
       'linux-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials',
       'linux-lacros-asan-lsan-rel': 'asan_lsan_lacros_release_bot_dcheck_always_on',
       'linux-lacros-fyi-rel': 'lacros_on_linux_release_trybot',
-      'linux-lacros-tester-rel-reviver': 'lacros_on_linux_release_bot',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-layout-tests-edit-ng': 'release_trybot',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
@@ -1193,8 +1192,8 @@
       # the CI configuration, where no debug builder exists.
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_bot',
 
-      'linux_layout_tests_layout_ng_disabled': 'release_trybot',
-      'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
+      'linux_layout_tests_layout_ng_disabled': 'release_trybot_reclient',
+      'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_reclient',
       'linux_upload_clang': 'release_bot',
       'linux_vr': 'vr_release_trybot',
       'network_service_linux': 'release_trybot',
@@ -3574,6 +3573,10 @@
 
     'release_trybot_no_nacl': [
       'release_trybot', 'disable_nacl',
+    ],
+
+    'release_trybot_reclient': [
+      'release_trybot_reclient',
     ],
 
     'release_trybot_tsan': [

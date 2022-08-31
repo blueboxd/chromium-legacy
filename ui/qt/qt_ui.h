@@ -13,7 +13,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/linux/linux_ui_base.h"
+#include "ui/linux/linux_ui.h"
 #include "ui/qt/qt_interface.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -25,9 +25,9 @@ namespace qt {
 class QtNativeTheme;
 
 // Interface to QT desktop features.
-class QtUi : public ui::LinuxUiBase, QtInterface::Delegate {
+class QtUi : public ui::LinuxUi, QtInterface::Delegate {
  public:
-  explicit QtUi(std::unique_ptr<ui::LinuxUi> fallback_linux_ui);
+  explicit QtUi(ui::LinuxUi* fallback_linux_ui);
 
   QtUi(const QtUi&) = delete;
   QtUi& operator=(const QtUi&) = delete;
@@ -54,6 +54,7 @@ class QtUi : public ui::LinuxUiBase, QtInterface::Delegate {
 
   // ui::LinuxUi:
   bool Initialize() override;
+  ui::NativeTheme* GetNativeTheme() const override;
   bool GetColor(int id, SkColor* color, bool use_custom_frame) const override;
   bool GetDisplayProperty(int id, int* result) const override;
   SkColor GetFocusRingColor() const override;
@@ -75,7 +76,6 @@ class QtUi : public ui::LinuxUiBase, QtInterface::Delegate {
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   std::string GetCursorThemeName() override;
   int GetCursorThemeSize() override;
-  ui::NativeTheme* GetNativeThemeImpl() const override;
 
   // ui::TextEditKeybindingDelegate:
   bool GetTextEditCommandsForEvent(
@@ -101,7 +101,7 @@ class QtUi : public ui::LinuxUiBase, QtInterface::Delegate {
 
   // TODO(https://crbug.com/1317782): This is a fallback for any unimplemented
   // functionality in the QT backend and should eventually be removed.
-  std::unique_ptr<ui::LinuxUi> fallback_linux_ui_;
+  ui::LinuxUi* const fallback_linux_ui_;
 
   // QT modifies argc and argv, and they must be kept alive while
   // `shim_` is alive.
@@ -122,8 +122,7 @@ class QtUi : public ui::LinuxUiBase, QtInterface::Delegate {
 
 // This should be the only symbol exported from this component.
 COMPONENT_EXPORT(QT)
-std::unique_ptr<ui::LinuxUi> CreateQtUi(
-    std::unique_ptr<ui::LinuxUi> fallback_linux_ui);
+std::unique_ptr<ui::LinuxUi> CreateQtUi(ui::LinuxUi* fallback_linux_ui);
 
 }  // namespace qt
 

@@ -1559,8 +1559,11 @@ if (!is_android) {
       "//tools/media_engagement_preload:make_dafsa_runtime",
       "//ui/webui/resources/js:modulize_local_runtime_data",
       "//ui/webui/resources/js/cr:modulize_local_runtime_data",
-      "//ui/webui/resources/js/cr/ui:modulize_runtime_data",
     ]
+
+    if (is_chromeos_ash) {
+      data_deps += [ "//ui/webui/resources/js/cr/ui:modulize_runtime_data" ]
+    }
 
     if (!is_component_build) {
       # WebRTC's frame_analyzer doesn't build correctly on component builds,
@@ -1641,7 +1644,6 @@ if (!is_android) {
 
       "//net/tools/testserver/",
       "//third_party/mocha/mocha.js",
-      "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/simplejson/",
       "//third_party/webrtc/rtc_tools/compare_videos.py",
@@ -3099,6 +3101,7 @@ if (!is_android) {
 
         deps += [
           "//chrome/browser/enterprise/connectors/device_trust:features",
+          "//chrome/browser/enterprise/connectors/device_trust:prefs",
           "//chrome/browser/enterprise/connectors/device_trust/common",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
@@ -4026,7 +4029,6 @@ if (!is_android) {
         # data or data_deps and through which dependencies.
         "//chromeos/test/data/",
         "//ui/file_manager/integration_tests/",
-        "//third_party/polymer/v1_0/components-chromium/",
         "$root_out_dir/chromevox_test_data/",
         "$root_out_dir/content_shell.pak",
         "$root_out_dir/resources/chromeos/",
@@ -6788,6 +6790,7 @@ test("unit_tests") {
       "../browser/ui/views/webid/account_selection_bubble_view_unittest.cc",
       "../browser/ui/views/webid/fake_delegate.cc",
       "../browser/ui/views/webid/fake_delegate.h",
+      "../browser/ui/views/webid/fedcm_account_selection_view_desktop_unittest.cc",
       "../browser/ui/webui/access_code_cast/access_code_cast_handler_unittest.cc",
       "../browser/ui/webui/browser_command/browser_command_handler_unittest.cc",
       "../browser/ui/webui/components/components_handler_unittest.cc",
@@ -6968,6 +6971,10 @@ test("unit_tests") {
         # across components.
         "../browser/importer/firefox_profile_lock_unittest.cc",
       ]
+
+      # Crashpad dependency is pulled in for non-fuchsia builds by
+      # browser/enterprise/connectors/reporting/browser_crash_event_router.h
+      deps += [ "//third_party/crashpad/crashpad/util" ]
     }
     if (is_posix) {
       sources += [ "../browser/process_singleton_posix_unittest.cc" ]
@@ -7120,6 +7127,7 @@ test("unit_tests") {
       "../browser/apps/app_service/metrics/app_platform_metrics_service_unittest.cc",
       "../browser/apps/app_service/publishers/arc_apps_unittest.cc",
       "../browser/apps/app_service/publishers/crostini_apps_unittest.cc",
+      "../browser/apps/app_service/publishers/plugin_vm_apps_unittest.cc",
       "../browser/apps/app_service/webapk/webapk_install_task_unittest.cc",
       "../browser/apps/app_service/webapk/webapk_manager_unittest.cc",
       "../browser/ash/attestation/attestation_policy_unittest.cc",
@@ -8331,6 +8339,7 @@ test("unit_tests") {
 
     deps += [
       "../browser/enterprise/connectors/device_trust:features",
+      "../browser/enterprise/connectors/device_trust:prefs",
       "../browser/enterprise/connectors/device_trust/key_management/browser:test_support",
     ]
   }
@@ -8346,6 +8355,7 @@ test("unit_tests") {
 
     deps += [
       "../browser/enterprise/connectors/device_trust:features",
+      "../browser/enterprise/connectors/device_trust:prefs",
       "../browser/enterprise/connectors/device_trust:test_support",
       "../browser/enterprise/connectors/device_trust/attestation/common",
       "../browser/enterprise/connectors/device_trust/attestation/common:test_support",
@@ -9312,7 +9322,6 @@ if (!is_android) {
       "//content/test/data/",
       "//net/tools/testserver/",
       "//third_party/mocha/mocha.js",
-      "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//tools/metrics/histograms/enums.xml",
       "//ui/webui/resources/html/test_loader.html",
@@ -9826,7 +9835,7 @@ if (!is_android) {
     }
 
     if (is_linux) {
-      deps += [ "//ui/linux:linux_ui_impl" ]
+      deps += [ "//ui/linux:linux_ui" ]
     }
 
     if (is_linux || is_chromeos_lacros) {

@@ -1323,6 +1323,11 @@ const char kEnableLensStandaloneDescription[] =
     "Enables Lens image and region search to learn about the visual content "
     "you see while you browse and shop on the web.";
 
+const char kEnableRegionSearchOnPdfViewerName[] =
+    "Enable Region Search on PDF viewer.";
+const char kEnableRegionSearchOnPdfViewerDescription[] =
+    "Enable the Lens Region Search feature on the PDF viewer.";
+
 const char kEnableManagedConfigurationWebApiName[] =
     "Enable Managed Configuration Web API";
 const char kEnableManagedConfigurationWebApiDescription[] =
@@ -1698,6 +1703,10 @@ const char kIncognitoScreenshotName[] = "Incognito Screenshot";
 const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
     "thumbnails visible.";
+
+const char kInfobarScrollOptimizationName[] = "Infobar scroll optimiaztion";
+const char kInfobarScrollOptimizationDescription[] =
+    "Optimize Infobar scroll on Android.";
 
 const char kInitialNavigationEntryName[] = "Initial NavigationEntry";
 const char kInitialNavigationEntryDescription[] =
@@ -3935,6 +3944,11 @@ const char kStylusWritingToInputDescription[] =
     "that come with an S Pen, and on Android T+ devices. The stylus writing "
     "feature will have to be enabled in Android settings as well.";
 
+const char kSyncAndroidLimitNTPPromoImpressionsName[] =
+    "Enable limiting NTP promo impressions on Android";
+const char kSyncAndroidLimitNTPPromoImpressionsDescription[] =
+    "Suppress the NTP sync promo after a specific number of impressions.";
+
 const char kSyncAndroidPromosWithAlternativeTitleName[] =
     "Enable the sync promos with alternative titles on Android";
 const char kSyncAndroidPromosWithAlternativeTitleDescription[] =
@@ -6016,6 +6030,12 @@ const char kWakeOnWifiAllowedDescription[] =
 const char kWebAppsCrosapiName[] = "Web Apps Crosapi";
 const char kWebAppsCrosapiDescription[] =
     "Support web apps publishing from Lacros browser.";
+
+const char kWelcomeScreenName[] =
+    "Productivity Experiment: Reorient with welcome screen";
+const char kWelcomeScreenDescription[] =
+    "When a user is about to start a new task, provide them with relevant "
+    "information and tools to help them orient and get started.";
 
 const char kWifiConnectMacAddressRandomizationName[] =
     "MAC address randomization";

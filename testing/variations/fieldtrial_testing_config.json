@@ -2583,6 +2583,27 @@
             ]
         }
     ],
+    "ChromeAppsDeprecationWinMacLinux": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220824",
+                    "params": {
+                        "allow_list": "alhngdkjgnedakdlnamimgfihgkmenbh"
+                    },
+                    "enable_features": [
+                        "ChromeAppsDeprecation",
+                        "KeepForceInstalledPreinstalledApps"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeLabs": [
         {
             "platforms": [
@@ -3130,48 +3151,6 @@
                     "name": "EnableExperiment",
                     "enable_features": [
                         "ContentCaptureTriggeringForExperiment"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ContentLanguagesInLanguagePicker": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithoutObservers",
-                    "params": {
-                        "disable_observers": "true"
-                    },
-                    "enable_features": [
-                        "ContentLanguagesInLanguagePicker"
-                    ]
-                },
-                {
-                    "name": "EnabledWithObservers",
-                    "params": {
-                        "disable_observers": "false"
-                    },
-                    "enable_features": [
-                        "ContentLanguagesInLanguagePicker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ContentSuggestionsUIModuleRefresh": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ContentSuggestionsUIModuleRefresh"
                     ]
                 }
             ]
@@ -4072,21 +4051,6 @@
             ]
         }
     ],
-    "DriveFsBidirectionalNativeMessaging": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DriveFsBidirectionalNativeMessaging"
-                    ]
-                }
-            ]
-        }
-    ],
     "EarlyExitOnNoopClassOrStyleChange": [
         {
             "platforms": [
@@ -4147,7 +4111,8 @@
     "EnableCbdSignOut": [
         {
             "platforms": [
-                "android"
+                "android",
+                "ios"
             ],
             "experiments": [
                 {
@@ -9154,6 +9119,24 @@
                     "enable_features": [
                         "StartSurface"
                     ]
+                },
+                {
+                    "name": "Start+ModuleRefresh",
+                    "params": {
+                        "ReturnToStartSurfaceInactiveDurationInSeconds": "21600",
+                        "show_return_to_recent_tab": "true",
+                        "shrink_logo": "true"
+                    },
+                    "enable_features": [
+                        "ContentSuggestionsUIModuleRefresh",
+                        "StartSurface"
+                    ]
+                },
+                {
+                    "name": "ModuleRefresh",
+                    "enable_features": [
+                        "ContentSuggestionsUIModuleRefresh"
+                    ]
                 }
             ]
         }
@@ -9629,6 +9612,28 @@
             ]
         }
     ],
+    "ThrottleIntersectionObserverUMA": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ThrottleIntersectionObserverUMA"
+                    ]
+                }
+            ]
+        }
+    ],
     "TimedHTMLParserBudget": [
         {
             "platforms": [
@@ -9681,6 +9686,22 @@
                     "name": "RegularLaunch_20220426",
                     "enable_features": [
                         "TouchToFillPasswordSubmission"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TranslateMessageUI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ContentLanguagesInLanguagePicker",
+                        "TranslateMessageUI"
                     ]
                 }
             ]

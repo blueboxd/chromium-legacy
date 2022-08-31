@@ -17,7 +17,9 @@ namespace metrics {
 void RecordBookmarkAdded();
 
 // Records when a bookmark is opened by the user.
-void RecordBookmarkOpened();
+void RecordBookmarkOpened(base::Time now,
+                          base::Time date_last_used,
+                          base::Time date_added);
 
 // Records the time since the last save with a 1 hour max. The first save will
 // record the time since startup.
@@ -32,6 +34,10 @@ void RecordFileSizeAtStartup(int64_t total_bytes);
 
 // Records the metrics derived from `stats`. Recording happens on profile load.
 void RecordUrlLoadStatsOnProfileLoad(const UrlLoadStats& stats);
+
+// Records when a bookmark node is cloned. `num_cloned` is the number of
+// bookmarks that were selected.
+void RecordCloneBookmarkNode(int num_cloned);
 
 }  // namespace metrics
 

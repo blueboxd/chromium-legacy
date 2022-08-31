@@ -121,7 +121,7 @@ int FakeLinuxUi::GetCursorThemeSize() {
   return 0;
 }
 
-ui::NativeTheme* FakeLinuxUi::GetNativeThemeImpl() const {
+ui::NativeTheme* FakeLinuxUi::GetNativeTheme() const {
   return nullptr;
 }
 

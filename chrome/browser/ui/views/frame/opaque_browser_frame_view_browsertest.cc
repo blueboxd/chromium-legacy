@@ -38,6 +38,24 @@
 
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/linux_ui_getter.h"
+
+class FakeLinuxUiGetter : public ui::LinuxUiGetter {
+ public:
+  explicit FakeLinuxUiGetter(bool use_system_theme)
+      : use_system_theme_(use_system_theme) {}
+
+  ui::LinuxUi* GetForWindow(aura::Window* window) override {
+    return GetForProfile(nullptr);
+  }
+
+  ui::LinuxUi* GetForProfile(Profile* profile) override {
+    return use_system_theme_ ? ui::LinuxUi::instance() : nullptr;
+  }
+
+ private:
+  const bool use_system_theme_;
+};
 #endif
 
 // Tests web-app windows that use the OpaqueBrowserFrameView implementation
@@ -58,8 +76,7 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     SetThemeMode(ThemeMode::kDefault);
 #if BUILDFLAG(IS_LINUX)
-    ui::LinuxUi::instance()->SetUseSystemThemeCallback(
-        base::BindRepeating([](aura::Window* window) { return false; }));
+    ui::LinuxUiGetter::set_instance(nullptr);
 #endif
   }
 
@@ -110,6 +127,10 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   };
 
   void SetThemeMode(ThemeMode theme_mode) {
+#if BUILDFLAG(IS_LINUX)
+    bool use_system_theme = theme_mode == ThemeMode::kSystem;
+    linux_ui_getter_ = std::make_unique<FakeLinuxUiGetter>(use_system_theme);
+#endif
     ThemeService* theme_service =
         ThemeServiceFactory::GetForProfile(browser()->profile());
     if (theme_mode == ThemeMode::kSystem)
@@ -123,6 +144,9 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   raw_ptr<BrowserView> browser_view_ = nullptr;
   raw_ptr<OpaqueBrowserFrameView> opaque_browser_frame_view_ = nullptr;
   raw_ptr<WebAppFrameToolbarView> web_app_frame_toolbar_ = nullptr;
+#if BUILDFLAG(IS_LINUX)
+  std::unique_ptr<ui::LinuxUiGetter> linux_ui_getter_;
+#endif
 
   // Disable animations.
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode_{

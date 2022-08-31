@@ -15,6 +15,7 @@ component("linux_ui") {
     "linux_ui.h",
     "linux_ui_delegate.h",
     "linux_ui_delegate_stub.h",
+    "linux_ui_getter.h",
     "nav_button_provider.h",
     "status_icon_linux.h",
     "window_button_order_observer.h",
@@ -24,32 +25,22 @@ component("linux_ui") {
     "linux_ui.cc",
     "linux_ui_delegate.cc",
     "linux_ui_delegate_stub.cc",
+    "linux_ui_getter.cc",
     "status_icon_linux.cc",
   ]
   deps = [ "//base" ]
   public_deps = [ "//printing/buildflags" ]
 }
 
-source_set("linux_ui_impl") {
-  public = [ "linux_ui_base.h" ]
-  sources = [ "linux_ui_base.cc" ]
-  public_deps = [ ":linux_ui" ]
-  deps = [
-    "//base",
-    "//skia",
-    "//ui/gfx",
-    "//ui/native_theme",
-    "//ui/shell_dialogs",
-  ]
-}
+component("linux_ui_factory") {
+  defines = [ "IS_LINUX_UI_FACTORY_IMPL" ]
+  public = [ "linux_ui_factory.h" ]
+  sources = [ "linux_ui_factory.cc" ]
 
-source_set("linux_ui_factory") {
-  sources = [
-    "linux_ui_factory.cc",
-    "linux_ui_factory.h",
+  public_deps = [
+    ":linux_ui",
+    "//ui/color:color_headers",
   ]
-
-  public_deps = [ ":linux_ui" ]
 
   deps = [
     "//base",
@@ -70,7 +61,7 @@ source_set("test_support") {
   public = [ "fake_linux_ui.h" ]
   sources = [ "fake_linux_ui.cc" ]
 
-  public_deps = [ ":linux_ui_impl" ]
+  public_deps = [ ":linux_ui" ]
   deps = [
     "//base",
     "//skia",

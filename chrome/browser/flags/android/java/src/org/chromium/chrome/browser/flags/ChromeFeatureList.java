@@ -316,6 +316,8 @@ public abstract class ChromeFeatureList {
             "ContextualTriggersSelectionMenu";
     public static final String CONTEXTUAL_TRIGGERS_SELECTION_SIZE =
             "ContextualTriggersSelectionSize";
+    public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
+            "SyncAndroidLimitNTPPromoImpressions";
     public static final String SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE =
             "SyncAndroidPromosWithAlternativeTitle";
     public static final String SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION =
@@ -377,6 +379,7 @@ public abstract class ChromeFeatureList {
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
             "IncognitoReauthenticationForAndroid";
     public static final String INCOGNITO_SCREENSHOT = "IncognitoScreenshot";
+    public static final String INFOBAR_SCROLL_OPTIMIZATION = "InfobarScrollOptimization";
     public static final String INSTALLABLE_AMBIENT_BADGE_INFOBAR = "InstallableAmbientBadgeInfoBar";
     public static final String INSTALLABLE_AMBIENT_BADGE_MESSAGE = "InstallableAmbientBadgeMessage";
     public static final String INSTANCE_SWITCHER = "InstanceSwitcher";
@@ -568,6 +571,7 @@ public abstract class ChromeFeatureList {
     public static final String TOUCH_TO_FILL_PASSWORD_SUBMISSION = "TouchToFillPasswordSubmission";
     public static final String TRANSLATE_ASSIST_CONTENT = "TranslateAssistContent";
     public static final String TRANSLATE_INTENT = "TranslateIntent";
+    public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT =

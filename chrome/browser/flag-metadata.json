@@ -2727,7 +2727,7 @@
   {
     "name": "enable-prerender2",
     "owners": [ "//content/browser/preloading/prerender/OWNERS" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "enable-projector",
@@ -2777,6 +2777,11 @@
     // This flag is a utility for disabling Reader Mode in CCT without using
     // low-end devices.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-region-search-on-pdf-viewer",
+    "owners": ["nguyenbryan@google.com"],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-removing-all-third-party-cookies",
@@ -3924,6 +3929,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "infobar-scroll-optimization",
+    "owners": [ "lazzzis@google.com", "mdjones", "twellington" ],
+    "expiry_milestone": 121
+  },
+  {
     "name": "initial-navigation-entry",
     "owners": [ "rakina", "chrome-security-architecture@google.com" ],
     "expiry_milestone": 105
@@ -4949,7 +4959,7 @@
   {
     "name": "omnibox-trigger-for-prerender2",
     "owners": [ "//content/browser/preloading/prerender/OWNERS" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "omnibox-ui-max-autocomplete-matches",
@@ -5748,7 +5758,7 @@
   {
     "name": "search-suggestion-for-prerender2",
     "owners": [ "//content/browser/preloading/prerender/OWNERS" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 109
   },
   {
     "name": "secondary-google-account-usage",
@@ -6103,6 +6113,11 @@
     "name": "suppress-toolbar-captures",
     "owners": [ "pnoland@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "sync-android-limit-ntp-promo-impressions",
+    "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
+    "expiry_milestone": 109
   },
   {
     "name": "sync-android-promos-with-alternative-title",
@@ -6761,6 +6776,11 @@
     // the particular hardware. Useful to debug user issues or multiple runtimes
     // with a single headset.
     "expiry_milestone": -1
+  },
+  {
+    "name": "welcome-screen",
+    "owners": ["jamescook", "amitrokhin", "cros-system-ui@google.com"],
+    "expiry_milestone": 118
   },
   {
     "name": "wifi-connect-mac-address-randomization",

@@ -801,7 +801,7 @@ void EventRouter::OnCopyStarted(int copy_id,
   status.destination_url =
       std::make_unique<std::string>(destination_url.spec());
   // Use the bytes copied member to store space needed for this event.
-  status.size = std::make_unique<double>(space_needed);
+  status.size = space_needed;
 
   notification_manager_->HandleCopyStart(copy_id, status);
 }
@@ -861,7 +861,7 @@ void EventRouter::OnCopyProgress(
         FileErrorToErrorName(base::File::FILE_ERROR_FAILED));
   }
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kProgress)
-    status.size = std::make_unique<double>(size);
+    status.size = size;
 
   // Discard error progress since current JS code cannot handle this properly.
   // TODO(yawano): Remove this after JS side is implemented correctly.
@@ -1328,6 +1328,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.task_id = status.task_id;
   event_status.type = GetIOTaskType(status.type);
   event_status.state = GetIOTaskState(status.state);
+  event_status.show_notification = status.show_notification;
 
   // Speedometer can produce infinite result which can't be serialized to JSON
   // when sending the status via private API.

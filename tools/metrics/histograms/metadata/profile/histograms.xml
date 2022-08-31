@@ -39,7 +39,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.AllAccounts.Categories"
-    enum="ProfileAllAccountsCategories" expires_after="2022-12-25">
+    enum="ProfileAllAccountsCategories" expires_after="2023-02-26">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -98,7 +98,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.BrowserActive.PerProfile" enum="Profile"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>msarda@chromium.org</owner>
   <owner>tangltom@chromium.org</owner>
   <summary>
@@ -211,7 +211,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Guest.OTR.Lifetime" units="minutes"
-    expires_after="2022-10-23">
+    expires_after="2023-02-26">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -311,8 +311,30 @@ chromium-metrics-reviews@google.com.
     closed.
   </summary>
   <token key="ProfileType">
-    <variant name="Original"/>
-    <variant name="OTR" summary="off the record"/>
+    <variant name="Original">
+      <obsolete>
+        This histogram considered a KeyedService as active even if NULL. This
+        was fixed in M-106 in commit 903912cd. Non-NULL KeyedServices were no
+        longer counted. However, that change forgot to revise the histogram
+        names. The meaning of values in his histogram changed. In order to avoid
+        having a histogram with a meaning that differs by Chrome version, this
+        histogram was renamed in M-107 to Original-M-107. Original-M-107 counts
+        only non-NULL KeyedServices.
+      </obsolete>
+    </variant>
+    <variant name="Original-M-107"/>
+    <variant name="OTR" summary="off the record">
+      <obsolete>
+        This histogram considered a KeyedService as active even if NULL. This
+        was fixed in M-106 in commit 903912cd. Non-NULL KeyedServices were no
+        longer counted. However, that change forgot to revise the histogram
+        names. The meaning of values in his histogram changed. In order to avoid
+        having a histogram with a meaning that differs by Chrome version, this
+        histogram was renamed in M-107 to OTR-M-107. OTR-M-107 counts only
+        non-NULL KeyedServices.
+      </obsolete>
+    </variant>
+    <variant name="OTR-M-107" summary="off the record"/>
   </token>
 </histogram>
 
@@ -387,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NukeFromDisk.Result" enum="NukeProfileResult"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -562,7 +584,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Profile.State.UnconsentedPrimaryAccountType"
-    enum="ProfileUnconsentedPrimaryAccountType" expires_after="2022-12-25">
+    enum="ProfileUnconsentedPrimaryAccountType" expires_after="2023-02-26">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -671,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.ZombieProfileCount" units="profiles"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>

@@ -286,10 +286,21 @@ CSSToggle* CSSToggle::Create(CSSToggleData* options,
 }
 
 void CSSToggle::SetValueAndCheckGroup(const State& value) {
+  // The specification says that we should go through the whole ChangeToggle
+  // algorithm (with a "set" value), but this implements a more direct way of
+  // doing the same thing.
   SetValue(value);
 
-  if (is_group_ && OwnerElement() && !ValueMatches(State(0u)))
-    MakeRestOfToggleGroupZero();
+  if (is_group_ && OwnerElement()) {
+    const ToggleRoot* specifier = FindToggleSpecifier();
+    const States* states = nullptr;
+    if (specifier)
+      states = &specifier->StateSet();
+
+    if (!ValueMatches(State(0u), states)) {
+      MakeRestOfToggleGroupZero();
+    }
+  }
 }
 
 void CSSToggle::SetValue(const State& value) {
@@ -344,12 +355,33 @@ void CSSToggle::SetLaterSiblingsNeedStyleRecalc(Element* toggle_element,
   }
 }
 
+const ToggleRoot* CSSToggle::FindToggleSpecifier() const {
+  Element* owner_element = OwnerElement();
+  if (!owner_element)
+    return nullptr;
+
+  const ToggleRoot* toggle_specifier = nullptr;
+  if (const ComputedStyle* style = owner_element->GetComputedStyle()) {
+    if (const ToggleRootList* toggle_root = style->ToggleRoot()) {
+      for (const auto& item : toggle_root->Roots()) {
+        if (item.Name() == name_) {
+          toggle_specifier = &item;
+        }
+      }
+    }
+  }
+  return toggle_specifier;
+}
+
 // https://tabatkins.github.io/css-toggle/#toggle-match-value
-bool CSSToggle::ValueMatches(const State& other) const {
+bool CSSToggle::ValueMatches(const State& other,
+                             const States* states_override) const {
   if (value_ == other)
     return true;
 
-  if (value_.IsInteger() == other.IsInteger() || !states_.IsNames())
+  const States& states = states_override ? *states_override : states_;
+
+  if (value_.IsInteger() == other.IsInteger() || !states.IsNames())
     return false;
 
   State::IntegerType integer;
@@ -362,8 +394,167 @@ bool CSSToggle::ValueMatches(const State& other) const {
     ident = &value_.AsName();
   }
 
-  auto ident_index = states_.AsNames().Find(*ident);
+  auto ident_index = states.AsNames().Find(*ident);
   return ident_index != kNotFound && integer == ident_index;
+}
+
+CSSToggle* CSSToggle::FindToggleInScope(Element& start_element,
+                                        const AtomicString& name) {
+  Element* element = &start_element;
+  bool allow_narrow_scope = true;
+  while (true) {
+    if (CSSToggleMap* toggle_map = element->GetToggleMap()) {
+      ToggleMap& toggles = toggle_map->Toggles();
+      auto iter = toggles.find(name);
+      if (iter != toggles.end()) {
+        CSSToggle* toggle = iter->value;
+        // TODO(https://github.com/tabatkins/css-toggle/issues/20): Should we
+        // allow the current toggle specifier (if any) on the element to
+        // override the stored one, like it does for other aspects?
+        if (allow_narrow_scope || toggle->Scope() == ToggleScope::kWide) {
+          return toggle;
+        }
+      }
+    }
+
+    if (Element* sibling = ElementTraversal::PreviousSibling(*element)) {
+      allow_narrow_scope = false;
+      element = sibling;
+      continue;
+    }
+
+    allow_narrow_scope = true;
+    element = element->parentElement();
+
+    if (!element)
+      return nullptr;
+  }
+}
+
+void CSSToggle::FireToggleActivation(Element& activated_element,
+                                     const ToggleTrigger& activation) {
+  const AtomicString& name = activation.Name();
+  CSSToggle* toggle = FindToggleInScope(activated_element, name);
+  if (!toggle)
+    return;
+
+  CSSToggle::State old_value = toggle->Value();
+  toggle->ChangeToggle(activation, toggle->FindToggleSpecifier());
+  CSSToggle::State new_value = toggle->Value();
+
+  if (old_value != new_value)
+    toggle->FireToggleChangeEvent();
+}
+
+// Implement https://tabatkins.github.io/css-toggle/#change-a-toggle
+void CSSToggle::ChangeToggle(const ToggleTrigger& action,
+                             const ToggleRoot* override_spec) {
+  using State = ToggleRoot::State;
+
+  if (!override_spec)
+    override_spec = this;
+  DCHECK_EQ(Name(), override_spec->Name());
+  const auto states = override_spec->StateSet();
+  const bool is_group = override_spec->IsGroup();
+  const auto overflow = override_spec->Overflow();
+
+  if (action.Mode() == ToggleTriggerMode::kSet) {
+    SetValue(action.Value());
+  } else {
+    using IntegerType = ToggleRoot::State::IntegerType;
+    DCHECK_EQ(std::numeric_limits<IntegerType>::lowest(), 0u);
+    const IntegerType infinity = std::numeric_limits<IntegerType>::max();
+    bool overflowed = false;
+
+    IntegerType index;
+    if (Value().IsInteger()) {
+      index = Value().AsInteger();
+    } else if (states.IsNames()) {
+      index = states.AsNames().Find(Value().AsName());
+      if (index == kNotFound) {
+        index = infinity;
+        overflowed = true;
+      }
+    } else {
+      index = infinity;
+      overflowed = true;
+    }
+
+    IntegerType max_index;
+    if (states.IsInteger()) {
+      max_index = states.AsInteger();
+    } else {
+      max_index = states.AsNames().size() - 1;
+    }
+
+    if (action.Mode() == ToggleTriggerMode::kNext) {
+      if (!overflowed) {
+        IntegerType new_index = index + action.Value().AsInteger();
+        if (new_index < index || new_index > max_index)
+          overflowed = true;
+        else
+          index = new_index;
+      }
+
+      if (overflowed) {
+        switch (overflow) {
+          case ToggleOverflow::kCycle:
+            index = 0u;
+            break;
+          case ToggleOverflow::kCycleOn:
+            index = 1u;
+            break;
+          case ToggleOverflow::kSticky:
+            index = max_index;
+            break;
+        }
+      }
+    } else {
+      DCHECK_EQ(action.Mode(), ToggleTriggerMode::kPrev);
+      bool overflowed_negative = false;
+      if (!overflowed) {
+        IntegerType new_index = index - action.Value().AsInteger();
+        if (new_index > index) {
+          overflowed = true;
+          overflowed_negative = true;
+        }
+        index = new_index;
+      }
+      switch (overflow) {
+        case ToggleOverflow::kCycle:
+          DCHECK_EQ(std::numeric_limits<IntegerType>::lowest(), 0u);
+          if (overflowed || index > max_index)
+            index = max_index;
+          break;
+        case ToggleOverflow::kCycleOn:
+          if (overflowed || index < 1u || index > max_index)
+            index = max_index;
+          break;
+        case ToggleOverflow::kSticky:
+          if (overflowed_negative)
+            index = 0u;
+          else if (overflowed || index > max_index)
+            index = max_index;
+          break;
+      }
+    }
+
+    if (states.IsNames()) {
+      const auto& names = states.AsNames();
+      if (index < names.size()) {
+        SetValue(State(names[index]));
+      } else {
+        SetValue(State(index));
+      }
+    } else {
+      SetValue(State(index));
+    }
+  }
+
+  // If t’s value does not match 0, and group is true, then set the value of
+  // all other toggles in the same toggle group as t to 0.
+  if (is_group && !ValueMatches(State(0u), &states))
+    MakeRestOfToggleGroupZero();
 }
 
 namespace {

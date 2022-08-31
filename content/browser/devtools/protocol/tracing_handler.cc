@@ -261,6 +261,34 @@ absl::optional<perfetto::BackendType> GetBackendTypeFromParameters(
   return absl::nullopt;
 }
 
+// Perfetto SDK build expects track_event data source to be configured via
+// track_event_config. But some devtools users (e.g. Perfetto UI) send
+// a chrome_config instead. We build a track_event_config based on the
+// chrome_config if no other track_event data sources have been configured.
+void ConvertToTrackEventConfigIfNeeded(perfetto::TraceConfig& trace_config) {
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  for (const auto& data_source : trace_config.data_sources()) {
+    if (!data_source.config().track_event_config_raw().empty()) {
+      return;
+    }
+  }
+  for (auto& data_source : *trace_config.mutable_data_sources()) {
+    if (data_source.config().name() ==
+            tracing::mojom::kTraceEventDataSourceName &&
+        data_source.config().has_chrome_config()) {
+      data_source.mutable_config()->set_name("track_event");
+      base::trace_event::TraceConfig base_config(
+          data_source.config().chrome_config().trace_config());
+      bool privacy_filtering_enabled =
+          data_source.config().chrome_config().privacy_filtering_enabled();
+      data_source.mutable_config()->set_track_event_config_raw(
+          base_config.ToPerfettoTrackEventConfigRaw(privacy_filtering_enabled));
+      return;
+    }
+  }
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+}
+
 // We currently don't support concurrent tracing sessions, but are planning to.
 // For the time being, we're using this flag as a workaround to prevent devtools
 // users from accidentally starting two concurrent sessions.
@@ -275,12 +303,15 @@ class TracingHandler::PerfettoTracingSession {
   PerfettoTracingSession(bool use_proto, perfetto::BackendType backend_type)
       : use_proto_format_(use_proto), backend_type_(backend_type) {}
 
+  ~PerfettoTracingSession() { g_any_agent_tracing = false; }
+
   void EnableTracing(const perfetto::TraceConfig& perfetto_config,
                      base::OnceCallback<void(const std::string& /*error_msg*/)>
                          start_callback) {
     DCHECK(!tracing_session_);
     DCHECK(!tracing_active_);
 
+    g_any_agent_tracing = true;
     tracing_active_ = true;
     start_callback_ = std::move(start_callback);
 
@@ -716,6 +747,8 @@ void TracingHandler::Start(Maybe<std::string> categories,
         break;
       }
     }
+
+    ConvertToTrackEventConfigIfNeeded(trace_config);
   } else {
     base::trace_event::TraceConfig browser_config =
         base::trace_event::TraceConfig();
@@ -794,7 +827,6 @@ void TracingHandler::Start(Maybe<std::string> categories,
       trace_config_,
       base::BindOnce(&TracingHandler::OnRecordingEnabled,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
-  g_any_agent_tracing = true;
 }
 
 perfetto::TraceConfig TracingHandler::CreatePerfettoConfiguration(
@@ -888,7 +920,6 @@ void TracingHandler::AttemptAdoptStartupSession(
   session_ =
       std::make_unique<PerfettoTracingSession>(proto_format_, tracing_backend);
   session_->AdoptStartupTracingSession(perfetto_config);
-  g_any_agent_tracing = true;
 }
 
 Response TracingHandler::End() {
@@ -1077,7 +1108,6 @@ void TracingHandler::StopTracing(
     session_.reset();
   }
   did_initiate_recording_ = false;
-  g_any_agent_tracing = false;
   video_consumer_->StopCapture();
 }
 

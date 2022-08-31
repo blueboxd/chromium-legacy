@@ -18,7 +18,15 @@ void RecordBookmarkAdded() {
   base::RecordAction(base::UserMetricsAction("Bookmarks.Added"));
 }
 
-void RecordBookmarkOpened() {
+void RecordBookmarkOpened(base::Time now,
+                          base::Time date_last_used,
+                          base::Time date_added) {
+  if (date_last_used != base::Time()) {
+    base::UmaHistogramCounts10000("Bookmarks.Opened.TimeSinceLastUsed",
+                                  (now - date_last_used).InDays());
+  }
+  base::UmaHistogramCounts10000("Bookmarks.Opened.TimeSinceAdded",
+                                (now - date_added).InDays());
   base::RecordAction(base::UserMetricsAction("Bookmarks.Opened"));
 }
 
@@ -84,6 +92,10 @@ void RecordUrlLoadStatsOnProfileLoad(const UrlLoadStats& stats) {
   base::UmaHistogramCounts1000(
       "Bookmarks.Times.OnProfileLoad.TimeSinceAdded",
       base::saturated_cast<int>(stats.avg_num_days_since_added));
+}
+
+void RecordCloneBookmarkNode(int num_cloned) {
+  base::UmaHistogramCounts100("Bookmarks.Clone.NumCloned", num_cloned);
 }
 
 }  // namespace bookmarks::metrics

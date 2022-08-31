@@ -1335,6 +1335,7 @@ test("content_browsertests") {
     "../browser/net/sandboxed_nqe_browsertest.cc",
     "../browser/net/sandboxed_socket_broker_browsertest.cc",
     "../browser/net/split_cache_browsertest.cc",
+    "../browser/net/transferable_socket_browsertest.cc",
     "../browser/net/trust_token_browsertest.cc",
     "../browser/net/trust_token_browsertest.h",
     "../browser/net/trust_token_origin_trial_browsertest.cc",
@@ -1894,6 +1895,7 @@ test("content_browsertests") {
       "../browser/webauth/webauth_browsertest.cc",
     ]
     deps += [
+      "//components/cbor",
       "//device/base",
       "//device/fido:fido",
       "//device/fido:mocks",
@@ -2771,6 +2773,7 @@ test("content_unittests") {
     "//ui/gl:test_support",
     "//ui/latency:test_support",
     "//ui/shell_dialogs:shell_dialogs",
+    "//ui/webui:test_support",
   ]
 
   data_deps = [

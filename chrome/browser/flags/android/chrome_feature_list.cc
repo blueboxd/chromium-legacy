@@ -247,6 +247,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
+    &kInfobarScrollOptimization,
     &kInstanceSwitcher,
     &kInstantStart,
     &kIsVoiceSearchEnabledCache,
@@ -405,6 +406,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kTangibleSync,
     &syncer::kEnableSyncImmediatelyInFRE,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
+    &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
     &syncer::kSyncAndroidPromosWithIllustration,
     &syncer::kSyncAndroidPromosWithSingleButton,
@@ -495,7 +497,7 @@ const base::Feature kBackgroundThreadPool{"BackgroundThreadPool",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kBulkTabRestore{"BulkTabRestore",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kConditionalTabStripAndroid{
     "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -702,6 +704,9 @@ const base::Feature kIncognitoReauthenticationForAndroid{
 
 const base::Feature kIncognitoScreenshot{"IncognitoScreenshot",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kInfobarScrollOptimization{
+    "InfobarScrollOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInstantStart{"InstantStart",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

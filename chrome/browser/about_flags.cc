@@ -593,12 +593,13 @@ const FeatureEntry::FeatureVariation
 };
 
 const FeatureEntry::FeatureParam
-    kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse[] = {
-        {"allow_group_collapsed_state", "true"}};
+    kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse[] = {
+        {"allow_group_collapsed_state", "false"}};
 const FeatureEntry::FeatureVariation
     kOmniboxRemoveSuggestionHeaderChevronVariations[] = {
-        {"AllowCollapse", kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse,
-         std::size(kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse),
+        {"DisallowCollapse",
+         kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse,
+         std::size(kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse),
          nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -2789,11 +2790,9 @@ constexpr char kBorealisLinuxModeInternalName[] = "borealis-linux-mode";
 constexpr char kBorealisPermittedInternalName[] = "borealis-enabled";
 constexpr char kBorealisStorageBallooningInternalName[] =
     "borealis-storage-ballooning";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kClipboardHistoryReorderInternalName[] =
     "clipboard-history-reorder";
+constexpr char kWelcomeScreenInternalName[] = "welcome-screen";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3271,6 +3270,24 @@ const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
          std::size(kHighEfficiencyModeAvailable1Hour), nullptr},
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax2ImpressionsParam[] = {
+    {"2 Impressions Limit", "2"}};
+const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax10ImpressionsParam[] = {
+    {"10 Impressions Limit", "10"}};
+const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax20ImpressionsParam[] = {
+    {"20 Impressions Limit", "20"}};
+const FeatureEntry::FeatureVariation
+    kSyncAndroidLimitNTPPromoImpressionsVariations[] = {
+        {"2 Impressions Limit", kSyncAndroidNTPPromoMax2ImpressionsParam,
+         std::size(kSyncAndroidNTPPromoMax2ImpressionsParam), nullptr},
+        {"10 Impressions Limit", kSyncAndroidNTPPromoMax10ImpressionsParam,
+         std::size(kSyncAndroidNTPPromoMax10ImpressionsParam), nullptr},
+        {"20 Impressions Limit", kSyncAndroidNTPPromoMax20ImpressionsParam,
+         std::size(kSyncAndroidNTPPromoMax20ImpressionsParam), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam
@@ -4639,6 +4656,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBackGestureRefactorAndroidName,
      flag_descriptions::kBackGestureRefactorAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kBackGestureRefactorAndroid)},
+    {"infobar-scroll-optimization",
+     flag_descriptions::kInfobarScrollOptimizationName,
+     flag_descriptions::kInfobarScrollOptimizationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kInfobarScrollOptimization)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -5152,6 +5173,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"fuse-box-debug", flag_descriptions::kFuseBoxDebugName,
      flag_descriptions::kFuseBoxDebugDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFuseBoxDebug)},
+    {kWelcomeScreenInternalName, flag_descriptions::kWelcomeScreenName,
+     flag_descriptions::kWelcomeScreenDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kGlanceables)},
     {"guest-os-files", flag_descriptions::kGuestOsFilesName,
      flag_descriptions::kGuestOsFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kGuestOsFiles)},
@@ -7646,6 +7670,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForName)},
 
 #if BUILDFLAG(IS_ANDROID)
+    {"sync-android-limit-ntp-promo-impressions",
+     flag_descriptions::kSyncAndroidLimitNTPPromoImpressionsName,
+     flag_descriptions::kSyncAndroidLimitNTPPromoImpressionsDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         syncer::kSyncAndroidLimitNTPPromoImpressions,
+         kSyncAndroidLimitNTPPromoImpressionsVariations,
+         "SyncAndroidLimitNTPPromoImpressions")},
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
     {"sync-android-promos-with-alternative-title",
      flag_descriptions::kSyncAndroidPromosWithAlternativeTitleName,
      flag_descriptions::kSyncAndroidPromosWithAlternativeTitleDescription,
@@ -8091,6 +8126,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(lens::features::kLensStandalone,
                                     kLensStandaloneVariations,
                                     "GoogleLensDesktopContextMenuSearch")},
+
+    {"enable-region-search-on-pdf-viewer",
+     flag_descriptions::kEnableRegionSearchOnPdfViewerName,
+     flag_descriptions::kEnableRegionSearchOnPdfViewerDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(lens::features::kEnableRegionSearchOnPdfViewer)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-log-controller-for-diagnostics-app",
@@ -9367,6 +9407,12 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kClipboardHistoryReorderInternalName, entry.internal_name)) {
     return channel != version_info::Channel::DEV &&
            channel != version_info::Channel::CANARY &&
+           channel != version_info::Channel::UNKNOWN;
+  }
+
+  // Only show glanceables flag for canary/unknown channels.
+  if (!strcmp(kWelcomeScreenInternalName, entry.internal_name)) {
+    return channel != version_info::Channel::CANARY &&
            channel != version_info::Channel::UNKNOWN;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

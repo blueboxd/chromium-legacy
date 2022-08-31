@@ -1054,16 +1054,12 @@ std::string DeskSyncBridge::GetStorageKey(
 }
 
 DeskModel::GetAllEntriesResult DeskSyncBridge::GetAllEntries() {
-  std::vector<const DeskTemplate*> entries;
-  GetAllEntriesStatus status = GetAllEntries(entries);
-  return GetAllEntriesResult(status, std::move(entries));
-}
-
-DeskModel::GetAllEntriesStatus DeskSyncBridge::GetAllEntries(
-    std::vector<const DeskTemplate*>& entries) {
   if (!IsReady()) {
-    return GetAllEntriesStatus::kFailure;
+    return GetAllEntriesResult(GetAllEntriesStatus::kFailure,
+                               std::vector<const DeskTemplate*>());
   }
+
+  std::vector<const DeskTemplate*> entries;
 
   for (const auto& it : policy_entries_)
     entries.push_back(it.get());
@@ -1073,16 +1069,15 @@ DeskModel::GetAllEntriesStatus DeskSyncBridge::GetAllEntries(
     entries.push_back(it.second.get());
   }
 
-  return GetAllEntriesStatus::kOk;
+  return GetAllEntriesResult(GetAllEntriesStatus::kOk, std::move(entries));
 }
 
 DeskModel::GetEntryByUuidResult DeskSyncBridge::GetEntryByUUID(
-    const std::string& uuid_str) {
+    const base::GUID& uuid) {
   if (!IsReady()) {
     return GetEntryByUuidResult(GetEntryByUuidStatus::kFailure, nullptr);
   }
 
-  const base::GUID uuid = base::GUID::ParseCaseInsensitive(uuid_str);
   if (!uuid.is_valid()) {
     return GetEntryByUuidResult(GetEntryByUuidStatus::kInvalidUuid, nullptr);
   }
@@ -1090,7 +1085,7 @@ DeskModel::GetEntryByUuidResult DeskSyncBridge::GetEntryByUUID(
   auto it = desk_template_entries_.find(uuid);
   if (it == desk_template_entries_.end()) {
     std::unique_ptr<DeskTemplate> policy_entry =
-        GetAdminDeskTemplateByUUID(uuid_str);
+        GetAdminDeskTemplateByUUID(uuid);
 
     if (policy_entry) {
       return GetEntryByUuidResult(GetEntryByUuidStatus::kOk,
@@ -1429,11 +1424,8 @@ bool DeskSyncBridge::HasUserTemplateWithName(const std::u16string& name) {
              }) != desk_template_entries_.end();
 }
 
-bool DeskSyncBridge::HasUuid(const std::string& uuid_str) const {
-  const base::GUID uuid = base::GUID::ParseCaseInsensitive(uuid_str);
-  if (!uuid.is_valid())
-    return false;
-  return base::Contains(desk_template_entries_, uuid);
+bool DeskSyncBridge::HasUuid(const base::GUID& uuid) const {
+  return uuid.is_valid() && base::Contains(desk_template_entries_, uuid);
 }
 
 }  // namespace desks_storage

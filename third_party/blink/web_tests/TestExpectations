@@ -307,10 +307,6 @@ crbug.com/1276999 virtual/document-transition/* [ Pass ]
 crbug.com/1276999 virtual/document-transition-wide-gamut/* [ Pass ]
 
 crbug.com/1351556 virtual/document-transition-wide-gamut/wpt_internal/document-transition/commit-timeout-crash.html [ Failure Timeout ]
-crbug.com/1351556 [ Win ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/nothing-captured.html [ Failure Timeout ]
-crbug.com/1351556 [ Mac11 ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/nothing-captured.html [ Failure Timeout ]
-crbug.com/1351556 [ Win ] virtual/document-transition/wpt_internal/document-transition/nothing-captured.html [ Failure Timeout ]
-crbug.com/1351556 [ Mac11 ] virtual/document-transition/wpt_internal/document-transition/nothing-captured.html [ Failure Timeout ]
 crbug.com/1351556 virtual/document-transition/document-transition/capture-callback-exception.html [ Failure ]
 crbug.com/1351556 virtual/document-transition-wide-gamut/document-transition/capture-callback-exception.html [ Failure ]
 
@@ -370,16 +366,19 @@ crbug.com/1170337 [ Debug Mac11 ] external/wpt/html/canvas/element/drawing-text-
 crbug.com/1170337 [ Debug Mac11 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.negative.html [ Pass Timeout ]
 crbug.com/1170337 [ Debug Mac11 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.zero.html [ Pass Timeout ]
 crbug.com/1170337 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.worker.html [ Skip Timeout ]
-crbug.com/1300389 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fillStyle.get.halftransparent.html [ Failure ]
-crbug.com/1300389 external/wpt/html/canvas/offscreen/fill-and-stroke-styles/2d.fillStyle.get.halftransparent.html [ Failure ]
-crbug.com/1300389 external/wpt/html/canvas/offscreen/fill-and-stroke-styles/2d.fillStyle.get.halftransparent.worker.html [ Failure ]
-crbug.com/1300389 virtual/no-alloc-direct-call/external/wpt/html/canvas/offscreen/fill-and-stroke-styles/2d.fillStyle.get.halftransparent.html [ Failure ]
-crbug.com/1300389 virtual/no-alloc-direct-call/external/wpt/html/canvas/offscreen/fill-and-stroke-styles/2d.fillStyle.get.halftransparent.worker.html [ Failure ]
 crbug.com/1315282 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-inherit-rtl.html [ Failure ]
 crbug.com/1315282 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-rtl.html [ Failure ]
 
 # Off by one pixel error on ref test
 crbug.com/1259367 [ Mac ] printing/offscreencanvas-webgl-printing.html [ Failure ]
+
+# These are testing deprecated features: https://github.com/web-platform-tests/wpt/issues/35662
+external/wpt/editing/run/inserttext.html?1001-2000 [ Failure ]
+external/wpt/editing/run/inserttext.html?2001-last [ Failure ]
+external/wpt/editing/run/forecolor.html?1-1000 [ Failure ]
+external/wpt/editing/run/forecolor.html?1001-2000 [ Failure ]
+external/wpt/editing/run/forecolor.html?2001-last [ Failure ]
+external/wpt/editing/run/insertlinebreak.html [ Failure ]
 
 # This test depends on synchronous focus() which does not exist (anymore?).
 crbug.com/1074482 external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering.html [ Failure ]
@@ -3270,6 +3269,10 @@ crbug.com/626703 [ Linux ] external/wpt/dom/nodes/NodeList-static-length-getter-
 crbug.com/626703 [ Linux ] external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-3.html [ Skip Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/background-sync.https.html [ Timeout ]
+crbug.com/626703 [ Win10.20h2 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaDevices-enumerateDevices-persistent-permission.https.html [ Crash Failure ]
+# TODO(crbug.com/1358135, crbug.com/1358147): Re-enable this test: Re-enable this test
+crbug.com/626703 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-quirks-mode.html [ Skip ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/mediacapture-record/MediaRecorder-mimetype.html [ Timeout ]
 crbug.com/626703 [ Mac12 ] external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Failure Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Failure Timeout ]
@@ -4875,10 +4878,6 @@ crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-trans
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Pass ]
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Pass ]
 
-crbug.com/1008483 virtual/backface-visibility-interop/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
-crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/stacking-context-lost.html [ Failure ]
-crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/multicol/multicol-as-paint-container.html [ Failure ]
-
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-innerwidth.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-screeny.html [ Crash Timeout ]
@@ -5080,8 +5079,8 @@ crbug.com/1279648 [ Mac ] virtual/threaded/external/wpt/scroll-animations/css/sc
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-descriptors-quirks-mode.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-descriptors-writing-mode-rl.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-descriptors.html [ Failure ]
-crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-frame-size-changed.html [ Failure ]
-crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-inline-orientation.html [ Failure ]
+crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-frame-size-changed.html [ Failure ]
+crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-inline-orientation.html [ Failure ]
 
 crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
@@ -6280,7 +6279,6 @@ crbug.com/1285411 external/wpt/css/css-scroll-snap/input/mouse-wheel.html [ Time
 
 # Sheriff 2022-01-07
 crbug.com/1285438 fast/layers/clip-rects-transformed.html [ Failure Pass ]
-crbug.com/1285431 [ Mac ] virtual/backface-visibility-interop/compositing/overflow/transform-should-update-absolute-clip-rects.html [ Crash Failure Pass ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-browser-navigate.js [ Crash Failure Pass Timeout ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-navigate.js [ Crash Failure Pass Timeout ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-subresource.js [ Crash Failure Pass Timeout ]
@@ -6838,3 +6836,13 @@ crbug.com/1356118 [ Mac ] virtual/partitioned-cookies/external/wpt/html/anonymou
 crbug.com/1356118 [ Linux ] external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 crbug.com/1356118 [ Linux ] virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 crbug.com/1356118 [ Linux ] virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
+
+# Sheriff 2022-08-30
+crbug.com/1357621 [ Linux ] external/wpt/webauthn/getcredential-abort.https.html [ Failure Pass Timeout ]
+crbug.com/1357917 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default.html [ Failure Pass ]
+crbug.com/1357917 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-writing-mode-rl.html [ Failure Pass ]
+
+crbug.com/1358051 external/wpt/longtask-timing/containerTypes.html [ Failure Pass ]
+
+# TODO(crbug.com/1358147): Re-enable this test
+virtual/plz-dedicated-worker/external/wpt/resource-timing/no-entries-for-cross-origin-css-fetched-memory-cache.sub.html [ Skip ]

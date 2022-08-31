@@ -13,13 +13,14 @@ void TemplatedObject<T>::Trace(Visitor* visitor) const {
 }
 
 class Test {
-public:
-    static void test()
-    {
-        HeapObject* obj = new HeapObject();
-        TemplatedObject<HeapObject>* instance =
-            new TemplatedObject<HeapObject>(obj);
-    }
+  DISALLOW_NEW();
+
+ public:
+  static void test() {
+    HeapObject* obj = MakeGarbageCollected<HeapObject>();
+    TemplatedObject<HeapObject>* instance =
+        MakeGarbageCollected<TemplatedObject<HeapObject>>(obj);
+  }
 };
 
 } // namespace blink

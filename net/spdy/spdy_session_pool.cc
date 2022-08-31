@@ -4,7 +4,6 @@
 
 #include "net/spdy/spdy_session_pool.h"
 
-#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -12,6 +11,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -373,8 +373,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
         aliases_.erase(alias_it);
 
         // Remap pooled session keys.
-        const auto& aliases = available_session->pooled_aliases();
-        for (auto it = aliases.begin(); it != aliases.end();) {
+        const auto& pooled_aliases = available_session->pooled_aliases();
+        for (auto it = pooled_aliases.begin(); it != pooled_aliases.end();) {
           // Ignore aliases this loop is inserting.
           if (it->socket_tag() == key.socket_tag()) {
             ++it;
@@ -467,7 +467,7 @@ void SpdySessionPool::CloseCurrentIdleSessions(const std::string& description) {
 void SpdySessionPool::CloseAllSessions() {
   auto is_draining = [](const SpdySession* s) { return s->IsDraining(); };
   // Repeat until every SpdySession owned by |this| is draining.
-  while (!std::all_of(sessions_.begin(), sessions_.end(), is_draining)) {
+  while (!base::ranges::all_of(sessions_, is_draining)) {
     CloseCurrentSessionsHelper(ERR_ABORTED, "Closing all sessions.",
                                false /* idle_only */);
   }

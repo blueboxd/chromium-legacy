@@ -13,17 +13,31 @@
 #include "ui/linux/linux_ui.h"
 #include "ui/linux/linux_ui_delegate.h"
 #include "ui/linux/linux_ui_factory.h"
+#include "ui/linux/linux_ui_getter.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace {
 
-std::unique_ptr<ui::LinuxUi> BuildLinuxUI() {
+class LinuxUiGetterImpl : public ui::LinuxUiGetter {
+ public:
+  LinuxUiGetterImpl() = default;
+  ~LinuxUiGetterImpl() override = default;
+  ui::LinuxUi* GetForWindow(aura::Window* window) override {
+    return window ? GetForProfile(GetThemeProfileForWindow(window)) : nullptr;
+  }
+  ui::LinuxUi* GetForProfile(Profile* profile) override {
+    return ui::GetLinuxUi(
+        ThemeServiceAuraLinux::GetSystemThemeForProfile(profile));
+  }
+};
+
+ui::LinuxUi* BuildLinuxUI() {
   // If the ozone backend hasn't provided a LinuxUiDelegate, don't try to create
   // a LinuxUi instance as this may result in a crash in toolkit initialization.
   if (!ui::LinuxUiDelegate::GetInstance())
     return nullptr;
 
-  return ui::CreateLinuxUi();
+  return ui::GetDefaultLinuxUi();
 }
 
 }  // namespace
@@ -37,15 +51,9 @@ ChromeBrowserMainExtraPartsViewsLinux::
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
 
-  if (auto linux_ui = BuildLinuxUI()) {
-    linux_ui->SetUseSystemThemeCallback(
-        base::BindRepeating([](aura::Window* window) {
-          if (!window)
-            return true;
-          return ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
-              GetThemeProfileForWindow(window));
-        }));
-    ui::LinuxUi::SetInstance(std::move(linux_ui));
+  if (auto* linux_ui = BuildLinuxUI()) {
+    linux_ui_getter_ = std::make_unique<LinuxUiGetterImpl>();
+    ui::LinuxUi::SetInstance(linux_ui);
 
     // Cursor theme changes are tracked by LinuxUI (via a CursorThemeManager
     // implementation). Start observing them once it's initialized.

@@ -27,21 +27,30 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/parser/arena.h"
 
 namespace blink {
 
 class CSSParserContext;
+template <bool UseArena>
 class CSSParserSelector;
 
 // See css_selector_parser.h.
-using CSSSelectorVector = Vector<std::unique_ptr<CSSParserSelector>>;
+template <bool UseArena>
+using CSSSelectorVector =
+    Vector<MaybeArenaUniquePtr<CSSParserSelector<UseArena>, UseArena>>;
 
+template <bool UseArena>
 class CORE_EXPORT CSSParserSelector {
   USING_FAST_MALLOC(CSSParserSelector);
 
  public:
-  CSSParserSelector();
-  explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
+  using MaybeArena = std::conditional_t<UseArena, Arena&, int>;  // Dummy int.
+
+  explicit CSSParserSelector(MaybeArena);
+  explicit CSSParserSelector(MaybeArena,
+                             const QualifiedName&,
+                             bool is_implicit = false);
   CSSParserSelector(const CSSParserSelector&) = delete;
   CSSParserSelector& operator=(const CSSParserSelector&) = delete;
   ~CSSParserSelector();
@@ -49,7 +58,7 @@ class CORE_EXPORT CSSParserSelector {
   // Note that on ReleaseSelector() or GetSelector(), you get that single
   // selector only, not its entire tag history (so TagHistory() will not
   // make sense until it's put into a CSSSelectorVector).
-  std::unique_ptr<CSSSelector> ReleaseSelector() {
+  MaybeArenaUniquePtr<CSSSelector, UseArena> ReleaseSelector() {
     return std::move(selector_);
   }
   const CSSSelector* GetSelector() const { return selector_.get(); }
@@ -87,7 +96,7 @@ class CORE_EXPORT CSSParserSelector {
     selector_->UpdatePseudoPage(value, document);
   }
 
-  void AdoptSelectorVector(CSSSelectorVector& selector_vector);
+  void AdoptSelectorVector(CSSSelectorVector<UseArena>& selector_vector);
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
   void SetAtomics(std::unique_ptr<CSSSelectorList>);
   void SetContainsPseudoInsideHasPseudoClass();
@@ -115,18 +124,21 @@ class CORE_EXPORT CSSParserSelector {
   bool NeedsImplicitShadowCombinatorForMatching() const;
 
   CSSParserSelector* TagHistory() const { return tag_history_.get(); }
-  void SetTagHistory(std::unique_ptr<CSSParserSelector> selector) {
+  void SetTagHistory(
+      MaybeArenaUniquePtr<CSSParserSelector, UseArena> selector) {
     tag_history_ = std::move(selector);
   }
   void ClearTagHistory() { tag_history_.reset(); }
   void AppendTagHistory(CSSSelector::RelationType,
-                        std::unique_ptr<CSSParserSelector>);
-  std::unique_ptr<CSSParserSelector> ReleaseTagHistory();
-  void PrependTagSelector(const QualifiedName&, bool tag_is_implicit = false);
+                        MaybeArenaUniquePtr<CSSParserSelector, UseArena>);
+  MaybeArenaUniquePtr<CSSParserSelector, UseArena> ReleaseTagHistory();
+  void PrependTagSelector(Arena&,
+                          const QualifiedName&,
+                          bool tag_is_implicit = false);
 
  private:
-  std::unique_ptr<CSSSelector> selector_;
-  std::unique_ptr<CSSParserSelector> tag_history_;
+  MaybeArenaUniquePtr<CSSSelector, UseArena> selector_;
+  MaybeArenaUniquePtr<CSSParserSelector, UseArena> tag_history_;
 };
 
 }  // namespace blink

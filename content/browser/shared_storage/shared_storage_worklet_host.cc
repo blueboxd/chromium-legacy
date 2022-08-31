@@ -89,11 +89,26 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
           document_service.render_frame_host().GetBrowserContext()),
       shared_storage_origin_(
           document_service.render_frame_host().GetLastCommittedOrigin()),
-      main_frame_origin_(document_service.main_frame_origin()) {}
+      main_frame_origin_(document_service.main_frame_origin()),
+      creation_time_(base::TimeTicks::Now()) {}
 
 SharedStorageWorkletHost::~SharedStorageWorkletHost() {
   base::UmaHistogramEnumeration("Storage.SharedStorage.Worklet.DestroyedStatus",
                                 destroyed_status_);
+
+  base::TimeDelta elapsed_time_since_creation =
+      base::TimeTicks::Now() - creation_time_;
+  if (pending_operations_count_ > 0 ||
+      last_operation_finished_time_.is_null() ||
+      elapsed_time_since_creation.is_zero()) {
+    base::UmaHistogramCounts100(
+        "Storage.SharedStorage.Worklet.Timing.UsefulResourceDuration", 100);
+  } else {
+    base::UmaHistogramCounts100(
+        "Storage.SharedStorage.Worklet.Timing.UsefulResourceDuration",
+        100 * (last_operation_finished_time_ - creation_time_) /
+            elapsed_time_since_creation);
+  }
 
   if (!page_)
     return;
@@ -220,7 +235,7 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
       base::BindOnce(
           &SharedStorageWorkletHost::
               OnRunURLSelectionOperationOnWorkletScriptExecutionFinished,
-          weak_ptr_factory_.GetWeakPtr(), urn_uuid));
+          weak_ptr_factory_.GetWeakPtr(), urn_uuid, base::TimeTicks::Now()));
 }
 
 bool SharedStorageWorkletHost::HasPendingOperations() {
@@ -548,6 +563,7 @@ void SharedStorageWorkletHost::OnRunOperationOnWorkletFinished(
 void SharedStorageWorkletHost::
     OnRunURLSelectionOperationOnWorkletScriptExecutionFinished(
         const GURL& urn_uuid,
+        base::TimeTicks start_time,
         bool success,
         const std::string& error_message,
         uint32_t index) {
@@ -571,12 +587,13 @@ void SharedStorageWorkletHost::
       shared_storage_origin_,
       base::BindOnce(&SharedStorageWorkletHost::
                          OnRunURLSelectionOperationOnWorkletFinished,
-                     weak_ptr_factory_.GetWeakPtr(), urn_uuid, success,
-                     error_message, index));
+                     weak_ptr_factory_.GetWeakPtr(), urn_uuid, start_time,
+                     success, error_message, index));
 }
 
 void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     const GURL& urn_uuid,
+    base::TimeTicks start_time,
     bool script_execution_succeeded,
     const std::string& script_execution_error_message,
     uint32_t index,
@@ -622,6 +639,9 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
         urn_uuid, std::move(mapping_result));
   }
 
+  base::UmaHistogramLongTimes(
+      "Storage.SharedStorage.Document.Timing.SelectURL.ExecutedInWorklet",
+      base::TimeTicks::Now() - start_time);
   DecrementPendingOperationsCount();
 }
 
@@ -658,7 +678,14 @@ void SharedStorageWorkletHost::DecrementPendingOperationsCount() {
   base::CheckedNumeric<uint32_t> count = pending_operations_count_;
   pending_operations_count_ = (--count).ValueOrDie();
 
-  if (!IsInKeepAlivePhase() || pending_operations_count_)
+  if (pending_operations_count_)
+    return;
+
+  // This time will be overridden if another operation is subsequently queued
+  // and completed.
+  last_operation_finished_time_ = base::TimeTicks::Now();
+
+  if (!IsInKeepAlivePhase())
     return;
 
   FinishKeepAlive(/*timeout_reached=*/false);

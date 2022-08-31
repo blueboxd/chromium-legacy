@@ -62,6 +62,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
 
     // The number of items past the last visible one we want to have loaded at any give point.
     static final int REMAINING_ITEM_BUFFER_SIZE = 25;
+    static final int MIN_EXPANDED_CLUSTER_SIZE = 2;
 
     interface Clock {
         long currentTimeMillis();
@@ -345,19 +346,26 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         VisitMetadata visitMetadata = mVisitMetadataMap.get(visit);
         if (visitMetadata == null) return;
         ListItem visitListItem = visitMetadata.visitListItem;
+        List<ListItem> visitsAndRelatedSearches = visitMetadata.visitsAndRelatedSearches;
+        boolean deletedModelHadDivider =
+                visitListItem.model.get(HistoryClustersItemProperties.DIVIDER_VISIBLE);
         assert mModelList.indexOf(visitListItem) != -1
-                && visitMetadata.visitsAndRelatedSearches.indexOf(visitListItem) != -1;
+                && visitsAndRelatedSearches.indexOf(visitListItem) != -1;
         mModelList.remove(visitListItem);
-        visitMetadata.visitsAndRelatedSearches.remove(visitListItem);
-        if (visitMetadata.visitsAndRelatedSearches.size() == 1
-                && visitMetadata.visitsAndRelatedSearches.get(0).type
-                        == ItemType.RELATED_SEARCHES) {
-            mModelList.remove(visitMetadata.visitsAndRelatedSearches.get(0));
-            visitMetadata.visitsAndRelatedSearches.clear();
+        visitsAndRelatedSearches.remove(visitListItem);
+        if (visitsAndRelatedSearches.size() == 1
+                && visitsAndRelatedSearches.get(0).type == ItemType.RELATED_SEARCHES) {
+            mModelList.remove(visitsAndRelatedSearches.get(0));
+            visitsAndRelatedSearches.clear();
         }
 
-        if (visitMetadata.visitsAndRelatedSearches.isEmpty()) {
+        if (visitsAndRelatedSearches.isEmpty()) {
             mModelList.remove(visitMetadata.clusterListItem);
+        } else if (deletedModelHadDivider) {
+            PropertyModel modelOfNewLastVisit =
+                    visitsAndRelatedSearches.get(visitsAndRelatedSearches.size() - 1).model;
+            modelOfNewLastVisit.set(HistoryClustersItemProperties.DIVIDER_VISIBLE, true);
+            modelOfNewLastVisit.set(HistoryClustersItemProperties.DIVIDER_IS_THICK, true);
         }
 
         mVisitMetadataMap.remove(visit);
@@ -395,7 +403,6 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             if (existingModel == null) {
                 Drawable journeysDrawable =
                         AppCompatResources.getDrawable(mContext, R.drawable.ic_journeys);
-                mLabelToModelMap.put(rawLabel, existingModel);
                 existingModel =
                         new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
                                 .with(HistoryClustersItemProperties.ICON_DRAWABLE, journeysDrawable)
@@ -413,6 +420,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
                                                 -> setQueryState(QueryState.forQuery(rawLabel,
                                                         mDelegate.getSearchEmptyString())))
                                 .build();
+                mLabelToModelMap.put(rawLabel, existingModel);
                 ListItem clusterItem = new ListItem(ItemType.CLUSTER, existingModel);
                 mModelList.add(clusterItem);
             }
@@ -430,6 +438,10 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         List<HistoryCluster> clusters = result.getClusters();
         for (int clusterIdx = 0; clusterIdx < clusters.size(); clusterIdx++) {
             HistoryCluster cluster = clusters.get(clusterIdx);
+            if (cluster.getVisits().size() < MIN_EXPANDED_CLUSTER_SIZE) {
+                continue;
+            }
+
             PropertyModel clusterModel =
                     new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
                             .with(HistoryClustersItemProperties.TITLE,

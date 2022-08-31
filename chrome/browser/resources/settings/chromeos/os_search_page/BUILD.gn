@@ -31,7 +31,7 @@ js_library("os_search_page") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 
@@ -39,11 +39,13 @@ js_library("os_search_selection_dialog") {
   deps = [
     "//chrome/browser/resources/settings/chromeos/os_search_page:search_engines_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -57,7 +59,7 @@ js_library("search_subpage") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 
@@ -71,7 +73,7 @@ js_library("search_engine") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 

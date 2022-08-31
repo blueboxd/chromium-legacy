@@ -1554,6 +1554,53 @@ static bool ParseHWBParameters(CSSParserTokenRange& range,
   return args.AtEnd();
 }
 
+static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
+                                      const CSSParserContext& context,
+                                      Color& result) {
+  bool is_lab = (range.Peek().FunctionId() == CSSValueID::kLab);
+  bool is_ok_lab = (range.Peek().FunctionId() == CSSValueID::kOklab);
+  DCHECK(is_lab || is_ok_lab);
+  CSSParserTokenRange args = ConsumeFunction(range);
+  // Consume lightness, either a percentage or a number
+  CSSPrimitiveValue* value =
+      ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
+  if (!value) {
+    value = ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+  }
+  if (!value)
+    return false;
+  double lightness = value->GetDoubleValue();
+  lightness = std::max(0.0, lightness);
+
+  double ab[2];
+  for (double& i : ab) {
+    value = ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
+    if (!value)
+      return false;
+    i = value->GetDoubleValue();
+  }
+
+  // If present, consume the alpha value.
+  double alpha = 1.0;
+  if (ConsumeSlashIncludingWhitespace(args)) {
+    if (!ConsumeNumberRaw(args, context, alpha)) {
+      CSSPrimitiveValue* alpha_percent =
+          ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+      if (!alpha_percent)
+        return false;
+      else
+        alpha = alpha_percent->GetDoubleValue() / 100.0;
+    }
+    alpha = ClampTo<double>(alpha, 0.0, 1.0);
+  }
+
+  if (is_ok_lab)
+    result = Color::FromOKLab(lightness, ab[0], ab[1], alpha);
+  else
+    result = Color::FromLab(lightness, ab[0], ab[1], alpha);
+  return args.AtEnd();
+}
+
 static bool ParseHexColor(CSSParserTokenRange& range,
                           Color& result,
                           bool accept_quirky_colors) {
@@ -1607,6 +1654,12 @@ static bool ParseColorFunction(CSSParserTokenRange& range,
       break;
     case CSSValueID::kHwb:
       if (!ParseHWBParameters(color_range, context, result))
+        return false;
+      break;
+    case CSSValueID::kLab:
+    case CSSValueID::kOklab:
+      if (!RuntimeEnabledFeatures::CSSColor4Enabled() ||
+          !ParseLABOrOKLABParameters(color_range, context, result))
         return false;
       break;
     default:

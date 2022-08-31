@@ -168,8 +168,8 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
   }
 
   result.extension_id = std::make_unique<std::string>(extension_id());
-  result.time = std::make_unique<double>(time().ToJsTime());
-  result.count = std::make_unique<double>(count());
+  result.time = time().ToJsTime();
+  result.count = count();
   result.api_call = std::make_unique<std::string>(api_name());
   result.args = std::make_unique<std::string>(Serialize(args()));
   if (action_id() != -1)
@@ -188,7 +188,7 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
         new ExtensionActivity::Other);
     if (absl::optional<bool> prerender =
             other()->FindBool(constants::kActionPrerender)) {
-      other_field->prerender = std::make_unique<bool>(*prerender);
+      other_field->prerender = *prerender;
     }
     if (const base::Value::Dict* web_request =
             other()->FindDict(constants::kActionWebRequest)) {

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addEntries, ENTRIES, EntryType, getCaller, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {DialogType} from '../dialog_type.js';
+import {addEntries, RootPath} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {expandTreeItem, IGNORE_APP_ERRORS, mountCrostini, navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DOWNLOADS_FAKE_TASKS} from './tasks.js';
 import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
@@ -253,7 +254,7 @@ testcase.trashRestoreFromTrashShortcut = async () => {
 };
 
 /**
- * Delete files (move them into trash) then empty trash using toolbar.
+ * Delete files (move them into trash) then empty trash using the banner.
  */
 testcase.trashEmptyTrash = async () => {
   const appId = await setupAndWaitUntilReady(
@@ -274,7 +275,8 @@ testcase.trashEmptyTrash = async () => {
       appId, '#file-list [file-name="hello.txt"]');
 
   // Empty trash and confirm delete (dialog shown).
-  await remoteCall.waitAndClickElement(appId, '#empty-trash-button');
+  await remoteCall.waitAndClickElement(
+      appId, ['trash-banner', 'cr-button[command="#empty-trash"]']);
   await remoteCall.waitAndClickElement(
       appId, '.files-confirm-dialog .cr-dialog-ok');
 
@@ -635,4 +637,44 @@ testcase.trashDragDropNonModifiableEntriesCantBeTrashed = async () => {
   // Ensure the Downloads entry doesn't exist in Trash.
   await remoteCall.waitForElement(appId, `[scan-completed="Trash"]`);
   await remoteCall.waitForFiles(appId, []);
+};
+
+/**
+ * Tests the Trash root is not visible when opening Files app as a select file
+ * dialog.
+ */
+testcase.trashDontShowTrashRootOnSelectFileDialog = async () => {
+  // Open Files app on Downloads as a select file dialog.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, [],
+      {type: DialogType.SELECT_OPEN_FILE});
+
+  // Navigate to the My files directory to ensure the directory tree has fully
+  // loaded and wait for My files to finish scanning.
+  await navigateWithDirectoryTree(appId, '/My files');
+  await remoteCall.waitForElement(appId, `[scan-completed="My files"]`);
+
+  // Ensure the Trash root entry is not visible on the page.
+  await remoteCall.waitForElementLost(
+      appId, '#directory-tree [entry-label="Trash"]');
+};
+
+/**
+ * Tests the Trash root is not visible when Files app is used as a select file
+ * dialog within Android applications.
+ */
+testcase.trashDontShowTrashRootWhenOpeningAsAndroidFilePicker = async () => {
+  // Open Files app on Downloads as an Android file picker.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, [],
+      {volumeFilter: ['media-store-files-only']});
+
+  // Navigate to the My files directory to ensure the directory tree has fully
+  // loaded and wait for My files to finish scanning.
+  await navigateWithDirectoryTree(appId, '/My files');
+  await remoteCall.waitForElement(appId, `[scan-completed="My files"]`);
+
+  // Ensure the Trash root entry is not visible on the page.
+  await remoteCall.waitForElementLost(
+      appId, '#directory-tree [entry-label="Trash"]');
 };

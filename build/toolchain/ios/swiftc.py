@@ -113,40 +113,65 @@ def compile_module(module, sources, settings, extras, tmpdir):
         '-enable-cxx-interop',
     ])
 
+  # The swiftc compiler uses a global module cache that is not robust against
+  # changes in the sub-modules nor against corruption (see crbug.com/1358073).
+  # Use a separate temporary directory as module cache path for each invocation
+  # of the compiler (use the -module-cache-path as a prefix if specified).
+  prefix = None
   if settings.module_cache_path:
-    if not os.path.exists(settings.module_cache_path):
-      os.makedirs(settings.module_cache_path)
-    extra_args.extend([
-        '-module-cache-path',
-        os.path.abspath(settings.module_cache_path),
-    ])
+    prefix = os.path.abspath(settings.module_cache_path) + os.path.sep
+    if not os.path.exists(prefix):
+      os.makedirs(prefix)
 
-  # Allow an alternative Swift toolchain (such as ToT or a newer version)
-  # by utilizing `xcrun`. If an alternative is not present in either
-  # /Library/Developer/Toolchains or ~/Library/Developer/Toolchains, this
-  # will automatically fall back to Xcode's default.
-  process = subprocess.Popen([
-      settings.swift_toolchain_path + '/usr/bin/swiftc',
-      '-parse-as-library',
-      '-module-name',
-      module,
-      '-emit-object',
-      '-emit-dependencies',
-      '-emit-module',
-      '-emit-module-path',
-      settings.module_path,
-      '-emit-objc-header',
-      '-emit-objc-header-path',
-      settings.header_path,
-      '-output-file-map',
-      output_file_map_path,
-      '-pch-output-dir',
-      os.path.abspath(settings.pch_output_dir),
-  ] + extra_args + extras + sources)
+  with tempfile.TemporaryDirectory(prefix=prefix) as module_cache_path:
+    extra_args.extend(['-module-cache-path', module_cache_path])
 
-  process.communicate()
-  if process.returncode:
-    sys.exit(process.returncode)
+    process = subprocess.Popen([
+        settings.swift_toolchain_path + '/usr/bin/swiftc',
+        '-parse-as-library',
+        '-module-name',
+        module,
+        '-emit-object',
+        '-emit-dependencies',
+        '-emit-module',
+        '-emit-module-path',
+        settings.module_path,
+        '-emit-objc-header',
+        '-emit-objc-header-path',
+        settings.header_path,
+        '-output-file-map',
+        output_file_map_path,
+        '-pch-output-dir',
+        os.path.abspath(settings.pch_output_dir),
+    ] + extra_args + extras + sources)
+
+    process.communicate()
+    if process.returncode:
+      sys.exit(process.returncode)
+
+  # The swiftc compiler generates an header file that use clang modules
+  # if the support is available. However, it appears that clang always
+  # return 1 when __has_features(modules) when -std=c++20 is enabled,
+  # even if modules are explicitly disabled with -fno-modules. Moreover
+  # it appears that enabling modules when compiling Objective-C++ does
+  # not work with ToT clang (selectors are not visible) while it work
+  # if using Apple version of clang.
+  #
+  # Until those issues are resolved, the swiftc.py wrapper exposes a
+  # flag to modify the generated bridging header to replace the checks
+  # for modules by a constant (i.e. pretending the modules support is
+  # not available).
+  #
+  # TODO(crbug.com/1284275): Remove this hack when it is either possible
+  # to enable modules with ToT clang, clang is fixed to not enable the
+  # module support by default when -std=c++20 or both.
+  if settings.enable_cxx20_hack:
+    with open(settings.header_path, 'r') as header_file:
+      header_contents = header_file.read()
+
+    header_contents = header_contents.replace('__has_feature(modules)', '0')
+    with open(settings.header_path, 'w') as header_file:
+      header_file.write(header_contents)
 
   # The swiftc compiler generates depfile that uses absolute paths, but
   # ninja requires paths in depfiles to be identical to paths used in
@@ -247,12 +272,17 @@ def main(args):
                       required=True,
                       help='path to the root of the repository')
   parser.add_argument('-swift-toolchain-path',
+                      default='',
+                      action='store',
                       dest='swift_toolchain_path',
                       help='path to the root of the Swift toolchain')
   parser.add_argument('-enable-cxx-interop',
                       dest='enable_cxx_interop',
                       action='store_true',
                       help='allow importing C++ modules into Swift')
+  parser.add_argument('-enable-cxx20-hack',
+                      action='store_true',
+                      help='enable hack to allow compilation with -std=c++20')
 
   parsed, extras = parser.parse_known_args(args)
   with tempfile.TemporaryDirectory() as tmpdir:

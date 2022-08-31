@@ -6,9 +6,9 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/mock_device_trust_key_manager.h"
+#include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,8 +33,8 @@ class MacDeviceTrustConnectorServiceTest
       public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  protected:
   void SetUp() override {
-    RegisterProfilePrefs(profile_prefs_.registry());
-    RegisterLocalPrefs(local_prefs_.registry());
+    RegisterDeviceTrustConnectorProfilePrefs(profile_prefs_.registry());
+    RegisterDeviceTrustConnectorLocalPrefs(local_prefs_.registry());
     feature_list_.InitWithFeatureState(kDeviceTrustConnectorEnabled,
                                        is_flag_enabled());
     UpdateAllowlistProfilePreference();
@@ -43,15 +43,15 @@ class MacDeviceTrustConnectorServiceTest
 
   void UpdateAllowlistProfilePreference() {
     is_policy_enabled()
-        ? profile_prefs_.SetUserPref(kContextAwareAccessSignalsAllowlistPref,
-                                     base::Value(GetOrigins()))
-        : profile_prefs_.SetUserPref(kContextAwareAccessSignalsAllowlistPref,
-                                     base::Value(base::Value::List()));
+        ? profile_prefs_.SetManagedPref(kContextAwareAccessSignalsAllowlistPref,
+                                        base::Value(GetOrigins()))
+        : profile_prefs_.SetManagedPref(kContextAwareAccessSignalsAllowlistPref,
+                                        base::Value(base::Value::List()));
   }
 
   void UpdateKeyCreationLocalPreference() {
-    local_prefs_.SetUserPref(kDeviceTrustDisableKeyCreationPref,
-                             base::Value(!is_key_creation_enabled()));
+    local_prefs_.SetManagedPref(kDeviceTrustDisableKeyCreationPref,
+                                base::Value(!is_key_creation_enabled()));
   }
 
   std::unique_ptr<MacDeviceTrustConnectorService> CreateService() {

@@ -489,6 +489,12 @@
       status: "test",
     },
     {
+      // Support for CSS Color Module Level 4
+      // https://www.w3.org/TR/css-color-4/
+      name: "CSSColor4",
+      status:  "experimental",
+    },
+    {
       name: "CSSColorContrast",
       status: "experimental",
     },
@@ -1907,6 +1913,10 @@
       name: "RenderPriorityAttribute"
     },
     {
+      name: "ResourceTimingResponseStatus",
+      status: "experimental",
+    },
+    {
       name: "RestrictGamepadAccess",
       status: "experimental",
     },
@@ -2502,6 +2512,11 @@
     {
       name: "WebAuthenticationConditionalUI",
       status: "test",
+    },
+    // https://github.com/w3c/webauthn/pull/1663
+    {
+      name: "WebAuthenticationDevicePublicKey",
+      status: "experimental",
     },
     {
       name: "WebAuthenticationLargeBlobExtension",

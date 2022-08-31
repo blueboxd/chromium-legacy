@@ -494,8 +494,10 @@ ci.builder(
         category = "default",
         short_name = "rev",
     ),
-    # To avoid peak hours, we run it from 1 AM to 4 PM UTC.
-    schedule = "0,30 1-15 * * *",
+    os = os.LINUX_DEFAULT,
+    # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
+    # 3 AM to 11 AM UTC.
+    schedule = "0 3,5,7,9 * * *",
 )
 
 ci.builder(
@@ -2139,7 +2141,7 @@ fyi_mac_builder(
     builderless = True,
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 40,
+    reclient_jobs = 200,
 )
 
 fyi_mac_builder(
@@ -2213,4 +2215,40 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
+    name = "Blink Unexpected Pass Finder",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        short_name = "upf",
+    ),
+    executable = "recipe:chromium_expectation_files/expectation_file_scripts",
+    # This will eventually be set to run on a schedule, but only support
+    # manual triggering for now until we get a successful build.
+    schedule = "triggered",
+    triggered_by = [],
+    service_account = "chromium-automated-expectation@chops-service-accounts.iam.gserviceaccount.com",
+    properties = {
+        "scripts": [
+            {
+                "step_name": "remove_stale_blink_expectations",
+                "script": "third_party/blink/tools/remove_stale_expectations.py",
+                "script_type": "UNEXPECTED_PASS",
+                "submit_type": "MANUAL",
+                "reviewer_list": {
+                    "reviewer": ["bsheedy@chromium.org"],
+                },
+                "cl_title": "Remove stale Blink expectations",
+                "args": [
+                    "--project",
+                    "chrome-unexpected-pass-data",
+                    "--no-include-internal-builders",
+                    "--remove-stale-expectations",
+                    "--num-samples",
+                    "200",
+                ],
+            },
+        ],
+    },
 )

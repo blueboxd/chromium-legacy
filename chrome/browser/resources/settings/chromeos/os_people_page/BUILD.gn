@@ -74,7 +74,7 @@ js_library("fingerprint_list") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 
@@ -96,7 +96,7 @@ js_library("lock_screen") {
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:plural_string_proxy",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "../settings_controls_types.js" ]
 }
@@ -141,7 +141,7 @@ js_library("os_people_page") {
     "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list =
       chrome_extension_public_externs + [ "../settings_controls_types.js" ]
@@ -176,11 +176,13 @@ js_library("setup_fingerprint_dialog") {
     ":fingerprint_browser_proxy",
     "..:metrics_recorder",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-  externs_list = [ "//ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc_externs.js" ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc_externs.js",
+    "//ui/webui/resources/cr_elements/cr_lottie/cr_lottie_externs.js",
+  ]
 }
 
 js_library("setup_pin_dialog") {
@@ -212,13 +214,13 @@ js_library("user_list") {
 js_library("users_add_user_dialog") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   externs_list = [
     "$externs_path/users_private.js",
     "//ui/webui/resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -232,7 +234,7 @@ js_library("users_page") {
     "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 

@@ -45,7 +45,16 @@ enum class OperationType {
   kEmptyTrash,
   kExtract,
   kMove,
+
+  // This restores to the location supplied in the .trashinfo folder, recreating
+  // the parent hierarchy as required. As .Trash folders reside on the same
+  // filesystem as trashed files, this implies an intra filesystem move.
   kRestore,
+
+  // This restores to a supplied destination only extracting the file name to
+  // properly name the destination file. The destination folder is expected to
+  // exist and items can be restored cross filesystem.
+  kRestoreToDestination,
   kTrash,
   kZip,
 };
@@ -110,12 +119,18 @@ struct ProgressStatus {
 
   // The estimate time to finish the operation.
   double remaining_seconds = 0;
+
+  // Whether notifications should be shown on progress status.
+  bool show_notification = true;
 };
 
 // An IOTask represents an I/O operation over multiple files, and is responsible
 // for executing the operation and providing progress/completion reports.
 class IOTask {
  public:
+  IOTask() = delete;
+  IOTask(const IOTask& other) = delete;
+  IOTask& operator=(const IOTask& other) = delete;
   virtual ~IOTask() = default;
 
   using ProgressCallback = base::RepeatingCallback<void(const ProgressStatus&)>;
@@ -137,9 +152,9 @@ class IOTask {
   const ProgressStatus& progress() { return progress_; }
 
  protected:
-  IOTask() = default;
-  IOTask(const IOTask& other) = delete;
-  IOTask& operator=(const IOTask& other) = delete;
+  explicit IOTask(bool show_notification) {
+    progress_.show_notification = show_notification;
+  }
 
   ProgressStatus progress_;
 
@@ -154,7 +169,8 @@ class DummyIOTask : public IOTask {
  public:
   DummyIOTask(std::vector<storage::FileSystemURL> source_urls,
               storage::FileSystemURL destination_folder,
-              OperationType type);
+              OperationType type,
+              bool show_notification = true);
   ~DummyIOTask() override;
 
   void Execute(ProgressCallback progress_callback,

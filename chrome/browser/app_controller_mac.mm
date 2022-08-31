@@ -14,7 +14,7 @@
 
 #include <dlfcn.h>
 
-#include "base/allocator/allocator_shim.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"

@@ -10,7 +10,6 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -138,13 +137,14 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
 
   _textLabel = [[UILabel alloc] init];
   _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+  _textLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
   _textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   [contentView addSubview:_textLabel];
 
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
+  _detailTextLabel.font = [UIFont systemFontOfSize:14
+                                            weight:UIFontWeightRegular];
   _detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   [contentView addSubview:_detailTextLabel];
 }

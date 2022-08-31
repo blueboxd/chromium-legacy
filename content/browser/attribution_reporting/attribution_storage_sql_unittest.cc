@@ -24,12 +24,14 @@
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/public/browser/attribution_reporting.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -225,11 +227,11 @@ TEST_F(AttributionStorageSqlTest,
     // [conversion_domain_idx], [impression_expiry_idx],
     // [impression_origin_idx], [impression_site_idx],
     // [conversion_report_time_idx], [conversion_impression_id_idx],
-    // [rate_limit_attribution_idx], [rate_limit_reporting_origin_idx],
-    // [rate_limit_time_idx], [rate_limit_impression_id_idx],
-    // [aggregate_source_id_idx], [aggregate_trigger_time_idx],
-    // [aggregate_report_time_idx], [contribution_aggregation_id_idx] and
-    // the meta table index.
+    // [rate_limit_source_site_reporting_origin_idx],
+    // [rate_limit_reporting_origin_idx], [rate_limit_time_idx],
+    // [rate_limit_impression_id_idx], [aggregate_source_id_idx],
+    // [aggregate_trigger_time_idx], [aggregate_report_time_idx],
+    // [contribution_aggregation_id_idx] and the meta table index.
     EXPECT_EQ(15u, sql::test::CountSQLIndices(&raw_db));
   }
 }
@@ -327,8 +329,9 @@ TEST_F(AttributionStorageSqlTest, ClearDataRangeMultipleReports) {
   // Use a time range that targets all triggers.
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating(std::equal_to<url::Origin>(),
-                          source.common_info().impression_origin()));
+      base::BindRepeating(
+          std::equal_to<blink::StorageKey>(),
+          blink::StorageKey(source.common_info().impression_origin())));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -378,8 +381,9 @@ TEST_F(AttributionStorageSqlTest, ClearDataWithVestigialConversion) {
   // Use a time range that only intersects the last trigger.
   storage()->ClearData(
       base::Time::Now(), base::Time::Now(),
-      base::BindRepeating(std::equal_to<url::Origin>(),
-                          source.common_info().impression_origin()));
+      base::BindRepeating(
+          std::equal_to<blink::StorageKey>(),
+          blink::StorageKey(source.common_info().impression_origin())));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -570,7 +574,13 @@ TEST_F(AttributionStorageSqlTest,
        DeleteRateLimitRowsForSubdomainImpressionOrigin) {
   OpenDatabase();
   delegate()->set_max_attributions_per_source(1);
-  delegate()->rate_limits().time_window = base::Days(7);
+  delegate()->set_rate_limits({
+      .time_window = base::Days(7),
+      .max_source_registration_reporting_origins =
+          std::numeric_limits<int64_t>::max(),
+      .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
+      .max_attributions = std::numeric_limits<int64_t>::max(),
+  });
   const url::Origin impression_origin =
       url::Origin::Create(GURL("https://sub.impression.example/"));
   const url::Origin reporting_origin =
@@ -598,7 +608,8 @@ TEST_F(AttributionStorageSqlTest,
       storage()->DeleteReport(AttributionReport::EventLevelData::Id(1)));
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating(std::equal_to<url::Origin>(), impression_origin));
+      base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                          blink::StorageKey(impression_origin)));
 
   CloseDatabase();
   sql::Database raw_db;
@@ -615,7 +626,13 @@ TEST_F(AttributionStorageSqlTest,
        DeleteRateLimitRowsForSubdomainConversionOrigin) {
   OpenDatabase();
   delegate()->set_max_attributions_per_source(1);
-  delegate()->rate_limits().time_window = base::Days(7);
+  delegate()->set_rate_limits({
+      .time_window = base::Days(7),
+      .max_source_registration_reporting_origins =
+          std::numeric_limits<int64_t>::max(),
+      .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
+      .max_attributions = std::numeric_limits<int64_t>::max(),
+  });
   const url::Origin impression_origin =
       url::Origin::Create(GURL("https://b.example/"));
   const url::Origin reporting_origin =
@@ -643,7 +660,8 @@ TEST_F(AttributionStorageSqlTest,
       storage()->DeleteReport(AttributionReport::EventLevelData::Id(1)));
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating(std::equal_to<url::Origin>(), conversion_origin));
+      base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                          blink::StorageKey(conversion_origin)));
 
   CloseDatabase();
   sql::Database raw_db;
@@ -717,14 +735,14 @@ TEST_F(AttributionStorageSqlTest, MaxUint64StorageSucceeds) {
       AttributionTrigger::EventLevelResult::kSuccess,
       MaybeCreateAndStoreEventLevelReport(
           TriggerBuilder()
-              .SetTriggerData(kMaxUint64)
+              .SetDebugKey(kMaxUint64)
               .SetDestinationOrigin(
                   impression.common_info().conversion_origin())
               .SetReportingOrigin(impression.common_info().reporting_origin())
               .Build()));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()),
-              ElementsAre(EventLevelDataIs(TriggerDataIs(kMaxUint64))));
+              ElementsAre(TriggerDebugKeyIs(kMaxUint64)));
 }
 
 TEST_F(AttributionStorageSqlTest, ImpressionNotExpired_NotDeleted) {

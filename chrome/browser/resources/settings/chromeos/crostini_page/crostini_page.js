@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../guest_os/guest_os_shared_paths.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
@@ -50,8 +50,11 @@ import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_browser
  */
 const SettingsCrostiniPageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, PrefsBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -140,7 +143,7 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
       enableBruschetta_: {
         type: Boolean,
         value: loadTimeData.getBoolean('enableBruschetta'),
-      }
+      },
     };
   }
 

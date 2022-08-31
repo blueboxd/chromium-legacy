@@ -63,6 +63,7 @@
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
+#include "chrome/browser/ash/crosapi/network_change_ash.h"
 #include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/networking_private_ash.h"
@@ -82,6 +83,7 @@
 #include "chrome/browser/ash/crosapi/time_zone_service_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/crosapi/video_capture_device_factory_ash.h"
+#include "chrome/browser/ash/crosapi/virtual_keyboard_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_extension_observer_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
 #include "chrome/browser/ash/crosapi/wallpaper_ash.h"
@@ -129,6 +131,8 @@
 
 #if defined(USE_CUPS)
 #include "chrome/browser/ash/crosapi/printing_metrics_ash.h"
+#else
+#include "chrome/browser/ash/crosapi/fake_printing_metrics_ash.h"
 #endif  // defined(USE_CUPS)
 
 namespace crosapi {
@@ -204,6 +208,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       metrics_reporting_ash_(registry->CreateMetricsReportingAsh(
           g_browser_process->metrics_service())),
       native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
+      network_change_ash_(std::make_unique<NetworkChangeAsh>()),
       networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
       networking_private_ash_(std::make_unique<NetworkingPrivateAsh>()),
       network_settings_service_ash_(std::make_unique<NetworkSettingsServiceAsh>(
@@ -232,6 +237,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
       video_capture_device_factory_ash_(
           std::make_unique<VideoCaptureDeviceFactoryAsh>()),
+      virtual_keyboard_ash_(std::make_unique<VirtualKeyboardAsh>()),
       vpn_extension_observer_ash_(std::make_unique<VpnExtensionObserverAsh>()),
       vpn_service_ash_(std::make_unique<VpnServiceAsh>()),
       wallpaper_ash_(std::make_unique<WallpaperAsh>()),
@@ -445,6 +451,11 @@ void CrosapiAsh::BindMetricsReporting(
 void CrosapiAsh::BindNativeThemeService(
     mojo::PendingReceiver<crosapi::mojom::NativeThemeService> receiver) {
   native_theme_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindNetworkChange(
+    mojo::PendingReceiver<crosapi::mojom::NetworkChange> receiver) {
+  network_change_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindSelectFile(
@@ -703,6 +714,11 @@ void CrosapiAsh::BindMachineLearningService(
 void CrosapiAsh::BindVideoCaptureDeviceFactory(
     mojo::PendingReceiver<mojom::VideoCaptureDeviceFactory> receiver) {
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindVirtualKeyboard(
+    mojo::PendingReceiver<mojom::VirtualKeyboard> receiver) {
+  virtual_keyboard_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindVpnExtensionObserver(

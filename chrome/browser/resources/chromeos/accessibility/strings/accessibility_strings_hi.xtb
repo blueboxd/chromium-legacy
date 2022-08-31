@@ -511,6 +511,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="4300318234632215983">किसी लिंक के पीछे का URL प्रदर्शित करें</translation>
 <translation id="4322625298640984693">गेरुआ</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{बिंदु}=3{पदलोप चिह्न}one{# बिंदु}other{# बिंदु}}</translation>
+<translation id="4352022650330571548"><ph name="PHRASE" /> टाइप करें</translation>
 <translation id="4372435075475052704">कम से कम:<ph name="X" /></translation>
 <translation id="4372705107434148843">बोली रोकें</translation>
 <translation id="4376316291247992553">ग्राफिक को ब्रेल के रूप में देखें</translation>
@@ -540,7 +541,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="4601367666219428522">ता <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ध्यान न देते हुए अगला बटन दबाएं</translation>
 <translation id="4623097797855662355">कॉलफ़न</translation>
-<translation id="4624970070706497034">अब Chromebook पर टॉकबैक की सुविधा को पसंद के मुताबिक सेट नहीं किया जा सकेगा. आपके पास अब भी इसे इस्तेमाल करने का विकल्प है. इसके लिए टॉकबैक के डिफ़ॉल्ट कीबोर्ड शॉर्टकट का इस्तेमाल करें. उपलब्ध शॉर्टकट देखने के लिए, Search+A और फिर K बटन दबाएं. अगर आपको अब भी टॉकबैक का इस्तेमाल करना है, तो दोबारा कमांड बटन दबाएं.</translation>
+<translation id="4624970070706497034">अब Chromebook पर TalkBack की सुविधा को पसंद के मुताबिक सेट नहीं किया जा सकेगा. आपके पास अब भी इसे इस्तेमाल करने का विकल्प है. इसके लिए TalkBack के डिफ़ॉल्ट कीबोर्ड शॉर्टकट का इस्तेमाल करें. उपलब्ध शॉर्टकट देखने के लिए, Search+A और फिर K बटन दबाएं. अगर आपको अब भी TalkBack का इस्तेमाल करना है, तो दोबारा कमांड बटन दबाएं.</translation>
 <translation id="463135993322337640">नया क्या है, यह जानने के लिए ChromeVox o, n दबाएं</translation>
 <translation id="4649220074413114917">ChromeVox को बोलने से रोकने के लिए, स्क्रीन पर दो उंगलियों से टैप करें. अगर आप ChromeVox को कुछ पढ़ने देना नहीं चाहते, तो यह उपयोगी है. जारी रखने के लिए, स्क्रीन पर दो उंगलियों से टैप करें.</translation>
 <translation id="4660783501463101648">क्लासिक को हटाया गया. ChromeVox क्लासिक में वापस ले जाने वाला कीबोर्ड टॉगल हटा दिया गया है.</translation>
@@ -802,7 +803,6 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="641759969622533235">{COUNT,plural, =1{विरामचिह्न}one{# विरामचिह्न}other{# विरामचिह्न}}</translation>
 <translation id="6444046323172968959">सूचना डॉयलॉग</translation>
 <translation id="6452403590345320472">विषय सूची</translation>
-<translation id="6457542714329819968">टाइप करें</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
 <translation id="646954774886932461">इंडेक्स</translation>
 <translation id="6475604559827479857">शब्द हाइलाइट करने का रंग:</translation>
@@ -860,6 +860,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6910969481785184048">चालू करें, बंद करें और रोकें</translation>
 <translation id="6919104639734799681">तालिकाओं की सूची दिखाएं</translation>
+<translation id="692135145298539227">मिटाएं</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6949846980769640811">मध्यम समुद्री हरा</translation>
 <translation id="6951482098621102657">आगे कोई लेवल 5 शीर्षक नहीं है</translation>
@@ -927,7 +928,6 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="7356610683936413584">जानकारी वाली सूची का ब्यौरा</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ऐम्परसेंड}one{# ऐम्परसेंड}other{# ऐम्परसेंड}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7388656272362719103">पिछला वर्ण मिटाएं</translation>
 <translation id="738899727977260036">स्लेटी नीला</translation>
 <translation id="7393979322571982935">आवाज़ और सेटिंग</translation>
 <translation id="739763518212184081">पिछली लाइन</translation>
@@ -1180,7 +1180,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="9223032053830369045">गहरा लाल</translation>
 <translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
 <translation id="93384979447910801">गहरा समुद्री हरा</translation>
-<translation id="937605981140327129">फ़िलहाल, टॉकबैक की सुविधा इंस्टॉल नहीं की गई है. कृपया Play Store से Android Accessibility Suite इंस्टॉल करें और फिर से कोशिश करें.</translation>
+<translation id="937605981140327129">फ़िलहाल, TalkBack की सुविधा इंस्टॉल नहीं की गई है. कृपया Play Store से Android Accessibility Suite इंस्टॉल करें और फिर से कोशिश करें.</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="957570623732056069">इस लेसन पर जाने के लिए, उंगली से बाईं या दाईं ओर स्वाइप करें</translation>
 <translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>

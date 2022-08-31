@@ -165,19 +165,19 @@ class ManagementUiElement extends ManagementUiElementBase {
     const reportingInfoMap = reportingInfo.reduce((info, response) => {
       info[response.reportingType] = info[response.reportingType] || {
         icon: this.getIconForReportingType_(response.reportingType),
-        messageIds: []
+        messageIds: [],
       };
       info[response.reportingType].messageIds.push(response.messageId);
       return info;
     }, {} as {[k: string]: {icon: string, messageIds: string[]}});
 
-    const reportingTypeOrder = {
+    const reportingTypeOrder: {[k: string]: number} = {
       [ReportingType.SECURITY]: 1,
       [ReportingType.EXTENSIONS]: 2,
       [ReportingType.USER]: 3,
       [ReportingType.USER_ACTIVITY]: 4,
       [ReportingType.DEVICE]: 5,
-    } as {[k: string]: number};
+    };
 
     this.browserReportingInfo_ =
         Object.keys(reportingInfoMap)

@@ -285,7 +285,6 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   title_view_->SetMultiLine(true);
   title_view_->SetAllowCharacterBreak(true);
   title_view_->SetMaxLines(kTitleLabelExpandedMaxLines);
-  title_view_->SetMaximumWidth(kNotificationInMessageCenterWidth);
 
   ConfigureLabelStyle(title_row_divider_, kTimestampInCollapsedViewSize,
                       /*is_color_primary=*/false);
@@ -1409,7 +1408,8 @@ int AshNotificationView::GetExpandedTitleLabelWidth() {
 
   return notification_width - kNotificationViewPadding.width() -
          kAppIconViewSize - kMainRightViewChildPadding.width() -
-         kAppIconViewSize - kRightContentExpandedPadding.width() -
+         kAppIconViewSize - right_content()->width() -
+         kRightContentExpandedPadding.width() -
          kMessageLabelInExpandedStatePadding.width();
 }
 
@@ -1434,8 +1434,8 @@ void AshNotificationView::UpdateAppIconView(
       (is_grouped_child_view_ && !notification->icon().IsEmpty()))
     return;
 
-  SkColor icon_color = AshColorProvider::Get()->GetInvertedContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonLabelColor);
+  SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kInvertedButtonLabelColor);
   SkColor icon_background_color = CalculateIconAndButtonsColor(notification);
 
   // TODO(crbug.com/768748): figure out if this has a performance impact and

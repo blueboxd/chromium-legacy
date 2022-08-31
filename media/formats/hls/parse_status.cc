@@ -26,6 +26,7 @@ base::StringPiece ParseStatusCodeToString(ParseStatusCode code) {
     PARSE_STATUS_CODE_CASE(kFailedToParseByteRange);
     PARSE_STATUS_CODE_CASE(kFailedToParseStableId);
     PARSE_STATUS_CODE_CASE(kFailedToParseInstreamId);
+    PARSE_STATUS_CODE_CASE(kFailedToParseAudioChannels);
     PARSE_STATUS_CODE_CASE(kInvalidPlaylistVersion);
     PARSE_STATUS_CODE_CASE(kUnknownPlaylistType);
     PARSE_STATUS_CODE_CASE(kMalformedAttributeList);
@@ -59,6 +60,7 @@ base::StringPiece ParseStatusCodeToString(ParseStatusCode code) {
     PARSE_STATUS_CODE_CASE(kPartTargetDurationExceedsTargetDuration);
     PARSE_STATUS_CODE_CASE(kPartHoldBackDistanceTooLow);
     PARSE_STATUS_CODE_CASE(kPartInfTagWithoutPartHoldBack);
+    PARSE_STATUS_CODE_CASE(kPlaylistHasUnexpectedDeltaUpdate);
   }
 
   NOTREACHED();

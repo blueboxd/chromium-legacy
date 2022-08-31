@@ -54,7 +54,6 @@
 <translation id="1435838927755162558">Chia sẻ thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="1439919885608649279">Người với hoa</translation>
 <translation id="1471718551822868769">Tiếng Slovak</translation>
-<translation id="1474339897586437869">"<ph name="FILENAME" />" không được tải lên. Không có đủ dung lượng trống trong Google Drive của bạn.</translation>
 <translation id="1482884275703521657">Tiếng Phần Lan</translation>
 <translation id="148466539719134488">Tiếng Thụy Sĩ</translation>
 <translation id="1497522201463361063">Không thể đổi tên "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
@@ -139,6 +138,7 @@
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2163152940313951844">Ký tự không hợp lệ: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Tiếng Bồ Đào Nha bằng bàn phím quốc tế Hoa Kỳ cho máy tính để bàn</translation>
+<translation id="2193661397560634290">Đã dùng <ph name="SPACE_USED" /></translation>
 <translation id="2198315389084035571">Tiếng Trung giản thể</translation>
 <translation id="22085916256174561">Tiếng Hàn</translation>
 <translation id="2208919847696382164">Cài đặt Linux</translation>
@@ -185,8 +185,10 @@
 <translation id="2544853746127077729">Chứng chỉ xác thực bị mạng từ chối</translation>
 <translation id="255937426064304553">Bàn phím quốc tế Hoa Kỳ</translation>
 <translation id="2563185590376525700">Ếch</translation>
+<translation id="2570012981255377263">Các tệp gần đây của bạn sẽ xuất hiện ở đây</translation>
 <translation id="2578394532502990878">Tiếng Tamil (phiên âm)</translation>
 <translation id="2579959351793446050">Tiếng Odia</translation>
+<translation id="2593644851255584939">Quản trị viên của bạn yêu cầu bạn tắt chế độ Khoá SIM.</translation>
 <translation id="2602810353103180630">Mạng <ph name="NETWORK_INDEX" /> trong tổng số <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Quản trị viên của bạn đã chặn, Thông tin chi tiết</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
@@ -194,6 +196,7 @@
 <translation id="2621713457727696555">Đã bảo mật</translation>
 <translation id="2638942478653899953">Không thể truy cập Google Drive. Vui lòng <ph name="BEGIN_LINK" />đăng xuất<ph name="END_LINK" /> và đăng nhập lại.</translation>
 <translation id="2649120831653069427">Cá cầu vồng</translation>
+<translation id="2653059201992392941">Bạn còn <ph name="RETRIES" /> lần nhập.</translation>
 <translation id="2663066752008346276">Tiếng Miến Điện/Myanmar bằng bàn phím Myansan</translation>
 <translation id="2664412712123763093">Vị trí tệp</translation>
 <translation id="2718540689505416944">Cài đặt ứng dụng Linux</translation>
@@ -201,6 +204,7 @@
 <translation id="2724954091494693138">Tiếng Thổ Nhĩ Kỳ bằng bàn phím F</translation>
 <translation id="2732839045120506979">Tiếng Việt (VNI)</translation>
 <translation id="2735623501230989521">Cho phép ứng dụng Parallels Desktop truy cập vào các tệp trong thư mục <ph name="FOLDER_NAME" /></translation>
+<translation id="2764206540577097904">Bạn đã dùng hết bộ nhớ cá nhân trên Google Workspace.</translation>
 <translation id="2771816809568414714">Pho mát</translation>
 <translation id="2781645665747935084">Tiếng Bỉ</translation>
 <translation id="2782104745158847185">Lỗi khi cài đặt ứng dụng Linux</translation>
@@ -221,6 +225,7 @@
 <translation id="2943503720238418293">Hãy sử dụng tên ngắn hơn</translation>
 <translation id="2949781154072577687">Đang định dạng <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Sứa</translation>
+<translation id="2958458230122209142">Sắp hết bộ nhớ, <ph name="TOTAL_SPACE" /> bộ nhớ cá nhân hiện còn <ph name="REMAINING_PERCENTAGE" />%.</translation>
 <translation id="2977940621473452797">Tệp này dành cho máy tính sử dụng phần mềm Macintosh. Tệp này không tương thích với thiết bị chạy ChromeOS của bạn. Vui lòng tìm kiếm ứng dụng thay thế phù hợp trong Cửa hàng Chrome trực tuyến.</translation>
 <translation id="2984337792991268709">Hôm nay <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">Đang khôi phục <ph name="COUNT" /> mục...</translation>
@@ -342,7 +347,6 @@
 <translation id="3971140002794351170">Tải hồ sơ mạng di động xuống, Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Tiếng Anh (Anh)</translation>
 <translation id="3975895378829046965">Tiếng Bangla (phiên âm)</translation>
-<translation id="3991446849494482687">Thao tác này cũng sẽ tắt chế độ Khoá SIM trên thiết bị.</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4017788180641807848">Tiếng Anh (Mỹ) bằng bàn phím Workman</translation>
 <translation id="4040753847560036377">Mã PUK không chính xác</translation>
@@ -488,7 +492,6 @@
 <translation id="5159560892333415631">Dọn sạch thùng rác</translation>
 <translation id="5163869187418756376">Chia sẻ không thành công. Hãy kiểm tra kết nối và thử lại sau.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
-<translation id="5170477580121653719">Dung lượng Google Drive còn lại: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Chế độ xem hình thu nhỏ</translation>
 <translation id="5194713942430106590">Nhấp để sắp xếp cột theo thứ tự tăng dần.</translation>
 <translation id="5211614973734216083">Tiếng Faroe</translation>
@@ -530,6 +533,7 @@
 <translation id="5489067830765222292">Tiếng Latvia</translation>
 <translation id="5489965683297092283">Đang tắt bộ lọc <ph name="FILTER_NAME" />.</translation>
 <translation id="5494920125229734069">Chọn tất cả</translation>
+<translation id="5500104704744051184">Bạn chỉ có thể sử dụng mạng này khi đã nhập PUK</translation>
 <translation id="5500122897333236901">Tiếng Ai-xơ-len</translation>
 <translation id="5508696409934741614">Dấu chấm</translation>
 <translation id="5522908512596376669">Danh sách tệp đã thay đổi thành chế độ xem danh sách.</translation>
@@ -545,6 +549,7 @@
 <translation id="5625294776298156701">Tiếng Tamil bằng bàn phím Tamil99</translation>
 <translation id="5633226425545095130">Khi bạn di chuyển mục này, mục này sẽ được chia sẻ với những người có thể xem thư mục dùng chung "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Nghe</translation>
+<translation id="5665074015635552640">Các video gần đây của bạn sẽ xuất hiện ở đây</translation>
 <translation id="5669691691057771421">Nhập mã PIN mới</translation>
 <translation id="5678784840044122290">Ứng dụng Linux sẽ có trong Thiết bị của bạn và cũng có thể hiển thị một biểu tượng trong Trình chạy.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Không thể ngắt kết nối khỏi vùng lưu trữ hoặc ổ đĩa ảo<ph name="END_BOLD" />
@@ -635,6 +640,7 @@
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> mục</translation>
 <translation id="642282551015776456">Không thể sử dụng tên này làm tên tệp trong thư mục</translation>
 <translation id="6423031066725912715">Tiếng Việt bằng bàn phím TCVN</translation>
+<translation id="6430271654280079150">Bạn còn 1 lần nhập.</translation>
 <translation id="6485131920355264772">Không thể truy xuất thông tin dung lượng</translation>
 <translation id="6495925982925244349">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Do quản trị viên của bạn quản lý, Thông tin chi tiết</translation>
 <translation id="649877868557234318">Đang giải nén <ph name="FILE_NAME" /> vào <ph name="FOLDER_NAME" /></translation>
@@ -669,6 +675,7 @@
 <translation id="6823166707458800069">Tất cả các tệp bạn đã lưu trong thư mục này đều tự động được sao lưu trực tuyến.</translation>
 <translation id="6825883775269213504">Tiếng Nga</translation>
 <translation id="6847101934483209767">Đã xóa <ph name="ENTRY_NAME" /> khỏi lựa chọn.</translation>
+<translation id="6848194403851638089"><ph name="ORGANIZATION_NAME" /> đã dùng hết bộ nhớ trên Google Workspace.</translation>
 <translation id="6856459657722366306">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Thông tin chi tiết</translation>
 <translation id="6861394552169064235">Tiếng Ba Tư</translation>
 <translation id="6862635236584086457">Tất cả tệp được lưu trong thư mục này đều tự động được sao lưu trực tuyến</translation>
@@ -687,6 +694,7 @@
     Đã tìm thấy <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Lộn ngược</translation>
 <translation id="6943836128787782965">HTTP gặp lỗi</translation>
+<translation id="6945604978460872381">Các tài liệu gần đây của bạn sẽ xuất hiện ở đây</translation>
 <translation id="6949408524333579394">Tiếng Serbia (chuyển tự)</translation>
 <translation id="6954309393500027528">Quản trị viên của bạn đã chặn thao tác dán tệp này</translation>
 <translation id="6960565108681981554">Chưa kích hoạt. Hãy liên hệ với nhà mạng của bạn.</translation>
@@ -700,6 +708,7 @@
 <translation id="6989942356279143254">Tiếng Thụy Điển</translation>
 <translation id="6990081529015358884">Bạn đã hết dung lượng lưu trữ</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
+<translation id="7008426324576352165">Tổ chức của bạn cần có thêm bộ nhớ để hoàn tất quá trình tải lên.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Cài đặt không thành công.</translation>
 <translation id="7031639531908619281">Tiếng Thổ Nhĩ Kỳ</translation>
@@ -733,6 +742,7 @@
 <translation id="7295662345261934369">Chia sẻ với những người khác</translation>
 <translation id="7297443947353982503">Tên người dùng/mật khẩu không đúng hoặc xác thực EAP không thành công</translation>
 <translation id="7309413087278791451">Tiếng Đức (Bỉ)</translation>
+<translation id="7313374447885864533">Các tệp âm thanh gần đây của bạn sẽ xuất hiện ở đây</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7343393116438664539">Tiếng Việt (Telex)</translation>
 <translation id="7357762654218998920">Loại tệp này không được hỗ trợ. <ph name="BEGIN_LINK_HELP" />Tìm hiểu thêm<ph name="END_LINK_HELP" /> về cách mở tệp trên ChromeOS.</translation>
@@ -866,6 +876,7 @@
 <translation id="8342318071240498787">Tệp hoặc thư mục có cùng tên đã tồn tại.</translation>
 <translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="8372852072747894550">Tiếng Hy Lạp</translation>
+<translation id="8384716930968677505">Các hình ảnh gần đây của bạn sẽ xuất hiện ở đây</translation>
 <translation id="8386903983509584791">Đã quét xong</translation>
 <translation id="8387733224523483503">Đã giải nén <ph name="FILE_NAME" />.</translation>
 <translation id="8395901698320285466">Kích thước</translation>
@@ -901,6 +912,7 @@
 <translation id="8579285237314169903">Đang đồng bộ hóa <ph name="NUMBER_OF_FILES" /> mục...</translation>
 <translation id="8600173386174225982">Danh sách tệp đã thay đổi thành chế độ xem hình thu nhỏ.</translation>
 <translation id="8601932370724196034">Tệp hình ảnh Crostini</translation>
+<translation id="8608515571837163082">Bạn đã nhập sai mã PIN quá nhiều lần. Nhập Khoá mở khoá cá nhân (PUK) gồm 8 chữ số do nhà mạng cung cấp.</translation>
 <translation id="8609695766746872526">Tiếng Iceland</translation>
 <translation id="863903787380594467">Mã PIN không chính xác. Bạn còn <ph name="RETRIES" /> lần nhập.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Cổng</translation>
@@ -932,11 +944,13 @@
 <translation id="8919081441417203123">Tiếng Đan Mạch</translation>
 <translation id="8965697826696209160">Không có đủ dung lượng.</translation>
 <translation id="8997962250644902079">Bính âm tiếng Trung (Phồn thể)</translation>
+<translation id="8998871447376656508">Google Drive không còn đủ dung lượng trống để hoàn tất quá trình tải lên.</translation>
 <translation id="9003940392834790328">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Do quản trị viên của bạn quản lý, Thông tin chi tiết</translation>
 <translation id="9017798300203431059">Ngữ âm tiếng Nga</translation>
 <translation id="9034924485347205037">Tệp Linux</translation>
 <translation id="9035012421917565900">Không thể chuyển lại các tệp này vào '<ph name="DESTINATION_NAME" />', do đó bạn sẽ không thể hoàn tác hành động này.</translation>
 <translation id="9035689366572880647">Nhập mã PIN hiện tại</translation>
+<translation id="9037777873893411148">*Đã dùng hết bộ nhớ của tổ chức</translation>
 <translation id="9038620279323455325">Tệp có tên "<ph name="FILE_NAME" />" đã tồn tại. Vui lòng chọn một tên khác.</translation>
 <translation id="9046895021617826162">Kết nối không thành công</translation>
 <translation id="9065512565307033593">Nếu không xác minh được, bạn sẽ không thể dùng mạng.</translation>

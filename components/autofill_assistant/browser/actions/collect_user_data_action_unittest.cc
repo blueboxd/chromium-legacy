@@ -26,7 +26,7 @@
 #include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
-#include "components/autofill_assistant/browser/mock_website_login_manager.h"
+#include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/test_util.h"
 #include "components/autofill_assistant/browser/ukm_test_util.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
@@ -2966,11 +2966,6 @@ TEST_F(CollectUserDataActionTest, RawDataFromProtoDoesNotGetFormatted) {
             mappings,
             IsSupersetOf({Pair(field_formatter::Key(7), "John Doe"),
                           Pair(field_formatter::Key(14), "+11234567890")}));
-        // Note: Phone number is still getting split, even if it's added with
-        // "raw=true".
-        EXPECT_THAT(mappings,
-                    Not(AnyOf(Contains(Key(field_formatter::Key(3))),
-                              Contains(Key(field_formatter::Key(5))))));
 
         std::move(collect_user_data_options->confirm_callback)
             .Run(&user_data_, &user_model_);

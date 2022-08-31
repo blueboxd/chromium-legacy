@@ -9,7 +9,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './storage_external.js';
 import '../../prefs/prefs.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -71,7 +71,7 @@ class SettingsStorageElement extends SettingsStorageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('isGuest');
-        }
+        },
       },
 
       /** @private */
@@ -80,7 +80,7 @@ class SettingsStorageElement extends SettingsStorageElementBase {
         // Initialize showOtherUsers_ to false if the user is in guest mode.
         value() {
           return !loadTimeData.getBoolean('isGuest');
-        }
+        },
       },
 
       /** @private {StorageSizeStat} */

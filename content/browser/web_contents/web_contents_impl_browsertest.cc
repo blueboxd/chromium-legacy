@@ -105,6 +105,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/display/screen.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -1755,6 +1756,20 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
 
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override {
     return is_fullscreen_;
+  }
+
+  bool IsFullscreenForTabOrPending(const WebContents* web_contents,
+                                   int64_t* display_id) override {
+    const bool fullscreen = IsFullscreenForTabOrPending(web_contents);
+    if (fullscreen && display_id) {
+      // Workaround for WebContents::GetNativeView not being const.
+      // TODO(crbug.com/1347558): Make WebContents::GetNativeView const.
+      DCHECK_EQ(web_contents_, web_contents);
+      *display_id = display::Screen::GetScreen()
+                        ->GetDisplayNearestView(web_contents_->GetNativeView())
+                        .id();
+    }
+    return fullscreen;
   }
 
   const blink::mojom::FullscreenOptions& fullscreen_options() {
@@ -4099,9 +4114,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   RenderFrameHost* child_contents_subframe =
       ChildFrameAt(child_contents->GetPrimaryMainFrame(), 0);
   ASSERT_TRUE(child_contents_subframe);
-  child_contents->AttachInnerWebContents(std::move(grandchild_contents_ptr),
-                                         child_contents_subframe,
-                                         false /* is_full_page */);
+  child_contents->AttachInnerWebContents(
+      std::move(grandchild_contents_ptr), child_contents_subframe,
+      /*remote_frame=*/mojo::NullAssociatedRemote(),
+      /*remote_frame_host_receiver=*/mojo::NullAssociatedReceiver(),
+      /*is_full_page=*/false);
 
   // At this point the child hasn't been attached to the root.
   {
@@ -4117,9 +4134,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   RenderFrameHost* root_contents_subframe =
       ChildFrameAt(root_web_contents->GetPrimaryMainFrame(), 0);
   ASSERT_TRUE(root_contents_subframe);
-  root_web_contents->AttachInnerWebContents(std::move(child_contents_ptr),
-                                            root_contents_subframe,
-                                            false /* is_full_page */);
+  root_web_contents->AttachInnerWebContents(
+      std::move(child_contents_ptr), root_contents_subframe,
+      /*remote_frame=*/mojo::NullAssociatedRemote(),
+      /*remote_frame_host_receiver=*/mojo::NullAssociatedReceiver(),
+      /*is_full_page=*/false);
 
   // Verify views registered for both child and grandchild.
   {
@@ -5313,7 +5332,47 @@ IN_PROC_BROWSER_TEST_F(
   WaitForWindowControlsOverlayUpdate(web_contents, bounding_client_rect);
   ValidateWindowsControlOverlayState(web_contents, bounding_client_rect, 70);
 }
+
+IN_PROC_BROWSER_TEST_F(
+    WebContentsImplBrowserTestWindowControlsOverlayNonOneDeviceScaleFactor,
+    ValidateScaledCorrectlyAfterNavigate) {
+  auto* web_contents = shell()->web_contents();
+  GURL url(
+      R"(data:text/html,<body><div id=target style="position=absolute;
+      left: env(titlebar-area-x, 70px);
+      top: env(titlebar-area-y, 70px);
+      width: env(titlebar-area-width, 70px);
+      height: env(titlebar-area-height, 70px);"><p>Page1</p></div></body>)");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  WaitForLoadStop(web_contents);
+#if BUILDFLAG(IS_MAC)
+  // Device scale factor on MacOSX is always an integer.
+  ASSERT_EQ(2.0f,
+            web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor());
+#else
+  ASSERT_EQ(1.25f,
+            web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor());
 #endif
+
+  gfx::Rect bounding_client_rect = gfx::Rect(5, 10, 15, 20);
+  WaitForWindowControlsOverlayUpdate(web_contents, bounding_client_rect);
+  ValidateWindowsControlOverlayState(web_contents, bounding_client_rect, 70);
+
+  // Validate that the |bounding_client_rect| is scaled correctly on navigation.
+  GURL second_url(
+      R"(data:text/html,<body><div id=target style="position=absolute;
+      left: env(titlebar-area-x, 70px);
+      top: env(titlebar-area-y, 70px);
+      width: env(titlebar-area-width, 70px);
+      height: env(titlebar-area-height, 70px);"><p>Page2</p></div></body>)");
+
+  EXPECT_TRUE(NavigateToURL(shell(), second_url));
+  WaitForLoadStop(web_contents);
+
+  ValidateWindowsControlOverlayState(web_contents, bounding_client_rect, 70);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 class RenderFrameCreatedObserver : public WebContentsObserver {
  public:

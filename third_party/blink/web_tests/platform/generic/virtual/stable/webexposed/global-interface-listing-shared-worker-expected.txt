@@ -126,7 +126,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter size
 [Worker]     method constructor
 [Worker] interface CropTarget
-[Worker]     static method fromElement
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface Crypto
@@ -1100,6 +1099,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method takeRecords
 [Worker] interface Request
 [Worker]     attribute @@toStringTag
+[Worker]     getter body
 [Worker]     getter bodyUsed
 [Worker]     getter cache
 [Worker]     getter credentials
@@ -1268,6 +1268,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
+[Worker] interface TransformStreamDefaultController
+[Worker]     attribute @@toStringTag
+[Worker]     getter desiredSize
+[Worker]     method constructor
+[Worker]     method enqueue
+[Worker]     method error
+[Worker]     method terminate
 [Worker] interface TrustedHTML
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

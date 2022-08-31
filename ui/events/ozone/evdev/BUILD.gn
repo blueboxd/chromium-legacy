@@ -82,8 +82,6 @@ component("evdev") {
     "mouse_button_map_evdev.h",
     "stylus_button_event_converter_evdev.cc",
     "stylus_button_event_converter_evdev.h",
-    "switches.cc",
-    "switches.h",
     "tablet_event_converter_evdev.cc",
     "tablet_event_converter_evdev.h",
     "touch_evdev_debug_buffer.cc",
@@ -116,8 +114,6 @@ component("evdev") {
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_inference.h",
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_inference_beta.cc",
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_inference_beta.h",
-    "touch_filter/palm_model/onedevice_train_palm_detection_filter_inference_v2.cc",
-    "touch_filter/palm_model/onedevice_train_palm_detection_filter_inference_v2.h",
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_model.cc",
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_model.h",
     "touch_filter/shared_palm_detection_filter_state.h",
@@ -149,7 +145,7 @@ component("evdev") {
       "numberpad_metrics.cc",
       "numberpad_metrics.h",
     ]
-    deps += [ "//chromeos/components/feature_usage" ]
+    deps += [ "//chromeos/ash/components/feature_usage" ]
   }
 
   public_configs = [ ":evdev_config" ]
@@ -286,7 +282,7 @@ source_set("unittests") {
 
   if (is_chromeos_ash) {
     sources += [ "numberpad_metrics_unittest.cc" ]
-    deps += [ "//chromeos/components/feature_usage" ]
+    deps += [ "//chromeos/ash/components/feature_usage" ]
   }
 
   visibility += [ "//ui/events/ozone:unittests" ]

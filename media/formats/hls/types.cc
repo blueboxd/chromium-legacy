@@ -4,8 +4,8 @@
 
 #include "media/formats/hls/types.h"
 
-#include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 
 #include "base/containers/contains.h"
@@ -45,8 +45,7 @@ absl::optional<SourceString> ExtractAttributeName(SourceString* source_str) {
   };
 
   // Extract the substring where `is_char_valid` succeeds
-  const char* end =
-      std::find_if_not(str.Str().cbegin(), str.Str().cend(), is_char_valid);
+  const char* end = base::ranges::find_if_not(str.Str(), is_char_valid);
   const auto name = str.Consume(end - str.Str().cbegin());
 
   // At least one character must have matched
@@ -110,16 +109,6 @@ absl::optional<SourceString> ExtractAttributeValue(SourceString* source_str) {
   *source_str = str;
   return result;
 }
-
-struct AttributeMapComparator {
-  bool operator()(const AttributeMap::Item& left,
-                  const AttributeMap::Item& right) {
-    return left.first < right.first;
-  }
-  bool operator()(const AttributeMap::Item& left, SourceString right) {
-    return left.first < right.Str();
-  }
-};
 
 }  // namespace
 
@@ -186,6 +175,7 @@ ParseStatus::Or<SignedDecimalFloatingPoint> ParseSignedDecimalFloatingPoint(
   return result;
 }
 
+// static
 ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
     ResolvedSourceString source_str) {
   // decimal-resolution values are in the format: DecimalInteger 'x'
@@ -213,6 +203,7 @@ ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
                            .height = std::move(height).value()};
 }
 
+// static
 ParseStatus::Or<ByteRangeExpression> ByteRangeExpression::Parse(
     ResolvedSourceString source_str) {
   // If this ByteRange has an offset, it will be separated from the length by
@@ -242,6 +233,7 @@ ParseStatus::Or<ByteRangeExpression> ByteRangeExpression::Parse(
                              .offset = offset};
 }
 
+// static
 absl::optional<ByteRange> ByteRange::Validate(DecimalInteger length,
                                               DecimalInteger offset) {
   if (length == 0) {
@@ -350,7 +342,7 @@ AttributeMap::AttributeMap(base::span<Item> sorted_items)
   // tries to access the stored value after filling by the index of a subsequent
   // duplicate key, rather than the first.
   DCHECK(
-      std::is_sorted(items_.begin(), items_.end(), AttributeMapComparator()));
+      base::ranges::is_sorted(items_, std::less(), &AttributeMap::Item::first));
 }
 
 ParseStatus::Or<AttributeListIterator::Item> AttributeMap::Fill(
@@ -366,10 +358,11 @@ ParseStatus::Or<AttributeListIterator::Item> AttributeMap::Fill(
 
     auto item = std::move(result).value();
 
-    // Look up the item. std::lower_bound performs a binary search to find the
-    // first item where the name comparison function fails.
-    auto entry = std::lower_bound(items_.begin(), items_.end(), item.name,
-                                  AttributeMapComparator());
+    // Look up the item. `base::ranges::lower_bound` performs a binary search to
+    // find the first entry where the name does not compare less than the given
+    // value.
+    auto entry = base::ranges::lower_bound(items_, item.name.Str(), std::less(),
+                                           &AttributeMap::Item::first);
     if (entry == items_.end()) {
       return item;
     }
@@ -400,6 +393,7 @@ ParseStatus AttributeMap::FillUntilError(AttributeListIterator* iter) {
   }
 }
 
+// static
 ParseStatus::Or<VariableName> VariableName::Parse(SourceString source_str) {
   static const base::NoDestructor<re2::RE2> variable_name_regex(
       "[a-zA-Z0-9_-]+");
@@ -412,6 +406,7 @@ ParseStatus::Or<VariableName> VariableName::Parse(SourceString source_str) {
   return VariableName(source_str.Str());
 }
 
+// static
 ParseStatus::Or<StableId> StableId::Parse(ResolvedSourceString str) {
   const auto is_char_valid = [](char c) -> bool {
     return base::IsAsciiAlphaNumeric(c) || IsOneOf(c, "+/=.-_");
@@ -424,6 +419,7 @@ ParseStatus::Or<StableId> StableId::Parse(ResolvedSourceString str) {
   return StableId(std::string{str.Str()});
 }
 
+// static
 ParseStatus::Or<InstreamId> InstreamId::Parse(ResolvedSourceString str) {
   constexpr base::StringPiece kCcStr = "CC";
   constexpr base::StringPiece kServiceStr = "SERVICE";
@@ -454,6 +450,57 @@ ParseStatus::Or<InstreamId> InstreamId::Parse(ResolvedSourceString str) {
   }
 
   return InstreamId(type, static_cast<uint8_t>(number));
+}
+
+AudioChannels::AudioChannels(DecimalInteger max_channels,
+                             std::vector<std::string> audio_coding_identifiers)
+    : max_channels_(max_channels),
+      audio_coding_identifiers_(std::move(audio_coding_identifiers)) {}
+
+AudioChannels::AudioChannels(const AudioChannels&) = default;
+
+AudioChannels::AudioChannels(AudioChannels&&) = default;
+
+AudioChannels& AudioChannels::operator=(const AudioChannels&) = default;
+
+AudioChannels& AudioChannels::operator=(AudioChannels&&) = default;
+
+AudioChannels::~AudioChannels() = default;
+
+// static
+ParseStatus::Or<AudioChannels> AudioChannels::Parse(ResolvedSourceString str) {
+  // First parameter is a decimal-integer indicating the number of channels
+  const auto max_channels_str = str.ConsumeDelimiter('/');
+  auto max_channels_result = ParseDecimalInteger(max_channels_str);
+  if (max_channels_result.has_error()) {
+    return ParseStatus(ParseStatusCode::kFailedToParseAudioChannels)
+        .AddCause(std::move(max_channels_result).error());
+  }
+  const auto max_channels = std::move(max_channels_result).value();
+
+  // Second parameter (optional) is a comma-seperated list of audio coding
+  // identifiers.
+  auto audio_coding_identifiers_str = str.ConsumeDelimiter('/');
+  std::vector<std::string> audio_coding_identifiers;
+  while (!audio_coding_identifiers_str.Empty()) {
+    const auto identifier = audio_coding_identifiers_str.ConsumeDelimiter(',');
+
+    constexpr auto is_valid_coding_identifier_char = [](char c) -> bool {
+      return base::IsAsciiUpper(c) || base::IsAsciiDigit(c) || c == '-';
+    };
+
+    // Each string must be non-empty and consist only of the allowed characters
+    if (identifier.Empty() ||
+        !base::ranges::all_of(identifier.Str(),
+                              is_valid_coding_identifier_char)) {
+      return ParseStatusCode::kFailedToParseAudioChannels;
+    }
+
+    audio_coding_identifiers.emplace_back(identifier.Str());
+  }
+
+  // Ignore any remaining parameters for forward-compatibility
+  return AudioChannels(max_channels, std::move(audio_coding_identifiers));
 }
 
 }  // namespace media::hls::types

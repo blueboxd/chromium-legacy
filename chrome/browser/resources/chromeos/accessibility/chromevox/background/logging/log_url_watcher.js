@@ -6,7 +6,9 @@
  * @fileoverview Watches the currently focused URL to verify if logging should
  * occur.
  */
-import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
+import {ChromeVoxState, ChromeVoxStateObserver} from '../chromevox_state.js';
+
+import {LogStore} from './log_store.js';
 
 /** @implements {ChromeVoxStateObserver} */
 export class LogUrlWatcher {
@@ -18,7 +20,8 @@ export class LogUrlWatcher {
     ChromeVoxState.addObserver(LogUrlWatcher.instance);
     // Initialize using the current range.
     if (ChromeVoxState.instance) {
-      this.onCurrentRangeChanged(ChromeVoxState.instance.currentRange);
+      LogUrlWatcher.instance.onCurrentRangeChanged(
+          ChromeVoxState.instance.currentRange);
     }
   }
 

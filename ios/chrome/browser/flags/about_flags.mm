@@ -75,6 +75,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
+#import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -84,7 +85,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/security_interstitials/https_only_mode/feature.h"
@@ -337,6 +337,50 @@ const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
      std::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
 };
 
+// Feed Background Refresh Feature Params
+
+const FeatureEntry::FeatureParam kOneHourIntervalOnce[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "false"},
+    {kEnableRecurringBackgroundRefreshSchedule, "false"},
+    {kBackgroundRefreshIntervalInSeconds, /* 60*60= */ "3600"}};
+const FeatureEntry::FeatureParam kFourHourIntervalOnce[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "false"},
+    {kEnableRecurringBackgroundRefreshSchedule, "false"},
+    {kBackgroundRefreshIntervalInSeconds, /* 4*60*60= */ "14400"}};
+const FeatureEntry::FeatureParam kOneHourIntervalRecurring[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "false"},
+    {kEnableRecurringBackgroundRefreshSchedule, "true"},
+    {kBackgroundRefreshIntervalInSeconds, /* 60*60= */ "3600"}};
+const FeatureEntry::FeatureParam kFourHourIntervalRecurring[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "false"},
+    {kEnableRecurringBackgroundRefreshSchedule, "true"},
+    {kBackgroundRefreshIntervalInSeconds, /* 4*60*60= */ "14400"}};
+const FeatureEntry::FeatureParam kServerDrivenOnce[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "true"},
+    {kEnableRecurringBackgroundRefreshSchedule, "false"},
+    {kBackgroundRefreshIntervalInSeconds, /* 60*60= */ "3600"}};
+const FeatureEntry::FeatureParam kServerDrivenRecurring[] = {
+    {kEnableServerDrivenBackgroundRefreshSchedule, "true"},
+    {kEnableRecurringBackgroundRefreshSchedule, "true"},
+    {kBackgroundRefreshIntervalInSeconds, /* 60*60= */ "3600"}};
+
+// Feed Background Refresh Feature Variations
+
+const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
+    {"1hr Interval Once", kOneHourIntervalOnce, std::size(kOneHourIntervalOnce),
+     nullptr},
+    {"4hr Interval Once", kFourHourIntervalOnce,
+     std::size(kFourHourIntervalOnce), nullptr},
+    {"1hr Interval Recurring", kOneHourIntervalRecurring,
+     std::size(kOneHourIntervalRecurring), nullptr},
+    {"4hr Interval Recurring", kFourHourIntervalRecurring,
+     std::size(kFourHourIntervalRecurring), nullptr},
+    {"Server Driven Once", kServerDrivenOnce, std::size(kServerDrivenOnce),
+     nullptr},
+    {"Server Driven Recurring", kServerDrivenRecurring,
+     std::size(kServerDrivenRecurring), nullptr},
+};
+
 const FeatureEntry::FeatureParam kFREDefaultBrowserPromoDefaultDelay[] = {
     {kFREDefaultBrowserPromoParam, kFREDefaultBrowserPromoDefaultDelayParam}};
 const FeatureEntry::FeatureParam kFREDefaultBrowserPromoFirstRunOnly[] = {
@@ -352,6 +396,45 @@ const FeatureEntry::FeatureVariation kFREDefaultBrowserPromoVariations[] = {
     {"Wait 3 days after FRE default browser promo",
      kFREDefaultBrowserPromoShortDelay,
      std::size(kFREDefaultBrowserPromoShortDelay), nullptr},
+};
+
+const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
+    {kTrendingQueriesHideShortcutsParam, "false"},
+    {kTrendingQueriesDisabledFeedParam, "false"},
+    {kTrendingQueriesSignedOutParam, "false"}};
+const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsersHideShortcuts[] =
+    {{kTrendingQueriesHideShortcutsParam, "true"},
+     {kTrendingQueriesDisabledFeedParam, "false"},
+     {kTrendingQueriesSignedOutParam, "false"}};
+const FeatureEntry::FeatureParam kTrendingQueriesEnableFeedDisabled[] = {
+    {kTrendingQueriesHideShortcutsParam, "false"},
+    {kTrendingQueriesDisabledFeedParam, "true"},
+    {kTrendingQueriesSignedOutParam, "false"}};
+const FeatureEntry::FeatureParam kTrendingQueriesEnableSignedOut[] = {
+    {kTrendingQueriesHideShortcutsParam, "true"},
+    {kTrendingQueriesDisabledFeedParam, "false"},
+    {kTrendingQueriesSignedOutParam, "true"}};
+const FeatureEntry::FeatureParam
+    kTrendingQueriesEnableNeverShowHideShortcuts[] = {
+        {kTrendingQueriesHideShortcutsParam, "true"},
+        {kTrendingQueriesDisabledFeedParam, "false"},
+        {kTrendingQueriesSignedOutParam, "false"},
+        {kTrendingQueriesNeverShowModuleParam, "true"}};
+
+const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
+    {"Enabled All Users", kTrendingQueriesEnableAllUsers,
+     std::size(kTrendingQueriesEnableAllUsers), nullptr},
+    {"Enabled All Users Hide Shortcuts",
+     kTrendingQueriesEnableAllUsersHideShortcuts,
+     std::size(kTrendingQueriesEnableAllUsersHideShortcuts), nullptr},
+    {"Enabled Disabled Feed", kTrendingQueriesEnableFeedDisabled,
+     std::size(kTrendingQueriesEnableFeedDisabled), nullptr},
+    {"Enabled Signed Out", kTrendingQueriesEnableSignedOut,
+     std::size(kTrendingQueriesEnableSignedOut), nullptr},
+    {"Enabled Never Show and Hide Shortcuts",
+     kTrendingQueriesEnableNeverShowHideShortcuts,
+     std::size(kTrendingQueriesEnableNeverShowHideShortcuts), nullptr},
+
 };
 
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
@@ -727,9 +810,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewOverflowMenuCBDActionName,
      flag_descriptions::kNewOverflowMenuCBDActionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenuCBDAction)},
-    {"enable-new-download-api", flag_descriptions::kEnableNewDownloadAPIName,
-     flag_descriptions::kEnableNewDownloadAPIDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableNewDownloadAPI)},
     {"use-lens-to-search-for-image",
      flag_descriptions::kUseLensToSearchForImageName,
      flag_descriptions::kUseLensToSearchForImageDescription, flags_ui::kOsIos,
@@ -795,11 +875,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"remove-extra-ntps", flag_descriptions::kRemoveExcessNTPsExperimentName,
      flag_descriptions::kRemoveExcessNTPsExperimentDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kRemoveExcessNTPs)},
-    {"lazily-create-web-state-on-restoration",
-     flag_descriptions::kLazilyCreateWebStateOnRestorationName,
-     flag_descriptions::kLazilyCreateWebStateOnRestorationDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableUnrealizedWebStates)},
     {"enable-shortened-password-auto-fill-instruction",
      flag_descriptions::kEnableShortenedPasswordAutoFillInstructionName,
      flag_descriptions::kEnableShortenedPasswordAutoFillInstructionDescription,
@@ -897,9 +972,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"download-calendar", flag_descriptions::kDownloadCalendarName,
      flag_descriptions::kDownloadCalendarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadCalendar)},
-    {"uiview-window-observing", flag_descriptions::kUIViewWindowObservingName,
-     flag_descriptions::kUIViewWindowObservingDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUIViewWindowObserving)},
     {"autofill-upstream-allow-additional-email-domains",
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
@@ -950,6 +1022,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"https-only-mode", flag_descriptions::kHttpsOnlyModeName,
      flag_descriptions::kHttpsOnlyModeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(security_interstitials::features::kHttpsOnlyMode)},
+    {"omnibox-https-upgrades", flag_descriptions::kOmniboxHttpsUpgradesName,
+     flag_descriptions::kOmniboxHttpsUpgradesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kDefaultTypedNavigationsToHttps)},
     {"smart-sorting-new-overflow-menu",
      flag_descriptions::kSmartSortingNewOverflowMenuName,
      flag_descriptions::kSmartSortingNewOverflowMenuDescription,
@@ -1007,7 +1082,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kAdaptiveSuggestionsCount)},
     {"trending-queries-module", flag_descriptions::kTrendingQueriesModuleName,
      flag_descriptions::kTrendingQueriesModuleDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTrendingQueriesModule)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTrendingQueriesModule,
+                                    kTrendingQueriesModuleVariations,
+                                    kTrendingQueriesFieldTrialName)},
     {"autofill-parse-iban-fields",
      flag_descriptions::kAutofillParseIbanFieldsName,
      flag_descriptions::kAutofillParseIbanFieldsDescription, flags_ui::kOsIos,
@@ -1038,6 +1115,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMetrickitNonCrashReportName,
      flag_descriptions::kMetrickitNonCrashReportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMetrickitNonCrashReport)},
+    {"autofill-enable-remade-downstream-metrics",
+     flag_descriptions::kAutofillEnableRemadeDownstreamMetricsName,
+     flag_descriptions::kAutofillEnableRemadeDownstreamMetricsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableRemadeDownstreamMetrics)},
+    {"feed-background-refresh-ios",
+     flag_descriptions::kFeedBackgroundRefreshName,
+     flag_descriptions::kFeedBackgroundRefreshDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedBackgroundRefresh,
+                                    kFeedBackgroundRefreshVariations,
+                                    "FeedBackgroundRefresh")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

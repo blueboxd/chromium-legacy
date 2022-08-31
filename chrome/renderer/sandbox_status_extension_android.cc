@@ -8,6 +8,7 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/url_constants.h"
@@ -122,7 +123,7 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
                      std::move(global_callback)));
 }
 
-std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {
+base::Value::Dict SandboxStatusExtension::ReadSandboxStatus() {
   std::string secontext;
   base::FilePath path(FILE_PATH_LITERAL("/proc/self/attr/current"));
   base::ReadFileToString(path, &secontext);
@@ -131,23 +132,21 @@ std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {
   path = base::FilePath(FILE_PATH_LITERAL("/proc/self/status"));
   base::ReadFileToString(path, &proc_status);
 
-  auto status = std::make_unique<base::DictionaryValue>();
-  status->SetIntKey("uid", getuid());
-  status->SetIntKey("pid", getpid());
-  status->SetStringKey("secontext", secontext);
-  status->SetIntKey("seccompStatus",
-                    static_cast<int>(content::GetSeccompSandboxStatus()));
-  status->SetStringKey("procStatus", proc_status);
-  status->SetStringKey(
-      "androidBuildId",
-      base::android::BuildInfo::GetInstance()->android_build_id());
-
-  return std::move(status);
+  base::Value::Dict status;
+  status.Set("uid", static_cast<int>(getuid()));
+  status.Set("pid", getpid());
+  status.Set("secontext", secontext);
+  status.Set("seccompStatus",
+             static_cast<int>(content::GetSeccompSandboxStatus()));
+  status.Set("procStatus", proc_status);
+  status.Set("androidBuildId",
+             base::android::BuildInfo::GetInstance()->android_build_id());
+  return status;
 }
 
 void SandboxStatusExtension::RunCallback(
     std::unique_ptr<v8::Global<v8::Function>> callback,
-    std::unique_ptr<base::Value> status) {
+    base::Value::Dict status) {
   if (!render_frame())
     return;
 
@@ -160,7 +159,7 @@ void SandboxStatusExtension::RunCallback(
       v8::Local<v8::Function>::New(isolate, *callback);
 
   v8::Local<v8::Value> argv[] = {
-      content::V8ValueConverter::Create()->ToV8Value(status.get(), context)};
+      content::V8ValueConverter::Create()->ToV8Value(status, context)};
   render_frame()->GetWebFrame()->CallFunctionEvenIfScriptDisabled(
       callback_local, v8::Object::New(isolate), 1, argv);
 }

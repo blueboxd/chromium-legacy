@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {EditingUtil} from '/accessibility_common/dictation/editing_util.js';
+import {EditingUtil} from './editing_util.js';
+import {FocusHandler} from './focus_handler.js';
+import {LocaleInfo} from './locale_info.js';
 
+const AutomationNode = chrome.automation.AutomationNode;
 const EventType = chrome.automation.EventType;
 
 /** InputController handles interaction with input fields for Dictation. */
@@ -27,9 +30,6 @@ export class InputController {
 
     /** @private {?function():void} */
     this.onConnectCallback_ = null;
-
-    /** @private {?string} */
-    this.locale_ = null;
 
     this.initialize_();
   }
@@ -101,15 +101,9 @@ export class InputController {
       return;
     }
 
-    const language = this.locale_.split('-')[0];
-    const useSmartSpacingAndCapitalization =
-        InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_.includes(
-            language);
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (editableNode && useSmartSpacingAndCapitalization &&
-        editableNode.textSelStart === editableNode.textSelEnd) {
-      const value = editableNode.value;
-      const caretIndex = editableNode.textSelStart;
+    const data = this.getEditableNodeData_();
+    if (LocaleInfo.allowSmartCapAndSpacing() && data) {
+      const {value, caretIndex} = data;
       text = EditingUtil.smartCapitalization(value, caretIndex, text);
       text = EditingUtil.smartSpacing(value, caretIndex, text);
     }
@@ -153,14 +147,12 @@ export class InputController {
    * intersects.
    */
   deletePrevSentence() {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    const data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
+    const {value, caretIndex} = data;
     const prevSentenceStart = EditingUtil.navPrevSent(value, caretIndex);
     const length = caretIndex - prevSentenceStart;
     this.deleteSurroundingText_(length, -length);
@@ -177,7 +169,7 @@ export class InputController {
       contextID: this.activeImeContextId_,
       engineID: InputController.IME_ENGINE_ID,
       length,
-      offset
+      offset,
     });
   }
 
@@ -198,19 +190,16 @@ export class InputController {
    * @param {string} insertPhrase The phrase to be inserted.
    */
   replacePhrase(deletePhrase, insertPhrase) {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    let data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
-    const data = EditingUtil.replacePhrase(
+    const {value, caretIndex} = data;
+    data = EditingUtil.replacePhrase(
         value, caretIndex, deletePhrase, insertPhrase);
     const newValue = data.value;
-    const newIndex = data.index;
-
+    const newIndex = data.caretIndex;
     this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
   }
 
@@ -223,19 +212,16 @@ export class InputController {
    * @param {string} beforePhrase
    */
   insertBefore(insertPhrase, beforePhrase) {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    let data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
-    const data =
+    const {value, caretIndex} = data;
+    data =
         EditingUtil.insertBefore(value, caretIndex, insertPhrase, beforePhrase);
     const newValue = data.value;
-    const newIndex = data.index;
-
+    const newIndex = data.caretIndex;
     this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
   }
 
@@ -248,54 +234,43 @@ export class InputController {
    * @param {string} endPhrase
    */
   selectBetween(startPhrase, endPhrase) {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    const data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
+    const {node, value, caretIndex} = data;
     const selection =
         EditingUtil.selectBetween(value, caretIndex, startPhrase, endPhrase);
     if (!selection) {
       return;
     }
 
-    editableNode.setSelection(selection.start, selection.end);
+    node.setSelection(selection.start, selection.end);
   }
 
   /** Moves the text caret to the next sentence. */
   navNextSent() {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    const data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
+    const {node, value, caretIndex} = data;
     const newCaretIndex = EditingUtil.navNextSent(value, caretIndex);
-    editableNode.setSelection(newCaretIndex, newCaretIndex);
+    node.setSelection(newCaretIndex, newCaretIndex);
   }
 
   /** Moves the text caret to the previous sentence. */
   navPrevSent() {
-    const editableNode = this.focusHandler_.getEditableNode();
-    if (!editableNode || !editableNode.value ||
-        editableNode.textSelStart !== editableNode.textSelEnd) {
+    const data = this.getEditableNodeData_();
+    if (!data) {
       return;
     }
 
-    const value = editableNode.value;
-    const caretIndex = editableNode.textSelStart;
+    const {node, value, caretIndex} = data;
     const newCaretIndex = EditingUtil.navPrevSent(value, caretIndex);
-    editableNode.setSelection(newCaretIndex, newCaretIndex);
-  }
-
-  /** @param {string} locale */
-  setLocale(locale) {
-    this.locale_ = locale;
+    node.setSelection(newCaretIndex, newCaretIndex);
   }
 
   /**
@@ -314,14 +289,30 @@ export class InputController {
     const setSelection = () => {
       if (!handled) {
         // Ensure this listener only runs once.
-        editableNode.removeEventListener(setSelection);
+        editableNode.removeEventListener(
+            EventType.VALUE_CHANGED, setSelection, false);
         editableNode.setSelection(index, index);
         handled = true;
       }
     };
 
-    editableNode.addEventListener(EventType.VALUE_CHANGED, setSelection);
+    editableNode.addEventListener(EventType.VALUE_CHANGED, setSelection, false);
     editableNode.setValue(value);
+  }
+
+  /**
+   * Returns the value and caret index of the currently focused editable node.
+   * @return {!{node: !AutomationNode, value: string, caretIndex: number}|null}
+   * @private
+   */
+  getEditableNodeData_() {
+    const node = this.focusHandler_.getEditableNode();
+    if (!node || node.value === undefined || node.textSelStart === undefined ||
+        node.textSelStart !== node.textSelEnd) {
+      return null;
+    }
+
+    return {node, value: node.value, caretIndex: node.textSelStart};
   }
 }
 
@@ -337,12 +328,3 @@ InputController.IME_ENGINE_ID =
  * @const
  */
 InputController.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
-
-
-/**
- * The languages that are supported by smart spacing and capitalization.
- * @private {!Array<string>}
- * @const
- */
-InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_ =
-    ['en', 'fr', 'it', 'de', 'es'];

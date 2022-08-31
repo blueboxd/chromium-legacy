@@ -9,8 +9,8 @@
 
 #include "base/containers/fixed_flat_map.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/types/display_constants.h"
@@ -21,7 +21,7 @@ namespace crostini {
 
 // web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
 //     GURL("chrome-untrusted://terminal/html/terminal.html"))
-extern const char kCrostiniTerminalSystemAppId[];
+extern const char kTerminalSystemAppId[];
 
 extern const char kTerminalHomePath[];
 
@@ -116,20 +116,18 @@ void RemoveTerminalFromRegistry(PrefService* prefs);
 const std::string& GetTerminalHomeUrl();
 
 // Generate URL to launch terminal.
-GURL GenerateTerminalURL(
-    Profile* profile,
-    const std::string& setings_profile,
-    const guest_os::GuestId& container_id = DefaultContainerId(),
-    const std::string& cwd = "",
-    const std::vector<std::string>& terminal_args = {});
+GURL GenerateTerminalURL(Profile* profile,
+                         const std::string& settings_profile,
+                         const guest_os::GuestId& container_id,
+                         const std::string& cwd = "",
+                         const std::vector<std::string>& terminal_args = {});
 
 // Launches the terminal tabbed app.
-void LaunchTerminal(
-    Profile* profile,
-    int64_t display_id = display::kInvalidDisplayId,
-    const guest_os::GuestId& container_id = DefaultContainerId(),
-    const std::string& cwd = "",
-    const std::vector<std::string>& terminal_args = {});
+void LaunchTerminal(Profile* profile,
+                    int64_t display_id,
+                    const guest_os::GuestId& container_id,
+                    const std::string& cwd = "",
+                    const std::vector<std::string>& terminal_args = {});
 
 void LaunchTerminalHome(Profile* profile, int64_t display_id);
 
@@ -137,10 +135,11 @@ void LaunchTerminalWithUrl(Profile* profile,
                            int64_t display_id,
                            const GURL& url);
 
-void LaunchTerminalWithIntent(Profile* profile,
-                              int64_t display_id,
-                              apps::mojom::IntentPtr intent,
-                              CrostiniSuccessCallback callback);
+void LaunchTerminalWithIntent(
+    Profile* profile,
+    int64_t display_id,
+    apps::IntentPtr intent,
+    base::OnceCallback<void(bool success, const std::string& msg)> callback);
 
 // Launches the terminal settings popup window.
 void LaunchTerminalSettings(Profile* profile,

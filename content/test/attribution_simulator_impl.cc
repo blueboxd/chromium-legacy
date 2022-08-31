@@ -13,18 +13,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
-#include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
+#include "base/thread_annotations.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
@@ -49,6 +51,8 @@
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/test/attribution_config.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/attribution_simulator_input_parser.h"
@@ -59,6 +63,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -310,15 +315,17 @@ class AttributionEventHandler : public AttributionObserver {
     DCHECK(!input_values_.empty());
     input_values_.pop_front();
 
-    base::RunLoop run_loop;
-    storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-        cookie.cookie, cookie.source_url,
-        net::CookieOptions::MakeAllInclusive(),
-        base::BindLambdaForTesting([&](net::CookieAccessResult r) {
-          // TODO(apaseltiner): Consider surfacing `r` in output.
-          run_loop.Quit();
-        }));
-    run_loop.Run();
+    // TODO(apaseltiner): Consider surfacing `net::CookieAccessResult` in
+    // output.
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &network::mojom::CookieManager::SetCanonicalCookie,
+            base::Unretained(
+                storage_partition_->GetCookieManagerForBrowserProcess()),
+            cookie.cookie, cookie.source_url,
+            net::CookieOptions::MakeAllInclusive(), base::DoNothing()));
   }
 
   // For use with `absl::visit()`.
@@ -326,31 +333,32 @@ class AttributionEventHandler : public AttributionObserver {
     DCHECK(!input_values_.empty());
     input_values_.pop_front();
 
-    base::RepeatingCallback<bool(const url::Origin&)> filter;
+    StoragePartition::StorageKeyMatcherFunction filter;
     if (clear.origins.has_value()) {
-      filter = base::BindLambdaForTesting([&](const url::Origin& origin) {
-        return clear.origins->contains(origin);
-      });
+      filter =
+          base::BindLambdaForTesting([origins = std::move(*clear.origins)](
+                                         const blink::StorageKey& storage_key) {
+            return origins.contains(storage_key.origin());
+          });
     }
 
-    base::RunLoop run_loop;
-    manager_->ClearData(clear.delete_begin, clear.delete_end, std::move(filter),
-                        /*delete_rate_limit_data=*/true,
-                        run_loop.QuitClosure());
-    run_loop.Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AttributionManagerImpl::ClearData,
+                       base::Unretained(manager_), clear.delete_begin,
+                       clear.delete_end, std::move(filter),
+                       /*delete_rate_limit_data=*/true, base::DoNothing()));
   }
 
  private:
-  // Ensure that cookies are checked at the intended time. If this were
-  // instead only done after the loop, events would be enqueued at the correct
-  // timestamp but earlier cookie checks, which are async, could complete at
-  // later times, which will happen in the real browser but which would make
-  // the simulator nondeterministic.
   void FlushCookies() {
-    base::RunLoop run_loop;
-    storage_partition_->GetCookieManagerForBrowserProcess()->FlushCookieStore(
-        run_loop.QuitClosure());
-    run_loop.Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &network::mojom::CookieManager::FlushCookieStore,
+            base::Unretained(
+                storage_partition_->GetCookieManagerForBrowserProcess()),
+            base::DoNothing()));
   }
 
   // AttributionObserver:
@@ -464,6 +472,116 @@ class AttributionEventHandler : public AttributionObserver {
   base::circular_deque<base::Value> input_values_;
 };
 
+class SimulatorStorageDelegate : public AttributionStorageDelegateImpl {
+ public:
+  SimulatorStorageDelegate(AttributionNoiseMode noise_mode,
+                           AttributionDelayMode delay_mode,
+                           std::unique_ptr<AttributionRandomGenerator> rng,
+                           AttributionConfig config)
+      : AttributionStorageDelegateImpl(noise_mode, delay_mode, std::move(rng)),
+        config_(config) {
+    DCHECK(config.Validate());
+  }
+
+  ~SimulatorStorageDelegate() override = default;
+
+  int GetMaxAttributionsPerSource(
+      AttributionSourceType source_type) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    switch (source_type) {
+      case AttributionSourceType::kNavigation:
+        return config_.event_level_limit.max_attributions_per_navigation_source;
+      case AttributionSourceType::kEvent:
+        return config_.event_level_limit.max_attributions_per_event_source;
+    }
+  }
+
+  int GetMaxSourcesPerOrigin() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return config_.max_sources_per_origin;
+  }
+
+  int GetMaxReportsPerDestination(
+      AttributionReport::ReportType report_type) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    switch (report_type) {
+      case AttributionReport::ReportType::kEventLevel:
+        return config_.event_level_limit.max_reports_per_destination;
+      case AttributionReport::ReportType::kAggregatableAttribution:
+        return config_.aggregate_limit.max_reports_per_destination;
+    }
+  }
+
+  int GetMaxDestinationsPerSourceSiteReportingOrigin() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return config_.max_destinations_per_source_site_reporting_origin;
+  }
+
+  AttributionRateLimitConfig GetRateLimits() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return config_.rate_limit;
+  }
+
+  double GetRandomizedResponseRate(
+      AttributionSourceType source_type) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    switch (source_type) {
+      case AttributionSourceType::kNavigation:
+        return config_.event_level_limit
+            .navigation_source_randomized_response_rate;
+      case AttributionSourceType::kEvent:
+        return config_.event_level_limit.event_source_randomized_response_rate;
+    }
+  }
+
+  int64_t GetAggregatableBudgetPerSource() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return config_.aggregate_limit.aggregatable_budget_per_source;
+  }
+
+  uint64_t TriggerDataCardinality(
+      AttributionSourceType source_type) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    switch (source_type) {
+      case AttributionSourceType::kNavigation:
+        return config_.event_level_limit
+            .navigation_source_trigger_data_cardinality;
+      case AttributionSourceType::kEvent:
+        return config_.event_level_limit.event_source_trigger_data_cardinality;
+    }
+  }
+
+  uint64_t SanitizeSourceEventId(uint64_t source_event_id) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!config_.source_event_id_cardinality)
+      return source_event_id;
+
+    return source_event_id % *config_.source_event_id_cardinality;
+  }
+
+  base::Time GetAggregatableReportTime(base::Time trigger_time) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    switch (delay_mode_) {
+      case AttributionDelayMode::kDefault:
+        switch (noise_mode_) {
+          case AttributionNoiseMode::kDefault:
+            return trigger_time + config_.aggregate_limit.min_delay +
+                   rng_->RandDouble() * config_.aggregate_limit.delay_span;
+          case AttributionNoiseMode::kNone:
+            return trigger_time + config_.aggregate_limit.min_delay +
+                   config_.aggregate_limit.delay_span;
+        }
+
+      case AttributionDelayMode::kNone:
+        return trigger_time;
+    }
+  }
+
+ private:
+  const AttributionConfig config_ GUARDED_BY_CONTEXT(sequence_checker_);
+};
+
 }  // namespace
 
 base::Value RunAttributionSimulation(
@@ -526,9 +644,9 @@ base::Value RunAttributionSimulation(
       user_data_directory,
       /*max_pending_events=*/std::numeric_limits<size_t>::max(),
       /*special_storage_policy=*/nullptr,
-      AttributionStorageDelegateImpl::CreateForTesting(
+      std::make_unique<SimulatorStorageDelegate>(
           options.noise_mode, options.delay_mode, std::move(rng),
-          options.randomized_response_rates),
+          options.config),
       std::move(cookie_checker),
       std::make_unique<SentReportAccumulator>(
           event_level_reports, debug_event_level_reports, aggregatable_reports,
@@ -548,11 +666,18 @@ base::Value RunAttributionSimulation(
                    /*fetch_time=*/base::Time::Now(),
                    /*expiry_time=*/base::Time::Max()));
 
+  base::Time last_event_time = GetEventTime(events->back());
+
   for (auto& event : *events) {
-    task_environment.AdvanceClock(GetEventTime(event) - base::Time::Now());
-    handler.Handle(std::move(event));
-    task_environment.RunUntilIdle();
+    base::Time event_time = GetEventTime(event);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AttributionEventHandler::Handle,
+                       base::Unretained(&handler), std::move(event)),
+        event_time - base::Time::Now());
   }
+
+  task_environment.FastForwardBy(last_event_time - base::Time::Now());
 
   std::vector<AttributionReport> pending_reports =
       GetAttributionReportsForTesting(manager.get());

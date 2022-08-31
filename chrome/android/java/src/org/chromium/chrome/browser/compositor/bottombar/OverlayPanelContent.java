@@ -161,8 +161,7 @@ public class OverlayPanelContent {
         }
 
         @Override
-        public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl,
-                boolean applyUserGestureCarryover) {
+        public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl) {
             // If either of the required params for the delegate are null, do not call the
             // delegate and ignore the navigation.
             if (mExternalNavHandler == null || navigationHandle == null) return true;
@@ -375,12 +374,17 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void didStartNavigation(NavigationHandle navigation) {
-                        if (navigation.isInPrimaryMainFrame() && !navigation.isSameDocument()) {
+                    public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigation) {
+                        if (!navigation.isSameDocument()) {
                             String url = navigation.getUrl().getSpec();
                             mContentDelegate.onMainFrameLoadStarted(
                                     url, !TextUtils.equals(url, mLoadedUrl));
                         }
+                    }
+
+                    @Override
+                    public void didStartNavigationNoop(NavigationHandle navigation) {
+                        if (!navigation.isInPrimaryMainFrame()) return;
                     }
 
                     @Override

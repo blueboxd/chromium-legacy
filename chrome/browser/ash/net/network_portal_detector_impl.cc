@@ -17,10 +17,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -139,7 +139,7 @@ bool NetworkPortalDetectorImpl::IsEnabled() {
   return enabled_;
 }
 
-void NetworkPortalDetectorImpl::Enable(bool start_detection) {
+void NetworkPortalDetectorImpl::Enable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (enabled_)
     return;
@@ -148,7 +148,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
   enabled_ = true;
 
   const NetworkState* network = DefaultNetwork();
-  if (!start_detection || !network)
+  if (!network)
     return;
   NET_LOG(EVENT) << "Starting detection attempt:"
                  << " id=" << NetworkId(network);
@@ -378,11 +378,12 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
     case captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL:
       status = CAPTIVE_PORTAL_STATUS_PORTAL;
       break;
-    default:
+    case captive_portal::RESULT_COUNT:
+      NOTREACHED();
       break;
   }
 
-  NET_LOG(EVENT) << "NetworkPortalDetector completed: id="
+  NET_LOG(EVENT) << "NetworkPortalDetector: AttemptCompleted: id="
                  << NetworkGuidId(default_network_id_) << ", result="
                  << captive_portal::CaptivePortalResultToString(result)
                  << ", status=" << status
@@ -425,7 +426,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
     DetectionCompleted(network, status, response_code);
   }
 
-  // Observers (via DetectionCompleted) may already schedule new attempt.
+  // Observers (via DetectionCompleted) may already schedule a new attempt.
   if (is_idle())
     ScheduleAttempt(results.retry_after_delta);
 }
@@ -447,6 +448,11 @@ void NetworkPortalDetectorImpl::DetectionCompleted(
     const NetworkState* network,
     const CaptivePortalStatus& status,
     int response_code) {
+  NET_LOG(EVENT) << "NetworkPortalDetector: DetectionCompleted: id="
+                 << (network ? NetworkGuidId(network->guid()) : "<none>")
+                 << ", status=" << status
+                 << ", response_code=" << response_code;
+
   default_portal_status_ = status;
   response_code_for_testing_ = response_code;
   if (network) {

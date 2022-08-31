@@ -265,7 +265,8 @@ NGLogicalOutOfFlowInsets ComputeOutOfFlowInsets(
     const ComputedStyle& style,
     const LogicalSize& available_logical_size,
     const WritingModeConverter& container_converter,
-    const NGLogicalAnchorQuery& anchor_query) {
+    const NGLogicalAnchorQuery& anchor_query,
+    bool* has_anchor_functions_out) {
   struct AnchorEvaluatorImpl : public Length::AnchorEvaluator {
     STACK_ALLOCATED();
 
@@ -275,20 +276,21 @@ NGLogicalOutOfFlowInsets ComputeOutOfFlowInsets(
         : anchor_query(anchor_query),
           container_converter(container_converter) {}
 
-    absl::optional<LayoutUnit> Evaluate(
+    absl::optional<LayoutUnit> EvaluateAnchor(
         const AtomicString& anchor_name,
         AnchorValue anchor_value) const override {
-      return anchor_query.Evaluate(anchor_name, anchor_value, available_size,
-                                   container_converter, is_vertical,
-                                   is_right_or_bottom);
+      return anchor_query.EvaluateAnchor(anchor_name, anchor_value,
+                                         available_size, container_converter,
+                                         is_y_axis, is_right_or_bottom);
     }
 
     const NGLogicalAnchorQuery& anchor_query;
     const WritingModeConverter& container_converter;
     LayoutUnit available_size;
-    bool is_vertical = false;
+    bool is_y_axis = false;
     bool is_right_or_bottom = false;
   } anchor_evaluator(anchor_query, container_converter);
+  bool has_anchor_functions = false;
 
   // Compute in physical, because anchors may be in different `writing-mode` or
   // `direction`.
@@ -297,31 +299,38 @@ NGLogicalOutOfFlowInsets ComputeOutOfFlowInsets(
       available_logical_size, writing_direction.GetWritingMode());
   anchor_evaluator.available_size = available_size.width;
   absl::optional<LayoutUnit> left;
-  if (!style.Left().IsAuto()) {
-    left = MinimumValueForLength(style.Left(), available_size.width,
+  if (const Length& left_length = style.Left(); !left_length.IsAuto()) {
+    left = MinimumValueForLength(left_length, available_size.width,
                                  &anchor_evaluator);
+    has_anchor_functions = left_length.HasAnchorQueries();
   }
   absl::optional<LayoutUnit> right;
-  if (!style.Right().IsAuto()) {
+  if (const Length& right_length = style.Right(); !right_length.IsAuto()) {
     anchor_evaluator.is_right_or_bottom = true;
-    right = MinimumValueForLength(style.Right(), available_size.width,
+    right = MinimumValueForLength(right_length, available_size.width,
                                   &anchor_evaluator);
+    has_anchor_functions |= right_length.HasAnchorQueries();
   }
 
-  anchor_evaluator.is_vertical = true;
+  anchor_evaluator.is_y_axis = true;
   anchor_evaluator.available_size = available_size.height;
   absl::optional<LayoutUnit> top;
-  if (!style.Top().IsAuto()) {
+  if (const Length& top_length = style.Top(); !top_length.IsAuto()) {
     anchor_evaluator.is_right_or_bottom = false;
-    top = MinimumValueForLength(style.Top(), available_size.height,
+    top = MinimumValueForLength(top_length, available_size.height,
                                 &anchor_evaluator);
+    has_anchor_functions |= top_length.HasAnchorQueries();
   }
   absl::optional<LayoutUnit> bottom;
-  if (!style.Bottom().IsAuto()) {
+  if (const Length& bottom_length = style.Bottom(); !bottom_length.IsAuto()) {
     anchor_evaluator.is_right_or_bottom = true;
-    bottom = MinimumValueForLength(style.Bottom(), available_size.height,
+    bottom = MinimumValueForLength(bottom_length, available_size.height,
                                    &anchor_evaluator);
+    has_anchor_functions |= bottom_length.HasAnchorQueries();
   }
+
+  if (has_anchor_functions_out)
+    *has_anchor_functions_out = has_anchor_functions;
 
   // Convert the physical insets to logical.
   PhysicalToLogical<absl::optional<LayoutUnit>&> insets(writing_direction, top,
@@ -355,6 +364,7 @@ bool ComputeOutOfFlowInlineDimensions(
     const LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
+    const Length::AnchorEvaluator* anchor_evaluator,
     NGLogicalOutOfFlowDimensions* dimensions) {
   DCHECK(dimensions);
   bool depends_on_min_max_sizes = false;
@@ -380,7 +390,8 @@ bool ComputeOutOfFlowInlineDimensions(
       ComputeOutOfFlowBlockDimensions(node, space, insets, border_padding,
                                       static_position, computed_available_size,
                                       /* replaced_size */ absl::nullopt,
-                                      container_writing_direction, dimensions);
+                                      container_writing_direction,
+                                      anchor_evaluator, dimensions);
     }
 
     // Create a new space, setting the fixed block-size.
@@ -434,10 +445,10 @@ bool ComputeOutOfFlowInlineDimensions(
 
     LayoutUnit main_inline_size = ResolveMainInlineLength(
         space, style, border_padding, MinMaxSizesFunc, main_inline_length,
-        computed_available_size.inline_size);
+        computed_available_size.inline_size, anchor_evaluator);
     MinMaxSizes min_max_inline_sizes = ComputeMinMaxInlineSizes(
         space, node, border_padding, MinMaxSizesFunc, &min_inline_length,
-        computed_available_size.inline_size);
+        computed_available_size.inline_size, anchor_evaluator);
 
     inline_size = min_max_inline_sizes.ClampSizeToMinAndMax(main_inline_size);
   }
@@ -476,6 +487,7 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
     const LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
+    const Length::AnchorEvaluator* anchor_evaluator,
     NGLogicalOutOfFlowDimensions* dimensions) {
   DCHECK(dimensions);
 
@@ -539,9 +551,10 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
 
     LayoutUnit main_block_size = ResolveMainBlockLength(
         space, style, border_padding, main_block_length, IntrinsicBlockSizeFunc,
-        computed_available_size.block_size);
+        computed_available_size.block_size, anchor_evaluator);
     MinMaxSizes min_max_block_sizes = ComputeMinMaxBlockSizes(
-        space, style, border_padding, computed_available_size.block_size);
+        space, style, border_padding, computed_available_size.block_size,
+        anchor_evaluator);
 
     // Manually resolve any intrinsic/content min/max block-sizes.
     // TODO(crbug.com/1135207): |ComputeMinMaxBlockSizes()| should handle this.

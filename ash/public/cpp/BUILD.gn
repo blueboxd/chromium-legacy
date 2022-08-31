@@ -398,6 +398,7 @@ component("cpp") {
     "//ui/display",
     "//ui/events/devices",
     "//ui/message_center/public/cpp",
+    "//ui/strings:ui_strings_grit",
     "//ui/views",
     "//ui/wm",
     "//ui/wm/public",
@@ -469,6 +470,8 @@ source_set("test_support") {
   sources = [
     "test/mock_in_session_auth_token_provider.cc",
     "test/mock_in_session_auth_token_provider.h",
+    "test/mock_projector_client.cc",
+    "test/mock_projector_client.h",
     "test/mock_projector_controller.cc",
     "test/mock_projector_controller.h",
     "test/test_app_list_color_provider.cc",

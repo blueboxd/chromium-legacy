@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
+#include "chrome/browser/external_protocol/constants.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -262,16 +263,15 @@ bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
   const base::Value::List& exempted_protocols =
       prefs->GetValueList(prefs::kAutoLaunchProtocolsFromOrigins);
 
-  const base::Value* origin_patterns = nullptr;
+  const base::Value::List* origin_patterns = nullptr;
   for (const base::Value& entry : exempted_protocols) {
-    const base::DictionaryValue& protocol_origins_map =
-        base::Value::AsDictionaryValue(entry);
-    const std::string* protocol = protocol_origins_map.FindStringKey(
-        policy::AutoLaunchProtocolsPolicyHandler::kProtocolNameKey);
+    const base::Value::Dict& protocol_origins_map = entry.GetDict();
+    const std::string* protocol = protocol_origins_map.FindString(
+        policy::external_protocol::kProtocolNameKey);
     DCHECK(protocol);
     if (*protocol == scheme) {
-      origin_patterns = protocol_origins_map.FindListKey(
-          policy::AutoLaunchProtocolsPolicyHandler::kOriginListKey);
+      origin_patterns = protocol_origins_map.FindList(
+          policy::external_protocol::kOriginListKey);
       break;
     }
   }
@@ -281,7 +281,7 @@ bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
   url_matcher::URLMatcher matcher;
   base::MatcherStringPattern::ID id(0);
   url_matcher::util::AddFilters(&matcher, true /* allowed */, &id,
-                                &base::Value::AsListValue(*origin_patterns));
+                                *origin_patterns);
 
   auto matching_set = matcher.MatchURL(initiating_origin->GetURL());
   return !matching_set.empty();

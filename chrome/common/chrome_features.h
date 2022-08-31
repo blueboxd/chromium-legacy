@@ -46,12 +46,14 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowTouchpadHapticClickSettings;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAlwaysReinstallSystemWebApps;
-
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAnonymousUpdateChecks;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppDeduplicationService;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -75,11 +77,6 @@ extern const base::Feature kAppShimRemoteCocoa;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppShimNewCloseBehavior;
 #endif  // BUILDFLAG(IS_MAC)
-
-#if BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kArcPiGhostWindow;
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
 
@@ -221,6 +218,9 @@ extern const base::Feature kKeepForceInstalledPreinstalledApps;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDisruptiveNotificationPermissionRevocation;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDnsOverHttps;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<bool> kDnsOverHttpsFallbackParam;
@@ -244,9 +244,6 @@ extern const base::Feature kEarlyLibraryLoad;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kEnableAllSystemWebApps;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableAmbientAuthenticationInGuestSession;
@@ -486,10 +483,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNoReferrers;
 #if BUILDFLAG(IS_WIN)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNotificationDurationLongForRequireInteraction;
-#endif
-
-#if BUILDFLAG(IS_POSIX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -807,6 +800,13 @@ extern const base::Feature kOmniboxTriggerForPrerender2;
 // when blink::features::Prerender2 is enabled.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSupportSearchSuggestionForPrerender2;
+enum class SearchSuggestionPrerenderImplementationType {
+  kUsePrefetch,
+  kIgnorePrefetch,
+};
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
+    kSearchSuggestionPrerenderImplementationTypeParam;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kOmniboxTriggerForNoStatePrefetch;

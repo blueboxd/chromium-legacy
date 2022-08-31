@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEBID_FEDCM_METRICS_H_
 
 #include "content/common/content_export.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -28,9 +29,9 @@ enum class FedCmRequestIdTokenStatus {
   kManifestHttpNotFound,
   kManifestNoResponse,
   kManifestInvalidResponse,
-  kClientMetadataHttpNotFound,
-  kClientMetadataNoResponse,
-  kClientMetadataInvalidResponse,
+  kClientMetadataHttpNotFound,     // obsolete
+  kClientMetadataNoResponse,       // obsolete
+  kClientMetadataInvalidResponse,  // obsolete
   kAccountsHttpNotFound,
   kAccountsNoResponse,
   kAccountsInvalidResponse,
@@ -38,7 +39,7 @@ enum class FedCmRequestIdTokenStatus {
   kIdTokenNoResponse,
   kIdTokenInvalidResponse,
   kIdTokenInvalidRequest,
-  kClientMetadataMissingPrivacyPolicyUrl,
+  kClientMetadataMissingPrivacyPolicyUrl,  // obsolete
   kThirdPartyCookiesBlocked,
   kDisabledInSettings,
   kDisabledInFlags,
@@ -48,14 +49,28 @@ enum class FedCmRequestIdTokenStatus {
   kManifestNotInManifestList,
   kManifestListTooBig,
   kDisabledEmbargo,
-  kUserInterfaceTimedOut,
+  kUserInterfaceTimedOut,  // obsolete
 
   kMaxValue = kUserInterfaceTimedOut
 };
 
+// This enum describes whether user sign-in states between IDP and browser
+// match.
+enum class FedCmSignInStateMatchStatus {
+  // Don't change the meaning or the order of these values because they are
+  // being recorded in metrics and in sync with the counterpart in enums.xml.
+  kMatch,
+  kIdpClaimedSignIn,
+  kBrowserObservedSignIn,
+
+  kMaxValue = kBrowserObservedSignIn
+};
+
 class FedCmMetrics {
  public:
-  FedCmMetrics(const GURL& provider, const ukm::SourceId page_source_id);
+  FedCmMetrics(const GURL& provider,
+               const ukm::SourceId page_source_id,
+               int session_id);
 
   ~FedCmMetrics() = default;
 
@@ -67,9 +82,16 @@ class FedCmMetrics {
   // presses the Continue button.
   void RecordContinueOnDialogTime(base::TimeDelta duration);
 
-  // Records the time from when the accounts dialog is shown to when the user
-  // closes the dialog without selecting any account.
+  // Records metrics when the user explicitly closes the accounts dialog without
+  // selecting any accounts. `duration` is the time from when the accounts
+  // dialog was shown to when the user closed the dialog.
   void RecordCancelOnDialogTime(base::TimeDelta duration);
+
+  // Records the reason that closed accounts dialog without selecting any
+  // accounts. Unlike RecordCancelOnDialogTime() this metric is recorded in
+  // cases that the acccounts dialog was closed without an explicit user action.
+  void RecordCancelReason(
+      IdentityRequestDialogController::DismissReason dismiss_reason);
 
   // Records the time from when the user presses the Continue button to when the
   // token response is received. Also records the overall time from when the API
@@ -80,12 +102,24 @@ class FedCmMetrics {
   // Records the status of the |RequestToken| call.
   void RecordRequestTokenStatus(FedCmRequestIdTokenStatus status);
 
+  // Records whether user sign-in states between IDP and browser match.
+  void RecordSignInStateMatchStatus(FedCmSignInStateMatchStatus status);
+
+ private:
   // The page's SourceId. Used to log the UKM event Blink.FedCm.
   ukm::SourceId page_source_id_;
 
   // The SourceId to be used to log the UKM event Blink.FedCmIdp. Uses
   // |provider_| as the URL.
   ukm::SourceId provider_source_id_;
+
+  // Whether a RequestTokenStatus has been recorded.
+  bool request_token_status_recorded_{false};
+
+  // The session ID associated to the FedCM call for which this object is
+  // recording metrics. Each FedCM call gets a random integer session id, which
+  // helps group UKM events by the session id.
+  int session_id_;
 };
 
 // The following are UMA-only recordings, hence do not need to be in the

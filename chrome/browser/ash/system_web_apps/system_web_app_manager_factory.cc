@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
@@ -66,21 +66,16 @@ bool SystemWebAppManagerFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* SystemWebAppManagerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // System Web Apps are only available in Ash.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   return web_app::GetBrowserContextForWebApps(context);
-#else
-  return nullptr;
-#endif
 }
 
 void SystemWebAppManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastUpdateVersion, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastInstalledLocale, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastAttemptedVersion, "");
-  registry->RegisterStringPref(::prefs::kSystemWebAppLastAttemptedLocale, "");
-  registry->RegisterIntegerPref(::prefs::kSystemWebAppInstallFailureCount, 0);
+  registry->RegisterStringPref(prefs::kSystemWebAppLastUpdateVersion, "");
+  registry->RegisterStringPref(prefs::kSystemWebAppLastInstalledLocale, "");
+  registry->RegisterStringPref(prefs::kSystemWebAppLastAttemptedVersion, "");
+  registry->RegisterStringPref(prefs::kSystemWebAppLastAttemptedLocale, "");
+  registry->RegisterIntegerPref(prefs::kSystemWebAppInstallFailureCount, 0);
 }
 
 }  //  namespace ash

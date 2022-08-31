@@ -35,7 +35,6 @@
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/navigation_client.mojom.h"
-#include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/web_ui.mojom.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
@@ -94,6 +93,7 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom.h"
 #include "third_party/blink/public/platform/child_url_loader_factory_bundle.h"
@@ -480,7 +480,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
-      const cc::LayerTreeSettings& settings) override;
+      const cc::LayerTreeSettings& settings,
+      scoped_refptr<base::TaskRunner> compositor_worker_task_runner) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;
 #if !BUILDFLAG(IS_ANDROID)
@@ -842,18 +843,19 @@ class CONTENT_EXPORT RenderFrameImpl
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories) override;
   void SetWantErrorMessageStackTrace() override;
-  void Unload(int proxy_routing_id,
-              bool is_loading,
-              blink::mojom::FrameReplicationStatePtr replicated_frame_state,
-              const blink::RemoteFrameToken& frame_token,
-              mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
-      override;
-  void Delete(mojom::FrameDeleteIntention intent) override;
-  void UndoCommitNavigation(
-      int proxy_routing_id,
+  void Unload(
       bool is_loading,
       blink::mojom::FrameReplicationStatePtr replicated_frame_state,
       const blink::RemoteFrameToken& frame_token,
+      mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
+      mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
+      override;
+  void Delete(mojom::FrameDeleteIntention intent) override;
+  void UndoCommitNavigation(
+      bool is_loading,
+      blink::mojom::FrameReplicationStatePtr replicated_frame_state,
+      const blink::RemoteFrameToken& frame_token,
+      mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
       override;
   void BlockRequests() override;
@@ -1115,10 +1117,10 @@ class CONTENT_EXPORT RenderFrameImpl
   //
   // Important: after this method returns, `this` has been deleted.
   bool SwapOutAndDeleteThis(
-      int proxy_routing_id,
       bool is_loading,
       blink::mojom::FrameReplicationStatePtr replicated_frame_state,
       const blink::RemoteFrameToken& frame_token,
+      mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
@@ -1287,7 +1289,7 @@ class CONTENT_EXPORT RenderFrameImpl
   //   request NavigationClient
   //
   // Note that the initiating RenderFrameImpl does *not* own the request
-  // NavigationClient. Rather, the RanderFrameImpl that the navigation *targets*
+  // NavigationClient. Rather, the RenderFrameImpl that the navigation *targets*
   // is the RenderFrameImpl that owns the request NavigationClient.
   //
   // ## Commit NavigationClient ##
@@ -1316,8 +1318,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Note that using RenderDocument means that all cross-document navigations
   // will use a provisional RenderFrameImpl: as such, all cross-document
   // navigations with RenderDocument will ignore cancellation after
-  // READY_TO_COMMIT. This is a known compatibility issue with RenderDocument
-  // and will need to eventually be addressed.
+  // READY_TO_COMMIT. To handle this, all renderer-initiated navigations will
+  // not enter the READY_TO_COMMIT stage until the task that initiated the
+  // navigation finishes, to ensure that no renderer-initiated navigation
+  // cancellation can take place after READY_TO_COMMIT. For more details, see
+  // RendererCancellationThrottle.
   std::unique_ptr<NavigationClient> navigation_client_impl_;
 
   // Creates various media clients.

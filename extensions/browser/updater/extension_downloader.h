@@ -129,6 +129,10 @@ class ExtensionDownloader {
   void SetBackoffPolicyForTesting(
       const net::BackoffEntry::Policy* backoff_policy);
 
+  bool HasActiveManifestRequestForTesting();
+
+  ManifestFetchData* GetActiveManifestFetchForTesting();
+
   // Sets a test delegate to use by any instances of this class. The |delegate|
   // should outlive all instances.
   static void set_test_delegate(ExtensionDownloaderTestDelegate* delegate);
@@ -255,7 +259,10 @@ class ExtensionDownloader {
   void CreateManifestLoader();
 
   // Retries the active request with some backoff delay.
-  void RetryManifestFetchRequest(int network_error_code, int response_code);
+  void RetryManifestFetchRequest(
+      RequestQueue<ManifestFetchData>::Request request,
+      int network_error_code,
+      int response_code);
 
   // Reports failures if we failed to fetch the manifest or the fetched manifest
   // was invalid.
@@ -272,11 +279,13 @@ class ExtensionDownloader {
   // AddFailureDataOnManifestFetchFailed when fetching of update manifest
   // failed.
   void RetryRequestOrHandleFailureOnManifestFetchFailure(
+      RequestQueue<ManifestFetchData>::Request request,
       const network::SimpleURLLoader& loader,
       const int response_code);
 
   // Handles the result of a manifest fetch.
-  void OnManifestLoadComplete(std::unique_ptr<std::string> response_body);
+  void OnManifestLoadComplete(std::unique_ptr<network::SimpleURLLoader> loader,
+                              std::unique_ptr<std::string> response_body);
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
   // If |results| is null, it means something went wrong when parsing it.
@@ -428,7 +437,6 @@ class ExtensionDownloader {
   std::vector<ExtensionDownloaderTask> pending_tasks_;
 
   // Outstanding url loader requests for manifests and updates.
-  std::unique_ptr<network::SimpleURLLoader> manifest_loader_;
   std::unique_ptr<network::SimpleURLLoader> extension_loader_;
   std::unique_ptr<network::ResourceRequest> extension_loader_resource_request_;
 

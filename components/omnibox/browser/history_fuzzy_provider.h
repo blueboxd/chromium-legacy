@@ -18,7 +18,9 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/history_provider.h"
+#include "components/omnibox/browser/history_quick_provider.h"
 
 // This namespace encapsulates the implementation details of fuzzy matching and
 // correction. It is used by the public (non-namespaced) HistoryFuzzyProvider
@@ -108,13 +110,12 @@ struct Node {
   ~Node();
 
   // Walk the trie, injecting nodes as necessary to build the given `text`
-  // starting at index `from`. The `from` parameter advances as an index into
-  // `text` and ensures recursion is bounded.
-  void Insert(const std::u16string& text, size_t from);
+  // starting at `text_index`. The `text_index` parameter advances as an index
+  // into `text` and ensures recursion is bounded.
+  void Insert(const std::u16string& text, size_t text_index);
 
   // Delete nodes as necessary to remove given `text` from the trie.
-  // Returns true if this node is left empty and may be deleted.
-  bool Delete(const std::u16string& text, size_t from);
+  void Delete(const std::u16string& text, size_t text_index);
 
   // Delete all nodes to clear the trie.
   void Clear();
@@ -133,17 +134,21 @@ struct Node {
                        ToleranceSchedule tolerance_schedule,
                        std::vector<Correction>& corrections) const;
 
-  // TODO(orinj): Remove this. It's a development-only debugging utility.
-  void Log(std::u16string built) const;
-
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  // Returns number of terminals contained within this trie (may include self).
+  int TerminalCount() const;
+
   // This is used to distinguish terminal nodes in the trie (nonzero values).
-  // TODO(orinj): Consider removing this if we only correct inputs and leave
-  //  scoring to other autocomplete machinery.
   int relevance = 0;
+
+  // This maintains the sum of `relevance` plus all `relevance_total` values
+  // contained within `next`. As long as `relevance` values are 0 or 1, this can
+  // be used as a count of contained terminals. When it drops to zero, the
+  // node may be deleted from the trie.
+  int relevance_total = 0;
 
   // Note: Some C++ implementations of unordered_map support using the
   // containing struct (Node) as the element type, but some do not. To avoid
@@ -176,7 +181,9 @@ struct Node {
 class HistoryFuzzyProvider : public HistoryProvider,
                              public history::HistoryServiceObserver {
  public:
-  explicit HistoryFuzzyProvider(AutocompleteProviderClient* client);
+  explicit HistoryFuzzyProvider(AutocompleteProviderClient* client,
+                                HistoryQuickProvider* history_quick_provider,
+                                BookmarkProvider* bookmark_provider);
   HistoryFuzzyProvider(const HistoryFuzzyProvider&) = delete;
   HistoryFuzzyProvider& operator=(const HistoryFuzzyProvider&) = delete;
 
@@ -195,11 +202,9 @@ class HistoryFuzzyProvider : public HistoryProvider,
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();
 
-  // Adds one match for the given corrected `text`.
-  void AddMatchForText(std::u16string text);
-
-  // Add multiple matches, converting them to fuzzy suggestions in the process.
-  void AddConvertedMatches(const ACMatches& matches);
+  // Add the best matches, converting them to fuzzy suggestions in the process.
+  // Returns the number of matches actually added.
+  int AddConvertedMatches(const ACMatches& matches);
 
   // Main thread callback to receive trie of URLs loaded from database.
   void OnUrlsLoaded(fuzzy::Node node);
@@ -215,16 +220,16 @@ class HistoryFuzzyProvider : public HistoryProvider,
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
 
+  // Record UMA histogram data for measuring usefulness of sub-providers.
+  void RecordMatchConversion(const char* name, int count);
+
   AutocompleteInput autocomplete_input_;
 
-  // TODO(orinj): For now this is memory resident for proof of concept, but
-  //  most likely the full implementation will store the tree in a SQL table
-  //  for persistence and to minimize RAM usage. Queries can be minimized by
-  //  making the algorithm stateful and incremental. As the user types, only
-  //  the last character is needed to take another step along the trie. Total
-  //  input changes are the rarer, more expensive case, and we might even
-  //  consider skipping them since fuzzy matching somewhat assumes human errors
-  //  generated while typing, not copy/pasting, etc.
+  // Non-owning pointers to existing sub-providers; may be null.
+  raw_ptr<HistoryQuickProvider> history_quick_provider_;
+  raw_ptr<BookmarkProvider> bookmark_provider_;
+
+  // This is the trie facilitating search for input alternatives.
   fuzzy::Node root_;
 
   // This provides a thread-safe way to check that loading has completed.

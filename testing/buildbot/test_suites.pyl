@@ -491,7 +491,6 @@
         'experiment_percentage': 100,
       },
       'cast_graphics_unittests': {},
-      'exo_unittests': {},
       'views_unittests': {
         'experiment_percentage': 100,
       },
@@ -1970,7 +1969,6 @@
       'crypto_unittests': {},
       'events_unittests': {},
       'filesystem_service_unittests': {},
-      'fuchsia_mojo_unittests': {},
       'gcm_unit_tests': {},
       'gin_unittests': {},
       'google_apis_unittests': {},
@@ -2916,39 +2914,56 @@
 
     'gpu_dawn_telemetry_cts_tests': {
       'webgpu_cts': {
-        'args': [
-          '--extra-browser-args=--force_high_performance_gpu',
-          '--retry-limit=3',
-          '--jobs=4',
-        ],
-        'linux_args': [
-          '--extra-browser-args=--enable-features=Vulkan',
-        ],
         'mixins': [
           'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
         ],
         'swarming': {
           'shards': 14,
         },
+      },
+      'webgpu_swiftshader_web_platform_cts': {
+        'args': [
+          '--use-webgpu-adapter=swiftshader',
+          '--test-filter=*web_platform*',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'telemetry_test_name': 'webgpu_cts',
       },
     },
 
     'gpu_dawn_telemetry_cts_tests_with_validation': {
       'webgpu_cts_with_validation': {
         'args': [
-          '--extra-browser-args=--force_high_performance_gpu',
           '--enable-dawn-backend-validation',
-          '--retry-limit=3',
-          '--jobs=4',
-        ],
-        'linux_args': [
-          '--extra-browser-args=--enable-features=Vulkan',
         ],
         'mixins': [
           'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
         ],
         'swarming': {
           'shards': 14,
+        },
+        'telemetry_test_name': 'webgpu_cts',
+      },
+      'webgpu_swiftshader_web_platform_cts_with_validation': {
+        'args': [
+          '--use-webgpu-adapter=swiftshader',
+          '--test-filter=*web_platform*',
+          '--enable-dawn-backend-validation',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
+        ],
+        'swarming': {
+          'shards': 2,
         },
         'telemetry_test_name': 'webgpu_cts',
       },
@@ -3498,6 +3513,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3521,6 +3537,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3554,6 +3571,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3580,6 +3598,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3601,6 +3620,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3624,6 +3644,7 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-cmd-decoder=validating --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3656,6 +3677,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3676,6 +3698,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3696,6 +3719,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3726,6 +3750,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3746,6 +3771,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3765,6 +3791,7 @@
           # We are only interested in running a 'smoketest' to test swangle
           # integration, not the full conformance suite.
           '--test-filter=conformance/rendering/gl-drawelements.html',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3781,6 +3808,7 @@
         'args': [
           '--extra-browser-args=--use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough',
           '--xvfb',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3803,6 +3831,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3839,6 +3868,7 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3858,6 +3888,7 @@
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3874,6 +3905,19 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'args': [
           '--flag-specific=webgpu-with-backend-validation',
+          # Increase the timeout when using backend validation layers (crbug.com/1208253)
+          '--timeout-ms=30000',
+        ],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
+      },
+      'webgpu_swiftshader_blink_web_tests_with_backend_validation': {
+        'name': 'webgpu_swiftshader_blink_web_tests_with_backend_validation',
+        'isolate_name': 'webgpu_blink_web_tests',
+        'args': [
+          '--flag-specific=webgpu-swiftshader-with-backend-validation',
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
@@ -3907,6 +3951,17 @@
           'skia_gold_test',
         ],
       },
+      'webgpu_swiftshader_blink_web_tests': {
+        'name': 'webgpu_swiftshader_blink_web_tests',
+        'isolate_name': 'webgpu_blink_web_tests',
+        'args': [
+          '--flag-specific=webgpu-swiftshader',
+        ],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
+      },
     },
 
     # For Windows. Use the D3D12 backend validation layers but without GPU-based
@@ -3917,6 +3972,19 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'args': [
           '--flag-specific=webgpu-with-partial-backend-validation',
+          # Increase the timeout when using backend validation layers (crbug.com/1208253)
+          '--timeout-ms=30000',
+        ],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
+      },
+      'webgpu_swiftshader_blink_web_tests_with_backend_validation': {
+        'name': 'webgpu_swiftshader_blink_web_tests_with_partial_backend_validation',
+        'isolate_name': 'webgpu_blink_web_tests',
+        'args': [
+          '--flag-specific=webgpu-swiftshader-with-partial-backend-validation',
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
@@ -4113,10 +4181,6 @@
         'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
         'timeout_sec': 10800,
       },
-      'lacros_variations_tast_tests': {
-        'tast_expr': '("name:lacros.VariationSmoke")',
-        'timeout_sec': 10800,
-      },
       'ozone_unittests': {
         'timeout_sec': 3600,
       },
@@ -4132,16 +4196,6 @@
         'mixins': [
           'has_native_resultdb_integration',
         ],
-      },
-      'ozone_unittests': {
-        'timeout_sec': 3600,
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter']
-      },
-      'viz_unittests': {
-        'timeout_sec': 3600,
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter']
       },
     },
 
@@ -4783,6 +4837,11 @@
 
     'pytype_tests': {
       'fuchsia_pytype': {
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+      },
+      'gold_common_pytype': {
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -7195,7 +7254,6 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_15_2',
-          'SIM_IPHONE_6S_14_5',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7204,9 +7262,6 @@
           'SIM_IPHONE_6S_15_2',
           'SIM_IPHONE_7_15_2',
           'SIM_IPAD_AIR_2_15_2',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
         ],
       },
       'ios_eg2_tests': {
@@ -7215,9 +7270,6 @@
           'SIM_IPHONE_7_15_2',
           'SIM_IPAD_AIR_2_15_2',
           'SIM_IPHONE_X_15_2',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
         ],
       },
       'ios_screen_size_dependent_tests': {
@@ -7226,10 +7278,6 @@
           'SIM_IPHONE_6S_15_2',
           'SIM_IPHONE_SE_1ST_GEN_15_2',
           'SIM_IPAD_AIR_2_15_2',
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
-          'SIM_IPAD_AIR_2_14_5',
         ],
       },
     },
@@ -7292,9 +7340,6 @@
           'SIM_IPHONE_7_15_2',
           'SIM_IPAD_AIR_2_15_2',
           'SIM_IPHONE_X_15_2',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -7302,8 +7347,6 @@
         'variants': [
           'SIM_IPHONE_7_15_2',
           'SIM_IPAD_AIR_2_15_2',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
         ]
       }
     },
@@ -7343,10 +7386,22 @@
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_14_5',
+          'SIM_IPHONE_7_14_5',
+          'SIM_IPAD_AIR_2_14_5',
+          'SIM_IPHONE_X_14_5',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
+        'variants': [
+          'SIM_IPHONE_6S_PLUS_14_5',
+          'SIM_IPHONE_6S_14_5',
+          'SIM_IPHONE_7_14_5',
+          'SIM_IPHONE_SE_1ST_GEN_14_5',
+          'SIM_IPAD_AIR_2_14_5',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_5',
           'SIM_IPHONE_6S_14_5',
@@ -7367,14 +7422,12 @@
     'ios_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_6S_15_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_6S_15_2',
         ]
       },
@@ -7384,10 +7437,6 @@
           'SIM_IPHONE_6S_15_2',
           'SIM_IPHONE_SE_1ST_GEN_15_2',
           'SIM_IPAD_AIR_2_15_2',
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
-          'SIM_IPAD_AIR_2_14_5'
         ]
       }
     },
@@ -7504,6 +7553,7 @@
           'CROS_JACUZZI_RELEASE_LKGM',
           'CROS_JACUZZI_RELEASE_DEV',
           'CROS_JACUZZI_RELEASE_BETA',
+          'CROS_JACUZZI_RELEASE_STABLE',
         ]
       },
     },
@@ -7597,31 +7647,31 @@
     'linux_optional_gpu_tests_rel_gpu_telemetry_tests': {
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
@@ -7630,7 +7680,7 @@
     'linux_optional_gpu_tests_rel_gtests': {
       'gpu_gles2_conform_gtests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },

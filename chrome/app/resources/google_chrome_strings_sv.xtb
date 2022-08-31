@@ -70,6 +70,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2139300032719313227">Starta om Chrome OS</translation>
 <translation id="2151406531797534936">Starta om Chrome nu</translation>
 <translation id="2174917724755363426">Installationen är inte klar. Är du säker på att du vill avbryta?</translation>
+<translation id="223889379102603431">Information om hur Chrome hanterar sina rotcertifikat</translation>
 <translation id="2258103955319320201">Logga in och aktivera synkronisering om du vill få tillgång till saker i webbläsaren Chrome på olika enheter.</translation>
 <translation id="2290014774651636340">Googles API-nycklar saknas. Vissa funktioner i Google Chrome kommer att vara inaktiverade.</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
@@ -82,6 +83,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2401189691232800402">Chrome OS-system</translation>
 <translation id="2467438592969358367">Lösenorden exporteras från Google Chrome. Skriv ditt Windows-lösenord om du tillåter detta.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
+<translation id="2494974097748878569">Google-assistenten i Chrome</translation>
 <translation id="2534507159460261402">Google Pay (har kopierats till Chrome)</translation>
 <translation id="2559253115192232574">Senare kan en webbplats fråga efter dina intressen i Chrome för att anpassa vilka annonser som visas. Chrome kan dela upp till tre intressen.</translation>
 <translation id="2563121210305478421">Vill du starta om Chrome?</translation>
@@ -160,6 +162,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3865754807470779944">Chrome-version <ph name="PRODUCT_VERSION" /> har installerats</translation>
 <translation id="3873044882194371212">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
+<translation id="3999683152997576765">Du kan se och ta bort intressanta ämnen som används på webbplatser för att visa annonser för dig. Uppskattningen av vad du är intresserad av görs utifrån den senaste webbhistoriken i Chrome.</translation>
 <translation id="4035053306113201399">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
@@ -282,6 +285,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6739177684496155661">Vill du fortsätta i en ny Chrome-profil?</translation>
 <translation id="6750954913813541382">Text som du skriver i webbläsaren Chrome skickas till Google för att kontrollera stavningen</translation>
 <translation id="677276454032249905">Vill du avsluta Chrome ändå?</translation>
+<translation id="6785872064505734160">Google-assistenten i Chrome kan slutföra åtgärder åt dig på webbplatser</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
 <translation id="6881299373831449287">Chrome uppdateras</translation>
 <translation id="6885412569789873916">Appar i Chrome Beta</translation>
@@ -354,6 +358,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initierar …</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>
+<translation id="8270775718612349140">Certifikat som hanteras av Chrome</translation>
 <translation id="8286862437124483331">Skriv ditt Windows-lösenord om du vill tillåta att lösenord visas i Google Chrome.</translation>
 <translation id="828798499196665338">Din förälder har inaktiverat Behörigheter för webbplatser, appar och tillägg för Chrome. Det är inte tillåtet att aktivera denna <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>

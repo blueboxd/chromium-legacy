@@ -6,11 +6,8 @@
  * @fileoverview JavaScript shim for the liblouis Web Assembly wrapper.
  */
 
-goog.provide('LibLouis');
-goog.provide('LibLouis.FormType');
-
 /** Encapsulates a liblouis Web Assembly instance in the page. */
-LibLouis = class {
+export class LibLouis {
   /**
    * @param {string} wasmPath Path to .wasm file for the module.
    * @param {string=} opt_tablesDir Path to tables directory.
@@ -162,7 +159,7 @@ LibLouis = class {
       this.onInstanceLoad_();
     });
   }
-};
+}
 
 
 /**
@@ -175,7 +172,7 @@ LibLouis.FormType = {
   ITALIC: 1,
   UNDERLINE: 2,
   BOLD: 4,
-  COMPUTER_BRAILLE: 8
+  COMPUTER_BRAILLE: 8,
 };
 
 
@@ -229,7 +226,7 @@ LibLouis.Translator = class {
     const message = {
       'table_names': this.tableNames_,
       text,
-      form_type_map: formTypeMap
+      form_type_map: formTypeMap,
     };
     this.instance_.rpc_('Translate', message, reply => {
       let cells = null;
@@ -271,7 +268,7 @@ LibLouis.Translator = class {
     }
     const message = {
       'table_names': this.tableNames_,
-      'cells': LibLouis.Translator.encodeHexString_(cells)
+      'cells': LibLouis.Translator.encodeHexString_(cells),
     };
     this.instance_.rpc_('BackTranslate', message, reply => {
       if (!reply['success'] || !goog.isString(reply['text'])) {

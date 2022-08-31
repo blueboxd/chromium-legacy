@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1621067168122174824">Запустить проверку зарядки</translation>
 <translation id="1631385268983122904">Пока не собирайте устройство</translation>
-<translation id="1639239467298939599">Загрузка</translation>
+<translation id="1639239467298939599">Загрузка…</translation>
 <translation id="1641857168437328880">Автоподатчик документов (односторонний)</translation>
 <translation id="1643449475550628585">Менять обои ежедневно</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1645954272419197032">Подтвердите информацию об устройстве</translation>
 <translation id="1662989795263954667">Печать прервана: нет чернил</translation>
+<translation id="1664796644829245314">Предварительный просмотр: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Встроенная VPN</translation>
 <translation id="1672499492233627739">Видеоизображение с веб-камеры</translation>
 <translation id="1676557873873341166">Запись видео…</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Видеоконференции</translation>
 <translation id="1852934301711881861">Установить Chrome OS Flex</translation>
 <translation id="1856388568474281774">Стрелка вниз</translation>
+<translation id="1858620243986915808">Прикрепить скриншот</translation>
 <translation id="1871569928317311284">Выключить тёмную тему</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключить тёмную тему</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">Закрытый ключ</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
+<translation id="8018928621986160031">Сохранено (<ph name="FILE_LOCATION" />)</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Включить автоматический цветовой режим</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">Без инициализации</translation>
 <translation id="8620617069779373398">Статус роуминга</translation>
 <translation id="8655295600908251630">Канал</translation>
+<translation id="8655828773034788261">URL с общим доступом:</translation>
 <translation id="8660881923941176839">фунта</translation>
 <translation id="8662671328352114214">Присоединиться к сети <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Обновить до версии <ph name="VERSION_NUMBER" /> и перезагрузить</translation>

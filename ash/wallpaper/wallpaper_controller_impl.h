@@ -239,7 +239,8 @@ class ASH_EXPORT WallpaperControllerImpl
                           const std::string& file_name,
                           WallpaperLayout layout,
                           const gfx::ImageSkia& image,
-                          bool preview_mode) override;
+                          bool preview_mode,
+                          const std::string& file_path = "") override;
   void SetOnlineWallpaper(const OnlineWallpaperParams& params,
                           SetWallpaperCallback callback) override;
   void SetOnlineWallpaperIfExists(const OnlineWallpaperParams& params,
@@ -301,7 +302,7 @@ class ASH_EXPORT WallpaperControllerImpl
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
       const AccountId& account_id) const override;
-  WallpaperInfo GetActiveUserWallpaperInfo() const override;
+  absl::optional<WallpaperInfo> GetActiveUserWallpaperInfo() const override;
   bool ShouldShowWallpaperSetting() override;
   void SetDailyRefreshCollectionId(const AccountId& account_id,
                                    const std::string& collection_id) override;
@@ -379,6 +380,7 @@ class ASH_EXPORT WallpaperControllerImpl
                            WallpaperMovementDuringUnlock);
   friend class WallpaperControllerTest;
   friend class WallpaperControllerTestApi;
+  friend class KeyboardBacklightColorControllerTest;
 
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
@@ -546,6 +548,7 @@ class ASH_EXPORT WallpaperControllerImpl
   // updates the cache.
   void SaveAndSetWallpaper(const AccountId& account_id,
                            const std::string& file_name,
+                           const std::string& file_path,
                            WallpaperType type,
                            WallpaperLayout layout,
                            bool show_wallpaper,
@@ -555,6 +558,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void SaveAndSetWallpaperWithCompletion(
       const AccountId& account_id,
       const std::string& file_name,
+      const std::string& file_path,
       WallpaperType type,
       WallpaperLayout layout,
       bool show_wallpaper,
@@ -564,6 +568,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void SaveAndSetWallpaperWithCompletionFilesId(
       const AccountId& account_id,
       const std::string& file_name,
+      const std::string& file_path,
       WallpaperType type,
       WallpaperLayout layout,
       bool show_wallpaper,

@@ -373,10 +373,6 @@ void WebRuntimeFeatures::EnablePrerender2(bool enable) {
   RuntimeEnabledFeatures::SetPrerender2Enabled(enable);
 }
 
-bool WebRuntimeFeatures::IsPrerender2Enabled() {
-  return RuntimeEnabledFeatures::Prerender2EnabledByRuntimeFlag();
-}
-
 void WebRuntimeFeatures::EnablePrerender2RelatedFeatures(bool enable) {
   RuntimeEnabledFeatures::SetPrerender2RelatedFeaturesEnabled(enable);
 }
@@ -675,6 +671,16 @@ void WebRuntimeFeatures::EnableEventPath(bool enable) {
 
 void WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(bool enable) {
   RuntimeEnabledFeatures::SetWebHIDOnServiceWorkersEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableGetDisplayMediaSet(bool enable) {
+  RuntimeEnabledFeatures::SetGetDisplayMediaSetEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableGetDisplayMediaSetAutoSelectAllScreens(
+    bool enable) {
+  RuntimeEnabledFeatures::SetGetDisplayMediaSetAutoSelectAllScreensEnabled(
+      enable);
 }
 
 }  // namespace blink

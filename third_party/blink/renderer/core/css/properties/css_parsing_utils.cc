@@ -531,17 +531,21 @@ bool AddCSSPaintArgument(
 Vector<CSSParserToken> ConsumeFunctionArgsOrNot(CSSParserTokenRange& args) {
   Vector<CSSParserToken> argument_tokens;
   if (args.Peek().GetBlockType() == CSSParserToken::kBlockStart) {
-    // Function block.
-    // Push the function name and initial right parenthesis.
-    // Since we don't have any upfront knowledge about the input argument types
-    // here, we should just leave the token as it is and resolve it later in
-    // the variable parsing phase.
+    // A block of some type (maybe a function, maybe (), [], or {}).
+    // Push the block start.
+    //
+    // For functions, we don't have any upfront knowledge about the input
+    // argument types here, we should just leave the token as it is and
+    // resolve it later in the variable parsing phase.
     argument_tokens.push_back(args.Peek());
+    CSSParserTokenType closing_type =
+        CSSParserToken::ClosingTokenType(args.Peek().GetType());
+
     CSSParserTokenRange contents = args.ConsumeBlock();
     while (!contents.AtEnd())
       argument_tokens.push_back(contents.Consume());
     argument_tokens.push_back(
-        CSSParserToken(kRightParenthesisToken, CSSParserToken::kBlockEnd));
+        CSSParserToken(closing_type, CSSParserToken::kBlockEnd));
 
   } else {
     argument_tokens.push_back(args.ConsumeIncludingWhitespace());
@@ -1262,27 +1266,15 @@ CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange& range,
   return ConsumeIdent(range);
 }
 
-CSSCustomIdentValue* ConsumeCustomIdentWithToken(
-    const CSSParserToken& token,
-    const CSSParserContext& context) {
-  if (token.GetType() != kIdentToken || IsCSSWideKeyword(token.Value()))
-    return nullptr;
-
-  if (EqualIgnoringASCIICase(token.Value(), "default"))
-    context.Count(WebFeature::kDefaultInCustomIdent);
-
-  return MakeGarbageCollected<CSSCustomIdentValue>(
-      token.Value().ToAtomicString());
-}
-
 CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
                                         const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken ||
-      IsCSSWideKeyword(range.Peek().Value())) {
+      IsCSSWideKeyword(range.Peek().Id()) ||
+      range.Peek().Id() == CSSValueID::kDefault) {
     return nullptr;
   }
-  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace(),
-                                     context);
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      range.ConsumeIncludingWhitespace().Value().ToAtomicString());
 }
 
 // Consume a custom ident more conservatively, for use in new uses of custom
@@ -1294,8 +1286,6 @@ CSSCustomIdentValue* ConsumeCustomIdentConservatively(
   if (range.Peek().GetType() != kIdentToken)
     return nullptr;
   switch (range.Peek().Id()) {
-    // TODO(crbug.com/882285): ConsumeCustomIdent should not allow "default".
-    case CSSValueID::kDefault:
     // TODO(crbug.com/1340852): Find out if we can make auto/none/normal
     // invalid generally.  For now, avoid allowing them on new custom idents.
     case CSSValueID::kNone:
@@ -2516,9 +2506,7 @@ CSSValue* ConsumeIntrinsicSizeLonghandNew(CSSParserTokenRange& range,
 
 CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange& range,
                                        const CSSParserContext& context) {
-  if (RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled())
-    return ConsumeIntrinsicSizeLonghandNew(range, context);
-  return ConsumeIntrinsicSizeLonghandOld(range, context);
+  return ConsumeIntrinsicSizeLonghandNew(range, context);
 }
 
 static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
@@ -2551,8 +2539,7 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,
                               const CSSParserContext& context) {
-  const CSSParserToken& name_token = args.ConsumeIncludingWhitespace();
-  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token, context);
+  CSSCustomIdentValue* name = ConsumeCustomIdent(args, context);
   if (!name)
     return nullptr;
 
@@ -4445,8 +4432,7 @@ CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kAuto ||
-      range.Peek().Id() == CSSValueID::kSpan ||
-      range.Peek().Id() == CSSValueID::kDefault) {
+      range.Peek().Id() == CSSValueID::kSpan) {
     return nullptr;
   }
   return ConsumeCustomIdent(range, context);

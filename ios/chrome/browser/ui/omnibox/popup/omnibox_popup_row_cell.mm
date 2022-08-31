@@ -6,7 +6,6 @@
 
 #include "base/check.h"
 #include "components/omnibox/common/omnibox_features.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
@@ -126,6 +125,13 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   [super didMoveToWindow];
 
   if (self.window) {
+    // Setup the layout when the view has a window.
+    if (self.contentView.subviews.count == 0) {
+      [self setupLayout];
+    }
+    if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
+      [self setupTrailingButtonLayout];
+    }
     [self attachToLayoutGuides];
   }
 }
@@ -218,7 +224,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     [self.separator.trailingAnchor
         constraintEqualToAnchor:self.contentView.trailingAnchor],
     [self.separator.heightAnchor
-        constraintEqualToConstant:1.0f / UIScreen.mainScreen.scale],
+        constraintEqualToConstant:1.0f / self.window.screen.scale],
     [self.separator.leadingAnchor
         constraintEqualToAnchor:self.textStackView.leadingAnchor],
   ]];
@@ -394,10 +400,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // layout the cell correctly for that data.
 - (void)setupWithAutocompleteSuggestion:(id<AutocompleteSuggestion>)suggestion
                               incognito:(BOOL)incognito {
-  // Setup the view layout the first time the cell is setup.
-  if (self.contentView.subviews.count == 0) {
-    [self setupLayout];
-  }
   self.suggestion = suggestion;
   self.incognito = incognito;
 
@@ -429,8 +431,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Setup the trailing button. This includes both setting up the button's layout
 // and popuplating it with the correct image and color.
 - (void)setupTrailingButton {
-  [self setupTrailingButtonLayout];
-
+  if (self.window) {
+    [self setupTrailingButtonLayout];
+  }
   // Show append button for search history/search suggestions or
   // switch-to-open-tab as the right control element (aka an accessory element
   // of a table view cell).

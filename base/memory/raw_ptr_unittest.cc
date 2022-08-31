@@ -1075,15 +1075,15 @@ TEST(BackupRefPtrImpl, Basic) {
 
   // The allocator should not be able to reuse the slot at this point.
   void* raw_ptr2 = allocator.root()->Alloc(sizeof(int), "");
-  EXPECT_NE(::partition_alloc::internal::UnmaskPtr(raw_ptr1),
-            ::partition_alloc::internal::UnmaskPtr(raw_ptr2));
+  EXPECT_NE(partition_alloc::UntagPtr(raw_ptr1),
+            partition_alloc::UntagPtr(raw_ptr2));
   allocator.root()->Free(raw_ptr2);
 
   // When the last reference is released, the slot should become reusable.
   wrapped_ptr1 = nullptr;
   void* raw_ptr3 = allocator.root()->Alloc(sizeof(int), "");
-  EXPECT_EQ(::partition_alloc::internal::UnmaskPtr(raw_ptr1),
-            ::partition_alloc::internal::UnmaskPtr(raw_ptr3));
+  EXPECT_EQ(partition_alloc::UntagPtr(raw_ptr1),
+            partition_alloc::UntagPtr(raw_ptr3));
   allocator.root()->Free(raw_ptr3);
 #endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 }
@@ -1659,6 +1659,10 @@ TEST(MTECheckedPtrImpl, CrashOnUseAfterFree_WithOffset) {
 TEST(MTECheckedPtrImpl, AdvancedPointerShiftedAppropriately) {
   uint64_t* unwrapped_ptr = new uint64_t[6];
   CountingRawPtr<uint64_t> ptr = unwrapped_ptr;
+
+  // This is a non-fixture test, so we need to unset all
+  // counters manually.
+  RawPtrCountingImpl::ClearCounters();
 
   // This is unwrapped, but still useful for ensuring that the
   // shift is sized in `uint64_t`s.

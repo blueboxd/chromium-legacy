@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/check.h"
-#include "base/notreached.h"
 #include "base/numerics/clamped_math.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -52,6 +50,7 @@ MediaPlaylist& MediaPlaylist::operator=(MediaPlaylist&&) = default;
 
 MediaPlaylist::~MediaPlaylist() = default;
 
+// static
 ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
     base::StringPiece source,
     GURL uri,
@@ -86,6 +85,7 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
   absl::optional<XMediaSequenceTag> media_sequence_tag;
   absl::optional<XDiscontinuitySequenceTag> discontinuity_sequence_tag;
   std::vector<MediaSegment> segments;
+  scoped_refptr<MediaSegment::InitializationSegment> initialization_segment;
 
   types::DecimalInteger discontinuity_sequence_number = 0;
 
@@ -141,11 +141,25 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
           }
           break;
         }
-        case MediaPlaylistTagName::kXTargetDuration: {
-          auto error = ParseUniqueTag(*tag, target_duration_tag);
+        case MediaPlaylistTagName::kXBitrate: {
+          auto result = XBitrateTag::Parse(*tag);
+          if (result.has_error()) {
+            return std::move(result).error();
+          }
+          bitrate_tag = std::move(result).value();
+          break;
+        }
+        case MediaPlaylistTagName::kXByteRange: {
+          // TODO(https://crbug.com/1328528): Investigate supporting aspects of
+          // this tag not described by the spec
+          auto error = ParseUniqueTag(*tag, byterange_tag);
           if (error.has_value()) {
             return std::move(error).value();
           }
+          break;
+        }
+        case MediaPlaylistTagName::kXDateRange: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-DATERANGE tag.
           break;
         }
         case MediaPlaylistTagName::kXDiscontinuity: {
@@ -162,60 +176,6 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
           // and increment the discontinuity sequence number by 1.
           discontinuity_tag = std::move(result).value();
           discontinuity_sequence_number += 1;
-          break;
-        }
-        case MediaPlaylistTagName::kXGap: {
-          auto error = ParseUniqueTag(*tag, gap_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXEndList: {
-          auto error = ParseUniqueTag(*tag, end_list_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXIFramesOnly: {
-          auto error = ParseUniqueTag(*tag, i_frames_only_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXPlaylistType: {
-          auto error = ParseUniqueTag(*tag, playlist_type_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXPartInf: {
-          auto error = ParseUniqueTag(*tag, part_inf_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXServerControl: {
-          auto error = ParseUniqueTag(*tag, server_control_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
-          break;
-        }
-        case MediaPlaylistTagName::kXMediaSequence: {
-          // This tag must appear before any media segment
-          if (!segments.empty()) {
-            return ParseStatusCode::kMediaSegmentBeforeMediaSequenceTag;
-          }
-
-          auto error = ParseUniqueTag(*tag, media_sequence_tag);
-          if (error.has_value()) {
-            return std::move(error).value();
-          }
           break;
         }
         case MediaPlaylistTagName::kXDiscontinuitySequence: {
@@ -237,21 +197,121 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
           discontinuity_sequence_number = discontinuity_sequence_tag->number;
           break;
         }
-        case MediaPlaylistTagName::kXByteRange: {
-          // TODO(https://crbug.com/1328528): Investigate supporting aspects of
-          // this tag not described by the spec
-          auto error = ParseUniqueTag(*tag, byterange_tag);
+        case MediaPlaylistTagName::kXEndList: {
+          auto error = ParseUniqueTag(*tag, end_list_tag);
           if (error.has_value()) {
             return std::move(error).value();
           }
           break;
         }
-        case MediaPlaylistTagName::kXBitrate: {
-          auto result = XBitrateTag::Parse(*tag);
+        case MediaPlaylistTagName::kXGap: {
+          auto error = ParseUniqueTag(*tag, gap_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXIFramesOnly: {
+          auto error = ParseUniqueTag(*tag, i_frames_only_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXKey: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-KEY tag.
+          break;
+        }
+        case MediaPlaylistTagName::kXMap: {
+          auto result =
+              XMapTag::Parse(*tag, common_state.variable_dict, sub_buffer);
           if (result.has_error()) {
             return std::move(result).error();
           }
-          bitrate_tag = std::move(result).value();
+          auto value = std::move(result).value();
+
+          // Resolve the URI against the playlist URI
+          auto resource_uri = uri.Resolve(value.uri.Str());
+          if (!resource_uri.is_valid()) {
+            return ParseStatusCode::kInvalidUri;
+          }
+
+          // Extract the byte range
+          absl::optional<types::ByteRange> byte_range;
+          if (value.byte_range.has_value()) {
+            // Safari defaults byte range offset to 0, do that here as well.
+            byte_range = types::ByteRange::Validate(
+                value.byte_range->length, value.byte_range->offset.value_or(0));
+            if (!byte_range.has_value()) {
+              return ParseStatusCode::kByteRangeInvalid;
+            }
+          }
+
+          initialization_segment =
+              base::MakeRefCounted<MediaSegment::InitializationSegment>(
+                  std::move(resource_uri), byte_range);
+          break;
+        }
+        case MediaPlaylistTagName::kXMediaSequence: {
+          // This tag must appear before any media segment
+          if (!segments.empty()) {
+            return ParseStatusCode::kMediaSegmentBeforeMediaSequenceTag;
+          }
+
+          auto error = ParseUniqueTag(*tag, media_sequence_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXPart: {
+          // TODO(crbug.com/1266991): Integrate the EXT-X-PART tag.
+          break;
+        }
+        case MediaPlaylistTagName::kXPartInf: {
+          auto error = ParseUniqueTag(*tag, part_inf_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXPlaylistType: {
+          auto error = ParseUniqueTag(*tag, playlist_type_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXPreloadHint: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-PRELOAD-HINT tag.
+          break;
+        }
+        case MediaPlaylistTagName::kXProgramDateTime: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-PROGRAM-DATE-TIME tag.
+          break;
+        }
+        case MediaPlaylistTagName::kXRenditionReport: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-RENDITION-REPORT tag.
+          break;
+        }
+        case MediaPlaylistTagName::kXServerControl: {
+          auto error = ParseUniqueTag(*tag, server_control_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXSkip: {
+          // TODO(crbug.com/1266991): Implement the EXT-X-SKIP tag.
+          // Since the appearance of the EXT-X-SKIP tag implies that this is a
+          // playlist delta update, we cannot parse this playlist.
+          return ParseStatusCode::kPlaylistHasUnexpectedDeltaUpdate;
+        }
+        case MediaPlaylistTagName::kXTargetDuration: {
+          auto error = ParseUniqueTag(*tag, target_duration_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
           break;
         }
       }
@@ -325,8 +385,8 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
 
     segments.emplace_back(inf_tag->duration, media_sequence_number,
                           discontinuity_sequence_number, std::move(segment_uri),
-                          byterange, bitrate, discontinuity_tag.has_value(),
-                          gap_tag.has_value());
+                          initialization_segment, byterange, bitrate,
+                          discontinuity_tag.has_value(), gap_tag.has_value());
 
     // Reset per-segment tags
     inf_tag.reset();

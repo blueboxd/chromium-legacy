@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
@@ -286,6 +287,13 @@ NSInteger kFeedSymbolPointSize = 17;
   [self applyHeaderConstraints];
 }
 
+- (void)updateForSelectedFeed {
+  FeedType selectedFeed = [self.feedControlDelegate selectedFeed];
+  self.segmentedControl.selectedSegmentIndex =
+      static_cast<NSInteger>(selectedFeed);
+  self.sortButton.alpha = selectedFeed == FeedTypeDiscover ? 0 : 1;
+}
+
 #pragma mark - Setters
 
 // Sets `followingFeedSortType` and recreates the sort menu to assign the active
@@ -363,7 +371,8 @@ NSInteger kFeedSymbolPointSize = 17;
     [menuButton setImage:DefaultSymbolTemplateWithPointSize(
                              kEllipsisFeedSymbol, kFeedSymbolPointSize)
                 forState:UIControlStateNormal];
-    menuButton.backgroundColor = [UIColor colorNamed:kGrey100Color];
+    menuButton.backgroundColor =
+        [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
     menuButton.layer.cornerRadius = kButtonSize / 2;
     menuButton.clipsToBounds = YES;
   } else {
@@ -438,7 +447,6 @@ NSInteger kFeedSymbolPointSize = 17;
       [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
   [segmentedControl setTitleTextAttributes:attributes
                                   forState:UIControlStateNormal];
-  segmentedControl.backgroundColor = [UIColor colorNamed:kGrey100Color];
 
   // Set selected feed and tap action.
   segmentedControl.selectedSegmentIndex =
@@ -755,6 +763,7 @@ NSInteger kFeedSymbolPointSize = 17;
 - (void)onSegmentSelected:(UISegmentedControl*)segmentedControl {
   switch (segmentedControl.selectedSegmentIndex) {
     case static_cast<NSInteger>(FeedTypeDiscover): {
+      [self.feedMetricsRecorder recordFeedSelected:FeedTypeDiscover];
       [self.feedControlDelegate handleFeedSelected:FeedTypeDiscover];
       [UIView animateWithDuration:kSegmentAnimationDuration
                        animations:^{
@@ -763,6 +772,7 @@ NSInteger kFeedSymbolPointSize = 17;
       break;
     }
     case static_cast<NSInteger>(FeedTypeFollowing): {
+      [self.feedMetricsRecorder recordFeedSelected:FeedTypeFollowing];
       [self.feedControlDelegate handleFeedSelected:FeedTypeFollowing];
       // Only show sorting button for Following feed.
       [UIView animateWithDuration:kSegmentAnimationDuration

@@ -52,6 +52,7 @@ extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordReuseDetectionEnabled;
 extern const base::Feature kPasswordsAccountStorageRevisedOptInFlow;
 extern const base::Feature kPasswordScriptsFetching;
+extern const base::Feature kPasswordStrengthIndicator;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kSecondaryServerFieldPredictions;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -65,12 +66,11 @@ extern const base::Feature kSyncUndecryptablePasswordsLinux;
 #endif
 #if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kTouchToFillPasswordSubmission;
-#endif
-#if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kUnifiedCredentialManagerDryRun;
 extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
 extern const base::Feature kPasswordEditDialogWithDetails;
+extern const base::Feature kShowUPMErrorNotification;
 #endif
 extern const base::Feature kUnifiedPasswordManagerDesktop;
 extern const base::Feature kUsernameFirstFlow;

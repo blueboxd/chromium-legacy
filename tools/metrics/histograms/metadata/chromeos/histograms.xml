@@ -347,7 +347,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.Error" enum="HdrnetError"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -452,7 +452,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.OpenDeviceClientType"
-    enum="ChromeOSCameraClientType" expires_after="2022-10-01">
+    enum="ChromeOSCameraClientType" expires_after="2023-01-15">
   <owner>lnishan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -956,7 +956,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2022-12-25">
+    enum="IntentPickerDialogAction" expires_after="2023-01-15">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1052,7 +1052,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.Migration"
-    enum="KeyPermissionsManagerMigrationStatus" expires_after="2022-11-01">
+    enum="KeyPermissionsManagerMigrationStatus" expires_after="2023-01-15">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
@@ -1357,7 +1357,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.PlatformVerification.Result2"
-    enum="ChromeOSPlatformVerificationResult2" expires_after="2022-11-13">
+    enum="ChromeOSPlatformVerificationResult2" expires_after="2023-01-15">
   <owner>erikchen@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1376,6 +1376,42 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     PrivacyScreenToggleUISurface enum for all UI surfaces for toggling the
     feature.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.RgbKeyboard.RgbKeyboardCapabilityType"
+    enum="RgbKeyboardCapabilityType" expires_after="2023-07-07">
+  <owner>michaelcheco@google.com</owner>
+  <owner>dpad@google.com</owner>
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records whether or not RGB keyboard is supported for the current device.
+    Most devices will return RgbKeyboardCapabilityType::None since RGB keyboard
+    is currently only supported on a handful of devices. We still include these
+    samples since it'll be useful for finding real failures, i.e,
+    RgbKeyboardCapabilityType::None is recorded for a device that supports RGB.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.RgbKeyboard.{Type}"
+    enum="RgbKeyboardBacklightChangeType" expires_after="2023-07-07">
+  <owner>michaelcheco@google.com</owner>
+  <owner>dpad@google.com</owner>
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>Records the source of RGB backlight change for a device.</summary>
+<!-- This must be kept current with RgbKeyboardCapabilityType located in
+  tools/metrics/histograms/enums.xml. RgbKeyboardCapabilityType::None is omitted
+  since the backlight can not be changed on unsupported devices. -->
+
+  <token key="Type">
+    <variant name="FourZoneFifteenLed"/>
+    <variant name="FourZoneFortyLed"/>
+    <variant name="FourZoneTwelveLed"/>
+    <variant name="IndividualKey"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.SAML.APILogin" enum="ChromeOSSamlApiUsed"
@@ -1398,7 +1434,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.InSessionPasswordSyncEvent"
-    enum="SamlInSessionPasswordSyncEvent" expires_after="2022-10-30">
+    enum="SamlInSessionPasswordSyncEvent" expires_after="2023-01-15">
   <owner>mslus@chromium.org</owner>
   <owner>mohammedabdon@chromium.org</owner>
   <summary>
@@ -1686,6 +1722,36 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.SystemTray.Network.SectionShown"
+    enum="DetailedViewSection" expires_after="2023-06-20">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>tjohnsonkanu@chromium.org</owner>
+  <owner>chadduffin@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records when different sections within the detailed network view in the
+    system tray shown. This metric is emitted each time a user opens the system
+    tray and each time a different network section is newly shown.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SystemTray.Network.{NetworkType}.Toggled"
+    enum="BooleanToggled" expires_after="2023-06-20">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>tjohnsonkanu@chromium.org</owner>
+  <owner>chadduffin@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the new value of the WiFi/Mobile toggle button in system tray.
+    Metric emitted each time a user clicks on the enable/disable WiFi or Mobile
+    toggle.
+  </summary>
+  <token key="NetworkType">
+    <variant name="Mobile"/>
+    <variant name="WiFi"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.SystemTray.NotificationsRemovedByClearAll"
     units="notifications" expires_after="2023-04-01">
   <owner>amehfooz@chromium.org</owner>
@@ -1772,7 +1838,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.CableSpeed" enum="CableSpeedMetric"
-    expires_after="2022-10-31">
+    expires_after="2023-01-15">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -1782,7 +1848,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.PartnerType" enum="PartnerTypeMetric"
-    expires_after="2022-10-31">
+    expires_after="2023-01-15">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -1803,7 +1869,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.WrongConfiguration"
-    enum="WrongConfigurationMetric" expires_after="2022-10-31">
+    enum="WrongConfigurationMetric" expires_after="2023-01-15">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -1825,11 +1891,55 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.USB.DeviceAttached"
-    enum="ChromeOSUsbEventTiming" expires_after="2022-11-13">
+    enum="ChromeOSUsbEventTiming" expires_after="2023-01-15">
   <owner>allenwebb@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <summary>Timing and number of USB devices attached.</summary>
+</histogram>
+
+<histogram base="true"
+    name="ChromeOS.USB.ExternalDeviceAttached.{USBDeviceRecognized}.{USBDeviceClass}"
+    enum="ChromeOSUsbEventTiming" expires_after="2022-12-31">
+  <owner>wonchung@google.com</owner>
+  <owner>allenwebb@chromium.org</owner>
+  <owner>chromeos-usb@google.com</owner>
+  <summary>
+    Timing and number of external USB devices attached. This is emitted each
+    time an external device is attached via USB and when user logs in with an
+    external device attached.
+  </summary>
+  <token key="USBDeviceRecognized">
+    <variant name="Recognized"
+        summary="A device that was already added to the list of trusted
+                 devices"/>
+    <variant name="Unrecognized"
+        summary="A device that was not in the list of trusted devices yet"/>
+  </token>
+  <token key="USBDeviceClass">
+    <variant name="App"
+        summary="A device with only the application specific interface class"/>
+    <variant name="Audio" summary="An audio device"/>
+    <variant name="AV" summary="An audio/video device"/>
+    <variant name="Card" summary="A smart card reader"/>
+    <variant name="Comm" summary="A communication device"/>
+    <variant name="Health" summary="A personal healthcare device"/>
+    <variant name="HID" summary="A human-interface device"/>
+    <variant name="Hub" summary="A USB hub"/>
+    <variant name="Image" summary="A still image capture device"/>
+    <variant name="Misc"
+        summary="A device with only the misc. interface class"/>
+    <variant name="Other"
+        summary="All devices not covered by the other groups"/>
+    <variant name="Phys" summary="A physical device"/>
+    <variant name="Print" summary="A printer"/>
+    <variant name="Sec" summary="A security device (e.g. fingerprint reader)"/>
+    <variant name="Storage" summary="A storage device"/>
+    <variant name="Vendor"
+        summary="A device with only the vendor specific interface class"/>
+    <variant name="Video" summary="A video device"/>
+    <variant name="Wireless" summary="A wireless controller device"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.UserTypeByDeviceType.LogSegment"

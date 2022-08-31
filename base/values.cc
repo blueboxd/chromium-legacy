@@ -8,7 +8,7 @@
 // build time. Try not to raise this limit unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 470000
+#pragma clang max_tokens_here 580000
 #endif
 
 #include <algorithm>
@@ -223,7 +223,11 @@ Value::Value(const std::vector<char>& value)
     : data_(absl::in_place_type_t<BlobStorage>(), value.begin(), value.end()) {}
 
 Value::Value(base::span<const uint8_t> value)
-    : data_(absl::in_place_type_t<BlobStorage>(), value.begin(), value.end()) {}
+    : data_(absl::in_place_type_t<BlobStorage>(), value.size()) {
+  // This is 100x faster than using the "range" constructor for a 512k blob:
+  // crbug.com/1343636
+  std::copy(value.begin(), value.end(), absl::get<BlobStorage>(data_).data());
+}
 
 Value::Value(BlobStorage&& value) noexcept : data_(std::move(value)) {}
 
@@ -915,6 +919,22 @@ Value::List::const_iterator Value::List::erase(const_iterator pos) {
                         base::to_address(storage_.end()));
 }
 
+Value::List::iterator Value::List::erase(iterator first, iterator last) {
+  auto next_it = storage_.erase(storage_.begin() + (first - begin()),
+                                storage_.begin() + (last - begin()));
+  return iterator(base::to_address(storage_.begin()), base::to_address(next_it),
+                  base::to_address(storage_.end()));
+}
+
+Value::List::const_iterator Value::List::erase(const_iterator first,
+                                               const_iterator last) {
+  auto next_it = storage_.erase(storage_.begin() + (first - begin()),
+                                storage_.begin() + (last - begin()));
+  return const_iterator(base::to_address(storage_.begin()),
+                        base::to_address(next_it),
+                        base::to_address(storage_.end()));
+}
+
 Value::List Value::List::Clone() const {
   return List(storage_);
 }
@@ -1225,10 +1245,6 @@ std::string* Value::FindStringPath(StringPiece path) {
   return GetDict().FindStringByDottedPath(path);
 }
 
-const Value::BlobStorage* Value::FindBlobPath(StringPiece path) const {
-  return GetDict().FindBlobByDottedPath(path);
-}
-
 const Value* Value::FindDictPath(StringPiece path) const {
   return FindPathOfType(path, Type::DICTIONARY);
 }
@@ -1390,22 +1406,6 @@ void Value::MergeDictionary(const Value* dictionary) {
   return GetDict().Merge(dictionary->GetDict().Clone());
 }
 
-bool Value::GetAsList(ListValue** out_value) {
-  if (out_value && is_list()) {
-    *out_value = static_cast<ListValue*>(this);
-    return true;
-  }
-  return is_list();
-}
-
-bool Value::GetAsList(const ListValue** out_value) const {
-  if (out_value && is_list()) {
-    *out_value = static_cast<const ListValue*>(this);
-    return true;
-  }
-  return is_list();
-}
-
 bool Value::GetAsDictionary(DictionaryValue** out_value) {
   if (out_value && is_dict()) {
     *out_value = static_cast<DictionaryValue*>(this);
@@ -1472,11 +1472,6 @@ bool operator==(const Value& lhs, const Value::Dict& rhs) {
 
 bool operator==(const Value& lhs, const Value::List& rhs) {
   return lhs.is_list() && lhs.GetList() == rhs;
-}
-
-bool Value::Equals(const Value* other) const {
-  DCHECK(other);
-  return *this == *other;
 }
 
 size_t Value::EstimateMemoryUsage() const {
@@ -1773,35 +1768,13 @@ std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
 
 // static
 std::unique_ptr<ListValue> ListValue::From(std::unique_ptr<Value> value) {
-  ListValue* out;
-  if (value && value->GetAsList(&out)) {
-    std::ignore = value.release();
-    return WrapUnique(out);
-  }
+  if (value && value->is_list())
+    return WrapUnique(static_cast<ListValue*>(value.release()));
+
   return nullptr;
 }
 
 ListValue::ListValue() : Value(Type::LIST) {}
-
-bool ListValue::GetDictionary(size_t index,
-                              const DictionaryValue** out_value) const {
-  const auto& list = GetListDeprecated();
-  if (list.size() <= index)
-    return false;
-  const base::Value& value = list[index];
-  if (!value.is_dict())
-    return false;
-
-  if (out_value)
-    *out_value = static_cast<const DictionaryValue*>(&value);
-
-  return true;
-}
-
-bool ListValue::GetDictionary(size_t index, DictionaryValue** out_value) {
-  return as_const(*this).GetDictionary(
-      index, const_cast<const DictionaryValue**>(out_value));
-}
 
 void ListValue::Append(base::Value::Dict in_dict) {
   list().emplace_back(std::move(in_dict));

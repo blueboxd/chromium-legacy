@@ -185,6 +185,23 @@ const char kConfirmPasskeyConfirmTime[] =
     "Bluetooth.ChromeOS.FastPair.ConfirmPasskey.Latency";
 const char kFastPairRetryCount[] =
     "Bluetooth.ChromeOS.FastPair.PairRetry.Count";
+const char kSavedDeviceRemoveResult[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.Remove.Result";
+const char kSavedDeviceUpdateOptInStatusInitialResult[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.UpdateOptInStatus.Result."
+    "InitialPairingProtocol";
+const char kSavedDeviceUpdateOptInStatusRetroactiveResult[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.UpdateOptInStatus.Result."
+    "RetroactivePairingProtocol";
+const char kSavedDeviceUpdateOptInStatusSubsequentResult[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.UpdateOptInStatus.Result."
+    "SubsequentPairingProtocol";
+const char kSavedDeviceGetDevicesResult[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.GetSavedDevices.Result";
+const char kSavedDevicesTotalUxLoadTime[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime";
+const char kSavedDevicesCount[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount";
 
 }  // namespace
 
@@ -536,6 +553,41 @@ void RecordConfirmPasskeyAskTime(base::TimeDelta total_ask_time) {
 void RecordPairFailureRetry(int num_retries) {
   base::UmaHistogramExactLinear(kFastPairRetryCount, num_retries,
                                 /*exclusive_max=*/10);
+}
+
+void RecordSavedDevicesRemoveResult(bool success) {
+  base::UmaHistogramBoolean(kSavedDeviceRemoveResult, success);
+}
+
+void RecordSavedDevicesUpdatedOptInStatusResult(const Device& device,
+                                                bool success) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+      base::UmaHistogramBoolean(kSavedDeviceUpdateOptInStatusInitialResult,
+                                success);
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramBoolean(kSavedDeviceUpdateOptInStatusRetroactiveResult,
+                                success);
+      break;
+    case Protocol::kFastPairSubsequent:
+      base::UmaHistogramBoolean(kSavedDeviceUpdateOptInStatusSubsequentResult,
+                                success);
+      break;
+  }
+}
+
+void RecordGetSavedDevicesResult(bool success) {
+  base::UmaHistogramBoolean(kSavedDeviceGetDevicesResult, success);
+}
+
+void RecordSavedDevicesTotalUxLoadTime(base::TimeDelta total_load_time) {
+  base::UmaHistogramCustomTimes(kSavedDevicesTotalUxLoadTime, total_load_time,
+                                base::Milliseconds(1), base::Seconds(25), 50);
+}
+
+void RecordSavedDevicesCount(int num_devices) {
+  base::UmaHistogramCounts100(kSavedDevicesCount, num_devices);
 }
 
 }  // namespace quick_pair

@@ -22,7 +22,6 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -550,7 +549,7 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadAllValidFilters) {
   filters_.Append(cc::FilterOperation::CreateOpacityFilter(0.8f));
   filters_.Append(cc::FilterOperation::CreateBlurFilter(0.9f));
   filters_.Append(cc::FilterOperation::CreateDropShadowFilter(
-      gfx::Point(10, 20), 1.0f, SK_ColorGREEN));
+      gfx::Point(10, 20), 1.0f, SkColors::kGreen));
   render_pass_filters_[render_pass_id_] = &filters_;
   quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
                 kOverlayRect, render_pass_id_, kInvalidResourceId, gfx::RectF(),
@@ -585,7 +584,7 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBlurFilterScale) {
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadDropShadowFilterScale) {
   filters_.Append(cc::FilterOperation::CreateDropShadowFilter(
-      gfx::Point(10, 20), 1.0f, SK_ColorGREEN));
+      gfx::Point(10, 20), 1.0f, SkColors::kGreen));
   render_pass_filters_[render_pass_id_] = &filters_;
   quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
                 kOverlayRect, render_pass_id_, kInvalidResourceId, gfx::RectF(),

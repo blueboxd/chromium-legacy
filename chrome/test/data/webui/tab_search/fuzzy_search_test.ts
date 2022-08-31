@@ -7,7 +7,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import {fuzzySearch, FuzzySearchOptions, TabData, TabGroup, TabItemType} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 
-import {createTab} from './tab_search_test_data.js';
+import {createTab, sampleToken} from './tab_search_test_data.js';
 
 /**
  * Assert search results return in specific order.
@@ -66,7 +66,9 @@ suite('FuzzySearchTest', () => {
         highlightRanges: {
           'tab.title': [{start: 2, length: 1}, {start: 4, length: 2}],
           hostname: [
-            {start: 6, length: 1}, {start: 8, length: 2}, {start: 13, length: 1}
+            {start: 6, length: 1},
+            {start: 8, length: 2},
+            {start: 13, length: 1},
           ],
         },
       },
@@ -97,7 +99,13 @@ suite('FuzzySearchTest', () => {
     const tabDataWithGroup = new TabData(
         createTab({title: 'Meet the cast'}), TabItemType.OPEN_TAB,
         'meet the cast');
-    tabDataWithGroup.tabGroup = {title: 'Glee TV show'} as TabGroup;
+
+    const tabGroup: TabGroup = {
+      title: 'Glee TV show',
+      color: 0,
+      id: sampleToken(1n, 1n),
+    };
+    tabDataWithGroup.tabGroup = tabGroup;
 
     const records = [
       new TabData(
@@ -136,7 +144,9 @@ suite('FuzzySearchTest', () => {
         highlightRanges: {
           'tab.title': [{start: 2, length: 1}, {start: 4, length: 2}],
           hostname: [
-            {start: 6, length: 1}, {start: 8, length: 2}, {start: 13, length: 1}
+            {start: 6, length: 1},
+            {start: 8, length: 2},
+            {start: 13, length: 1},
           ],
         },
       },
@@ -187,7 +197,7 @@ suite('FuzzySearchTest', () => {
               name: 'tab.title',
               weight: 1,
             },
-          ]
+          ],
         };
         assertSearchOrders('sear', records, options, [2, 1, 0]);
       });
@@ -266,7 +276,7 @@ suite('FuzzySearchTest', () => {
         hostname: 'searchengineland.com',
         highlightRanges: {
           'tab.title': [{start: 2, length: 4}, {start: 23, length: 4}],
-          hostname: [{start: 2, length: 4}]
+          hostname: [{start: 2, length: 4}],
         },
       },
       {
@@ -434,8 +444,8 @@ suite('FuzzySearchTest', () => {
         {
           name: 'hostname',
           weight: 1,
-        }
-      ]
+        },
+      ],
     };
 
     assertSearchOrders(

@@ -10,8 +10,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -143,19 +143,6 @@ gfx::CALayerResult FromRenderPassQuad(
   return gfx::kCALayerSuccess;
 }
 
-gfx::CALayerResult FromStreamVideoQuad(
-    DisplayResourceProvider* resource_provider,
-    const StreamVideoDrawQuad* quad,
-    CALayerOverlay* ca_layer_overlay) {
-  ResourceId resource_id = quad->resource_id();
-  if (!resource_provider->IsOverlayCandidate(resource_id))
-    return gfx::kCALayerFailedStreamVideoNotCandidate;
-  ca_layer_overlay->contents_resource_id = resource_id;
-  ca_layer_overlay->contents_rect =
-      BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
-  return gfx::kCALayerSuccess;
-}
-
 gfx::CALayerResult FromSolidColorDrawQuad(const SolidColorDrawQuad* quad,
                                           CALayerOverlay* ca_layer_overlay,
                                           bool* skip) {
@@ -193,6 +180,7 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
   }
   ca_layer_overlay->opacity *= quad->vertex_opacity[0];
   ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
+  ca_layer_overlay->hdr_metadata = quad->hdr_metadata;
   if (quad->is_video_frame)
     ca_layer_overlay->protected_video_type = quad->protected_video_type;
   return gfx::kCALayerSuccess;
@@ -256,6 +244,7 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
 
   ca_layer_overlay->contents_resource_id = y_resource_id;
   ca_layer_overlay->contents_rect = ya_contents_rect;
+  ca_layer_overlay->hdr_metadata = quad->hdr_metadata;
   ca_layer_overlay->protected_video_type = quad->protected_video_type;
   return gfx::kCALayerSuccess;
 }
@@ -346,21 +335,21 @@ class CALayerOverlayProcessorInternal {
     *render_pass_draw_quad =
         quad->material == DrawQuad::Material::kAggregatedRenderPass;
     switch (quad->material) {
-      case DrawQuad::Material::kTextureContent:
-        return FromTextureQuad(resource_provider,
-                               TextureDrawQuad::MaterialCast(quad),
+      case DrawQuad::Material::kTextureContent: {
+        const TextureDrawQuad* texture_draw_quad =
+            TextureDrawQuad::MaterialCast(quad);
+        // Stream video counts as a yuv draw quad.
+        if (texture_draw_quad->is_stream_video)
+          yuv_draw_quad_count += 1;
+        return FromTextureQuad(resource_provider, texture_draw_quad,
                                ca_layer_overlay);
+      }
       case DrawQuad::Material::kTiledContent:
         return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                             ca_layer_overlay);
       case DrawQuad::Material::kSolidColor:
         return FromSolidColorDrawQuad(SolidColorDrawQuad::MaterialCast(quad),
                                       ca_layer_overlay, skip);
-      case DrawQuad::Material::kStreamVideoContent:
-        yuv_draw_quad_count++;
-        return FromStreamVideoQuad(resource_provider,
-                                   StreamVideoDrawQuad::MaterialCast(quad),
-                                   ca_layer_overlay);
       case DrawQuad::Material::kDebugBorder:
         return gfx::kCALayerFailedDebugBoarder;
       case DrawQuad::Material::kPictureContent:

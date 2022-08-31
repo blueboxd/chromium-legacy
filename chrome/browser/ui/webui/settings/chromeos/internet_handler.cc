@@ -22,9 +22,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chromeos/ash/components/network/network_connect.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -133,8 +133,14 @@ void InternetHandler::AddThirdPartyVpn(const base::Value::List& args) {
   if (arc_app_list_prefs && arc_app_list_prefs->GetApp(app_id)) {
     DCHECK(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
         profile_));
-    apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
-        app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
+          app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
+    } else {
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
+          app_id, ui::EF_NONE,
+          apps::mojom::LaunchSource::kFromParentalControls);
+    }
     return;
   }
 

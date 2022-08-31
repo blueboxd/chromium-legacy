@@ -260,6 +260,22 @@ void RecordConfirmPasskeyAskTime(base::TimeDelta total_ask_time);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordPairFailureRetry(int num_retries);
 
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordSavedDevicesRemoveResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordSavedDevicesUpdatedOptInStatusResult(const Device& device,
+                                                bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordGetSavedDevicesResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordSavedDevicesTotalUxLoadTime(base::TimeDelta total_load_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordSavedDevicesCount(int num_devices);
+
 }  // namespace quick_pair
 }  // namespace ash
 

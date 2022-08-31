@@ -5,11 +5,13 @@
 /**
  * @fileoverview ChromeVox options page.
  */
-import {AbstractTts} from '/chromevox/common/abstract_tts.js';
-import {BrailleTable} from '/chromevox/common/braille/braille_table.js';
-import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
-import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
-import {BluetoothBrailleDisplayUI} from '/chromevox/options/bluetooth_braille_display_ui.js';
+import {AbstractTts} from '../common/abstract_tts.js';
+import {BrailleTable} from '../common/braille/braille_table.js';
+import {ExtensionBridge} from '../common/extension_bridge.js';
+import {Msgs} from '../common/msgs.js';
+import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+
+import {BluetoothBrailleDisplayUI} from './bluetooth_braille_display_ui.js';
 
 /** @const {string} */
 const GOOGLE_TTS_EXTENSION_ID = 'gjjabgpgjpampikjhjpfhneeoapjbjaf';
@@ -440,8 +442,10 @@ export class OptionsPage {
    */
   static setEventStreamFilter(name, enabled) {
     BackgroundBridge.ChromeVoxPrefs.setPref(name, enabled);
+
+    // TODO(accessibility): the below cast needs to be validated.
     BackgroundBridge.EventStreamLogger.notifyEventStreamFilterChanged(
-        name, enabled);
+        /** @type {chrome.automation.EventType} */ (name), enabled);
   }
 
   /**

@@ -180,7 +180,6 @@ interface CountQueuingStrategy
     getter size
     method constructor
 interface CropTarget
-    static method fromElement
     attribute @@toStringTag
     method constructor
 interface Crypto
@@ -1324,7 +1323,6 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
-    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -1409,6 +1407,7 @@ interface ServiceWorkerRegistration : EventTarget
     setter onupdatefound
 interface StorageBucket
     attribute @@toStringTag
+    getter indexedDB
     method constructor
     method durability
     method estimate
@@ -1522,6 +1521,13 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TransformStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method constructor
+    method enqueue
+    method error
+    method terminate
 interface TrustedHTML
     attribute @@toStringTag
     method constructor

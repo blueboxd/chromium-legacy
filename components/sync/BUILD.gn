@@ -94,6 +94,8 @@ static_library("test_support_model") {
     "test/model/fake_model_type_sync_bridge.h",
     "test/model/fake_sync_change_processor.cc",
     "test/model/fake_sync_change_processor.h",
+    "test/model/forwarding_model_type_change_processor.cc",
+    "test/model/forwarding_model_type_change_processor.h",
     "test/model/mock_model_type_change_processor.cc",
     "test/model/mock_model_type_change_processor.h",
     "test/model/model_type_store_test_util.cc",
@@ -212,6 +214,7 @@ source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "trusted_vault/degraded_recoverability_scheduler_unittest.cc",
       "trusted_vault/download_keys_response_handler_unittest.cc",
       "trusted_vault/proto_string_bytes_conversion_unittest.cc",
       "trusted_vault/securebox_unittest.cc",

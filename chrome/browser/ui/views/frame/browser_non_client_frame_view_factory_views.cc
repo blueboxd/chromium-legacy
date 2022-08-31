@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/views/frame/browser_frame_view_linux_native.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/linux_ui/nav_button_provider.h"
+#include "ui/linux/linux_ui.h"
+#include "ui/linux/nav_button_provider.h"
 #endif
 
 namespace chrome {
@@ -34,7 +34,7 @@ std::unique_ptr<OpaqueBrowserFrameView> CreateOpaqueBrowserFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if BUILDFLAG(IS_LINUX)
-  auto* linux_ui = views::LinuxUI::instance();
+  auto* linux_ui = ui::LinuxUi::instance();
   auto* profile = browser_view->browser()->profile();
   auto* theme_service_factory = ThemeServiceFactory::GetForProfile(profile);
   auto* app_controller = browser_view->browser()->app_controller();

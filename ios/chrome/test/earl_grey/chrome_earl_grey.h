@@ -227,6 +227,10 @@ UIWindow* GetAnyKeyWindow();
 // Injects typed URL to sync FakeServer.
 - (void)addFakeSyncServerTypedURL:(const GURL&)URL;
 
+// Injects device info to sync FakeServer.
+- (void)addFakeSyncServerDeviceInfo:(NSString*)deviceName
+               lastUpdatedTimestamp:(base::Time)lastUpdatedTimestamp;
+
 // Triggers a sync cycle for a |type|.
 - (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
@@ -774,6 +778,14 @@ UIWindow* GetAnyKeyWindow();
 // Clear the watcher list, stopping monitoring.
 - (void)stopWatcher;
 
+#pragma mark - Url Param Classification utilities
+// Sets the |raw_classifications| on the
+// url_param_filter::ClassificationsLoader.
+- (void)setUrlParamClassifications:(const std::string&)raw_classifications;
+
+// Resets the stored classifications on the
+// url_param_filter::ClassificationsLoader.
+- (void)resetUrlParamClassifications;
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

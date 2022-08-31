@@ -14,7 +14,6 @@
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/hdr_metadata.h"
 
 #if defined(USE_OZONE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "ui/gfx/native_pixmap_handle.h"
@@ -124,10 +123,6 @@ class GFX_EXPORT GpuMemoryBuffer {
   // Set the color space in which this buffer should be interpreted when used
   // as an overlay. Note that this will not impact texturing from the buffer.
   virtual void SetColorSpace(const ColorSpace& color_space);
-
-  // Set the HDR metadata for use when this buffer is used as an overlay. Note
-  // that this will not impact texturing from the buffer.
-  virtual void SetHDRMetadata(const HDRMetadata& hdr_metadata);
 
   // Returns a unique identifier associated with buffer.
   virtual GpuMemoryBufferId GetId() const = 0;

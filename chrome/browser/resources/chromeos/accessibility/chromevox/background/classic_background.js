@@ -5,18 +5,20 @@
 /**
  * @fileoverview Script that runs on the background page.
  */
-import {BrailleBackground} from '/chromevox/background/braille/braille_background.js';
-import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {ConsoleTts} from '/chromevox/background/console_tts.js';
-import {ChromeVoxEditableTextBase, TypingEcho} from '/chromevox/background/editing/editable_text_base.js';
-import {InjectedScriptLoader} from '/chromevox/background/injected_script_loader.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
-import {TtsBackground} from '/chromevox/background/tts_background.js';
-import {AbstractTts} from '/chromevox/common/abstract_tts.js';
-import {CompositeTts} from '/chromevox/common/composite_tts.js';
-import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
+import {AbstractTts} from '../common/abstract_tts.js';
+import {CompositeTts} from '../common/composite_tts.js';
+import {ExtensionBridge} from '../common/extension_bridge.js';
+import {Msgs} from '../common/msgs.js';
+
+import {BrailleBackground} from './braille/braille_background.js';
+import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
+import {ChromeVoxState} from './chromevox_state.js';
+import {ConsoleTts} from './console_tts.js';
+import {ChromeVoxEditableTextBase, TypingEcho} from './editing/editable_text_base.js';
+import {InjectedScriptLoader} from './injected_script_loader.js';
+import {Output} from './output/output.js';
+import {ChromeVoxPrefs} from './prefs.js';
+import {TtsBackground} from './tts_background.js';
 
 /**
  * This is the legacy ChromeVox background object.
@@ -52,7 +54,8 @@ export class ChromeVoxBackground {
     ChromeVox.tts = this.tts;
     ChromeVox.braille = this.backgroundBraille_;
 
-    this.onIntroduceChromeVox();
+    chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
+        this.onIntroduceChromeVox);
 
     // Set up a message passing system for goog.provide() calls from
     // within the content scripts.

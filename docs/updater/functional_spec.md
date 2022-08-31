@@ -106,7 +106,7 @@ process is determined by command-line arguments:
         *   If --tag is specified, --install is assumed.
     *   --handoff=...
         *   As --tag.
-    *  --offlinedir=...
+    *   --offlinedir=...
         *   Performs offline install, which means no update check or file
             download is performed against the server during installation.
             All data is read from the files in the directory instead.
@@ -115,6 +115,8 @@ process is determined by command-line arguments:
               The file contains the update check response in XML format.
             * App installer.
         *   The switch can be combined with `--handoff` above.
+        *   --enterprise
+            *   Suppresses transmission of pings from the offline install.
 *   --uninstall
     *   Uninstall all versions of the updater.
 *   --uninstall-self
@@ -305,6 +307,16 @@ NSURLSession on macOS).
 It is not possible to MITM the updater even if the network (including TLS) is
 compromised. The integrity of the client-server communication is guaranteed
 by the [Client Update Protocol (CUP)](cup.md).
+
+##### COM Security
+
+The legacy COM classes in updater_legacy_idl.template allow non-admin callers
+because the interfaces only expose functionality that non-admin callers need.
+
+The new COM classes in updater_internal_idl.template and updater_idl.template
+require the callers to be admin. This is because the corresponding interfaces
+allow for unrestricted functionality, such as installing any app that the
+updater supports. For non-admins, COM creation will fail with E_ACCESSDENIED.
 
 #### Retries
 The updater does not retry an update check that transacted with the backend,
@@ -812,6 +824,25 @@ respectively, a command format of:
   `echo.exe %1 %%2 %%%2`
 becomes the command line
   `echo.exe AA %2 %BB`
+
+### Policy Status API
+The feature allows Chrome and other applications to query the policies that are
+currently in effect.
+
+Chrome Browser Enterprise (CBE) admins sometimes want to understand if the
+update policies they have set have propagated to the clients.
+
+Without this API, the only way they can do this is to open up regedit to see if
+the GPO has propagated correctly.
+
+In addition there is a delay between when the GPO is set on the server and when
+the value is propagated on the client so being able to verify that the updater
+picks up the policy can help debug propagation issues as well.
+
+The IPolicyStatus/IPolicyStatus2/IPolicyStatus3 interfaces therefore expose this
+functionality that can be queried and shown in chrome://policy.
+
+[IPolicyStatus/IPolicyStatus2/IPolicyStatus3 interface definition](https://source.chromium.org/chromium/chromium/src/+/main:chrome/updater/app/server/win/updater_legacy_idl.template?q=IPolicyStatus)
 
 ## Uninstallation
 On Mac and Linux, if the application was registered with an existence path

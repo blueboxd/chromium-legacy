@@ -6,7 +6,7 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../../controls/settings_slider.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../controls/settings_dropdown_menu.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -187,32 +187,32 @@ class SettingsKeyboardElement extends SettingsKeyboardElementBase {
       },
       {
         value: ModifierKey.CONTROL_KEY,
-        name: loadTimeData.getString('keyboardKeyCtrl')
+        name: loadTimeData.getString('keyboardKeyCtrl'),
       },
       {
         value: ModifierKey.ALT_KEY,
-        name: loadTimeData.getString('keyboardKeyAlt')
+        name: loadTimeData.getString('keyboardKeyAlt'),
       },
       {
         value: ModifierKey.CAPS_LOCK_KEY,
-        name: loadTimeData.getString('keyboardKeyCapsLock')
+        name: loadTimeData.getString('keyboardKeyCapsLock'),
       },
       {
         value: ModifierKey.ESCAPE_KEY,
-        name: loadTimeData.getString('keyboardKeyEscape')
+        name: loadTimeData.getString('keyboardKeyEscape'),
       },
       {
         value: ModifierKey.BACKSPACE_KEY,
-        name: loadTimeData.getString('keyboardKeyBackspace')
+        name: loadTimeData.getString('keyboardKeyBackspace'),
       },
       {
         value: ModifierKey.ASSISTANT_KEY,
-        name: loadTimeData.getString('keyboardKeyAssistant')
+        name: loadTimeData.getString('keyboardKeyAssistant'),
       },
       {
         value: ModifierKey.VOID_KEY,
-        name: loadTimeData.getString('keyboardKeyDisabled')
-      }
+        name: loadTimeData.getString('keyboardKeyDisabled'),
+      },
     ];
   }
 

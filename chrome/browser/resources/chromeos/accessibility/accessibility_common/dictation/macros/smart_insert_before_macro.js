@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Macro, MacroError} from '/accessibility_common/dictation/macros/macro.js';
-import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
+import {InputController} from '../input_controller.js';
+
+import {Macro, MacroError} from './macro.js';
+import {MacroName} from './macro_names.js';
 
 /**
  * Implements a macro that inserts a word or phrase before another word or
@@ -39,5 +41,10 @@ export class SmartInsertBeforeMacro extends Macro {
     }
     this.inputController_.insertBefore(this.insertPhrase_, this.beforePhrase_);
     return this.createRunMacroResult_(/*isSuccess=*/ true);
+  }
+
+  /** @override */
+  isSmart() {
+    return true;
   }
 }

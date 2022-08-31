@@ -41,6 +41,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/base/features.h"
 #include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_host.h"
@@ -63,10 +64,12 @@
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/ime/stylus_writing_gesture.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
@@ -235,6 +238,25 @@ viz::FrameSinkId GetRemoteFrameSinkId(const HitTestResult& result) {
   return remote_frame->GetFrameSinkId();
 }
 
+bool IsElementNotNullAndEditable(Element* element) {
+  if (!element)
+    return false;
+
+  if (IsEditable(*element))
+    return true;
+
+  auto* text_control = ToTextControlOrNull(element);
+  if (text_control && !text_control->IsDisabledOrReadOnly())
+    return true;
+
+  if (EqualIgnoringASCIICase(element->FastGetAttribute(html_names::kRoleAttr),
+                             "textbox")) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // WebFrameWidget ------------------------------------------------------------
@@ -298,17 +320,9 @@ void WebFrameWidgetImpl::SetIsNestedMainFrameWidget(bool is_nested) {
 }
 
 void WebFrameWidgetImpl::Close() {
-  LocalFrameView* frame_view;
-  if (ForSubframe()) {
-    frame_view = LocalRootImpl()->GetFrame()->View();
-  } else {
-    // Scrolling for the root frame is special we need to pass null indicating
-    // we are at the top of the tree when setting up the Animation. Which will
-    // cause ownership of the timeline and animation host.
-    // See ScrollingCoordinator::AnimationHostInitialized.
-    frame_view = nullptr;
-  }
-  GetPage()->WillCloseAnimationHost(frame_view);
+  // TODO(bokan): This seems wrong since the page may have other still-active
+  // frame widgets. See also: https://crbug.com/1344531.
+  GetPage()->WillStopCompositing();
 
   if (ForMainFrame()) {
     // Closing the WebFrameWidgetImpl happens in response to the local main
@@ -490,24 +504,58 @@ void WebFrameWidgetImpl::DragSourceSystemDragEnded() {
   CancelDrag();
 }
 
-void WebFrameWidgetImpl::OnStartStylusWriting() {
+gfx::Rect WebFrameWidgetImpl::GetAbsoluteCaretBounds() {
+  LocalFrame* local_frame = GetPage()->GetFocusController().FocusedFrame();
+  if (local_frame) {
+    auto& selection = local_frame->Selection();
+    if (selection.GetSelectionInDOMTree().IsCaret())
+      return selection.AbsoluteCaretBounds();
+  }
+  return gfx::Rect();
+}
+
+void WebFrameWidgetImpl::OnStartStylusWriting(
+    OnStartStylusWritingCallback callback) {
   // Focus the stylus writable element for current touch sequence as we have
   // detected writing has started.
   LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
-  if (!frame)
+  if (!frame) {
+    std::move(callback).Run(absl::nullopt, absl::nullopt);
     return;
+  }
+
   Element* stylus_writable_element =
       frame->GetEventHandler().CurrentTouchDownElement();
-  if (!stylus_writable_element)
+  if (!stylus_writable_element) {
+    std::move(callback).Run(absl::nullopt, absl::nullopt);
     return;
+  }
+
   if (auto* text_control = EnclosingTextControl(stylus_writable_element)) {
     text_control->Focus();
   } else if (auto* html_element =
                  DynamicTo<HTMLElement>(stylus_writable_element)) {
     html_element->Focus();
   }
-  // TODO(rbug.com/1330821): If we are unable to focus writable element for any
-  // reason, notify browser about the same.
+  Element* focused_element = FocusedElement();
+  // Since the element can change after it gets focused, we just verify if
+  // the focused element is editable to continue writing.
+  if (IsElementNotNullAndEditable(focused_element)) {
+    std::move(callback).Run(
+        focused_element->BoundsInViewport(),
+        frame->View()->FrameToViewport(GetAbsoluteCaretBounds()));
+    return;
+  }
+
+  std::move(callback).Run(absl::nullopt, absl::nullopt);
+}
+
+void WebFrameWidgetImpl::HandleStylusWritingGestureAction(
+    mojom::blink::StylusWritingGestureDataPtr gesture_data) {
+  LocalFrame* focused_frame = FocusedLocalFrameInWidget();
+  if (!focused_frame)
+    return;
+  StylusWritingGesture::ApplyGesture(focused_frame, std::move(gesture_data));
 }
 
 void WebFrameWidgetImpl::SetBackgroundOpaque(bool opaque) {
@@ -921,6 +969,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       frame->GetEventHandler().TargetGestureEvent(scaled_event);
 
   // Link highlight animations are only for the main frame.
+  // TODO(bokan): This isn't intentional, see https://crbug.com/1344531.
   if (ForMainFrame()) {
     // Handle link highlighting outside the main switch to avoid getting lost in
     // the complicated set of cases handled below.
@@ -2016,18 +2065,11 @@ void WebFrameWidgetImpl::InitializeCompositing(
       *GetPage()->GetPageScheduler(), screen_infos, settings,
       input_handler_weak_ptr_factory_.GetWeakPtr());
 
-  LocalFrameView* frame_view;
-  if (ForSubframe()) {
-    frame_view = LocalRootImpl()->GetFrame()->View();
-  } else {
-    // Scrolling for the root frame is special we need to pass null indicating
-    // we are at the top of the tree when setting up the Animation. Which will
-    // cause ownership of the timeline and animation host.
-    // See ScrollingCoordinator::AnimationHostInitialized.
-    frame_view = nullptr;
-  }
-
-  GetPage()->AnimationHostInitialized(*AnimationHost(), frame_view);
+  // TODO(bokan): This seems wrong. Page may host multiple FrameWidgets so this
+  // will call DidInitializeCompositing once per FrameWidget. It probably makes
+  // sense to move LinkHighlight from Page to WidgetBase so initialization is
+  // per-widget. See also: https://crbug.com/1344531.
+  GetPage()->DidInitializeCompositing(*AnimationHost());
 }
 
 void WebFrameWidgetImpl::InitializeNonCompositing(
@@ -2872,6 +2914,10 @@ cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {
   return widget_base_->AnimationHost();
 }
 
+cc::AnimationTimeline* WebFrameWidgetImpl::ScrollAnimationTimeline() const {
+  return widget_base_->ScrollAnimationTimeline();
+}
+
 base::WeakPtr<PaintWorkletPaintDispatcher>
 WebFrameWidgetImpl::EnsureCompositorPaintDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner) {
@@ -3435,6 +3481,16 @@ void WebFrameWidgetImpl::ShowVirtualKeyboardOnElementFocus() {
 
 void WebFrameWidgetImpl::ProcessTouchAction(WebTouchAction touch_action) {
   widget_base_->ProcessTouchAction(touch_action);
+}
+
+void WebFrameWidgetImpl::SetPanAction(mojom::blink::PanAction pan_action) {
+  if (!widget_base_->widget_input_handler_manager())
+    return;
+  mojom::blink::WidgetInputHandlerHost* host =
+      widget_base_->widget_input_handler_manager()->GetWidgetInputHandlerHost();
+  if (!host)
+    return;
+  host->SetPanAction(pan_action);
 }
 
 void WebFrameWidgetImpl::DidHandleGestureEvent(const WebGestureEvent& event) {

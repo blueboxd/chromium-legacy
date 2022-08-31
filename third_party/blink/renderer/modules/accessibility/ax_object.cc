@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -1242,6 +1243,9 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
   // Always try to serialize child tree ids.
   SerializeChildTreeID(node_data);
 
+  if (!accessibility_mode.has_mode(ui::AXMode::kPDF))
+    SerializeBoundingBoxAttributes(*node_data);
+
   // Return early. The following attributes are unnecessary for ignored nodes.
   // Exception: focusable ignored nodes are fully serialized, so that reasonable
   // verbalizations can be made if they actually receive focus.
@@ -1260,6 +1264,9 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
     }
   }
 
+  if (accessibility_mode.has_mode(ui::AXMode::kScreenReader))
+    SerializeScreenReaderAttributes(node_data);
+
   SerializeUnignoredAttributes(node_data, accessibility_mode);
 
   if (accessibility_mode.has_mode(ui::AXMode::kPDF)) {
@@ -1275,7 +1282,52 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
 
   if (LiveRegionRoot())
     SerializeLiveRegionAttributes(node_data);
+
   SerializeOtherScreenReaderAttributes(node_data);
+}
+
+void AXObject::SerializeBoundingBoxAttributes(ui::AXNodeData& dst) const {
+  bool clips_children = false;
+  PopulateAXRelativeBounds(dst.relative_bounds, &clips_children);
+  if (clips_children) {
+    dst.AddBoolAttribute(ax::mojom::blink::BoolAttribute::kClipsChildren, true);
+  }
+
+  if (IsLineBreakingObject()) {
+    dst.AddBoolAttribute(ax::mojom::blink::BoolAttribute::kIsLineBreakingObject,
+                         true);
+  }
+  AXObjectCache().SetCachedBoundingBox(AXObjectID(), dst.relative_bounds);
+}
+
+static bool AXShouldIncludePageScaleFactorInRoot() {
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+  return true;
+#else
+  return false;
+#endif
+}
+
+void AXObject::PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
+                                        bool* clips_children) const {
+  AXObject* offset_container;
+  gfx::RectF bounds_in_container;
+  gfx::Transform container_transform;
+  GetRelativeBounds(&offset_container, bounds_in_container, container_transform,
+                    clips_children);
+  bounds.bounds = bounds_in_container;
+  if (offset_container && !offset_container->IsDetached())
+    bounds.offset_container_id = offset_container->AXObjectID();
+
+  if (AXShouldIncludePageScaleFactorInRoot() && IsRoot()) {
+    const Page* page = GetDocument()->GetPage();
+    container_transform.Scale(page->PageScaleFactor(), page->PageScaleFactor());
+    container_transform.Translate(
+        -page->GetVisualViewport().VisibleRect().origin().OffsetFromOrigin());
+  }
+
+  if (!container_transform.IsIdentity())
+    bounds.transform = std::make_unique<gfx::Transform>(container_transform);
 }
 
 void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
@@ -1298,7 +1350,7 @@ void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
 void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
   // If this is an HTMLFrameOwnerElement (such as an iframe), we may need
   // to embed the ID of the child frame.
-  if (!ui::IsChildTreeOwner(RoleValue())) {
+  if (!IsChildTreeOwner()) {
     // TODO(crbug.com/1342603) Determine why these are firing in the wild and,
     // once fixed, turn into a DCHECK.
     SANITIZER_CHECK(!IsFrame(GetNode()))
@@ -1551,6 +1603,78 @@ void AXObject::SerializeNameAndDescriptionAttributes(
   String placeholder = Placeholder(name_from);
   TruncateAndAddStringAttribute(
       node_data, ax::mojom::blink::StringAttribute::kPlaceholder, placeholder);
+}
+
+void AXObject::SerializeScreenReaderAttributes(ui::AXNodeData* node_data) {
+  String display_style;
+  Node* node = GetNode();
+  if (node && !node->IsDocumentNode()) {
+    if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
+      display_style = CSSProperty::Get(CSSPropertyID::kDisplay)
+                          .CSSValueFromComputedStyle(
+                              *computed_style, /* layout_object */ nullptr,
+                              /* allow_visited_style */ false)
+                          ->CssText();
+      if (!display_style.IsEmpty()) {
+        TruncateAndAddStringAttribute(
+            node_data, ax::mojom::blink::StringAttribute::kDisplay,
+            display_style);
+      }
+    }
+  }
+
+  if (KeyboardShortcut().length() &&
+      !node_data->HasStringAttribute(
+          ax::mojom::blink::StringAttribute::kKeyShortcuts)) {
+    TruncateAndAddStringAttribute(
+        node_data, ax::mojom::blink::StringAttribute::kKeyShortcuts,
+        KeyboardShortcut());
+  }
+
+  if (AXObject* active_descendant = ActiveDescendant()) {
+    node_data->AddIntAttribute(
+        ax::mojom::blink::IntAttribute::kActivedescendantId,
+        active_descendant->AXObjectID());
+  }
+
+  if (Node* node = GetNode()) {
+    if (node->IsElementNode()) {
+      Element* element = To<Element>(node);
+      if (element->IsHTMLWithTagName("input")) {
+        String type = element->getAttribute("type");
+        if (type.IsEmpty())
+          type = "text";
+        TruncateAndAddStringAttribute(
+            node_data, ax::mojom::blink::StringAttribute::kInputType, type);
+      }
+    }
+  }
+}
+
+String AXObject::KeyboardShortcut() const {
+  const AtomicString& access_key = AccessKey();
+  if (access_key.IsNull())
+    return String();
+
+  DEFINE_STATIC_LOCAL(String, modifier_string, ());
+  if (modifier_string.IsNull()) {
+    unsigned modifiers = KeyboardEventManager::kAccessKeyModifiers;
+    // Follow the same order as Mozilla MSAA implementation:
+    // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
+    // should not be localized and defines the separator as "+".
+    StringBuilder modifier_string_builder;
+    if (modifiers & WebInputEvent::kControlKey)
+      modifier_string_builder.Append("Ctrl+");
+    if (modifiers & WebInputEvent::kAltKey)
+      modifier_string_builder.Append("Alt+");
+    if (modifiers & WebInputEvent::kShiftKey)
+      modifier_string_builder.Append("Shift+");
+    if (modifiers & WebInputEvent::kMetaKey)
+      modifier_string_builder.Append("Win+");
+    modifier_string = modifier_string_builder.ToString();
+  }
+
+  return String(modifier_string + access_key);
 }
 
 void AXObject::SerializeOtherScreenReaderAttributes(
@@ -2864,7 +2988,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   event.SetTarget(target);
 
   // Capturing phase.
-  event.SetEventPhase(Event::kCapturingPhase);
+  event.SetEventPhase(Event::PhaseType::kCapturingPhase);
   for (int i = static_cast<int>(event_path.size()) - 1; i >= 0; i--) {
     // Don't call capturing event listeners on the target. Note that
     // the target may not necessarily be in the event path which is why
@@ -2879,14 +3003,14 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   }
 
   // Targeting phase.
-  event.SetEventPhase(Event::kAtTarget);
+  event.SetEventPhase(Event::PhaseType::kAtTarget);
   event.SetCurrentTarget(event_path[0]);
   event_path[0]->FireEventListeners(event);
   if (event.PropagationStopped())
     return true;
 
   // Bubbling phase.
-  event.SetEventPhase(Event::kBubblingPhase);
+  event.SetEventPhase(Event::PhaseType::kBubblingPhase);
   for (wtf_size_t i = 1; i < event_path.size(); i++) {
     event.SetCurrentTarget(event_path[i]);
     event_path[i]->FireEventListeners(event);
@@ -4210,7 +4334,7 @@ const AtomicString& AXObject::LiveRegionRelevant() const {
 
 bool AXObject::IsDisabled() const {
   // <embed> or <object> with unsupported plugin, or more iframes than allowed.
-  if (ui::IsChildTreeOwner(RoleValue())) {
+  if (IsChildTreeOwner()) {
     auto* html_frame_owner_element = To<HTMLFrameOwnerElement>(GetElement());
     return !html_frame_owner_element->ContentFrame();
   }
@@ -5023,7 +5147,12 @@ void AXObject::ClearChildren() const {
        child_node;
        child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
     // Get the child object that should be detached from this parent.
-    AXObject* ax_child_from_node = AXObjectCache().Get(child_node);
+    // Do not invalidate from layout, because it nay be  unsafe to check layout
+    // at this time. However, do allow invalidations if an object changes its
+    // display locking (content-visibility: auto) status, as this may be the
+    // only chance to do that, and it's safe to do now.
+    AXObject* ax_child_from_node =
+        AXObjectCache().GetWithoutInvalidation(child_node, true);
     if (ax_child_from_node &&
         ax_child_from_node->CachedParentObject() == this) {
       // Check current parent first. It may be owned by another node.

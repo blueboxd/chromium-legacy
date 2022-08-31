@@ -1,8 +1,4 @@
-achuith@chromium.org
-hidehiko@chromium.org
-khorimoto@chromium.org
-michaelpg@chromium.org
-xiyuan@chromium.org
+file://ash/webui/PLATFORM_OWNERS
 
 per-file *bluetooth*=file://ui/webui/resources/cr_components/chromeos/bluetooth/OWNERS
 per-file *net*=file://ui/webui/resources/cr_components/chromeos/network/OWNERS

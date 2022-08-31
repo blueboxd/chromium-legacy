@@ -220,6 +220,13 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
             app_restore_data->tab_group_infos.value(), browser);
       }
 
+      if (app_restore_data->first_non_pinned_tab_index.has_value() &&
+          app_restore_data->first_non_pinned_tab_index.value() <=
+              urls->size()) {
+        chrome_desks_util::SetBrowserPinnedTabs(
+            app_restore_data->first_non_pinned_tab_index.value(), browser);
+      }
+
       // We need to handle minimized windows separately since unlike other
       // window types, it's not shown.
       if (window_state_type &&
@@ -288,10 +295,7 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchLacrosBrowsers() {
     if (app_id != app_constants::kLacrosAppId)
       continue;
 
-    for (const auto& window_iter : iter.second) {
-      const std::unique_ptr<app_restore::AppRestoreData>& app_restore_data =
-          window_iter.second;
-
+    for (const auto& [restore_window_id, app_restore_data] : iter.second) {
       if (!app_restore_data->active_tab_index.has_value() ||
           !app_restore_data->urls.has_value()) {
         LOG(WARNING) << "Corrupted data for the Lacros window found";
@@ -305,7 +309,7 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchLacrosBrowsers() {
               app_restore_data->window_state_type.value_or(
                   chromeos::WindowStateType::kDefault)),
           app_restore_data->active_tab_index.value(),
-          GetBrowserAppName(app_restore_data, app_id));
+          GetBrowserAppName(app_restore_data, app_id), restore_window_id);
     }
   }
   restore_data()->RemoveApp(app_constants::kLacrosAppId);

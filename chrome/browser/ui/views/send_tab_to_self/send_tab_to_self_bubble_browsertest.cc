@@ -8,9 +8,9 @@
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/test/browser_test.h"
@@ -89,15 +89,15 @@ IN_PROC_BROWSER_TEST_F(SendTabToSelfBubbleTest, InvokeUi_ShowDeviceList) {
 }
 
 IN_PROC_BROWSER_TEST_F(SendTabToSelfBubbleTest, InvokeUi_ShowSigninPromo) {
-  // Last updated in crrev.com/c/3669248.
-  set_baseline("3669248");
+  // Last updated in crrev.com/c/3776623.
+  set_baseline("3776623");
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(SendTabToSelfBubbleTest,
                        InvokeUi_ShowNoTargetDevicePromo) {
-  // Last updated in crrev.com/c/3669248.
-  set_baseline("3669248");
+  // Last updated in crrev.com/c/3776623.
+  set_baseline("3776623");
   ShowAndVerifyUi();
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,10 +18,15 @@
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/user_education/common/feature_promo_specification.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "ui/chromeos/devicetype_utils.h"
+#endif
 
 IntentChipButton::IntentChipButton(Browser* browser,
                                    PageActionIconView::Delegate* delegate)
@@ -42,16 +48,23 @@ void IntentChipButton::Update() {
   SetVisible(is_visible);
 
   if (is_visible) {
-    bool collapsed = GetChipCollapsed();
-    ResetAnimation(!collapsed);
-    SetTheme(collapsed ? OmniboxChipTheme::kIconStyle
-                       : OmniboxChipTheme::kLowVisibility);
+    bool expanded = GetChipExpanded();
+    ResetAnimation(expanded);
+    SetTheme(expanded ? OmniboxChipTheme::kLowVisibility
+                      : OmniboxChipTheme::kIconStyle);
     UpdateIconAndColors();
   }
   if (browser_->window()) {
     if (is_visible && !was_visible) {
+#if BUILDFLAG(IS_CHROMEOS)
+      user_education::FeaturePromoSpecification::StringReplacements
+          replacements = {ui::GetChromeOSDeviceName()};
+#else
+      user_education::FeaturePromoSpecification::StringReplacements
+          replacements = {};
+#endif
       browser_->window()->MaybeShowFeaturePromo(
-          feature_engagement::kIPHIntentChipFeature);
+          feature_engagement::kIPHIntentChipFeature, replacements);
     } else if (was_visible && !is_visible) {
       IntentPickerBubbleView::CloseCurrentBubble();
       browser_->window()->CloseFeaturePromo(
@@ -79,9 +92,9 @@ bool IntentChipButton::GetShowChip() const {
   return tab_helper && tab_helper->should_show_icon();
 }
 
-bool IntentChipButton::GetChipCollapsed() const {
+bool IntentChipButton::GetChipExpanded() const {
   auto* tab_helper = GetTabHelper();
-  return tab_helper && tab_helper->should_show_collapsed_chip();
+  return tab_helper && tab_helper->ShouldShowExpandedChip();
 }
 
 ui::ImageModel IntentChipButton::GetAppIcon() const {
@@ -96,7 +109,7 @@ void IntentChipButton::HandlePressed() {
   content::WebContents* web_contents =
       delegate_->GetWebContentsForPageActionIconView();
   const GURL& url = web_contents->GetURL();
-  apps::ShowIntentPickerBubble(web_contents, url);
+  apps::ShowIntentPickerOrLaunchApp(web_contents, url);
 }
 
 IntentPickerTabHelper* IntentChipButton::GetTabHelper() const {

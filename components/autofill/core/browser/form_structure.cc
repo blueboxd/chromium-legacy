@@ -283,6 +283,12 @@ void PopulateRandomizedFieldMetadata(
                           field.placeholder, /*include_checksum=*/false,
                           metadata->mutable_placeholder());
   }
+  if (!field.autocomplete_attribute.empty()) {
+    EncodeRandomizedValue(
+        encoder, form_signature, field_signature,
+        RandomizedEncoder::FIELD_AUTOCOMPLETE, field.autocomplete_attribute,
+        /*include_checksum=*/false, metadata->mutable_autocomplete());
+  }
 }
 
 // Defines necessary types for the rationalization logic, meaning that fields of
@@ -1780,14 +1786,13 @@ void FormStructure::RationalizeAddressStateCountry(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
   // Walk on the sections of state and country indexes simultaneously. If they
-  // both point to the same section, it means that that section includes both
-  // the country and the state type. This means that no that rationalization is
-  // needed. So, walk both pointers forward. Otherwise, look at the section that
-  // appears earlier on the form. That section doesn't have any field of the
-  // other type. Rationalize the fields on the earlier section if needed. Walk
-  // the pointer that points to the earlier section forward. Stop when both
-  // sections of indexes are processed. (This resembles the merge in the merge
-  // sort.)
+  // both point to the same section, it means that the section includes both the
+  // country and the state type. This means that no rationalization is needed.
+  // So, walk both pointers forward. Otherwise, look at the section that appears
+  // earlier on the form. That section doesn't have any field of the other type.
+  // Rationalize the fields on the earlier section if needed. Walk the pointer
+  // that points to the earlier section forward. Stop when both sections of
+  // indexes are processed. (This resembles the merge in the merge sort.)
   sections_of_state_indexes->Reset();
   sections_of_country_indexes->Reset();
 
@@ -2149,7 +2154,7 @@ void FormStructure::IdentifySectionsWithNewMethod() {
         (field->section != kDefaultSection);
 
     // Boolean flag that is set to true when the |field| has
-    // autocomplete-section attribute defined and is different that the
+    // autocomplete-section attribute defined and is different than the
     // previous field.
     bool different_autocomplete_section_than_previous =
         (autocomplete_section_attribute_present &&
@@ -2157,7 +2162,7 @@ void FormStructure::IdentifySectionsWithNewMethod() {
 
     // Start a new section if the |current_type| was already seen or the
     // autocomplete-section attribute is defined for the |field| which is
-    // different than the previous field.
+    // different than the previous field's.
     if (current_type != UNKNOWN_TYPE &&
         (already_saw_current_type ||
          different_autocomplete_section_than_previous)) {
@@ -2311,9 +2316,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       if (current_type == previous_type)
         already_saw_current_type = false;
 
-      // Start a new section if the |current_type| was already seen or the
-      // autocomplete-section attribute is defined for the |field| which is
-      // different than the previous field.
+      // Start a new section if the |current_type| was already seen.
       if (current_type != UNKNOWN_TYPE && already_saw_current_type) {
         // Keep track of seen_types if the new section is hidden. The next
         // visible section might be the continuation of the previous visible

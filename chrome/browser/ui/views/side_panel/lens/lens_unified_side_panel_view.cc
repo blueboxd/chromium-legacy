@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/side_panel/lens/lens_unified_side_panel_view.h"
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/lens/lens_entrypoints.h"
+#include "components/lens/lens_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -72,14 +75,34 @@ std::unique_ptr<views::WebView> CreateWebView(
 namespace lens {
 constexpr int kDefaultSidePanelHeaderHeight = 40;
 constexpr gfx::Insets kLensLabelButtonMargins = gfx::Insets::VH(12, 16);
+// Explore hosting the html in the gstatic url instead.
+// That will avoid needing to make a change in Chromium.
 constexpr char kStaticGhostCardDataURL[] =
     "data:text/html;charset=utf-8,"
     "<!DOCTYPE html>"
     "<style>"
     "html, body {"
-    "background-image: "
-    "url('https://www.gstatic.com/lens/web/ui/side_panel_loading.gif');"
-    "}</style>";
+    "width: 100%;"
+    "height: 100%;"
+    "display: flex;"
+    "background: linear-gradient(transparent 0%, %23fff 100%);"  // %23fff is
+                                                                 // #fff
+    "flex-direction: column;"
+    "align-items: center;"
+    "justify-content: center;"
+    "overflow: hidden;"
+    "}"
+    "img {"
+    "height: 95%;"
+    "width: 95%;"
+    "}"
+    "</style>"
+    "<body>"
+    "<img "
+    "src='https://www.gstatic.com/lens/web/ui/loading/"
+    "320x1957_resizable_side_panel_view-fcf5ded159483fa61496e2cc7afca2a5.svg' "
+    "alt='Loading Screen'/>"
+    "</body>";
 
 LensUnifiedSidePanelView::LensUnifiedSidePanelView(BrowserView* browser_view) {
   browser_view_ = browser_view;
@@ -98,7 +121,10 @@ LensUnifiedSidePanelView::LensUnifiedSidePanelView(BrowserView* browser_view) {
       ui::PAGE_TRANSITION_FROM_API, std::string());
   web_view_ = AddChildView(CreateWebView(this, browser_context));
   separator_ = AddChildView(std::make_unique<views::Separator>());
-  CreateAndInstallFooter();
+
+  if (lens::features::GetEnableLensSidePanelFooter())
+    CreateAndInstallFooter();
+
   SetContentVisible(false);
   auto* web_contents = web_view_->GetWebContents();
   web_contents->SetDelegate(this);
@@ -121,6 +147,8 @@ void LensUnifiedSidePanelView::LoadResultsInNewTab() {
                                 ui::PAGE_TRANSITION_TYPED,
                                 /*is_renderer_initiated=*/false);
   browser_view_->browser()->OpenURL(params);
+  base::RecordAction(
+      base::UserMetricsAction("LensUnifiedSidePanel.LoadResultsInNewTab"));
   browser_view_->side_panel_coordinator()->Close();
 }
 
@@ -157,6 +185,8 @@ void LensUnifiedSidePanelView::DidOpenRequestedURL(
     params.initiator_origin = url::Origin::Create(url);
 
   browser_view_->browser()->OpenURL(params);
+  base::RecordAction(
+      base::UserMetricsAction("LensUnifiedSidePanel.ResultLinkClick"));
 }
 
 void LensUnifiedSidePanelView::CreateAndInstallFooter() {

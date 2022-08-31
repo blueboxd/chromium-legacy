@@ -13,8 +13,9 @@
  * extended to override methods that extract lines for multiline fields
  * or to provide other customizations.
  */
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {AbstractTts} from '../../common/abstract_tts.js';
+import {Msgs} from '../../common/msgs.js';
+import {ChromeVoxState} from '../chromevox_state.js';
 
 /**
  * A class containing the information needed to speak
@@ -68,7 +69,7 @@ export const TypingEcho = {
   WORD: 1,
   CHARACTER_AND_WORD: 2,
   NONE: 3,
-  COUNT: 4
+  COUNT: 4,
 };
 
 
@@ -116,7 +117,7 @@ export class ChromeVoxEditableTextBase {
       }.bind(this),
       set: function(val) {
         this.value_ = val.replace('\u00a0', ' ');
-      }.bind(this)
+      }.bind(this),
     });
     this.value = value;
 
@@ -304,7 +305,7 @@ export class ChromeVoxEditableTextBase {
     if (this.isPassword) {
       this.speak(
           (new goog.i18n.MessageFormat(Msgs.getMsg('bullet')).format({
-            'COUNT': 1
+            'COUNT': 1,
           })),
           evt.triggeredByUser);
       return;
@@ -413,7 +414,7 @@ export class ChromeVoxEditableTextBase {
     if (this.isPassword) {
       this.speak(
           (new goog.i18n.MessageFormat(Msgs.getMsg('bullet')).format({
-            'COUNT': 1
+            'COUNT': 1,
           })),
           evt.triggeredByUser, personality);
       return;

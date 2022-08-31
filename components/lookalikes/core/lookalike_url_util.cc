@@ -20,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
@@ -42,6 +43,19 @@ const char kHistogramName[] = "NavigationSuggestion.Event2";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kLookalikeWarningAllowlistDomains);
+}
+
+std::string GetConsoleMessage(const GURL& lookalike_url,
+                              bool is_new_heuristic) {
+  const char* const kNewHeuristicMessage =
+      "Future Chrome versions will show a warning on this domain name.\n";
+  return base::StringPrintf(
+      "Chrome has determined that %s could be fake or fraudulent.\n\n"
+      "%s"
+      "If you believe this is shown in error please visit "
+      "https://g.co/chrome/lookalike-warnings",
+      lookalike_url.host().c_str(),
+      is_new_heuristic ? kNewHeuristicMessage : "");
 }
 
 }  // namespace lookalikes
@@ -102,21 +116,29 @@ const int kDefaultLaunchPercentageOnBeta = 50;
 const char* kBrandNamesforCSQ[] = {
     "adobe",     "airbnb",    "alibaba",     "aliexpress",    "amazon",
     "baidu",     "bestbuy",   "blogspot",    "costco",        "craigslist",
-    "dropbox",   "ebay",      "etsy",        "expedia",       "facebook",
-    "fedex",     "flickr",    "github",      "glassdoor",     "gofundme",
-    "google",    "homedepot", "hulu",        "icloud",        "ikea",
-    "imdb",      "indeed",    "instagram",   "intuit",        "microsoft",
+    "dropbox",   "expedia",   "facebook",    "fedex",         "flickr",
+    "github",    "glassdoor", "gofundme",    "google",        "homedepot",
+    "icloud",    "indeed",    "instagram",   "intuit",        "microsoft",
     "nbcnews",   "netflix",   "norton",      "nytimes",       "office365",
     "paypal",    "pinterest", "playstation", "quora",         "reddit",
     "reuters",   "samsung",   "spotify",     "stackexchange", "stackoverflow",
-    "trello",    "twitch",    "twitter",     "udemy",         "usps",
-    "wikipedia", "wordpress", "xbox",        "xfinity",       "yahoo",
-    "yelp",      "youtube",   "zillow"};
+    "trello",    "twitch",    "twitter",     "udemy",         "wikipedia",
+    "wordpress", "xfinity",   "yahoo",       "youtube",       "zillow"};
 
 const char* kPopularKeywordsforCSQ[] = {
     // Security
-    "account", "activate", "active",   "admin", "login",
-    "online",  "password", "security", "signin"};
+    "account", "activate", "active", "admin",    "login",  "logout",
+    "online",  "password", "secure", "security", "signin", "signout"};
+
+// Minimum length of brand to be checked for Combo Squatting.
+const size_t kMinBrandNameLengthForComboSquatting = 4;
+
+ComboSquattingParams* GetComboSquattingParams() {
+  static ComboSquattingParams params{
+      kBrandNamesforCSQ, std::size(kBrandNamesforCSQ), kPopularKeywordsforCSQ,
+      std::size(kPopularKeywordsforCSQ)};
+  return &params;
+}
 
 bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
                     const url_formatter::Skeletons& skeletons2) {
@@ -1192,28 +1214,44 @@ bool IsHeuristicEnabledForHostname(
   return false;
 }
 
+void SetComboSquattingParamsForTesting(const ComboSquattingParams& params) {
+  *GetComboSquattingParams() = params;
+}
+
+void ResetComboSquattingParamsForTesting() {
+  ComboSquattingParams* params = GetComboSquattingParams();
+  *params = {kBrandNamesforCSQ, std::size(kBrandNamesforCSQ),
+             kPopularKeywordsforCSQ, std::size(kPopularKeywordsforCSQ)};
+}
+
 bool IsComboSquatting(const DomainInfo& navigated_domain,
                       std::string* matched_domain) {
   // TODO(crbug.com/1341023): We should check the domain in allowlist once we
   // start getting metrics in future iterations.
-
+  ComboSquattingParams* combo_squatting_params = GetComboSquattingParams();
   // Check if the domain has any brand name and any popular keyword.
-  for (auto* const brand : kBrandNamesforCSQ) {
-    if (navigated_domain.domain_and_registry.find(brand) != std::string::npos &&
-        navigated_domain.domain_and_registry.size() != strlen(brand)) {
-      for (auto* const keyword : kPopularKeywordsforCSQ) {
-        if (navigated_domain.domain_and_registry.find(keyword) !=
-                std::string::npos &&
-            std::string(brand).find(keyword) == std::string::npos &&
-            std::string(keyword).find(brand) == std::string::npos) {
-          // TODO(crbug.com/1341320): In future cls we will compute a better
-          // suggestion for each domain.
-          *matched_domain = std::string(brand) + ".com";
-          return true;
-        }
+  for (size_t i = 0; i < combo_squatting_params->num_brand_names; i++) {
+    auto* const brand = combo_squatting_params->brand_names[i];
+    DCHECK(std::string(brand).size() > kMinBrandNameLengthForComboSquatting);
+
+    if (!(navigated_domain.domain_without_registry.find(brand) !=
+              std::string::npos &&
+          navigated_domain.domain_without_registry.size() != strlen(brand))) {
+      continue;
+    }
+
+    for (size_t j = 0; j < combo_squatting_params->num_popular_keywords; j++) {
+      auto* const keyword = combo_squatting_params->popular_keywords[j];
+      if (navigated_domain.domain_without_registry.find(keyword) !=
+              std::string::npos &&
+          std::string(brand).find(keyword) == std::string::npos &&
+          std::string(keyword).find(brand) == std::string::npos) {
+        // TODO(crbug.com/1341320): In future cls we will compute a better
+        // suggestion for each domain.
+        *matched_domain = std::string(brand) + ".com";
+        return true;
       }
     }
   }
-  *matched_domain = navigated_domain.hostname;
   return false;
 }

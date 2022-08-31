@@ -31,6 +31,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -1073,18 +1074,24 @@ bool content::IsNSRange(id value) {
 - (id)parent {
   if (![self instanceActive])
     return nil;
-  // A nil parent means we're the root.
   if (_owner->PlatformGetParent()) {
-    return NSAccessibilityUnignoredAncestor(
+    id unignored_parent = NSAccessibilityUnignoredAncestor(
         _owner->PlatformGetParent()->GetNativeViewAccessible());
-  } else {
-    // Hook back up to RenderWidgetHostViewCocoa.
-    BrowserAccessibilityManagerMac* manager =
-        _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
-    if (manager)
-      return manager->GetParentView();
+    DCHECK(unignored_parent);
+    return unignored_parent;
+  }
+
+  // A nil parent means we're the root.
+  // Hook back up to RenderWidgetHostViewCocoa.
+  BrowserAccessibilityManagerMac* manager =
+      _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
+  if (!manager) {
+    // TODO(accessibility) Determine why this is happening.
+    SANITIZER_NOTREACHED();
     return nil;
   }
+  SANITIZER_CHECK(manager->GetParentView());
+  return manager->GetParentView();
 }
 
 - (NSValue*)position {
@@ -1653,9 +1660,10 @@ bool content::IsNSRange(id value) {
 
   BrowserAccessibilityManagerMac* manager =
       _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
-  if (!manager || !manager->GetParentView())
-    return nil;
-
+  CHECK(manager) << "There should always be a root manager whenever an object "
+                    "is instanceActive.";
+  CHECK(manager->GetParentView());
+  DCHECK(manager->GetWindow());
   return manager->GetWindow();
 }
 

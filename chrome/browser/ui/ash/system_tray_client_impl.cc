@@ -61,12 +61,14 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/tether_constants.h"
+#include "chromeos/ash/components/network/tether_constants.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -507,7 +509,7 @@ void SystemTrayClientImpl::ShowGestureEducationHelp() {
 
   ash::SystemAppLaunchParams params;
   params.url = GURL(chrome::kChromeOSGestureEducationHelpURL);
-  params.launch_source = apps::mojom::LaunchSource::kFromOtherApp;
+  params.launch_source = apps::LaunchSource::kFromOtherApp;
   ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::HELP, params);
 }
 
@@ -608,8 +610,13 @@ void SystemTrayClientImpl::ShowArcVpnCreate(const std::string& app_id) {
     return;
   }
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
-      app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
+        app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
+        app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
+  }
 }
 
 void SystemTrayClientImpl::ShowSettingsSimUnlock() {
@@ -657,7 +664,7 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
     page += base::EscapeUrlEncodedData(network_state->name(), true);
     page += "&type=";
     page += base::EscapeUrlEncodedData(
-        chromeos::network_util::TranslateShillTypeToONC(network_state->type()),
+        ash::network_util::TranslateShillTypeToONC(network_state->type()),
         true);
     page += "&settingId=";
     page += base::NumberToString(static_cast<int32_t>(

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/public/js_messaging/optimize_js.gni")
+import("//ios/web/public/js_messaging/optimize_ts.gni")
 
 source_set("follow") {
   sources = [
@@ -51,11 +51,16 @@ source_set("tab_helper") {
   deps = [
     ":follow",
     "//base",
+    "//components/feature_engagement/public",
+    "//components/history/core/browser",
+    "//components/keyed_service/core",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/follow:enums",
     "//ios/chrome/browser/follow:utils",
+    "//ios/chrome/browser/history",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/follow",
     "//ios/web/public",
@@ -65,9 +70,19 @@ source_set("tab_helper") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-optimize_js("rss_link_js") {
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "follow_util_unittest.mm" ]
+  deps = [
+    ":utils",
+    "//testing/gtest",
+  ]
+}
+
+optimize_ts("rss_link_js") {
   visibility = [ ":follow" ]
 
-  primary_script = "resources/rss_link.js"
-  sources = [ "resources/rss_link.js" ]
+  sources = [ "resources/rss_link.ts" ]
+  deps = [ "//ios/web/public/js_messaging:gcrweb" ]
 }

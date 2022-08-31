@@ -67,21 +67,21 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/attestation/attestation_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/hermes/hermes_euicc_client.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -440,7 +440,7 @@ void ReadTpmStatus(DeviceStatusCollector::TpmStatusReceiver callback) {
   chromeos::TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
       ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
       base::BindOnce(&TpmStatusCombiner::OnGetTpmStatus, tpm_status_combiner));
-  chromeos::AttestationClient::Get()->GetStatus(
+  ash::AttestationClient::Get()->GetStatus(
       ::attestation::GetStatusRequest(),
       base::BindOnce(&TpmStatusCombiner::OnGetEnrollmentStatus,
                      tpm_status_combiner));
@@ -1235,6 +1235,71 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       }
     }
 
+    // Process SystemResult.
+    const auto& system_result = probe_result->system_result;
+    if (!system_result.is_null()) {
+      switch (system_result->which()) {
+        case cros_healthd::SystemResult::Tag::kError: {
+          LOG(ERROR) << "cros_healthd: Error getting system info: "
+                     << system_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::SystemResult::Tag::kSystemInfo: {
+          const auto& system_info = system_result->get_system_info();
+          em::SystemStatus* const system_status_out =
+              response_params_.device_status->mutable_system_status();
+          if (report_vpd_info) {
+            if (system_info->first_power_date.has_value()) {
+              system_status_out->set_first_power_date(
+                  system_info->first_power_date.value());
+              SetDeviceStatusReported();
+            }
+            if (system_info->manufacture_date.has_value()) {
+              system_status_out->set_manufacture_date(
+                  system_info->manufacture_date.value());
+              SetDeviceStatusReported();
+            }
+            if (system_info->product_sku_number.has_value()) {
+              system_status_out->set_vpd_sku_number(
+                  system_info->product_sku_number.value());
+              SetDeviceStatusReported();
+            }
+            if (system_info->product_serial_number.has_value()) {
+              system_status_out->set_vpd_serial_number(
+                  system_info->product_serial_number.value());
+              SetDeviceStatusReported();
+            }
+          }
+          if (report_system_info) {
+            system_status_out->set_marketing_name(system_info->marketing_name);
+            if (system_info->bios_version.has_value()) {
+              system_status_out->set_bios_version(
+                  system_info->bios_version.value());
+            }
+            if (system_info->board_name.has_value()) {
+              system_status_out->set_board_name(
+                  system_info->board_name.value());
+            }
+            if (system_info->board_version.has_value()) {
+              system_status_out->set_board_version(
+                  system_info->board_version.value());
+            }
+            if (system_info->chassis_type) {
+              system_status_out->set_chassis_type(
+                  system_info->chassis_type->value);
+            }
+            if (system_info->product_name.has_value()) {
+              system_status_out->set_product_name(
+                  system_info->product_name.value());
+            }
+            SetDeviceStatusReported();
+          }
+          break;
+        }
+      }
+    }
+
     // Process SystemResultV2.
     const auto& system_result_v2 = probe_result->system_result_v2;
     if (!system_result_v2.is_null()) {
@@ -1251,59 +1316,6 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         // info below.
         case cros_healthd::SystemResultV2::Tag::kSystemInfoV2: {
           const auto& system_info_v2 = system_result_v2->get_system_info_v2();
-
-          if (report_vpd_info || report_system_info) {
-            em::SystemStatus* const system_status_out =
-                response_params_.device_status->mutable_system_status();
-            if (report_vpd_info) {
-              if (system_info_v2->vpd_info->activate_date.has_value()) {
-                system_status_out->set_first_power_date(
-                    system_info_v2->vpd_info->activate_date.value());
-                SetDeviceStatusReported();
-              }
-              if (system_info_v2->vpd_info->mfg_date.has_value()) {
-                system_status_out->set_manufacture_date(
-                    system_info_v2->vpd_info->mfg_date.value());
-                SetDeviceStatusReported();
-              }
-              if (system_info_v2->vpd_info->sku_number.has_value()) {
-                system_status_out->set_vpd_sku_number(
-                    system_info_v2->vpd_info->sku_number.value());
-                SetDeviceStatusReported();
-              }
-              if (system_info_v2->vpd_info->serial_number.has_value()) {
-                system_status_out->set_vpd_serial_number(
-                    system_info_v2->vpd_info->serial_number.value());
-                SetDeviceStatusReported();
-              }
-            }
-            if (report_system_info) {
-              if (system_info_v2->os_info->marketing_name.has_value()) {
-                system_status_out->set_marketing_name(
-                    system_info_v2->os_info->marketing_name.value());
-              }
-              if (system_info_v2->dmi_info->bios_version.has_value()) {
-                system_status_out->set_bios_version(
-                    system_info_v2->dmi_info->bios_version.value());
-              }
-              if (system_info_v2->dmi_info->board_name.has_value()) {
-                system_status_out->set_board_name(
-                    system_info_v2->dmi_info->board_name.value());
-              }
-              if (system_info_v2->dmi_info->board_version.has_value()) {
-                system_status_out->set_board_version(
-                    system_info_v2->dmi_info->board_version.value());
-              }
-              if (system_info_v2->dmi_info->chassis_type) {
-                system_status_out->set_chassis_type(
-                    system_info_v2->dmi_info->chassis_type->value);
-              }
-              system_status_out->set_product_name(
-                  system_info_v2->os_info->code_name);
-              SetDeviceStatusReported();
-            }
-          }
-
           em::SmbiosInfo* const smbios_info_out =
               response_params_.device_status->mutable_smbios_info();
           if (!system_info_v2->dmi_info.is_null()) {
@@ -2330,9 +2342,9 @@ bool DeviceStatusCollector::GetNetworkConfiguration(
     if ((*device)->type() == shill::kTypeCellular) {
       std::vector<std::string> eids;
       for (const auto& euicc_path :
-           chromeos::HermesManagerClient::Get()->GetAvailableEuiccs()) {
-        chromeos::HermesEuiccClient::Properties* properties =
-            chromeos::HermesEuiccClient::Get()->GetProperties(euicc_path);
+           ash::HermesManagerClient::Get()->GetAvailableEuiccs()) {
+        ash::HermesEuiccClient::Properties* properties =
+            ash::HermesEuiccClient::Get()->GetProperties(euicc_path);
         interface->add_eids(properties->eid().value());
       }
     }
@@ -2672,9 +2684,12 @@ void DeviceStatusCollector::GetDeviceStatus(
 
   std::vector<ProbeCategoryEnum> probe_categories;
 
-  // Always probe System to get device vendor, product name, and product
+  // Always probe System2 to get device vendor, product name, and product
   // version
-  probe_categories.push_back(ProbeCategoryEnum::kSystem);
+  probe_categories.push_back(ProbeCategoryEnum::kSystem2);
+
+  if (report_vpd_info_ || report_system_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kSystem);
 
   if (report_timezone_info_)
     probe_categories.push_back(ProbeCategoryEnum::kTimezone);
@@ -2938,8 +2953,8 @@ bool DeviceStatusCollector::IsReportingHardwareData() const {
   return report_power_status_ || report_storage_status_ ||
          report_audio_status_ || report_board_status_ || report_memory_info_ ||
          report_cpu_info_ || report_backlight_info_ || report_bluetooth_info_ ||
-         report_fan_info_ || report_vpd_info_ || report_system_info_ ||
-         report_boot_mode_ || report_version_info_;
+         report_fan_info_ || report_vpd_info_ || report_system_info_ || report_boot_mode_ ||
+         report_version_info_;
 }
 bool DeviceStatusCollector::IsReportingUsers() const {
   // For more details, see comment in

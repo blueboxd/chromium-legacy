@@ -4,6 +4,8 @@
 
 #include "ash/wm/float/float_controller.h"
 
+#include <algorithm>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -12,15 +14,16 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/check_op.h"
 #include "chromeos/ui/base/display_util.h"
+#include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/display/screen.h"
 
 namespace ash {
-
 namespace {
 
 // The ideal dimensions of a float window before factoring in its minimum size
@@ -28,9 +31,9 @@ namespace {
 constexpr float kFloatWindowTabletWidthRatio = 0.3333333f;
 constexpr float kFloatWindowTabletHeightRatio = 0.8f;
 
-bool InTabletMode() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
+// TODO(sophiewen): Remove this once the untuck window widget is implemented. It
+// is temporarily here to give users a way to untuck the window.
+constexpr int kTuckedFloatWindowVisibleWidth = 100;
 
 gfx::Size GetPreferredFloatWindowTabletSize(const gfx::Rect& work_area,
                                             bool landscape) {
@@ -55,13 +58,35 @@ bool IsLandscapeOrientationForWindow(aura::Window* window) {
   return chromeos::IsLandscapeOrientation(orientation);
 }
 
+// Updates `window`'s bounds while in tablet mode.
+void UpdateWindowBoundsForTablet(aura::Window* window) {
+  WindowState* window_state = WindowState::Get(window);
+  DCHECK(window_state);
+  TabletModeWindowState::UpdateWindowPosition(window_state, /*animate=*/true);
+}
+
 }  // namespace
+
+// Scoped class which makes modifications while a window is tucked. It owns a
+// widget which is used to untuck the window.
+// TODO(sophiewen): Fill in this class.
+class FloatController::ScopedWindowTucker {
+ public:
+  explicit ScopedWindowTucker(aura::Window* window) : window_(window) {
+    DCHECK(window_);
+  }
+  ScopedWindowTucker(const ScopedWindowTucker&) = delete;
+  ScopedWindowTucker& operator=(const ScopedWindowTucker&) = delete;
+  ~ScopedWindowTucker() = default;
+
+ private:
+  aura::Window* window_;
+};
 
 FloatController::FloatController() = default;
 
 FloatController::~FloatController() = default;
 
-// static
 gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
     aura::Window* window) {
   DCHECK(CanFloatWindowInTablet(window));
@@ -81,10 +106,8 @@ gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
 
   // Update the origin of the float window based on whichever corner it is
   // magnetized to.
-  const MagnetismCorner corner =
-      Shell::Get()->float_controller()->magnetism_corner();
   gfx::Point origin;
-  switch (corner) {
+  switch (magnetism_corner_) {
     case MagnetismCorner::kTopLeft:
       origin = gfx::Point(kFloatWindowPaddingDp, kFloatWindowPaddingDp);
       break;
@@ -102,7 +125,69 @@ gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
       break;
   }
 
+  // If the window is tucked, shift it so `kTuckedFloatWindowVisibleWidth` is
+  // visible on one side, depending on `corner`.
+  if (scoped_window_tucker_) {
+    int x_offset;
+    switch (magnetism_corner_) {
+      case MagnetismCorner::kTopLeft:
+      case MagnetismCorner::kBottomLeft:
+        x_offset =
+            -width - kFloatWindowPaddingDp + kTuckedFloatWindowVisibleWidth;
+        break;
+      case MagnetismCorner::kTopRight:
+      case MagnetismCorner::kBottomRight:
+        x_offset =
+            width + kFloatWindowPaddingDp - kTuckedFloatWindowVisibleWidth;
+        break;
+    }
+    origin.Offset(x_offset, 0);
+  }
+
   return gfx::Rect(origin, gfx::Size(width, height));
+}
+
+// static
+gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
+    aura::Window* window) {
+  DCHECK(CanFloatWindowInClamshell(window));
+  auto* work_area_insets = WorkAreaInsets::ForWindow(window->GetRootWindow());
+  const gfx::Rect work_area = work_area_insets->user_work_area_bounds();
+
+  gfx::Rect preferred_bounds =
+      WindowState::Get(window)->HasRestoreBounds()
+          ? WindowState::Get(window)->GetRestoreBoundsInParent()
+          : window->bounds();
+
+  // Float bounds should not be smaller than min bounds.
+  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+  DCHECK_GE(preferred_bounds.height(), minimum_size.height());
+  DCHECK_GE(preferred_bounds.width(), minimum_size.width());
+
+  int preferred_width = std::min(preferred_bounds.width(),
+                                 work_area.width() - 2 * kFloatWindowPaddingDp);
+  int preferred_height =
+      std::min(preferred_bounds.height(),
+               work_area.height() - 2 * kFloatWindowPaddingDp);
+
+  gfx::Rect float_init_bounds(
+      work_area.width() - preferred_width - kFloatWindowPaddingDp,
+      work_area.height() - preferred_height - kFloatWindowPaddingDp,
+      preferred_width, preferred_height);
+
+  return float_init_bounds;
+}
+
+// static
+bool FloatController::CanFloatWindowInClamshell(aura::Window* window) {
+  const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
+                                  ->user_work_area_bounds();
+  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+  if (minimum_size.width() > work_area.width() - 2 * kFloatWindowPaddingDp ||
+      minimum_size.height() > work_area.height() - 2 * kFloatWindowPaddingDp) {
+    return false;
+  }
+  return true;
 }
 
 // static
@@ -132,9 +217,17 @@ bool FloatController::CanFloatWindowInTablet(aura::Window* window) {
   return true;
 }
 
-bool FloatController::IsFloated(const aura::Window* window) const {
-  DCHECK(window);
-  return float_window_ == window;
+void FloatController::MaybeTuckFloatedWindow() {
+  if (scoped_window_tucker_)
+    return;
+
+  DCHECK(float_window_);
+  scoped_window_tucker_ = std::make_unique<ScopedWindowTucker>(float_window_);
+  UpdateWindowBoundsForTablet(float_window_);
+}
+
+void FloatController::MaybeUntuckFloatedWindow() {
+  scoped_window_tucker_.reset();
 }
 
 void FloatController::OnDragCompleted(
@@ -164,15 +257,30 @@ void FloatController::OnDragCompleted(
                             : MagnetismCorner::kBottomRight;
   }
 
-  WindowState* window_state = WindowState::Get(float_window_);
-  DCHECK(window_state);
-  TabletModeWindowState::UpdateWindowPosition(window_state, /*animate=*/true);
+  UpdateWindowBoundsForTablet(float_window_);
+}
+
+void FloatController::OnFlingOrSwipe(bool left, bool up) {
+  DCHECK(float_window_);
+  if (left && up) {
+    magnetism_corner_ = MagnetismCorner::kTopLeft;
+  } else if (left && !up) {
+    magnetism_corner_ = MagnetismCorner::kBottomLeft;
+  } else if (!left && up) {
+    magnetism_corner_ = MagnetismCorner::kTopRight;
+  } else {
+    DCHECK(!left && !up);
+    magnetism_corner_ = MagnetismCorner::kBottomRight;
+  }
+
+  MaybeTuckFloatedWindow();
 }
 
 void FloatController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(float_window_, window);
   float_window_observation_.Reset();
   float_window_ = nullptr;
+  scoped_window_tucker_.reset();
   tablet_mode_observation_.Reset();
   display_observer_.reset();
 }
@@ -180,14 +288,16 @@ void FloatController::OnWindowDestroying(aura::Window* window) {
 void FloatController::OnTabletModeStarting() {
   DCHECK(float_window_);
   aura::Window* floated_window = float_window_;
+
   if (!CanFloatWindowInTablet(floated_window))
     ResetFloatedWindow();
 
   MaybeUpdateWindowUIAndBoundsForTablet(floated_window);
 }
 
-void FloatController::OnTabletModeEnded() {
+void FloatController::OnTabletModeEnding() {
   DCHECK(float_window_);
+  scoped_window_tucker_.reset();
   MaybeUpdateWindowUIAndBoundsForTablet(float_window_);
 }
 
@@ -207,17 +317,26 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
     MaybeUpdateWindowUIAndBoundsForTablet(float_window_);
 }
 
+void FloatController::ToggleFloat(aura::Window* window) {
+  WindowState* window_state = WindowState::Get(window);
+  const WMEvent toggle_event(window_state->IsFloated() ? WM_EVENT_RESTORE
+                                                       : WM_EVENT_FLOAT);
+  window_state->OnWMEvent(&toggle_event);
+}
+
 void FloatController::Float(aura::Window* window) {
   if (window == float_window_)
     return;
-
-  // TODO(shidi): temporary remove the DCHECK, will implement proper trigger on
-  // crbug/1339095.
 
   // Only one floating window is allowed, reset previously floated window.
   ResetFloatedWindow();
   DCHECK(!float_window_);
   float_window_ = window;
+  // Save the window position auto-management status.
+  position_auto_managed_ = WindowState::Get(window)->GetWindowPositionManaged();
+  // Floated window position should not be auto-managed.
+  if (position_auto_managed_)
+    WindowState::Get(window)->SetWindowPositionManaged(false);
   float_window_observation_.Observe(float_window_);
   aura::Window* float_container =
       window->GetRootWindow()->GetChildById(kShellWindowId_FloatContainer);
@@ -232,35 +351,49 @@ void FloatController::Float(aura::Window* window) {
 void FloatController::Unfloat(aura::Window* window) {
   if (window != float_window_)
     return;
-  //  Re-parent window to active desk container.
+  // When a window is moved in/out from active desk container to float
+  // container, it gets reparented and will use
+  // `pre_added_to_workspace_window_bounds_` to update it's bounds, here we
+  // update `pre_added_to_workspace_window_bounds_` as window is re-added to
+  // active desk container from float container.
+  WindowState::Get(window)->SetPreAddedToWorkspaceWindowBounds(
+      window->bounds());
+  // Re-parent window to active desk container.
   desks_util::GetActiveDeskContainerForRoot(float_window_->GetRootWindow())
       ->AddChild(float_window_);
+  // Reset the window position auto-managed status.
+  WindowState::Get(window)->SetWindowPositionManaged(position_auto_managed_);
   float_window_observation_.Reset();
   float_window_ = nullptr;
 
   tablet_mode_observation_.Reset();
   display_observer_.reset();
+  scoped_window_tucker_.reset();
   MaybeUpdateWindowUIAndBoundsForTablet(window);
 }
 
 void FloatController::ResetFloatedWindow() {
-  // TODO(shidi): Remove `kWindowToggleFloatKey` and implement event trigger.
-  if (float_window_)
-    float_window_->SetProperty(chromeos::kWindowToggleFloatKey, false);
+  if (float_window_) {
+    DCHECK(WindowState::Get(float_window_)->IsFloated());
+    ToggleFloat(float_window_);
+    float_window_ = nullptr;
+  }
 }
 
 void FloatController::MaybeUpdateWindowUIAndBoundsForTablet(
     aura::Window* window) {
   DCHECK(window);
 
-  if (!InTabletMode())
+  // Update bounds and UI when entering or exiting tablet mode, or while in
+  // tablet mode.
+  if (chromeos::TabletState::Get()->state() ==
+      display::TabletState::kInClamshellMode) {
     return;
+  }
 
   // TODO(sophiewen): Update rounded corners and shadow.
 
-  WindowState* window_state = WindowState::Get(window);
-  DCHECK(window_state);
-  TabletModeWindowState::UpdateWindowPosition(window_state, /*animate=*/true);
+  UpdateWindowBoundsForTablet(window);
 }
 
 }  // namespace ash

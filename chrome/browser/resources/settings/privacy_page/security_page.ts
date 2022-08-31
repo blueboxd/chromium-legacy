@@ -11,7 +11,7 @@ import '../controls/settings_radio_group.js';
 import '../controls/settings_toggle_button.js';
 import '../icons.html.js';
 import '../prefs/prefs.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './disable_safebrowsing_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -21,9 +21,10 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
+import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions} from '../metrics_browser_proxy.js';
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="chromeos_ash or chromeos_lacros or chrome_root_store_supported">
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 // </if>
 
@@ -46,8 +47,6 @@ export enum SafeBrowsingSetting {
   STANDARD = 1,
   DISABLED = 2,
 }
-
-type FocusConfig = Map<string, (string|(() => void))>;
 
 export interface SettingsSecurityPageElement {
   $: {
@@ -85,6 +84,20 @@ export class SettingsSecurityPageElement extends
         type: Object,
         notify: true,
       },
+
+      // <if expr="chrome_root_store_supported">
+      /**
+       * Whether we should adjust Manage Certificates links to indicate
+       * support for Chrome Root Store.
+       */
+      showChromeRootStoreCertificates_: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          return loadTimeData.getBoolean('showChromeRootStoreCertificates');
+        },
+      },
+      // </if>
 
       /**
        * Whether the HTTPS-Only Mode setting should be displayed.
@@ -134,7 +147,7 @@ export class SettingsSecurityPageElement extends
         readOnly: true,
         value() {
           return loadTimeData.getBoolean('enableSecurityKeysSubpage');
-        }
+        },
       },
 
       // <if expr="is_win">
@@ -146,7 +159,7 @@ export class SettingsSecurityPageElement extends
           // it exists. Thus the phones subpage is only linked from this page
           // if the security keys subpage is disabled.
           return !loadTimeData.getBoolean('enableSecurityKeysSubpage');
-        }
+        },
       },
       // </if>
 
@@ -158,7 +171,9 @@ export class SettingsSecurityPageElement extends
       showDisableSafebrowsingDialog_: Boolean,
     };
   }
-
+  // <if expr="chrome_root_store_supported">
+  private showChromeRootStoreCertificates_: boolean;
+  // </if>
   private showHttpsOnlyModeSetting_: boolean;
   private showSecureDnsSetting_: boolean;
 
@@ -288,6 +303,13 @@ export class SettingsSecurityPageElement extends
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
         PrivacyElementInteractions.MANAGE_CERTIFICATES);
   }
+
+  // <if expr="chrome_root_store_supported">
+  private onChromeCertificatesClick_() {
+    OpenWindowProxyImpl.getInstance().openURL(
+        loadTimeData.getString('chromeRootStoreHelpCenterURL'));
+  }
+  // </if>
 
   private onAdvancedProtectionProgramLinkClick_() {
     window.open(loadTimeData.getString('advancedProtectionURL'));

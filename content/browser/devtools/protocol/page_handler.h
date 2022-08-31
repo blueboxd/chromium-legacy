@@ -27,6 +27,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -83,8 +84,6 @@ class PageHandler : public DevToolsDomainHandler,
   void SetRenderer(int process_host_id,
                    RenderFrameHostImpl* frame_host) override;
   // Instrumentation signals.
-  void OnSynchronousSwapCompositorFrame(
-      const cc::RenderFrameMetadata& frame_metadata);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
@@ -102,8 +101,6 @@ class PageHandler : public DevToolsDomainHandler,
   void DidCloseJavaScriptDialog(bool success, const std::u16string& user_input);
   void NavigationReset(NavigationRequest* navigation_request);
   void DownloadWillBegin(FrameTreeNode* ftn, download::DownloadItem* item);
-
-  WebContentsImpl* GetWebContents();
 
   bool ShouldBypassCSP();
   void BackForwardCacheNotUsed(
@@ -188,7 +185,6 @@ class PageHandler : public DevToolsDomainHandler,
 
   bool ShouldCaptureNextScreencastFrame();
   void NotifyScreencastVisibility(bool visible);
-  void InnerSwapCompositorFrame();
   void OnFrameFromVideoConsumer(scoped_refptr<media::VideoFrame> frame);
   void ScreencastFrameCaptured(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
@@ -221,6 +217,11 @@ class PageHandler : public DevToolsDomainHandler,
   void OnDownloadUpdated(download::DownloadItem* item) override;
   void OnDownloadDestroyed(download::DownloadItem* item) override;
 
+  // Returns WebContents only if `host_` is a top level frame. Otherwise, it
+  // returns Response with an error.
+  using ResponseOrWebContents = absl::variant<Response, WebContentsImpl*>;
+  ResponseOrWebContents GetWebContentsForTopLevelActiveFrame();
+
   const bool allow_unsafe_operations_;
   const bool may_capture_screenshots_not_from_surface_;
   const absl::optional<url::Origin> navigation_initiator_origin_;
@@ -235,8 +236,6 @@ class PageHandler : public DevToolsDomainHandler,
   int screencast_max_width_;
   int screencast_max_height_;
   int capture_every_nth_frame_;
-  int capture_retry_count_;
-  absl::optional<cc::RenderFrameMetadata> frame_metadata_;
   int session_id_;
   int frame_counter_;
   int frames_in_flight_;

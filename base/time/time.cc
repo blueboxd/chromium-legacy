@@ -10,7 +10,7 @@
 // time.h is a widely included header and its size impacts build time.
 // Try not to raise this limit unless necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 390000
+#pragma clang max_tokens_here 490000
 #endif  // BUILDFLAG(IS_LINUX)
 
 #include <atomic>
@@ -159,8 +159,9 @@ time_t Time::ToTimeT() const {
   if (is_null())
     return 0;  // Preserve 0 so we can tell it doesn't exist.
   if (!is_inf() && ((std::numeric_limits<int64_t>::max() -
-                     kTimeTToMicrosecondsOffset) > us_))
-    return (*this - UnixEpoch()).InSeconds();
+                     kTimeTToMicrosecondsOffset) > us_)) {
+    return static_cast<time_t>((*this - UnixEpoch()).InSeconds());
+  }
   return (us_ < 0) ? std::numeric_limits<time_t>::min()
                    : std::numeric_limits<time_t>::max();
 }

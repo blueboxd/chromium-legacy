@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -20,11 +21,7 @@ MockQuotaManagerProxy::MockQuotaManagerProxy(
           quota_manager,
           std::move(quota_manager_task_runner),
           quota_manager ? quota_manager->profile_path() : base::FilePath()),
-      mock_quota_manager_(quota_manager),
-      storage_accessed_count_(0),
-      storage_modified_count_(0),
-      last_notified_type_(blink::mojom::StorageType::kUnknown),
-      last_notified_delta_(0) {}
+      mock_quota_manager_(quota_manager) {}
 
 void MockQuotaManagerProxy::RegisterClient(
     mojo::PendingRemote<storage::mojom::QuotaClient> client,
@@ -82,6 +79,20 @@ void MockQuotaManagerProxy::GetBucketById(
   }
 }
 
+void MockQuotaManagerProxy::GetBucketsForStorageKey(
+    const blink::StorageKey& storage_key,
+    blink::mojom::StorageType type,
+    bool delete_expired,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+    base::OnceCallback<void(QuotaErrorOr<std::set<BucketInfo>>)> callback) {
+  if (mock_quota_manager_) {
+    mock_quota_manager_->GetBucketsForStorageKey(
+        storage_key, type, std::move(callback), delete_expired);
+  } else {
+    std::move(callback).Run(std::set<BucketInfo>());
+  }
+}
+
 void MockQuotaManagerProxy::GetUsageAndQuota(
     const blink::StorageKey& storage_key,
     blink::mojom::StorageType type,
@@ -102,6 +113,12 @@ void MockQuotaManagerProxy::NotifyStorageAccessed(
   last_notified_type_ = type;
 }
 
+void MockQuotaManagerProxy::NotifyBucketAccessed(storage::BucketId bucket_id,
+                                                 base::Time access_time) {
+  ++bucket_accessed_count_;
+  last_notified_bucket_id_ = bucket_id;
+}
+
 void MockQuotaManagerProxy::NotifyStorageModified(
     storage::QuotaClientType client_id,
     const blink::StorageKey& storage_key,
@@ -115,7 +132,33 @@ void MockQuotaManagerProxy::NotifyStorageModified(
   last_notified_type_ = type;
   last_notified_delta_ = delta;
   if (mock_quota_manager_) {
-    mock_quota_manager_->UpdateUsage(storage_key, type, delta);
+    mock_quota_manager_->GetOrCreateBucketDeprecated(
+        BucketInitParams::ForDefaultBucket(storage_key), type,
+        base::BindLambdaForTesting(
+            [this, delta, callback_task_runner,
+             &callback](QuotaErrorOr<BucketInfo> result) {
+              if (result.ok()) {
+                mock_quota_manager_->UpdateUsage(result->ToBucketLocator().id,
+                                                 delta);
+              }
+              callback_task_runner->PostTask(FROM_HERE, std::move(callback));
+            }));
+  } else if (callback)
+    callback_task_runner->PostTask(FROM_HERE, std::move(callback));
+}
+
+void MockQuotaManagerProxy::NotifyBucketModified(
+    storage::QuotaClientType client_id,
+    storage::BucketId bucket_id,
+    int64_t delta,
+    base::Time modification_time,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+    base::OnceClosure callback) {
+  ++bucket_modified_count_;
+  last_notified_bucket_id_ = bucket_id;
+  last_notified_bucket_delta_ = delta;
+  if (mock_quota_manager_) {
+    mock_quota_manager_->UpdateUsage(bucket_id, delta);
   }
   if (callback)
     callback_task_runner->PostTask(FROM_HERE, std::move(callback));

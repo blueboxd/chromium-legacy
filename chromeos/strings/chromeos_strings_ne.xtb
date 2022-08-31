@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645954272419197032">कृपया डिभाइससम्बन्धी जानकारी पुष्टि गर्नुहोस्</translation>
 <translation id="1662989795263954667">रोकियो - प्रिन्टरको मसी सकियो</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> प्रिभ्यू गर्नुहोस्</translation>
 <translation id="1668469839109562275">अन्तर्निर्मित VPN</translation>
 <translation id="1672499492233627739">वेबक्याम भिडियो फिड</translation>
 <translation id="1676557873873341166">भिडियो खिचिँदै छ</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">भिडियो कन्फ्रेन्स</translation>
 <translation id="1852934301711881861">ChromeOS Flex इन्स्टल गर्नुहोस्</translation>
 <translation id="1856388568474281774">डाउन एरो</translation>
+<translation id="1858620243986915808">स्क्रिनसट एट्याच गर्नुहोस्</translation>
 <translation id="1871569928317311284">अँध्यारो थिम अफ गर्नुहोस्‌</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">अँध्यारो मोड अफ गर्नुहोस्</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">निजी कुञ्जी</translation>
 <translation id="7982789257301363584">सञ्जाल</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" मा सेभ गरियो</translation>
 <translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">स्वतः रङ समायोजन गर्ने मोड अन गर्नुहोस्</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">सुरु गरिएको छैन</translation>
 <translation id="8620617069779373398">रोमिङको स्थिति</translation>
 <translation id="8655295600908251630">च्यानल</translation>
+<translation id="8655828773034788261">URL सेयर गर्नुहोस्:</translation>
 <translation id="8660881923941176839">पाउन्ड</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्कमा सामेल हुनुहोस्</translation>
 <translation id="8671972493856476349">अपडेट गरी <ph name="VERSION_NUMBER" /> बनाउनुहोस् र रिस्टार्ट गर्नुहोस्</translation>

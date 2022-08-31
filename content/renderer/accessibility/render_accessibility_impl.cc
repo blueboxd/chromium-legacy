@@ -250,7 +250,7 @@ void RenderAccessibilityImpl::HitTest(
     const gfx::Point& point,
     ax::mojom::Event event_to_fire,
     int request_id,
-    mojom::RenderAccessibility::HitTestCallback callback) {
+    blink::mojom::RenderAccessibility::HitTestCallback callback) {
   WebAXObject ax_object;
 
   const WebDocument& document = GetMainDocument();
@@ -305,8 +305,8 @@ void RenderAccessibilityImpl::HitTest(
 
     // Reply with the result.
     const auto& frame_token = render_frame_->GetWebFrame()->GetFrameToken();
-    std::move(callback).Run(
-        mojom::HitTestResponse::New(frame_token, point, ax_object.AxID()));
+    std::move(callback).Run(blink::mojom::HitTestResponse::New(
+        frame_token, point, ax_object.AxID()));
     return;
   }
 
@@ -334,7 +334,7 @@ void RenderAccessibilityImpl::HitTest(
         rect.OffsetFromOrigin();
   }
 
-  std::move(callback).Run(mojom::HitTestResponse::New(
+  std::move(callback).Run(blink::mojom::HitTestResponse::New(
       child_frame->GetFrameToken(), transformed_point, ax_object.AxID()));
 }
 
@@ -958,6 +958,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   if (document.IsNull())
     return;
 
+  // Don't serialize child trees without an embedding token. These are
+  // unrendered child frames. This prevents a situation where child trees can't
+  // be linked to their parent, leading to a dangerous situation for some
+  // platforms, where events are fired on objects not connected to the root. For
+  // example, on Mac, this can lead to a lockup in AppKit.
+  CHECK(document.GetFrame()->GetEmbeddingToken());
+
   DCHECK(document.IsAccessibilityEnabled())
       << "SendPendingAccessibilityEvents should not do any work when nothing "
          "has enabled accessibility.";
@@ -1051,8 +1058,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   }
 
   // The serialized list of updates and events to send to the browser.
-  mojom::AXUpdatesAndEventsPtr updates_and_events =
-      mojom::AXUpdatesAndEvents::New();
+  blink::mojom::AXUpdatesAndEventsPtr updates_and_events =
+      blink::mojom::AXUpdatesAndEvents::New();
 
   bool need_to_send_location_changes = SerializeUpdatesAndEvents(
       document, root, updates_and_events->events, updates_and_events->updates,
@@ -1096,9 +1103,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
 void RenderAccessibilityImpl::SendLocationChanges() {
   TRACE_EVENT0("accessibility", "RenderAccessibilityImpl::SendLocationChanges");
-
-  std::vector<mojom::LocationChangesPtr> changes;
-
   // Update layout on the root of the tree.
   WebAXObject root = tree_source_->GetRoot();
 
@@ -1107,37 +1111,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   if (!root.MaybeUpdateLayoutAndCheckValidity())
     return;
 
-  blink::WebVector<WebAXObject> changed_bounds_objects;
-  root.GetAllObjectsWithChangedBounds(changed_bounds_objects);
-  for (const WebAXObject& obj : changed_bounds_objects) {
-    // See if we had a previous location. If not, this whole subtree must
-    // be new, so no need to update.
-    int id = obj.AxID();
-    if (!tree_source_->HasCachedBoundingBox(id))
-      continue;
-
-    // If the location has changed, append it to the IPC message.
-    ui::AXRelativeBounds new_location;
-    tree_source_->PopulateAXRelativeBounds(obj, &new_location);
-    if (new_location != tree_source_->GetCachedBoundingBox(id))
-      changes.push_back(mojom::LocationChanges::New(id, new_location));
-
-    // Save the new location.
-    tree_source_->SetCachedBoundingBox(id, new_location);
-  }
-
-  if (changes.empty())
-    return;
-
-  // Ensure that the number of cached bounding boxes doesn't exceed the
-  // number of nodes in the tree, that would indicate the cache could
-  // grow without bounds. Calls from the serializer to
-  // BlinkAXTreeSerializer::SerializerClearedNode are supposed to keep the
-  // cache trimmed to only actual nodes in the tree.
-  DCHECK_LE(tree_source_->GetCachedBoundingBoxCount(),
-            serializer_->ClientTreeNodeCount());
-
-  render_accessibility_manager_->HandleLocationChanges(std::move(changes));
+  root.SerializeLocationChanges();
 }
 
 void RenderAccessibilityImpl::OnAccessibilityEventsHandled() {

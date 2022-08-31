@@ -71,7 +71,7 @@
   }
 
   :host([selected]) .tree-row:hover,
-  :host([selected][tree-focused=true]) .tree-row {
+  :host([selected]) .tree-row:focus {
     background-color: hsl(214, 91%, 89%);
     border-color: rgb(125, 162, 206);
   }
@@ -82,6 +82,12 @@
 
   .tree-children {
     display: none;
+  }
+
+  #extra-aria-label {
+    clip: rect(0,0,0,0);
+    display: inline-block;
+    position: fixed;
   }
 
   :host .tree-row > * {
@@ -162,9 +168,11 @@
     }
   }
 </style>
-<div class="tree-row" part="row">
+<div class="tree-row" role="treeitem" aria-owns="tree-children"
+    aria-labelledby="label extra-aria-label">
   <span class="expand-icon"></span>
   <span class="tree-label-icon"></span>
-  <span class="tree-label"></span>
+  <span class="tree-label" id="label"></span>
+  <span id="extra-aria-label"></span>
 </div>
-<div class="tree-children" role="group"></div>
+<div class="tree-children" id="tree-children" role="group"></div>

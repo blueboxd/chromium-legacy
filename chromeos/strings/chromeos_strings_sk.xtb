@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Spustiť test nabitia</translation>
 <translation id="1631385268983122904">Zariadenie zatiaľ znova neskladajte</translation>
-<translation id="1639239467298939599">Prebieha načítavanie</translation>
+<translation id="1639239467298939599">Načítava sa</translation>
 <translation id="1641857168437328880">Podávač dokumentov (jednostranný)</translation>
 <translation id="1643449475550628585">Denne meniť obrázok tapety</translation>
 <translation id="1644574205037202324">História</translation>
 <translation id="1645954272419197032">Potvrďte informácie zo zariadení</translation>
 <translation id="1662989795263954667">Zastavené – minul sa atrament</translation>
+<translation id="1664796644829245314">Zobraziť ukážku položky <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Vstavaná sieť VPN</translation>
 <translation id="1672499492233627739">Videoprenos z webovej kamery</translation>
 <translation id="1676557873873341166">Nahráva sa video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferencie</translation>
 <translation id="1852934301711881861">Nainštalovať Chrome OS Flex</translation>
 <translation id="1856388568474281774">Šípka nadol</translation>
+<translation id="1858620243986915808">Priložiť snímku obrazovky</translation>
 <translation id="1871569928317311284">Vypnúť tmavý motív</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Vypnúť tmavý režim</translation>
@@ -797,6 +799,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7978412674231730200">Súkromný kľúč</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="7994702968232966508">Metóda EAP</translation>
+<translation id="8018928621986160031">Uložené do priečinka <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Povoliť automatický farebný režim</translation>
@@ -865,6 +868,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8576249514688522074">Nespustené</translation>
 <translation id="8620617069779373398">Stav roamingu</translation>
 <translation id="8655295600908251630">Kanál</translation>
+<translation id="8655828773034788261">Webová adresa zdieľania:</translation>
 <translation id="8660881923941176839">libry</translation>
 <translation id="8662671328352114214">Pridanie sa k sieti <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Aktualizovať na verziu <ph name="VERSION_NUMBER" /> a reštartovať</translation>

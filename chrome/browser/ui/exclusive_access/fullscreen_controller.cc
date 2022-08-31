@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -48,14 +49,19 @@ namespace {
 const char kFullscreenBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.Fullscreen";
 
-int64_t GetDisplayId(WebContents* web_contents) {
-  DCHECK(web_contents);
+int64_t GetDisplayId(const WebContents& web_contents) {
   auto* screen = display::Screen::GetScreen();
-  auto display = screen->GetDisplayNearestView(web_contents->GetNativeView());
+  // crbug.com/1347558 WebContents::GetNativeView is const-incorrect.
+  // const_cast is used to access GetNativeView(). Also GetDisplayNearestView
+  // should accept const gfx::NativeView, but there is other const incorrectness
+  // down the call chain in some implementations.
+  auto display = screen->GetDisplayNearestView(
+      const_cast<WebContents&>(web_contents).GetNativeView());
   return display.id();
 }
 
-bool IsAnotherScreen(WebContents* web_contents, const int64_t display_id) {
+bool IsAnotherScreen(const WebContents& web_contents,
+                     const int64_t display_id) {
   if (display_id == display::kInvalidDisplayId)
     return false;
   return display_id != GetDisplayId(web_contents);
@@ -111,10 +117,10 @@ bool FullscreenController::IsTabFullscreen() const {
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
-  if (IsFullscreenWithinTab(web_contents))
-    return true;
-  if (web_contents == exclusive_access_tab()) {
+    const content::WebContents* web_contents,
+    int64_t* display_id) const {
+  bool is_fullscreen = IsFullscreenWithinTab(web_contents);
+  if (!is_fullscreen && web_contents == exclusive_access_tab()) {
     // If we're handling OnTabDeactivated(), |web_contents| is the
     // deactivated contents. On the other hand,
     // exclusive_access_manager()->context()->GetActiveWebContents() returns
@@ -123,9 +129,19 @@ bool FullscreenController::IsFullscreenForTabOrPending(
     DCHECK(web_contents ==
                exclusive_access_manager()->context()->GetActiveWebContents() ||
            web_contents == deactivated_contents_);
-    return true;
+    is_fullscreen = true;
   }
-  return false;
+  if (is_fullscreen && display_id) {
+    if (started_fullscreen_transition_) {
+      DCHECK_NE(tab_fullscreen_target_display_id_, display::kInvalidDisplayId);
+      *display_id = tab_fullscreen_target_display_id_;
+    } else {
+      DCHECK(web_contents);
+      *display_id = web_contents ? GetDisplayId(*web_contents)
+                                 : display::kInvalidDisplayId;
+    }
+  }
+  return is_fullscreen;
 }
 
 bool FullscreenController::IsFullscreenCausedByTab() const {
@@ -176,7 +192,7 @@ void FullscreenController::EnterFullscreenModeForTab(
   // Keep the current state. |SetTabWithExclusiveAccess| may change the return
   // value of |IsWindowFullscreenForTabOrPending|.
   const bool requesting_another_screen =
-      IsAnotherScreen(web_contents, display_id);
+      IsAnotherScreen(*web_contents, display_id);
   const bool was_window_fullscreen_for_tab_or_pending =
       !requesting_another_screen && IsWindowFullscreenForTabOrPending();
 
@@ -265,9 +281,9 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   // For Tab Fullscreen -> Browser Fullscreen, enter browser fullscreen on the
   // display that originated the browser fullscreen prior to the tab fullscreen.
   // crbug.com/1313606.
-  if (was_browser_fullscreen &&
+  if (was_browser_fullscreen && web_contents &&
       display_id_prior_to_tab_fullscreen_ != display::kInvalidDisplayId &&
-      display_id_prior_to_tab_fullscreen_ != GetDisplayId(web_contents)) {
+      display_id_prior_to_tab_fullscreen_ != GetDisplayId(*web_contents)) {
     EnterFullscreenModeInternal(BROWSER, nullptr,
                                 display_id_prior_to_tab_fullscreen_);
   }
@@ -344,6 +360,12 @@ void FullscreenController::FullscreenTransititionCompleted() {
   if (fullscreen_transition_complete_callback_)
     std::move(fullscreen_transition_complete_callback_).Run();
   started_fullscreen_transition_ = false;
+  if (IsTabFullscreen()) {
+    DCHECK(exclusive_access_tab());
+    DCHECK_EQ(tab_fullscreen_target_display_id_,
+              GetDisplayId(*exclusive_access_tab()));
+  }
+  tab_fullscreen_target_display_id_ = display::kInvalidDisplayId;
 }
 
 void FullscreenController::RunOrDeferUntilTransitionIsComplete(
@@ -458,27 +480,34 @@ void FullscreenController::EnterFullscreenModeInternal(
   if (option == TAB) {
     url = GetRequestingOrigin();
     tab_fullscreen_ = true;
+    WebContents* web_contents =
+        WebContents::FromRenderFrameHost(requesting_frame);
+    // Do not enter tab fullscreen if there is no web contents for the
+    // requesting frame (This normally shouldn't happen).
+    DCHECK(web_contents);
+    if (!web_contents)
+      return;
+    int64_t current_display = GetDisplayId(*web_contents);
+    if (display_id != display::kInvalidDisplayId) {
+      // Check, but do not prompt, for permission to request a specific screen.
+      // Sites generally need permission to get `display_id` in the first place.
+      if (!requesting_frame ||
+          requesting_frame->GetBrowserContext()
+                  ->GetPermissionController()
+                  ->GetPermissionStatusForCurrentDocument(
+                      blink::PermissionType::WINDOW_PLACEMENT,
+                      requesting_frame) !=
+              blink::mojom::PermissionStatus::GRANTED) {
+        display_id = display::kInvalidDisplayId;
+      }
+      if (entering_tab_fullscreen)
+        display_id_prior_to_tab_fullscreen_ = current_display;
+    }
+    tab_fullscreen_target_display_id_ =
+        display_id == display::kInvalidDisplayId ? current_display : display_id;
   } else {
     if (!extension_caused_fullscreen_.is_empty())
       url = extension_caused_fullscreen_;
-  }
-
-  if (option == TAB && display_id != display::kInvalidDisplayId) {
-    // Check, but do not prompt, for permission to request a specific screen.
-    // Sites generally need permission to get the display id in the first place.
-    if (!requesting_frame ||
-        requesting_frame->GetBrowserContext()
-                ->GetPermissionController()
-                ->GetPermissionStatusForCurrentDocument(
-                    blink::PermissionType::WINDOW_PLACEMENT,
-                    requesting_frame) !=
-            blink::mojom::PermissionStatus::GRANTED) {
-      display_id = display::kInvalidDisplayId;
-    }
-    if (entering_tab_fullscreen) {
-      display_id_prior_to_tab_fullscreen_ =
-          GetDisplayId(WebContents::FromRenderFrameHost(requesting_frame));
-    }
   }
 
   if (option == BROWSER)

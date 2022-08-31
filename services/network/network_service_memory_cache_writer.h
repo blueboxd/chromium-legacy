@@ -10,6 +10,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/transport_info.h"
 #include "services/network/public/mojom/url_loader_completion_status.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -32,14 +33,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceMemoryCacheWriter {
   NetworkServiceMemoryCacheWriter(
       base::WeakPtr<NetworkServiceMemoryCache> cache,
       uint64_t trace_id,
+      size_t max_bytes,
       std::string cache_key,
       net::URLRequest* request,
+      mojom::RequestDestination request_destination,
+      const net::TransportInfo& transport_info,
       const mojom::URLResponseHeadPtr& response_head);
 
   ~NetworkServiceMemoryCacheWriter();
 
-  // Called when the owner received response content.
-  void OnDataRead(const char* buf, int result);
+  // Called when the owner received response content. Returns false when `this`
+  // doesn't want to duplicate the response any longer (e.g. the content is too
+  // large).
+  bool OnDataRead(const char* buf, int result);
 
   // Called when the owner completed.
   void OnCompleted(const URLLoaderCompletionStatus& status);
@@ -50,11 +56,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceMemoryCacheWriter {
   // Used for tracing.
   const uint64_t trace_id_;
 
+  // The maximum size of `received_data_`.
+  const size_t max_bytes_;
+
   std::string cache_key_;
 
   // `url_request_` must outlive `this`. The owner owns `url_request_`.
   const raw_ptr<net::URLRequest> url_request_;
 
+  mojom::RequestDestination request_destination_;
+
+  const net::TransportInfo transport_info_;
   mojom::URLResponseHeadPtr response_head_;
   std::vector<unsigned char> received_data_;
 };

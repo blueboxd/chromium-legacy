@@ -136,6 +136,7 @@ class WebContentsView;
 struct AXEventNotificationDetails;
 struct LoadNotificationDetails;
 struct MHTMLGenerationParams;
+class PreloadingAttempt;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -324,6 +325,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // human-readable name.
   std::string GetTitleForMediaControls();
 
+  // Returns true if this WebContents is in fullscreen (or pending fullscreen)
+  // on the specified display ID.
+  bool IsFullscreenOnDisplay(int64_t display_id) const;
+
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;
@@ -413,9 +418,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   Visibility GetVisibility() override;
   bool NeedToFireBeforeUnloadOrUnloadEvents() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
-  void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
-                              RenderFrameHost* render_frame_host,
-                              bool is_full_page) override;
+  void AttachInnerWebContents(
+      std::unique_ptr<WebContents> inner_web_contents,
+      RenderFrameHost* render_frame_host,
+      mojo::PendingAssociatedRemote<blink::mojom::RemoteFrame> remote_frame,
+      mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>
+          remote_frame_host_receiver,
+      bool is_full_page) override;
   bool IsInnerWebContentsForGuest() override;
   bool IsPortal() override;
   WebContentsImpl* GetPortalHostWebContents() override;
@@ -661,7 +670,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
   void DidCallFocus() override;
-  RenderFrameHostImpl* GetFocusedFrameIncludingInnerFrameTrees() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view,
@@ -849,6 +857,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
+      PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) override;
 
@@ -1171,6 +1180,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Sets the spatial navigation state.
   void SetSpatialNavigationDisabled(bool disabled);
 
+  // Sets the Stylus handwriting feature status. This status is updated to web
+  // preferences.
+  void SetStylusHandwritingEnabled(bool enabled);
+
   // Called when a file selection is to be done.
   void RunFileChooser(
       RenderFrameHost* render_frame_host,
@@ -1306,6 +1319,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   void set_suppress_ime_events_for_testing(bool suppress) {
     suppress_ime_events_for_testing_ = suppress;
+  }
+
+  RenderWidgetHost* mouse_lock_widget_for_testing() {
+    return mouse_lock_widget_;
   }
 
  private:
@@ -2194,6 +2211,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool has_persistent_video_ = false;
 
   bool is_spatial_navigation_disabled_ = false;
+
+  bool stylus_handwriting_enabled_ = false;
 
   bool is_currently_audible_ = false;
   bool was_ever_audible_ = false;

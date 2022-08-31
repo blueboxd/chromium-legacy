@@ -68,6 +68,7 @@
 <translation id="2139300032719313227">ChromeOSን ዳግም አስጀምር</translation>
 <translation id="2151406531797534936">እባክዎ Chrome ን አሁን ዳግም ያስጀምሩ</translation>
 <translation id="2174917724755363426">መጫኑ አልተጠናቀቀም። እርግጠኛ ነዎት መሰረዝ ይፈልጋሉ?</translation>
+<translation id="223889379102603431">Chrome እንዴት የስር እውቅና ማረጋገጫዎቹን እንደሚያስተዳድር ላይ መረጃ</translation>
 <translation id="2258103955319320201">በሁሉም መሣሪያዎችዎ ላይ የእርስዎን የChrome አሳሽ ነገሮች ለመድረስ ይግቡ፣ ከዚያ ስምረትን ያብሩ</translation>
 <translation id="2290014774651636340">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የGoogle Chrome ተግባራት ይሰናከላሉ።</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>
@@ -80,6 +81,7 @@
 <translation id="2401189691232800402">የChromeOS ስርዓት</translation>
 <translation id="2467438592969358367">Google Chrome የእርስዎን የይለፍ ቃላት ወደ ውጭ መላክ ይፈልጋል። ይህንን ለመፍቀድ የWindows የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
+<translation id="2494974097748878569">በChrome ውስጥ Google ረዳት</translation>
 <translation id="2534507159460261402">Google Pay (ወደ Chrome ተቀድቷል)</translation>
 <translation id="2559253115192232574">በኋላ ላይ እርስዎ የሚጎበኙት ጣቢያ እርስዎ የሚያዩዋቸውን ማስታወቂያዎች ግላዊነት ለማላበስ Chrome ዝንባሌዎችዎን እንዲያይ ሊጠይቅ ይችላል። Chrome እስከ 3 ዝንባሌዎች ድረስ ማጋራት ይችላል።</translation>
 <translation id="2563121210305478421">Chrome ዳግም ይጀመር?</translation>
@@ -158,6 +160,7 @@
 <translation id="3865754807470779944">የChrome ስሪት <ph name="PRODUCT_VERSION" /> ተጭኗል</translation>
 <translation id="3873044882194371212">አገናኝ በChrome ማንነት የ&amp;ማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
+<translation id="3999683152997576765">ማስታወቂያዎችን ለእርስዎ ለማሳየት የሚጠቀሙባቸውን የዝንባሌ ጣቢያዎች ርዕሶች ማየት እና ማስወገድ ይችላሉ። Chrome በቅርብ ጊዜ የአሰሳ ታሪክዎ ላይ ተመስርቶ የእርስዎን ዝንባሌዎች ይገምታል።</translation>
 <translation id="4035053306113201399">ChromeOS ዝማኔውን ለመተግበር ዳግም መጀመር አለበት።</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
@@ -197,7 +200,7 @@
 <translation id="4747730611090640388">Chrome የእርስዎን ዝንባሌዎች ሊገምት ይችላል።  በኋላ ላይ እርስዎ የሚጎበኙት ጣቢያ እርስዎ የሚያዩዋቸውን ማስታወቂያዎች ግላዊነት ለማላበስ Chrome ዝንባሌዎችዎን እንዲያይ ሊጠይቅ ይችላል።</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
-<translation id="479167709087336770">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሑፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
+<translation id="479167709087336770">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሁፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
 <translation id="4842397268809523050">ስምረት ለጎራዎ ስለማይገኝ ChromeOS Flex ውሂብዎን ማስመር አልቻለም።</translation>
 <translation id="4873783916118289636">በChrome ውስጥ ቁልፍ የግላዊነት እና የደህንነት ቁጥጥሮችን ይገምግሙ</translation>
 <translation id="4891791193823137474">Google Chrome በጀርባ ውስጥ ይሂድ</translation>
@@ -277,8 +280,9 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6696915334902295848">Chrome ለዚህ ጣቢያ የማይክሮፎን ፈቃድ ያስፈልገዋል</translation>
 <translation id="6735387454586646204">የChromeOS Flex ስርዓት</translation>
 <translation id="6739177684496155661">በአዲሱ የChrome መገለጫ ውስጥ ይቀጥል?</translation>
-<translation id="6750954913813541382">የሥርዓተ ሆሄ ህጸሶችን ለማስተካከል እርስዎን የሚተይቡትን ጽሑፍ Chrome ወደ Google በአሳሽ ውስጥ ይልካል</translation>
+<translation id="6750954913813541382">የሥርዓተ ሆሄ ህጸሶችን ለማስተካከል እርስዎን የሚተይቡትን ጽሁፍ Chrome ወደ Google በአሳሽ ውስጥ ይልካል</translation>
 <translation id="677276454032249905">የሆነው ሆኖ ከChrome ይወጣ?</translation>
+<translation id="6785872064505734160">በChrome ውስጥ Google ረዳት በመላ ድር ጣቢያዎች ላይ ለእርስዎ እርምጃዎችን ማጠናቀቅ ይችላል</translation>
 <translation id="683440813066116847">Google Chrome Canary ለmDNS ትራፊክ ለመፍቀድ የውስጥ ደንብ።</translation>
 <translation id="6881299373831449287">Chromeን በማዘመን ላይ</translation>
 <translation id="6885412569789873916">የChrome ቅድመ-ይሁነታ መተግበሪያዎች</translation>
@@ -351,6 +355,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8129812357326543296">ስለ &amp;Google Chrome</translation>
 <translation id="813913629614996137">በማስጀመር ላይ…</translation>
 <translation id="8255190535488645436">Google Chrome ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
+<translation id="8270775718612349140">በChrome የሚተዳደሩ የእውቅና ማረጋገጫዎች</translation>
 <translation id="8286862437124483331">Google Chrome የይለፍ ቃሎችን ለማሳየት እየሞከረ ነው። ይህንን ለመፍቀድ የእርስዎን Windows የይለፍ ቃል ይተይቡ።</translation>
 <translation id="828798499196665338">የእርስዎ ወላጅ ለChrome «የጣቢያዎች፣ መተግበሪያዎች እና ቅጥያዎች ፈቃዶች»ን አጥፍተዋል። ይህን <ph name="EXTENSION_TYPE_PARAMETER" /> ማንቃት አይፈቀድም።</translation>
 <translation id="8290100596633877290">ኧረ ገዳይ! Google Chrome ተሰናክሏል። አሁን እንደገና ይጀመር?</translation>

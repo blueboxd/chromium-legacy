@@ -34,6 +34,9 @@ const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch{
 const base::FeatureParam<bool> kEnableSidePanelForLens{
     &kLensStandalone, "enable-side-panel", true};
 
+const base::FeatureParam<bool> kEnableLensSidePanelFooter{
+    &kLensStandalone, "enable-lens-side-panel-footer", true};
+
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
 
@@ -55,6 +58,9 @@ const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1{
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
     &kLensSearchOptimizations, "use-menu-item-alt-text-2", false};
 
+const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
+    &kLensSearchOptimizations, "use-menu-item-alt-text-3", false};
+
 // Default is set to true but it is only enabled if kLensSearchOptimizations is
 // enabled. This setup allows us to have fullscreen search as a toggleable
 // experience in chrome://flags
@@ -67,6 +73,10 @@ bool GetEnableUKMLoggingForRegionSearch() {
 
 bool GetEnableUKMLoggingForImageSearch() {
   return kEnableUKMLoggingForImageSearch.Get();
+}
+
+bool GetEnableLensSidePanelFooter() {
+  return kEnableLensSidePanelFooter.Get();
 }
 
 int GetMaxPixelsForRegionSearch() {
@@ -95,6 +105,12 @@ bool UseRegionSearchMenuItemAltText2() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
          kRegionSearchUseMenuItemAltText2.Get();
+}
+
+bool UseRegionSearchMenuItemAltText3() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
+         kRegionSearchUseMenuItemAltText3.Get();
 }
 
 bool UseGoogleAsVisualSearchProvider() {

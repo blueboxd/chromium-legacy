@@ -5,10 +5,11 @@
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-import {mountGuest} from '../../common/js/api.js';
 
+import {mountGuest} from '../../common/js/api.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
 import {metrics} from '../../common/js/metrics.js';
+import {createTrashReaders} from '../../common/js/trash.js';
 import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -268,16 +269,22 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
 export class RecentContentScanner extends ContentScanner {
   /**
    * @param {string} query Search query.
+   * @param {VolumeManager} volumeManager Volume manager.
    * @param {chrome.fileManagerPrivate.SourceRestriction=} opt_sourceRestriction
    * @param {chrome.fileManagerPrivate.RecentFileType=} opt_recentFileType
    */
-  constructor(query, opt_sourceRestriction, opt_recentFileType) {
+  constructor(query, volumeManager, opt_sourceRestriction, opt_recentFileType) {
     super();
 
     /**
      * @private {string}
      */
     this.query_ = query.toLowerCase();
+
+    /**
+     * @private {VolumeManager}
+     */
+    this.volumeManager_ = volumeManager;
 
     /**
      * @private {chrome.fileManagerPrivate.SourceRestriction}
@@ -298,6 +305,17 @@ export class RecentContentScanner extends ContentScanner {
   async scan(
       entriesCallback, successCallback, errorCallback,
       invalidateCache = false) {
+    /** @type {function(!FileEntry): boolean} */
+    const isMatchQuery = (entry) =>
+        entry.name.toLowerCase().indexOf(this.query_) >= 0;
+    /**
+     * Files app launched with "volumeFilter" launch parameter will filter out
+     * some volumes. Before returning the recent entries, we need to check if
+     * the entry's volume location is valid or not (crbug.com/1333385/#c17).
+     */
+    /** @type {function(!FileEntry): boolean} */
+    const isAllowedVolume = (entry) =>
+        this.volumeManager_.getVolumeInfo(entry) !== null;
     chrome.fileManagerPrivate.getRecentFiles(
         this.sourceRestriction_, this.recentFileType_, invalidateCache,
         entries => {
@@ -309,7 +327,7 @@ export class RecentContentScanner extends ContentScanner {
           }
           if (entries.length > 0) {
             entriesCallback(entries.filter(
-                entry => entry.name.toLowerCase().indexOf(this.query_) >= 0));
+                entry => isMatchQuery(entry) && isAllowedVolume(entry)));
           }
           successCallback();
         });
@@ -426,6 +444,47 @@ export class GuestOsMounter extends ContentScanner {
 }
 
 /**
+ * Read all the Trash directories for content.
+ */
+export class TrashContentScanner extends ContentScanner {
+  /**
+   * @param {!VolumeManager} volumeManager Identifies the underlying filesystem.
+   */
+  constructor(volumeManager) {
+    super();
+
+    this.readers_ = createTrashReaders(volumeManager);
+  }
+
+  /**
+   * Scan all the trash directories for content.
+   * @override
+   */
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
+    const readEntries = (idx) => {
+      if (this.readers_.length === idx) {
+        // All Trash directories have been read.
+        successCallback();
+        return;
+      }
+      this.readers_[idx].readEntries(entries => {
+        if (this.cancelled_) {
+          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+          return;
+        }
+
+        entriesCallback(entries);
+        readEntries(idx + 1);
+      }, errorCallback);
+    };
+    readEntries(0);
+    return;
+  }
+}
+
+/**
  * This class manages filters and determines a file should be shown or not.
  * When filters are changed, a 'changed' event is fired.
  */
@@ -457,10 +516,6 @@ export class FileFilter extends EventTarget {
    * @private
    */
   setupInitialFilters_() {
-    if (this.volumeManager_.getMediaStoreFilesOnlyFilterEnabled()) {
-      this.setMediaStoreRecentsFilter();
-    }
-
     this.setHiddenFilesVisible(false);
     this.setAllAndroidFoldersVisible(false);
     this.hideAndroidDownload();
@@ -482,16 +537,6 @@ export class FileFilter extends EventTarget {
   removeFilter(name) {
     delete this.filters_[name];
     dispatchSimpleEvent(this, 'changed');
-  }
-
-  /**
-   * When Android MediaStore volume manager filter is enabled, filter RECENTS
-   * volume entries by allowed volume type: crbug.com/1333385/#c17
-   */
-  setMediaStoreRecentsFilter() {
-    this.addFilter('media-store-recents', entry => {
-      return entry && this.volumeManager_.getLocationInfo(entry) !== null;
-    });
   }
 
   /**
@@ -664,6 +709,10 @@ export class FileListContext {
          i < constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES.length;
          i++) {
       set[constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
+    }
+    for (let i = 0; i < constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES.length;
+         i++) {
+      set[constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
     }
     return Object.keys(set);
   }
@@ -860,8 +909,6 @@ export class DirectoryContents extends EventTarget {
       this.onScanError_(error);
     }
 
-    metrics.startInterval('DirectoryListLoad');
-
     // TODO(hidehiko,mtomasz): this scan method must be called at most once.
     // Remove such a limitation.
     this.scanner_ = this.scannerFactory_();
@@ -973,21 +1020,6 @@ export class DirectoryContents extends EventTarget {
       // Call callback first, so isScanning() returns false in the event
       // handlers.
       callback();
-      // TODO(crbug.com/1290197): Currently we only care about the load time for
-      // local files, filter out all the other root types.
-      if (this.getDirectoryEntry()) {
-        const locationInfo = this.context_.volumeManager.getLocationInfo(
-            /** @type {!Entry} */ (this.getDirectoryEntry()));
-        if (locationInfo &&
-            (locationInfo.rootType === VolumeManagerCommon.RootType.MY_FILES ||
-             locationInfo.rootType ===
-                 VolumeManagerCommon.RootType.DOWNLOADS)) {
-          metrics.recordDirectoryListLoadWithTolerance(
-              'DirectoryListLoad', this.getFileListLength(),
-              VolumeManagerCommon.RootType.MY_FILES, [10, 100, 1000],
-              /*tolerance=*/ 0.2);
-        }
-      }
       dispatchSimpleEvent(this, 'scan-completed');
     });
   }

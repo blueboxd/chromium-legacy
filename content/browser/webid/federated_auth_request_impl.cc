@@ -4,8 +4,11 @@
 
 #include "content/browser/webid/federated_auth_request_impl.h"
 
+#include <random>
+
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -35,6 +38,7 @@ using blink::mojom::RequestTokenStatus;
 using FederatedApiPermissionStatus =
     content::FederatedIdentityApiPermissionContextDelegate::PermissionStatus;
 using TokenStatus = content::FedCmRequestIdTokenStatus;
+using SignInStateMatchStatus = content::FedCmSignInStateMatchStatus;
 using LoginState = content::IdentityRequestAccount::LoginState;
 using SignInMode = content::IdentityRequestAccount::SignInMode;
 
@@ -42,13 +46,7 @@ namespace content {
 
 namespace {
 static constexpr base::TimeDelta kDefaultTokenRequestDelay = base::Seconds(3);
-// TODO(yigu): We need to make sure the delay is greater than the time required
-// for a successful flow based on `Blink.FedCm.Timing.TurnaroundTime`.
-// https://crbug.com/1298316.
-// TODO(crbug.com/1329633): We temporarily use 120s to make the UI more
-// accessible. We should try not to dismiss it automatically if a user is
-// interacting with it using keyboard or accessibility tools.
-static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(120);
+static constexpr base::TimeDelta kMaxRejectionTime = base::Seconds(60);
 
 // Maximum number of provider URLs in the manifest list.
 // TODO(cbiesinger): Determine what the right number is.
@@ -222,16 +220,18 @@ RequestTokenStatus FederatedAuthRequestResultToRequestTokenStatus(
   }
 }
 
+// TODO(crbug.com/1344150): Use normal distribution after sufficient data is
+// collected.
+base::TimeDelta GetRandomRejectionTime() {
+  return kMaxRejectionTime * base::RandDouble();
+}
+
 }  // namespace
 
 FederatedAuthRequestImpl::FederatedAuthRequestImpl(
     RenderFrameHost& host,
     mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver)
     : DocumentService(host, std::move(receiver)),
-      delay_timer_(FROM_HERE,
-                   kRequestRejectionDelay,
-                   this,
-                   &FederatedAuthRequestImpl::OnRejectRequest),
       token_request_delay_(kDefaultTokenRequestDelay) {}
 
 FederatedAuthRequestImpl::~FederatedAuthRequestImpl() {
@@ -239,17 +239,7 @@ FederatedAuthRequestImpl::~FederatedAuthRequestImpl() {
   // pending promise.
   if (auth_request_callback_) {
     DCHECK(!logout_callback_);
-    // If we have completed the request, e.g. when the token is returned or the
-    // API is aborted, `auth_request_callback_` would be null so we won't double
-    // count. If the request was failed but we have not yet rejected the
-    // promise, e.g. when the user has declined the permission or the API is
-    // disabled etc., we have already reported the errors to console. i.e.
-    // `errors_logged_to_console_` would be true so we won't double count
-    // either. We record `kUnhandledRequest` only when the user refreshed,
-    // closed or left the page while the UI is displayed.
-    if (!errors_logged_to_console_) {
-      fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kUnhandledRequest);
-    }
+    fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kUnhandledRequest);
     CompleteRequest(FederatedAuthRequestResult::kError, "",
                     /*should_call_callback=*/true);
   }
@@ -287,14 +277,17 @@ void FederatedAuthRequestImpl::RequestToken(const GURL& provider,
 
   auth_request_callback_ = std::move(callback);
   provider_ = provider;
+  // Generate a random int for the FedCM call, to be used by the UKM events.
+  std::random_device dev;
+  std::mt19937 rng(dev());
+  std::uniform_int_distribution<std::mt19937::result_type> uniform_dist(
+      1, 1 << 30);
   fedcm_metrics_ = std::make_unique<FedCmMetrics>(
-      provider_, render_frame_host().GetPageUkmSourceId());
+      provider_, render_frame_host().GetPageUkmSourceId(), uniform_dist(rng));
   client_id_ = client_id;
   nonce_ = nonce;
   prefer_auto_sign_in_ = prefer_auto_sign_in && IsFedCmAutoSigninEnabled();
   start_time_ = base::TimeTicks::Now();
-  if (!ShouldCompleteRequestImmediately())
-    delay_timer_.Reset();
 
   if (!GetApiPermissionContext()) {
     CompleteRequest(FederatedAuthRequestResult::kError, "",
@@ -360,6 +353,7 @@ void FederatedAuthRequestImpl::CancelTokenRequest() {
   // Dialog will be hidden by the destructor for request_dialog_controller_,
   // triggered by CompleteRequest.
   fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kAborted);
+
   CompleteRequest(FederatedAuthRequestResult::kErrorCanceled, "",
                   /*should_call_callback=*/true);
 }
@@ -687,6 +681,24 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
 
       // Populate the accounts login state.
       for (auto& account : accounts) {
+        // Record when IDP and browser have different user sign-in states.
+        bool idp_claimed_sign_in = account.login_state == LoginState::kSignIn;
+        bool browser_observed_sign_in =
+            GetSharingPermissionContext() &&
+            GetSharingPermissionContext()->HasSharingPermission(
+                origin(), url::Origin::Create(provider_), account.id);
+
+        if (idp_claimed_sign_in == browser_observed_sign_in) {
+          fedcm_metrics_->RecordSignInStateMatchStatus(
+              SignInStateMatchStatus::kMatch);
+        } else if (idp_claimed_sign_in) {
+          fedcm_metrics_->RecordSignInStateMatchStatus(
+              SignInStateMatchStatus::kIdpClaimedSignIn);
+        } else {
+          fedcm_metrics_->RecordSignInStateMatchStatus(
+              SignInStateMatchStatus::kBrowserObservedSignIn);
+        }
+
         // We set the login state based on the IDP response if it sends
         // back an approved_clients list. If it does not, we need to set
         // it here based on browser state.
@@ -695,9 +707,7 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
         LoginState login_state = LoginState::kSignUp;
         // Consider this a sign-in if we have seen a successful sign-up for
         // this account before.
-        if (GetSharingPermissionContext() &&
-            GetSharingPermissionContext()->HasSharingPermission(
-                origin(), url::Origin::Create(provider_), account.id)) {
+        if (browser_observed_sign_in) {
           login_state = LoginState::kSignIn;
         }
         account.login_state = login_state;
@@ -724,6 +734,8 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
           rp_web_contents, provider_, accounts, idp_metadata, data,
           is_auto_sign_in ? SignInMode::kAuto : SignInMode::kExplicit,
           base::BindOnce(&FederatedAuthRequestImpl::OnAccountSelected,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
                          weak_ptr_factory_.GetWeakPtr()));
       return;
     }
@@ -734,8 +746,9 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
 }
 
 void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
-                                                 bool is_sign_in,
-                                                 bool should_embargo) {
+                                                 bool is_sign_in) {
+  DCHECK(!account_id.empty());
+
   // Check if the user has disabled the FedCM API after the FedCM UI is
   // displayed. This ensures that requests are not wrongfully sent to IDPs when
   // settings are changed while an existing FedCM UI is displayed. Ideally, we
@@ -746,22 +759,6 @@ void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
     fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kDisabledInSettings);
 
     CompleteRequest(FederatedAuthRequestResult::kErrorDisabledInSettings, "",
-                    /*should_call_callback=*/false);
-    return;
-  }
-
-  // This could happen if user didn't select any accounts.
-  if (account_id.empty()) {
-    base::TimeTicks dismiss_dialog_time = base::TimeTicks::Now();
-    fedcm_metrics_->RecordCancelOnDialogTime(dismiss_dialog_time -
-                                             show_accounts_dialog_time_);
-    fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kNotSelectAccount);
-
-    if (should_embargo && GetApiPermissionContext()) {
-      GetApiPermissionContext()->RecordDismissAndEmbargo(origin());
-    }
-
-    CompleteRequest(FederatedAuthRequestResult::kError, "",
                     /*should_call_callback=*/false);
     return;
   }
@@ -783,6 +780,40 @@ void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
                                       is_sign_in),
       base::BindOnce(&FederatedAuthRequestImpl::OnTokenResponseReceived,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FederatedAuthRequestImpl::OnDialogDismissed(
+    IdentityRequestDialogController::DismissReason dismiss_reason) {
+  // Clicking the close button and swiping away the account chooser are more
+  // intentional than other ways of dismissing the account chooser such as
+  // the virtual keyboard showing on Android.
+  bool should_embargo = false;
+  switch (dismiss_reason) {
+    case IdentityRequestDialogController::DismissReason::CLOSE_BUTTON:
+    case IdentityRequestDialogController::DismissReason::SWIPE:
+      should_embargo = true;
+      break;
+    default:
+      break;
+  }
+
+  if (should_embargo) {
+    base::TimeTicks dismiss_dialog_time = base::TimeTicks::Now();
+    fedcm_metrics_->RecordCancelOnDialogTime(dismiss_dialog_time -
+                                             show_accounts_dialog_time_);
+  }
+  fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kNotSelectAccount);
+  fedcm_metrics_->RecordCancelReason(dismiss_reason);
+
+  if (should_embargo && GetApiPermissionContext()) {
+    GetApiPermissionContext()->RecordDismissAndEmbargo(origin());
+  }
+
+  // Reject the promise immediately if the UI is dismissed without selecting
+  // an account. Meanwhile, we fuzz the rejection time for other failures to
+  // make it indistinguishable.
+  CompleteRequest(FederatedAuthRequestResult::kError, "",
+                  /*should_call_callback=*/true);
 }
 
 void FederatedAuthRequestImpl::OnTokenResponseReceived(
@@ -952,6 +983,12 @@ void FederatedAuthRequestImpl::CompleteRequest(
     RequestTokenStatus status =
         FederatedAuthRequestResultToRequestTokenStatus(result);
     std::move(auth_request_callback_).Run(status, id_token);
+  } else {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&FederatedAuthRequestImpl::OnRejectRequest,
+                       weak_ptr_factory_.GetWeakPtr()),
+        GetRandomRejectionTime());
   }
 }
 
@@ -1098,18 +1135,7 @@ FederatedAuthRequestImpl::GetSharingPermissionContext() {
 void FederatedAuthRequestImpl::OnRejectRequest() {
   if (auth_request_callback_) {
     DCHECK(!logout_callback_);
-    // If we have completed the request, e.g. when the token is returned or the
-    // API is aborted, `auth_request_callback_` would be null so we won't double
-    // count. If the request was failed but we have not yet rejected the
-    // promise, e.g. when the user has declined the permission or the API is
-    // disabled etc., we have already reported the errors to console. i.e.
-    // `errors_logged_to_console_` would be true so we won't double count
-    // either. We record `kUserInterfaceTimedOut` only when the UI is displayed
-    // and then time out without user interaction.
-    if (!errors_logged_to_console_) {
-      fedcm_metrics_->RecordRequestTokenStatus(
-          TokenStatus::kUserInterfaceTimedOut);
-    }
+    DCHECK(errors_logged_to_console_);
     CompleteRequest(FederatedAuthRequestResult::kError, "",
                     /*should_call_callback=*/true);
   }

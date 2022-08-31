@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.inputmethod.InputConnection;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
@@ -56,6 +57,46 @@ public class ViewAndroidDelegate {
     private ObserverList<ContainerViewObserver> mContainerViewObservers = new ObserverList<>();
 
     /**
+     * Notifies the listener of vertical scroll direction changes.
+     */
+    public interface VerticalScrollDirectionChangeListener {
+        /**
+         * Called when the vertical scroll direction changes.
+         * @param directionUp Whether the scroll direction is up, i.e. swiping down.
+         * @param currentScrollRatio The current scroll ratio of the page.
+         */
+        void onVerticalScrollDirectionChanged(boolean directionUp, float currentScrollRatio);
+    }
+
+    private final ObserverList<VerticalScrollDirectionChangeListener>
+            mVerticalScrollDirectionChangeListeners = new ObserverList<>();
+
+    /**
+     * Handles cursor updates for stylus writing.
+     */
+    public interface StylusWritingCursorHandler {
+        /**
+         * @param currentView the current view to set the cursor.
+         * @return true if cursor update was handled.
+         */
+        boolean didHandleCursorUpdate(View currentView);
+    }
+
+    private StylusWritingCursorHandler mStylusWritingCursorHandler;
+
+    // Whether the current hovered element's action is stylus writable or not.
+    private boolean mHoverActionStylusWritable;
+
+    /**
+     * Sets a handler to handle the stylus writing cursor updates.
+     *
+     * @param handler the handler object.
+     */
+    public void setStylusWritingCursorHandler(StylusWritingCursorHandler handler) {
+        mStylusWritingCursorHandler = handler;
+    }
+
+    /**
      * Create and return a basic implementation of {@link ViewAndroidDelegate}.
      * @param containerView {@link ViewGroup} to be used as a container view.
      * @return a new instance of {@link ViewAndroidDelegate}.
@@ -78,6 +119,18 @@ public class ViewAndroidDelegate {
      */
     public final void addObserver(ContainerViewObserver observer) {
         mContainerViewObservers.addObserver(observer);
+    }
+
+    /** Adds the provided {@link VerticalScrollDirectionChangeListener}. */
+    public final void addVerticalScrollDirectionChangeListener(
+            VerticalScrollDirectionChangeListener listener) {
+        mVerticalScrollDirectionChangeListeners.addObserver(listener);
+    }
+
+    /** Removes the provided {@link VerticalScrollDirectionChangeListener}. */
+    public final void removeVerticalScrollDirectionChangeListener(
+            VerticalScrollDirectionChangeListener listener) {
+        mVerticalScrollDirectionChangeListeners.removeObserver(listener);
     }
 
     /**
@@ -225,6 +278,12 @@ public class ViewAndroidDelegate {
     public void onCursorChanged(int cursorType) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
 
+        // Allow stylus writing handler to override the cursor.
+        if (mHoverActionStylusWritable && mStylusWritingCursorHandler != null
+                && mStylusWritingCursorHandler.didHandleCursorUpdate(getContainerViewGroup())) {
+            return;
+        }
+
         int pointerIconType = PointerIcon.TYPE_ARROW;
         switch (cursorType) {
             case CursorType.NONE:
@@ -351,6 +410,11 @@ public class ViewAndroidDelegate {
         ApiHelperForN.setPointerIcon(containerView, icon);
     }
 
+    @CalledByNative
+    private void setHoverActionStylusWritable(boolean stylusWritable) {
+        mHoverActionStylusWritable = stylusWritable;
+    }
+
     /**
      * Called whenever the background color of the page changes as notified by Blink.
      * @param color The new ARGB color of the page background.
@@ -394,7 +458,9 @@ public class ViewAndroidDelegate {
      * if page is not scrollable, though this should not be called in that case.
      */
     @CalledByNative
+    @CallSuper
     protected void onVerticalScrollDirectionChanged(boolean directionUp, float currentScrollRatio) {
+        notifyVerticalScrollDirectionChangeListeners(directionUp, currentScrollRatio);
     }
 
     /**
@@ -511,6 +577,14 @@ public class ViewAndroidDelegate {
     @CalledByNative
     protected int[] getDisplayFeature() {
         return null;
+    }
+
+    private void notifyVerticalScrollDirectionChangeListeners(
+            boolean directionUp, float currentScrollRatio) {
+        for (VerticalScrollDirectionChangeListener listener :
+                mVerticalScrollDirectionChangeListeners) {
+            listener.onVerticalScrollDirectionChanged(directionUp, currentScrollRatio);
+        }
     }
 
     /** Destroy and clean up dependencies (e.g. drag state tracker if set). */

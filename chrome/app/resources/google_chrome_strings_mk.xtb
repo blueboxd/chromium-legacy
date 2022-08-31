@@ -70,6 +70,7 @@
 <translation id="2139300032719313227">Рестартирајте го Chrome OS</translation>
 <translation id="2151406531797534936">Рестартирајте го Chrome сега</translation>
 <translation id="2174917724755363426">Инсталирањето не е завршено. Дали сигурно сакате да го откажете?</translation>
+<translation id="223889379102603431">Информации за тоа како Chrome управува со своите сертификати за администраторски права</translation>
 <translation id="2258103955319320201">За да пристапувате до вашите работи на прелистувачот Chrome на сите уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="2290014774651636340">Клучевите Google API недостасуваат. Некои функции на Google Chrome ќе бидат оневозможени.</translation>
 <translation id="2290095356545025170">Дали сте сигурни дека сакате да го деинсталирате Google Chrome?</translation>
@@ -82,6 +83,7 @@
 <translation id="2401189691232800402">Систем Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome сака да ги извезе вашите лозинки. Внесете ја лозинката за Windows за да го дозволите ова.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2494974097748878569">„Помошникот на Google“ во Chrome</translation>
 <translation id="2534507159460261402">Google Pay (копирана во Chrome)</translation>
 <translation id="2559253115192232574">Подоцна, сајтот што го посетувате може да побара од Chrome да ги види вашите интереси за да ги персонализира рекламите што ги гледате. Chrome може да сподели до 3 интереси.</translation>
 <translation id="2563121210305478421">Да се рестартира Chrome?</translation>
@@ -160,6 +162,7 @@
 <translation id="3865754807470779944">Инсталирана е верзијата <ph name="PRODUCT_VERSION" /> на Chrome</translation>
 <translation id="3873044882194371212">Отвори го линкот во инко&amp;гнито прозорец на Chrome</translation>
 <translation id="3889417619312448367">Деинсталирај го Google Chrome</translation>
+<translation id="3999683152997576765">Може да ги гледате и отстранувате темите од интерес што сајтовите ги користат за да ви прикажуваат реклами. Chrome ги проценува вашите интереси според вашата неодамнешна историја на прелистувањето.</translation>
 <translation id="4035053306113201399">Chrome OS треба да се рестартира за да се примени ажурирањето.</translation>
 <translation id="4050175100176540509">Во најновата верзија се достапни значајни безбедносни подобрувања и нови карактеристики.</translation>
 <translation id="4053720452172726777">Приспособи го и контролирај го Google Chrome</translation>
@@ -282,6 +285,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="6739177684496155661">Сакате да продолжите на нов профил на Chrome?</translation>
 <translation id="6750954913813541382">За исправка на правописни грешки, Chrome го испраќа текстот што го пишувате во прелистувачот до Google</translation>
 <translation id="677276454032249905">Сепак да се излезе од Chrome?</translation>
+<translation id="6785872064505734160">„Помошникот на Google“ во Chrome може да извршува дејства за вас на веб-сајтовите</translation>
 <translation id="683440813066116847">Дојдовно правило за Google Chrome Canary за да овозможи сообраќај mDNS.</translation>
 <translation id="6881299373831449287">Chrome се ажурира</translation>
 <translation id="6885412569789873916">Апликации на Chrome Beta</translation>
@@ -354,6 +358,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="8129812357326543296">За &amp;Google Chrome</translation>
 <translation id="813913629614996137">Се иницијализира…</translation>
 <translation id="8255190535488645436">Google Chrome ги користи камерата и микрофонот.</translation>
+<translation id="8270775718612349140">Сертификати управувани од Chrome</translation>
 <translation id="8286862437124483331">Google Chrome се обидува да покаже лозинки. Впишете ја лозинката за Windows за да се дозволи ова.</translation>
 <translation id="828798499196665338">Родителот ги исклучил „Дозволите за сајтови, апликации и екстензии“ за Chrome. Не е дозволено овозможувањето на оваа<ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Google Chrome падна. Веднаш да се стартува повторно?</translation>

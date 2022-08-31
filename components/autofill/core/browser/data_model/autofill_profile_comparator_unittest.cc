@@ -32,9 +32,9 @@ using autofill::ADDRESS_HOME_SORTING_CODE;
 using autofill::ADDRESS_HOME_STATE;
 using autofill::ADDRESS_HOME_STREET_ADDRESS;
 using autofill::ADDRESS_HOME_ZIP;
+using autofill::BIRTHDATE_4_DIGIT_YEAR;
 using autofill::BIRTHDATE_DAY;
 using autofill::BIRTHDATE_MONTH;
-using autofill::BIRTHDATE_YEAR_4_DIGITS;
 using autofill::COMPANY_NAME;
 using autofill::EMAIL_ADDRESS;
 using autofill::NAME_FIRST;
@@ -193,7 +193,7 @@ class AutofillProfileComparatorTest
     AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
     profile.SetRawInfo(BIRTHDATE_DAY, base::UTF8ToUTF16(day));
     profile.SetRawInfo(BIRTHDATE_MONTH, base::UTF8ToUTF16(month));
-    profile.SetRawInfo(BIRTHDATE_YEAR_4_DIGITS, base::UTF8ToUTF16(year));
+    profile.SetRawInfo(BIRTHDATE_4_DIGIT_YEAR, base::UTF8ToUTF16(year));
     return profile;
   }
 
@@ -1374,7 +1374,7 @@ TEST_P(AutofillProfileComparatorTest, MergeBirthdates) {
   Birthdate expected;
   expected.SetRawInfo(BIRTHDATE_DAY, u"14");
   expected.SetRawInfo(BIRTHDATE_MONTH, u"3");
-  expected.SetRawInfo(BIRTHDATE_YEAR_4_DIGITS, u"1997");
+  expected.SetRawInfo(BIRTHDATE_4_DIGIT_YEAR, u"1997");
 
   Birthdate actual;
   EXPECT_TRUE(comparator_.MergeBirthdates(profile1, profile2, actual));
@@ -1386,20 +1386,30 @@ TEST_P(AutofillProfileComparatorTest, MergeBirthdates) {
 // Checks for various scenarios for determining mergeability of profiles w.r.t.
 // the state.
 TEST_P(AutofillProfileComparatorTest, CheckStatesMergeability) {
+  // |kAutofillEnableSupportForMoreStructureInAddresses| is not compatible with
+  // AlternativeStateNameMap merging logic.
+  if (structured_addresses_enabled_)
+    return;
+
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(
       autofill::features::kAutofillUseAlternativeStateNameMap);
 
   autofill::test::ClearAlternativeStateNameMapForTesting();
-  autofill::test::PopulateAlternativeStateNameMapForTesting();
+  autofill::test::PopulateAlternativeStateNameMapForTesting(
+      "DE", "RandomState",
+      {{.canonical_name = "RandomState",
+        .abbreviations = {"RS"},
+        .alternative_names = {"AlternateRandomState"}}});
 
   AutofillProfile empty = CreateProfileWithAddress("", "", "", "", "", "DE");
-  AutofillProfile p1 = CreateProfileWithAddress("", "", "", "Bayern", "", "DE");
+  AutofillProfile p1 =
+      CreateProfileWithAddress("", "", "", "RandomState", "", "DE");
   AutofillProfile p2 = CreateProfileWithAddress("", "", "", "Random", "", "DE");
-  AutofillProfile p3 =
-      CreateProfileWithAddress("", "", "", "Bayern - BY - Bavaria", "", "DE");
+  AutofillProfile p3 = CreateProfileWithAddress(
+      "", "", "", "RandomState - RS - AlternateRandomState", "", "DE");
   AutofillProfile p4 =
-      CreateProfileWithAddress("", "", "", "Bavaria", "", "DE");
+      CreateProfileWithAddress("", "", "", "AlternateRandomState", "", "DE");
 
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(empty, empty));
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(p1, empty));

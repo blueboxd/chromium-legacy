@@ -6,19 +6,18 @@
  * @fileoverview Handles automation intents for speech feedback.
  * Braille is *not* handled in this module.
  */
-import {EditableLine} from '/chromevox/background/editing/editable_line.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {OutputRoleInfo} from '/chromevox/background/output/output_role_info.js';
-import {CursorRange} from '/common/cursors/range.js';
+import {CursorRange} from '../../../common/cursors/range.js';
+import {Output} from '../output/output.js';
+import {OutputRoleInfo} from '../output/output_role_info.js';
+import {OutputEventType} from '../output/output_types.js';
+
+import {EditableLine} from './editable_line.js';
 
 const AutomationIntent = chrome.automation.AutomationIntent;
-const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
 const IntentCommandType = chrome.automation.IntentCommandType;
 const IntentTextBoundaryType = chrome.automation.IntentTextBoundaryType;
-const Movement = cursors.Movement;
 const RoleType = chrome.automation.RoleType;
-const Unit = cursors.Unit;
 
 /**
  * A stateless class that turns intents into speech.

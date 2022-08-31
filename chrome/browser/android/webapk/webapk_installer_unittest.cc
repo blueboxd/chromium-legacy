@@ -194,9 +194,9 @@ class UpdateRequestStorer {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     WebApkInstaller::StoreUpdateRequestToFile(
-        update_request_path, webapps::ShortcutInfo((GURL())), "", false, "", "",
-        "", std::map<std::string, webapps::WebApkIconHasher::Icon>(), false,
-        false, {webapps::WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS},
+        update_request_path, webapps::ShortcutInfo((GURL())), GURL(), "", false,
+        "", "", "", std::map<std::string, webapps::WebApkIconHasher::Icon>(),
+        false, false, {webapps::WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS},
         base::BindOnce(&UpdateRequestStorer::OnComplete,
                        base::Unretained(this)));
     run_loop.Run();
@@ -300,7 +300,7 @@ class WebApkInstallerTest : public ::testing::Test {
     webapps::ShortcutInfo info(GURL::EmptyGURL());
 
     return webapps::BuildProtoInBackground(
-        info, primary_icon_data, false, splash_icon_data,
+        info, info.manifest_id, primary_icon_data, false, splash_icon_data,
         /*package_name*/ "", /*version*/ "",
         std::move(icon_url_to_murmur2_hash), true /* is_manifest_stale */,
         true /* is_app_identity_update_supported */,

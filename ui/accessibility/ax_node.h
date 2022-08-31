@@ -29,6 +29,8 @@ namespace ui {
 
 class AXComputedNodeData;
 class AXTableInfo;
+class AXTreeManager;
+
 struct AXLanguageInfo;
 struct AXTreeData;
 
@@ -122,7 +124,7 @@ class AX_EXPORT AXNode final {
          AXNode* parent,
          AXNodeID id,
          size_t index_in_parent,
-         size_t unignored_index_in_parent = 0);
+         size_t unignored_index_in_parent = 0u);
   virtual ~AXNode();
 
   // Accessors.
@@ -167,10 +169,18 @@ class AX_EXPORT AXNode final {
   AXNode* GetLastChildCrossingTreeBoundary() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetLastUnignoredChildCrossingTreeBoundary() const;
+
+  // TODO(accessibility): Consider renaming all "GetDeepest...Child" methods to
+  // "GetDeepest...Descendant".
   AXNode* GetDeepestFirstChild() const;
+  AXNode* GetDeepestFirstChildCrossingTreeBoundary() const;
   AXNode* GetDeepestFirstUnignoredChild() const;
+  AXNode* GetDeepestFirstUnignoredChildCrossingTreeBoundary() const;
   AXNode* GetDeepestLastChild() const;
+  AXNode* GetDeepestLastChildCrossingTreeBoundary() const;
   AXNode* GetDeepestLastUnignoredChild() const;
+  AXNode* GetDeepestLastUnignoredChildCrossingTreeBoundary() const;
+
   AXNode* GetNextSibling() const;
   AXNode* GetNextUnignoredSibling() const;
   AXNode* GetPreviousSibling() const;
@@ -230,6 +240,12 @@ class AX_EXPORT AXNode final {
   UnignoredChildrenCrossingTreeBoundaryBegin() const;
   UnignoredChildCrossingTreeBoundaryIterator
   UnignoredChildrenCrossingTreeBoundaryEnd() const;
+
+  // Returns true if this is a node on which accessibility events make sense to
+  // be fired. Events are not needed on nodes that will, for example, never
+  // appear in a tree that is visible to assistive software, as there will be no
+  // software to handle the event on the other end.
+  bool CanFireEvents() const;
 
   // Returns an optional integer indicating the logical order of this node
   // compared to another node, or returns an empty optional if the nodes are not
@@ -291,6 +307,8 @@ class AX_EXPORT AXNode final {
   // common cases.
   SkColor ComputeColor() const;
   SkColor ComputeBackgroundColor() const;
+
+  AXTreeManager* GetManager() const;
 
   //
   // Methods for accessing accessibility attributes including attributes that
@@ -387,6 +405,9 @@ class AX_EXPORT AXNode final {
   }
   bool HasHtmlAttribute(const char* attribute) const {
     return data().HasHtmlAttribute(attribute);
+  }
+  std::u16string GetHtmlAttribute(const char* attribute) const {
+    return data().GetHtmlAttribute(attribute);
   }
   bool GetHtmlAttribute(const char* attribute, std::string* value) const {
     return data().GetHtmlAttribute(attribute, value);
@@ -683,6 +704,11 @@ class AX_EXPORT AXNode final {
   // an editable region is synonymous to a node with the kTextField role, or a
   // contenteditable without the role, (see `AXNodeData::IsTextField()`).
   AXNode* GetTextFieldAncestor() const;
+
+  // Get the native text field's deepest container; the lowest descendant that
+  // contains all its text. Returns nullptr if the text field is empty, or if it
+  // is not an atomic text field, (e.g., <input> or <textarea>).
+  AXNode* GetTextFieldInnerEditorElement() const;
 
   // If this node is within a container (or widget) that supports either single
   // or multiple selection, returns the node that represents the container.

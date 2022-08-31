@@ -59,9 +59,6 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
-#include "chrome/browser/ui/views/location_bar/permission_quiet_chip.h"
-#include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -70,6 +67,9 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/permissions/permission_chip.h"
+#include "chrome/browser/ui/views/permissions/permission_quiet_chip.h"
+#include "chrome/browser/ui/views/permissions/permission_request_chip.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -265,8 +265,14 @@ void LocationBarView::Init() {
         std::u16string(), ChromeTextContext::CONTEXT_OMNIBOX_DEEMPHASIZED,
         views::style::STYLE_LINK);
     omnibox_additional_text_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    int left_margin =
+        OmniboxFieldTrial::kRichAutocompletionAdditionalTextWithParenthesis
+                .Get()
+            ? 10
+            : 0;
     omnibox_additional_text_view->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 10, 0, 0)));
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, left_margin, 0, 0)));
+    omnibox_additional_text_view->SetFontList(font_list);
     omnibox_additional_text_view->SetVisible(false);
     omnibox_additional_text_view_ =
         AddChildView(std::move(omnibox_additional_text_view));
@@ -301,7 +307,7 @@ void LocationBarView::Init() {
     // TODO(crbug.com/1318890): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
     if (side_search::IsDSESupportEnabled(profile_) &&
-        browser_->is_type_normal()) {
+        side_search::IsEnabledForBrowser(browser_)) {
       params.types_enabled.push_back(PageActionIconType::kSideSearch);
     }
     params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
@@ -439,11 +445,18 @@ void LocationBarView::SetOmniboxAdditionalText(const std::u16string& text) {
   DCHECK(OmniboxFieldTrial::IsRichAutocompletionEnabled() || text.empty());
   if (!OmniboxFieldTrial::RichAutocompletionShowAdditionalText())
     return;
-  auto wrapped_text =
-      text.empty()
-          ? text
-          // TODO(pkasting): This should use a localizable string constant.
-          : u"(" + text + u")";
+
+  // TODO(pkasting): This should use a localizable string constant.
+  // TODO(manukh): '-' separator doesn't play nice with RTL; results in
+  //  'input[autocompletion] URL -'.
+  std::u16string wrapped_text;
+  if (!text.empty()) {
+    wrapped_text =
+        OmniboxFieldTrial::kRichAutocompletionAdditionalTextWithParenthesis
+                .Get()
+            ? u"(" + text + u")"
+            : u" - " + text;
+  }
   SetOmniboxAdjacentText(omnibox_additional_text_view_, wrapped_text);
 }
 

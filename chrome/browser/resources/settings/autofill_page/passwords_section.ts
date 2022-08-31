@@ -22,7 +22,7 @@ import '../controls/password_prompt_dialog.js';
 // </if>
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 import './password_list_item.js';
 import './passwords_list_handler.js';
@@ -41,6 +41,7 @@ import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {FocusConfig} from '../focus_config.js';
 import {GlobalScrollTargetMixin, GlobalScrollTargetMixinInterface} from '../global_scroll_target_mixin.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -53,9 +54,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 // <if expr="chromeos_ash or chromeos_lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MergeExceptionsStoreCopiesMixin, MergeExceptionsStoreCopiesMixinInterface} from './merge_exceptions_store_copies_mixin.js';
 import {MergePasswordsStoreCopiesMixin, MergePasswordsStoreCopiesMixinInterface} from './merge_passwords_store_copies_mixin.js';
-import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
 import {AddCredentialFromSettingsUserInteractions, PasswordEditDialogElement} from './password_edit_dialog.js';
@@ -76,8 +75,6 @@ function isEditable(element: Element): boolean {
         /^(?:text|search|email|number|tel|url|password)$/i.test(
             (element as HTMLInputElement).type)));
 }
-
-type FocusConfig = Map<string, string|(() => void)>;
 
 export interface PasswordsSectionElement {
   $: {
@@ -110,13 +107,11 @@ export interface PasswordsSectionElement {
 }
 
 const PasswordsSectionElementBase =
-    MergePasswordsStoreCopiesMixin(PasswordRequestorMixin(
-        PrefsMixin(GlobalScrollTargetMixin(RouteObserverMixin(
-            MergeExceptionsStoreCopiesMixin(WebUIListenerMixin(
-                I18nMixin(PasswordCheckMixin(PolymerElement))))))))) as {
+    MergePasswordsStoreCopiesMixin(PasswordRequestorMixin(PrefsMixin(
+        GlobalScrollTargetMixin(RouteObserverMixin(WebUIListenerMixin(
+            I18nMixin(PasswordCheckMixin(PolymerElement)))))))) as {
       new (): PolymerElement & PasswordCheckMixinInterface &
           I18nMixinInterface & WebUIListenerMixinInterface &
-          MergeExceptionsStoreCopiesMixinInterface &
           RouteObserverMixinInterface & GlobalScrollTargetMixinInterface &
           PrefsMixinInterface & PasswordRequestorMixinInterface &
           MergePasswordsStoreCopiesMixinInterface,
@@ -258,7 +253,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         value() {
           return loadTimeData.getBoolean(
               'enableAutomaticPasswordChangeInSettings');
-        }
+        },
       },
 
       isPasswordViewPageEnabled_: {
@@ -281,7 +276,13 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         value() {
           return loadTimeData.valueExists('showImportPasswords') &&
               loadTimeData.getBoolean('showImportPasswords');
-        }
+        },
+      },
+
+      /** An array of blocked sites to display. */
+      passwordExceptions: {
+        type: Array,
+        value: () => [],
       },
 
       profileEmail_: {
@@ -320,6 +321,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   focusConfig: FocusConfig;
   subpageRoute: Route;
   filter: string;
+  passwordExceptions: chrome.passwordsPrivate.ExceptionEntry[];
 
   private shownPasswordsCount_: number;
   private shownExceptionsCount_: number;
@@ -398,12 +400,13 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     super.connectedCallback();
 
     // Create listener functions.
-    const setIsOptedInForAccountStorageListener = (optedIn: boolean) => {
+    this.setIsOptedInForAccountStorageListener_ = (optedIn: boolean) => {
       this.isOptedInForAccountStorage_ = optedIn;
     };
 
-    this.setIsOptedInForAccountStorageListener_ =
-        setIsOptedInForAccountStorageListener;
+    this.setPasswordExceptionsListener_ = exceptionList => {
+      this.passwordExceptions = exceptionList;
+    };
 
     // <if expr="chromeos_ash or chromeos_lacros">
     // If the user's account supports the password check, an auth token will be
@@ -420,11 +423,14 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
 
     // Request initial data.
     this.passwordManager_.isOptedInForAccountStorage().then(
-        setIsOptedInForAccountStorageListener);
+        this.setIsOptedInForAccountStorageListener_);
+    this.passwordManager_.getExceptionList(this.setPasswordExceptionsListener_);
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
-        setIsOptedInForAccountStorageListener);
+        this.setIsOptedInForAccountStorageListener_);
+    this.passwordManager_.addExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
 
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
@@ -464,6 +470,11 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     this.passwordManager_.removeAccountStorageOptInStateListener(
         this.setIsOptedInForAccountStorageListener_);
     this.setIsOptedInForAccountStorageListener_ = null;
+
+    assert(this.setPasswordExceptionsListener_);
+    PasswordManagerImpl.getInstance().removeExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
+    this.setPasswordExceptionsListener_ = null;
   }
 
   override currentRouteChanged(route: Route): void {
@@ -504,7 +515,11 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   }
 
   private computeNumberOfDevicePasswords_(): number {
-    return this.savedPasswords.filter(p => p.isPresentOnDevice()).length;
+    return this.savedPasswords
+        .filter(
+            p =>
+                p.storedIn !== chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT)
+        .length;
   }
 
   private computeHasPasswordExceptions_(): boolean {
@@ -654,9 +669,9 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
    * Fires an event that should delete the password exception.
    */
   private onRemoveExceptionButtonTap_(
-      e: DomRepeatEvent<MultiStoreExceptionEntry>) {
+      e: DomRepeatEvent<chrome.passwordsPrivate.ExceptionEntry>) {
     const exception = e.model.item;
-    this.passwordManager_.removeException(exception.getAnyId());
+    this.passwordManager_.removeException(exception.id);
   }
 
   /**

@@ -20,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -48,7 +47,7 @@ public class SearchResumptionTileBuilderUnitTest {
     @Mock
     private Tab mTab;
     @Mock
-    private SearchResumptionContainerView mSuggestionTilesContainerView;
+    private SearchResumptionTileContainerView mSuggestionTilesContainerView;
     @Mock
     SearchResumptionTileView mTileView1;
     @Mock
@@ -118,9 +117,8 @@ public class SearchResumptionTileBuilderUnitTest {
     }
 
     private void createTileBuilder() {
-        OnSuggestionClickCallback callback = tile -> {
-            mTab.loadUrl(new LoadUrlParams(tile.getUrl()));
-            RecordUserAction.record(SearchResumptionModuleMediator.ACTION_CLICK);
+        OnSuggestionClickCallback callback = (gUrl) -> {
+            mTab.loadUrl(new LoadUrlParams(gUrl));
         };
         mTileBuilder = new SearchResumptionTileBuilder(callback);
     }

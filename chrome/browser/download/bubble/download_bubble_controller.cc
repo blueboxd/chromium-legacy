@@ -10,7 +10,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/bubble/download_display_controller.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
 #include "chrome/browser/download/offline_item_model_manager_factory.h"
@@ -110,6 +114,10 @@ DownloadBubbleUIController::DownloadBubbleUIController(Browser* browser)
 
 DownloadBubbleUIController::~DownloadBubbleUIController() = default;
 
+void DownloadBubbleUIController::HideDownloadUi() {
+  display_controller_->HideToolbarButton();
+}
+
 bool DownloadBubbleUIController::MaybeAddOfflineItem(const OfflineItem& item,
                                                      bool is_new) {
   if (profile_->IsOffTheRecord() != item.is_off_the_record)
@@ -205,6 +213,12 @@ void DownloadBubbleUIController::OnNewItem(download::DownloadItem* item,
   display_controller_->OnNewItem(
       (item->GetState() == download::DownloadItem::IN_PROGRESS) &&
       show_details);
+}
+
+bool DownloadBubbleUIController::ShouldShowIncognitoIcon(
+    const DownloadUIModel* model) const {
+  return download::IsDownloadBubbleV2Enabled(profile_) &&
+         model->GetDownloadItem() && model->GetDownloadItem()->IsOffTheRecord();
 }
 
 void DownloadBubbleUIController::OnItemRemoved(const ContentId& id) {
@@ -398,6 +412,10 @@ void DownloadBubbleUIController::ProcessDownloadButtonPress(
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::RESUME:
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
       commands.ExecuteCommand(command);
       break;
     default:
@@ -427,8 +445,9 @@ bool DownloadBubbleUIController::SubmitDownloadToFeedbackService(
   if (!dp_service)
     return false;
   // TODO(shaktisahu): Enable feedback service for offline item.
-  return !model->download() || dp_service->MaybeBeginFeedbackForDownload(
-                                   profile_, model->download(), command);
+  return !model->GetDownloadItem() ||
+         dp_service->MaybeBeginFeedbackForDownload(
+             profile_, model->GetDownloadItem(), command);
 #else
   NOTREACHED();
   return false;
@@ -473,4 +492,16 @@ void DownloadBubbleUIController::RetryDownload(
       download::DownloadSource::RETRY_FROM_BUBBLE);
 
   download_manager_->DownloadUrl(std::move(download_url_params));
+}
+
+void DownloadBubbleUIController::ScheduleCancelForEphemeralWarning(
+    const std::string& guid) {
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile_);
+  if (!download_core_service)
+    return;
+  ChromeDownloadManagerDelegate* delegate =
+      download_core_service->GetDownloadManagerDelegate();
+  if (delegate)
+    delegate->ScheduleCancelForEphemeralWarning(guid);
 }

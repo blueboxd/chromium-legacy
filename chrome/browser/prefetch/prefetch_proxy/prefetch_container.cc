@@ -19,7 +19,8 @@ PrefetchContainer::PrefetchContainer(const GURL& url,
                                      size_t original_prediction_index)
     : url_(url),
       prefetch_type_(prefetch_type),
-      original_prediction_index_(original_prediction_index) {}
+      original_prediction_index_(original_prediction_index),
+      request_id_(base::UnguessableToken::Create().ToString()) {}
 
 PrefetchContainer::~PrefetchContainer() = default;
 
@@ -120,7 +121,7 @@ void PrefetchContainer::CreateNetworkContextForPrefetch(Profile* profile) {
   network_context_ = std::make_unique<PrefetchProxyNetworkContext>(
       profile, prefetch_type_.IsIsolatedNetworkContextRequired(),
       prefetch_type_.IsProxyRequired() &&
-          !prefetch_type_.IsProxyBypassedForTest());
+          !prefetch_type_.IsProxyBypassedForTesting());
 }
 
 std::unique_ptr<PrefetchProxyNetworkContext>

@@ -28,10 +28,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace content {
+
+namespace {
+
 using testing::_;
 using testing::Invoke;
-
-namespace content {
+using testing::Property;
 
 class PrivateAggregationHostTest : public testing::Test {
  public:
@@ -46,12 +49,16 @@ class PrivateAggregationHostTest : public testing::Test {
 
  protected:
   base::MockRepeatingCallback<void(AggregatableReportRequest,
-                                   PrivateAggregationBudgetKey::Api)>
+                                   PrivateAggregationBudgetKey)>
       mock_callback_;
+  std::unique_ptr<PrivateAggregationHost> host_;
+
+ private:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  std::unique_ptr<PrivateAggregationHost> host_;
 };
+
+}  // namespace
 
 TEST_F(PrivateAggregationHostTest,
        SendHistogramReport_ReportRequestHasCorrectMembers) {
@@ -64,7 +71,9 @@ TEST_F(PrivateAggregationHostTest,
                                      remote.BindNewPipeAndPassReceiver()));
 
   absl::optional<AggregatableReportRequest> validated_request;
-  EXPECT_CALL(mock_callback_, Run(_, PrivateAggregationBudgetKey::Api::kFledge))
+  EXPECT_CALL(mock_callback_,
+              Run(_, Property(&PrivateAggregationBudgetKey::api,
+                              PrivateAggregationBudgetKey::Api::kFledge)))
       .WillOnce(MoveArg<0>(&validated_request));
 
   std::vector<mojom::AggregatableReportHistogramContributionPtr> contributions;
@@ -102,11 +111,50 @@ TEST_F(PrivateAggregationHostTest,
               AggregatableReportSharedInfo::DebugMode::kDisabled,
               /*additional_fields=*/base::Value::Dict(),
               /*api_version=*/"0.1",
-              /*api_identifier=*/"private-aggregation"));
+              /*api_identifier=*/"private-aggregation"),
+          /*reporting_path=*/"/.well-known/private-aggregation/report-fledge");
   ASSERT_TRUE(expected_request);
 
   EXPECT_TRUE(aggregation_service::ReportRequestsEqual(
       validated_request.value(), expected_request.value()));
+}
+
+TEST_F(PrivateAggregationHostTest, ReportingPath) {
+  const url::Origin kExampleOrigin =
+      url::Origin::Create(GURL("https://example.com"));
+
+  const PrivateAggregationBudgetKey::Api apis[] = {
+      PrivateAggregationBudgetKey::Api::kFledge,
+      PrivateAggregationBudgetKey::Api::kSharedStorage};
+
+  std::vector<mojo::Remote<mojom::PrivateAggregationHost>> remotes{/*n=*/2};
+  std::vector<absl::optional<AggregatableReportRequest>> validated_requests{
+      /*n=*/2};
+
+  for (int i = 0; i < 2; i++) {
+    EXPECT_TRUE(host_->BindNewReceiver(
+        kExampleOrigin, apis[i], remotes[i].BindNewPipeAndPassReceiver()));
+    EXPECT_CALL(mock_callback_,
+                Run(_, Property(&PrivateAggregationBudgetKey::api, apis[i])))
+        .WillOnce(MoveArg<0>(&validated_requests[i]));
+
+    std::vector<mojom::AggregatableReportHistogramContributionPtr>
+        contributions;
+    contributions.push_back(mojom::AggregatableReportHistogramContribution::New(
+        /*bucket=*/123, /*value=*/456));
+    remotes[i]->SendHistogramReport(std::move(contributions),
+                                    mojom::AggregationServiceMode::kDefault);
+
+    remotes[i].FlushForTesting();
+    EXPECT_TRUE(remotes[i].is_connected());
+
+    ASSERT_TRUE(validated_requests[i]);
+  }
+
+  EXPECT_EQ(validated_requests[0]->reporting_path(),
+            "/.well-known/private-aggregation/report-fledge");
+  EXPECT_EQ(validated_requests[1]->reporting_path(),
+            "/.well-known/private-aggregation/report-shared-storage");
 }
 
 TEST_F(PrivateAggregationHostTest,
@@ -132,21 +180,30 @@ TEST_F(PrivateAggregationHostTest,
       remotes[3].BindNewPipeAndPassReceiver()));
 
   // Use the bucket as a sentinel to ensure that calls were routed correctly.
-  EXPECT_CALL(mock_callback_, Run(_, PrivateAggregationBudgetKey::Api::kFledge))
-      .WillOnce(Invoke([&kExampleOriginB](AggregatableReportRequest request,
-                                          PrivateAggregationBudgetKey::Api) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.shared_info().reporting_origin, kExampleOriginB);
-      }));
   EXPECT_CALL(mock_callback_,
-              Run(_, PrivateAggregationBudgetKey::Api::kSharedStorage))
-      .WillOnce(Invoke([&kExampleOriginA](AggregatableReportRequest request,
-                                          PrivateAggregationBudgetKey::Api) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, kExampleOriginA);
-      }));
+              Run(_, Property(&PrivateAggregationBudgetKey::api,
+                              PrivateAggregationBudgetKey::Api::kFledge)))
+      .WillOnce(
+          Invoke([&kExampleOriginB](AggregatableReportRequest request,
+                                    PrivateAggregationBudgetKey budget_key) {
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.shared_info().reporting_origin, kExampleOriginB);
+            EXPECT_EQ(budget_key.origin(), kExampleOriginB);
+          }));
+
+  EXPECT_CALL(
+      mock_callback_,
+      Run(_, Property(&PrivateAggregationBudgetKey::api,
+                      PrivateAggregationBudgetKey::Api::kSharedStorage)))
+      .WillOnce(
+          Invoke([&kExampleOriginA](AggregatableReportRequest request,
+                                    PrivateAggregationBudgetKey budget_key) {
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, kExampleOriginA);
+            EXPECT_EQ(budget_key.origin(), kExampleOriginA);
+          }));
 
   {
     std::vector<mojom::AggregatableReportHistogramContributionPtr>
@@ -214,12 +271,25 @@ TEST_F(PrivateAggregationHostTest, InvalidRequest_Rejected) {
                                      remote.BindNewPipeAndPassReceiver()));
 
   // Negative values are invalid
-  std::vector<mojom::AggregatableReportHistogramContributionPtr> contributions;
-  contributions.push_back(mojom::AggregatableReportHistogramContribution::New(
-      /*bucket=*/123, /*value=*/-1));
+  std::vector<mojom::AggregatableReportHistogramContributionPtr>
+      negative_contributions;
+  negative_contributions.push_back(
+      mojom::AggregatableReportHistogramContribution::New(
+          /*bucket=*/123, /*value=*/-1));
+
+  std::vector<mojom::AggregatableReportHistogramContributionPtr>
+      too_many_contributions;
+  for (int i = 0; i < PrivateAggregationHost::kMaxNumberOfContributions + 1;
+       ++i) {
+    too_many_contributions.push_back(
+        mojom::AggregatableReportHistogramContribution::New(
+            /*bucket=*/123, /*value=*/1));
+  }
 
   EXPECT_CALL(mock_callback_, Run(_, _)).Times(0);
-  remote->SendHistogramReport(std::move(contributions),
+  remote->SendHistogramReport(std::move(negative_contributions),
+                              mojom::AggregationServiceMode::kDefault);
+  remote->SendHistogramReport(std::move(too_many_contributions),
                               mojom::AggregationServiceMode::kDefault);
   remote.FlushForTesting();
 }

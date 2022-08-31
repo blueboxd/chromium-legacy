@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.site_settings;
 import static org.chromium.components.browser_ui.site_settings.AutoDarkMetrics.AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL;
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_DISPLAY_SETTING_ENABLED;
+import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
 
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +37,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.FederatedIdentityTestUtils;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
@@ -53,6 +56,7 @@ import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -74,6 +78,7 @@ import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
 import org.chromium.components.policy.test.annotations.Policies;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -81,6 +86,7 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1068,6 +1074,16 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteAdditions")
+    public void testOnlyExpectedPreferencesRequestDesktopSiteAdditionalSettings() {
+        String[] rdsDisabled = {"binary_toggle", "desktop_site_peripheral", "desktop_site_display"};
+        testExpectedPreferences(
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE, rdsDisabled, BINARY_TOGGLE);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesSensors() {
         testExpectedPreferences(SiteSettingsCategory.Type.SENSORS, BINARY_TOGGLE, BINARY_TOGGLE);
     }
@@ -1556,6 +1572,42 @@ public class SiteSettingsTest {
         settingsActivity.finish();
     }
 
+    /**
+     * Test that embargoing federated identity permission displays "Automatically Blocked" message
+     * in page info UI. Federated identity is a content setting. Content settings use a different
+     * code path than permissions (like notifications).
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testEmbargoedFederatedIdentity() throws Exception {
+        final String rpUrl = mPermissionRule.getURLWithHostName(
+                "example.com", "/chrome/test/data/android/simple.html");
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { FederatedIdentityTestUtils.embargoFedCmForRelyingParty(new GURL(rpUrl)); });
+
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(context,
+                SingleWebsiteSettings.class.getName(),
+                SingleWebsiteSettings.createFragmentArgsForSite(rpUrl));
+        final SettingsActivity settingsActivity =
+                (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                        intent);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final SingleWebsiteSettings websitePreferences =
+                    (SingleWebsiteSettings) settingsActivity.getMainFragment();
+            final Preference fedCmPreference =
+                    websitePreferences.findPreference("federated_identity_api_list");
+
+            Assert.assertEquals(context.getString(R.string.automatically_blocked),
+                    fedCmPreference.getSummary());
+        });
+        settingsActivity.finish();
+    }
+
     @Test
     @MediumTest
     @Feature({"Preferences"})
@@ -1622,6 +1674,62 @@ public class SiteSettingsTest {
         initializeUpdateWaiter(false /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteAdditions")
+    public void testDesktopSitePeripherals() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategorySettings preferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            ChromeBaseCheckBoxPreference peripheralPref = preferences.findPreference(
+                    SingleCategorySettings.DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY);
+            PrefService prefService = UserPrefs.get(getBrowserContextHandle());
+            Assert.assertFalse("Peripherals setting should be OFF.",
+                    prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
+
+            preferences.onPreferenceChange(peripheralPref, true);
+            Assert.assertTrue("Peripherals setting should be ON.",
+                    prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
+
+            preferences.onPreferenceChange(peripheralPref, false);
+            Assert.assertFalse("Peripherals setting should be OFF.",
+                    prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
+        });
+        settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteAdditions")
+    public void testDesktopSiteExternalDisplay() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategorySettings preferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            ChromeBaseCheckBoxPreference externalDisplayPref = preferences.findPreference(
+                    SingleCategorySettings.DESKTOP_SITE_DISPLAY_TOGGLE_KEY);
+            PrefService prefService = UserPrefs.get(getBrowserContextHandle());
+            Assert.assertFalse("Display setting should be OFF.",
+                    prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
+
+            preferences.onPreferenceChange(externalDisplayPref, true);
+            Assert.assertTrue("Display setting should be ON.",
+                    prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
+
+            preferences.onPreferenceChange(externalDisplayPref, false);
+            Assert.assertFalse("Display setting should be OFF.",
+                    prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
+        });
+        settingsActivity.finish();
     }
 
     static class PermissionTestCase {

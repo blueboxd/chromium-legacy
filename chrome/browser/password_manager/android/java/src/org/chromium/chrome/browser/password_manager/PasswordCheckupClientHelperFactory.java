@@ -4,34 +4,39 @@
 
 package org.chromium.chrome.browser.password_manager;
 
+import androidx.annotation.VisibleForTesting;
+
 /**
  * This factory returns an implementation for the helper. The factory itself is also implemented
  * downstream.
  */
 public abstract class PasswordCheckupClientHelperFactory {
+    private static PasswordCheckupClientHelperFactory sInstance;
+
     /**
-     * Creates a new instance of PasswordCheckupClientHelperFactory.
+     * Return an instance of PasswordCheckupClientHelperFactory. If no factory was used yet, it is
+     * created.
      */
     public static PasswordCheckupClientHelperFactory getInstance() {
-        return new PasswordCheckupClientHelperFactoryImpl();
+        if (sInstance == null) sInstance = new PasswordCheckupClientHelperFactoryImpl();
+        return sInstance;
     }
 
     /**
      * Returns the downstream implementation provided by subclasses.
      *
      * @return An implementation of the {@link PasswordCheckupClientHelper} if one exists.
+     *
+     * TODO(crbug.com/1346239): Check if backend could be instantiated and throw error
      */
-    public PasswordCheckupClientHelper createHelper() {
+    public PasswordCheckupClientHelper createHelper()
+            throws PasswordCheckupClientHelper.PasswordCheckBackendException {
         return null;
     }
 
-    /**
-     * Returns whether the downstream implementation has the required versions of the
-     * dependency it relies on.
-     *
-     * @return True if the required dependency version is available, false otherwise.
-     */
-    public boolean isBackendVersionSupported() {
-        return false;
+    @VisibleForTesting
+    public static void setFactoryForTesting(
+            PasswordCheckupClientHelperFactory passwordCheckupClientHelperFactory) {
+        sInstance = passwordCheckupClientHelperFactory;
     }
 }

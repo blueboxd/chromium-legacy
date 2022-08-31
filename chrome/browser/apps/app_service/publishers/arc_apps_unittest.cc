@@ -10,6 +10,7 @@
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -435,4 +437,123 @@ TEST_F(ArcAppsPublisherTest,
 
   ASSERT_TRUE(result.has_value());
   ASSERT_FALSE(result.value());
+}
+
+TEST_F(
+    ArcAppsPublisherTest,
+    LaunchAppWithIntent_ViewFileIntent_SendsOpenUrlRequestWithIndividualFileMimeTypes) {
+  SetUpFileSystemInstance();
+
+  auto file1 = apps::mojom::IntentFile::New();
+  file1->url = FileInDownloads(profile(), base::FilePath("test1.png"));
+  file1->mime_type = "image/png";
+
+  auto file2 = apps::mojom::IntentFile::New();
+  file2->url = FileInDownloads(profile(), base::FilePath("test2.jpeg"));
+  file2->mime_type = "image/jpeg";
+
+  std::vector<apps::mojom::IntentFilePtr> files;
+  files.push_back(std::move(file1));
+  files.push_back(std::move(file2));
+
+  auto intent = apps_util::CreateViewIntentFromFiles(std::move(files));
+
+  const auto& fake_apps = arc_test()->fake_apps();
+  std::string package_name = fake_apps[0]->package_name;
+  std::string app_id = ArcAppListPrefs::GetAppId(fake_apps[0]->package_name,
+                                                 fake_apps[0]->activity);
+  arc_test()->app_instance()->SendRefreshAppList(fake_apps);
+
+  absl::optional<bool> result;
+  app_service_proxy()->LaunchAppWithIntent(
+      app_id, 0, std::move(intent), apps::mojom::LaunchSource::kFromFileManager,
+      /*window_info=*/nullptr,
+      base::BindLambdaForTesting(
+          [&result](bool callback_result) { result = callback_result; }));
+
+  FlushMojoCalls();
+
+  ASSERT_TRUE(result.has_value() && result.value());
+
+  ASSERT_EQ(file_system_instance()->handledUrlRequests().size(), 1);
+  auto& url_request = file_system_instance()->handledUrlRequests()[0];
+  ASSERT_EQ(url_request->action_type, arc::mojom::ActionType::VIEW);
+  ASSERT_EQ(url_request->urls.size(), 2);
+  ASSERT_EQ(url_request->urls[0]->mime_type, "image/png");
+  ASSERT_EQ(url_request->urls[1]->mime_type, "image/jpeg");
+  ASSERT_TRUE(
+      base::EndsWith(url_request->urls[0]->content_url.spec(), "test1.png"));
+  ASSERT_TRUE(
+      base::EndsWith(url_request->urls[1]->content_url.spec(), "test2.jpeg"));
+}
+
+TEST_F(ArcAppsPublisherTest,
+       LaunchAppWithIntent_ShareFileIntent_SendsOpenUrlRequest) {
+  SetUpFileSystemInstance();
+
+  std::string mime_type = "image/jpeg";
+  std::string file_name = "test.jpeg";
+
+  GURL url = FileInDownloads(profile(), base::FilePath(file_name));
+  auto intent = apps_util::CreateShareIntentFromFiles({url}, {mime_type});
+
+  const auto& fake_apps = arc_test()->fake_apps();
+  std::string package_name = fake_apps[0]->package_name;
+  std::string app_id = ArcAppListPrefs::GetAppId(fake_apps[0]->package_name,
+                                                 fake_apps[0]->activity);
+  arc_test()->app_instance()->SendRefreshAppList(fake_apps);
+
+  absl::optional<bool> result;
+  app_service_proxy()->LaunchAppWithIntent(
+      app_id, 0, std::move(intent), apps::mojom::LaunchSource::kFromFileManager,
+      /*window_info=*/nullptr,
+      base::BindLambdaForTesting(
+          [&result](bool callback_result) { result = callback_result; }));
+
+  FlushMojoCalls();
+
+  ASSERT_TRUE(result.has_value() && result.value());
+
+  ASSERT_EQ(file_system_instance()->handledUrlRequests().size(), 1);
+  auto& url_request = file_system_instance()->handledUrlRequests()[0];
+  ASSERT_EQ(url_request->action_type, arc::mojom::ActionType::SEND);
+  ASSERT_EQ(url_request->urls.size(), 1);
+  ASSERT_EQ(url_request->urls[0]->mime_type, mime_type);
+  ASSERT_TRUE(
+      base::EndsWith(url_request->urls[0]->content_url.spec(), file_name));
+}
+
+TEST_F(ArcAppsPublisherTest, LaunchAppWithIntent_ShareFilesIntent_SendsExtras) {
+  SetUpFileSystemInstance();
+
+  constexpr char kTestIntentText[] = "launch text";
+  constexpr char kTestIntentTitle[] = "launch title";
+  constexpr char kTestExtraKey[] = "extra_key";
+  constexpr char kTestExtraValue[] = "extra_value";
+
+  GURL url = FileInDownloads(profile(), base::FilePath("test.jpeg"));
+  auto intent = apps_util::CreateShareIntentFromFiles(
+      {url}, {"image/jpeg"}, kTestIntentText, kTestIntentTitle);
+  intent->extras = {std::make_pair(kTestExtraKey, kTestExtraValue)};
+
+  const auto& fake_apps = arc_test()->fake_apps();
+  std::string package_name = fake_apps[0]->package_name;
+  std::string app_id = ArcAppListPrefs::GetAppId(fake_apps[0]->package_name,
+                                                 fake_apps[0]->activity);
+  arc_test()->app_instance()->SendRefreshAppList(fake_apps);
+
+  app_service_proxy()->LaunchAppWithIntent(
+      app_id, 0, std::move(intent), apps::mojom::LaunchSource::kFromFileManager,
+      /*window_info=*/nullptr, base::DoNothing());
+  FlushMojoCalls();
+
+  ASSERT_EQ(file_system_instance()->handledUrlRequests().size(), 1);
+  auto& url_request = file_system_instance()->handledUrlRequests()[0];
+  ASSERT_EQ(url_request->action_type, arc::mojom::ActionType::SEND);
+  ASSERT_EQ(url_request->urls.size(), 1);
+  ASSERT_EQ(url_request->extras.value()[kTestExtraKey], kTestExtraValue);
+  ASSERT_EQ(url_request->extras.value()["android.intent.extra.TEXT"],
+            kTestIntentText);
+  ASSERT_EQ(url_request->extras.value()["android.intent.extra.SUBJECT"],
+            kTestIntentTitle);
 }

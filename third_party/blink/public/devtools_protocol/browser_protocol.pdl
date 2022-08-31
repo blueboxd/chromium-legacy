@@ -168,6 +168,8 @@ experimental domain Accessibility
       optional array of AXProperty ignoredReasons
       # This `Node`'s role, whether explicit or implicit.
       optional AXValue role
+      # This `Node`'s Chrome raw role.
+      optional AXValue chromeRole
       # The accessible name for this `Node`.
       optional AXValue name
       # The accessible description for this `Node`.
@@ -754,6 +756,7 @@ experimental domain Audits
       DeprecationExample
       DocumentDomainSettingWithoutOriginAgentClusterHeader
       EventPath
+      ExpectCTHeader
       GeolocationInsecureOrigin
       GeolocationInsecureOriginDeprecatedNotRemoved
       GetUserMediaInsecureOrigin
@@ -764,11 +767,14 @@ experimental domain Audits
       LocalCSSFileExtensionRejected
       MediaSourceAbortRemove
       MediaSourceDurationTruncatingBuffered
+      NavigateEventRestoreScroll
+      NavigateEventTransitionWhile
       NoSysexWebMIDIWithoutPermission
       NotificationInsecureOrigin
       NotificationPermissionRequestedIframe
       ObsoleteWebRtcCipherSuite
       OpenWebDatabaseInsecureContext
+      OverflowVisibleOnReplacedElement
       PictureSourceSrc
       PrefixedCancelAnimationFrame
       PrefixedRequestAnimationFrame
@@ -1811,6 +1817,8 @@ experimental domain CSS
       optional array of InheritedPseudoElementMatches inheritedPseudoElements
       # A list of CSS keyframed animations matching this node.
       optional array of CSSKeyframesRule cssKeyframesRules
+      # Id of the first parent element that does not have display: contents.
+      experimental optional DOM.NodeId parentLayoutNodeId
 
   # Returns all media queries parsed by the rendering engine.
   command getMediaQueries
@@ -2677,7 +2685,7 @@ domain DOM
       array of NodeId nodeIds
 
   # Returns NodeIds of current top layer elements.
-  # Top layer is rendered closest to the user within a viewport, therefore its elements always 
+  # Top layer is rendered closest to the user within a viewport, therefore its elements always
   # appear on top of all other content.
   experimental command getTopLayerElements
     returns
@@ -4873,6 +4881,7 @@ domain Network
       TextTrack
       XHR
       Fetch
+      Prefetch
       EventSource
       WebSocket
       Manifest
@@ -5101,6 +5110,12 @@ domain Network
       array of SignedCertificateTimestamp signedCertificateTimestampList
       # Whether the request complied with Certificate Transparency policy
       CertificateTransparencyCompliance certificateTransparencyCompliance
+      # The signature algorithm used by the server in the TLS server signature,
+      # represented as a TLS SignatureScheme code point. Omitted if not
+      # applicable or not known.
+      optional integer serverSignatureAlgorithm
+      # Whether the connection used Encrypted ClientHello
+      boolean encryptedClientHello
 
   # Whether the request complied with Certificate Transparency policy.
   type CertificateTransparencyCompliance extends string
@@ -7107,6 +7122,7 @@ domain Page
       screen-wake-lock
       serial
       shared-autofill
+      shared-storage
       storage-access-api
       sync-xhr
       trust-token-redemption
@@ -8974,6 +8990,14 @@ experimental domain Storage
     parameters
       # Security origin.
       string origin
+      # Comma separated list of StorageType to clear.
+      string storageTypes
+
+  # Clears storage for storage key.
+  command clearDataForStorageKey
+    parameters
+      # Storage key.
+      string storageKey
       # Comma separated list of StorageType to clear.
       string storageTypes
 

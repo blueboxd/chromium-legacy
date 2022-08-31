@@ -44,6 +44,9 @@
   /* Desktop media tab list colors. */ \
   E_CPONLY(kColorDesktopMediaTabListBorder) \
   E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
+  /* Download bubble colors. */\
+  E_CPONLY(kColorDownloadBubbleInfoBackground) \
+  E_CPONLY(kColorDownloadBubbleInfoIcon) \
   /* Download shelf colors. */ \
   E_CPONLY(kColorDownloadItemForeground) \
   E_CPONLY(kColorDownloadItemForegroundDangerous) \
@@ -213,6 +216,7 @@
   E_CPONLY(kColorPwaToolbarBackground) \
   E_CPONLY(kColorPwaToolbarButtonIcon) \
   E_CPONLY(kColorPwaToolbarButtonIconDisabled) \
+  E_CPONLY(kColorPwaScrollButtonBackground) \
   /* QR code colors. */ \
   E_CPONLY(kColorQrCodeBackground) \
   E_CPONLY(kColorQrCodeBorder) \

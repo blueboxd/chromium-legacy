@@ -32,6 +32,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.AppLauncher.AppURLHasChromeLaunchScheme" enum="Boolean"
+    expires_after="2023-07-04">
+  <owner>ajuma@chromium.org</owner>
+  <owner>bling-fundamentals@google.com</owner>
+  <summary>
+    This histogram counts the frequency of app launch attempts where the target
+    app is Chrome itself. This logged once per app launch attempt.
+  </summary>
+</histogram>
+
 <histogram name="IOS.BackgroundTimeBeforeColdStart" units="minutes"
     expires_after="2023-04-27">
   <owner>thegreenfrog@chromium.org</owner>
@@ -257,6 +267,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.CredentialExtension.IsEnabled.Startup" enum="Boolean"
+    expires_after="2023-07-01">
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    Logged once per app launch. Logs on startup whether the user had enabled the
+    credential provider in their iOS settings.
+  </summary>
+</histogram>
+
 <histogram name="IOS.CredentialExtension.KeychainSavePasswordFailureCount"
     units="count" expires_after="2022-12-11">
   <owner>rkgibson@chromium.org</owner>
@@ -365,6 +385,17 @@ chromium-metrics-reviews@google.com.
     The number of times the Credential Extension user unobfuscated a Password
     since last Chrome foregrounding. Reported when Chrome is put in foreground.
     Note: events where the count is zero were removed in M91.
+  </summary>
+</histogram>
+
+<histogram name="IOS.CredentialExtension.StatusDidChangeTo.Startup"
+    enum="Boolean" expires_after="2023-07-01">
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    Logged once per app launch if the status did changed. Logs the new status
+    value (enabled/disabled) of the credential provider in the user's iOS
+    settings on startup.
   </summary>
 </histogram>
 
@@ -896,7 +927,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.ApplicationHangTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -920,7 +951,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.ApplicationResumeTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -933,7 +964,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.AverageSuspendedMemory" units="MB"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1034,7 +1065,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.PeakMemoryUsage" units="MB"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1053,7 +1084,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.TimeToFirstDraw" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1188,6 +1219,36 @@ chromium-metrics-reviews@google.com.
     Measures the time from the end of user input in the omnibox to when the page
     is fully loaded. Only measures page loads initiated by user typing a URL or
     selecting a suggested entry from the URL bar.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PasswordManager.Favicons.Count" units="count"
+    expires_after="2023-07-01">
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    The number of favicons loaded (image, not monogram string) in the Password
+    Manager recorded when the view will disappear.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PasswordManager.Favicons.Percentage" units="%"
+    expires_after="2023-07-01">
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    The percentage of passwords that have a favicon that is an image in the
+    Password Manager recorded when the view will disappear.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PasswordManager.PasswordsWithFavicons.Count" units="count"
+    expires_after="2023-07-01">
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    The number of passwords with a favicon loaded in the Password Manager
+    recorded when the view will disappear.
   </summary>
 </histogram>
 
@@ -1686,6 +1747,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The method used to detect language in the web page during the
     CLD3-&gt;TFlite transition.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TrendingQueries" enum="TrendingQueryIndex"
+    expires_after="2023-07-24">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Logs a user tapping on a trending query and the index position of that query
+    in the module.
   </summary>
 </histogram>
 

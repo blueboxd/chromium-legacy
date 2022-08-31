@@ -162,6 +162,13 @@ buildflag_header("ios_cronet_buildflags") {
   flags = [ "CRONET_BUILD=$is_cronet_build" ]
 }
 
+enable_message_pump_epoll = is_linux || is_chromeos || is_android
+buildflag_header("message_pump_buildflags") {
+  header = "message_pump_buildflags.h"
+  header_dir = "base/message_loop"
+  flags = [ "ENABLE_MESSAGE_PUMP_EPOLL=$enable_message_pump_epoll" ]
+}
+
 # Base and everything it depends on should be a static library rather than
 # a source set. Base is more of a "library" in the classic sense in that many
 # small parts of it are used in many different contexts. This combined with a
@@ -183,6 +190,10 @@ mixed_component("base") {
     "allocator/allocator_check.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
+    "allocator/dispatcher/dispatcher.cc",
+    "allocator/dispatcher/dispatcher.h",
+    "allocator/dispatcher/reentry_guard.cc",
+    "allocator/dispatcher/reentry_guard.h",
     "as_const.h",
     "at_exit.cc",
     "at_exit.h",
@@ -220,6 +231,8 @@ mixed_component("base") {
     "cancelable_callback.h",
     "check.cc",
     "check.h",
+    "check_is_test.cc",
+    "check_is_test.h",
     "check_op.cc",
     "check_op.h",
     "command_line.cc",
@@ -502,7 +515,6 @@ mixed_component("base") {
     "native_library.cc",
     "native_library.h",
     "no_destructor.h",
-    "notreached.cc",
     "notreached.h",
     "observer_list.h",
     "observer_list_internal.cc",
@@ -556,7 +568,6 @@ mixed_component("base") {
     "profiler/metadata_recorder.h",
     "profiler/module_cache.cc",
     "profiler/module_cache.h",
-    "profiler/native_unwinder.h",
     "profiler/profile_builder.h",
     "profiler/register_context.h",
     "profiler/sample_metadata.cc",
@@ -1271,9 +1282,9 @@ mixed_component("base") {
       "process/process_iterator_mac.cc",
       "process/process_mac.cc",
       "process/process_metrics_mac.cc",
+      "profiler/frame_pointer_unwinder.cc",
+      "profiler/frame_pointer_unwinder.h",
       "profiler/module_cache_mac.cc",
-      "profiler/native_unwinder_apple.cc",
-      "profiler/native_unwinder_apple.h",
       "profiler/stack_sampler_mac.cc",
       "profiler/suspendable_thread_delegate_mac.cc",
       "profiler/suspendable_thread_delegate_mac.h",
@@ -1320,8 +1331,8 @@ mixed_component("base") {
 
     if (ios_stack_profiler_enabled) {
       sources += [
-        "profiler/native_unwinder_apple.cc",
-        "profiler/native_unwinder_apple.h",
+        "profiler/frame_pointer_unwinder.cc",
+        "profiler/frame_pointer_unwinder.h",
         "profiler/suspendable_thread_delegate_mac.cc",
         "profiler/suspendable_thread_delegate_mac.h",
       ]
@@ -1421,15 +1432,13 @@ mixed_component("base") {
 
   configs += [
     "//build/config:precompiled_headers",
-
-    # TODO(crbug.com/1292951): Enable.
-    # "//build/config/compiler:prevent_unsafe_narrowing",
-
+    "//build/config/compiler:prevent_unsafe_narrowing",
     "//build/config/compiler:wexit_time_destructors",
     "//build/config/compiler:wglobal_constructors",
   ]
 
   deps = [
+    ":message_pump_buildflags",
     "//base/allocator:buildflags",
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
@@ -1679,8 +1688,6 @@ mixed_component("base") {
       "android/reached_addresses_bitset.h",
       "android/reached_code_profiler.cc",
       "android/reached_code_profiler.h",
-      "android/record_histogram.cc",
-      "android/record_user_action.cc",
       "android/remove_stale_data.cc",
       "android/remove_stale_data.h",
       "android/scoped_hardware_buffer_fence_sync.cc",
@@ -1767,8 +1774,14 @@ mixed_component("base") {
       "logging_chromeos.cc",
       "system/sys_info_chromeos.cc",
     ]
-    if (is_chromeos_ash) {
-      sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
+
+    sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
+
+    if (current_cpu == "x64") {
+      sources += [
+        "profiler/frame_pointer_unwinder.cc",
+        "profiler/frame_pointer_unwinder.h",
+      ]
     }
   }
 
@@ -2278,6 +2291,13 @@ mixed_component("base") {
     ]
   }
 
+  if (enable_message_pump_epoll) {
+    sources += [
+      "message_loop/message_pump_epoll.cc",
+      "message_loop/message_pump_epoll.h",
+    ]
+  }
+
   # Android and MacOS have their own custom shared memory handle
   # implementations. e.g. due to supporting both POSIX and native handles.
   if (is_posix && !is_android && !is_apple) {
@@ -2319,8 +2339,7 @@ mixed_component("base") {
     ]
   }
 
-  if ((is_posix && !is_apple && !is_android && !is_chromeos_ash) ||
-      is_fuchsia) {
+  if ((is_posix && !is_apple && !is_android && !is_chromeos) || is_fuchsia) {
     sources += [ "power_monitor/power_monitor_device_source_stub.cc" ]
   }
 
@@ -2749,7 +2768,7 @@ test("base_perftests") {
       "allocator/partition_allocator/partition_alloc_perftest.cc",
       "allocator/partition_allocator/partition_lock_perftest.cc",
     ]
-    deps += [ "allocator/partition_allocator:test_support" ]
+    deps += [ ":partition_alloc_test_support" ]
   }
 
   data_deps = [
@@ -2834,7 +2853,8 @@ if (is_win) {
 }
 
 if ((is_win && (current_cpu == "x64" || current_cpu == "arm64")) || is_mac ||
-    (is_android && (current_cpu == "arm" || current_cpu == "arm64"))) {
+    (is_android && (current_cpu == "arm" || current_cpu == "arm64")) ||
+    (is_chromeos && current_cpu == "x64")) {
   # Must be a loadable module so that it can be loaded/unloaded at runtime
   # during testing.
   loadable_module("base_profiler_test_support_library") {
@@ -3021,6 +3041,7 @@ test("base_unittests") {
     "callback_list_unittest.cc",
     "callback_unittest.cc",
     "cancelable_callback_unittest.cc",
+    "check_is_test_unittest.cc",
     "check_unittest.cc",
     "command_line_unittest.cc",
     "component_export_unittest.cc",
@@ -3704,7 +3725,7 @@ test("base_unittests") {
     } else if (is_fuchsia) {
       sources += [ "allocator/partition_allocator/partition_alloc_base/fuchsia/fuchsia_logging_pa_unittest.cc" ]
     }
-    deps += [ "allocator/partition_allocator:test_support" ]
+    deps += [ ":partition_alloc_test_support" ]
   }
 
   if (is_mac) {
@@ -3755,7 +3776,10 @@ test("base_unittests") {
 
   if (use_libevent) {
     sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
-    deps += [ "//third_party/libevent" ]
+    deps += [
+      ":message_pump_buildflags",
+      "//third_party/libevent",
+    ]
   }
 
   if (is_fuchsia) {
@@ -3823,7 +3847,11 @@ test("base_unittests") {
     sources += [ "files/os_validation_win_unittest.cc" ]
   }
   if (is_apple) {
-    sources += [ "profiler/native_unwinder_apple_unittest.cc" ]
+    sources += [ "profiler/frame_pointer_unwinder_unittest.cc" ]
+  }
+  if (is_chromeos && current_cpu == "x64") {
+    sources += [ "profiler/frame_pointer_unwinder_unittest.cc" ]
+    deps += [ ":base_profiler_test_support_library" ]
   }
 
   if (use_allocator_shim) {
@@ -3987,8 +4015,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
-      "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
-      "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
       "android/java/src/org/chromium/base/task/PostTask.java",
@@ -4252,6 +4278,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/IntentUtilsTest.java",
       "android/javatests/src/org/chromium/base/LocaleUtilsTest.java",
       "android/javatests/src/org/chromium/base/ObserverListTest.java",
+      "android/javatests/src/org/chromium/base/PackageUtilsTest.java",
       "android/javatests/src/org/chromium/base/StrictModeContextTest.java",
       "android/javatests/src/org/chromium/base/UserDataHostTest.java",
       "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java",
@@ -4395,8 +4422,6 @@ if (is_android) {
     sources = [
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTask.java",
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",
-      "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
-      "android/junit/src/org/chromium/base/metrics/test/ShadowRecordUserAction.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
@@ -4444,8 +4469,6 @@ if (is_android) {
       "android/junit/src/org/chromium/base/library_loader/LinkerTest.java",
       "android/junit/src/org/chromium/base/memory/MemoryPressureMonitorTest.java",
       "android/junit/src/org/chromium/base/metrics/CachingUmaRecorderTest.java",
-      "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogramTest.java",
-      "android/junit/src/org/chromium/base/metrics/test/ShadowRecordUserActionTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildConnectionAllocatorTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildProcessConnectionTest.java",
       "android/junit/src/org/chromium/base/supplier/ObservableSupplierImplTest.java",
@@ -4622,4 +4645,63 @@ fuzzer_test("pickle_fuzzer") {
     "//base",
     "//base/test:test_support",
   ]
+}
+
+# TODO(1151236): Temporarily move test_support from
+# //base/allocator/partition_allocator/BUILD.gn to //base/BUILD.gn. After
+# fixing partition_allocator tests issue, we will move test_support to
+# //base/allocator/partition_allocator/BUILD.gn again.
+source_set("partition_alloc_test_support") {
+  testonly = true
+
+  sources = [
+    "allocator/partition_allocator/extended_api.cc",
+    "allocator/partition_allocator/extended_api.h",
+    "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h",
+  ]
+  if (is_posix) {
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_posix_for_testing.cc" ]
+  }
+  if (is_fuchsia) {
+    sources += [
+      "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_fuchsia_for_testing.cc",
+      "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_posix_for_testing.cc",
+    ]
+  }
+  if (is_win) {
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_win_for_testing.cc" ]
+  }
+  if (is_mac || is_ios) {
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_mac_for_testing.mm" ]
+  }
+  if (is_linux || is_chromeos) {
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_linux_for_testing.cc" ]
+  }
+  if (is_android) {
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_android_for_testing.cc" ]
+  }
+  public_deps = [
+    "allocator/partition_allocator:buildflags",
+    "//build:branding_buildflags",
+    "//build/config/compiler:compiler_buildflags",
+  ]
+  public_configs = []
+  if (is_fuchsia) {
+    public_deps += [
+      "//third_party/fuchsia-sdk/sdk/pkg/fit",
+      "//third_party/fuchsia-sdk/sdk/pkg/sync",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
+    ]
+
+    # Needed for users of spinning_mutex.h, which for performance reasons,
+    # contains inlined calls to `libsync` inside the header file.
+    # It appends an entry to the "libs" section of the dependent target.
+    public_configs += [ ":fuchsia_sync_lib" ]
+  }
+  deps = [ ":base" ]
+
+  if (!is_debug) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_speed" ]
+  }
 }

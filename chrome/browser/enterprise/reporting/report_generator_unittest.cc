@@ -25,6 +25,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_task_environment.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -170,9 +171,9 @@ class ReportGeneratorTest : public ::testing::Test {
 
     profile_manager_.CreateGuestProfile();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
     profile_manager_.CreateSystemProfile();
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();

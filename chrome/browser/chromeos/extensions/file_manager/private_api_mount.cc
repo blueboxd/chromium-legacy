@@ -27,7 +27,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "components/drive/event_logger.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/cpp/unzip.h"
@@ -194,10 +194,13 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
   VolumeManager* const volume_manager = VolumeManager::Get(profile);
   DCHECK(volume_manager);
 
+  std::string volume_id = params->volume_id;
+  volume_manager->ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(&volume_id);
+
   const base::WeakPtr<Volume> volume =
-      volume_manager->FindVolumeById(params->volume_id);
+      volume_manager->FindVolumeById(volume_id);
   if (!volume) {
-    LOG(ERROR) << "Cannot find volume " << Redact(params->volume_id);
+    LOG(ERROR) << "Cannot find volume " << Redact(volume_id);
     return RespondNow(Error(file_manager_private::ToString(
         api::file_manager_private::
             MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED)));

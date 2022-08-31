@@ -23,6 +23,12 @@ extern const char kHistogramName[];
 
 // Register applicable preferences with the provided registry.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Returns the console message to be shown in devtools when a URL is flagged by
+// a lookalike heuristic. If is_new_heuristic is true, the message is for a new
+// heuristic that's not fully launched and it has an extra line about future
+// behavior of Chrome.
+std::string GetConsoleMessage(const GURL& lookalike_url, bool is_new_heuristic);
 }
 
 using LookalikeTargetAllowlistChecker =
@@ -113,6 +119,20 @@ struct Top500DomainsParams {
   const char* const* edit_distance_skeletons;
   // Number of skeletons in `edit_distance_skeletons`.
   size_t num_edit_distance_skeletons;
+};
+
+struct ComboSquattingParams {
+  // List of brand names such as "google", "youtube".
+  // Should be usable in domain names (i.e. lower case, no punctuation except
+  // for - etc.)
+  const char* const* brand_names;
+  // Number of brand names in combo_squatting_brand_names.
+  size_t num_brand_names;
+
+  // List of popular keywords such as "login", "online".
+  const char* const* popular_keywords;
+  // Number of popular keywords in combo_squatting_keywords.
+  size_t num_popular_keywords;
 };
 
 struct DomainInfo {
@@ -250,6 +270,12 @@ bool IsHeuristicEnabledForHostname(
     reputation::HeuristicLaunchConfig::Heuristic heuristic,
     const std::string& lookalike_etld_plus_one,
     version_info::Channel channel);
+
+// Set brand names and keywords for testing Combo Squatting heuristic.
+void SetComboSquattingParamsForTesting(const ComboSquattingParams& params);
+
+// Reset brand names and keywords after testing Combo Squatting heuristic.
+void ResetComboSquattingParamsForTesting();
 
 // Returns true if the navigated_domain is flagged as Combo Squatting.
 // matched_domain is the suggested domain that will be shown to the user

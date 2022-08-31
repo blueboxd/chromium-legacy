@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1645954272419197032">請確認裝置資訊</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用盡</translation>
+<translation id="1664796644829245314">預覽「<ph name="PREVIEW_OBJECT" />」</translation>
 <translation id="1668469839109562275">內建 VPN</translation>
 <translation id="1672499492233627739">網路攝影機視訊畫面</translation>
 <translation id="1676557873873341166">正在錄影</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">視訊會議</translation>
 <translation id="1852934301711881861">安裝 ChromeOS Flex</translation>
 <translation id="1856388568474281774">向下鍵</translation>
+<translation id="1858620243986915808">附加螢幕截圖</translation>
 <translation id="1871569928317311284">關閉深色主題</translation>
 <translation id="1874612839560830905">最大傳輸單元</translation>
 <translation id="188114911237521550">關閉深色模式</translation>
@@ -427,7 +429,7 @@
 <translation id="4744944742468440486">所選內容的相關資訊</translation>
 <translation id="4751272708893364980">查看退貨授權記錄</translation>
 <translation id="4773299976671772492">已停止</translation>
-<translation id="4774530504324923332">你需要啟用了 RSU 的安全金鑰、QR 圖碼掃描器，以及另一部可以連上網際網路的裝置</translation>
+<translation id="4774530504324923332">你需要啟用了 RSU 的安全金鑰、QR code 掃描器，以及另一部可以連上網際網路的裝置</translation>
 <translation id="4782311465517282004">按住文字或在文字上按一下滑鼠右鍵後，就能取得定義、翻譯或單位轉換結果</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> 張相片</translation>
 <translation id="4793710386569335688">如需其他協助，請前往<ph name="BEGIN_LINK" />說明中心<ph name="END_LINK" />。</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">秘密金鑰</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
+<translation id="8018928621986160031">已儲存到「<ph name="FILE_LOCATION" />」</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">啟用自動色彩模式</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
 <translation id="8655295600908251630">版本</translation>
+<translation id="8655828773034788261">分享網址：</translation>
 <translation id="8660881923941176839">磅</translation>
 <translation id="8662671328352114214">加入 <ph name="TYPE" /> 網路</translation>
 <translation id="8671972493856476349">更新至 <ph name="VERSION_NUMBER" /> 並重新啟動</translation>

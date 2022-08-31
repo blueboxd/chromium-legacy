@@ -404,6 +404,15 @@
     "dependencies": ["permission:enterprise.reportingPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.reportingPrivate.getFileSystemInfo": {
+    "platforms": ["win", "mac", "linux"]
+  },
+  "enterprise.reportingPrivate.getAvInfo": {
+    "platforms": ["win"]
+  },
+  "enterprise.reportingPrivate.getHotfixes": {
+    "platforms": ["win"]
+  },
   "experimental.devtools.audits": {
     "nocompile": true,
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
@@ -764,6 +773,10 @@
       "chrome://settings/*"
     ]
   }],
+  "sidePanel": {
+    "dependencies": ["permission:sidePanel"],
+    "contexts": ["blessed_extension"]
+  },
   "speechRecognitionPrivate": {
     "dependencies": ["permission:speechRecognitionPrivate"],
     "contexts": ["blessed_extension"]
@@ -937,13 +950,18 @@
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/775961
     ]
   },
-  "webstorePrivate": {
+  "webstorePrivate": [{
     "dependencies": ["permission:webstorePrivate"],
     // NOTE: even though this is only used by the webstore hosted app, which
     // normally would mean blessed_web_page, component hosted apps are actually
     // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "dev",
+    "contexts": ["web_page"],
+    "matches": ["https://webstore.google.com/*"],
+    "feature_flag": "NewWebstoreDomain"
+  }],
   "webviewTag": {
     "internal": true,
     "channel": "stable",

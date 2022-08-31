@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
+#include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
@@ -15,13 +16,16 @@ FragmentData::RareData::RareData() : unique_id(NewUniqueObjectId()) {}
 FragmentData::RareData::~RareData() = default;
 
 void FragmentData::RareData::SetLayer(PaintLayer* new_layer) {
-  if (layer && layer != new_layer)
+  if (layer && layer != new_layer) {
     layer->Destroy();
+    sticky_constraints = nullptr;
+  }
   layer = new_layer;
 }
 
 void FragmentData::RareData::Trace(Visitor* visitor) const {
   visitor->Trace(layer);
+  visitor->Trace(sticky_constraints);
   visitor->Trace(next_fragment_);
 }
 
@@ -92,13 +96,13 @@ const TransformPaintPropertyNodeOrAlias& FragmentData::PostScrollTranslation()
 
 const ClipPaintPropertyNodeOrAlias& FragmentData::PreClip() const {
   if (const auto* properties = PaintProperties()) {
-    if (const auto* clip = properties->ClipPathClip()) {
-      // SPv1 composited clip-path has an alternative clip tree structure.
-      // If the clip-path is parented by the mask clip, it is only used
-      // to clip mask layer chunks, and not in the clip inheritance chain.
+    if (const auto* clip = properties->PixelMovingFilterClipExpander()) {
       DCHECK(clip->Parent());
-      if (clip->Parent() != properties->MaskClip())
-        return *clip->Parent();
+      return *clip->Parent();
+    }
+    if (const auto* clip = properties->ClipPathClip()) {
+      DCHECK(clip->Parent());
+      return *clip->Parent();
     }
     if (const auto* mask_clip = properties->MaskClip()) {
       DCHECK(mask_clip->Parent());
@@ -138,16 +142,6 @@ const EffectPaintPropertyNodeOrAlias& FragmentData::PreEffect() const {
   return LocalBorderBoxProperties().Effect();
 }
 
-const EffectPaintPropertyNodeOrAlias& FragmentData::PreFilter() const {
-  if (const auto* properties = PaintProperties()) {
-    if (const auto* filter = properties->Filter()) {
-      DCHECK(filter->Parent());
-      return *filter->Parent();
-    }
-  }
-  return LocalBorderBoxProperties().Effect();
-}
-
 const EffectPaintPropertyNodeOrAlias& FragmentData::PostIsolationEffect()
     const {
   if (const auto* properties = PaintProperties()) {
@@ -155,17 +149,6 @@ const EffectPaintPropertyNodeOrAlias& FragmentData::PostIsolationEffect()
       return *properties->EffectIsolationNode();
   }
   return LocalBorderBoxProperties().Effect();
-}
-
-void FragmentData::MapRectToFragment(const FragmentData& fragment,
-                                     gfx::Rect& rect) const {
-  if (this == &fragment)
-    return;
-  const auto& from_transform = LocalBorderBoxProperties().Transform();
-  const auto& to_transform = fragment.LocalBorderBoxProperties().Transform();
-  rect.Offset(ToRoundedPoint(PaintOffset()).OffsetFromOrigin());
-  GeometryMapper::SourceToDestinationRect(from_transform, to_transform, rect);
-  rect.Offset(-ToRoundedPoint(fragment.PaintOffset()).OffsetFromOrigin());
 }
 
 }  // namespace blink

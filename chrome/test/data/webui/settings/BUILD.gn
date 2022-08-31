@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -34,7 +35,7 @@ preprocessed_files = [
 if (!is_chromeos_ash) {
   preprocessed_files += [
     "test_languages_browser_proxy.ts",
-    "languages_page_tests.ts",
+    "spell_check_page_tests.ts",
     "languages_page_metrics_test_browser.ts",
   ]
 }
@@ -69,7 +70,6 @@ non_preprocessed_files = [
   "fake_settings_private.ts",
   "help_page_test.ts",
   "idle_load_tests.ts",
-  "multi_store_exception_entry_test.ts",
   "multi_store_password_ui_entry_test.ts",
   "on_startup_page_tests.ts",
   "passwords_and_autofill_fake_data.ts",
@@ -156,8 +156,8 @@ if (is_chromeos_ash) {
 } else {
   non_preprocessed_files += [
     "fake_language_settings_private.ts",
-    "languages_subpage_details_tests.ts",
-    "languages_subpage_tests.ts",
+    "languages_page_details_tests.ts",
+    "languages_page_tests.ts",
     "languages_tests.ts",
     "metrics_reporting_tests.ts",
     "people_page_manage_profile_test.ts",
@@ -177,6 +177,7 @@ if (is_win && is_chrome_branded) {
 preprocessed_folder = "$target_gen_dir/preprocessed"
 
 preprocess_if_expr("preprocess") {
+  defines = chrome_grit_defines
   in_folder = "./"
   out_folder = preprocessed_folder
   in_files = preprocessed_files

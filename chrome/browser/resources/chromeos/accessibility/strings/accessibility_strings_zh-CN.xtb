@@ -511,6 +511,7 @@
 <translation id="4300318234632215983">读出链接网址</translation>
 <translation id="4322625298640984693">赭色</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{1个点}=3{3个点}other{#个点}}</translation>
+<translation id="4352022650330571548">输入“<ph name="PHRASE" />”</translation>
 <translation id="4372435075475052704">最小值为<ph name="X" /></translation>
 <translation id="4372705107434148843">关闭语音</translation>
 <translation id="4376316291247992553">以盲文的形式查看图形</translation>
@@ -802,7 +803,6 @@
 <translation id="641759969622533235">{COUNT,plural, =1{1个冒号}other{#个冒号}}</translation>
 <translation id="6444046323172968959">提醒对话框</translation>
 <translation id="6452403590345320472">目录</translation>
-<translation id="6457542714329819968">输入</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
 <translation id="646954774886932461">索引</translation>
 <translation id="6475604559827479857">字词的突出显示颜色：</translation>
@@ -860,6 +860,7 @@
 <translation id="6910211073230771657">已删除</translation>
 <translation id="6910969481785184048">开启、关闭和停止</translation>
 <translation id="6919104639734799681">显示表格列表</translation>
+<translation id="692135145298539227">删除</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6949846980769640811">中碧蓝色</translation>
 <translation id="6951482098621102657">没有下一个 5 级标题</translation>
@@ -927,7 +928,6 @@
 <translation id="7356610683936413584">说明列表详情</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{1个&amp;号}other{#个&amp;号}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7388656272362719103">删除上一个字符</translation>
 <translation id="738899727977260036">岩蓝色</translation>
 <translation id="7393979322571982935">提示音和设置</translation>
 <translation id="739763518212184081">上一行</translation>

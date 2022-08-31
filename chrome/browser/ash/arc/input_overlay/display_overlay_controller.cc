@@ -150,8 +150,9 @@ void DisplayOverlayController::RemoveNudgeView() {
 }
 
 void DisplayOverlayController::OnNudgeDismissed() {
-  touch_injector_->set_first_launch(false);
   RemoveNudgeView();
+  DCHECK(touch_injector_);
+  touch_injector_->set_show_nudge(false);
 }
 
 gfx::Point DisplayOverlayController::CalculateNudgePosition(int nudge_width) {
@@ -225,7 +226,7 @@ void DisplayOverlayController::OnMenuEntryPressed() {
   SetDisplayMode(DisplayMode::kMenu);
 
   input_menu_view_ = parent_view->AddChildView(
-      InputMenuView::BuildMenuView(this, menu_entry_));
+      InputMenuView::BuildMenuView(this, menu_entry_, parent_view->size()));
   // Hide the menu entry when the menu is displayed.
   menu_entry_->SetVisible(false);
 }
@@ -319,6 +320,8 @@ void DisplayOverlayController::RemoveEducationalView() {
 
 void DisplayOverlayController::OnEducationalViewDismissed() {
   SetDisplayMode(DisplayMode::kView);
+  DCHECK(touch_injector_);
+  touch_injector_->set_first_launch(false);
 }
 
 views::Widget* DisplayOverlayController::GetOverlayWidget() {
@@ -385,7 +388,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       AddInputMappingView(overlay_widget);
       AddMenuEntryView(overlay_widget);
       ClearFocusOnMenuEntry();
-      if (touch_injector_->first_launch())
+      if (touch_injector_->show_nudge())
         AddNudgeView(overlay_widget);
       overlay_widget->GetNativeWindow()->SetEventTargetingPolicy(
           aura::EventTargetingPolicy::kNone);
@@ -507,7 +510,7 @@ void DisplayOverlayController::OnApplyMenuState() {
 }
 
 void DisplayOverlayController::OnMouseEvent(ui::MouseEvent* event) {
-  if (display_mode_ == DisplayMode::kView ||
+  if ((display_mode_ == DisplayMode::kView && !nudge_view_) ||
       event->type() != ui::ET_MOUSE_PRESSED) {
     return;
   }
@@ -516,7 +519,7 @@ void DisplayOverlayController::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void DisplayOverlayController::OnTouchEvent(ui::TouchEvent* event) {
-  if (display_mode_ == DisplayMode::kView ||
+  if ((display_mode_ == DisplayMode::kView && !nudge_view_) ||
       event->type() != ui::ET_TOUCH_PRESSED) {
     return;
   }

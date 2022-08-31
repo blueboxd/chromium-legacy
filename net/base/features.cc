@@ -23,9 +23,6 @@ const base::Feature kAvoidH2Reprioritization{"AvoidH2Reprioritization",
 const base::Feature kCapReferrerToOriginOnCrossOrigin{
     "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCookieDomainAttributeEmptyString{
-    "CookieDomainAttributeEmptyString", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDnsTransactionDynamicTimeouts{
     "DnsTransactionDynamicTimeouts", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -328,4 +325,13 @@ const base::FeatureParam<int>
         &kOptimizeNetworkBuffers, "filter_source_stream_buffer_size",
         32 * 1024};
 
+const base::FeatureParam<bool> kOptimizeNetworkBuffersInputStreamCheckAvailable{
+    &kOptimizeNetworkBuffers, "input_stream_check_available", true};
+
+const base::Feature kStorageAccessAPI{"StorageAccessAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr int kStorageAccessAPIDefaultImplicitGrantLimit = 5;
+const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
+    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit",
+    kStorageAccessAPIDefaultImplicitGrantLimit};
 }  // namespace net::features

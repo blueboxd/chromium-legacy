@@ -14,9 +14,10 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gtk/gtk_ui_platform.h"
-#include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/linux_ui/window_frame_provider.h"
+#include "ui/linux/linux_ui_base.h"
+#include "ui/linux/window_frame_provider.h"
 #include "ui/views/window/frame_buttons.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -36,7 +37,7 @@ class NativeThemeGtk;
 class SettingsProvider;
 
 // Interface to GTK desktop features.
-class GtkUi : public views::LinuxUI {
+class GtkUi : public ui::LinuxUiBase {
  public:
   GtkUi();
 
@@ -66,15 +67,15 @@ class GtkUi : public views::LinuxUI {
       std::string* family_out,
       int* size_pixels_out,
       int* style_out,
-      gfx::Font::Weight* weight_out,
+      int* weight_out,
       gfx::FontRenderParams* params_out) const override;
 
   // ui::ShellDialogLinux:
   ui::SelectFileDialog* CreateSelectFileDialog(
-      ui::SelectFileDialog::Listener* listener,
+      void* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) const override;
 
-  // views::LinuxUI:
+  // ui::LinuxUi:
   bool Initialize() override;
   bool GetColor(int id, SkColor* color, bool use_custom_frame) const override;
   bool GetDisplayProperty(int id, int* result) const override;
@@ -92,18 +93,17 @@ class GtkUi : public views::LinuxUI {
   float GetDeviceScaleFactor() const override;
   bool PreferDarkTheme() const override;
   bool AnimationsEnabled() const override;
-  std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
-  views::WindowFrameProvider* GetWindowFrameProvider(bool solid_frame) override;
+  std::unique_ptr<ui::NavButtonProvider> CreateNavButtonProvider() override;
+  ui::WindowFrameProvider* GetWindowFrameProvider(bool solid_frame) override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   std::string GetCursorThemeName() override;
   int GetCursorThemeSize() override;
-  std::vector<std::string> GetAvailableSystemThemeNamesForTest() const override;
-  void SetSystemThemeByNameForTest(const std::string& theme_name) override;
-  ui::NativeTheme* GetNativeTheme() const override;
+  ui::NativeTheme* GetNativeThemeImpl() const override;
 
   // ui::TextEditKeybindingDelegate:
-  bool MatchEvent(const ui::Event& event,
-                  std::vector<ui::TextEditCommandAuraLinux>* commands) override;
+  bool GetTextEditCommandsForEvent(
+      const ui::Event& event,
+      std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   // printing::PrintingContextLinuxDelegate:
@@ -197,8 +197,8 @@ class GtkUi : public views::LinuxUI {
   // Paints a native window frame.  Typically only one of these will be
   // non-null.  The exception is when the user starts or stops their compositor
   // while Chrome is running.
-  std::unique_ptr<views::WindowFrameProvider> solid_frame_provider_;
-  std::unique_ptr<views::WindowFrameProvider> transparent_frame_provider_;
+  std::unique_ptr<ui::WindowFrameProvider> solid_frame_provider_;
+  std::unique_ptr<ui::WindowFrameProvider> transparent_frame_provider_;
 };
 
 }  // namespace gtk

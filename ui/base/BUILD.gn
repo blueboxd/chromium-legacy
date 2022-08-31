@@ -389,10 +389,6 @@ component("base") {
         "accelerators/menu_label_accelerator_util_linux.h",
         "linux/linux_desktop.cc",
         "linux/linux_desktop.h",
-        "linux/linux_ui_delegate.cc",
-        "linux/linux_ui_delegate.h",
-        "linux/linux_ui_delegate_stub.cc",
-        "linux/linux_ui_delegate_stub.h",
       ]
     }
 
@@ -1013,10 +1009,7 @@ test("ui_base_unittests") {
     ]
 
     if (is_mac) {
-      sources += [
-        "test/scoped_fake_nswindow_fullscreen_unittest.mm",
-        "test/view_tree_validator_unittest.mm",
-      ]
+      sources += [ "test/view_tree_validator_unittest.mm" ]
     }
   }
 

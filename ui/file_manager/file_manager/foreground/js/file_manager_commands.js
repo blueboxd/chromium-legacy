@@ -1000,7 +1000,7 @@ CommandHandler.COMMANDS_['new-window'] = new (class extends FilesCommand {
   execute(event, fileManager) {
     fileManager.launchFileManager({
       currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
-          fileManager.getCurrentDirectoryEntry().toURL()
+          fileManager.getCurrentDirectoryEntry().toURL(),
     });
   }
 
@@ -1288,7 +1288,7 @@ CommandHandler.registerUndoDeleteToast = function(fileManager) {
       callback: () => {
         fileManager.fileOperationManager.restoreDeleted(
             assert(e.trashedEntries));
-      }
+      },
     });
   };
 
@@ -2413,7 +2413,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = new (class extends FilesCommand {
           chrome.fileManagerPrivate.openSettingsSubpage('crostini/sharedPaths');
           CommandHandler.recordMenuItemSelected(
               CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST);
-        }
+        },
       });
     }
     // Show a confirmation dialog if we are sharing the root of a volume.
@@ -2490,7 +2490,7 @@ CommandHandler
               'app-management/pluginVm/sharedPaths');
           CommandHandler.recordMenuItemSelected(
               CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING_TOAST);
-        }
+        },
       });
     }
     // Show a confirmation dialog if we are sharing the root of a volume.
@@ -2971,7 +2971,7 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new (class extends FilesCommand {
                 {
                   data: arrayBuffer,
                   layout: chrome.wallpaper.WallpaperLayout.CENTER_CROPPED,
-                  filename: 'wallpaper'
+                  filename: 'wallpaper',
                 },
                 () => {
                   if (chrome.runtime.lastError) {

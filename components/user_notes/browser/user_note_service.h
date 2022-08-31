@@ -21,16 +21,16 @@
 #include "components/user_notes/interfaces/user_note_storage.h"
 #include "components/user_notes/interfaces/user_notes_ui_delegate.h"
 #include "components/user_notes/model/user_note.h"
+#include "content/public/browser/weak_document_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/annotation/annotation.mojom.h"
 
 class UserNoteUICoordinatorTest;
 
 namespace content {
 class RenderFrameHost;
 }  // namespace content
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
 
 namespace user_notes {
 
@@ -83,14 +83,8 @@ class UserNoteService : public KeyedService,
 
   // Called by a note manager when the user selects "Add a note" from the
   // associated page's context menu. Kicks off the note creation process.
-  // TODO(gujen) and TODO(bokan): Make the renderer notify the manager and the
-  // manager call this method. Also consider pre-creating the agent on the
-  // renderer side so it is immediately ready when the browser side receives the
-  // request.
   void OnAddNoteRequested(content::RenderFrameHost* frame,
-                          std::string original_text,
-                          std::string selector,
-                          gfx::Rect rect);
+                          bool has_selected_text);
 
   // Called by a note manager when a user selects a web highlight in the page.
   // This causes the associated note to become focused in the UserNotesUI.
@@ -102,10 +96,10 @@ class UserNoteService : public KeyedService,
                       content::RenderFrameHost* rfh) override;
   void OnNoteDeleted(const base::UnguessableToken& id) override;
   void OnNoteCreationDone(const base::UnguessableToken& id,
-                          const std::string& note_content) override;
+                          const std::u16string& note_content) override;
   void OnNoteCreationCancelled(const base::UnguessableToken& id) override;
   void OnNoteEdited(const base::UnguessableToken& id,
-                    const std::string& note_content) override;
+                    const std::u16string& note_content) override;
 
   // UserNoteStorage implementation
   void OnNotesChanged() override;
@@ -127,12 +121,33 @@ class UserNoteService : public KeyedService,
   friend class UserNoteInstanceTest;
   friend class UserNoteUtilsTest;
   friend class ::UserNoteUICoordinatorTest;
+  FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest,
+                           OnNoteMetadataFetchedForNavigationSomeNotes);
+  FRIEND_TEST_ALL_PREFIXES(
+      UserNoteServiceTest,
+      OnNoteMetadataFetchedForNavigationSomeNotesBackground);
+  FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest,
+                           OnNoteMetadataFetchedForNavigationNoNotes);
+  FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest,
+                           OnNoteMetadataFetchedForNavigationNoNotesBackground);
   FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest, OnNoteMetadataFetched);
   FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest, OnNoteModelsFetched);
   FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest, OnFrameChangesApplied);
 
+  void InitializeNewNoteForCreation(
+      content::WeakDocumentPtr document,
+      bool is_page_level,
+      mojo::PendingReceiver<blink::mojom::AnnotationAgentHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AnnotationAgent> agent_remote,
+      const std::string& serialized_selector,
+      const std::u16string& selected_text);
+
   // Private helpers used when processing note storage changes. Marked virtual
   // for tests to override.
+  virtual void OnNoteMetadataFetchedForNavigation(
+      const std::vector<content::RenderFrameHost*>& all_frames,
+      const content::RenderFrameHost* navigated_frame,
+      UserNoteMetadataSnapshot metadata_snapshot);
   virtual void OnNoteMetadataFetched(
       const std::vector<content::RenderFrameHost*>& all_frames,
       UserNoteMetadataSnapshot metadata_snapshot);

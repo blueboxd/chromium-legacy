@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kör laddningstest</translation>
 <translation id="1631385268983122904">Sätt inte tillbaka batteriet i enheten än</translation>
-<translation id="1639239467298939599">Läser in</translation>
+<translation id="1639239467298939599">Profilen läses in</translation>
 <translation id="1641857168437328880">Dokumentmatare (ensidig)</translation>
 <translation id="1643449475550628585">Byt bakgrundsbild varje dag</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1645954272419197032">Bekräfta enhetsinformation</translation>
 <translation id="1662989795263954667">Har stoppats – slut på bläck</translation>
+<translation id="1664796644829245314">Förhandsgranska <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Inbyggt VPN</translation>
 <translation id="1672499492233627739">Videoflöde från webbkameran</translation>
 <translation id="1676557873873341166">Spelar in video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferenser</translation>
 <translation id="1852934301711881861">Installera ChromeOS Flex</translation>
 <translation id="1856388568474281774">Nedåtpiltangenten</translation>
+<translation id="1858620243986915808">Bifoga skärmbild</translation>
 <translation id="1871569928317311284">Inaktivera mörkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Inaktivera mörkt läge</translation>
@@ -797,6 +799,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7978412674231730200">Privat nyckel</translation>
 <translation id="7982789257301363584">Nätverk</translation>
 <translation id="7994702968232966508">EAP-metod</translation>
+<translation id="8018928621986160031">Sparades i <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktivera automatiskt färgläge</translation>
@@ -865,6 +868,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="8576249514688522074">Inte initierat</translation>
 <translation id="8620617069779373398">Dirigeringsstatus</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Dela webbadress:</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8662671328352114214">Anslut till <ph name="TYPE" />-nätverket</translation>
 <translation id="8671972493856476349">Uppdatera till version <ph name="VERSION_NUMBER" /> och starta om enheten</translation>

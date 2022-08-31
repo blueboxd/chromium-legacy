@@ -69,8 +69,54 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // LayoutResult::OutOfFlowPositionedDescendants.
   void Run(const LayoutBox* only_layout = nullptr);
 
-  // Handle the layout of any OOF elements in a fragmentation context.
-  void HandleFragmentation();
+  struct ColumnBalancingInfo {
+    DISALLOW_NEW();
+
+   public:
+    ColumnBalancingInfo() = default;
+
+    bool HasOutOfFlowFragmentainerDescendants() const {
+      return !out_of_flow_fragmentainer_descendants.IsEmpty();
+    }
+    void SwapOutOfFlowFragmentainerDescendants(
+        HeapVector<NGLogicalOOFNodeForFragmentation>* descendants) {
+      DCHECK(descendants->IsEmpty());
+      std::swap(out_of_flow_fragmentainer_descendants, *descendants);
+    }
+
+    void PropagateSpaceShortage(LayoutUnit space_shortage);
+
+    // The list of columns to balance.
+    NGContainerFragmentBuilder::ChildrenVector columns;
+    // The list of OOF fragmentainer descendants of |columns|.
+    HeapVector<NGLogicalOOFNodeForFragmentation>
+        out_of_flow_fragmentainer_descendants;
+    // The smallest space shortage found while laying out the members of
+    // |out_of_flow_fragmentainer_descendants| within the set of existing
+    // |columns|.
+    LayoutUnit minimal_space_shortage = kIndefiniteSize;
+    // The number of new columns needed to hold the
+    // |out_of_flow_fragmentainer_descendants| within the existing set of
+    // |columns|.
+    wtf_size_t num_new_columns = 0;
+    // True if there is any violating breaks found when performing layout on the
+    // |out_of_flow_fragmentainer_descendants|. Since break avoidance rules
+    // don't apply to OOFs, this can only happen when a monolithic OOF has to
+    // overflow.
+    bool has_violating_break = false;
+
+    void Trace(Visitor* visitor) const {
+      visitor->Trace(columns);
+      visitor->Trace(out_of_flow_fragmentainer_descendants);
+    }
+  };
+
+  // Handle the layout of any OOF elements in a fragmentation context. If
+  // |column_balancing_info| is set, perform layout on the column and OOF
+  // members of |column_balancing_info| rather than of the builder, and keep
+  // track of any info needed for the OOF children to affect column balancing.
+  void HandleFragmentation(
+      ColumnBalancingInfo* column_balancing_info = nullptr);
 
   // Information needed to position descendant within a containing block.
   // Geometry expressed here is complicated:
@@ -181,11 +227,12 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     NGLogicalOutOfFlowDimensions node_dimensions;
 
     bool inline_size_depends_on_min_max_sizes = false;
-    bool block_size_depends_on_layout = false;
 
     // If true, a cached layout result was found. See the comment for
     // |initial_layout_result| for more details.
     bool has_cached_layout_result = false;
+
+    bool disable_first_tier_cache = false;
 
     // The offset from the OOF to the top of the fragmentation context root.
     // This should only be used when laying out a fragmentainer descendant.
@@ -340,6 +387,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   NGLogicalStaticPosition ToStaticPositionForLegacy(
       NGLogicalStaticPosition position) const;
 
+  const NGContainerFragmentBuilder::ChildrenVector&
+  FragmentationContextChildren() const {
+    DCHECK(container_builder_->IsBlockFragmentationContextRoot());
+    return column_balancing_info_ ? column_balancing_info_->columns
+                                  : container_builder_->Children();
+  }
+
   NGBoxFragmentBuilder* container_builder_;
   ContainingBlockInfo default_containing_block_info_for_absolute_;
   ContainingBlockInfo default_containing_block_info_for_fixed_;
@@ -353,6 +407,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // Holds the children of an inner multicol if we are laying out OOF elements
   // inside a nested fragmentation context.
   HeapVector<MulticolChildInfo>* multicol_children_;
+  // If set, we are currently attempting to balance the columns of a multicol.
+  // In which case, we need to know how much any OOF fragmentainer descendants
+  // will affect column balancing, if any, without actually adding the OOFs to
+  // the associated columns.
+  ColumnBalancingInfo* column_balancing_info_ = nullptr;
   // The block size of the multi-column (before adjustment for spanners, etc.)
   // This is used to calculate the column size of any newly added proxy
   // fragments when handling fragmentation for abspos elements.

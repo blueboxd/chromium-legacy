@@ -13,6 +13,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="1185134272377778587">Rreth Chromium</translation>
 <translation id="1203500561924088507">Faleminderit që e instalove. Duhet të rinisësh shfletuesin përpara se të përdorësh <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1315551408014407711">Konfiguro profilin tënd të ri të Chromium</translation>
+<translation id="1385859895174722837">"Asistenti i Google" në Chromium</translation>
 <translation id="1396446129537741364">Chromium po përpiqet të shfaqë fjalëkalimet.</translation>
 <translation id="1414495520565016063">Je i identifikuar në Chromium!</translation>
 <translation id="1524282610922162960">Ndaj një skedë të Chromium</translation>
@@ -24,6 +25,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen për këtë llogari. "Llogaritë e tua të Google" mund t'i menaxhosh te <ph name="SETTINGS_LINK_BEGIN" />Cilësimet<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Po shkarkohet...</translation>
 <translation id="1708666629004767631">Ofrohet një version i ri më i sigurt i Chromium.</translation>
+<translation id="17264556997921157">Mund të shikosh dhe të heqësh temat e interesit që përdorin sajtet për të të shfaqur reklama. Chromium i përllogarit interesat e tu bazuar në historikun tënd të shfletimit së fundi.</translation>
 <translation id="1774152462503052664">Lejo që Chromium të ekzekutohet në sfond</translation>
 <translation id="1779356040007214683">Për ta bërë më të sigurt Chromium, çaktivizuam disa shtesa që nuk janë të listuara në <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dhe që mund të jenë shtuar pa dijeninë tënde.</translation>
 <translation id="1808667845054772817">Instalo përsëri Chromium</translation>
@@ -42,6 +44,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="2018879682492276940">Instalimi nuk u krye. Provo përsëri.</translation>
 <translation id="2020032459870799438">Për të kontrolluar nëse fjalëkalimet e tjera janë të sigurta nga nxjerrjet e paautorizuara të të dhënave dhe probleme të tjera të sigurisë, <ph name="BEGIN_LINK" />identifikohu në Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Zgjidh nëse do ta përfshish historikun e Chromium për përvoja më të personalizuara në shërbimet e Google</translation>
+<translation id="2088953378266246249">Informacione rreth mënyrës se si i menaxhon Chromium certifikatat e veta rrënjë</translation>
 <translation id="2174178932569897599">Personalizo Chromium</translation>
 <translation id="2174917724755363426">Instalimi nuk përfundoi. E konfirmon që dëshiron ta anulosh?</translation>
 <translation id="2185166961232948079">Chromium - identifikimi në rrjet - <ph name="PAGE_TITLE" /></translation>
@@ -103,6 +106,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="3474745554856756813">Kjo do të fshijë <ph name="ITEMS_COUNT" /> artikuj nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chromium si <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> mund të kalojë nga një profil i Chromium te një tjetër</translation>
 <translation id="3509308970982693815">Mbyll të gjitha dritaret e Chromium dhe provo sërish.</translation>
+<translation id="3518180795744733843">"Asistenti i Google" në Chromium mund të kryejë veprime nëpër sajte uebi për ty</translation>
 <translation id="3533435340678213462">Për të mbrojtur privatësinë tënde, ne fshijmë automatikisht interesat e tua që janë më të vjetra se 4 javë. Ndërsa vazhdon të shfletosh, një interes mund të shfaqet përsëri në listë. Ndryshe, mund të heqësh interesat që nuk dëshiron që Chromium të marrë parasysh.</translation>
 <translation id="3567254597502212821">Historiku yt i shfletimit, regjistri i sajteve që ke vizituar duke përdorur Chromium në këtë pajisje.</translation>
 <translation id="3575459661164320785">Ka një softuer keqdashës në kompjuterin tënd. Chromium mund ta heqë atë, të restaurojë cilësimet e tua dhe të çaktivizojë shtesat për të bërë që shfletuesi yt të punojë përsëri si normalisht.</translation>
@@ -364,6 +368,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="9185526690718004400">Nise përsëri për të përditësuar &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium mund të mos funksionojë si duhet sepse nuk mbështetet më në Windows XP ose Windows Vista</translation>
+<translation id="942598560705308788">Certifikatat e menaxhuara nga Chromium</translation>
 <translation id="945990405696787151">Për të marrë përditësimet e ardhshme të Chromium, do të të duhet macOS 10.13 e lart. Ky kompjuter përdor OS X 10.11.</translation>
 <translation id="965162752251293939">Kush po e përdor Chromium?</translation>
 <translation id="967427899662692980">Merr sigurinë më të fortë të Chromium</translation>

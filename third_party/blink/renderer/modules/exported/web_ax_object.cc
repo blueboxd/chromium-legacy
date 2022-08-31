@@ -238,6 +238,10 @@ void WebAXObject::Serialize(ui::AXNodeData* node_data,
   private_->Serialize(node_data, accessibility_mode);
 }
 
+BLINK_EXPORT void WebAXObject::SerializerClearedNode(int node_id) const {
+  private_->AXObjectCache().SerializerClearedNode(node_id);
+}
+
 WebString WebAXObject::AutoComplete() const {
   if (IsDetached())
     return WebString();
@@ -543,35 +547,6 @@ gfx::Rect WebAXObject::GetBoundsInFrameCoordinates() const {
   return ToEnclosingRect(rect);
 }
 
-WebString WebAXObject::KeyboardShortcut() const {
-  if (IsDetached())
-    return WebString();
-
-  String access_key = private_->AccessKey();
-  if (access_key.IsNull())
-    return WebString();
-
-  DEFINE_STATIC_LOCAL(String, modifier_string, ());
-  if (modifier_string.IsNull()) {
-    unsigned modifiers = KeyboardEventManager::kAccessKeyModifiers;
-    // Follow the same order as Mozilla MSAA implementation:
-    // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
-    // should not be localized and defines the separator as "+".
-    StringBuilder modifier_string_builder;
-    if (modifiers & WebInputEvent::kControlKey)
-      modifier_string_builder.Append("Ctrl+");
-    if (modifiers & WebInputEvent::kAltKey)
-      modifier_string_builder.Append("Alt+");
-    if (modifiers & WebInputEvent::kShiftKey)
-      modifier_string_builder.Append("Shift+");
-    if (modifiers & WebInputEvent::kMetaKey)
-      modifier_string_builder.Append("Win+");
-    modifier_string = modifier_string_builder.ToString();
-  }
-
-  return String(modifier_string + access_key);
-}
-
 WebString WebAXObject::Language() const {
   if (IsDetached())
     return WebString();
@@ -786,7 +761,7 @@ WebURL WebAXObject::Url() const {
 
 WebString WebAXObject::GetName(ax::mojom::NameFrom& out_name_from,
                                WebVector<WebAXObject>& out_name_objects) const {
-  out_name_from = ax::mojom::blink::NameFrom::kUninitialized;
+  out_name_from = ax::mojom::blink::NameFrom::kNone;
 
   if (IsDetached())
     return WebString();
@@ -900,29 +875,6 @@ WebDocument WebAXObject::GetDocument() const {
     return WebDocument();
 
   return WebDocument(document);
-}
-
-WebString WebAXObject::ComputedStyleDisplay() const {
-  if (IsDetached())
-    return WebString();
-
-#if DCHECK_IS_ON()
-  CheckLayoutClean(private_->GetDocument());
-#endif
-
-  Node* node = private_->GetNode();
-  if (!node || node->IsDocumentNode())
-    return WebString();
-
-  const ComputedStyle* computed_style = node->GetComputedStyle();
-  if (!computed_style)
-    return WebString();
-
-  return WebString(CSSProperty::Get(CSSPropertyID::kDisplay)
-                       .CSSValueFromComputedStyle(
-                           *computed_style, /* layout_object */ nullptr,
-                           /* allow_visited_style */ false)
-                       ->CssText());
 }
 
 bool WebAXObject::AccessibilityIsIgnored() const {
@@ -1194,18 +1146,11 @@ void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
   bounds_in_container = bounds;
 }
 
-void WebAXObject::GetAllObjectsWithChangedBounds(
-    WebVector<WebAXObject>& out_changed_bounds_objects) const {
+void WebAXObject::SerializeLocationChanges() const {
   if (IsDetached())
     return;
 
-  HeapVector<Member<AXObject>> changed_bounds_objects =
-      private_->AXObjectCache().GetAllObjectsWithChangedBounds();
-
-  out_changed_bounds_objects.reserve(changed_bounds_objects.size());
-  out_changed_bounds_objects.resize(changed_bounds_objects.size());
-  std::copy(changed_bounds_objects.begin(), changed_bounds_objects.end(),
-            out_changed_bounds_objects.begin());
+  private_->AXObjectCache().SerializeLocationChanges();
 }
 
 bool WebAXObject::ScrollToMakeVisible() const {

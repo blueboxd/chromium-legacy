@@ -52,10 +52,6 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace viz {
 class RasterContextProvider;
 }
@@ -103,12 +99,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   CreateWebSocketHandshakeThrottleProvider() override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  blink::WebString DatabaseCreateOriginIdentifier(
-      const blink::WebSecurityOrigin& origin) override;
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
-  blink::WebString FileSystemCreateOriginIdentifier(
-      const blink::WebSecurityOrigin& origin) override;
   bool IsThreadedAnimationEnabled() override;
   bool IsGpuCompositingDisabled() const override;
 #if BUILDFLAG(IS_ANDROID)
@@ -119,7 +111,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool IsLcdTextEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsScrollAnimatorEnabled() override;
-  cc::TaskGraphRunner* GetTaskGraphRunner() override;
   double AudioHardwareSampleRate() override;
   size_t AudioHardwareBufferSize() override;
   unsigned AudioHardwareOutputChannels() override;
@@ -181,7 +172,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  void SetCompositingThreadType(base::PlatformThreadId thread_id) override;
+  void SetThreadType(base::PlatformThreadId thread_id,
+                     base::ThreadType) override;
 #endif
   blink::BlameContext* GetTopLevelBlameContext() override;
   std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
@@ -217,8 +209,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::CrossVariantMojoRemote<
           network::mojom::URLLoaderFactoryInterfaceBase> url_loader_factory)
       override;
-  std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> factory) override;
   std::unique_ptr<media::MediaLog> GetMediaLog(
       blink::MediaInspectorContext* inspector_context,
       scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner,

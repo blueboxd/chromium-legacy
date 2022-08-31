@@ -5,12 +5,14 @@
 /**
  * @fileoverview ChromeVox keyboard handler.
  */
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {EventSourceState} from '/chromevox/background/event_source.js';
-import {MathHandler} from '/chromevox/background/math_handler.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {EventSourceType} from '/chromevox/common/event_source_type.js';
-import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
+import {EventSourceType} from '../common/event_source_type.js';
+import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+
+import {ChromeVoxState} from './chromevox_state.js';
+import {EventSourceState} from './event_source.js';
+import {MathHandler} from './math_handler.js';
+import {Output} from './output/output.js';
+import {UserActionMonitor} from './user_action_monitor.js';
 
 /**
  * @enum {string}
@@ -27,7 +29,7 @@ const KeyboardPassThroughState_ = {
 
   // The pass through shortcut command has been pressed and released, waiting
   // for the user to press/release a shortcut to be passed through.
-  PENDING_SHORTCUT_KEYUPS: 'pending_shortcut_keyups'
+  PENDING_SHORTCUT_KEYUPS: 'pending_shortcut_keyups',
 };
 
 export class BackgroundKeyboardHandler {
@@ -42,8 +44,9 @@ export class BackgroundKeyboardHandler {
     /** @private {Set} */
     this.passedThroughKeyDowns_ = new Set();
 
-    document.addEventListener('keydown', this.onKeyDown.bind(this), false);
-    document.addEventListener('keyup', this.onKeyUp.bind(this), false);
+    document.addEventListener(
+        'keydown', (event) => this.onKeyDown(event), false);
+    document.addEventListener('keyup', (event) => this.onKeyUp(event), false);
 
     chrome.accessibilityPrivate.setKeyboardListener(
         true, ChromeVox.isStickyPrefOn);
@@ -84,16 +87,8 @@ export class BackgroundKeyboardHandler {
     // Try to restore to the last valid range.
     ChromeVoxState.instance.restoreLastValidRangeIfNeeded();
 
-    // Defer first to the math handler, if it exists, then ordinary keyboard
-    // commands.
-    if (!MathHandler.onKeyDown(evt) ||
-        !ChromeVoxKbHandler.basicKeyDownActionsListener(evt) ||
-        // We natively always capture Search, so we have to be very careful to
-        // either eat it here or re-inject it; otherwise, some components, like
-        // ARC++ with TalkBack never get it. We only want to re-inject when
-        // ChromeVox has no range.
-        (ChromeVoxState.instance.currentRange &&
-         (evt.metaKey || evt.keyCode === KeyCode.SEARCH))) {
+    if (!this.callOnKeyDownHandlers_(evt) ||
+        this.shouldConsumeSearchKey_(evt)) {
       if (ChromeVox.passThroughMode) {
         this.passThroughState_ =
             KeyboardPassThroughState_.PENDING_PASS_THROUGH_SHORTCUT_KEYUPS;
@@ -103,6 +98,43 @@ export class BackgroundKeyboardHandler {
       this.eatenKeyDowns_.add(evt.keyCode);
     }
     return false;
+  }
+
+  /**
+   * @param {Event} evt The key down event to process.
+   * @return {boolean} Whether the event should continue propagating.
+   * @private
+   */
+  callOnKeyDownHandlers_(evt) {
+    // Defer first to the math handler, if it exists, then ordinary keyboard
+    // commands.
+    if (!MathHandler.onKeyDown(evt)) {
+      return false;
+    }
+
+    const userActionMonitor = UserActionMonitor.instance;
+    if (userActionMonitor && !userActionMonitor.onKeyDown(evt)) {
+      return false;
+    }
+
+    return ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
+  }
+
+  /**
+   * @param {Event} evt The key down event to evaluate.
+   * @return {boolean} Whether the event should be consumed.
+   * @private
+   */
+  shouldConsumeSearchKey_(evt) {
+    // We natively always capture Search, so we have to be very careful to
+    // either eat it here or re-inject it; otherwise, some components, like
+    // ARC++ with TalkBack never get it. We only want to re-inject when
+    // ChromeVox has no range.
+    if (!ChromeVoxState.instance.currentRange) {
+      return false;
+    }
+
+    return Boolean(evt.metaKey) || evt.keyCode === KeyCode.SEARCH;
   }
 
   /**

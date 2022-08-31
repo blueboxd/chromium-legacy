@@ -50,12 +50,6 @@ public class InstalledWebappBridge {
                 sNativeInstalledWebappProvider, type);
     }
 
-    public static void onGetPermissionResult(long callback, boolean allow) {
-        if (callback == 0) return;
-
-        InstalledWebappBridgeJni.get().notifyPermissionResult(callback, allow);
-    }
-
     public static void runPermissionCallback(
             long callback, @ContentSettingValues int settingValue) {
         if (callback == 0) return;
@@ -74,6 +68,13 @@ public class InstalledWebappBridge {
     }
 
     @CalledByNative
+    @ContentSettingValues
+    private static int getPermission(@ContentSettingsType int type, String origin) {
+        return InstalledWebappPermissionManager.get().getPermission(
+                type, Origin.create(Uri.parse(origin)));
+    }
+
+    @CalledByNative
     private static String getOriginFromPermission(Permission permission) {
         return permission.origin.toString();
     }
@@ -84,17 +85,7 @@ public class InstalledWebappBridge {
     }
 
     @CalledByNative
-    private static void decidePermission(String url, long callback) {
-        Origin origin = Origin.create(Uri.parse(url));
-        if (origin == null) {
-            onGetPermissionResult(callback, false);
-            return;
-        }
-        PermissionUpdater.get().getLocationPermission(origin, callback);
-    }
-
-    @CalledByNative
-    private static void decidePermissionSetting(@ContentSettingsType int type, String originUrl,
+    private static void decidePermission(@ContentSettingsType int type, String originUrl,
             String lastCommittedUrl, long callback) {
         Origin origin = Origin.create(Uri.parse(originUrl));
         if (origin == null) {
@@ -117,7 +108,6 @@ public class InstalledWebappBridge {
     @NativeMethods
     interface Natives {
         void notifyPermissionsChange(long provider, int type);
-        void notifyPermissionResult(long callback, boolean allow);
         void runPermissionCallback(long callback, @ContentSettingValues int settingValue);
     }
 }

@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1621067168122174824">चार्ज टेस्ट चलाएं</translation>
 <translation id="1631385268983122904">डिवाइस में अभी बैटरी न लगाएं</translation>
-<translation id="1639239467298939599">लोड हो रहा है</translation>
+<translation id="1639239467298939599">लोड हो रही है</translation>
 <translation id="1641857168437328880">डॉक्यूमेंट फ़ीडर (एक तरफ़ वाला)</translation>
 <translation id="1643449475550628585">वॉलपेपर रोज़ बदलें</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645954272419197032">कृपया डिवाइस की जानकारी की पुष्टि करें</translation>
 <translation id="1662989795263954667">बंद हो गया - स्याही खत्म हो गई</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> की झलक देखें</translation>
 <translation id="1668469839109562275">पहले से मौजूद वीपीएन</translation>
 <translation id="1672499492233627739">वेबकैम वीडियो फ़ीड</translation>
 <translation id="1676557873873341166">वीडियो रिकॉर्ड हो रहा है</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">वीडियो कॉन्फ़्रेंसिंग</translation>
 <translation id="1852934301711881861">ChromeOS Flex इंस्टॉल करें</translation>
 <translation id="1856388568474281774">डाउन ऐरो</translation>
+<translation id="1858620243986915808">स्क्रीनशॉट अटैच करें</translation>
 <translation id="1871569928317311284">गहरे रंग वाली थीम बंद करें</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">गहरे रंग वाला मोड बंद करें</translation>
@@ -219,7 +221,7 @@
 <translation id="2756652381241102009">डाइग्नोस्टिक्स चलाएं</translation>
 <translation id="2783010256799387990">जांच में पास</translation>
 <translation id="2789486458103222910">ठीक है</translation>
-<translation id="2805756323405976993">ऐप्स</translation>
+<translation id="2805756323405976993">ऐप्लिकेशन</translation>
 <translation id="28232023175184696">इंटरनेट से कनेक्ट नहीं किया जा सका. फिर से कोशिश करने के लिए क्लिक करें.</translation>
 <translation id="2827359915699915567">आरएसयू कोड पाने के लिए, इस यूआरएल को मैन्युअल तरीके से टाइप करें</translation>
 <translation id="2859243502336719778">अहम अपडेट</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">निजी कुंजी</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" में सेव किए गए</translation>
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">अपने-आप रंग तय करने वाला मोड चालू करें</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">शुरू नहीं किया गया</translation>
 <translation id="8620617069779373398">रोमिंग की स्‍थिति</translation>
 <translation id="8655295600908251630">चैनल</translation>
+<translation id="8655828773034788261">यूआरएल शेयर करें:</translation>
 <translation id="8660881923941176839">पाउंड</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्क में शामिल हों</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> वर्शन में अपडेट करें और रीस्टार्ट करें</translation>

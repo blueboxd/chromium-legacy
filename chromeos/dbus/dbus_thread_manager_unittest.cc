@@ -8,7 +8,6 @@
 
 namespace chromeos {
 
-// Tests that real and fake clients can be created.
 TEST(DBusThreadManagerTest, Initialize) {
   DBusThreadManager::Initialize();
   EXPECT_TRUE(DBusThreadManager::IsInitialized());
@@ -18,12 +17,6 @@ TEST(DBusThreadManagerTest, Initialize) {
 
   // In tests, clients are fake.
   EXPECT_TRUE(manager->IsUsingFakes());
-
-  // Clients were created.
-  EXPECT_TRUE(manager->GetArcObbMounterClient());
-  EXPECT_TRUE(manager->GetCrosDisksClient());
-  EXPECT_TRUE(manager->GetDebugDaemonClient());
-  EXPECT_TRUE(manager->GetEasyUnlockClient());
 
   DBusThreadManager::Shutdown();
   EXPECT_FALSE(DBusThreadManager::IsInitialized());

@@ -25,11 +25,13 @@ import org.chromium.base.CallbackController;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.history_clusters.HistoryCluster.MatchPosition;
+import org.chromium.chrome.browser.history_clusters.HistoryClusterView.ClusterViewAccessibilityState;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
+import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
@@ -43,11 +45,15 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 class HistoryClustersMediator extends RecyclerView.OnScrollListener implements SearchDelegate {
@@ -58,6 +64,19 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
 
     interface Clock {
         long currentTimeMillis();
+    }
+
+    private static class VisitMetadata {
+        public final ListItem visitListItem;
+        public final ListItem clusterListItem;
+        public final List<ListItem> visitsAndRelatedSearches;
+
+        private VisitMetadata(ListItem visitListItem, ListItem clusterListItem,
+                List<ListItem> visitsAndRelatedSearches) {
+            this.visitListItem = visitListItem;
+            this.clusterListItem = clusterListItem;
+            this.visitsAndRelatedSearches = visitsAndRelatedSearches;
+        }
     }
 
     private final HistoryClustersBridge mHistoryClustersBridge;
@@ -77,8 +96,13 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     private ListItem mToggleItem;
     private ListItem mPrivacyDisclaimerItem;
     private ListItem mClearBrowsingDataItem;
-    private QueryState mQueryState = QueryState.forQueryless();
+    private QueryState mQueryState;
+    private final ListItem mMoreProgressItem;
     private final HistoryClustersMetricsLogger mMetricsLogger;
+    private final Map<String, PropertyModel> mLabelToModelMap = new LinkedHashMap<>();
+    private final Map<ClusterVisit, VisitMetadata> mVisitMetadataMap = new HashMap<>();
+    private final AccessibilityUtil mAccessibilityUtil;
+    private final boolean mIsScrollToLoadDisabled;
 
     /**
      * Create a new HistoryClustersMediator.
@@ -96,13 +120,14 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
      * @param selectionDelegate Delegate that gives us information about the currently selected
      *         items in the list we're displaying.
      * @param metricsLogger Object that records metrics about user interactions.
+     * @param accessibilityUtil Utility object that tells us about the current accessibility state.
      */
     HistoryClustersMediator(@NonNull HistoryClustersBridge historyClustersBridge,
             LargeIconBridge largeIconBridge, @NonNull Context context, @NonNull Resources resources,
             @NonNull ModelList modelList, @NonNull PropertyModel toolbarModel,
             HistoryClustersDelegate historyClustersDelegate, Clock clock,
             TemplateUrlService templateUrlService, SelectionDelegate selectionDelegate,
-            HistoryClustersMetricsLogger metricsLogger) {
+            HistoryClustersMetricsLogger metricsLogger, AccessibilityUtil accessibilityUtil) {
         mHistoryClustersBridge = historyClustersBridge;
         mLargeIconBridge = largeIconBridge;
         mModelList = modelList;
@@ -116,6 +141,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         mTemplateUrlService = templateUrlService;
         mSelectionDelegate = selectionDelegate;
         mMetricsLogger = metricsLogger;
+        mAccessibilityUtil = accessibilityUtil;
 
         PropertyModel toggleModel = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
         mToggleItem = new ListItem(ItemType.TOGGLE, toggleModel);
@@ -129,12 +155,24 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
                 new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
         mClearBrowsingDataItem = new ListItem(ItemType.CLEAR_BROWSING_DATA, clearBrowsingDataModel);
         mDelegate.shouldShowClearBrowsingDataSupplier().addObserver(show -> ensureHeaders());
+
+        mIsScrollToLoadDisabled = mAccessibilityUtil.isAccessibilityEnabled()
+                || AccessibilityUtil.isHardwareKeyboardAttached(mResources.getConfiguration());
+        @State
+        int buttonState = mIsScrollToLoadDisabled ? State.BUTTON : State.LOADING;
+        PropertyModel moreProgressModel =
+                new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
+                        .with(HistoryClustersItemProperties.PROGRESS_BUTTON_STATE, buttonState)
+                        .with(HistoryClustersItemProperties.CLICK_HANDLER,
+                                (v) -> mPromise.then(this::continueQuery))
+                        .build();
+        mMoreProgressItem = new ListItem(ItemType.MORE_PROGRESS, moreProgressModel);
     }
 
     // SearchDelegate implementation.
     @Override
     public void onSearchTextChanged(String query) {
-        mModelList.clear();
+        resetModel();
         startQuery(query);
     }
 
@@ -146,14 +184,11 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     // OnScrollListener implementation
     @Override
     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        if (mIsScrollToLoadDisabled) return;
         LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         if (layoutManager.findLastVisibleItemPosition()
                 > (mModelList.size() - REMAINING_ITEM_BUFFER_SIZE)) {
-            mPromise.then(result -> {
-                if (result.canLoadMore()) {
-                    continueQuery(result.getQuery());
-                }
-            });
+            mPromise.then(this::continueQuery);
         }
     }
 
@@ -163,10 +198,14 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     }
 
     void setQueryState(QueryState queryState) {
+        if (mQueryState != null && !mQueryState.isSearching() && !queryState.isSearching()) {
+            return;
+        }
+
         mQueryState = queryState;
         mToolbarModel.set(HistoryClustersToolbarProperties.QUERY_STATE, queryState);
         if (!queryState.isSearching()) {
-            mModelList.clear();
+            resetModel();
             startQuery(mQueryState.getQuery());
         }
     }
@@ -179,11 +218,14 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
 
         mPromise = mHistoryClustersBridge.queryClusters(query);
         mPromise.then(mCallbackController.makeCancelable(this::queryComplete));
+        ensureFooter(State.LOADING, true);
     }
 
-    void continueQuery(String query) {
-        mPromise = mHistoryClustersBridge.loadMoreClusters(query);
+    void continueQuery(HistoryClustersResult previousResult) {
+        if (!previousResult.canLoadMore()) return;
+        mPromise = mHistoryClustersBridge.loadMoreClusters(previousResult.getQuery());
         mPromise.then(mCallbackController.makeCancelable(this::queryComplete));
+        ensureFooter(State.LOADING, true);
     }
 
     void openHistoryClustersUi(String query) {
@@ -217,29 +259,45 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         }
 
         mMetricsLogger.recordRelatedSearchesClick(index);
-        navigateToUrl(
-                new GURL(mTemplateUrlService.getUrlForSearchQuery(searchQuery)), false, false);
+        navigateToUrlInCurrentTab(
+                new GURL(mTemplateUrlService.getUrlForSearchQuery(searchQuery)), false);
     }
 
-    void navigateToUrl(GURL gurl, boolean inIncognito, boolean createNewTab) {
+    void openVisitsInNewTabs(List<ClusterVisit> visits, boolean isIncognito, boolean inTabGroup) {
+        for (ClusterVisit visit : visits) {
+            mMetricsLogger.recordVisitAction(
+                    HistoryClustersMetricsLogger.VisitAction.CLICKED, visit);
+        }
+
+        if (mDelegate.isSeparateActivity()) {
+            ArrayList<String> additionalUrls = new ArrayList<>(visits.size() - 1);
+            for (int i = 1; i < visits.size(); i++) {
+                additionalUrls.add(visits.get(i).getNormalizedUrl().getSpec());
+            }
+
+            Intent intent = mDelegate.getOpenUrlIntent(visits.get(0).getNormalizedUrl(),
+                    isIncognito, true, inTabGroup, additionalUrls);
+            ContextUtils.getApplicationContext().startActivity(intent);
+        } else {
+            Tab parent = createNewTab(visits.get(0).getNormalizedUrl(), isIncognito, null);
+            for (int i = 1; i < visits.size(); i++) {
+                createNewTab(visits.get(i).getNormalizedUrl(), false, parent);
+            }
+        }
+    }
+
+    void navigateToUrlInCurrentTab(GURL gurl, boolean inIncognito) {
         Context appContext = ContextUtils.getApplicationContext();
         if (mDelegate.isSeparateActivity()) {
-            appContext.startActivity(mDelegate.getOpenUrlIntent(gurl, inIncognito, createNewTab));
+            appContext.startActivity(
+                    mDelegate.getOpenUrlIntent(gurl, inIncognito, false, false, null));
             return;
         }
 
         Tab currentTab = mDelegate.getTab();
         if (currentTab == null) return;
-
-        if (createNewTab) {
-            TabCreator tabCreator = mDelegate.getTabCreator(currentTab.isIncognito());
-            assert tabCreator != null;
-            tabCreator.createNewTab(
-                    new LoadUrlParams(gurl), TabLaunchType.FROM_CHROME_UI, currentTab);
-        } else {
-            LoadUrlParams loadUrlParams = new LoadUrlParams(gurl);
-            currentTab.loadUrl(loadUrlParams);
-        }
+        LoadUrlParams loadUrlParams = new LoadUrlParams(gurl);
+        currentTab.loadUrl(loadUrlParams);
     }
 
     void deleteVisits(List<ClusterVisit> visits) {
@@ -248,17 +306,82 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             mDelegate.markVisitForRemoval(visit);
             mMetricsLogger.recordVisitAction(
                     HistoryClustersMetricsLogger.VisitAction.DELETED, visit);
+            removeVisit(visit);
         }
-        mDelegate.removeMarkedItems();
 
-        mModelList.clear();
-        startQuery(mQueryState.getQuery());
+        mDelegate.removeMarkedItems();
+    }
+
+    private void removeVisit(ClusterVisit visit) {
+        VisitMetadata visitMetadata = mVisitMetadataMap.get(visit);
+        if (visitMetadata == null) return;
+        ListItem visitListItem = visitMetadata.visitListItem;
+        assert mModelList.indexOf(visitListItem) != -1
+                && visitMetadata.visitsAndRelatedSearches.indexOf(visitListItem) != -1;
+        mModelList.remove(visitListItem);
+        visitMetadata.visitsAndRelatedSearches.remove(visitListItem);
+        if (visitMetadata.visitsAndRelatedSearches.size() == 1
+                && visitMetadata.visitsAndRelatedSearches.get(0).type
+                        == ItemType.RELATED_SEARCHES) {
+            mModelList.remove(visitMetadata.visitsAndRelatedSearches.get(0));
+            visitMetadata.visitsAndRelatedSearches.clear();
+        }
+
+        if (visitMetadata.visitsAndRelatedSearches.isEmpty()) {
+            mModelList.remove(visitMetadata.clusterListItem);
+        }
+
+        mVisitMetadataMap.remove(visit);
+    }
+
+    private Tab createNewTab(GURL gurl, boolean incognito, Tab parentTab) {
+        TabCreator tabCreator = mDelegate.getTabCreator(incognito);
+        assert tabCreator != null;
+        return tabCreator.createNewTab(
+                new LoadUrlParams(gurl), TabLaunchType.FROM_CHROME_UI, parentTab);
     }
 
     private void queryComplete(HistoryClustersResult result) {
         boolean isQueryLess = !mQueryState.isSearching();
         if (isQueryLess) {
             ensureHeaders();
+            for (Map.Entry<String, Integer> entry : result.getLabelCounts().entrySet()) {
+                // Check if label exists in the model already
+                // If not, create a new entry
+                String rawLabel = entry.getKey();
+                PropertyModel existingModel = mLabelToModelMap.get(rawLabel);
+                if (existingModel == null) {
+                    existingModel = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
+                    mLabelToModelMap.put(rawLabel, existingModel);
+                    Drawable journeysDrawable =
+                            AppCompatResources.getDrawable(mContext, R.drawable.ic_journeys);
+                    existingModel.set(
+                            HistoryClustersItemProperties.ICON_DRAWABLE, journeysDrawable);
+                    existingModel.set(HistoryClustersItemProperties.DIVIDER_VISIBLE, true);
+                    existingModel.set(HistoryClustersItemProperties.TITLE,
+                            getQuotedLabelFromRawLabel(rawLabel, result.getClusters()));
+                    ListItem clusterItem = new ListItem(ItemType.CLUSTER, existingModel);
+                    mModelList.add(clusterItem);
+                    existingModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
+                            (v)
+                                    -> setQueryState(QueryState.forQuery(
+                                            rawLabel, mDelegate.getSearchEmptyString())));
+                    existingModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, null);
+                    existingModel.set(HistoryClustersItemProperties.ACCESSIBILITY_STATE,
+                            ClusterViewAccessibilityState.CLICKABLE);
+                }
+                existingModel.set(HistoryClustersItemProperties.LABEL,
+                        mResources.getQuantityString(R.plurals.history_clusters_n_matches,
+                                entry.getValue(), entry.getValue()));
+            }
+
+            if (!mIsScrollToLoadDisabled && result.canLoadMore() && !result.isContinuation()) {
+                continueQuery(result);
+            }
+
+            ensureFooter(State.BUTTON, result.canLoadMore());
+
+            return;
         }
 
         for (HistoryCluster cluster : result.getClusters()) {
@@ -268,19 +391,31 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             Drawable journeysDrawable =
                     AppCompatResources.getDrawable(mContext, R.drawable.ic_journeys);
             clusterModel.set(HistoryClustersItemProperties.ICON_DRAWABLE, journeysDrawable);
+            clusterModel.set(HistoryClustersItemProperties.DIVIDER_VISIBLE, isQueryLess);
+            clusterModel.set(HistoryClustersItemProperties.ACCESSIBILITY_STATE,
+                    ClusterViewAccessibilityState.COLLAPSIBLE);
             ListItem clusterItem = new ListItem(ItemType.CLUSTER, clusterModel);
             mModelList.add(clusterItem);
-            if (isQueryLess) {
-                clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                        (v) -> setQueryState(QueryState.forQuery(cluster.getRawLabel())));
-                clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, null);
-                clusterModel.set(HistoryClustersItemProperties.LABEL, null);
-                continue;
-            }
 
             List<ListItem> visitsAndRelatedSearches =
                     new ArrayList<>(cluster.getVisits().size() + 1);
-            for (ClusterVisit visit : cluster.getVisits()) {
+            ListItem relatedSearchesItem = null;
+            List<String> relatedSearches = cluster.getRelatedSearches();
+            if (!relatedSearches.isEmpty()) {
+                PropertyModel relatedSearchesModel =
+                        new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
+                                .with(HistoryClustersItemProperties.RELATED_SEARCHES,
+                                        relatedSearches)
+                                .with(HistoryClustersItemProperties.CHIP_CLICK_HANDLER,
+                                        (query)
+                                                -> onRelatedSearchesChipClicked(
+                                                        query, relatedSearches.indexOf(query)))
+                                .build();
+                relatedSearchesItem = new ListItem(ItemType.RELATED_SEARCHES, relatedSearchesModel);
+            }
+
+            for (int i = 0; i < cluster.getVisits().size(); i++) {
+                ClusterVisit visit = cluster.getVisits().get(i);
                 PropertyModel visitModel =
                         new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
                                 .with(HistoryClustersItemProperties.TITLE,
@@ -308,39 +443,48 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
                             });
                 }
 
-                visitsAndRelatedSearches.add(new ListItem(ItemType.VISIT, visitModel));
+                ListItem listItem = new ListItem(ItemType.VISIT, visitModel);
+                mVisitMetadataMap.put(
+                        visit, new VisitMetadata(listItem, clusterItem, visitsAndRelatedSearches));
+                visitsAndRelatedSearches.add(listItem);
             }
 
-            List<String> relatedSearches = cluster.getRelatedSearches();
-            if (!relatedSearches.isEmpty()) {
-                PropertyModel relatedSearchesModel =
-                        new PropertyModel.Builder(HistoryClustersItemProperties.ALL_KEYS)
-                                .with(HistoryClustersItemProperties.RELATED_SEARCHES,
-                                        relatedSearches)
-                                .with(HistoryClustersItemProperties.CHIP_CLICK_HANDLER,
-                                        (query)
-                                                -> onRelatedSearchesChipClicked(
-                                                        query, relatedSearches.indexOf(query)))
-                                .build();
-                ListItem relatedSearchesItem =
-                        new ListItem(ItemType.RELATED_SEARCHES, relatedSearchesModel);
+            if (relatedSearchesItem != null) {
                 visitsAndRelatedSearches.add(relatedSearchesItem);
             }
 
             mModelList.addAll(visitsAndRelatedSearches);
-
             clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                    v -> hideCluster(clusterModel, visitsAndRelatedSearches));
+                    v -> hideCluster(clusterItem, visitsAndRelatedSearches));
             Drawable chevron = UiUtils.getTintedDrawable(mContext,
                     R.drawable.ic_expand_more_black_24dp, R.color.default_icon_color_tint_list);
             clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
             clusterModel.set(
                     HistoryClustersItemProperties.LABEL, getTimeString(cluster.getTimestamp()));
         }
+
+        ensureFooter(State.BUTTON, result.canLoadMore());
+    }
+
+    private void resetModel() {
+        mModelList.clear();
+        mLabelToModelMap.clear();
+        mVisitMetadataMap.clear();
+    }
+
+    private String getQuotedLabelFromRawLabel(String rawLabel, List<HistoryCluster> clusters) {
+        for (HistoryCluster cluster : clusters) {
+            if (cluster.getRawLabel().equals(rawLabel)) {
+                return cluster.getLabel();
+            }
+        }
+
+        // This shouldn't happen, but the unquoted label is a graceful fallback in case it does.
+        return rawLabel;
     }
 
     private void ensureHeaders() {
-        if (mQueryState.isSearching()) {
+        if (mQueryState != null && mQueryState.isSearching()) {
             return;
         }
 
@@ -370,6 +514,22 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         }
     }
 
+    private void ensureFooter(@State int buttonState, boolean canLoadMore) {
+        mMoreProgressItem.model.set(
+                HistoryClustersItemProperties.PROGRESS_BUTTON_STATE, buttonState);
+        boolean shouldShow = (buttonState == State.BUTTON && canLoadMore && mIsScrollToLoadDisabled)
+                || buttonState == State.LOADING;
+        int currentIndex = mModelList.indexOf(mMoreProgressItem);
+        boolean showing = currentIndex != -1;
+        if (showing) {
+            mModelList.remove(mMoreProgressItem);
+        }
+
+        if (shouldShow) {
+            mModelList.add(mMoreProgressItem);
+        }
+    }
+
     @VisibleForTesting
     void onClusterVisitClicked(SelectableItemView view, ClusterVisit clusterVisit) {
         if (mSelectionDelegate.isSelectionEnabled()) {
@@ -377,18 +537,21 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         } else {
             mMetricsLogger.recordVisitAction(
                     HistoryClustersMetricsLogger.VisitAction.CLICKED, clusterVisit);
-            navigateToUrl(clusterVisit.getNormalizedUrl(), false, false);
+            navigateToUrlInCurrentTab(clusterVisit.getNormalizedUrl(), false);
         }
     }
 
     @VisibleForTesting
-    void hideCluster(PropertyModel clusterModel, List<ListItem> itemsToHide) {
+    void hideCluster(ListItem clusterItem, List<ListItem> itemsToHide) {
         int indexOfFirstVisit = mModelList.indexOf(itemsToHide.get(0));
+        PropertyModel clusterModel = clusterItem.model;
         clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                (v) -> showCluster(clusterModel, itemsToHide, indexOfFirstVisit));
+                (v) -> showCluster(clusterItem, itemsToHide));
         Drawable chevron = UiUtils.getTintedDrawable(mContext, R.drawable.ic_expand_less_black_24dp,
                 R.color.default_icon_color_tint_list);
         clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
+        clusterModel.set(HistoryClustersItemProperties.ACCESSIBILITY_STATE,
+                ClusterViewAccessibilityState.EXPANDABLE);
 
         mModelList.removeRange(indexOfFirstVisit, itemsToHide.size());
         for (ListItem listItem : itemsToHide) {
@@ -401,12 +564,16 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     }
 
     @VisibleForTesting
-    void showCluster(PropertyModel clusterModel, List<ListItem> itemsToShow, int insertionIndex) {
+    void showCluster(ListItem clusterItem, List<ListItem> itemsToShow) {
+        PropertyModel clusterModel = clusterItem.model;
         clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                (v) -> hideCluster(clusterModel, itemsToShow));
+                (v) -> hideCluster(clusterItem, itemsToShow));
         Drawable chevron = UiUtils.getTintedDrawable(mContext, R.drawable.ic_expand_more_black_24dp,
                 R.color.default_icon_color_tint_list);
         clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
+        clusterModel.set(HistoryClustersItemProperties.ACCESSIBILITY_STATE,
+                ClusterViewAccessibilityState.COLLAPSIBLE);
+        int insertionIndex = mModelList.indexOf(clusterItem) + 1;
         mModelList.addAll(itemsToShow, insertionIndex);
     }
 

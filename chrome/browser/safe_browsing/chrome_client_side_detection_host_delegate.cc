@@ -11,9 +11,11 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
+#include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/client_side_detection_host.h"
+#include "components/safe_browsing/content/browser/client_side_detection_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
@@ -81,9 +83,17 @@ ChromeClientSideDetectionHostDelegate::GetSafeBrowsingUIManager() {
   return sb_service ? sb_service->ui_manager() : nullptr;
 }
 
-ClientSideDetectionService*
+base::WeakPtr<ClientSideDetectionService>
 ChromeClientSideDetectionHostDelegate::GetClientSideDetectionService() {
-  return ClientSideDetectionServiceFactory::GetForProfile(
+  ClientSideDetectionService* service =
+      ClientSideDetectionServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  return service ? service->GetWeakPtr() : nullptr;
+}
+
+raw_ptr<VerdictCacheManager>
+ChromeClientSideDetectionHostDelegate::GetCacheManager() {
+  return VerdictCacheManagerFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 }
 

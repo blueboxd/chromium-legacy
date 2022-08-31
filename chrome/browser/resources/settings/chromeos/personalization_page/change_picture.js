@@ -9,7 +9,7 @@
  */
 import 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_list.js';
 import 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_pane.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {CrPicture} from 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_types.js';
 import {isEncodedPngDataUrlAnimated} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
@@ -38,8 +38,10 @@ import {ChangePictureBrowserProxy, ChangePictureBrowserProxyImpl, DefaultImage} 
  */
 const SettingsChangePictureElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, RouteObserverBehavior, I18nBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      RouteObserverBehavior,
+      I18nBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -374,7 +376,7 @@ class SettingsChangePictureElement extends SettingsChangePictureElementBase {
     const event = new CustomEvent('iron-announce', {
       bubbles: true,
       composed: true,
-      detail: {text: this.i18n('photoDiscardAccessibleText')}
+      detail: {text: this.i18n('photoDiscardAccessibleText')},
     });
     this.dispatchEvent(event);
   }

@@ -70,6 +70,7 @@
 <translation id="2139300032719313227">ຣີສະຕາດ ChromeOS</translation>
 <translation id="2151406531797534936">ກະລຸນາປິດເປີດ Chrome ຄືນໃໝ່ຕອນນີ້ເລີຍ</translation>
 <translation id="2174917724755363426">ການຕິດຕັ້ງບໍ່ສຳເລັດ. ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການຍົກເລີກ?</translation>
+<translation id="223889379102603431">ຂໍ້ມູນກ່ຽວກັບວິທີທີ່ Chrome ຈັດການກັບໃບຮັບຮອງຮາກຖານຂອງມັນ</translation>
 <translation id="2258103955319320201">ເພື່ອເຂົ້າເຖິງຂໍ້ມູນໂປຣແກຣມທ່ອງເວັບ Chrome ຂອງທ່ານຢູ່ອຸປະກອນທັງໝົດຂອງທ່ານ, ກະລຸນາເຂົ້າສູ່ລະບົບແລ້ວເປີດການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="2290014774651636340">ລະຫັດ Google API ຫາຍໄປ. ການເຮັດໜ້າທີ່ບາງອັນຂອງ  Google Chrom ຈະປິດໃຊ້ງານ.</translation>
 <translation id="2290095356545025170">ທ່ານແນ່ໃຈບໍວ່າ ທ່ານຕ້ອງການຖອນຕິດຕັ້ງ Google Chrome?</translation>
@@ -82,6 +83,7 @@
 <translation id="2401189691232800402">ລະບົບ ChromeOS</translation>
 <translation id="2467438592969358367">Google Chrome ຕ້ອງການສົ່ງອອກລະຫັດຜ່ານຂອງທ່ານ. ກະລຸນາພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດສິ່ງນີ້.</translation>
 <translation id="2485422356828889247">ຖອນ​ຕິດ​ຕັ້ງ</translation>
+<translation id="2494974097748878569">ຜູ້ຊ່ວຍ Google ໃນ Chrome</translation>
 <translation id="2534507159460261402">Google Pay (ສຳເນົາໄວ້ໃນ Chrome ແລ້ວ)</translation>
 <translation id="2559253115192232574">ເວັບໄຊໃດໜຶ່ງທີ່ທ່ານເຂົ້າເບິ່ງຈະສາມາດຂໍ Chrome ເພື່ອເບິ່ງຄວາມສົນໃຈຂອງທ່ານໃນພາຍຫຼັງໄດ້ເພື່ອປັບແຕ່ງໂຄສະນາທີ່ທ່ານເຫັນໃຫ້ເປັນສ່ວນຕົວ. Chrome ສາມາດແບ່ງປັນຄວາມສົນໃຈໄດ້ສູງສຸດ 3 ຢ່າງ.</translation>
 <translation id="2563121210305478421">ເລີ່ມເປີດໃຊ້ Chrome ໃໝ່ບໍ?</translation>
@@ -160,6 +162,7 @@
 <translation id="3865754807470779944">ຕິດຕັ້ງ Chrome ເວີຊັນ <ph name="PRODUCT_VERSION" /> ແລ້ວ</translation>
 <translation id="3873044882194371212">ເປີດລິ້ງໃນໜ້າຈໍທີ່ບໍ່ເຜີຍຕົວຕົນຂອງ Chrome</translation>
 <translation id="3889417619312448367">ຖອນຕິດຕັ້ງ Google Chrome</translation>
+<translation id="3999683152997576765">ທ່ານສາມາດເບິ່ງ ແລະ ລຶບຫົວຂໍ້ຂອງຄວາມສົນໃຈທີ່ເວັບໄຊຕ່າງໆໃຊ້ເພື່ອສະແດງໂຄສະນາໃຫ້ທ່ານເຫັນໄດ້. Chrome ປະເມີນຄວາມສົນໃຈຂອງທ່ານໂດຍອ້າງອີງໃສ່ປະຫວັດການທ່ອງເວັບຫຼ້າສຸດຂອງທ່ານ.</translation>
 <translation id="4035053306113201399">ຈຳເປັນຕ້ອງຣີສະຕາດ ChromeOS ເພື່ອນຳໃຊ້ອັບເດດ.</translation>
 <translation id="4050175100176540509">ການ​ປັບ​ປຸງ​ຄວາມ​ປອດ​ໄພ​ທີ່​ສຳ​ຄັນ ແລະ​ຄຸນ​ສົມ​ບັດ​ໃໝ່​ມີ​ໃຫ້​ຢູ່​ໃນ​ເວີ​ຊັນ​ຫຼ້າ​ສຸດ.</translation>
 <translation id="4053720452172726777">ກໍານົດເອງ ແລະຄວບຄຸມ Google Chrome</translation>
@@ -282,6 +285,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="6739177684496155661">ສືບຕໍ່ໃນໂປຣໄຟລ໌ Chrome ໃໝ່ບໍ?</translation>
 <translation id="6750954913813541382">ເພື່ອແກ້ໄຂຂໍ້ຜິດພາດກ່ຽວກັບການສະກົດຄຳ, Chrome ສົ່ງຂໍ້ຄວາມທີ່ທ່ານພິມໃນໂປຣແກຣມທ່ອງເວັບໃຫ້ Google</translation>
 <translation id="677276454032249905">ຢືນຢັນການອອກຈາກ Chrome ບໍ?</translation>
+<translation id="6785872064505734160">ຜູ້ຊ່ວຍ Google ໃນ Chrome ສາມາດເຮັດຄຳສັ່ງຕ່າງໆໃຫ້ສຳເລັດໃນທົ່ວເວັບໄຊໃຫ້ທ່ານໄດ້</translation>
 <translation id="683440813066116847">ກົດລະບຽບຂາເຂົ້າສໍາລັບ Google Chrome Canary ເພື່ອອະນຸຍາດໃຫ້ການຈາລະຈອນ mDNS.</translation>
 <translation id="6881299373831449287">ກຳລັງອັບເດດ Chrome</translation>
 <translation id="6885412569789873916">ແອັບ Chrome Beta</translation>
@@ -354,6 +358,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="8129812357326543296">ກ່ຽວກັບ Google Chrome</translation>
 <translation id="813913629614996137">ກຳລັງລິເລີ່ມ...</translation>
 <translation id="8255190535488645436">Google Chrome ກໍາລັງໃຊ້​ກ້ອງ​ຖ່າຍ​ຮູບ​ ແລະໄມໂຄຣໂຟນຂອງ​ທ່ານ​.</translation>
+<translation id="8270775718612349140">ໃບຮັບຮອງທີ່ຈັດການໂດຍ Chrome</translation>
 <translation id="8286862437124483331">Google Chrome ກໍາລັງພະຍາຍາມສະແດງລະຫັດຜ່ານ. ພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດອັນນີ້.</translation>
 <translation id="828798499196665338">ພໍ່ແມ່ຂອງທ່ານໄດ້ປິດ "ການອະນຸຍາດສຳລັບເວັບໄຊ, ແອັບ ແລະ ສ່ວນຂະຫຍາຍ" ສຳລັບ Chrome ແລ້ວ. ການເປີດການນຳໃຊ້ <ph name="EXTENSION_TYPE_PARAMETER" /> ນີ້ບໍ່ໄດ້ຮັບອະນຸຍາດ.</translation>
 <translation id="8290100596633877290">ໂຮ້! Google Chrome ​ເກີດ​ຂັດຂ້ອງ. ເປີດໃຊ້ໃໝ່ດຽວນີ້ບໍ?</translation>

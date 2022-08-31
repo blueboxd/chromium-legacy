@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_STREAMING_SEARCH_PREFETCH_URL_LOADER_H_
 #define CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_STREAMING_SEARCH_PREFETCH_URL_LOADER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_request.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
-#include "chrome/browser/prefetch/search_prefetch/streaming_search_prefetch_request.h"
-#include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -21,7 +22,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -38,7 +38,7 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
   // Creates a network service URLLoader, binds to the URL Loader, and starts
   // the request.
   StreamingSearchPrefetchURLLoader(
-      StreamingSearchPrefetchRequest* streaming_prefetch_request,
+      SearchPrefetchRequest* streaming_prefetch_request,
       Profile* profile,
       bool navigation_prefetch,
       std::unique_ptr<network::ResourceRequest> resource_request,
@@ -157,7 +157,7 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
 
   // The initiating prefetch request. Cleared when handing this request off to
   // the navigation stack.
-  raw_ptr<StreamingSearchPrefetchRequest> streaming_prefetch_request_;
+  raw_ptr<SearchPrefetchRequest> streaming_prefetch_request_;
 
   // Whether we are serving from |bdoy_content_|.
   bool serving_from_data_ = false;

@@ -6,7 +6,7 @@
  * @fileoverview Logic for panning a braille display within a line of braille
  * content that might not fit on a single display.
  */
-import {CURSOR_DOTS} from '/chromevox/background/braille/cursor_dots.js';
+import {CURSOR_DOTS} from './cursor_dots.js';
 
 export class PanStrategy {
   constructor() {
@@ -93,7 +93,7 @@ export class PanStrategy {
     return {
       brailleOffset: this.viewPort_.firstRow * this.displaySize_.columns,
       textOffset: this.brailleToText
-                      [this.viewPort_.firstRow * this.displaySize_.columns]
+                      [this.viewPort_.firstRow * this.displaySize_.columns],
     };
   }
 
@@ -130,7 +130,8 @@ export class PanStrategy {
     const buf =
         this.panStrategyWrapped_ ? this.wrappedBuffer_ : this.fixedBuffer_;
 
-    let startIndex, endIndex;
+    let startIndex;
+    let endIndex;
     if (this.panStrategyWrapped_) {
       startIndex = this.wrappedCursor_.start;
       endIndex = this.wrappedCursor_.end;
@@ -353,7 +354,8 @@ export class PanStrategy {
     const contentLength =
         this.panStrategyWrapped_ ? this.wrappedLineCount : this.fixedLineCount;
     if (this.viewPort_.firstRow > 0) {
-      let newStart, newEnd;
+      let newStart;
+      let newEnd;
       if (this.viewPort_.firstRow < this.displaySize_.rows) {
         newStart = 0;
         newEnd = Math.min(this.displaySize_.rows, contentLength);

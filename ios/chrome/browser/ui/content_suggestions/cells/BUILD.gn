@@ -40,6 +40,8 @@ source_set("cells") {
     "content_suggestions_whats_new_item.mm",
     "content_suggestions_whats_new_view.h",
     "content_suggestions_whats_new_view.mm",
+    "query_suggestion_view.h",
+    "query_suggestion_view.mm",
     "suggested_content.h",
   ]
   deps = [
@@ -54,7 +56,6 @@ source_set("cells") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/collection_view",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/content_suggestions:constants",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui_util",
@@ -62,7 +63,8 @@ source_set("cells") {
     "//ios/chrome/browser/ui/content_suggestions:public",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/icons:symbols",
-    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/resources:module_shadow",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common:timing",
@@ -100,7 +102,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_suggestions_header_item_unittest.mm",
-    "content_suggestions_most_visited_item_unittest.mm",
     "content_suggestions_tile_layout_util_unittest.mm",
     "content_suggestions_whats_new_item_unittest.mm",
   ]

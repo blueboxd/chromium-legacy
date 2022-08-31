@@ -405,6 +405,10 @@
 // Injects typed URL to sync FakeServer.
 + (void)addFakeSyncServerTypedURL:(NSString*)URL;
 
+// Injects device info to sync FakeServer.
++ (void)addFakeSyncServerDeviceInfo:(NSString*)deviceName
+               lastUpdatedTimestamp:(base::Time)lastUpdatedTimestamp;
+
 // Adds typed URL into HistoryService.
 + (void)addHistoryServiceTypedURL:(NSString*)URL;
 
@@ -647,6 +651,13 @@
 // message.
 + (void)disableDefaultBrowserPromo;
 
+#pragma mark - Url Param Classification utilities
+// Sets |contents| to be used by the url_param_filter::ClassificationsLoader.
++ (void)setUrlParamClassifications:(NSString*)contents;
+
+// Resets the stored classifications on the
+// url_param_filter::ClassificationsLoader.
++ (void)resetUrlParamClassifications;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

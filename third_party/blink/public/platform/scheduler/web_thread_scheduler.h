@@ -59,9 +59,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Returns main thread scheduler for the main thread of the current process.
   static WebThreadScheduler* MainThreadScheduler();
 
-  // Returns the default task runner.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
-
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();
 
@@ -131,12 +128,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Renderer will be resumed when the handle is destroyed.
   // Handle should be destroyed before the renderer.
   [[nodiscard]] virtual std::unique_ptr<RendererPauseHandle> PauseRenderer();
-
-  // Returns true if the scheduler has reason to believe that high priority work
-  // may soon arrive on the main thread, e.g., if gesture events were observed
-  // recently.
-  // Must be called from the main thread.
-  virtual bool IsHighPriorityWorkAnticipated();
 
   // Sets the default blame context to which top level work should be
   // attributed in this renderer. |blame_context| must outlive this scheduler.

@@ -116,7 +116,7 @@ public class ShoppingPersistedTabDataTest {
         shoppingPersistedTabData.setCurrencyCode(
                 ShoppingPersistedTabDataTestUtils.GREAT_BRITAIN_CURRENCY_CODE);
         shoppingPersistedTabData.setPriceDropGurl(new GURL("https://www.google.com"));
-        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializer().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
         Assert.assertEquals(
@@ -155,7 +155,7 @@ public class ShoppingPersistedTabDataTest {
                     shoppingPersistedTabData.setPreviousPriceMicros(containsPriceDrop
                                     ? 30_000_000L
                                     : ShoppingPersistedTabData.NO_PRICE_KNOWN);
-                    ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+                    ByteBuffer serialized = shoppingPersistedTabData.getSerializer().get();
                     ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
                     deserialized.deserialize(serialized);
                     MetricsResult metricsResult = deserialized.getPriceDropMetricsLoggerForTesting()
@@ -495,25 +495,21 @@ public class ShoppingPersistedTabDataTest {
                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
                 OptimizationGuideDecision.TRUE, null);
         NavigationHandle navigationHandle = mock(NavigationHandle.class);
-        for (boolean isInPrimaryMainFrame : new boolean[] {false, true}) {
-            for (boolean isSameDocument : new boolean[] {false, true}) {
-                ShoppingPersistedTabData shoppingPersistedTabData =
-                        new ShoppingPersistedTabData(tab);
-                shoppingPersistedTabData.setPriceMicros(42_000_000L);
-                shoppingPersistedTabData.setPreviousPriceMicros(60_000_000L);
-                shoppingPersistedTabData.setCurrencyCode("USD");
-                shoppingPersistedTabData.setPriceDropGurl(
-                        ShoppingPersistedTabDataTestUtils.DEFAULT_GURL);
+        for (boolean isSameDocument : new boolean[] {false, true}) {
+            ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
+            shoppingPersistedTabData.setPriceMicros(42_000_000L);
+            shoppingPersistedTabData.setPreviousPriceMicros(60_000_000L);
+            shoppingPersistedTabData.setCurrencyCode("USD");
+            shoppingPersistedTabData.setPriceDropGurl(
+                    ShoppingPersistedTabDataTestUtils.DEFAULT_GURL);
+            Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
+            doReturn(isSameDocument).when(navigationHandle).isSameDocument();
+            shoppingPersistedTabData.getUrlUpdatedObserverForTesting()
+                    .onDidStartNavigationInPrimaryMainFrame(tab, navigationHandle);
+            if (!isSameDocument) {
+                Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
+            } else {
                 Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
-                doReturn(isInPrimaryMainFrame).when(navigationHandle).isInPrimaryMainFrame();
-                doReturn(isSameDocument).when(navigationHandle).isSameDocument();
-                shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidStartNavigation(
-                        tab, navigationHandle);
-                if (isInPrimaryMainFrame && !isSameDocument) {
-                    Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
-                } else {
-                    Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
-                }
             }
         }
     }
@@ -548,12 +544,12 @@ public class ShoppingPersistedTabDataTest {
         shoppingPersistedTabData.setCurrencyCode("USD");
         shoppingPersistedTabData.setPriceDropGurl(gurl1);
         Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
-        shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidStartNavigation(
-                tab, navigationHandle);
+        shoppingPersistedTabData.getUrlUpdatedObserverForTesting()
+                .onDidStartNavigationInPrimaryMainFrame(tab, navigationHandle);
         Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
         doReturn(gurl2).when(navigationHandle).getUrl();
-        shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidStartNavigation(
-                tab, navigationHandle);
+        shoppingPersistedTabData.getUrlUpdatedObserverForTesting()
+                .onDidStartNavigationInPrimaryMainFrame(tab, navigationHandle);
         Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
     }
 
@@ -689,7 +685,7 @@ public class ShoppingPersistedTabDataTest {
                 ShoppingPersistedTabDataTestUtils.IS_INCOGNITO);
         ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
         shoppingPersistedTabData.setPriceMicros(42_000_000L, null);
-        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializer().get();
         PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
                 ShoppingPersistedTabData.class, tab.isIncognito());
         ShoppingPersistedTabData deserialized =
@@ -709,7 +705,7 @@ public class ShoppingPersistedTabDataTest {
         supplier.set(true);
         shoppingPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
         shoppingPersistedTabData.setMainOfferId(ShoppingPersistedTabDataTestUtils.FAKE_OFFER_ID);
-        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializer().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
         Assert.assertEquals(

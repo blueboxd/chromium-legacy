@@ -39,6 +39,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
@@ -2158,6 +2159,21 @@ IN_PROC_BROWSER_TEST_F(SubresourceWebBundlesContentScriptApiTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
   EXPECT_EQ(uuid_html_url, listener.message());
+}
+
+class ContentScriptApiPrerenderingTest : public ContentScriptApiTest {
+ public:
+  ContentScriptApiPrerenderingTest() = default;
+
+ private:
+  content::test::ScopedPrerenderFeatureList prerender_feature_list_;
+};
+
+// TODO(crbug.com/1344548): Re-enable this test
+IN_PROC_BROWSER_TEST_F(ContentScriptApiPrerenderingTest,
+                       DISABLED_Prerendering) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/prerendering")) << message_;
 }
 
 }  // namespace extensions

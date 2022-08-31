@@ -199,7 +199,8 @@ class PictureInPictureTestWebFrameClient
       WebMediaPlayerEncryptedMediaClient*,
       WebContentDecryptionModule*,
       const WebString& sink_id,
-      const cc::LayerTreeSettings& settings) override {
+      const cc::LayerTreeSettings& settings,
+      scoped_refptr<base::TaskRunner> compositor_worker_task_runner) override {
     return web_media_player_.release();
   }
 
@@ -534,6 +535,19 @@ TEST_F(PictureInPictureControllerTest,
   // of the video element.
   EXPECT_EQ(Video()->BoundsInViewport(), gfx::Rect(33, 33, 300, 300));
   EXPECT_EQ(Service().source_bounds(), gfx::Rect(173, 173, 20, 20));
+}
+
+TEST_F(PictureInPictureControllerTest, VideoIsNotAllowedIfAutoPip) {
+  EXPECT_EQ(PictureInPictureControllerImpl::Status::kEnabled,
+            PictureInPictureControllerImpl::From(GetDocument())
+                .IsElementAllowed(*Video(), /*report_failure=*/false));
+
+  // Simulate auto-pip mode.
+  Video()->SetPersistentState(true);
+
+  EXPECT_EQ(PictureInPictureControllerImpl::Status::kAutoPipAndroid,
+            PictureInPictureControllerImpl::From(GetDocument())
+                .IsElementAllowed(*Video(), /*report_failure=*/false));
 }
 
 TEST_F(PictureInPictureControllerTest, CreateDocumentPictureInPictureWindow) {

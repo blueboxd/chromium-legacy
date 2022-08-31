@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1645954272419197032">기기 정보를 확인하세요</translation>
 <translation id="1662989795263954667">중지됨 - 잉크 부족</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> 미리보기</translation>
 <translation id="1668469839109562275">기본 제공 VPN</translation>
 <translation id="1672499492233627739">웹캠 동영상 피드</translation>
 <translation id="1676557873873341166">동영상 촬영 중</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">화상 회의</translation>
 <translation id="1852934301711881861">ChromeOS Flex 설치</translation>
 <translation id="1856388568474281774">아래쪽 화살표</translation>
+<translation id="1858620243986915808">스크린샷 첨부</translation>
 <translation id="1871569928317311284">어두운 테마 사용 중지</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">어두운 모드 사용 중지</translation>
@@ -667,7 +669,7 @@
 <translation id="6659594942844771486">탭</translation>
 <translation id="6692996468359469499">선택 항목과 관련된 정보 얻기</translation>
 <translation id="6704062477274546131">DNS 변환</translation>
-<translation id="6721744718589119342">이메일로 추가 정보나 새로운 소식을 전송하도록 허용</translation>
+<translation id="6721744718589119342">이메일로 추가 정보나 새로운 소식을 전송할 수 있습니다</translation>
 <translation id="6723839937902243910">전원</translation>
 <translation id="6723847290197874913">키보드 백라이트</translation>
 <translation id="672609503628871915">새로운 기능 알아보기</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">비공개 키</translation>
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="7994702968232966508">EAP 방식</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"에 저장됨</translation>
 <translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">색상 자동조절 사용</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">초기화되지 않음</translation>
 <translation id="8620617069779373398">로밍 상태</translation>
 <translation id="8655295600908251630">채널</translation>
+<translation id="8655828773034788261">공유 URL:</translation>
 <translation id="8660881923941176839">파운드</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> 네트워크에 연결</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" />로 업데이트 및 다시 시작</translation>

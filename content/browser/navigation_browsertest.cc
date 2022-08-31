@@ -4423,9 +4423,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_FALSE(no_commit_obs.navigation_committed());
 }
 
-// Do sandbox flags apply to error page in sandboxed iframes?
-// Apparently yes.
-// TODO(https://crbug.com/1158370): Reconsider this.
+// Sandbox flags defined by the parent must not apply to Chrome's error page.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromInSandboxedIframe) {
   GURL url = embedded_test_server()->GetURL("a.com", "/empty.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -4446,12 +4444,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromInSandboxedIframe) {
   RenderFrameHostImpl* child_rfh =
       current_frame_host()->child_at(0)->current_frame_host();
 
-  // An error page committed. Apparently, the error page inherited sandbox flags
-  // from its parent.
-  // TODO(https://crbug.com/1158370): Reconsider this.
   EXPECT_TRUE(child_rfh->IsErrorDocument());
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
-                ~network::mojom::WebSandboxFlags::kOrientationLock,
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             child_rfh->active_sandbox_flags());
 }
 
@@ -5925,7 +5919,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   // An anonymous document has a storage key with a nonce.
   EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
   base::UnguessableToken anonymous_nonce =
-      current_frame_host()->GetPage().anonymous_iframes_nonce();
+      current_frame_host()->anonymous_iframes_nonce();
   EXPECT_EQ(anonymous_nonce,
             child->current_frame_host()->storage_key().nonce().value());
 
@@ -6027,7 +6021,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
 
   EXPECT_TRUE(child_b->current_frame_host()->storage_key().nonce().has_value());
   base::UnguessableToken anonymous_nonce_b =
-      current_frame_host()->GetPage().anonymous_iframes_nonce();
+      current_frame_host()->anonymous_iframes_nonce();
   EXPECT_NE(anonymous_nonce, anonymous_nonce_b);
   EXPECT_EQ(anonymous_nonce_b,
             child_b->current_frame_host()->storage_key().nonce().value());

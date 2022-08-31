@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">Ресетуј дозволе</translation>
 <translation id="301521992641321250">Аутоматски је блокирано</translation>
 <translation id="3069226013421428034">Дозволите пријављивање трећих страна за одређени сајт.</translation>
+<translation id="3109724472072898302">Скупљено</translation>
 <translation id="3114012059975132928">Видео плејер</translation>
 <translation id="3115898365077584848">Прикажи информације</translation>
 <translation id="3123473560110926937">Блокирано на неким сајтовима</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">Искључите звук видеа</translation>
 <translation id="3596414637720633074">Блокира колачиће трећих страна у режиму без архивирања</translation>
 <translation id="3600792891314830896">Искључи звук сајтова који пуштају звук</translation>
+<translation id="3628308229821498208">Предложене претраге</translation>
 <translation id="3744111561329211289">Синхронизација у позадини</translation>
 <translation id="3763247130972274048">Двапут додирните видео лево или десно да бисте прескочили 10 сек</translation>
 <translation id="3797520601150691162">Не примењујте тамну тему за одређени сајт</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">Блокирај колачиће треће стране</translation>
 <translation id="6216432067784365534">Опције ставке <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Желите да деинсталатирате „<ph name="APP_NAME" />“?</translation>
+<translation id="6262191102408817757">На основу последње картице</translation>
 <translation id="6262279340360821358">Дозволе <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /> су блокиране</translation>
 <translation id="6270391203985052864">Сајтови могу да траже да шаљу обавештења</translation>
 <translation id="6295158916970320988">Сви сајтови</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">Блокирај приказивање искачућих прозора и преусмеравања на сајтовима (препоручено)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Освежи</translation>
+<translation id="7203150201908454328">Проширено</translation>
 <translation id="723171743924126238">Изаберите слике</translation>
 <translation id="7243308994586599757">Опције су доступне у дну екрана</translation>
 <translation id="7250468141469952378">Изабрали сте <ph name="ITEM_COUNT" /></translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">Блокирај да сајтови пуштају заштићени садржај</translation>
 <translation id="7577900504646297215">Управљајте интересовањима</translation>
 <translation id="7594634374516752650">Повезан је са Bluetooth уређајем</translation>
+<translation id="7641339528570811325">Обриши податке прегледања…</translation>
 <translation id="7649070708921625228">Помоћ</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7781829728241885113">Јуче</translation>

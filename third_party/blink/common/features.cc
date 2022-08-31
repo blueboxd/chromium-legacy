@@ -265,7 +265,7 @@ const base::FeatureParam<base::TimeDelta>
 const base::FeatureParam<base::TimeDelta>
     kSharedStorageOriginStalenessThreshold = {
         &kSharedStorageAPI, "SharedStorageOriginStalenessThreshold",
-        base::Days(60)};
+        base::Days(30)};
 
 // Enables the Prerender2 feature: https://crbug.com/1126305
 // Note that default enabling this does not enable the Prerender2 features
@@ -305,7 +305,7 @@ bool IsFencedFramesShadowDOMBased() {
 }
 
 const base::Feature kInitialNavigationEntry{"InitialNavigationEntry",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsInitialNavigationEntryEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kInitialNavigationEntry);
@@ -454,10 +454,6 @@ const base::Feature kStopInBackground {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Enable the Storage Access API. https://crbug.com/989663.
-const base::Feature kStorageAccessAPI{"StorageAccessAPI",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable text snippets in URL fragments. https://crbug.com/919204.
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
@@ -959,7 +955,7 @@ const base::FeatureParam<std::string>
 const base::Feature kSanitizerAPI{"SanitizerAPI",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSanitizerAPIv0{"SanitizerAPIv0",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the Sanitizer API allows namespaced content (SVG + MathML).
 //
@@ -1350,9 +1346,13 @@ const base::Feature kEarlyCodeCache{"EarlyCodeCache",
 const base::Feature kClientHintsMetaHTTPEquivAcceptCH{
     "ClientHintsMetaHTTPEquivAcceptCH", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Allow use of a named meta tag to set client hints.
+// Allow use of a named meta tag to set and delegate client hints.
 const base::Feature kClientHintsMetaNameAcceptCH{
-    "ClientHintsMetaNameAcceptCH", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ClientHintsMetaNameAcceptCH", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow use of a http-equiv meta tag to set and delegate client hints.
+const base::Feature kClientHintsMetaEquivDelegateCH{
+    "ClientHintsMetaEquivDelegateCH", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOriginAgentClusterDefaultEnabled{
     "OriginAgentClusterDefaultEnable", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1425,6 +1425,9 @@ const base::Feature kReduceUserAgentMinorVersion{
 const base::FeatureParam<std::string> kUserAgentFrozenBuildVersion{
     &kReduceUserAgentMinorVersion, "build_version", "0"};
 
+const base::Feature kReduceUserAgentPlatformOsCpu{
+    "ReduceUserAgentPlatformOsCpu", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kReportFCPOnlyOnSuccessfulCommit{
     "ReportFCPOnlyOnSuccessfulCommit", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1435,6 +1438,9 @@ const base::Feature kSecureContextFixForWorkers{
 
 const base::Feature kZeroCopyTabCapture{"ZeroCopyTabCapture",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRegionCaptureExperimentalSubtypes{
+    "RegionCaptureExperimentalSubtypes", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserAgentOverrideExperiment{
     "UserAgentOverrideExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1475,12 +1481,27 @@ const base::Feature kEstablishGpuChannelAsync{
 const base::Feature kDecodeScriptSourceOffThread{
     "DecodeScriptSourceOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDelayAsyncScriptExecution{
+    "DelayAsyncScriptExecution", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<DelayAsyncScriptDelayType>::Option
+    delay_async_script_execution_delay_types[] = {
+        {DelayAsyncScriptDelayType::kFinishedParsing, "finished_parsing"},
+        {DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing,
+         "first_paint_or_finished_parsing"}};
+
+const base::FeatureParam<DelayAsyncScriptDelayType>
+    kDelayAsyncScriptExecutionDelayParam{
+        &kDelayAsyncScriptExecution, "delay_type",
+        DelayAsyncScriptDelayType::kFinishedParsing,
+        &delay_async_script_execution_delay_types};
+
+const base::Feature kForceDeferScriptIntervention{
+    "ForceDeferScriptIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAllowSourceSwitchOnPausedVideoMediaStream{
     "AllowSourceSwitchOnPausedVideoMediaStream",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDispatchPopstateSync{"DispatchPopstateSync",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Exposes non-standard stats in the WebRTC getStats() API.
 const base::Feature kWebRtcExposeNonStandardStats{
@@ -1522,9 +1543,6 @@ const base::Feature kFileSystemUrlNavigation{"FileSystemUrlNavigation",
 const base::Feature kEarlyExitOnNoopClassOrStyleChange{
     "EarlyExitOnNoopClassOrStyleChange", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLocalFrameRootPrePostFCPMetrics{
-    "LocalFrameRootPrePostFCPMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 const base::Feature kStylusWritingToInput{"StylusWritingToInput",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1538,6 +1556,9 @@ const base::Feature kTimedHTMLParserBudget{"TimedHTMLParserBudget",
 
 const base::Feature kCSSOverflowForReplacedElements{
     "CSSOverflowForReplacedElements", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kClipboardUnsanitizedContent{
+    "ClipboardUnsanitizedContent", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

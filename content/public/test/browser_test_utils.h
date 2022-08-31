@@ -758,7 +758,7 @@ inline bool operator==(std::nullptr_t a, const EvalJsResult& b) {
 
 // Provides informative failure messages when the result of EvalJs() is
 // used in a failing ASSERT_EQ or EXPECT_EQ.
-void PrintTo(const EvalJsResult& bar, ::std::ostream* os);
+std::ostream& operator<<(std::ostream& os, const EvalJsResult& bar);
 
 enum EvalJsOptions {
   EXECUTE_SCRIPT_DEFAULT_OPTIONS = 0,
@@ -1067,6 +1067,9 @@ void UiaGetPropertyValueVtArrayVtUnknownValidate(
 
 // Returns the RenderWidgetHost that holds the keyboard lock.
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents);
+
+// Returns the RenderWidgetHost that holds the mouse lock.
+RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
 
 // Allows tests to drive keyboard lock functionality without requiring access
 // to the RenderWidgetHostImpl header or setting up an HTTP test server.

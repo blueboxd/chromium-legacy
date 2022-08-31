@@ -370,7 +370,8 @@ VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryWin::CreateDevice(
       }
       if (outcome == MFSourceOutcome::kSuccess) {
         auto device = std::make_unique<VideoCaptureDeviceMFWin>(
-            device_descriptor, std::move(source), dxgi_device_manager_);
+            device_descriptor, std::move(source), dxgi_device_manager_,
+            base::ThreadTaskRunnerHandle::Get());
         DVLOG(1) << " MediaFoundation Device: "
                  << device_descriptor.display_name();
         if (device->Init())
@@ -1001,6 +1002,13 @@ VideoCaptureDeviceFactoryWin::GetSupportedFormatsMediaFoundation(
 scoped_refptr<DXGIDeviceManager>
 VideoCaptureDeviceFactoryWin::GetDxgiDeviceManager() {
   return dxgi_device_manager_;
+}
+
+void VideoCaptureDeviceFactoryWin::OnGpuInfoUpdate(const CHROME_LUID& luid) {
+  luid_ = luid;
+  if (dxgi_device_manager_) {
+    dxgi_device_manager_->OnGpuInfoUpdate(luid_);
+  }
 }
 
 }  // namespace media

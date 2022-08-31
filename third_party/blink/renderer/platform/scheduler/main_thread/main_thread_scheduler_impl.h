@@ -174,7 +174,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 #endif
   [[nodiscard]] std::unique_ptr<ThreadScheduler::RendererPauseHandle>
   PauseRenderer() override;
-  bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   void AddTaskObserver(base::TaskObserver* task_observer) override;
@@ -223,6 +222,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                                        WebInputEventResult result);
   void DidAnimateForInputOnCompositorThread();
 
+  // Returns true if the scheduler has reason to believe that high priority work
+  // may soon arrive on the main thread, e.g., if gesture events were observed
+  // recently.
+  // Must be called from the main thread.
+  bool IsHighPriorityWorkAnticipated();
+
   // Use a separate task runner so that IPC tasks are not logged via the same
   // task queue that executes them. Otherwise this would result in an infinite
   // loop of posting and logging to a single queue.
@@ -231,8 +236,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return back_forward_cache_ipc_tracking_task_runner_;
   }
 
-  // WebThreadScheduler implementation:
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
 
   // The following functions are defined in both WebThreadScheduler and
   // ThreadScheduler, and have the same function signatures -- see above.

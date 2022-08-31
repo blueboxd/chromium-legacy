@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/platform_util.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 #include "third_party/zlib/google/redact.h"
 
@@ -56,7 +58,9 @@ ExtractIOTask::ExtractIOTask(
   sizingCount_ = extractCount_ = progress_.sources.size();
 }
 
-ExtractIOTask::~ExtractIOTask() {}
+ExtractIOTask::~ExtractIOTask() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 void ExtractIOTask::ZipListenerCallback(uint64_t bytes) {
   progress_.bytes_transferred += bytes;
@@ -72,13 +76,23 @@ void ExtractIOTask::ZipListenerCallback(uint64_t bytes) {
 }
 
 void ExtractIOTask::FinishedExtraction(base::FilePath directory, bool success) {
-  progress_.state = success ? State::kSuccess : State::kError;
   if (success) {
     // Open a new window to show the extracted content.
     platform_util::ShowItemInFolder(profile_, directory);
   }
+  // Release the unpacker parameters stored for the extraction.
+  auto unpacker = unpackers_[directory];
+  if (unpacker) {
+    unpacker->CleanUp();
+    // Wait for the task runner to clean up the UnpackParams object.
+    while (!unpacker->CleanUpDone()) {
+      // Yield until the cancellation tasks are done.
+      base::PlatformThread::Sleep(base::Microseconds(1));
+    }
+  }
   DCHECK_GT(extractCount_, 0);
   if (--extractCount_ == 0) {
+    progress_.state = success ? State::kSuccess : State::kError;
     RecordUmaExtractStatus(progress_.state == State::kSuccess
                                ? ExtractStatus::kSuccess
                                : ExtractStatus::kUnknownError);
@@ -116,16 +130,20 @@ void ExtractIOTask::ExtractIntoNewDirectory(
     base::FilePath destination_directory,
     base::FilePath source_file,
     bool created_ok) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (created_ok) {
     unzip::mojom::UnzipOptionsPtr options =
         unzip::mojom::UnzipOptions::New("auto", password_);
-    unzip::Unzip(
+    scoped_refptr<unzip::ZipFileUnpacker> unpacker =
+        base::MakeRefCounted<unzip::ZipFileUnpacker>();
+    unpacker->Unpack(
         unzip::LaunchUnzipper(), source_file, destination_directory,
         std::move(options),
         base::BindRepeating(&ExtractIOTask::ZipListenerCallback,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ExtractIOTask::ZipExtractCallback,
                        weak_ptr_factory_.GetWeakPtr(), destination_directory));
+    unpackers_.insert({destination_directory, std::move(unpacker)});
   } else {
     LOG(ERROR) << "Cannot create directory "
                << zip::Redact(destination_directory);
@@ -248,7 +266,7 @@ void ExtractIOTask::Execute(IOTask::ProgressCallback progress_callback,
   progress_callback_ = std::move(progress_callback);
   complete_callback_ = std::move(complete_callback);
 
-  VLOG(1) << "Executing EXTRACT_ARCHIVE IO task";
+  DVLOG(1) << "Executing EXTRACT_ARCHIVE IO task";
   progress_.state = State::kInProgress;
   progress_callback_.Run(progress_);
   // If the backend can't handle the folder to unpack into or
@@ -266,7 +284,16 @@ void ExtractIOTask::Execute(IOTask::ProgressCallback progress_callback,
 void ExtractIOTask::Cancel() {
   progress_.state = State::kCancelled;
   RecordUmaExtractStatus(ExtractStatus::kCancelled);
-  // Any inflight operation will be cancelled when the task is destroyed.
+  // Run through all existing extraction instances and cancel them all.
+  for (auto unpacker : unpackers_) {
+    if (unpacker.second) {
+      unpacker.second->Stop();
+      while (!unpacker.second->CleanUpDone()) {
+        // Yield until the UnpackParams objects have been released.
+        base::PlatformThread::Sleep(base::Microseconds(1));
+      }
+    }
+  }
 }
 
 // Calls the completion callback for the task. |progress_| should not be

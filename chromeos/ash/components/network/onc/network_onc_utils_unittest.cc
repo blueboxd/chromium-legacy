@@ -13,15 +13,14 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/components/onc/variable_expander.h"
-#include "chromeos/network/network_ui_data.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace onc {
+namespace ash::onc {
 
 TEST(ONCUtils, ProxySettingsToProxyConfig) {
   base::Value list_of_tests = test_utils::ReadTestJson("proxy_config.json");
@@ -130,5 +129,4 @@ TEST(ONCPasswordVariable, MultipleNetworksPasswordAvailableForL2tpVpn) {
   EXPECT_TRUE(HasUserPasswordSubsitutionVariable(network_list));
 }
 
-}  // namespace onc
-}  // namespace chromeos
+}  // namespace ash::onc

@@ -53,6 +53,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_1010102:
       DCHECK_EQ(plane, 0);
       return 4;
@@ -71,7 +72,6 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     }
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
       NOTREACHED();
@@ -99,6 +99,7 @@ uint32_t BufferFormatToIOSurfacePixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return 'BGRA';
     case gfx::BufferFormat::RGBA_F16:
       return 'RGhA';
@@ -108,7 +109,6 @@ uint32_t BufferFormatToIOSurfacePixelFormat(gfx::BufferFormat format) {
       return 'x420';
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     // Technically RGBA_1010102 should be accepted as 'R10k', but then it won't
     // be supported by CGLTexImageIOSurface2D(), so it's best to reject it here.
@@ -254,12 +254,13 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
       const size_t plane_width = (size.width() + factor - 1) / factor;
       const size_t plane_height = (size.height() + factor - 1) / factor;
       const size_t plane_bytes_per_element = BytesPerElement(format, plane);
-      const size_t plane_bytes_per_row = IOSurfaceAlignProperty(
-          kIOSurfacePlaneBytesPerRow,
-          base::bits::AlignUp(plane_width, 2) * plane_bytes_per_element);
+      const size_t plane_bytes_per_row =
+          IOSurfaceAlignProperty(kIOSurfacePlaneBytesPerRow,
+                                 base::bits::AlignUp(plane_width, size_t{2}) *
+                                     plane_bytes_per_element);
       const size_t plane_bytes_alloc = IOSurfaceAlignProperty(
           kIOSurfacePlaneSize,
-          base::bits::AlignUp(plane_height, 2) * plane_bytes_per_row);
+          base::bits::AlignUp(plane_height, size_t{2}) * plane_bytes_per_row);
       const size_t plane_offset =
           IOSurfaceAlignProperty(kIOSurfacePlaneOffset, total_bytes_alloc);
 

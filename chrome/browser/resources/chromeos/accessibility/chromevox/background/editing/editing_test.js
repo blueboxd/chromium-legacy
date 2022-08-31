@@ -629,11 +629,12 @@ AX_TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', async function() {
     {speech: ['s'], braille: [lineText, {startIndex: 5, endIndex: 5}]},
     {speech: [' '], braille: [lineText, {startIndex: 6, endIndex: 6}]},
     {speech: ['a'], braille: [lineText, {startIndex: 7, endIndex: 7}]},
-    {speech: [' '], braille: [lineText, {startIndex: 8, endIndex: 8}]}, {
+    {speech: [' '], braille: [lineText, {startIndex: 8, endIndex: 8}]},
+    {
       speech: ['cat', 'Image'],
-      braille: [lineOnCatText, {startIndex: 9, endIndex: 9}]
+      braille: [lineOnCatText, {startIndex: 9, endIndex: 9}],
     },
-    {speech: [' '], braille: [lineText, {startIndex: 12, endIndex: 12}]}
+    {speech: [' '], braille: [lineText, {startIndex: 12, endIndex: 12}]},
   ];
 
   for (const item of moves) {
@@ -1605,9 +1606,11 @@ AX_TEST_F('ChromeVoxEditingTest', 'NestedInsertionDeletion', async function() {
       .replay();
 });
 
-AX_TEST_F('ChromeVoxEditingTest', 'MoveByCharSuggestions', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(https://crbug.com/1342870): Test is flaky.
+AX_TEST_F(
+    'ChromeVoxEditingTest', 'DISABLED_MoveByCharSuggestions', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <div contenteditable="true" role="textbox">
       <p>Start</p>
       <span>I </span>
@@ -1617,41 +1620,41 @@ AX_TEST_F('ChromeVoxEditingTest', 'MoveByCharSuggestions', async function() {
       <p>End</p>
     </div>
   `;
-  const root = await this.runWithLoadedTree(site);
-  await this.focusFirstTextField(root);
+      const root = await this.runWithLoadedTree(site);
+      await this.focusFirstTextField(root);
 
-  mockFeedback.call(this.press(KeyCode.DOWN))
-      .expectSpeech('I ')
-      // Move forward through line.
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech(' ')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('Suggest', 'Username', 'Insert', 'w')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('a')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('s')
-      .expectSpeech('Insert end')
-      .call(this.press(KeyCode.RIGHT))
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('Delete', 'a')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('m')
-      .expectSpeech('Delete end', 'Suggest end')
-      // Move backward through the same line.
-      .call(this.press(KeyCode.LEFT))
-      .expectSpeech('Delete', 'a')
-      .call(this.press(KeyCode.LEFT))
-      .call(this.press(KeyCode.LEFT))
-      .expectSpeech('s', 'Insert end')
-      .call(this.press(KeyCode.LEFT))
-      .expectSpeech('a')
-      .call(this.press(KeyCode.LEFT))
-      .expectSpeech('Suggest', 'Insert', 'w')
-      .call(this.press(KeyCode.DOWN))
-      .expectSpeech('End')
-      .replay();
-});
+      mockFeedback.call(this.press(KeyCode.DOWN))
+          .expectSpeech('I ')
+          // Move forward through line.
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech(' ')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Suggest', 'Username', 'Insert', 'w')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('a')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('s')
+          .expectSpeech('Insert end')
+          .call(this.press(KeyCode.RIGHT))
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Delete', 'a')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('m')
+          .expectSpeech('Delete end', 'Suggest end')
+          // Move backward through the same line.
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Delete', 'a')
+          .call(this.press(KeyCode.LEFT))
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('s', 'Insert end')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('a')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Suggest', 'Insert', 'w')
+          .call(this.press(KeyCode.DOWN))
+          .expectSpeech('End')
+          .replay();
+    });
 
 AX_TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestions', async function() {
   const mockFeedback = this.createMockFeedback();
@@ -1944,12 +1947,12 @@ AX_TEST_F(
       const ctrlDown = () => chrome.accessibilityPrivate.sendSyntheticKeyEvent({
         type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: KeyCode.DOWN,
-        modifiers: {ctrl: true}
+        modifiers: {ctrl: true},
       });
       const ctrlUp = () => chrome.accessibilityPrivate.sendSyntheticKeyEvent({
         type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: KeyCode.UP,
-        modifiers: {ctrl: true}
+        modifiers: {ctrl: true},
       });
 
       mockFeedback.expectSpeech('Text area')
@@ -2091,7 +2094,7 @@ AX_TEST_F(
 
         11000000 /* cursor _ */,
 
-        101011 /* ed contraction */
+        101011, /* ed contraction */
       ]);
 
       this.press(KeyCode.HOME)();
@@ -2106,7 +2109,7 @@ AX_TEST_F(
 
         0 /* space */,
 
-        101011 /* ed contraction */
+        101011, /* ed contraction */
       ]);
     });
 

@@ -1283,7 +1283,7 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
   home_profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
   home_profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 3);
-  home_profile.SetRawInfoAsInt(BIRTHDATE_YEAR_4_DIGITS, 1997);
+  home_profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1997);
   home_profile.set_disallow_settings_visible_updates(true);
   home_profile.set_language_code("en");
   Time pre_creation_time = AutofillClock::Now();
@@ -1380,7 +1380,7 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181230000");
   billing_profile.SetRawInfoAsInt(BIRTHDATE_DAY, 4);
   billing_profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 5);
-  billing_profile.SetRawInfoAsInt(BIRTHDATE_YEAR_4_DIGITS, 1977);
+  billing_profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1977);
 
   Time pre_modification_time_2 = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
@@ -1436,7 +1436,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
   home_profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
   home_profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 3);
-  home_profile.SetRawInfoAsInt(BIRTHDATE_YEAR_4_DIGITS, 1997);
+  home_profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1997);
   home_profile.set_language_code("en");
 
   Time pre_creation_time = AutofillClock::Now();
@@ -1518,7 +1518,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181230000");
   billing_profile.SetRawInfoAsInt(BIRTHDATE_DAY, 4);
   billing_profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 5);
-  billing_profile.SetRawInfoAsInt(BIRTHDATE_YEAR_4_DIGITS, 1977);
+  billing_profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1977);
 
   Time pre_modification_time_2 = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
@@ -1542,6 +1542,71 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   EXPECT_TRUE(table_->RemoveAutofillProfile(billing_profile.guid()));
   db_profile = table_->GetAutofillProfile(billing_profile.guid());
   EXPECT_FALSE(db_profile);
+}
+
+TEST_F(AutofillTableTest, Iban) {
+  // Add a valid Iban.
+  Iban iban;
+  std::string guid = base::GenerateGUID();
+  iban.set_guid(guid);
+  iban.SetRawInfo(IBAN_VALUE, u"IE12 BOFI 9000 0112 3456 78");
+  iban.set_nickname(u"My doctor's IBAN");
+
+  EXPECT_TRUE(table_->AddIban(iban));
+
+  // Get the inserted Iban.
+  std::unique_ptr<Iban> db_iban = table_->GetIban(iban.guid());
+  ASSERT_TRUE(db_iban);
+  EXPECT_EQ(guid, db_iban->guid());
+  sql::Statement s_work(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid, use_count, use_date, "
+      "value, nickname FROM ibans WHERE guid = ?"));
+  s_work.BindString(0, iban.guid());
+  ASSERT_TRUE(s_work.is_valid());
+  ASSERT_TRUE(s_work.Step());
+  EXPECT_FALSE(s_work.Step());
+
+  // Add another valid Iban.
+  Iban another_iban;
+  std::string another_guid = base::GenerateGUID();
+  another_iban.set_guid(another_guid);
+  another_iban.SetRawInfo(IBAN_VALUE, u"DE91 1000 0000 0123 4567 89");
+  another_iban.set_nickname(u"My brother's IBAN");
+
+  EXPECT_TRUE(table_->AddIban(another_iban));
+
+  db_iban = table_->GetIban(another_iban.guid());
+  ASSERT_TRUE(db_iban);
+
+  EXPECT_EQ(another_guid, db_iban->guid());
+  sql::Statement s_target(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid, use_count, use_date, "
+      "value, nickname FROM ibans WHERE guid = ?"));
+  s_target.BindString(0, another_iban.guid());
+  ASSERT_TRUE(s_target.is_valid());
+  ASSERT_TRUE(s_target.Step());
+  EXPECT_FALSE(s_target.Step());
+
+  // Update the another_iban.
+  another_iban.set_origin("Interactive Autofill dialog");
+  another_iban.SetRawInfo(IBAN_VALUE, u"GB98 MIDL 0700 9312 3456 78");
+  another_iban.set_nickname(u"My teacher's IBAN");
+  EXPECT_TRUE(table_->UpdateIban(another_iban));
+  db_iban = table_->GetIban(another_iban.guid());
+  ASSERT_TRUE(db_iban);
+  EXPECT_EQ(another_guid, db_iban->guid());
+  sql::Statement s_target_updated(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid, use_count, use_date, "
+      "value, nickname FROM ibans WHERE guid = ?"));
+  s_target_updated.BindString(0, another_iban.guid());
+  ASSERT_TRUE(s_target_updated.is_valid());
+  ASSERT_TRUE(s_target_updated.Step());
+  EXPECT_FALSE(s_target_updated.Step());
+
+  // Remove the 'Target' iban.
+  EXPECT_TRUE(table_->RemoveIban(another_iban.guid()));
+  db_iban = table_->GetIban(another_iban.guid());
+  EXPECT_FALSE(db_iban);
 }
 
 TEST_F(AutofillTableTest, CreditCard) {
@@ -1665,7 +1730,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
   profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
   profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 3);
-  profile.SetRawInfoAsInt(BIRTHDATE_YEAR_4_DIGITS, 1997);
+  profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1997);
   profile.set_language_code("en");
   profile.FinalizeAfterImport();
   table_->AddAutofillProfile(profile);

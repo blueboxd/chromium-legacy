@@ -39,7 +39,7 @@
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/views/linux_ui/linux_ui.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 #if defined(USE_AURA)
@@ -219,7 +219,7 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
     // NativeThemeGtk instance will always be returned.
     // TODO(crbug.com/1304441): Remove this once GTK passthrough is fully
     // supported.
-    views::LinuxUI::instance()->SetUseSystemThemeCallback(
+    ui::LinuxUi::instance()->SetUseSystemThemeCallback(
         base::BindRepeating([](aura::Window* window) { return false; }));
     ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
 
@@ -243,7 +243,7 @@ views::Widget* OmniboxPopupContentsViewTest::CreatePopupForTestQuery() {
   AutocompleteInput input(
       u"foo", metrics::OmniboxEventProto::BLANK,
       ChromeAutocompleteSchemeClassifier(browser()->profile()));
-  input.set_want_asynchronous_matches(false);
+  input.set_omit_asynchronous_matches(true);
   edit_model()->autocomplete_controller()->Start(input);
 
   EXPECT_FALSE(edit_model()->result().empty());
@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   AutocompleteInput input(
       u"foo", metrics::OmniboxEventProto::BLANK,
       ChromeAutocompleteSchemeClassifier(browser()->profile()));
-  input.set_want_asynchronous_matches(false);
+  input.set_omit_asynchronous_matches(true);
   edit_model()->autocomplete_controller()->Start(input);
 
   // Create a match to populate the autocomplete.

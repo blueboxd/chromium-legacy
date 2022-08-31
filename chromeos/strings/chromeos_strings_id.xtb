@@ -92,12 +92,13 @@
 <translation id="1644574205037202324">Histori</translation>
 <translation id="1645954272419197032">Konfirmasi informasi perangkat</translation>
 <translation id="1662989795263954667">Dihentikan - Tinta habis</translation>
+<translation id="1664796644829245314">Pratinjau <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN bawaan</translation>
 <translation id="1672499492233627739">Feed video webcam</translation>
 <translation id="1676557873873341166">Merekam video</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Keberadaan DNS Resolver</translation>
-<translation id="1715359911173058521">Terjadi masalah saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
+<translation id="1715359911173058521">Terjadi error saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
 <translation id="1717874160321062422">Dikelola oleh <ph name="FIRST_MANAGER" /> dan <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Nama server</translation>
 <translation id="1731082422893354635">Touchpad Bluetooth</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Konferensi Video</translation>
 <translation id="1852934301711881861">Instal ChromeOS Flex</translation>
 <translation id="1856388568474281774">Panah bawah</translation>
+<translation id="1858620243986915808">Lampirkan screenshot</translation>
 <translation id="1871569928317311284">Nonaktifkan tema gelap</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Nonaktifkan mode gelap</translation>
@@ -216,7 +218,7 @@
 <translation id="2727250716596204208">Tidak dapat menemukan image firmware. Masukkan penyimpanan eksternal, seperti drive USB atau kartu SD, yang berisi image Utilitas Pemulihan Chromebook yang telah didownload.</translation>
 <translation id="2740531572673183784">Oke</translation>
 <translation id="2751739896257479635">Autentikasi tahap 2 EAP</translation>
-<translation id="2756652381241102009">Jalankan Diagnosis</translation>
+<translation id="2756652381241102009">Jalankan Diagnostik</translation>
 <translation id="2783010256799387990">LULUS</translation>
 <translation id="2789486458103222910">Oke</translation>
 <translation id="2805756323405976993">Apl</translation>
@@ -797,6 +799,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7978412674231730200">Kunci pribadi</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
+<translation id="8018928621986160031">Disimpan ke "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktifkan mode warna otomatis</translation>
@@ -865,6 +868,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8620617069779373398">Status roaming</translation>
 <translation id="8655295600908251630">Saluran</translation>
+<translation id="8655828773034788261">Bagikan URL:</translation>
 <translation id="8660881923941176839">pound</translation>
 <translation id="8662671328352114214">Bergabung dengan jaringan <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Update ke <ph name="VERSION_NUMBER" /> &amp; mulai ulang</translation>

@@ -22,6 +22,7 @@
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/input_method_test_interface_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
 #include "chrome/browser/ash/crosapi/window_util.h"
 #include "chrome/browser/ash/printing/cups_print_job_manager.h"
@@ -390,7 +391,7 @@ void TestControllerAsh::OnGetContextMenuForShelfItem(
     std::unique_ptr<ui::SimpleMenuModel> model) {
   std::vector<std::string> items;
   items.reserve(model->GetItemCount());
-  for (int i = 0; i < model->GetItemCount(); ++i) {
+  for (size_t i = 0; i < model->GetItemCount(); ++i) {
     items.push_back(base::UTF16ToUTF8(model->GetLabelAt(i)));
   }
   std::move(callback).Run(std::move(items));
@@ -399,7 +400,7 @@ void TestControllerAsh::OnGetContextMenuForShelfItem(
 void TestControllerAsh::OnSelectContextMenuForShelfItem(
     SelectContextMenuForShelfItemCallback callback,
     const std::string& item_id,
-    uint32_t index,
+    size_t index,
     std::unique_ptr<ui::SimpleMenuModel> model) {
   if (index < model->GetItemCount()) {
     model->ActivatedAt(index, /*event_flags=*/0);
@@ -546,6 +547,15 @@ void TestControllerAsh::GetSanitizedActiveUsername(
             std::move(callback).Run(result->sanitized_username());
           },
           std::move(callback)));
+}
+
+void TestControllerAsh::BindInputMethodTestInterface(
+    mojo::PendingReceiver<crosapi::mojom::InputMethodTestInterface> receiver,
+    BindInputMethodTestInterfaceCallback callback) {
+  mojo::MakeSelfOwnedReceiver<crosapi::mojom::InputMethodTestInterface>(
+      std::make_unique<crosapi::InputMethodTestInterfaceAsh>(),
+      std::move(receiver));
+  std::move(callback).Run();
 }
 
 // This class waits for overview mode to either enter or exit and fires a

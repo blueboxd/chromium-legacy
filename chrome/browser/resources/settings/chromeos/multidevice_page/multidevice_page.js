@@ -9,7 +9,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../controls/password_prompt_dialog.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../nearby_share_page/nearby_share_subpage.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import './multidevice_feature_toggle.js';
@@ -137,7 +137,7 @@ class SettingsMultidevicePageElement extends
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('isNearbyShareSupported');
-        }
+        },
       },
 
       /** @private */
@@ -190,7 +190,7 @@ class SettingsMultidevicePageElement extends
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('isChromeosScreenLockEnabled');
-        }
+        },
       },
 
       /** @private */
@@ -198,7 +198,7 @@ class SettingsMultidevicePageElement extends
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('isPhoneScreenLockEnabled');
-        }
+        },
       },
     };
   }

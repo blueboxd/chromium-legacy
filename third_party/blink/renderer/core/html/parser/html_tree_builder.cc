@@ -460,12 +460,13 @@ void HTMLTreeBuilder::ProcessCloseWhenNestedTag(AtomicHTMLToken* token) {
   tree_.InsertHTMLElement(token);
 }
 
+namespace {
 typedef HashMap<AtomicString, QualifiedName> PrefixedNameToQualifiedNameMap;
 
 template <typename TableQualifiedName>
-static void MapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map,
-                                      const TableQualifiedName* const* names,
-                                      size_t length) {
+void MapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map,
+                               const TableQualifiedName* const* names,
+                               size_t length) {
   for (size_t i = 0; i < length; ++i) {
     const QualifiedName& name = *names[i];
     const AtomicString& local_name = name.LocalName();
@@ -475,14 +476,26 @@ static void MapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map,
   }
 }
 
+void AddManualLocalName(PrefixedNameToQualifiedNameMap* map, const char* name) {
+  const QualifiedName item(g_null_atom, name, g_null_atom);
+  const blink::QualifiedName* const names = &item;
+  MapLoweredLocalNameToName<QualifiedName>(map, &names, 1);
+}
+
 // "Any other start tag" bullet in
 // https://html.spec.whatwg.org/C/#parsing-main-inforeign
-static void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
+void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* case_map = nullptr;
   if (!case_map) {
     case_map = new PrefixedNameToQualifiedNameMap;
     std::unique_ptr<const SVGQualifiedName* []> svg_tags = svg_names::GetTags();
     MapLoweredLocalNameToName(case_map, svg_tags.get(), svg_names::kTagsCount);
+    // These tags aren't implemented by Chromium, so they don't exist in
+    // svg_tag_names.json5.
+    AddManualLocalName(case_map, "altGlyph");
+    AddManualLocalName(case_map, "altGlyphDef");
+    AddManualLocalName(case_map, "altGlyphItem");
+    AddManualLocalName(case_map, "glyphRef");
   }
 
   const auto it = case_map->find(token->GetName());
@@ -492,13 +505,20 @@ static void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
   }
 }
 
-template <std::unique_ptr<const QualifiedName* []> getAttrs(), unsigned length>
-static void AdjustAttributes(AtomicHTMLToken* token) {
+template <std::unique_ptr<const QualifiedName* []> getAttrs(),
+          unsigned length,
+          bool forSVG>
+void AdjustAttributes(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* case_map = nullptr;
   if (!case_map) {
     case_map = new PrefixedNameToQualifiedNameMap;
     std::unique_ptr<const QualifiedName* []> attrs = getAttrs();
     MapLoweredLocalNameToName(case_map, attrs.get(), length);
+    if (forSVG) {
+      // This attribute isn't implemented by Chromium, so it doesn't exist in
+      // svg_attribute_names.json5.
+      AddManualLocalName(case_map, "viewTarget");
+    }
   }
 
   for (auto& token_attribute : token->Attributes()) {
@@ -511,19 +531,21 @@ static void AdjustAttributes(AtomicHTMLToken* token) {
 }
 
 // https://html.spec.whatwg.org/C/#adjust-svg-attributes
-static void AdjustSVGAttributes(AtomicHTMLToken* token) {
-  AdjustAttributes<svg_names::GetAttrs, svg_names::kAttrsCount>(token);
+void AdjustSVGAttributes(AtomicHTMLToken* token) {
+  AdjustAttributes<svg_names::GetAttrs, svg_names::kAttrsCount,
+                   /*forSVG*/ true>(token);
 }
 
 // https://html.spec.whatwg.org/C/#adjust-mathml-attributes
-static void AdjustMathMLAttributes(AtomicHTMLToken* token) {
-  AdjustAttributes<mathml_names::GetAttrs, mathml_names::kAttrsCount>(token);
+void AdjustMathMLAttributes(AtomicHTMLToken* token) {
+  AdjustAttributes<mathml_names::GetAttrs, mathml_names::kAttrsCount,
+                   /*forSVG*/ false>(token);
 }
 
-static void AddNamesWithPrefix(PrefixedNameToQualifiedNameMap* map,
-                               const AtomicString& prefix,
-                               const QualifiedName* const* names,
-                               size_t length) {
+void AddNamesWithPrefix(PrefixedNameToQualifiedNameMap* map,
+                        const AtomicString& prefix,
+                        const QualifiedName* const* names,
+                        size_t length) {
   for (size_t i = 0; i < length; ++i) {
     const QualifiedName* name = names[i];
     const AtomicString& local_name = name->LocalName();
@@ -533,7 +555,7 @@ static void AddNamesWithPrefix(PrefixedNameToQualifiedNameMap* map,
   }
 }
 
-static void AdjustForeignAttributes(AtomicHTMLToken* token) {
+void AdjustForeignAttributes(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* map = nullptr;
   if (!map) {
     map = new PrefixedNameToQualifiedNameMap;
@@ -560,6 +582,8 @@ static void AdjustForeignAttributes(AtomicHTMLToken* token) {
     }
   }
 }
+
+}  // namespace
 
 void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetType(), HTMLToken::kStartTag);
@@ -688,7 +712,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
   if (token->GetName() == html_names::kPlaintextTag) {
     ProcessFakePEndTagIfPInButtonScope();
     tree_.InsertHTMLElement(token);
-    parser_->Tokenizer()->SetState(HTMLTokenizer::kPLAINTEXTState);
+    parser_->SetTokenizerState(*token, HTMLTokenizer::kPLAINTEXTState);
     return;
   }
   if (token->GetName() == html_names::kButtonTag) {
@@ -805,7 +829,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
   if (token->GetName() == html_names::kTextareaTag) {
     tree_.InsertHTMLElement(token);
     should_skip_leading_newline_ = true;
-    parser_->Tokenizer()->SetState(HTMLTokenizer::kRCDATAState);
+    parser_->SetTokenizerState(*token, HTMLTokenizer::kRCDATAState);
     original_insertion_mode_ = insertion_mode_;
     frameset_ok_ = false;
     SetInsertionMode(kTextMode);
@@ -2230,7 +2254,7 @@ void HTMLTreeBuilder::ProcessEndTag(AtomicHTMLToken* token) {
 
         // We must set the tokenizer's state to DataState explicitly if the
         // tokenizer didn't have a chance to.
-        parser_->Tokenizer()->SetState(HTMLTokenizer::kDataState);
+        parser_->SetTokenizerState(*token, HTMLTokenizer::kDataState);
         return;
       }
       tree_.OpenElements()->Pop();
@@ -2763,7 +2787,7 @@ bool HTMLTreeBuilder::ProcessStartTagForInHead(AtomicHTMLToken* token) {
 void HTMLTreeBuilder::ProcessGenericRCDATAStartTag(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetType(), HTMLToken::kStartTag);
   tree_.InsertHTMLElement(token);
-  parser_->Tokenizer()->SetState(HTMLTokenizer::kRCDATAState);
+  parser_->SetTokenizerState(*token, HTMLTokenizer::kRCDATAState);
   original_insertion_mode_ = insertion_mode_;
   SetInsertionMode(kTextMode);
 }
@@ -2771,7 +2795,7 @@ void HTMLTreeBuilder::ProcessGenericRCDATAStartTag(AtomicHTMLToken* token) {
 void HTMLTreeBuilder::ProcessGenericRawTextStartTag(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetType(), HTMLToken::kStartTag);
   tree_.InsertHTMLElement(token);
-  parser_->Tokenizer()->SetState(HTMLTokenizer::kRAWTEXTState);
+  parser_->SetTokenizerState(*token, HTMLTokenizer::kRAWTEXTState);
   original_insertion_mode_ = insertion_mode_;
   SetInsertionMode(kTextMode);
 }
@@ -2779,7 +2803,7 @@ void HTMLTreeBuilder::ProcessGenericRawTextStartTag(AtomicHTMLToken* token) {
 void HTMLTreeBuilder::ProcessScriptStartTag(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetType(), HTMLToken::kStartTag);
   tree_.InsertScriptElement(token);
-  parser_->Tokenizer()->SetState(HTMLTokenizer::kScriptDataState);
+  parser_->SetTokenizerState(*token, HTMLTokenizer::kScriptDataState);
   original_insertion_mode_ = insertion_mode_;
 
   TextPosition position = parser_->GetTextPosition();

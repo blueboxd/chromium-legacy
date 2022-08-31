@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/vpn_provider.h"
+#include "chromeos/ash/components/network/shill_property_handler.h"
 #include "chromeos/crosapi/mojom/vpn_service.mojom-test-utils.h"
-#include "chromeos/network/shill_property_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/pepper_vpn_provider_resource_host_proxy.h"
 #include "content/public/browser/vpn_service_proxy.h"
@@ -33,10 +33,10 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/dbus/shill/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/network/network_profile_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
 

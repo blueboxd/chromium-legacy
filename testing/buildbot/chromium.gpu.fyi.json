@@ -569,7 +569,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -1177,7 +1178,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -1823,7 +1825,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -1868,7 +1871,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -2016,7 +2020,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -2063,7 +2068,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -2869,7 +2875,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -2916,7 +2923,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -2962,7 +2970,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -3008,7 +3017,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -3829,7 +3839,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -3876,7 +3887,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
@@ -4543,6 +4555,7 @@
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
@@ -4597,6 +4610,7 @@
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
@@ -4651,6 +4665,7 @@
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
@@ -5193,6 +5208,7 @@
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=1",
           "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -5235,6 +5251,7 @@
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=1",
           "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -5349,8 +5366,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5388,8 +5405,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5427,8 +5444,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5448,7 +5465,7 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912",
+          "9bc5",
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
@@ -5470,8 +5487,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5518,8 +5535,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5557,8 +5574,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5605,8 +5622,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5645,8 +5662,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5684,8 +5701,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5715,8 +5732,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5735,6 +5752,7 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu --enable-features=UseOzonePlatform --ozone-platform=wayland",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4",
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
@@ -5756,8 +5774,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -5776,6 +5794,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu --enable-features=UseOzonePlatform --ozone-platform=wayland",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4",
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
@@ -5797,8 +5816,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -6200,7 +6219,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6231,181 +6251,11 @@
       }
     ]
   },
-  "Linux FYI Experimental Release (Intel HD 630)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "angle_unittests"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "angle_unittests",
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
-        "use_isolated_scripts_api": true
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
-      },
-      {
-        "args": [
-          "--use-cmd-decoder=passthrough",
-          "--use-gl=angle",
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "gl_tests_passthrough",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gles2_conform_test",
-        "test_id_prefix": "ninja://gpu/gles2_conform_support:gles2_conform_test/"
-      }
-    ],
+  "Linux FYI Experimental Release (Intel UHD 630)": {
     "isolated_scripts": [
       {
         "args": [
-          "context_lost",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "context_lost_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "gpu_process",
+          "noop_sleep",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -6417,377 +6267,21 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gpu_process_launch_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
+        "name": "noop_sleep_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "hardware_accelerated_feature",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "hardware_accelerated_feature_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "info_collection",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--expected-vendor-id",
-          "8086",
-          "--expected-device-id",
-          "5912"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "info_collection_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "maps",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test",
-          "--test-machine-name",
-          "${buildername}",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "maps_pixel_passthrough_test",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "mediapipe",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_higher_performance_gpu --use-cmd-decoder=passthrough --use-gl=angle"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mediapipe_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test",
-          "--test-machine-name",
-          "${buildername}",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_skia_gold_passthrough_test",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "screenshot_sync",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "screenshot_sync_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "trace_test",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "trace_test",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_gl_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 20
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_gl_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-20.0.8",
-              "os": "Ubuntu-18.04.5",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
@@ -7400,7 +6894,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7438,7 +6933,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7462,568 +6958,6 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      }
-    ]
-  },
-  "Linux FYI Release (Intel HD 630)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "angle_unittests"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "angle_unittests",
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
-        "use_isolated_scripts_api": true
-      },
-      {
-        "args": [
-          "--use-cmd-decoder=passthrough",
-          "--use-gl=angle",
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "gl_tests_passthrough",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gles2_conform_test",
-        "test_id_prefix": "ninja://gpu/gles2_conform_support:gles2_conform_test/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "context_lost",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "context_lost_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "gpu_process",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "gpu_process_launch_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "hardware_accelerated_feature",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "hardware_accelerated_feature_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "info_collection",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--expected-vendor-id",
-          "8086",
-          "--expected-device-id",
-          "5912"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "info_collection_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "maps",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test",
-          "--test-machine-name",
-          "${buildername}",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "maps_pixel_passthrough_test",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "mediapipe",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_higher_performance_gpu --use-cmd-decoder=passthrough --use-gl=angle"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mediapipe_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test",
-          "--test-machine-name",
-          "${buildername}",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_skia_gold_passthrough_test",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "screenshot_sync",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-          "--dont-restore-color-profile-after-test"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "screenshot_sync_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "trace_test",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "trace_test",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=Vulkan --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough",
-          "--dont-restore-color-profile-after-test",
-          "--test-machine-name",
-          "${buildername}",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "vulkan_pixel_skia_gold_test",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl2_conformance_gl_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 20
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_gl_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
@@ -8057,34 +6991,6 @@
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
         "use_isolated_scripts_api": true
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:9bc5-20.0.8",
-              "os": "Ubuntu-18.04.6",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -8510,7 +7416,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8547,7 +7454,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9072,7 +7980,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9109,7 +8018,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9707,7 +8617,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9745,7 +8656,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9783,7 +8695,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10284,7 +9197,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10900,7 +9814,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10940,7 +9855,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10979,7 +9895,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11018,7 +9935,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11057,7 +9975,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11673,7 +10592,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11713,7 +10633,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11752,7 +10673,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11791,7 +10713,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11830,7 +10753,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11958,7 +10882,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -11988,7 +10912,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12016,7 +10940,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12042,7 +10966,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12067,7 +10991,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12089,7 +11013,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12115,7 +11039,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12154,7 +11078,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12191,7 +11115,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12228,7 +11152,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12269,7 +11193,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12315,7 +11239,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12352,7 +11276,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12398,7 +11322,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12436,7 +11360,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12473,7 +11397,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12506,7 +11430,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12524,7 +11448,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12545,7 +11470,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12564,7 +11489,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12585,7 +11511,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12603,7 +11529,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12624,7 +11551,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12642,7 +11569,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12663,7 +11591,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -12681,7 +11609,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12702,7 +11631,7 @@
               "cpu": "arm64",
               "display_attached": "1",
               "mac_model": "Macmini9,1",
-              "os": "Mac-11",
+              "os": "Mac-11|Mac-12",
               "pool": "chromium.tests"
             }
           ],
@@ -13280,7 +12209,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -13320,6 +12250,7 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4",
           "--enable-metal-debug-layers"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13358,7 +12289,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -13397,6 +12329,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4",
           "--enable-metal-debug-layers"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13435,7 +12368,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14067,7 +13001,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14107,7 +13042,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14147,7 +13083,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14678,7 +13615,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15805,7 +14743,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15846,7 +14785,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15886,7 +14826,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15926,7 +14867,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15966,7 +14908,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16600,7 +15543,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16640,7 +15584,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16680,7 +15625,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--test-filter=conformance/rendering/gl-drawelements.html"
+          "--test-filter=conformance/rendering/gl-drawelements.html",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17215,7 +16161,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17255,7 +16202,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17889,7 +16837,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17926,7 +16875,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17963,7 +16913,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17999,7 +16950,8 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -18746,7 +17698,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -18784,7 +17737,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -18822,7 +17776,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19515,7 +18470,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19552,7 +18508,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19589,7 +18546,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19626,7 +18584,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19662,7 +18621,8 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20282,7 +19242,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20319,7 +19280,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20356,7 +19318,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20393,7 +19356,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20429,7 +19393,8 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21081,7 +20046,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21118,7 +20084,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21155,7 +20122,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21192,7 +20160,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21228,7 +20197,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu",
+          "--jobs=4"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

@@ -22,7 +22,9 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -33,14 +35,16 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDrawable;
 
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.favicon.IconType;
 import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
@@ -55,7 +59,8 @@ import java.util.List;
 
 /** A simple test for {@link TileRenderer} using real {@link android.view.View} objects. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class, ShadowPostTask.class})
+@Config(manifest = Config.NONE, shadows = {ShadowPostTask.class})
+@EnableFeatures({ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES})
 public class TileRendererTest {
     /**
      * Backend that substitutes normal PostTask operations. Allow us to coordinate task execution
@@ -80,11 +85,17 @@ public class TileRendererTest {
     private static final int TITLE_LINES = 1;
     private static final GURL TEST_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
 
+    @Rule
+    public TestRule mFeatures = new Features.JUnitProcessor();
+
     @Mock
     private ImageFetcher mMockImageFetcher;
 
     @Mock
     private TileGroup.TileSetupDelegate mTileSetupDelegate;
+
+    @Mock
+    private TileGroup.TileInteractionDelegate mTileInteractionDelegate;
 
     @Mock
     private Runnable mTileSetupCallback;
@@ -133,24 +144,28 @@ public class TileRendererTest {
 
         // Set up mocks.
         doReturn(mTileSetupCallback).when(mTileSetupDelegate).createIconLoadCallback(any());
+        doReturn(mTileInteractionDelegate)
+                .when(mTileSetupDelegate)
+                .createInteractionDelegate(any());
         doReturn(mBitmap).when(mIconGenerator).generateIconForUrl(any(GURL.class));
     }
 
-    private void buildTileView(@TileStyle int style) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+    private SuggestionsTileView buildTileView(@TileStyle int style, int titleLines) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             TileRenderer tileRenderer =
-                    new TileRenderer(mActivity, style, TITLE_LINES, mMockImageFetcher);
+                    new TileRenderer(mActivity, style, titleLines, mMockImageFetcher);
             tileRenderer.setIconGeneratorForTesting(mIconGenerator);
             SuggestionsTileView tileView =
                     tileRenderer.buildTileView(mTile, mSharedParent, mTileSetupDelegate);
             Assert.assertNotNull(tileView);
+            return tileView;
         });
     }
 
     @Test
     @SmallTest
     public void testBuildTestView_Modern_noDecoration() {
-        buildTileView(TileStyle.MODERN);
+        buildTileView(TileStyle.MODERN, TITLE_LINES);
         // Expect no callbacks: we don't have any icon to offer there.
         mPostTaskRunner.runAll();
         verify(mTileSetupCallback, times(0)).run();
@@ -159,7 +174,7 @@ public class TileRendererTest {
     @Test
     @SmallTest
     public void testBuildTileView_ModernCondensed_noDecoration() {
-        buildTileView(TileStyle.MODERN_CONDENSED);
+        buildTileView(TileStyle.MODERN_CONDENSED, TITLE_LINES);
         // Expect no callbacks: we don't have any icon to offer there.
         mPostTaskRunner.runAll();
         verify(mTileSetupCallback, times(0)).run();
@@ -168,7 +183,7 @@ public class TileRendererTest {
     @Test
     @SmallTest
     public void testBuildTileView_ModernCondensed_fallbackColor() {
-        buildTileView(TileStyle.MODERN_CONDENSED);
+        buildTileView(TileStyle.MODERN_CONDENSED, TITLE_LINES);
         // Expect no callbacks: we don't have any icon to offer there.
         mPostTaskRunner.runAll();
         verify(mMockImageFetcher, times(1))
@@ -189,7 +204,7 @@ public class TileRendererTest {
     @Test
     @SmallTest
     public void testBuildTileView_ModernCondensed_favicon() {
-        buildTileView(TileStyle.MODERN_CONDENSED);
+        buildTileView(TileStyle.MODERN_CONDENSED, TITLE_LINES);
         // Expect no callbacks: we don't have any icon to offer there.
         mPostTaskRunner.runAll();
         verify(mMockImageFetcher, times(1))
@@ -213,7 +228,7 @@ public class TileRendererTest {
                 .when(mMockTemplateUrlService)
                 .isSearchResultsPageFromDefaultSearchProvider(any());
 
-        buildTileView(TileStyle.MODERN);
+        buildTileView(TileStyle.MODERN, TITLE_LINES);
 
         verify(mTileSetupCallback, times(0)).run();
         mPostTaskRunner.runAll();
@@ -225,5 +240,45 @@ public class TileRendererTest {
         ShadowDrawable shadowDrawable = shadowOf(mTile.getIcon());
         Assert.assertEquals(
                 R.drawable.ic_suggestion_magnifier, shadowDrawable.getCreatedFromResId());
+    }
+
+    @Test
+    @SmallTest
+    public void testTileTitle_multiLineSearch() {
+        doReturn(true)
+                .when(mMockTemplateUrlService)
+                .isSearchResultsPageFromDefaultSearchProvider(any());
+        SuggestionsTileView tileView = buildTileView(TileStyle.MODERN, 2);
+        Assert.assertEquals(2, tileView.getTitleView().getMaxLines());
+    }
+
+    @Test
+    @SmallTest
+    public void testTileTitle_multiLineURL() {
+        doReturn(false)
+                .when(mMockTemplateUrlService)
+                .isSearchResultsPageFromDefaultSearchProvider(any());
+        SuggestionsTileView tileView = buildTileView(TileStyle.MODERN, 2);
+        Assert.assertEquals(2, tileView.getTitleView().getMaxLines());
+    }
+
+    @Test
+    @SmallTest
+    public void testTileTitle_singleLineSearch() {
+        doReturn(true)
+                .when(mMockTemplateUrlService)
+                .isSearchResultsPageFromDefaultSearchProvider(any());
+        SuggestionsTileView tileView = buildTileView(TileStyle.MODERN, 1);
+        Assert.assertEquals(1, tileView.getTitleView().getMaxLines());
+    }
+
+    @Test
+    @SmallTest
+    public void testTileTitle_singleLineURL() {
+        doReturn(false)
+                .when(mMockTemplateUrlService)
+                .isSearchResultsPageFromDefaultSearchProvider(any());
+        SuggestionsTileView tileView = buildTileView(TileStyle.MODERN, 1);
+        Assert.assertEquals(1, tileView.getTitleView().getMaxLines());
     }
 }

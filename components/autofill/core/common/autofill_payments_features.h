@@ -27,6 +27,7 @@ extern const base::Feature kAutofillEnableFIDOProgressDialog;
 extern const base::Feature kAutofillEnableManualFallbackForVirtualCards;
 extern const base::Feature kAutofillEnableOfferNotificationForPromoCodes;
 extern const base::Feature kAutofillEnableOffersInClankKeyboardAccessory;
+extern const base::Feature kAutofillEnableRemadeDownstreamMetrics;
 extern const base::Feature kAutofillEnableSendingBcnInGetUploadDetails;
 extern const base::Feature kAutofillEnableStickyManualFallbackForCards;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
@@ -48,7 +49,6 @@ extern const base::Feature kAutofillSaveCardUiExperiment;
 extern const base::FeatureParam<int>
     kAutofillSaveCardUiExperimentSelectorInNumber;
 extern const base::Feature kAutofillShowUnmaskedCachedCardInManualFillingView;
-extern const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAdditionalEmailDomains;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;

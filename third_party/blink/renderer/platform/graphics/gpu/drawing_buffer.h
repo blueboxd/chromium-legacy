@@ -44,6 +44,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
@@ -72,7 +73,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
 namespace blink {
 class CanvasResource;
@@ -86,7 +87,6 @@ class WebGraphicsContext3DProviderWrapper;
 // publish its rendering results to a cc::Layer for compositing.
 class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                                       public RefCounted<DrawingBuffer> {
-
  public:
   class Client {
    public:
@@ -210,12 +210,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // have not yet been resolved.
   bool MarkContentsChanged();
 
-  // Maintenance of auto-clearing of color/depth/stencil buffers. The
-  // Reset method is present to keep calling code simpler, so it
-  // doesn't have to know which buffers were allocated.
-  void ResetBuffersToAutoClear();
-  void SetBuffersToAutoClear(GLbitfield bitmask);
-  GLbitfield GetBuffersToAutoClear() const;
+  void SetBufferClearNeeded(bool);
+  bool BufferClearNeeded() const;
 
   void SetIsInHiddenPage(bool);
   void SetFilterQuality(cc::PaintFlags::FilterQuality);
@@ -459,12 +455,13 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     gpu::SyncToken receive_sync_token;
   };
 
-  // bool CopyFunction(const gpu::MailboxHolder&, viz::ResourceFormat,
-  //                   const gfx::Size&, const gfx::ColorSpace&)
-  template <typename CopyFunction>
+  using CopyFunctionRef = absl::FunctionRef<bool(const gpu::MailboxHolder&,
+                                                 viz::ResourceFormat,
+                                                 const gfx::Size&,
+                                                 const gfx::ColorSpace&)>;
   bool CopyToPlatformInternal(gpu::InterfaceBase* dst_interface,
                               SourceDrawingBuffer src_buffer,
-                              const CopyFunction& copy_function);
+                              CopyFunctionRef copy_function);
 
   enum ClearOption { kClearOnlyMultisampledFBO, kClearAllFBOs };
 
@@ -518,8 +515,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   static void NotifyMailboxReleasedGpu(scoped_refptr<ColorBuffer>,
                                        const gpu::SyncToken&,
                                        bool lost_resource);
-  void MailboxReleasedGpu(scoped_refptr<ColorBuffer>,
-                          bool lost_resource);
+  void MailboxReleasedGpu(scoped_refptr<ColorBuffer>, bool lost_resource);
   void MailboxReleasedSoftware(RegisteredBitmap,
                                const gpu::SyncToken&,
                                bool lost_resource);
@@ -663,11 +659,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // True if resolveIfNeeded() has been called since the last time
   // markContentsChanged() had been called.
   bool contents_change_resolved_ = false;
-
-  // A bitmask of GL buffer bits (GL_COLOR_BUFFER_BIT,
-  // GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT) which need to be
-  // auto-cleared.
-  GLbitfield buffers_to_auto_clear_ = 0;
+  bool buffer_clear_needed_ = false;
 
   // Whether the client wants a depth or stencil buffer.
   const bool want_depth_;

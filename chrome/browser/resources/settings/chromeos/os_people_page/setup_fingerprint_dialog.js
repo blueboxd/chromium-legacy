@@ -6,7 +6,7 @@ import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
 import 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -24,7 +24,7 @@ import {FingerprintBrowserProxy, FingerprintBrowserProxyImpl, FingerprintResultT
 export const FingerprintSetupStep = {
   LOCATE_SCANNER: 1,  // The user needs to locate the scanner.
   MOVE_FINGER: 2,     // The user needs to move finger around the scanner.
-  READY: 3            // The scanner has read the fingerprint successfully.
+  READY: 3,           // The scanner has read the fingerprint successfully.
 };
 
 /**

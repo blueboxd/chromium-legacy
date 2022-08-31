@@ -344,6 +344,14 @@ void CameraHalDispatcherImpl::RemoveCameraPrivacySwitchObserver(
 void CameraHalDispatcherImpl::GetCameraSWPrivacySwitchState(
     cros::mojom::CameraHalServer::GetCameraSWPrivacySwitchStateCallback
         callback) {
+  if (!proxy_thread_.IsRunning()) {
+    LOG(ERROR) << "CameraProxyThread is not started. Failed to query the "
+                  "camera SW privacy switch state";
+    std::move(callback).Run(cros::mojom::CameraPrivacySwitchState::UNKNOWN);
+    return;
+  }
+  // Unretained reference is safe here because CameraHalDispatcherImpl owns
+  // |proxy_thread_|.
   proxy_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -353,6 +361,13 @@ void CameraHalDispatcherImpl::GetCameraSWPrivacySwitchState(
 
 void CameraHalDispatcherImpl::SetCameraSWPrivacySwitchState(
     cros::mojom::CameraPrivacySwitchState state) {
+  if (!proxy_thread_.IsRunning()) {
+    LOG(ERROR) << "CameraProxyThread is not started. "
+                  "SetCameraSWPrivacySwitchState request was aborted";
+    return;
+  }
+  // Unretained reference is safe here because CameraHalDispatcherImpl owns
+  // |proxy_thread_|.
   proxy_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -445,6 +460,7 @@ void CameraHalDispatcherImpl::RegisterServerWithToken(
   camera_hal_server_.set_disconnect_handler(
       base::BindOnce(&CameraHalDispatcherImpl::OnCameraHalServerConnectionError,
                      base::Unretained(this)));
+  camera_hal_server_->SetAutoFramingState(current_auto_framing_state_);
   CAMERA_LOG(EVENT) << "Camera HAL server registered";
   std::move(callback).Run(
       0, camera_hal_server_callbacks_.BindNewPipeAndPassRemote());
@@ -913,6 +929,29 @@ void CameraHalDispatcherImpl::StopOnProxyThread() {
   camera_hal_server_callbacks_.reset();
   camera_hal_server_.reset();
   receiver_set_.Clear();
+}
+
+void CameraHalDispatcherImpl::SetAutoFramingState(
+    cros::mojom::CameraAutoFramingState state) {
+  if (!proxy_thread_.IsRunning()) {
+    // The camera hal dispatcher is not running, ignore the request.
+    // TODO(pihsun): Any better way?
+    return;
+  }
+  proxy_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CameraHalDispatcherImpl::SetAutoFramingStateOnProxyThread,
+                     base::Unretained(this), state));
+}
+
+void CameraHalDispatcherImpl::SetAutoFramingStateOnProxyThread(
+    cros::mojom::CameraAutoFramingState state) {
+  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+
+  current_auto_framing_state_ = state;
+  if (camera_hal_server_) {
+    camera_hal_server_->SetAutoFramingState(state);
+  }
 }
 
 TokenManager* CameraHalDispatcherImpl::GetTokenManagerForTesting() {

@@ -201,6 +201,8 @@ file_manager_private::IOTaskType GetIOTaskType(
       return file_manager_private::IO_TASK_TYPE_EXTRACT;
     case file_manager::io_task::OperationType::kMove:
       return file_manager_private::IO_TASK_TYPE_MOVE;
+    case file_manager::io_task::OperationType::kRestore:
+      return file_manager_private::IO_TASK_TYPE_RESTORE;
     case file_manager::io_task::OperationType::kTrash:
       return file_manager_private::IO_TASK_TYPE_TRASH;
     case file_manager::io_task::OperationType::kZip:
@@ -1044,6 +1046,11 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   DispatchMountCompletedEvent(
       file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT, error_code,
       volume);
+
+  // TODO(mtomasz): Move VolumeManager and part of the event router outside of
+  // file_manager, so there is no dependency between File System API and the
+  // file_manager code.
+  extensions::file_system_api::DispatchVolumeListChangeEvent(profile_);
 }
 
 void EventRouter::DispatchMountCompletedEvent(

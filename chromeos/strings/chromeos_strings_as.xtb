@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1645954272419197032">অনুগ্ৰহ কৰি ডিভাইচৰ তথ্য নিশ্চিত কৰক</translation>
 <translation id="1662989795263954667">বন্ধ হৈছে - চিয়াঁহী শেষ হৈছে</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> পূৰ্বদৰ্শন কৰক</translation>
 <translation id="1668469839109562275">বিল্ট-ইন ভিপিএন</translation>
 <translation id="1672499492233627739">ৱেবকেমৰ ভিডিঅ’ ফীড</translation>
 <translation id="1676557873873341166">ভিডিঅ’ চিত্ৰগ্ৰহণ কৰি থকা হৈছে</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">ভিডিঅ’ কনফাৰেন্সিং</translation>
 <translation id="1852934301711881861">ChromeOS Flex ইনষ্টল কৰক</translation>
 <translation id="1856388568474281774">ডাউন এৰ’</translation>
+<translation id="1858620243986915808">স্ক্ৰীনশ্বট সংলগ্ন কৰক</translation>
 <translation id="1871569928317311284">গাঢ় ৰঙৰ থীম অফ কৰক</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">গাঢ় ম’ড অফ কৰক</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">ব্যক্তিগত কী</translation>
 <translation id="7982789257301363584">নেটৱৰ্ক</translation>
 <translation id="7994702968232966508">ই.এ.পি. পদ্ধতি</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"ত ছেভ কৰা আছে</translation>
 <translation id="802154636333426148">ডাউনল’ড কৰিব পৰা নগ’ল</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">স্বয়ংক্ৰিয় ৰঙৰ ম'ডটো সক্ষম কৰক</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">আৰম্ভ কৰা হোৱা নাই</translation>
 <translation id="8620617069779373398">ৰ’মিঙৰ স্থিতি</translation>
 <translation id="8655295600908251630">চেনেল</translation>
+<translation id="8655828773034788261">URL শ্বেয়াৰ কৰক:</translation>
 <translation id="8660881923941176839">পাউণ্ড</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> নেটৱর্কত যোগদান কৰক</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" />লৈ আপডে’ট কৰক আৰু ৰিষ্টাৰ্ট কৰক</translation>

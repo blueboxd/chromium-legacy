@@ -65,6 +65,7 @@
 <translation id="2139300032719313227">Перезапустите Chrome OS</translation>
 <translation id="2151406531797534936">Перезапустите Chrome</translation>
 <translation id="2174917724755363426">Установка не завершена. Отменить ее?</translation>
+<translation id="223889379102603431">Информация о том, как Chrome управляет корневыми сертификатами</translation>
 <translation id="2258103955319320201">Чтобы получить доступ к данным в браузере Chrome на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
@@ -77,6 +78,7 @@
 <translation id="2401189691232800402">Chrome OS</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
+<translation id="2494974097748878569">Google Ассистент в Chrome</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2559253115192232574">Сайты, на которые вы зайдете в дальнейшем, смогут запрашивать у Chrome сведения о ваших интересах, чтобы показывать вам подходящую рекламу. Chrome может предоставлять информацию не более чем о трех интересах.</translation>
 <translation id="2563121210305478421">Перезапустить Chrome?</translation>
@@ -155,6 +157,7 @@
 <translation id="3865754807470779944">Установлен браузер Chrome версии <ph name="PRODUCT_VERSION" />.</translation>
 <translation id="3873044882194371212">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
+<translation id="3999683152997576765">Вы можете просматривать и удалять потенциально интересные вам темы, используемые сайтами для показа рекламы. Chrome определяет такие темы на основе вашей недавней истории браузера.</translation>
 <translation id="4035053306113201399">Чтобы установить обновление, перезапустите Chrome OS.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -273,6 +276,7 @@
 <translation id="6739177684496155661">Продолжить работу в новом профиле Chrome?</translation>
 <translation id="6750954913813541382">Для проверки правописания Chrome отправляет в Google текст, который вы вводите в браузере.</translation>
 <translation id="677276454032249905">Закрыть Chrome?</translation>
+<translation id="6785872064505734160">Google Ассистент в Chrome может помогать вам выполнять действия на сайтах.</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6881299373831449287">Обновление Chrome</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
@@ -345,6 +349,7 @@
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
 <translation id="813913629614996137">Инициализация...</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>
+<translation id="8270775718612349140">Сертификаты, которыми управляет Chrome</translation>
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="828798499196665338">Родители отключили в Chrome параметр "Разрешения для сайтов, приложений и расширений". Включать это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>

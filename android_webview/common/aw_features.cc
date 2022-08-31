@@ -11,27 +11,6 @@ namespace features {
 
 // Alphabetical:
 
-// Enables package name logging for the most popular WebView embedders that are
-// on a dynamically generated allowlist.
-const base::Feature kWebViewAppsPackageNamesAllowlist{
-    "WebViewAppsPackageNamesAllowlist", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Maximum time to throttle querying the app package names allowlist from the
-// component updater service, used when there is a valid cached allowlist
-// result.
-const base::FeatureParam<base::TimeDelta>
-    kWebViewAppsMinAllowlistThrottleTimeDelta{
-        &kWebViewAppsPackageNamesAllowlist,
-        "WebViewAppsMinAllowlistThrottleTimeDelta", base::Hours(1)};
-
-// Minimum time to throttle querying the app package names allowlist from the
-// component updater service, used when there is no valid cached allowlist
-// result.
-const base::FeatureParam<base::TimeDelta>
-    kWebViewAppsMaxAllowlistThrottleTimeDelta{
-        &kWebViewAppsPackageNamesAllowlist,
-        "WebViewAppsMaxAllowlistThrottleTimeDelta", base::Days(2)};
-
 // Enable brotli compression support in WebView.
 const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -78,7 +57,7 @@ const base::Feature kWebViewJavaJsBridgeMojo{"WebViewJavaJsBridgeMojo",
 
 // When enabled, connections using legacy TLS 1.0/1.1 versions are allowed.
 const base::Feature kWebViewLegacyTlsSupport{"WebViewLegacyTlsSupport",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Measure the number of pixels occupied by one or more WebViews as a
 // proportion of the total screen size. Depending on the number of

@@ -15,12 +15,6 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
   async setUpDeferred() {
     await super.setUpDeferred();
 
-    window.doGesture = this.doGesture;
-    window.simulateHitTestResult = this.simulateHitTestResult;
-    window.press = this.press;
-    window.Mod = constants.ModifierFlag;
-    window.ActionType = chrome.automation.ActionType;
-
     await importModule(
         'BackgroundKeyboardHandler',
         '/chromevox/background/keyboard_handler.js');
@@ -45,6 +39,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         'DesktopAutomationInterface',
         '/chromevox/background/desktop_automation_interface.js');
     await importModule('EventGenerator', '/common/event_generator.js');
+    await importModule('FocusBounds', '/chromevox/background/focus_bounds.js');
     await importModule(
         'GestureCommandHandler',
         '/chromevox/background/gesture_command_handler.js');
@@ -54,6 +49,15 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         '/chromevox/background/page_load_sound_handler.js');
     await importModule(
         'PointerHandler', '/chromevox/background/pointer_handler.js');
+    await importModule('Cursor', '/common/cursors/cursor.js');
+    await importModule(
+        'OutputAction', '/chromevox/background/output/output_types.js');
+
+    window.doGesture = this.doGesture;
+    window.simulateHitTestResult = this.simulateHitTestResult;
+    window.press = this.press;
+    window.Mod = constants.ModifierFlag;
+    window.ActionType = chrome.automation.ActionType;
 
     this.forceContextualLastOutput();
   }
@@ -1291,7 +1295,8 @@ AX_TEST_F(
       const mockFeedback = this.createMockFeedback();
       const root = await this.runWithLoadedTree(undefined, {
         url: `${
-            testRunnerParams.testServerBaseUrl}accessibility/in_page_links.html`
+            testRunnerParams
+                .testServerBaseUrl}accessibility/in_page_links.html`,
       });
       mockFeedback.call(doCmd('nextObject'))
           .expectSpeech('Jump', 'Internal link')
@@ -1360,8 +1365,8 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'NodeVsSubnode', async function() {
   function outputLinkRange(start, end) {
     return function() {
       new Output()
-          .withSpeech(new CursorRange(
-              new cursors.Cursor(link, start), new cursors.Cursor(link, end)))
+          .withSpeech(
+              new CursorRange(new Cursor(link, start), new Cursor(link, end)))
           .go();
     };
   }
@@ -2762,7 +2767,7 @@ AX_TEST_F(
             Object.defineProperty(group, 'role', {
               get() {
                 return chrome.automation.RoleType.PANE;
-              }
+              },
             });
           })
           .call(simulateHitTestResult(group))
@@ -2792,12 +2797,12 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'FocusOnUnknown', async function() {
   Object.defineProperty(group1, 'role', {
     get() {
       return chrome.automation.RoleType.UNKNOWN;
-    }
+    },
   });
   Object.defineProperty(group2, 'role', {
     get() {
       return chrome.automation.RoleType.UNKNOWN;
-    }
+    },
   });
 
   const evt2 = new CustomAutomationEvent(EventType.FOCUS, group2);
@@ -2979,13 +2984,13 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'AudioVideo', async function() {
   Object.defineProperty(audio, 'role', {
     get() {
       return chrome.automation.RoleType.AUDIO;
-    }
+    },
   });
 
   Object.defineProperty(video, 'role', {
     get() {
       return chrome.automation.RoleType.VIDEO;
-    }
+    },
   });
 
   mockFeedback.call(doCmd('nextObject'))
@@ -3127,12 +3132,12 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ImageAnnotations', async function() {
   Object.defineProperty(namedImg, 'imageAnnotation', {
     get() {
       return 'foo';
-    }
+    },
   });
   Object.defineProperty(unnamedImg, 'imageAnnotation', {
     get() {
       return 'foo';
-    }
+    },
   });
 
   mockFeedback.call(doCmd('nextObject'))
@@ -3208,7 +3213,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ContainerButtons', async function() {
   Object.defineProperty(group, 'clickable', {
     get() {
       return true;
-    }
+    },
   });
 
   mockFeedback.call(doCmd('nextObject'))
@@ -3546,7 +3551,7 @@ AX_TEST_F(
             keyCode: KeyCode.RIGHT,
             metaKey: true,
             preventDefault: () => {},
-            stopPropagation: () => {}
+            stopPropagation: () => {},
           });
       const nextObjectBraille = BrailleCommandHandler.onBrailleKeyEvent.bind(
           BrailleCommandHandler, {command: BrailleKeyCommand.PAN_RIGHT});
@@ -3778,9 +3783,11 @@ AX_TEST_F(
       mockFeedback.expectSpeech(/menu opened/).replay();
     });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'SelectWithOptGroup', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(crbug.com/1346144): Fix flaky test.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'DISABLED_SelectWithOptGroup', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <select>
       <optgroup label="Theropods">
           <option>Tyrannosaurus</option>
@@ -3789,18 +3796,18 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SelectWithOptGroup', async function() {
       </optgroup>
     </select>
   `;
-  await this.runWithLoadedTree(site);
-  mockFeedback.expectSpeech('Tyrannosaurus', 'has pop up', 'Collapsed')
-      .call(doCmd('forceClickOnCurrentItem'))
-      .expectSpeech('Tyrannosaurus')
-      .call(press(KeyCode.DOWN))
-      .expectSpeech('Velociraptor')
-      .call(press(KeyCode.DOWN))
-      .expectSpeech('Deinonychus')
-      .call(press(KeyCode.UP))
-      .expectSpeech('Velociraptor')
-      .replay();
-});
+      await this.runWithLoadedTree(site);
+      mockFeedback.expectSpeech('Tyrannosaurus', 'has pop up', 'Collapsed')
+          .call(doCmd('forceClickOnCurrentItem'))
+          .expectSpeech('Tyrannosaurus')
+          .call(press(KeyCode.DOWN))
+          .expectSpeech('Velociraptor')
+          .call(press(KeyCode.DOWN))
+          .expectSpeech('Deinonychus')
+          .call(press(KeyCode.UP))
+          .expectSpeech('Velociraptor')
+          .replay();
+    });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'GroupNavigation', async function() {
   const mockFeedback = this.createMockFeedback();
@@ -4063,21 +4070,24 @@ AX_TEST_F(
           .replay();
     });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'GestureOnPopUpButton', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(crbug.com/1346144): Fix flaky test.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'DISABLED_GestureOnPopUpButton',
+    async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <select><option>apple</option><option>banana</option></select>
   `;
-  await this.runWithLoadedTree(site);
-  mockFeedback.expectSpeech('Button', 'has pop up')
-      .call(doGesture(Gesture.CLICK))
-      .expectSpeech('Button', 'has pop up', 'Expanded')
-      .call(doGesture(Gesture.SWIPE_DOWN1))
-      .expectSpeech('banana')
-      .call(doGesture(Gesture.SWIPE_UP1))
-      .expectSpeech('apple')
-      .replay();
-});
+      await this.runWithLoadedTree(site);
+      mockFeedback.expectSpeech('Button', 'has pop up')
+          .call(doGesture(Gesture.CLICK))
+          .expectSpeech('Button', 'has pop up', 'Expanded')
+          .call(doGesture(Gesture.SWIPE_DOWN1))
+          .expectSpeech('banana')
+          .call(doGesture(Gesture.SWIPE_UP1))
+          .expectSpeech('apple')
+          .replay();
+    });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'NestedImages', async function() {
   const mockFeedback = this.createMockFeedback();

@@ -251,14 +251,14 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
     {wf::EnablePaymentRequest, features::kWebPayments},
     {wf::EnablePaymentRequestBasicCard, features::kPaymentRequestBasicCard},
-    {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling},
+    {wf::EnablePercentBasedScrolling, features::kWindowsScrollingPersonality},
     {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
     {wf::EnablePictureInPicture, media::kPictureInPicture},
     {wf::EnablePictureInPictureV2, features::kPictureInPictureV2,
      kSetOnlyIfOverridden},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions},
     {wf::EnablePortals, blink::features::kPortals, kSetOnlyIfOverridden},
-    {wf::EnablePrerender2, blink::features::kPrerender2, kSetOnlyIfOverridden},
+    {wf::EnablePrerender2, blink::features::kPrerender2},
     {wf::EnablePushSubscriptionChangeEvent,
      features::kPushSubscriptionChangeEvent},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
@@ -314,6 +314,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kRemoveMobileViewportDoubleTap},
     {wf::EnableZeroCopyTabCapture, blink::features::kZeroCopyTabCapture},
     {wf::EnableEventPath, blink::features::kEventPath},
+    {wf::EnableGetDisplayMediaSet, features::kGetDisplayMediaSet},
+    {wf::EnableGetDisplayMediaSetAutoSelectAllScreens,
+     features::kGetDisplayMediaSetAutoSelectAllScreens},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -373,6 +376,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"PendingBeaconAPI", blink::features::kPendingBeaconAPI},
           {"PrefersColorSchemeClientHintHeader",
            blink::features::kPrefersColorSchemeClientHintHeader},
+          {"PrivateNetworkAccessPermissionPrompt",
+           blink::features::kPrivateNetworkAccessPermissionPrompt},
           {"FirstPartySets", features::kFirstPartySets},
           {"QuickIntensiveWakeUpThrottlingAfterLoading",
            blink::features::kQuickIntensiveWakeUpThrottlingAfterLoading},
@@ -380,7 +385,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"SanitizerAPIv0", blink::features::kSanitizerAPIv0},
           {"SecureContextFixForWorkers",
            blink::features::kSecureContextFixForWorkers},
-          {"StorageAccessAPI", blink::features::kStorageAccessAPI},
+          {"StorageAccessAPI", net::features::kStorageAccessAPI},
           {"ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
            blink::features::
                kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
@@ -411,6 +416,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kClientHintsMetaHTTPEquivAcceptCH},
           {"ClientHintsMetaNameAcceptCH",
            blink::features::kClientHintsMetaNameAcceptCH},
+          {"ClientHintsMetaEquivDelegateCH",
+           blink::features::kClientHintsMetaEquivDelegateCH},
           {"ClientHintThirdPartyDelegation",
            blink::features::kClientHintThirdPartyDelegation},
           {"UserAgentReduction", blink::features::kReduceUserAgent},
@@ -610,17 +617,6 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "=" << blink::features::kPortals.name
         << " instead.";
     WebRuntimeFeatures::EnablePortals(false);
-  }
-
-  // blink::features::kPrerender2 controls the browser side implementation of
-  // the Prerender2. To use the feature, both blink::features::kPrerender2 and
-  // WebRuntimeFeatures are enabled.
-  if (!blink::features::IsPrerender2Enabled()) {
-    LOG_IF(WARNING, WebRuntimeFeatures::IsPrerender2Enabled())
-        << "Prerender2 cannot be enabled in this configuration. Use --"
-        << switches::kEnableFeatures << "=" << blink::features::kPrerender2.name
-        << " instead.";
-    WebRuntimeFeatures::EnablePrerender2(false);
   }
 
   // Fenced frames, like Portals, cannot be enabled without the support of the

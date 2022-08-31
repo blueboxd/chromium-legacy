@@ -14,6 +14,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
@@ -29,6 +30,7 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -74,11 +76,19 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuReadLater"));
       [self.delegate readPageLater];
       break;
-    case PopupMenuActionPageBookmark:
+    case PopupMenuActionPageBookmark: {
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-      [self.dispatcher bookmarkCurrentPage];
+      web::WebState* currentWebState = self.delegate.currentWebState;
+      if (!currentWebState) {
+        return;
+      }
+      BookmarkAddCommand* command =
+          [[BookmarkAddCommand alloc] initWithWebState:currentWebState
+                                  presentFolderChooser:NO];
+      [self.bookmarksCommandsHandler bookmark:command];
       break;
+    }
     case PopupMenuActionTranslate:
       base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
       [self.dispatcher showTranslate];

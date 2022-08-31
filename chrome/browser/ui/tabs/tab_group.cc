@@ -69,7 +69,6 @@ void TabGroup::AddTab() {
   if (tab_count_ == 0) {
     controller_->CreateTabGroup(id_);
     TabGroupChange::VisualsChange visuals;
-    visuals.old_visuals = nullptr;
     controller_->ChangeTabGroupVisuals(id_, visuals);
   }
   controller_->ChangeTabGroupContents(id_);
@@ -150,8 +149,8 @@ void TabGroup::SaveGroup() {
 
   SavedTabGroupKeyedService* backend =
       SavedTabGroupServiceFactory::GetForProfile(controller_->GetProfile());
-  SavedTabGroup saved_tab_group(id_, visual_data_->title(),
-                                visual_data_->color(), urls);
+  SavedTabGroup saved_tab_group(visual_data_->title(), visual_data_->color(),
+                                urls, absl::nullopt, id_);
   backend->model()->Add(saved_tab_group);
 }
 

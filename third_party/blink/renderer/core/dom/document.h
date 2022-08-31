@@ -215,6 +215,7 @@ class ScriptElementBase;
 class ScriptPromise;
 class ScriptRegexp;
 class ScriptRunner;
+class ScriptRunnerDelayer;
 class ScriptValue;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
@@ -754,7 +755,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // AXContext associated with this document. When all associated
   // AXContexts are deleted, the AXObjectCache will be removed.
   AXObjectCache* ExistingAXObjectCache() const;
-
+  bool HasAXObjectCache() const;
   Document& AXObjectCacheOwner() const;
   void ClearAXObjectCache();
 
@@ -1331,6 +1332,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);
 
+  void MarkFirstPaint();
   void FinishedParsing();
 
   void SetEncodingData(const DocumentEncodingData& new_data);
@@ -2017,6 +2019,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void ExecuteScriptsWaitingForResources();
   void ExecuteJavaScriptUrls();
 
+  enum class MilestoneForDelayedAsyncScript { kFirstPaint, kFinishedParsing };
+  void MaybeExecuteDelayedAsyncScripts(MilestoneForDelayedAsyncScript);
+
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
 
@@ -2067,9 +2072,9 @@ class CORE_EXPORT Document : public ContainerNode,
                                    mojom::blink::FocusType focus_type);
   void DisplayNoneChangedForFrame();
 
-  // Handles a connection error to |has_trust_tokens_answerer_| by rejecting all
-  // pending promises created by |hasTrustToken|.
-  void HasTrustTokensAnswererConnectionError();
+  // Handles a connection error to |trust_token_query_answerer_| by rejecting
+  // all pending promises created by |hasTrustToken|.
+  void TrustTokenQueryAnswererConnectionError();
 
   void RunPostPrerenderingActivationSteps();
 
@@ -2260,6 +2265,7 @@ class CORE_EXPORT Document : public ContainerNode,
   base::ElapsedTimer start_time_;
 
   Member<ScriptRunner> script_runner_;
+  Member<ScriptRunnerDelayer> script_runner_delayer_;
 
   HeapVector<Member<ScriptElementBase>> current_script_stack_;
 

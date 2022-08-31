@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "ash/components/login/auth/challenge_response/cert_utils.h"
-#include "ash/components/login/auth/cryptohome_key_constants.h"
-#include "ash/components/login/auth/saml_password_attributes.h"
-#include "ash/components/login/auth/sync_trusted_vault_keys.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/cryptohome_key_constants.h"
+#include "ash/components/login/auth/public/saml_password_attributes.h"
+#include "ash/components/login/auth/public/sync_trusted_vault_keys.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -40,6 +40,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/login/saml/public_saml_url_fetcher.h"
 #include "chrome/browser/ash/login/saml/saml_metric_utils.h"
@@ -560,8 +561,14 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
       !gaia_reauth_request_token_.empty()) {
     params.SetStringKey("rart", gaia_reauth_request_token_);
   }
-  params.SetBoolKey("enableAzureADIntegration",
-                    ash::features::IsAzureADIntegrationEnabled());
+
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->IsManagedPreference(
+          ash::prefs::kUrlParameterToAutofillSAMLUsername)) {
+    params.SetStringKey("urlParameterToAutofillSAMLUsername",
+                        local_state->GetString(
+                            ash::prefs::kUrlParameterToAutofillSAMLUsername));
+  }
 
   was_security_token_pin_canceled_ = false;
 
@@ -1158,7 +1165,8 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
 
 void GaiaScreenHandler::Show() {
   base::Value::Dict data;
-  data.Set("hasUserPods", LoginDisplayHost::default_host()->HasUserPods());
+  if (LoginDisplayHost::default_host())
+    data.Set("hasUserPods", LoginDisplayHost::default_host()->HasUserPods());
   ShowInWebUI(std::move(data));
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
   hidden_ = false;
@@ -1324,7 +1332,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
   // TODO(crbug.com/1105387): Part of initial screen logic.
   PrefService* prefs = g_browser_process->local_state();
-  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
+  if (prefs->GetBoolean(::prefs::kFactoryResetRequested)) {
     DCHECK(LoginDisplayHost::default_host());
     LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
   }

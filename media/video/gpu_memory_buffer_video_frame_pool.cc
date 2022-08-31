@@ -756,16 +756,16 @@ gfx::Size CodedSize(const VideoFrame* video_frame,
       DCHECK_EQ(video_frame->visible_rect().x() % 2, 0);
       DCHECK_EQ(video_frame->visible_rect().y() % 2, 0);
       if (!gfx::IsOddWidthMultiPlanarBuffersAllowed())
-        width = base::bits::AlignUp(width, 2);
+        width = base::bits::AlignUp(width, size_t{2});
       if (!gfx::IsOddHeightMultiPlanarBuffersAllowed())
-        height = base::bits::AlignUp(height, 2);
+        height = base::bits::AlignUp(height, size_t{2});
       output = gfx::Size(width, height);
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
     case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
-      output = gfx::Size(base::bits::AlignUp(width, 2), height);
+      output = gfx::Size(base::bits::AlignUp(width, size_t{2}), height);
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
@@ -942,10 +942,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
         plane_resource.gpu_memory_buffer->Unmap();
         plane_resource.gpu_memory_buffer->SetColorSpace(
             video_frame->ColorSpace());
-        if (video_frame->hdr_metadata()) {
-          plane_resource.gpu_memory_buffer->SetHDRMetadata(
-              video_frame->hdr_metadata().value());
-        }
       }
     }
   }
@@ -1192,6 +1188,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDoneOnMediaThread(
   bool new_allow_overlay = frame->metadata().allow_overlay;
   bool new_read_lock_fences_enabled =
       frame->metadata().read_lock_fences_enabled;
+  frame->set_hdr_metadata(video_frame->hdr_metadata());
   frame->metadata().MergeMetadataFrom(video_frame->metadata());
   frame->metadata().allow_overlay = new_allow_overlay;
   frame->metadata().read_lock_fences_enabled = new_read_lock_fences_enabled;
@@ -1248,7 +1245,7 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
       // TODO(crbug.com/1241537): Always add the flag once the
-      // SharedImageBackingOzone is by default turned on.
+      // OzoneImageBacking is by default turned on.
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableUnsafeWebGPU)) {
         usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU;

@@ -203,7 +203,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                                      const gfx::Rect& bounds,
                                      const ui::WindowShowState show_state,
                                      int32_t active_tab_index,
-                                     const std::string& app_name);
+                                     const std::string& app_name,
+                                     int32_t restore_window_id);
 
   // Initialize resources and start Lacros. This class provides two approaches
   // to fulfill different requirements.
@@ -287,6 +288,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
     // Set true if Lacros uses resource file sharing.
     bool enable_resource_file_sharing = false;
+
+    // Any addiniotal  args to start lacros with.
+    std::vector<std::string> lacros_additional_args;
   };
 
  protected:
@@ -355,7 +359,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                             const gfx::Rect& bounds,
                             ui::WindowShowState show_state,
                             int32_t active_tab_index,
-                            const std::string& app_name);
+                            const std::string& app_name,
+                            int32_t restore_window_id);
     RestoreFromDeskTemplate(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate& operator=(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate(RestoreFromDeskTemplate&&);
@@ -367,6 +372,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     int32_t active_tab_index;
     // An non-empty |app_name| indicates that it's an app type browser window.
     std::string app_name;
+    int32_t restore_window_id;
   };
 
   // Returns true if the binary is ready to launch or already launched.

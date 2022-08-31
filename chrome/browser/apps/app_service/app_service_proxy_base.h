@@ -95,9 +95,6 @@ class AppServiceProxyBase : public KeyedService,
 
   apps::BrowserAppLauncher* BrowserAppLauncher();
 
-  // TODO(crbug.com/1333422): Remove this PreferredAppsImpl() function when
-  // proxy()->AddPreferredApp() can be called directly to add preferred apps.
-  apps::PreferredAppsImpl* PreferredAppsImpl();
   apps::PreferredAppsListHandle& PreferredAppsList();
 
   // Registers `publisher` with the App Service as exclusively publishing apps
@@ -140,6 +137,12 @@ class AppServiceProxyBase : public KeyedService,
   // Note: prefer using LaunchSystemWebAppAsync() for launching System Web Apps,
   // as that is robust to the choice of profile and avoids needing to specify an
   // app_id.
+  void Launch(const std::string& app_id,
+              int32_t event_flags,
+              apps::LaunchSource launch_source,
+              apps::WindowInfoPtr window_info = nullptr);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
@@ -241,14 +244,14 @@ class AppServiceProxyBase : public KeyedService,
   // exclude the browser apps. If |exclude_browser_tab_apps| is true then
   // exclude apps that open in browser tabs.
   std::vector<IntentLaunchInfo> GetAppsForIntent(
-      const apps::mojom::IntentPtr& intent,
+      const apps::IntentPtr& intent,
       bool exclude_browsers = false,
       bool exclude_browser_tab_apps = true);
 
   // Returns a list of apps (represented by their ids) and activities (if
   // applied) which can handle |files|.
   std::vector<IntentLaunchInfo> GetAppsForFiles(
-      std::vector<apps::mojom::IntentFilePtr> files);
+      std::vector<apps::IntentFilePtr> files);
 
   // Adds a preferred app for |url|.
   void AddPreferredApp(const std::string& app_id, const GURL& url);
@@ -389,11 +392,11 @@ class AppServiceProxyBase : public KeyedService,
   apps::mojom::IntentFilterPtr FindBestMatchingMojomFilter(
       const apps::mojom::IntentPtr& intent);
 
-  virtual void PerformPostLaunchTasks(apps::mojom::LaunchSource launch_source);
+  virtual void PerformPostLaunchTasks(apps::LaunchSource launch_source);
 
   virtual void RecordAppPlatformMetrics(Profile* profile,
                                         const apps::AppUpdate& update,
-                                        apps::mojom::LaunchSource launch_source,
+                                        apps::LaunchSource launch_source,
                                         apps::LaunchContainer container);
 
   virtual void PerformPostUninstallTasks(

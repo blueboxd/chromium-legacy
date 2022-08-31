@@ -43,6 +43,14 @@
             var(--cr-focus-outline-color));
       }
 
+      @media (forced-colors: active) {
+        :host(:focus-visible:focus) {
+          /* Use outline instead of box-shadow (which does not work) in Windows
+             HCM. */
+          outline: var(--cr-focus-outline-hcm);
+        }
+      }
+
       :host(:active) {
         background-color: var(--cr-icon-button-active-background-color,
             var(--cr-active-background-color));
@@ -78,6 +86,12 @@
         height: 100%;
         transition: background-color var(--cr-icon-button-transition);
         width: 100%;
+      }
+
+      @media (forced-colors: active) {
+        :host(:not([iron-icon])) #maskedImage {
+          background-color: ButtonText;
+        }
       }
 
       #icon {

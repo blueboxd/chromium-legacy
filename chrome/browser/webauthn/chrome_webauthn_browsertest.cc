@@ -98,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthnBrowserTest, ChromeExtensions) {
 
   static constexpr char kPageFile[] = "page.html";
 
-  std::vector<base::Value> resources;
-  resources.emplace_back(std::string(kPageFile));
+  base::Value::List resources;
+  resources.Append(std::string(kPageFile));
   static constexpr char kContents[] = R"(
 <html>
   <head>
@@ -196,7 +196,16 @@ class WebAuthnConditionalUITest : public WebAuthnBrowserTest {
         AuthenticatorRequestDialogModel::ExperimentServerLinkTitle exp_title)
         override {}
 
+    void AccountSelectorShown(
+        const std::vector<device::AuthenticatorGetAssertionResponse>& responses)
+        override {
+      for (const auto& response : responses) {
+        accounts_.emplace_back(base::HexEncode(response.credential->id));
+      }
+    }
+
     raw_ptr<ChromeAuthenticatorRequestDelegate> delegate_ = nullptr;
+    std::vector<std::string> accounts_;
 
    private:
     State state_ = kHasNotShowedUI;
@@ -279,6 +288,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthnConditionalUITest,
   std::string result;
   ASSERT_TRUE(message_queue.WaitForMessage(&result));
   EXPECT_EQ(result, "\"webauthn: OK\"");
+  EXPECT_EQ(observer_->accounts_.size(), 1u);
+  EXPECT_EQ(observer_->accounts_.at(0), "01020304");
 }
 
 // WebAuthnCableExtension exercises code paths where a server sends a caBLEv2
@@ -442,7 +453,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthnCableExtension, ServerLinkExperiments) {
 class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
  public:
   WebAuthnCableSecondFactor() {
-    scoped_feature_list_.InitWithFeatures({features::kWebAuthCable}, {});
     // This makes it a little easier to compare against.
     trace_ << std::endl;
   }
@@ -652,7 +662,6 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
 
     void UIShown(ChromeAuthenticatorRequestDelegate* delegate) override {
       parent_->model() = delegate->dialog_model();
-      LOG(ERROR) << static_cast<void*>(parent_->model());
 
       for (const auto& name : parent_->model()->paired_phone_names()) {
         parent_->trace() << "UINAME: " << name << std::endl;
@@ -688,7 +697,6 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
   };
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::ostringstream trace_;
   AuthenticatorRequestDialogModel* model_ = nullptr;
 };

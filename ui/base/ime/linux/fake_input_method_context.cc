@@ -6,7 +6,7 @@
 
 namespace ui {
 
-FakeInputMethodContext::FakeInputMethodContext() {}
+FakeInputMethodContext::FakeInputMethodContext() = default;
 
 // Overriden from ui::LinuxInputMethodContext
 
@@ -19,15 +19,13 @@ bool FakeInputMethodContext::IsPeekKeyEvent(const ui::KeyEvent& key_event) {
   return false;
 }
 
-void FakeInputMethodContext::Reset() {
-}
+void FakeInputMethodContext::Reset() {}
 
 void FakeInputMethodContext::UpdateFocus(bool has_client,
                                          TextInputType old_type,
                                          TextInputType new_type) {}
 
-void FakeInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
-}
+void FakeInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {}
 
 void FakeInputMethodContext::SetSurroundingText(
     const std::u16string& text,
@@ -40,6 +38,10 @@ void FakeInputMethodContext::SetContentType(TextInputType type,
 
 void FakeInputMethodContext::SetGrammarFragmentAtCursor(
     const ui::GrammarFragment& fragment) {}
+
+void FakeInputMethodContext::SetAutocorrectInfo(
+    const gfx::Range& autocorrect_range,
+    const gfx::Rect& autocorrect_bounds) {}
 
 VirtualKeyboardController*
 FakeInputMethodContext::GetVirtualKeyboardController() {

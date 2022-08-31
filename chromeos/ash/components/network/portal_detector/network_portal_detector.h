@@ -10,9 +10,9 @@
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 // TODO(https://crbug.com/1164001): forward declare NetworkState when moved to
 // chrome/browser/ash/.
-#include "chromeos/network/network_state.h"
+#include "chromeos/ash/components/network/network_state.h"
 
-namespace chromeos {
+namespace ash {
 
 // This is an interface for a chromeos portal detector that allows for
 // observation of captive portal state. It supports retries based on a portal
@@ -78,12 +78,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
   // Returns true if portal detection is enabled.
   virtual bool IsEnabled() = 0;
 
-  // Enable portal detection. This method is needed because we can't
-  // check current network for portal state unless user accepts EULA.
-  // If |start_detection| is true and NetworkPortalDetector was
-  // disabled previously, portal detection for the active network is
-  // initiated by this method.
-  virtual void Enable(bool start_detection) = 0;
+  // Enable portal detection. We do not want to show any portal detection UI
+  // during OOBE until the user accepts the EULA, so NetworkPortalDetector is
+  // 'disabled' while in that state. Once enabled, if a network is connected,
+  // portal detection for the default network will be handled.
+  virtual void Enable() = 0;
 
   // Starts or restarts portal detection for the default network. If not
   // currently in the idle state, does nothing. Returns true if a new portal
@@ -130,19 +129,12 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK) bool SetForTesting();
 
 }  // namespace network_portal_detector
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::NetworkPortalDetector;
-namespace network_portal_detector {
-using ::chromeos::network_portal_detector::GetInstance;
-using ::chromeos::network_portal_detector::InitializeForTesting;
-using ::chromeos::network_portal_detector::IsInitialized;
-using ::chromeos::network_portal_detector::SetForTesting;
-using ::chromeos::network_portal_detector::SetNetworkPortalDetector;
-using ::chromeos::network_portal_detector::Shutdown;
-}  // namespace network_portal_detector
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkPortalDetector;
+namespace network_portal_detector = ::ash::network_portal_detector;
+}  // namespace chromeos
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_

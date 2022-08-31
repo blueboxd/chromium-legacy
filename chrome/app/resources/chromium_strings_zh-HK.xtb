@@ -13,6 +13,7 @@
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1203500561924088507">多謝安裝。您必須先重新啟動瀏覽器，才能使用 <ph name="BUNDLE_NAME" />。</translation>
 <translation id="1315551408014407711">設定新的 Chromium 設定檔</translation>
+<translation id="1385859895174722837">Chromium 的「Google 助理」</translation>
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="1414495520565016063">您已登入 Chromium！</translation>
 <translation id="1524282610922162960">分享 Chromium 分頁</translation>
@@ -24,6 +25,7 @@
 您已向網站和應用程式授予的權限，可能會套用到此帳戶。您可在「<ph name="SETTINGS_LINK_BEGIN" />設定<ph name="SETTINGS_LINK_END" />」中管理 Google 帳戶。</translation>
 <translation id="1640672724030957280">下載中…</translation>
 <translation id="1708666629004767631">更新、更安全的 Chromium 版本現已推出。</translation>
+<translation id="17264556997921157">您可以查看及移除網站用來向您顯示廣告的感興趣主題。Chromium 會根據您最近的瀏覽記錄，推測您感興趣的主題。</translation>
 <translation id="1774152462503052664">讓 Chromium 在背景執行</translation>
 <translation id="1779356040007214683">為了讓 Chromium 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="1808667845054772817">重新安裝 Chromium</translation>
@@ -42,6 +44,7 @@
 <translation id="2018879682492276940">無法安裝，請再試一次。</translation>
 <translation id="2020032459870799438">如要檢查其他密碼是否安全，且未受資料外洩或其他安全性問題影響，請<ph name="BEGIN_LINK" />登入 Chromium<ph name="END_LINK" />。</translation>
 <translation id="2049376729098081731">選擇是否包含 Chromium 記錄，以便在 Google 服務中享有更個人化的體驗</translation>
+<translation id="2088953378266246249">Chromium 如何管理根憑證的相關資訊</translation>
 <translation id="2174178932569897599">自訂 Chromium</translation>
 <translation id="2174917724755363426">安裝尚未完成。確定要取消嗎？</translation>
 <translation id="2185166961232948079">Chromium - 網絡登入 - <ph name="PAGE_TITLE" /></translation>
@@ -103,6 +106,7 @@
 <translation id="3474745554856756813">這會刪除此裝置上的 <ph name="ITEMS_COUNT" /> 個項目。如果日後想擷取資料，請以 <ph name="USER_EMAIL" /> 的身分登入 Chromium。</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> 可以切換唔同嘅 Chromium 設定檔</translation>
 <translation id="3509308970982693815">請關閉所有 Chromium 視窗，然後再試一次。</translation>
+<translation id="3518180795744733843">Chromium 的「Google 助理」可助您完成各網站的操作</translation>
 <translation id="3533435340678213462">為保障您的私隱，我們會自動刪除超過 4 星期的興趣。按瀏覽內容而定，某個主題可能會再次在您的興趣清單中顯示。您亦可移除不希望 Chromium 列在興趣喜好清單中的項目。</translation>
 <translation id="3567254597502212821">您的瀏覽記錄，亦即您在此裝置上使用 Chromium 瀏覽過的網站記錄。</translation>
 <translation id="3575459661164320785">在您的電腦上發現有害軟件。Chromium 可移除該軟件、復原設定及停用擴充程式，讓瀏覽器恢復正常運作。</translation>
@@ -364,6 +368,7 @@ Chromium 無法復原您的設定。</translation>
 <translation id="9185526690718004400">重新啟動以更新 &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">由於 Chromium 將不再支援 Windows XP 或 Windows Vista，因此可能無法正常運作</translation>
+<translation id="942598560705308788">由 Chromium 管理的憑證</translation>
 <translation id="945990405696787151">如要取得日後的 Chromium 更新，您將需要 macOS 10.13 或以上版本。此電腦正在使用 OS X 10.11。</translation>
 <translation id="965162752251293939">誰在使用 Chromium？</translation>
 <translation id="967427899662692980">取得 Chromium 最強大的安全防護功能</translation>

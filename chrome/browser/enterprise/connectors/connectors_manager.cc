@@ -6,23 +6,24 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/url_matcher/url_matcher.h"
 #include "url/gurl.h"
 
 namespace enterprise_connectors {
 
-ConnectorsManager::ConnectorsManager(PrefService* pref_service,
-                                     const ServiceProviderConfig* config,
-                                     bool observe_prefs)
-    : service_provider_config_(config) {
+ConnectorsManager::ConnectorsManager(
+    ExtensionInstallEventRouter extension_install_event_router,
+    PrefService* pref_service,
+    const ServiceProviderConfig* config,
+    bool observe_prefs)
+    : service_provider_config_(config),
+      extension_install_event_router_(
+          std::move(extension_install_event_router)) {
   if (observe_prefs)
     StartObservingPrefs(pref_service);
+  extension_install_event_router_.StartObserving();
 }
 
 ConnectorsManager::~ConnectorsManager() = default;
@@ -242,7 +243,7 @@ absl::optional<GURL> ConnectorsManager::GetLearnMoreUrl(
   return absl::nullopt;
 }
 
-absl::optional<bool> ConnectorsManager::GetBypassJustificationRequired(
+bool ConnectorsManager::GetBypassJustificationRequired(
     AnalysisConnector connector,
     const std::string& tag) {
   if (IsConnectorEnabled(connector)) {
@@ -256,7 +257,7 @@ absl::optional<bool> ConnectorsManager::GetBypassJustificationRequired(
           .GetBypassJustificationRequired(tag);
     }
   }
-  return absl::nullopt;
+  return false;
 }
 
 std::vector<std::string> ConnectorsManager::GetAnalysisServiceProviderNames(

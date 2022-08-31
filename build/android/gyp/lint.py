@@ -30,10 +30,11 @@ _DISABLED_ALWAYS = [
     "InlinedApi",  # Constants are copied so they are always available.
     "LintBaseline",  # Don't warn about using baseline.xml files.
     "MissingApplicationIcon",  # False positive for non-production targets.
+    "ObsoleteLintCustomCheck",  # We have no control over custom lint checks.
     "SwitchIntDef",  # Many C++ enums are not used at all in java.
+    "Typos",  # Strings are committed in English first and later translated.
     "UniqueConstants",  # Chromium enums allow aliases.
     "UnusedAttribute",  # Chromium apks have various minSdkVersion values.
-    "ObsoleteLintCustomCheck",  # We have no control over custom lint checks.
 ]
 
 # These checks are not useful for test targets and adds an unnecessary burden
@@ -219,8 +220,10 @@ def _RunLint(create_cache,
   if baseline and not os.path.exists(baseline):
     # Generating new baselines is only done locally, and requires more memory to
     # avoid OOMs.
+    creating_baseline = True
     lint_xmx = '4G'
   else:
+    creating_baseline = False
     lint_xmx = '2G'
 
   # All paths in lint are based off of relative paths from root with root as the
@@ -336,13 +339,20 @@ def _RunLint(create_cache,
   logging.debug('Lint command %s', ' '.join(cmd))
   failed = True
 
+  if creating_baseline and not warnings_as_errors:
+    # Allow error code 6 when creating a baseline: ERRNO_CREATED_BASELINE
+    fail_func = lambda returncode, _: returncode not in (0, 6)
+  else:
+    fail_func = lambda returncode, _: returncode != 0
+
   try:
     failed = bool(
         build_utils.CheckOutput(cmd,
                                 print_stdout=True,
                                 stdout_filter=stdout_filter,
                                 stderr_filter=stderr_filter,
-                                fail_on_output=warnings_as_errors))
+                                fail_on_output=warnings_as_errors,
+                                fail_func=fail_func))
   finally:
     # When not treating warnings as errors, display the extra footer.
     is_debug = os.environ.get('LINT_DEBUG', '0') != '0'
@@ -447,6 +457,13 @@ def _ParseArgs(argv):
   args.extra_manifest_paths = build_utils.ParseGnList(args.extra_manifest_paths)
   args.resource_zips = build_utils.ParseGnList(args.resource_zips)
   args.classpath = build_utils.ParseGnList(args.classpath)
+
+  if args.baseline:
+    assert os.path.basename(args.baseline) == 'lint-baseline.xml', (
+        'The baseline file needs to be named "lint-baseline.xml" in order for '
+        'the autoroller to find and update it whenever lint is rolled to a new '
+        'version.')
+
   return args
 
 

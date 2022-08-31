@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/disks/disk.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
@@ -92,6 +93,8 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
 
 // Registers a mount point for Android files to ExternalMountPoints.
 bool RegisterAndroidFilesMountPoint() {
+  if (base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+    return false;
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   return mount_points->RegisterFileSystem(
@@ -342,8 +345,10 @@ std::unique_ptr<Volume> Volume::CreateForProvidedFileSystem(
     const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
     MountContext mount_context) {
   std::unique_ptr<Volume> volume(new Volume());
+
   volume->file_system_id_ = file_system_info.file_system_id();
   volume->provider_id_ = file_system_info.provider_id();
+
   switch (file_system_info.source()) {
     case extensions::SOURCE_FILE:
       volume->source_ = SOURCE_FILE;
@@ -355,17 +360,60 @@ std::unique_ptr<Volume> Volume::CreateForProvidedFileSystem(
       volume->source_ = SOURCE_NETWORK;
       break;
   }
+
   volume->volume_label_ = file_system_info.display_name();
   volume->type_ = VOLUME_TYPE_PROVIDED;
   volume->mount_path_ = file_system_info.mount_path();
   volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->mount_context_ = mount_context;
+
   volume->is_parent_ = true;
   volume->is_read_only_ = !file_system_info.writable();
   volume->configurable_ = file_system_info.configurable();
   volume->watchable_ = file_system_info.watchable();
-  volume->volume_id_ = GenerateVolumeId(*volume);
   volume->icon_set_ = file_system_info.icon_set();
+
+  volume->volume_id_ = GenerateVolumeId(*volume);
+  return volume;
+}
+
+// static
+std::unique_ptr<Volume> Volume::CreateForFuseBoxProvidedFileSystem(
+    const base::FilePath& mount_path,
+    const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
+    MountContext mount_context) {
+  std::unique_ptr<Volume> volume(new Volume());
+
+  switch (file_system_info.source()) {
+    case extensions::SOURCE_FILE:
+      volume->source_ = SOURCE_FILE;
+      break;
+    case extensions::SOURCE_DEVICE:
+      volume->source_ = SOURCE_DEVICE;
+      break;
+    case extensions::SOURCE_NETWORK:
+      volume->source_ = SOURCE_NETWORK;
+      break;
+  }
+
+  volume->volume_label_ = file_system_info.display_name();
+  if (ash::features::IsFileManagerFuseBoxDebugEnabled())
+    volume->volume_label_.insert(0, "fusebox ");
+
+  volume->type_ = VOLUME_TYPE_PROVIDED;
+  volume->file_system_type_ = util::kFuseBox;
+  volume->mount_path_ = mount_path;
+  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
+  volume->mount_context_ = mount_context;
+
+  volume->is_parent_ = true;
+  volume->is_read_only_ = !file_system_info.writable();
+  volume->configurable_ = file_system_info.configurable();
+  volume->icon_set_ = file_system_info.icon_set();
+
+  // "fusebox" prefix the original FSP volume id.
+  volume->volume_id_ = util::kFuseBox;
+  volume->volume_id_.append(GenerateVolumeId(*volume));
   return volume;
 }
 
@@ -387,20 +435,18 @@ std::unique_ptr<Volume> Volume::CreateForMTP(const base::FilePath& mount_path,
   return volume;
 }
 
-// static: |mount_path| is the fusebox daemon AttachStorage API 'subdir'.
+// static
 std::unique_ptr<Volume> Volume::CreateForFuseBoxMTP(
     const base::FilePath& mount_path,
     const std::string& label,
     bool read_only) {
-  const base::FilePath mount_point(util::kFuseBoxMediaPath);
-
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = VOLUME_TYPE_MTP;
   volume->file_system_type_ = util::kFuseBox;
   volume->device_type_ = chromeos::DEVICE_TYPE_MOBILE;
-  volume->source_path_ = mount_point.Append(mount_path);
+  volume->source_path_ = mount_path;
   volume->source_ = SOURCE_DEVICE;
-  volume->mount_path_ = mount_point.Append(mount_path);
+  volume->mount_path_ = mount_path;
   volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = true;
   volume->is_read_only_ = read_only;
@@ -671,16 +717,11 @@ void VolumeManager::Initialize() {
   // Subscribe to FileSystemProviderService and register currently mounted
   // volumes for the profile.
   if (file_system_provider_service_) {
-    using ash::file_system_provider::ProvidedFileSystemInfo;
-    file_system_provider_service_->AddObserver(this);
-
-    std::vector<ProvidedFileSystemInfo> file_system_info_list =
-        file_system_provider_service_->GetProvidedFileSystemInfoList();
-    for (auto& info : file_system_info_list) {
-      std::unique_ptr<Volume> volume =
-          Volume::CreateForProvidedFileSystem(info, MOUNT_CONTEXT_AUTO);
-      DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
-    }
+    auto restore_provided_file_systems =
+        base::BindOnce(&VolumeManager::RestoreProvidedFileSystems,
+                       weak_ptr_factory_.GetWeakPtr());
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(restore_provided_file_systems));
   }
 
   // Subscribe to Profile Preference change.
@@ -838,7 +879,7 @@ void VolumeManager::RemoveSshfsCrostiniVolume(
   disk_mount_manager_->UnmountPath(
       sshfs_mount_path.value(),
       base::BindOnce(&VolumeManager::OnSshfsCrostiniUnmountCallback,
-                     base::Unretained(this), sshfs_mount_path,
+                     weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path,
                      std::move(callback)));
 }
 
@@ -849,7 +890,7 @@ void VolumeManager::RemoveSftpGuestOsVolume(
   disk_mount_manager_->UnmountPath(
       sftp_mount_path.value(),
       base::BindOnce(&VolumeManager::OnSftpGuestOsUnmountCallback,
-                     base::Unretained(this), sftp_mount_path,
+                     weak_ptr_factory_.GetWeakPtr(), sftp_mount_path,
                      std::move(callback)));
 }
 
@@ -1207,6 +1248,21 @@ void VolumeManager::OnRenameEvent(
   NOTREACHED();
 }
 
+void VolumeManager::RestoreProvidedFileSystems() {
+  using ash::file_system_provider::ProvidedFileSystemInfo;
+
+  DCHECK(file_system_provider_service_);
+  file_system_provider_service_->AddObserver(this);
+
+  std::vector<ProvidedFileSystemInfo> file_system_info_list =
+      file_system_provider_service_->GetProvidedFileSystemInfoList();
+  for (const auto& file_system_info : file_system_info_list) {
+    OnProvidedFileSystemMount(file_system_info,
+                              ash::file_system_provider::MOUNT_CONTEXT_RESTORE,
+                              base::File::FILE_OK);
+  }
+}
+
 void VolumeManager::OnProvidedFileSystemMount(
     const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
     ash::file_system_provider::MountContext context,
@@ -1240,6 +1296,71 @@ void VolumeManager::OnProvidedFileSystemMount(
   }
 
   DoMountEvent(mount_error, std::move(volume));
+
+  // The fusebox_mounter_ is enabled by a chrome flag.
+  if (!fusebox_mounter_.get())
+    return;
+
+  // The FSP is not added to chrome::storage if mounting failed.
+  if (error != base::File::FILE_OK)
+    return;
+
+  // Get the FileSystemURL of the FSP storage device.
+  const std::string fsid =
+      file_system_info.mount_path().BaseName().AsUTF8Unsafe();
+  auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  auto fsp_file_system_url = mount_points->CreateExternalFileSystemURL(
+      blink::StorageKey(util::GetFilesAppOrigin()), fsid, {});
+  const std::string url = fsp_file_system_url.ToGURL().spec();
+  DCHECK(fsp_file_system_url.is_valid());
+
+  // Attach the FSP storage device to the fusebox daemon.
+  const std::string subdir = "fsp:" + fsid;
+  fusebox_mounter_->AttachStorage(
+      subdir, url, !file_system_info.writable(),
+      base::BindOnce(&VolumeManager::OnFuseboxAttachStorageProvidedFileSystem,
+                     weak_ptr_factory_.GetWeakPtr(), subdir, fsid,
+                     file_system_info, volume_context));
+}
+
+void VolumeManager::OnFuseboxAttachStorageProvidedFileSystem(
+    const std::string& subdir,
+    const std::string& fsid,
+    const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
+    MountContext volume_context,
+    int error) {
+  LOG_IF(ERROR, error) << "failed attaching fsp " << fsid;
+  if (error)
+    return;
+
+  // Create a Volume for the fusebox FSP storage device.
+  const base::FilePath mount_path =
+      base::FilePath(util::kFuseBoxMediaPath).Append(subdir);
+  std::unique_ptr<Volume> volume = Volume::CreateForFuseBoxProvidedFileSystem(
+      mount_path, file_system_info, volume_context);
+
+  // Register the fusebox FSP storage device with chrome::storage.
+  auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  bool result = mount_points->RegisterFileSystem(
+      /*prefixed*/ util::kFuseBox + fsid, storage::kFileSystemTypeFuseBox,
+      storage::FileSystemMountOption(), volume->mount_path());
+  DCHECK(result);
+
+  // Mount the fusebox FSP storage device in files app.
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
+}
+
+void VolumeManager::ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(
+    std::string* volume_id) const {
+  DCHECK(volume_id);
+
+  static const base::FilePath::CharType kFuseBoxFSPVolumeIdPrefix[] =
+      FILE_PATH_LITERAL("fuseboxprovided:fsp:");
+  if (!base::StartsWith(*volume_id, kFuseBoxFSPVolumeIdPrefix))
+    return;
+
+  int prefix = strlen(kFuseBoxFSPVolumeIdPrefix);
+  *volume_id = volume_id->substr(prefix).insert(0, "provided:");
 }
 
 void VolumeManager::OnProvidedFileSystemUnmount(
@@ -1253,6 +1374,30 @@ void VolumeManager::OnProvidedFileSystemUnmount(
   std::unique_ptr<Volume> volume = Volume::CreateForProvidedFileSystem(
       file_system_info, MOUNT_CONTEXT_UNKNOWN);
   DoUnmountEvent(mount_error, *volume);
+
+  // The fusebox_mounter_ is enabled by a chrome flag.
+  if (!fusebox_mounter_.get())
+    return;
+
+  // Get FSP chrome::storage |fsid| and fusebox daemon |subdir|.
+  const std::string fsid =
+      file_system_info.mount_path().BaseName().AsUTF8Unsafe();
+  const std::string subdir = "fsp:" + fsid;
+
+  // Unmount the fusebox FSP storage device in files app.
+  const base::FilePath mount_path =
+      base::FilePath(util::kFuseBoxMediaPath).Append(subdir);
+  std::unique_ptr<Volume> fusebox_volume =
+      Volume::CreateForFuseBoxProvidedFileSystem(mount_path, file_system_info,
+                                                 MOUNT_CONTEXT_UNKNOWN);
+  DoUnmountEvent(mount_error, *fusebox_volume);
+
+  // Remove the fusebox FSP storage device from chrome::storage.
+  auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  mount_points->RevokeFileSystem(util::kFuseBox + fsid);
+
+  // Detach the fusebox FSP storage device from the fusebox daemon.
+  fusebox_mounter_->DetachStorage(subdir, base::DoNothing());
 }
 
 void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
@@ -1298,9 +1443,10 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
                  Volume::CreateForMediaView(arc::kAudioRootDocumentId));
     DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  Volume::CreateForMediaView(arc::kDocumentsRootDocumentId));
-    DoMountEvent(
-        chromeos::MOUNT_ERROR_NONE,
-        Volume::CreateForAndroidFiles(base::FilePath(util::kAndroidFilesPath)));
+    if (!base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+      DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+                   Volume::CreateForAndroidFiles(
+                       base::FilePath(util::kAndroidFilesPath)));
   } else {
     DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                    *Volume::CreateForMediaView(arc::kImagesRootDocumentId));
@@ -1310,9 +1456,10 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
                    *Volume::CreateForMediaView(arc::kAudioRootDocumentId));
     DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                    *Volume::CreateForMediaView(arc::kDocumentsRootDocumentId));
-    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
-                   *Volume::CreateForAndroidFiles(
-                       base::FilePath(util::kAndroidFilesPath)));
+    if (!base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+      DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                     *Volume::CreateForAndroidFiles(
+                         base::FilePath(util::kAndroidFilesPath)));
   }
 
   documents_provider_root_manager_->SetEnabled(enabled);
@@ -1455,7 +1602,8 @@ void VolumeManager::OnFuseboxAttachStorageMTP(const std::string& subdir,
     return;
 
   // Create a Volume for the fusebox MTP storage device.
-  const base::FilePath mount_path = base::FilePath(subdir);
+  const base::FilePath mount_path =
+      base::FilePath(util::kFuseBoxMediaPath).Append(subdir);
   std::unique_ptr<Volume> volume =
       Volume::CreateForFuseBoxMTP(mount_path, label, read_only);
 

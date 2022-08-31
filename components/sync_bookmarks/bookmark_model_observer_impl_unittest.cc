@@ -43,6 +43,7 @@ using testing::IsNull;
 using testing::Ne;
 using testing::NiceMock;
 using testing::NotNull;
+using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
 const char kBookmarkBarId[] = "bookmark_bar_id";
@@ -103,12 +104,12 @@ class BookmarkModelObserverImplTest : public testing::Test {
   void SimulateCommitResponseForAllLocalChanges() {
     for (const SyncedBookmarkTrackerEntity* entity :
          bookmark_tracker()->GetEntitiesWithLocalChanges()) {
-      const std::string id = entity->metadata()->server_id();
+      const std::string id = entity->metadata().server_id();
       // Don't simulate change in id for simplicity.
       bookmark_tracker()->UpdateUponCommitResponse(
           entity, id,
           /*server_version=*/1,
-          /*acked_sequence_number=*/entity->metadata()->sequence_number());
+          /*acked_sequence_number=*/entity->metadata().sequence_number());
     }
   }
 
@@ -117,7 +118,33 @@ class BookmarkModelObserverImplTest : public testing::Test {
     const SyncedBookmarkTrackerEntity* entity =
         bookmark_tracker()->GetEntityForBookmarkNode(bookmark_node);
     return syncer::UniquePosition::FromProto(
-        entity->metadata()->unique_position());
+        entity->metadata().unique_position());
+  }
+
+  std::vector<const bookmarks::BookmarkNode*> GenerateBookmarkNodes(
+      size_t num_bookmarks) {
+    const std::string kTitle = "title";
+    const std::string kUrl = "http://www.url.com";
+
+    const bookmarks::BookmarkNode* bookmark_bar_node =
+        bookmark_model()->bookmark_bar_node();
+    std::vector<const bookmarks::BookmarkNode*> nodes;
+    for (size_t i = 0; i < num_bookmarks; ++i) {
+      nodes.push_back(bookmark_model()->AddURL(
+          /*parent=*/bookmark_bar_node, /*index=*/i, base::UTF8ToUTF16(kTitle),
+          GURL(kUrl)));
+    }
+
+    // Verify number of entities local changes. Should be the same as number of
+    // new nodes.
+    DCHECK_EQ(bookmark_tracker()->GetEntitiesWithLocalChanges().size(),
+              num_bookmarks);
+
+    // All bookmarks should be tracked now (including permanent nodes).
+    DCHECK_EQ(bookmark_tracker()->TrackedEntitiesCountForTest(),
+              3 + num_bookmarks);
+
+    return nodes;
   }
 
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
@@ -157,7 +184,7 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark_tracker()->GetEntitiesWithLocalChanges();
   ASSERT_THAT(local_changes.size(), 1U);
   EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node));
-  EXPECT_THAT(local_changes[0]->metadata()->server_id(),
+  EXPECT_THAT(local_changes[0]->metadata().server_id(),
               Eq(bookmark_node->guid().AsLowercaseString()));
 }
 
@@ -249,50 +276,165 @@ TEST_F(BookmarkModelObserverImplTest,
 
 TEST_F(BookmarkModelObserverImplTest,
        ReorderChildrenShouldUpdateTheTrackerAndNudgeForCommit) {
-  const std::string kTitle = "title";
-  const std::string kUrl = "http://www.url.com";
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
 
-  // Build this structure:
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Reorder it to be (2 bookmarks have been moved):
   // bookmark_bar
-  //  |- node0
   //  |- node1
-  //  |- node2
   //  |- node3
-  const bookmarks::BookmarkNode* bookmark_bar_node =
-      bookmark_model()->bookmark_bar_node();
-  std::vector<const bookmarks::BookmarkNode*> nodes;
-  for (size_t i = 0; i < 4; ++i) {
-    nodes.push_back(bookmark_model()->AddURL(
-        /*parent=*/bookmark_bar_node, /*index=*/i, base::UTF8ToUTF16(kTitle),
-        GURL(kUrl)));
-  }
+  //  |- node0
+  //  |- node2
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[1], nodes[3], nodes[0], nodes[2]});
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[3])));
+  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[0])));
+  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[2])));
 
-  // Verify number of entities local changes. Should be the same as number of
-  // new nodes.
-  ASSERT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges().size(), 4U);
+  // Only 2 moved nodes should have local changes to commit.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), SizeIs(2));
+}
 
-  // All bookmarks should be tracked now.
-  ASSERT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 7U);
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldReorderChildrenAndUpdateOnlyMovedToRightBookmark) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
 
   SimulateCommitResponseForAllLocalChanges();
 
   // Reorder it to be:
   // bookmark_bar
   //  |- node1
-  //  |- node3
-  //  |- node0
   //  |- node2
-  bookmark_model()->ReorderChildren(bookmark_bar_node,
-                                    {nodes[1], nodes[3], nodes[0], nodes[2]});
-  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[3])));
-  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[0])));
-  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[2])));
+  //  |- node0 (moved)
+  //  |- node3
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[1], nodes[2], nodes[0], nodes[3]});
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
+  EXPECT_TRUE(PositionOf(nodes[2]).LessThan(PositionOf(nodes[0])));
+  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[3])));
 
-  // All 4 nodes should have local changes to commit.
+  // Only one moved node should have local changes to commit.
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(),
-              UnorderedElementsAre(
-                  HasBookmarkNode(nodes[0]), HasBookmarkNode(nodes[1]),
-                  HasBookmarkNode(nodes[2]), HasBookmarkNode(nodes[3])));
+              UnorderedElementsAre(HasBookmarkNode(nodes[0])));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldReorderChildrenAndUpdateOnlyMovedToLeftBookmark) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Reorder it to be:
+  // bookmark_bar
+  //  |- node0
+  //  |- node3 (moved)
+  //  |- node1
+  //  |- node2
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[0], nodes[3], nodes[1], nodes[2]});
+  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[3])));
+  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[1])));
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
+
+  // Only one moved node should have local changes to commit.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(),
+              UnorderedElementsAre(HasBookmarkNode(nodes[3])));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldReorderWhenBookmarkMovedToLastPosition) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Reorder it to be:
+  // bookmark_bar
+  //  |- node1
+  //  |- node2
+  //  |- node3
+  //  |- node0 (moved)
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[1], nodes[2], nodes[3], nodes[0]});
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
+  EXPECT_TRUE(PositionOf(nodes[2]).LessThan(PositionOf(nodes[3])));
+  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[0])));
+
+  // Only one moved node should have local changes to commit.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(),
+              UnorderedElementsAre(HasBookmarkNode(nodes[0])));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldReorderWhenBookmarkMovedToFirstPosition) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Reorder it to be:
+  // bookmark_bar
+  //  |- node3 (moved)
+  //  |- node0
+  //  |- node1
+  //  |- node2
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[3], nodes[0], nodes[1], nodes[2]});
+  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[0])));
+  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[1])));
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
+
+  // Only one moved node should have local changes to commit.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(),
+              UnorderedElementsAre(HasBookmarkNode(nodes[3])));
+}
+
+TEST_F(BookmarkModelObserverImplTest, ShouldReorderWhenAllBookmarksReversed) {
+  // In this case almost all the bookmarks should be updated apart from only one
+  // bookmark.
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Reorder it to be (all nodes are moved):
+  // bookmark_bar
+  //  |- node3
+  //  |- node2
+  //  |- node1
+  //  |- node0
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[3], nodes[2], nodes[1], nodes[0]});
+  EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[2])));
+  EXPECT_TRUE(PositionOf(nodes[2]).LessThan(PositionOf(nodes[1])));
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[0])));
+
+  // Do not verify which nodes exactly have been updated, it depends on the
+  // implementation and any of the nodes may become a base node to calculate
+  // relative positions of all other nodes.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), SizeIs(3));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldNotReorderIfAllBookmarksStillOrdered) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GenerateBookmarkNodes(/*num_bookmarks=*/4);
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  // Keep the original order.
+  bookmark_model()->ReorderChildren(bookmark_model()->bookmark_bar_node(),
+                                    {nodes[0], nodes[1], nodes[2], nodes[3]});
+  EXPECT_TRUE(PositionOf(nodes[0]).LessThan(PositionOf(nodes[1])));
+  EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
+  EXPECT_TRUE(PositionOf(nodes[2]).LessThan(PositionOf(nodes[3])));
+
+  // The bookmarks remain in the same order, nothing to commit.
+  EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), IsEmpty());
 }
 
 TEST_F(BookmarkModelObserverImplTest,
@@ -336,16 +478,15 @@ TEST_F(BookmarkModelObserverImplTest,
   const SyncedBookmarkTrackerEntity* bookmark3_entity =
       bookmark_tracker()->GetEntityForBookmarkNode(bookmark3_node);
 
-  ASSERT_FALSE(folder2_entity->metadata()->is_deleted());
-  ASSERT_FALSE(bookmark2_entity->metadata()->is_deleted());
-  ASSERT_FALSE(bookmark3_entity->metadata()->is_deleted());
+  ASSERT_FALSE(folder2_entity->metadata().is_deleted());
+  ASSERT_FALSE(bookmark2_entity->metadata().is_deleted());
+  ASSERT_FALSE(bookmark3_entity->metadata().is_deleted());
 
-  const std::string& folder2_entity_id =
-      folder2_entity->metadata()->server_id();
+  const std::string& folder2_entity_id = folder2_entity->metadata().server_id();
   const std::string& bookmark2_entity_id =
-      bookmark2_entity->metadata()->server_id();
+      bookmark2_entity->metadata().server_id();
   const std::string& bookmark3_entity_id =
-      bookmark3_entity->metadata()->server_id();
+      bookmark3_entity->metadata().server_id();
   // Delete folder2.
   EXPECT_CALL(*nudge_for_commit_closure(), Run());
   bookmark_model()->Remove(folder2_node);
@@ -354,15 +495,15 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_TRUE(bookmark_tracker()
                   ->GetEntityForSyncId(folder2_entity_id)
                   ->metadata()
-                  ->is_deleted());
+                  .is_deleted());
   EXPECT_TRUE(bookmark_tracker()
                   ->GetEntityForSyncId(bookmark2_entity_id)
                   ->metadata()
-                  ->is_deleted());
+                  .is_deleted());
   EXPECT_TRUE(bookmark_tracker()
                   ->GetEntityForSyncId(bookmark3_entity_id)
                   ->metadata()
-                  ->is_deleted());
+                  .is_deleted());
 
   // folder2, bookmark2, and bookmark3 should be in the local changes to be
   // committed and folder2 deletion should be the last one (after all children
@@ -389,7 +530,7 @@ TEST_F(BookmarkModelObserverImplTest,
   ASSERT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 4U);
   const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker()->GetEntityForBookmarkNode(folder_node);
-  const std::string id = entity->metadata()->server_id();
+  const std::string id = entity->metadata().server_id();
   ASSERT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges().size(), 1U);
 
   bookmark_tracker()->MarkCommitMayHaveStarted(entity);
@@ -429,7 +570,7 @@ TEST_F(BookmarkModelObserverImplTest,
   const std::string id = bookmark_tracker()
                              ->GetEntityForBookmarkNode(folder_node)
                              ->metadata()
-                             ->server_id();
+                             .server_id();
   ASSERT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges().size(), 1U);
 
   // Remove the folder.
@@ -634,9 +775,9 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotIssueCommitUponFaviconLoad) {
   const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker()->GetEntityForBookmarkNode(bookmark_node);
   ASSERT_THAT(entity, NotNull());
-  ASSERT_TRUE(entity->metadata()->has_bookmark_favicon_hash());
+  ASSERT_TRUE(entity->metadata().has_bookmark_favicon_hash());
   const uint32_t initial_favicon_hash =
-      entity->metadata()->bookmark_favicon_hash();
+      entity->metadata().bookmark_favicon_hash();
 
   // Clear the specifics hash (as if the proto definition would have changed).
   // This is needed because otherwise the commit is trivially optimized away
@@ -653,8 +794,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotIssueCommitUponFaviconLoad) {
   ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(
       kBookmarkUrl, kIconUrl, CreateTestImage(kColor)));
 
-  EXPECT_TRUE(entity->metadata()->has_bookmark_favicon_hash());
-  EXPECT_THAT(entity->metadata()->bookmark_favicon_hash(),
+  EXPECT_TRUE(entity->metadata().has_bookmark_favicon_hash());
+  EXPECT_THAT(entity->metadata().bookmark_favicon_hash(),
               Eq(initial_favicon_hash));
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), IsEmpty());
 }
@@ -678,9 +819,9 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
   const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker()->GetEntityForBookmarkNode(bookmark_node);
   ASSERT_THAT(entity, NotNull());
-  ASSERT_TRUE(entity->metadata()->has_bookmark_favicon_hash());
+  ASSERT_TRUE(entity->metadata().has_bookmark_favicon_hash());
   const uint32_t initial_favicon_hash =
-      entity->metadata()->bookmark_favicon_hash();
+      entity->metadata().bookmark_favicon_hash();
 
   // A favicon change should trigger a commit nudge once the favicon loads, but
   // not earlier. Note that OnFaviconsChanged() needs no icon URL to invalidate
@@ -694,8 +835,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
   ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(
       kBookmarkUrl, kFinalIconUrl, CreateTestImage(SK_ColorBLUE)));
 
-  EXPECT_TRUE(entity->metadata()->has_bookmark_favicon_hash());
-  EXPECT_THAT(entity->metadata()->bookmark_favicon_hash(),
+  EXPECT_TRUE(entity->metadata().has_bookmark_favicon_hash());
+  EXPECT_THAT(entity->metadata().bookmark_favicon_hash(),
               Ne(initial_favicon_hash));
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(),
               ElementsAre(HasBookmarkNode(bookmark_node)));
@@ -780,7 +921,7 @@ TEST_F(BookmarkModelObserverImplTest,
   const std::vector<const SyncedBookmarkTrackerEntity*> local_changes =
       bookmark_tracker()->GetEntitiesWithLocalChanges();
   ASSERT_THAT(local_changes, ElementsAre(folder_entity));
-  ASSERT_TRUE(folder_entity->metadata()->is_deleted());
+  ASSERT_TRUE(folder_entity->metadata().is_deleted());
   ASSERT_EQ(
       bookmark_tracker()->GetEntityForClientTagHash(folder_client_tag_hash),
       folder_entity);
@@ -795,7 +936,7 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark_tracker()->GetEntityForClientTagHash(folder_client_tag_hash),
       folder_entity);
   EXPECT_TRUE(folder_entity->IsUnsynced());
-  EXPECT_FALSE(folder_entity->metadata()->is_deleted());
+  EXPECT_FALSE(folder_entity->metadata().is_deleted());
   EXPECT_EQ(folder_entity->bookmark_node(), folder);
 }
 

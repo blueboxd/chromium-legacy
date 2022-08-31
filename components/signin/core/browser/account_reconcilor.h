@@ -163,6 +163,19 @@ class AccountReconcilor : public KeyedService,
   friend class signin::ConsistencyCookieManagerTest;
 #endif
 
+#if BUILDFLAG(ENABLE_MIRROR)
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           ForceReconcileEarlyExitsForInactiveReconcilor);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
+                           ForceReconcileImmediatelyStartsForIdleReconcilor);
+  FRIEND_TEST_ALL_PREFIXES(
+      AccountReconcilorMirrorTest,
+      ForceReconcileImmediatelyStartsForErroredOutReconcilor);
+  FRIEND_TEST_ALL_PREFIXES(
+      AccountReconcilorMirrorTest,
+      ForceReconcileSchedulesReconciliationIfReconcilorIsAlreadyRunning);
+#endif  // BUILDFLAG(ENABLE_MIRROR)
+
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestForceDiceMigration,
                            TableRowTestCheckNoOp);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
@@ -243,6 +256,10 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            DelegateTimeoutIsNotCalled);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           ForcedReconcileTriggerShouldNotCallListAccounts);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           ForcedReconcileTriggerShouldNotResultInNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MultiloginLogout);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestForceDiceMigration,
@@ -283,8 +300,9 @@ class AccountReconcilor : public KeyedService,
     kTokenChangeDuringReconcile = 5,
     kCookieChange = 6,
     kCookieSettingChange = 7,
+    kForcedReconcile = 8,
 
-    kMaxValue = kCookieSettingChange
+    kMaxValue = kForcedReconcile
   };
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
@@ -315,6 +333,13 @@ class AccountReconcilor : public KeyedService,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void ScheduleStartReconcileIfChromeAccountsChanged();
+
+#if BUILDFLAG(ENABLE_MIRROR)
+  // Forces reconciliation. A reconciliation cycle is started immediately if it
+  // is not already running, otherwise another forced reconciliation is
+  // attempted after some time.
+  void ForceReconcile();
+#endif  // BUILDFLAG(ENABLE_MIRROR)
 
   // Returns the list of valid accounts from the TokenService.
   std::vector<CoreAccountId> LoadValidAccountsFromTokenService() const;

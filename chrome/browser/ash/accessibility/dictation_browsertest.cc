@@ -92,7 +92,7 @@ const char* kMacroFailedMetric = "Accessibility.CrosDictation.MacroFailed";
 const int kInputTextViewMetricValue = 1;
 
 static const char* kEnglishDictationCommands[] = {
-    "delete the previous character",
+    "delete",
     "move to the previous character",
     "move to the next character",
     "move to the previous line",
@@ -726,6 +726,15 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalization) {
   WaitForRecognitionStopped();
 }
 
+IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalizationWithComma) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello,", "Hello,");
+  SendFinalResultAndWaitForTextAreaValue("world", "Hello, world");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
 // Tests the behavior of Dictation in other languages.
 class DictationI18NTest : public DictationTestBase {
  public:
@@ -823,12 +832,10 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, TypesNonCommands) {
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteCharacter) {
   SendFinalResultAndWaitForTextAreaValue("Vega", "Vega");
   // Capitalization and whitespace shouldn't matter.
-  SendFinalResultAndWaitForTextAreaValue(" Delete the previous character",
-                                         "Veg");
-  SendFinalResultAndWaitForTextAreaValue("delete the previous character", "Ve");
-  SendFinalResultAndWaitForTextAreaValue("  delete the previous character",
-                                         "V");
-  SendFinalResultAndWaitForTextAreaValue("DELETE the previous character", "");
+  SendFinalResultAndWaitForTextAreaValue(" Delete", "Veg");
+  SendFinalResultAndWaitForTextAreaValue("delete", "Ve");
+  SendFinalResultAndWaitForTextAreaValue("  delete ", "V");
+  SendFinalResultAndWaitForTextAreaValue("DELETE", "");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, MoveByCharacter) {
@@ -866,7 +873,7 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectAllAndUnselect) {
   SendFinalResultAndWaitForTextAreaValue("Vega is the brightest star in Lyra",
                                          "Vega is the brightest star in Lyra");
   SendFinalResultAndWaitForSelectionChanged("Select all");
-  SendFinalResultAndWaitForTextAreaValue("delete the previous character", "");
+  SendFinalResultAndWaitForTextAreaValue("delete", "");
   SendFinalResultAndWaitForTextAreaValue(
       "Vega is the fifth brightest star in the sky",
       "Vega is the fifth brightest star in the sky");
@@ -1331,13 +1338,21 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, ChromeVoxAnnouncesHints) {
   // Setup ChromeVox first.
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
+  extensions::ExtensionHostTestHelper host_helper(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId);
   EnableChromeVox();
+  host_helper.WaitForHostCompletedFirstLoad();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
 
-  // Wait for ChromeVox to start.
-  sm.ExpectSpeech("ChromeVox spoken feedback is ready");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
 
-  sm.Call([this]() { ToggleDictationWithKeystroke(); });
+  // Hints should show up after a few seconds without speech.
+  WaitForProperties(
+      /*visible=*/true,
+      /*icon=*/DictationBubbleIconType::kStandby,
+      /*text=*/absl::optional<std::u16string>(),
+      /*hints=*/std::vector<std::u16string>{kTrySaying, kType, kHelp});
 
   // Assert speech from ChromeVox.
   sm.ExpectSpeechPattern("Try saying*Type*Help*");

@@ -181,6 +181,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
+    // Scroll container of the element specified by the 'anchor-scroll'
+    // property, if this element uses anchor positioning and is not in the same
+    // scroll container.
+    scoped_refptr<const TransformPaintPropertyNode> anchor_scroll_container;
     // If a visible frame is rooted at this node, this represents the element
     // ID of the containing document.
     CompositorElementId visible_frame_element_id;
@@ -275,6 +279,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.sticky_constraint.get();
   }
 
+  const TransformPaintPropertyNode* GetAnchorScrollContainer() const {
+    return state_.anchor_scroll_container.get();
+  }
+
   // If this is a scroll offset translation (i.e., has an associated scroll
   // node), returns this. Otherwise, returns the transform node that this node
   // scrolls with respect to. This can require a full ancestor traversal.
@@ -356,9 +364,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return DirectCompositingReasons() & CompositingReason::kFixedToViewport;
   }
 
-  bool RequiresCompositingForScrollDependentPosition() const {
-    return DirectCompositingReasons() &
-           CompositingReason::kComboScrollDependentPosition;
+  bool RequiresCompositingForStickyPosition() const {
+    return DirectCompositingReasons() & CompositingReason::kStickyPosition;
   }
 
   CompositingReasons DirectCompositingReasonsForDebugging() const {

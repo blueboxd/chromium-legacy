@@ -230,6 +230,16 @@ void FillLoopRestorationParams(v4l2_av1_loop_restoration* v4l2_lr,
     }
   }
 
+  const bool use_loop_restoration =
+      std::find_if(std::begin(lr.type),
+                   std::begin(lr.type) + libgav1::kMaxPlanes,
+                   [](const auto type) {
+                     return type != libgav1::kLoopRestorationTypeNone;
+                   }) != (lr.type + libgav1::kMaxPlanes);
+
+  if (!use_loop_restoration)
+    return;
+
   DCHECK_GE(lr.unit_size_log2[0], lr.unit_size_log2[1]);
   DCHECK_LE(lr.unit_size_log2[0] - lr.unit_size_log2[1], 1);
   v4l2_lr->lr_unit_shift = lr.unit_size_log2[0] - 6;
@@ -480,6 +490,9 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
     libgav1::RefCountedBufferPtr current_frame,
     scoped_refptr<MmapedBuffer> buffer,
     uint32_t last_queued_buffer_index) {
+  state_->UpdateReferenceFrames(current_frame,
+                                base::strict_cast<int>(refresh_frame_flags));
+
   static_assert(
       kAv1NumRefFrames == sizeof(refresh_frame_flags) * CHAR_BIT,
       "|refresh_frame_flags| size must be equal to |kAv1NumRefFrames|");
@@ -545,9 +558,6 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
     ref_frames_[i] = buffer;
   }
 
-  state_->UpdateReferenceFrames(current_frame,
-                                base::strict_cast<int>(refresh_frame_flags));
-
   return reusable_buffer_ids;
 }
 
@@ -607,8 +617,8 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     ANALYZER_ALLOW_UNUSED(reference_id);
   }
 
-  // TODO(b/228534730): add changes to prepare parameters for V4L2 AV1 stateless
-  // decoding and make VIDIOC_S_EXT_CTRLS v4l2 ioctl call
+  // TODO(b/239618516): add ext_ctrl for V4L2_CID_STATELESS_AV1_SEQUENCE
+
   struct v4l2_ctrl_av1_frame_header v4l2_frame_params = {};
 
   FillLoopFilterParams(&v4l2_frame_params.loop_filter,
@@ -637,6 +647,17 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
 
   FillGlobalMotionParams(&v4l2_frame_params.global_motion,
                          current_frame_header.global_motion);
+
+  // TODO(stevecho): V4L2_CID_STATELESS_AV1_FRAME_HEADER is trending to be
+  // changed to V4L2_CID_STATELESS_AV1_FRAME
+  struct v4l2_ext_control ext_ctrl = {.id = V4L2_CID_STATELESS_AV1_FRAME_HEADER,
+                                      .size = sizeof(v4l2_frame_params),
+                                      .ptr = &v4l2_frame_params};
+
+  struct v4l2_ext_controls ext_ctrls = {.count = 1, .controls = &ext_ctrl};
+
+  if (!v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls))
+    LOG(FATAL) << "VIDIOC_S_EXT_CTRLS failed.";
 
   if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_QUEUE failed.";

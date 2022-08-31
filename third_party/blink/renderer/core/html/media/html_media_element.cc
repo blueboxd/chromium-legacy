@@ -434,11 +434,6 @@ bool HTMLMediaElement::IsHLSURL(const KURL& url) {
   return url.GetPath().EndsWith(".m3u8");
 }
 
-bool HTMLMediaElement::MediaTracksEnabledInternally() {
-  return RuntimeEnabledFeatures::AudioVideoTracksEnabled() ||
-         RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled();
-}
-
 // static
 void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
   auto it = DocumentToElementSetMap().find(document);
@@ -1114,7 +1109,7 @@ void HTMLMediaElement::LoadInternal() {
   if (text_tracks_) {
     for (unsigned i = 0; i < text_tracks_->length(); ++i) {
       TextTrack* track = text_tracks_->AnonymousIndexedGetter(i);
-      if (track->mode() != TextTrack::DisabledKeyword())
+      if (track->mode() != TextTrackMode::kDisabled)
         text_tracks_when_resource_selection_began_.push_back(track);
     }
   }
@@ -3112,7 +3107,6 @@ void HTMLMediaElement::AudioTrackChanged(AudioTrack* track) {
   DVLOG(3) << "audioTrackChanged(" << *this
            << ") trackId= " << String(track->id())
            << " enabled=" << BoolString(track->enabled());
-  DCHECK(MediaTracksEnabledInternally());
 
   audioTracks().ScheduleChangeEvent();
 
@@ -3165,7 +3159,6 @@ VideoTrackList& HTMLMediaElement::videoTracks() {
 void HTMLMediaElement::SelectedVideoTrackChanged(VideoTrack* track) {
   DVLOG(3) << "selectedVideoTrackChanged(" << *this << ") selectedTrackId="
            << (track->selected() ? String(track->id()) : "none");
-  DCHECK(MediaTracksEnabledInternally());
 
   if (track->selected())
     videoTracks().TrackSelected(track->id());
@@ -3306,7 +3299,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   // wrong. (The 'change' event shouldn't be fired at all in this case...)
 
   // ..., its text track mode to the text track hidden mode, ...
-  text_track->setMode(TextTrack::HiddenKeyword());
+  text_track->SetModeEnum(TextTrackMode::kHidden);
 
   // 5. Return the new TextTrack object.
   return text_track;
@@ -4376,9 +4369,6 @@ void HTMLMediaElement::Trace(Visitor* visitor) const {
 }
 
 void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {
-  if (!MediaTracksEnabledInternally())
-    return;
-
   // Create a placeholder audio track if the player says it has audio but it
   // didn't explicitly announce the tracks.
   if (HasAudio() && !audioTracks().length()) {

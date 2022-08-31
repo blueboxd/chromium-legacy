@@ -12,6 +12,7 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -222,23 +223,24 @@ int64_t File::Seek(Whence whence, int64_t offset) {
 int File::Read(int64_t offset, char* data, int size) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
-  if (size < 0)
+  if (size < 0 || !IsValueInRangeForNumericType<off_t>(offset + size - 1))
     return -1;
 
   SCOPED_FILE_TRACE_WITH_SIZE("Read", size);
 
   int bytes_read = 0;
-  int rv;
+  long rv;
   do {
     rv = HANDLE_EINTR(pread(file_.get(), data + bytes_read,
-                            size - bytes_read, offset + bytes_read));
+                            static_cast<size_t>(size - bytes_read),
+                            static_cast<off_t>(offset + bytes_read)));
     if (rv <= 0)
       break;
 
     bytes_read += rv;
   } while (bytes_read < size);
 
-  return bytes_read ? bytes_read : rv;
+  return bytes_read ? bytes_read : checked_cast<int>(rv);
 }
 
 int File::ReadAtCurrentPos(char* data, int size) {
@@ -250,23 +252,29 @@ int File::ReadAtCurrentPos(char* data, int size) {
   SCOPED_FILE_TRACE_WITH_SIZE("ReadAtCurrentPos", size);
 
   int bytes_read = 0;
-  int rv;
+  long rv;
   do {
-    rv = HANDLE_EINTR(read(file_.get(), data + bytes_read, size - bytes_read));
+    rv = HANDLE_EINTR(read(file_.get(), data + bytes_read,
+                           static_cast<size_t>(size - bytes_read)));
     if (rv <= 0)
       break;
 
     bytes_read += rv;
   } while (bytes_read < size);
 
-  return bytes_read ? bytes_read : rv;
+  return bytes_read ? bytes_read : checked_cast<int>(rv);
 }
 
 int File::ReadNoBestEffort(int64_t offset, char* data, int size) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
+  if (size < 0 || !IsValueInRangeForNumericType<off_t>(offset))
+    return -1;
+
   SCOPED_FILE_TRACE_WITH_SIZE("ReadNoBestEffort", size);
-  return HANDLE_EINTR(pread(file_.get(), data, size, offset));
+  return checked_cast<int>(
+      HANDLE_EINTR(pread(file_.get(), data, static_cast<size_t>(size),
+                         static_cast<off_t>(offset))));
 }
 
 int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
@@ -276,7 +284,8 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
     return -1;
 
   SCOPED_FILE_TRACE_WITH_SIZE("ReadAtCurrentPosNoBestEffort", size);
-  return HANDLE_EINTR(read(file_.get(), data, size));
+  return checked_cast<int>(
+      HANDLE_EINTR(read(file_.get(), data, static_cast<size_t>(size))));
 }
 
 int File::Write(int64_t offset, const char* data, int size) {
@@ -292,7 +301,7 @@ int File::Write(int64_t offset, const char* data, int size) {
   SCOPED_FILE_TRACE_WITH_SIZE("Write", size);
 
   int bytes_written = 0;
-  int rv;
+  long rv;
   do {
 #if BUILDFLAG(IS_ANDROID)
     // In case __USE_FILE_OFFSET64 is not used, we need to call pwrite64()
@@ -300,10 +309,12 @@ int File::Write(int64_t offset, const char* data, int size) {
     static_assert(sizeof(int64_t) == sizeof(off64_t),
                   "off64_t must be 64 bits");
     rv = HANDLE_EINTR(pwrite64(file_.get(), data + bytes_written,
-                               size - bytes_written, offset + bytes_written));
+                               static_cast<size_t>(size - bytes_written),
+                               offset + bytes_written));
 #else
     rv = HANDLE_EINTR(pwrite(file_.get(), data + bytes_written,
-                             size - bytes_written, offset + bytes_written));
+                             static_cast<size_t>(size - bytes_written),
+                             offset + bytes_written));
 #endif
     if (rv <= 0)
       break;
@@ -311,7 +322,7 @@ int File::Write(int64_t offset, const char* data, int size) {
     bytes_written += rv;
   } while (bytes_written < size);
 
-  return bytes_written ? bytes_written : rv;
+  return bytes_written ? bytes_written : checked_cast<int>(rv);
 }
 
 int File::WriteAtCurrentPos(const char* data, int size) {
@@ -323,17 +334,17 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   SCOPED_FILE_TRACE_WITH_SIZE("WriteAtCurrentPos", size);
 
   int bytes_written = 0;
-  int rv;
+  long rv;
   do {
     rv = HANDLE_EINTR(write(file_.get(), data + bytes_written,
-                            size - bytes_written));
+                            static_cast<size_t>(size - bytes_written)));
     if (rv <= 0)
       break;
 
     bytes_written += rv;
   } while (bytes_written < size);
 
-  return bytes_written ? bytes_written : rv;
+  return bytes_written ? bytes_written : checked_cast<int>(rv);
 }
 
 int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
@@ -343,7 +354,8 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
     return -1;
 
   SCOPED_FILE_TRACE_WITH_SIZE("WriteAtCurrentPosNoBestEffort", size);
-  return HANDLE_EINTR(write(file_.get(), data, size));
+  return checked_cast<int>(
+      HANDLE_EINTR(write(file_.get(), data, static_cast<size_t>(size))));
 }
 
 int64_t File::GetLength() {
@@ -506,7 +518,7 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
 
   static_assert(O_RDONLY == 0, "O_RDONLY must equal zero");
 
-  int mode = S_IRUSR | S_IWUSR;
+  mode_t mode = S_IRUSR | S_IWUSR;
 #if BUILDFLAG(IS_CHROMEOS)
   mode |= S_IRGRP | S_IROTH;
 #endif

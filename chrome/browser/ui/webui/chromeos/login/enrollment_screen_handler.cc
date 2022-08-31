@@ -35,8 +35,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -443,6 +443,7 @@ void EnrollmentScreenHandler::ShowAuthError(
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
     case GoogleServiceAuthError::SERVICE_ERROR:
+    case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR, false);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
@@ -1082,6 +1083,12 @@ void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,
 }
 
 void EnrollmentScreenHandler::DoShow() {
+  if (config_.is_mode_attestation()) {
+    // Don't need sign-in partition for attestation enrollment.
+    DoShowWithData(ScreenDataForAttestationEnrollment());
+    return;
+  }
+
   // Start a new session with SigninPartitionManager, generating a unique
   // StoragePartition.
   login::SigninPartitionManager* signin_partition_manager =
@@ -1100,31 +1107,52 @@ void EnrollmentScreenHandler::DoShowWithPartition(
   if (shutdown_)
     return;
 
-  base::Value::Dict screen_data;
-
-  screen_data.Set("webviewPartitionName", partition_name);
   signin_partition_name_ = partition_name;
 
-  screen_data.Set("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
-  screen_data.Set("clientId",
-                  GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  screen_data.Set("enrollment_mode", EnrollmentModeToUIMode(config_.mode));
-  screen_data.Set("is_enrollment_enforced", config_.is_forced());
-  screen_data.Set("attestationBased", config_.is_mode_attestation());
-  screen_data.Set("management_domain", config_.management_domain);
-  screen_data.Set("flow", GetFlowString(flow_type_));
-  screen_data.Set("gaia_buttons_type",
-                  GetGaiaButtonsTypeString(gaia_buttons_type_));
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (!app_locale.empty())
-    screen_data.Set("hl", app_locale);
+  DoShowWithData(ScreenDataForOAuthEnrollment());
+}
 
+void EnrollmentScreenHandler::DoShowWithData(base::Value::Dict screen_data) {
   ShowInWebUI(std::move(screen_data));
   if (first_show_) {
     first_show_ = false;
     UpdateStateInternal(NetworkError::ERROR_REASON_UPDATE, true);
   }
   histogram_helper_->OnScreenShow();
+}
+
+base::Value::Dict
+EnrollmentScreenHandler::ScreenDataForAttestationEnrollment() {
+  // Attestation-based enrollment doesn't require additional screen data.
+  return ScreenDataCommon();
+}
+
+base::Value::Dict EnrollmentScreenHandler::ScreenDataForOAuthEnrollment() {
+  base::Value::Dict screen_data = ScreenDataCommon();
+
+  screen_data.Set("webviewPartitionName", signin_partition_name_);
+  screen_data.Set("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
+  screen_data.Set("clientId",
+                  GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  screen_data.Set("management_domain", config_.management_domain);
+  screen_data.Set("gaia_buttons_type",
+                  GetGaiaButtonsTypeString(gaia_buttons_type_));
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  if (!app_locale.empty())
+    screen_data.Set("hl", app_locale);
+
+  return screen_data;
+}
+
+base::Value::Dict EnrollmentScreenHandler::ScreenDataCommon() {
+  base::Value::Dict screen_data;
+
+  screen_data.Set("enrollment_mode", EnrollmentModeToUIMode(config_.mode));
+  screen_data.Set("is_enrollment_enforced", config_.is_forced());
+  screen_data.Set("attestationBased", config_.is_mode_attestation());
+  screen_data.Set("flow", GetFlowString(flow_type_));
+
+  return screen_data;
 }
 
 }  // namespace chromeos

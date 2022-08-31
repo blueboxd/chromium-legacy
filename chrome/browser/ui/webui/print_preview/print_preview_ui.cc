@@ -93,7 +93,7 @@ namespace {
 #if BUILDFLAG(IS_MAC)
 const char16_t kBasicPrintShortcut[] = u"\u0028\u21e7\u2318\u0050\u0029";
 #elif !BUILDFLAG(IS_CHROMEOS)
-const char16_t kBasicPrintShortcut[] = u"(Ctrl+Alt+P)";
+const char16_t kBasicPrintShortcut[] = u"(Ctrl+Shift+P)";
 #endif
 
 constexpr char kInvalidArgsForDidStartPreview[] =
@@ -399,6 +399,8 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
 }
 
 }  // namespace
+
+WEB_UI_CONTROLLER_TYPE_IMPL(PrintPreviewUI)
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
                                std::unique_ptr<PrintPreviewHandler> handler)
@@ -720,8 +722,11 @@ void PrintPreviewUI::SetInitialParams(
     const mojom::RequestPrintPreviewParams& params) {
   if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
     return;
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_dialog->GetWebUI()->GetController());
+
+  PrintPreviewUI* print_preview_ui = print_preview_dialog->GetWebUI()
+                                         ->GetController()
+                                         ->GetAs<PrintPreviewUI>();
+  CHECK(print_preview_ui);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   print_preview_ui->source_is_arc_ = params.is_from_arc;
 #endif

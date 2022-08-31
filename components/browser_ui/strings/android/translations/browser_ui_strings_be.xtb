@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">Скінуць дазволы</translation>
 <translation id="301521992641321250">Заблакіравана аўтаматычна</translation>
 <translation id="3069226013421428034">Дазволіць уваход праз староннія сэрвісы для канкрэтнага сайта.</translation>
+<translation id="3109724472072898302">Згорнута</translation>
 <translation id="3114012059975132928">Відэапрайгравальнік</translation>
 <translation id="3115898365077584848">Паказаць інфармацыю</translation>
 <translation id="3123473560110926937">Заблакіравана на некаторых сайтах</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">Выключыць гук відэа</translation>
 <translation id="3596414637720633074">Блакіраваць староннія файлы cookie у рэжыме інкогніта</translation>
 <translation id="3600792891314830896">Выключыць гук на сайтах, якія прайграюць гукі</translation>
+<translation id="3628308229821498208">Прапанаваныя пошукавыя запыты</translation>
 <translation id="3744111561329211289">Фонавая сінхранізацыя</translation>
 <translation id="3763247130972274048">Каб пераматаць відэа на 10 с назад або наперад, двойчы націсніце на яго з правага або левага боку</translation>
 <translation id="3797520601150691162">Не прымяняць цёмную тэму да канкрэтнага сайта</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">Блакіраваць староннія файлы cookie</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6231752747840485235">Выдаліць "<ph name="APP_NAME" />"?</translation>
+<translation id="6262191102408817757">На падставе даных вашай апошняй укладкі</translation>
 <translation id="6262279340360821358">Заблакіравана: <ph name="PERMISSION_1" /> і <ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">Сайтам дазволена запытваць дазвол на паказ апавяшчэнняў</translation>
 <translation id="6295158916970320988">Усе сайты</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">Заблакіраваць сайтам паказ выплыўных вокнаў і перанакіраванні (рэкамендуецца)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Абнавіць</translation>
+<translation id="7203150201908454328">Разгорнута</translation>
 <translation id="723171743924126238">Выберыце відарысы</translation>
 <translation id="7243308994586599757">Параметры знаходзяцца ў ніжняй частцы экрана</translation>
 <translation id="7250468141469952378">Выбрана: <ph name="ITEM_COUNT" /></translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">Блакіраваць прайграванне абароненага змесціва на сайтах</translation>
 <translation id="7577900504646297215">Кіраваць інтарэсамі</translation>
 <translation id="7594634374516752650">Вэб-сайт падключаны да прылады з Bluetooth</translation>
+<translation id="7641339528570811325">Выдаліць гісторыю праглядаў…</translation>
 <translation id="7649070708921625228">Даведка</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7781829728241885113">Учора</translation>

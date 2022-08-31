@@ -1040,6 +1040,7 @@
     "standalone",
     "minimal-ui",
     "browser",
+    "window-controls-overlay",
 
     // position
     "sticky",
@@ -1305,6 +1306,15 @@
     "min",
     "max",
     "clamp",
+
+    // Trigonometic functions
+    "sin",
+    // "cos",
+    // "tan" - already declared for color value
+    // "atan",
+    // "atan2",
+    // "acos",
+    // "asin",
 
     //<calc-constant>
     //https://drafts.csswg.org/css-values/#calc-syntax

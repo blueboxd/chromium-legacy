@@ -23,11 +23,6 @@ std::unique_ptr<Thread> WebFakeThreadScheduler::CreateMainThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebFakeThreadScheduler::DefaultTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WebFakeThreadScheduler::CompositorTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
@@ -40,10 +35,6 @@ WebFakeThreadScheduler::CreateAgentGroupScheduler() {
 WebAgentGroupScheduler*
 WebFakeThreadScheduler::GetCurrentAgentGroupScheduler() {
   return nullptr;
-}
-
-bool WebFakeThreadScheduler::IsHighPriorityWorkAnticipated() {
-  return false;
 }
 
 void WebFakeThreadScheduler::SetRendererHidden(bool hidden) {}

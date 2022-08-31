@@ -10,7 +10,7 @@
 <translation id="110877069173485804">Dies ist dein persönlicher Chrome-Browser</translation>
 <translation id="1125124144982679672">Wer verwendet gerade Chrome?</translation>
 <translation id="1142745911746664600">Chrome kann nicht aktualisiert werden</translation>
-<translation id="1152920704813762236">Über Chrome OS</translation>
+<translation id="1152920704813762236">Über ChromeOS</translation>
 <translation id="1154147086299354128">In Chr&amp;ome öffnen</translation>
 <translation id="1178374936842835197">Wenn du auf dieser Seite eine Einstellung nicht finden kannst, sieh in den <ph name="LINK_BEGIN" />Einstellungen von Chrome OS Flex<ph name="LINK_END" /> nach</translation>
 <translation id="1203500561924088507">Vielen Dank für die Installation. Du musst deinen Browser neu starten, bevor du <ph name="BUNDLE_NAME" /> verwenden kannst.</translation>
@@ -65,6 +65,7 @@
 <translation id="2139300032719313227">Chrome OS neu starten</translation>
 <translation id="2151406531797534936">Starte Chrome jetzt neu</translation>
 <translation id="2174917724755363426">Die Installation wurde nicht abgeschlossen. Möchtest du den Vorgang wirklich abbrechen?</translation>
+<translation id="223889379102603431">Informationen zur Verwaltung von Root-Zertifikaten in Chrome</translation>
 <translation id="2258103955319320201">Wenn du auf allen deinen Geräten auf deine Chrome-Browserinhalte zugreifen möchtest, melde dich an und aktiviere die Synchronisierung</translation>
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2290095356545025170">Möchtest du Google Chrome wirklich deinstallieren?</translation>
@@ -77,6 +78,7 @@
 <translation id="2401189691232800402">Chrome OS-System</translation>
 <translation id="2467438592969358367">Google Chrome möchte deine Passwörter exportieren. Wenn du dies zulassen möchtest, gib dein Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
+<translation id="2494974097748878569">Google Assistant für Chrome</translation>
 <translation id="2534507159460261402">Google Pay (in Chrome kopiert)</translation>
 <translation id="2559253115192232574">Wenn du eine Website besuchst, kann diese von Chrome dann deine Interessen anfordern, um die dir gezeigte Werbung zu personalisieren. Chrome kann bis zu drei Interessen teilen.</translation>
 <translation id="2563121210305478421">Chrome neu starten?</translation>
@@ -149,12 +151,13 @@
 <translation id="3744202345691150878">Chrome OS-Hilfe</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3785324443014631273">Chrome OS Flex konnte deine Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
-<translation id="3795971588916395511">Google Chrome OS</translation>
+<translation id="3795971588916395511">Google ChromeOS</translation>
 <translation id="3835168907083856002">Dadurch wird ein neues Chrome-Profil für <ph name="USER_EMAIL_ADDRESS" /> erstellt</translation>
 <translation id="386202838227397562">Schließe alle Google Chrome-Fenster und versuche es erneut.</translation>
 <translation id="3865754807470779944">Chrome-Version <ph name="PRODUCT_VERSION" /> ist installiert</translation>
 <translation id="3873044882194371212">Link in Chrome-Inkognitofenster öffnen</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
+<translation id="3999683152997576765">Du kannst Themen von Interesse sehen, die von Websites verwendet werden, um dir Werbung anzuzeigen, und diese Themen entfernen. Chrome schätzt auf Grundlage deines aktuellen Browserverlaufs, welche Themen dich interessieren.</translation>
 <translation id="4035053306113201399">Chrome OS muss neu gestartet werden, um das Update zu installieren.</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="4053720452172726777">Google Chrome anpassen und verwalten</translation>
@@ -272,6 +275,7 @@
 <translation id="6739177684496155661">Mit einem neuen Chrome-Profil fortfahren?</translation>
 <translation id="6750954913813541382">Zur Behebung von Tippfehlern sendet Chrome im Browser eingegebenen Text an Google</translation>
 <translation id="677276454032249905">Chrome trotzdem beenden?</translation>
+<translation id="6785872064505734160">Google Assistant kann in Chrome Aktionen auf Websites für dich durchführen.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
 <translation id="6881299373831449287">Chrome wird aktualisiert</translation>
 <translation id="6885412569789873916">Chrome Beta-Apps</translation>
@@ -335,7 +339,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="7930071585467473040">Google Chrome versucht, Passwörter zu kopieren.</translation>
 <translation id="7951272445806340501">Chrome OS Flex muss neu gestartet werden, um das Update zu übernehmen.</translation>
 <translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
-<translation id="8005666035647241369">Im Passwortmanager von Google auf diesem Gerät</translation>
+<translation id="8005666035647241369">Im Google Passwortmanager auf diesem Gerät</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8013993649590906847">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für dich zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
 <translation id="80471789339884597">Vielen Dank für die Installation. Du musst alle Browser neu starten, bevor du <ph name="BUNDLE_NAME" /> verwenden kannst.</translation>
@@ -344,6 +348,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initialisierung…</translation>
 <translation id="8255190535488645436">Google Chrome verwendet deine Kamera und dein Mikrofon.</translation>
+<translation id="8270775718612349140">Von Chrome verwaltete Zertifikate</translation>
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Gib dein Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="828798499196665338">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chrome deaktiviert. Das Aktivieren dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>

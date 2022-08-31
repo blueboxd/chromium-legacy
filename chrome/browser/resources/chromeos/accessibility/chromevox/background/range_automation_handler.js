@@ -5,12 +5,16 @@
 /**
  * @fileoverview Handles automation from ChromeVox's current range.
  */
-import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
-import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
-import {DesktopAutomationHandler} from '/chromevox/background/desktop_automation_handler.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
-import {CursorRange} from '/common/cursors/range.js';
+import {CursorRange} from '../../common/cursors/range.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '../common/custom_automation_event.js';
+import {Msgs} from '../common/msgs.js';
+
+import {BaseAutomationHandler} from './base_automation_handler.js';
+import {ChromeVoxState, ChromeVoxStateObserver} from './chromevox_state.js';
+import {DesktopAutomationHandler} from './desktop_automation_handler.js';
+import {FocusBounds} from './focus_bounds.js';
+import {Output} from './output/output.js';
+import {OutputEventType} from './output/output_types.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -53,7 +57,7 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
   onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (this.node_) {
       this.removeAllListeners();
-      this.node_ = undefined;
+      this.node_ = null;
     }
 
     if (!newRange || !newRange.start.node || !newRange.end.node) {
@@ -213,7 +217,7 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
         new CustomAutomationEvent(EventType.CHECKED_STATE_CHANGED, evt.target, {
           eventFrom: evt.eventFrom,
           eventFromAction: evt.eventFromAction,
-          intents: evt.intents
+          intents: evt.intents,
         });
     this.onEventIfInRange(event);
   }
@@ -237,7 +241,6 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
     const oldFocusBounds = FocusBounds.get();
     const startRect = cur.start.node.location;
     const endRect = cur.end.node.location;
-
     const found =
         oldFocusBounds.some(rect => this.areRectsEqual_(rect, startRect)) &&
         oldFocusBounds.some(rect => this.areRectsEqual_(rect, endRect));

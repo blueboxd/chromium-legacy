@@ -464,9 +464,41 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AverageViewportAdDensity">
     <summary>
-      The estimated average density of ads within the viewport by area.
-      Calculated as the moving average of area of ads within the viewport * 100
-      / viewport area. This counts each overlapping area once.
+      The estimated average viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the average
+      of the densities accumulated over the page load time rounded to the
+      nearest integer.
+    </summary>
+  </metric>
+  <metric name="KurtosisViewportAdDensity">
+    <summary>
+      The estimated kurtosis of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the kurtosis
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
+    </summary>
+  </metric>
+  <metric name="SkewnessViewportAdDensity">
+    <summary>
+      The estimated skewness of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the skewness
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
+    </summary>
+  </metric>
+  <metric name="VarianceViewportAdDensity">
+    <summary>
+      The estimated variance of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the variance
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
     </summary>
   </metric>
 </event>
@@ -3064,6 +3096,13 @@ be describing additional metrics about the same event.
   <summary>
     Records performance metrics for FedCM(Federated Credential Management) API.
   </summary>
+  <metric name="FedCmSessionID">
+    <summary>
+      Records the session ID associated to the FedCM call for which this event
+      is recording metrics. Each FedCM call gets a random integer session id,
+      which helps group UKM events by the session id.
+    </summary>
+  </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
     <summary>
       Records the status of a request id token call to the FedCM API.
@@ -3120,9 +3159,22 @@ be describing additional metrics about the same event.
     This event uses the specific WEB_IDENTITY ukm_source_id which is generated
     from the identity provider's origin.
   </summary>
+  <metric name="FedCmSessionID">
+    <summary>
+      Records the session ID associated to the FedCM call for which this event
+      is recording metrics. Each FedCM call gets a random integer session id,
+      which helps group UKM events by the session id.
+    </summary>
+  </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
     <summary>
       Records the status of a request id token call to the FedCM API.
+    </summary>
+  </metric>
+  <metric name="Status.SignInStateMatch" enum="FedCmSignInStateMatchStatus">
+    <summary>
+      Records whether user sign-in states between IDP and browser match after
+      browser receives an account list from IDP prior to showing UI.
     </summary>
   </metric>
   <metric name="Timing.CancelOnDialog">

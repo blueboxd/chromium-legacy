@@ -77,10 +77,16 @@ class NodeLink : public msg::NodeMessageListener {
   // specifies which side of the link this end identifies as (A or B), and
   // `type` specifies the type of link this is, from the perspective of
   // `router`.
-  Ref<RemoteRouterLink> AddRemoteRouterLink(SublinkId sublink,
-                                            LinkType type,
-                                            LinkSide side,
-                                            Ref<Router> router);
+  //
+  // If `link_state_fragment` is non-null, the given fragment contains the
+  // shared RouterLinkState structure for the new link. Only central links
+  // require a RouterLinkState.
+  Ref<RemoteRouterLink> AddRemoteRouterLink(
+      SublinkId sublink,
+      FragmentRef<RouterLinkState> link_state,
+      LinkType type,
+      LinkSide side,
+      Ref<Router> router);
 
   // Removes the route specified by `sublink`. Once removed, any messages
   // received for that sublink are ignored.
@@ -92,6 +98,13 @@ class NodeLink : public msg::NodeMessageListener {
 
   // Retrieves only the Router currently bound to `sublink` on this NodeLink.
   Ref<Router> GetRouter(SublinkId sublink);
+
+  // Sends a new driver memory object to the remote endpoint to be associated
+  // with BufferId within the peer NodeLink's associated NodeLinkMemory, and to
+  // be used to dynamically allocate blocks of `block_size` bytes. The BufferId
+  // must have already been reserved locally by this NodeLink using
+  // AllocateNewBufferId().
+  void AddBlockBuffer(BufferId id, uint32_t block_size, DriverMemory memory);
 
   // Permanently deactivates this NodeLink. Once this call returns the NodeLink
   // will no longer receive transport messages. It may still be used to transmit
@@ -119,8 +132,11 @@ class NodeLink : public msg::NodeMessageListener {
   SequenceNumber GenerateOutgoingSequenceNumber();
 
   // NodeMessageListener overrides:
+  bool OnAddBlockBuffer(msg::AddBlockBuffer& add) override;
   bool OnAcceptParcel(msg::AcceptParcel& accept) override;
   bool OnRouteClosed(msg::RouteClosed& route_closed) override;
+  bool OnSetRouterLinkState(msg::SetRouterLinkState& set) override;
+  bool OnFlushRouter(msg::FlushRouter& flush) override;
   void OnTransportError() override;
 
   const Ref<Node> node_;

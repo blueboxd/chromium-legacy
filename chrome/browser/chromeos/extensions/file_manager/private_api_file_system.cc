@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -648,14 +649,26 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
     return RespondNow(
         Error("GetSizeStats: volume with ID * not found", params->volume_id));
 
-  // For fusebox volumes, get the underlying (aka original) volume.
+  // For fusebox volumes, get the underlying (aka regular) volume.
   const auto fusebox = base::StringPiece(file_manager::util::kFuseBox);
   if (base::StartsWith(volume->file_system_type(), fusebox)) {
-    auto volume_id = params->volume_id.substr(fusebox.length());
+    std::string volume_id = params->volume_id;
+
+    if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
+      volume_id = volume_id.substr(fusebox.length());
+    } else if (volume->type() == file_manager::VOLUME_TYPE_PROVIDED) {
+      // NB: FileManagerPrivate.GetSizeStats is not called by files app JS
+      // because regular PROVIDED volumes do not support size stats.
+      volume_manager->ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(&volume_id);
+    } else {
+      // TODO(crbug.com/1292825): add VOLUME_TYPE_DOCUMENTS_PROVIDER.
+    }
+
     volume = volume_manager->FindVolumeById(volume_id);
-    if (!volume.get())
+    if (!volume.get()) {
       return RespondNow(
           Error("GetSizeStats: volume with ID * not found", volume_id));
+    }
   }
 
   if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
@@ -766,6 +779,43 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
   sizes->SetDoubleKey("remainingSize", static_cast<double>(*remaining_size));
 
   Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(sizes))));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetDriveQuotaMetadataFunction::Run() {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (!integration_service) {
+    return RespondNow(Error("Drive not available"));
+  }
+  integration_service->GetPooledQuotaUsage(base::BindOnce(
+      &FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata,
+      this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata(
+    drive::FileError error,
+    drivefs::mojom::PooledQuotaUsagePtr usage) {
+  if (error != drive::FileError::FILE_ERROR_OK) {
+    Respond(NoArguments());
+    return;
+  }
+
+  base::Value::Dict quotaMetadata;
+
+  quotaMetadata.Set("userType", static_cast<int>(usage->user_type));
+  quotaMetadata.Set("usedUserBytes",
+                    static_cast<double>(usage->used_user_bytes));
+  quotaMetadata.Set("totalUserBytes",
+                    static_cast<double>(usage->total_user_bytes));
+  quotaMetadata.Set("organizationLimitExceeded",
+                    usage->organization_limit_exceeded);
+  quotaMetadata.Set("organizationName", usage->organization_name);
+
+  Respond(OneArgument(base::Value(std::move(quotaMetadata))));
 }
 
 ExtensionFunction::ResponseAction
@@ -1625,14 +1675,6 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     }
   }
 
-  std::vector<std::string> restore_paths;
-  if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash) &&
-      params->params.restore_paths) {
-    for (const auto& path : *params->params.restore_paths) {
-      restore_paths.emplace_back(path);
-    }
-  }
-
   std::unique_ptr<file_manager::io_task::IOTask> task;
   switch (type.value()) {
     case file_manager::io_task::OperationType::kCopy:
@@ -1662,12 +1704,8 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       }
     case file_manager::io_task::OperationType::kRestore:
       if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
-        if (source_urls.size() != restore_paths.size()) {
-          return RespondNow(Error("Invalid number of restore paths"));
-        }
         task = std::make_unique<file_manager::io_task::RestoreIOTask>(
-            std::move(source_urls), std::move(restore_paths), profile,
-            file_system_context,
+            std::move(source_urls), profile, file_system_context,
             /*base_path=*/base::FilePath());
         break;
       } else {

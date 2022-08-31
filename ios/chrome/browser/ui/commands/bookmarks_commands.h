@@ -23,7 +23,6 @@
 // - If it is not already bookmarked, it will be bookmarked automatically and an
 //   "Edit" button will be provided in the displayed snackbar message.
 - (void)bookmark:(BookmarkAddCommand*)command;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BOOKMARKS_COMMANDS_H_

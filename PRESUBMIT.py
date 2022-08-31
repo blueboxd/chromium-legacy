@@ -335,6 +335,18 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
       ),
       True,
     ),
+    BanRule(
+    ' systemImageNamed:',
+      (
+        '+[UIImage systemImageNamed:] should not be used to create symbols.',
+        'Instead use a wrapper defined in:',
+        'ios/chrome/browser/ui/icons/chrome_symbol.h'
+      ),
+      True,
+      excluded_paths=(
+        'ios/chrome/browser/ui/icons/chrome_symbol.mm',
+      ),
+    ),
 )
 
 _BANNED_IOS_EGTEST_FUNCTIONS : Sequence[BanRule] = (
@@ -1185,6 +1197,7 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/tools/merge_web_test_results.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
+    'tools/perf/process_perf_results.pydeps',
 ]
 
 
@@ -1199,7 +1212,8 @@ _KNOWN_ROBOTS = set(
           for s in ('bling-autoroll-builder', 'v8-ci-autoroll-builder',
                     'wpt-autoroller', 'chrome-weblayer-builder',
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
-                    'infra-try-recipes-tester', 'lacros-tracking-roller')
+                    'infra-try-recipes-tester', 'lacros-tracking-roller',
+                    'lacros-sdk-version-roller')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -3580,9 +3594,10 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
 
 def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
     """Checks if MDPI assets are placed in a correct directory."""
-    file_filter = lambda f: (f.LocalPath().endswith('.png') and
-                             ('/res/drawable/' in f.LocalPath() or
-                              '/res/drawable-ldrtl/' in f.LocalPath()))
+    file_filter = lambda f: (f.LocalPath().endswith(
+        '.png') and ('/res/drawable/'.replace('/', input_api.os_path.sep) in f.
+                     LocalPath() or '/res/drawable-ldrtl/'.replace(
+                         '/', input_api.os_path.sep) in f.LocalPath()))
     errors = []
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=file_filter):

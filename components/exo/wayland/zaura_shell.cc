@@ -768,6 +768,11 @@ void AuraToplevel::OnConfigure(const gfx::Rect& bounds,
   if (activated)
     AddState(&states, XDG_TOPLEVEL_STATE_ACTIVATED);
 
+  if (state_type == chromeos::WindowStateType::kPrimarySnapped)
+    AddState(&states, XDG_TOPLEVEL_STATE_TILED_LEFT);
+  if (state_type == chromeos::WindowStateType::kSecondarySnapped)
+    AddState(&states, XDG_TOPLEVEL_STATE_TILED_RIGHT);
+
   zaura_toplevel_send_configure(aura_toplevel_resource_, bounds.x(), bounds.y(),
                                 bounds.width(), bounds.height(), &states);
   wl_array_release(&states);
@@ -786,6 +791,10 @@ void AuraPopup::SetClientSubmitsSurfacesInPixelCoordinates(bool enable) {
 
 void AuraPopup::SetDecoration(SurfaceFrameType type) {
   shell_surface_->OnSetFrame(type);
+}
+
+void AuraPopup::SetMenu() {
+  shell_surface_->SetMenu();
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1172,9 +1181,14 @@ void aura_popup_set_decoration(wl_client* client,
       AuraPopupDecorationType(type));
 }
 
+void aura_popup_set_menu(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraPopup>(resource)->SetMenu();
+}
+
 const struct zaura_popup_interface aura_popup_implementation = {
     aura_popup_surface_submission_in_pixel_coordinates,
     aura_popup_set_decoration,
+    aura_popup_set_menu,
 };
 
 void aura_shell_get_aura_toplevel(wl_client* client,

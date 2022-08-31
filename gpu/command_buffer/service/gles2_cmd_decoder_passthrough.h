@@ -28,7 +28,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -43,7 +43,7 @@ class ProgressReporter;
 }
 
 namespace gpu {
-class SharedImageRepresentationGLTexturePassthrough;
+class GLTexturePassthroughImageRepresentation;
 
 namespace gles2 {
 
@@ -98,9 +98,9 @@ struct PassthroughResources {
    public:
     SharedImageData();
     explicit SharedImageData(
-        std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-            representation,
-        gl::GLApi* api);
+        std::unique_ptr<GLTexturePassthroughImageRepresentation> representation,
+        gl::GLApi* api,
+        const FeatureInfo* feature_info);
     SharedImageData(SharedImageData&& other);
 
     SharedImageData(const SharedImageData&) = delete;
@@ -109,11 +109,11 @@ struct PassthroughResources {
     ~SharedImageData();
     SharedImageData& operator=(SharedImageData&& other);
 
-    SharedImageRepresentationGLTexturePassthrough* representation() const {
+    GLTexturePassthroughImageRepresentation* representation() const {
       return representation_.get();
     }
 
-    void EnsureClear(gl::GLApi* api);
+    void EnsureClear(gl::GLApi* api, const FeatureInfo* feature_info);
 
     bool BeginAccess(GLenum mode, gl::GLApi* api);
 
@@ -125,15 +125,13 @@ struct PassthroughResources {
     bool is_being_accessed() const { return !!scoped_access_; }
 
    private:
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        representation_;
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+    std::unique_ptr<GLTexturePassthroughImageRepresentation> representation_;
+    std::unique_ptr<GLTexturePassthroughImageRepresentation::ScopedAccess>
         scoped_access_;
   };
-  // Mapping of client texture IDs to
-  // SharedImageRepresentationGLTexturePassthroughs.
+  // Mapping of client texture IDs to GLTexturePassthroughImageRepresentations.
   // TODO(ericrk): Remove this once TexturePassthrough holds a reference to
-  // the SharedImageRepresentationGLTexturePassthrough itself.
+  // the GLTexturePassthroughImageRepresentation itself.
   base::flat_map<GLuint, SharedImageData> texture_shared_image_map;
 
   // A set of yet-to-be-deleted TexturePassthrough, which should be tossed

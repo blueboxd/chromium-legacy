@@ -7,7 +7,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {DomIf, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PasswordsSectionElement, PaymentsManagerImpl, SettingsAutofillSectionElement, SettingsPaymentsSectionElement} from 'chrome://settings/lazy_load.js';
 import {buildRouter, Router, routes} from 'chrome://settings/settings.js';
-import {CrSettingsPrefs, MultiStoreExceptionEntry, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement} from 'chrome://settings/settings.js';
 import {SettingsRoutes} from 'chrome://settings/settings_routes.js';
 import {assertDeepEquals, assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
@@ -80,7 +80,7 @@ suite('PasswordsAndForms', function() {
                            key: 'payments.can_make_payment_enabled',
                            type: chrome.settingsPrivate.PrefType.BOOLEAN,
                            value: true,
-                         }
+                         },
                        ]) as unknown as typeof chrome.settingsPrivate);
 
       CrSettingsPrefs.initialized.then(function() {
@@ -194,7 +194,7 @@ suite('PasswordsAndForms', function() {
 
       const list = [
         createPasswordEntry({url: 'one.com', username: 'user1', id: 0}),
-        createPasswordEntry({url: 'two.com', username: 'user1', id: 1})
+        createPasswordEntry({url: 'two.com', username: 'user1', id: 1}),
       ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener!(list);
@@ -222,13 +222,13 @@ suite('PasswordsAndForms', function() {
 
       const list = [
         createExceptionEntry({url: 'one.com', id: 0}),
-        createExceptionEntry({url: 'two.com', id: 1})
+        createExceptionEntry({url: 'two.com', id: 1}),
       ];
       passwordManager.lastCallback.addExceptionListChangedListener!(list);
       flush();
 
       assertDeepEquals(
-          list.map(entry => new MultiStoreExceptionEntry(entry)),
+          list,
           element.shadowRoot!
               .querySelector<PasswordsSectionElement>(
                   '#passwordSection')!.passwordExceptions);

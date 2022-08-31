@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "components/cast_certificate/cast_cert_reader.h"
 #include "components/cast_certificate/cast_cert_test_helpers.h"
-#include "net/cert/internal/cert_errors.h"
-#include "net/cert/internal/parsed_certificate.h"
-#include "net/cert/internal/signature_algorithm.h"
-#include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/pki/cert_errors.h"
+#include "net/cert/pki/parsed_certificate.h"
+#include "net/cert/pki/signature_algorithm.h"
+#include "net/cert/pki/trust_store_in_memory.h"
 #include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,11 +126,11 @@ void RunTest(CastCertError expected_result,
 
   // Test verification of some invalid signatures.
   EXPECT_FALSE(context->VerifySignatureOverData("bogus signature", "bogus data",
-                                                net::DigestAlgorithm::Sha256));
+                                                CastDigestAlgorithm::SHA256));
   EXPECT_FALSE(context->VerifySignatureOverData("", "bogus data",
-                                                net::DigestAlgorithm::Sha256));
+                                                CastDigestAlgorithm::SHA256));
   EXPECT_FALSE(
-      context->VerifySignatureOverData("", "", net::DigestAlgorithm::Sha256));
+      context->VerifySignatureOverData("", "", CastDigestAlgorithm::SHA256));
 
   // If valid signatures are known for this device certificate, test them.
   if (!optional_signed_data_file_name.empty()) {
@@ -140,12 +140,12 @@ void RunTest(CastCertError expected_result,
     // Test verification of a valid SHA1 signature.
     EXPECT_TRUE(context->VerifySignatureOverData(signature_data.signature_sha1,
                                                  signature_data.message,
-                                                 net::DigestAlgorithm::Sha1));
+                                                 CastDigestAlgorithm::SHA1));
 
     // Test verification of a valid SHA256 signature.
     EXPECT_TRUE(context->VerifySignatureOverData(
         signature_data.signature_sha256, signature_data.message,
-        net::DigestAlgorithm::Sha256));
+        CastDigestAlgorithm::SHA256));
   }
 }
 

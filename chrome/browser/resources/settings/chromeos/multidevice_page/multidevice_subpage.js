@@ -11,7 +11,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 import './multidevice_combined_setup_item.js';
 import './multidevice_feature_item.js';
@@ -45,8 +45,10 @@ import {MultiDeviceFeatureBehavior, MultiDeviceFeatureBehaviorInterface} from '.
  */
 const SettingsMultideviceSubpageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, MultiDeviceFeatureBehavior, RouteObserverBehavior,
-      I18nBehavior
+      DeepLinkingBehavior,
+      MultiDeviceFeatureBehavior,
+      RouteObserverBehavior,
+      I18nBehavior,
     ],
     PolymerElement);
 
@@ -306,20 +308,29 @@ class SettingsMultideviceSubpageElement extends
   }
 
   /** @private */
-  handlePhoneHubSetupClick_() {
+  handleNotificationSetupClicked_() {
+    this.handlePhoneHubSetupClick(
+        PhoneHubPermissionsSetupFeatureCombination.NOTIFICATION);
+  }
+
+  /** @private */
+  handleCameraRollSetupClicked_() {
+    this.handlePhoneHubSetupClick(
+        PhoneHubPermissionsSetupFeatureCombination.CAMERA_ROLL);
+  }
+
+  /** @private */
+  handleMessagingAppSetupClicked_() {
+    this.handlePhoneHubSetupClick(
+        PhoneHubPermissionsSetupFeatureCombination.MESSAGING_APP);
+  }
+
+  /** @param {!PhoneHubPermissionsSetupFeatureCombination} setupMode */
+  /** @private */
+  handlePhoneHubSetupClick(setupMode) {
     const permissionSetupRequestedEvent = new CustomEvent(
         'permission-setup-requested', {bubbles: true, composed: true});
     this.dispatchEvent(permissionSetupRequestedEvent);
-    let setupMode = PhoneHubPermissionsSetupFeatureCombination.NONE;
-    if (this.shouldShowPhoneHubCameraRollItem_()) {
-      setupMode = PhoneHubPermissionsSetupFeatureCombination.CAMERA_ROLL;
-    }
-    if (this.shouldShowPhoneHubNotificationsItem_()) {
-      setupMode = PhoneHubPermissionsSetupFeatureCombination.NOTIFICATION;
-    }
-    if (this.shouldShowPhoneHubAppsItem_()) {
-      setupMode = PhoneHubPermissionsSetupFeatureCombination.MESSAGING_APP;
-    }
     this.browserProxy_.logPhoneHubPermissionSetUpButtonClicked(setupMode);
   }
 

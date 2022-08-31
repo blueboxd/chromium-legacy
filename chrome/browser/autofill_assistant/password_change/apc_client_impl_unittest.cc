@@ -4,6 +4,9 @@
 
 #include "chrome/browser/autofill_assistant/password_change/apc_client_impl.h"
 
+#include <memory>
+#include <string>
+
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/gmock_move_support.h"
@@ -11,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator_impl.h"
 #include "chrome/browser/autofill_assistant/password_change/mock_apc_onboarding_coordinator.h"
+#include "chrome/browser/ui/autofill_assistant/password_change/mock_apc_scrim_manager.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_assistant_side_panel_coordinator.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -20,17 +24,25 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace {
 constexpr char kUrl1[] = "https://www.example.com";
 constexpr char kUsername1[] = "Lori";
+constexpr char kDebugBundleId[] = "testuser/123/password_change/example.com";
+constexpr char kDebugSocketId[] = "testuser";
 
 constexpr char kPasswordChangeSkipLoginParameter[] =
     "PASSWORD_CHANGE_SKIP_LOGIN";
 constexpr char kSourceParameter[] = "SOURCE";
+constexpr char kDebugBundleIdParameter[] = "DEBUG_BUNDLE_ID";
+constexpr char kDebugSocketIdParameter[] = "DEBUG_SOCKET_ID";
 constexpr char kSourcePasswordChangeLeakWarning[] = "10";
 constexpr char kSourcePasswordChangeSettings[] = "11";
+
+constexpr int kDescriptionId1 = 3;
+constexpr int kDescriptionId2 = 17;
 }  // namespace
 
 using ::testing::DoAll;
@@ -63,6 +75,10 @@ class TestApcClientImpl : public ApcClientImpl {
     return runtime_manager_;
   }
 
+  std::unique_ptr<ApcScrimManager> CreateApcScrimManager() override {
+    return std::move(scrim_manager_);
+  }
+
   // Allows setting an onboarding coordinator that is returned by the factory
   // function. Must be called at least once before every expected call to
   // `CreateOnboardingCoordinator()`.
@@ -90,12 +106,19 @@ class TestApcClientImpl : public ApcClientImpl {
     runtime_manager_ = runtime_manager;
   }
 
+  // Allows setting an ApcScrimManager.
+  void InjectApcScrimManagerForTesting(
+      std::unique_ptr<ApcScrimManager> scrim_manager) {
+    scrim_manager_ = std::move(scrim_manager);
+  }
+
  private:
   std::unique_ptr<ApcOnboardingCoordinator> coordinator_;
   std::unique_ptr<AssistantSidePanelCoordinator> side_panel_;
   std::unique_ptr<autofill_assistant::HeadlessScriptController>
       external_script_controller_;
   raw_ptr<autofill_assistant::RuntimeManager> runtime_manager_;
+  std::unique_ptr<ApcScrimManager> scrim_manager_;
 };
 
 // static
@@ -144,11 +167,17 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
     // Prepare the RunTimeManager.
     test_apc_client_->InjectRunTimeManagerForTesting(
         mock_runtime_manager_.get());
+
+    // Prepare the ApcScrimManager.
+    auto scrim_manager = std::make_unique<MockApcScrimManager>();
+    scrim_manager_ref_ = scrim_manager.get();
+    test_apc_client_->InjectApcScrimManagerForTesting(std::move(scrim_manager));
   }
 
   TestApcClientImpl* apc_client() { return test_apc_client_; }
   MockApcOnboardingCoordinator* coordinator() { return coordinator_ref_; }
   MockAssistantSidePanelCoordinator* side_panel() { return side_panel_ref_; }
+  MockApcScrimManager* scrim_manager() { return scrim_manager_ref_; }
   AssistantSidePanelCoordinator::Observer* side_panel_observer() {
     return side_panel_observer_;
   }
@@ -169,6 +198,7 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
   raw_ptr<MockAssistantSidePanelCoordinator> side_panel_ref_ = nullptr;
   raw_ptr<autofill_assistant::MockHeadlessScriptController>
       external_script_controller_ref_ = nullptr;
+  raw_ptr<MockApcScrimManager> scrim_manager_ref_ = nullptr;
 
   // The last registered side panel observer - may be null or dangling.
   raw_ptr<AssistantSidePanelCoordinator::Observer> side_panel_observer_ =
@@ -199,14 +229,18 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_Success) {
       .WillOnce(MoveArg<0>(&coordinator_callback));
   EXPECT_CALL(*runtime_manager(),
               SetUIState(autofill_assistant::UIState::kShown));
+  EXPECT_CALL(*scrim_manager(), Show());
+
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
                 result_callback1.Get());
+
   EXPECT_TRUE(client->IsRunning());
 
   // We cannot start a second flow.
   EXPECT_CALL(result_callback2, Run(false));
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
-                result_callback2.Get());
+                result_callback2.Get(),
+                /*debug_run_information=*/absl::nullopt);
 
   // Prepare to extract the callback to the external script controller.
   base::OnceCallback<void(
@@ -236,7 +270,8 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_fromSettings) {
       .WillOnce(MoveArg<0>(&coordinator_callback));
 
   apc_client()->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
-                      base::DoNothing());
+                      /*callback=*/base::DoNothing(),
+                      /*debug_run_information=*/absl::nullopt);
 
   // Prepare to extract the script_params to the external script
   // controller.
@@ -262,7 +297,8 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_fromLeakWarning) {
 
   // `skip_login = true` equals a trigger from leak warning.
   apc_client()->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
-                      base::DoNothing());
+                      /*callback=*/base::DoNothing(),
+                      /*debug_run_information=*/absl::nullopt);
 
   // Prepare to extract the script_params to the external script
   // controller.
@@ -278,6 +314,32 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_fromLeakWarning) {
               StrEq(kSourcePasswordChangeLeakWarning));
 }
 
+TEST_F(ApcClientImplTest, CreateAndStartApcFlow_withDebugInformation) {
+  // Prepare to extract the callback to the coordinator.
+  ApcOnboardingCoordinator::Callback coordinator_callback;
+  EXPECT_CALL(*coordinator(), PerformOnboarding)
+      .Times(1)
+      .WillOnce(MoveArg<0>(&coordinator_callback));
+
+  apc_client()->Start(
+      GURL(kUrl1), kUsername1, /*skip_login=*/false,
+      /*callback=*/base::DoNothing(),
+      ApcClient::DebugRunInformation{.bundle_id = kDebugBundleId,
+                                     .socket_id = kDebugSocketId});
+
+  // Prepare to extract the script_params to the external script
+  // controller.
+  base::flat_map<std::string, std::string> params_map;
+  EXPECT_CALL(*external_script_controller(), StartScript)
+      .Times(1)
+      .WillOnce(MoveArg<0>(&params_map));
+
+  // Successful onboarding.
+  std::move(coordinator_callback).Run(true);
+  EXPECT_EQ(params_map[kDebugBundleIdParameter], kDebugBundleId);
+  EXPECT_EQ(params_map[kDebugSocketIdParameter], kDebugSocketId);
+}
+
 TEST_F(ApcClientImplTest, CreateAndStartApcFlow_WithFailedOnboarding) {
   // Prepare to extract the callback to the coordinator.
   ApcOnboardingCoordinator::Callback coordinator_callback;
@@ -286,7 +348,8 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_WithFailedOnboarding) {
       .WillOnce(MoveArg<0>(&coordinator_callback));
 
   apc_client()->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
-                      base::DoNothing());
+                      /*callback=*/base::DoNothing(),
+                      /*debug_run_information=*/absl::nullopt);
 
   // Fail onboarding.
   std::move(coordinator_callback).Run(false);
@@ -311,7 +374,8 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_WithUnifiedSidePanelDisabled) {
 
   // Starting it does not work.
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
-                base::DoNothing());
+                /*callback=*/base::DoNothing(),
+                /*debug_run_information=*/absl::nullopt);
   EXPECT_FALSE(client->IsRunning());
 }
 
@@ -322,7 +386,7 @@ TEST_F(ApcClientImplTest, StopApcFlow) {
   base::MockCallback<ApcClient::ResultCallback> result_callback;
 
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
-                result_callback.Get());
+                result_callback.Get(), /*debug_run_information=*/absl::nullopt);
 
   // Calling `Stop()` twice only triggers the callback the first time around.
   EXPECT_CALL(result_callback, Run(false)).Times(1);
@@ -341,7 +405,8 @@ TEST_F(ApcClientImplTest, OnHidden_WithOngoingApcFlow) {
   EXPECT_CALL(*runtime_manager(),
               SetUIState(autofill_assistant::UIState::kShown));
   apc_client()->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
-                      base::DoNothing());
+                      /*callback=*/base::DoNothing(),
+                      /*debug_run_information=*/absl::nullopt);
   std::move(coordinator_callback).Run(true);
   EXPECT_TRUE(apc_client()->IsRunning());
 
@@ -354,4 +419,29 @@ TEST_F(ApcClientImplTest, OnHidden_WithOngoingApcFlow) {
   side_panel_observer()->OnHidden();
 
   EXPECT_FALSE(apc_client()->IsRunning());
+}
+
+TEST_F(ApcClientImplTest, PromptForConsent) {
+  // `ApcClient` should forward the consent request to the onboarding
+  // coordinator.
+  ApcOnboardingCoordinator::Callback coordinator_callback;
+  EXPECT_CALL(*coordinator(), PerformOnboarding)
+      .Times(1)
+      .WillOnce(MoveArg<0>(&coordinator_callback));
+
+  apc_client()->PromptForConsent();
+  EXPECT_TRUE(apc_client()->IsRunning());
+  std::move(coordinator_callback).Run(true);
+  EXPECT_FALSE(apc_client()->IsRunning());
+}
+
+TEST_F(ApcClientImplTest, RevokeConsent) {
+  // `ApcClient` should forward the consent revokation to the onboarding
+  // coordinator.
+  ApcOnboardingCoordinator::Callback coordinator_callback;
+  EXPECT_CALL(
+      *coordinator(),
+      RevokeConsent(std::vector<int>({kDescriptionId1, kDescriptionId2})));
+
+  apc_client()->RevokeConsent({kDescriptionId1, kDescriptionId2});
 }

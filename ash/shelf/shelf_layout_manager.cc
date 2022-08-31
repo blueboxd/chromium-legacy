@@ -116,7 +116,9 @@ constexpr int kMaxAutoHideShowShelfRegionSize = 10;
 constexpr int kShelfPalmRejectionSwipeOffset = 80;
 
 const constexpr char* const kStylusAppIds[] = {
-    "fhapgmpiiiigioilnjmkiohjhlegnceb",  // Cursive/A4
+    "fhapgmpiiiigioilnjmkiohjhlegnceb",  // Cursive/A4 Dogfood
+    "apignacaigpffemhdbhmnajajaccbckh",  // Cursive/A4 Live
+    "ieailfmhaghpphfffooibmlghaeopach",  // Canvas
     "eilembjdkfgodjkcjnpgpaenohkicgjd",  // Google Keep Web
     "ifeodkfobgahmoofeclbhkdacaaopkek",  // Google Keep ARC
     "gjcfgmjegppjhimhlldbhhkfgkdjngcc",  // Squid
@@ -794,9 +796,6 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 
 bool ShelfLayoutManager::ProcessGestureEvent(
     const ui::GestureEvent& event_in_screen) {
-  if (shelf_widget_->HandleLoginShelfGestureEvent(event_in_screen))
-    return true;
-
   if (!IsDragAllowed())
     return false;
 
@@ -1232,7 +1231,9 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
 }
 
 void ShelfLayoutManager::OnLocaleChanged() {
-  shelf_->shelf_widget()->HandleLocaleChange();
+  if (!features::IsUseLoginShelfWidgetEnabled())
+    shelf_->shelf_widget()->HandleLocaleChange();
+
   shelf_->status_area_widget()->HandleLocaleChange();
   shelf_->navigation_widget()->HandleLocaleChange();
 
@@ -1619,7 +1620,8 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
   AnimateOpacity(GetLayer(shelf_->status_area_widget()), target_opacity_,
                  dim_animation_duration, dim_animation_tween);
 
-  shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
+  if (!features::IsUseLoginShelfWidgetEnabled())
+    shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
   return true;
 }
 

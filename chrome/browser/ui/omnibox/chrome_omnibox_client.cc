@@ -34,8 +34,8 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_utils.h"
+#include "chrome/browser/preloading/prerender/prerender_manager.h"
+#include "chrome/browser/preloading/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/typed_navigation_upgrade_throttle.h"
@@ -329,6 +329,7 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
   AutocompleteActionPredictor::Action recommended_action =
       AutocompleteActionPredictor::ACTION_NONE;
   if (user_input_in_progress) {
+    content::WebContents* web_contents = controller_->GetWebContents();
     AutocompleteActionPredictor* action_predictor =
         predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
     action_predictor->RegisterTransitionalMatches(user_text, result);
@@ -338,8 +339,8 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
     // but only get it if the user has actually typed something to avoid
     // constructing it before it's needed. Note: This event is triggered as
     // part of startup when the initial tab transitions to the start page.
-    recommended_action =
-        action_predictor->RecommendAction(user_text, current_match);
+    recommended_action = action_predictor->RecommendAction(
+        user_text, current_match, web_contents);
   }
 
   UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.Action",

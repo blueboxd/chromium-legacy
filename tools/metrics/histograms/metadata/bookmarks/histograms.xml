@@ -95,7 +95,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.BookmarkAllTabsWithTabsCount.Regular" units="tabs"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>roagarwal@chromium.org</owner>
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
@@ -130,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.Count.OnProfileLoad" units="bookmarks"
-    expires_after="2022-11-06">
+    expires_after="2023-01-15">
   <owner>supertri@chromium.org</owner>
   <owner>isherman@chromium.org</owner>
   <owner>aidanday@google.com</owner>
@@ -296,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.{SubmetricMatchCounts}"
-    units="match counts" expires_after="2022-07-15">
+    units="match counts" expires_after="2022-12-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -355,7 +355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.{SubmetricMs}" units="ms"
-    expires_after="2022-07-15">
+    expires_after="2022-12-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -413,7 +413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.{SubmetricNodeCounts}"
-    units="node counts" expires_after="2022-07-15">
+    units="node counts" expires_after="2022-12-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -518,7 +518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.{SubmetricTermCounts}"
-    units="term counts" expires_after="2022-07-15">
+    units="term counts" expires_after="2022-12-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -590,7 +590,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.OpenBookmarkManager.PerProfileType"
-    enum="BrowserProfileType" expires_after="2022-11-13">
+    enum="BrowserProfileType" expires_after="2023-01-15">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>

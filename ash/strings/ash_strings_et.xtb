@@ -27,6 +27,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1111021433905331574">Saate muuta oma klaviatuuri taustavalguse värvi valikutega Seaded &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Riiuli automaatne peitmine</translation>
 <translation id="1142002900084379065">Hiljutised fotod</translation>
+<translation id="114451698114044150">Automaatne suumimine on sisse lülitatud.</translation>
 <translation id="1148499908455722006">Avage konto <ph name="USER_NAME" /> teabedialoog</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Seotud seadmed</translation>
@@ -165,6 +166,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Sõrmejäljega avamine</translation>
 <translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Eraldusvõimeks määrati <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
+<translation id="1908992311423394684">Uus installimine</translation>
 <translation id="1915307458270490472">Lõpeta kõne</translation>
 <translation id="1918022425394817322">Kaamera kinnitati paremasse ülanurka</translation>
 <translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
@@ -305,6 +307,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2814448776515246190">Osaline jäädvustamine</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
+<translation id="2822551631199737692">Kaamera on kasutuses</translation>
 <translation id="2825224105325558319">Üksus <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõimeks määrati <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2831035692318564937">Päikesetõusuni sees</translation>
@@ -447,6 +450,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3593039967545720377">Uurige oma lõikelaua ajalugu, vajutades klahvikombinatsiooni <ph name="SHORTCUT_KEY_NAME" /> + V, et lõikelauda vaadata. Alustamiseks kopeerige üksus.</translation>
 <translation id="3593646411856133110">Avatud rakenduste nägemiseks pühkige üles ja hoidke sõrme ekraanil</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
+<translation id="3600061223661453002">Väljas</translation>
 <translation id="3604801046548457007">Töölaud <ph name="DESK_TITILE" /> on loodud</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="3615926715408477684">Mobiilse andmeside lubamisel lubatakse Bluetooth</translation>
@@ -490,7 +494,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="3804737937830804242">Kaamera ahendamine</translation>
 <translation id="3826099427150913765">Kasuta parooli</translation>
 <translation id="383058930331066723">Akusäästja režiim on sisse lülitatud</translation>
-<translation id="3835880383832568924">Värskenduste nägemiseks avage rakendus Otseteed</translation>
 <translation id="383629559565718788">Kuvab klaviatuuriseaded</translation>
 <translation id="384082539148746321">Kas kustutada mall?</translation>
 <translation id="3842239759367498783">Jätkake lugemist mobiilseadmes <ph name="TITLE" /></translation>
@@ -808,6 +811,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5682642926269496722">Google'i assistent pole praeguse kasutajakonto jaoks saadaval.</translation>
 <translation id="5689633613396158040">Öövalgus muudab hämaras valguses ekraani vaatamise ja lugemise lihtsamaks. Puudutage, et muuta Öövalguse sisselülitumise aega või lülitada see täielikult välja.</translation>
 <translation id="5691772641933328258">Sõrmejälge ei tuntud ära</translation>
+<translation id="5693255400847650006">Mikrofon on kasutuses</translation>
 <translation id="570390244361237317">Kõik rakendused, kõigile rakendustele juurdepääsemiseks navigeerige nooleklahvidega</translation>
 <translation id="5707775774148071965">Teie seade toetab kiiremat andmesidet kui teie kaabel. Seadme toimivus võib olla piiratud.</translation>
 <translation id="5710450975648804523">Režiim Mitte segada on sees</translation>
@@ -966,6 +970,7 @@ Uus installimine</translation>
 <translation id="6637729079642709226">Kellaaja muutmine</translation>
 <translation id="6641720045729354415">Reaalajas subtiitrite lüliti. <ph name="STATE_TEXT" /></translation>
 <translation id="6643169293433369663">Võta nime järgi sortimine tagasi</translation>
+<translation id="6649641931981131786">Kohandage kaamerat, et oleksite ekraanikuva keskel.</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> soovib kinnitada, et see olete teie</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parool</translation>
@@ -982,6 +987,7 @@ Uus installimine</translation>
 <translation id="6723839937902243910">Toide</translation>
 <translation id="6727969043791803658">Ühendatud, <ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
+<translation id="6737983188036277605">Kaamera ja mikrofon on kasutuses</translation>
 <translation id="6739144137573853180">AVAGE SEADED</translation>
 <translation id="6751052314767925245">Jõustas administraator</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
@@ -1006,6 +1012,7 @@ Uus installimine</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Üks number on jäänud}other{# numbrit on jäänud}}</translation>
 <translation id="6867938213751067702">Allalaadimine on peatatud: <ph name="FILENAME" /></translation>
 <translation id="6878400149835617132">Otsetee on välja lülitatud</translation>
+<translation id="6878709625737492815">Automaatne suumimine on välja lülitatud.</translation>
 <translation id="6884665277231944629">Tagasi tänase juurde</translation>
 <translation id="6886172995547742638">Seadme <ph name="DEVICE_TYPE" /> jõudlus võib olla väiksem. Kasutage sertifitseeritud <ph name="PREFERRED_MINIMUM_POWER" /> W või võimsamat USB-C-toiteadapterit.</translation>
 <translation id="688631446150864480">Akende vahetamiseks vajutage allanoolt</translation>
@@ -1013,7 +1020,6 @@ Uus installimine</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6901883536534621389">Proovige navigeerimiseks liigutusi</translation>
 <translation id="6919251195245069855">Teie kiipkaarti ei õnnestunud tuvastada. Proovige uuesti.</translation>
-<translation id="6921188888306725546">Klaviatuuri otseteid täiustati</translation>
 <translation id="6931576957638141829">Sihtkohta salvestamine</translation>
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6960565108681981554">Aktiveerimata. Võtke oma operaatoriga ühendust.</translation>
@@ -1086,6 +1092,7 @@ Uus installimine</translation>
 <translation id="7378203170292176219">Lohistage salvestatava piirkonna valimiseks</translation>
 <translation id="7378594059915113390">Meedia juhtnupud</translation>
 <translation id="7378889811480108604">Akusäästja režiim on välja lülitatud</translation>
+<translation id="7382680553121047388">Sees</translation>
 <translation id="7384028040782072252">Rakenduste järjestuse muutmiseks paremklõpsake kus tahes</translation>
 <translation id="7392563512730092880">Selle saab alati hiljem seadistada menüüs Seaded.</translation>
 <translation id="7405710164030118432">Seadme lukustuse avamiseks sisestage oma Family Linki vanema pääsukood</translation>
@@ -1168,6 +1175,7 @@ Uus installimine</translation>
 <translation id="7868900307798234037">Sõrmejäljega avamine</translation>
 <translation id="7872195908557044066">Administraator lähtestab teie eSIM-i. Oodake mõni minut.</translation>
 <translation id="7872786842639831132">Väljas</translation>
+<translation id="7875280185395705476">Automaatne suumimine</translation>
 <translation id="7875575368831396199">Näib, et Bluetooth on teie seadmes <ph name="DEVICE_TYPE" /> välja lülitatud. Lülitage Bluetooth Phone Hubi kasutamiseks sisse.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Viige seadme operatsioonisüsteem kohe tagasi eelmisele versioonile}=1{Teil on seadme operatsioonisüsteemi eelmisele versioonile üleminekuks aega 1 sekund}other{Teil on seadme operatsioonisüsteemi eelmisele versioonile üleminekuks aega # sekundit}}</translation>
 <translation id="7886169021410746335">Privaatsusseadete kohandamine</translation>
@@ -1288,6 +1296,7 @@ Uus installimine</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> soovitab seadet <ph name="DEVICE_TYPE" /> värskendada</translation>
 <translation id="8563862697512465947">Teatiste seaded</translation>
 <translation id="857201607579416096">Menüü teisaldati ekraanikuva paremasse alanurka.</translation>
+<translation id="8576288697319745668">Automaatse suumimise lüliti. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">–<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Sortige oma rakendused nime või värvi järgi</translation>
 <translation id="8614517853887502247">Rakenduste <ph name="APP_1_TITLE" /> ja <ph name="APP_2_TITLE" /> märguanded on peidetud, kuna vaatamiskaitse on sisse lülitatud</translation>

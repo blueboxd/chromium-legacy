@@ -101,7 +101,7 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
       : RenderViewContextMenu(render_frame_host, params) {}
 
   bool HasCommandWithId(int command_id) {
-    return menu_model_.GetIndexOfCommandId(command_id) != -1;
+    return menu_model_.GetIndexOfCommandId(command_id).has_value();
   }
 
   void Show() override {}
@@ -268,10 +268,9 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
       return false;
     }
 
-    apps::AppLaunchParams params(extension->id(),
-                                 apps::LaunchContainer::kLaunchContainerNone,
-                                 WindowOpenDisposition::NEW_WINDOW,
-                                 apps::mojom::LaunchSource::kFromTest);
+    apps::AppLaunchParams params(
+        extension->id(), apps::LaunchContainer::kLaunchContainerNone,
+        WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest);
     params.command_line = command_line;
     params.current_directory = test_data_dir_;
     apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
@@ -951,8 +950,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(const char* name,
         ->BrowserAppLauncher()
         ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
             extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-            WindowOpenDisposition::NEW_WINDOW,
-            apps::mojom::LaunchSource::kFromTest));
+            WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
     app_loaded_observer.Wait();
     window = GetFirstAppWindow();
     ASSERT_TRUE(window);
@@ -1102,8 +1100,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       ->BrowserAppLauncher()
       ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
           extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromTest));
+          WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1127,8 +1124,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PRE_ComponentAppBackgroundPage) {
       ->BrowserAppLauncher()
       ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
           extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromTest));
+          WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_FALSE(should_not_install.seen());
@@ -1168,8 +1164,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
       ->BrowserAppLauncher()
       ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
           extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromTest));
+          WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1196,8 +1191,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
         ->BrowserAppLauncher()
         ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
             extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-            WindowOpenDisposition::NEW_WINDOW,
-            apps::mojom::LaunchSource::kFromTest));
+            WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   }
 

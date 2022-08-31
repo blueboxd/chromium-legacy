@@ -56,6 +56,7 @@
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -70,7 +71,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
-#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/run_on_os_login_types.h"
@@ -615,7 +615,7 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
     app->intent_filters.push_back(apps_util::CreateLockScreenFilter());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (web_app->app_id() == crostini::kCrostiniTerminalSystemAppId) {
+  if (web_app->app_id() == crostini::kTerminalSystemAppId) {
     app->intent_filters.push_back(apps::ConvertMojomIntentFilterToIntentFilter(
         apps_util::CreateFileFilter(
             {apps_util::kIntentActionView},
@@ -771,8 +771,8 @@ void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
 content::WebContents* WebAppPublisherHelper::Launch(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
+    apps::LaunchSource launch_source,
+    apps::WindowInfoPtr window_info) {
   if (IsShuttingDown()) {
     return nullptr;
   }
@@ -783,48 +783,48 @@ content::WebContents* WebAppPublisherHelper::Launch(
   }
 
   switch (launch_source) {
-    case apps::mojom::LaunchSource::kUnknown:
-    case apps::mojom::LaunchSource::kFromParentalControls:
+    case apps::LaunchSource::kUnknown:
+    case apps::LaunchSource::kFromParentalControls:
       break;
-    case apps::mojom::LaunchSource::kFromAppListGrid:
-    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+    case apps::LaunchSource::kFromAppListGrid:
+    case apps::LaunchSource::kFromAppListGridContextMenu:
       UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunch",
                                 extension_misc::APP_LAUNCH_APP_LIST_MAIN,
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
       break;
-    case apps::mojom::LaunchSource::kFromAppListQuery:
-    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+    case apps::LaunchSource::kFromAppListQuery:
+    case apps::LaunchSource::kFromAppListQueryContextMenu:
       UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunch",
                                 extension_misc::APP_LAUNCH_APP_LIST_SEARCH,
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
       break;
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-    case apps::mojom::LaunchSource::kFromShelf:
-    case apps::mojom::LaunchSource::kFromFileManager:
-    case apps::mojom::LaunchSource::kFromLink:
-    case apps::mojom::LaunchSource::kFromOmnibox:
-    case apps::mojom::LaunchSource::kFromChromeInternal:
-    case apps::mojom::LaunchSource::kFromKeyboard:
-    case apps::mojom::LaunchSource::kFromOtherApp:
-    case apps::mojom::LaunchSource::kFromMenu:
-    case apps::mojom::LaunchSource::kFromInstalledNotification:
-    case apps::mojom::LaunchSource::kFromTest:
-    case apps::mojom::LaunchSource::kFromArc:
-    case apps::mojom::LaunchSource::kFromSharesheet:
-    case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
-    case apps::mojom::LaunchSource::kFromFullRestore:
-    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
-    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
-    case apps::mojom::LaunchSource::kFromManagementApi:
-    case apps::mojom::LaunchSource::kFromKiosk:
-    case apps::mojom::LaunchSource::kFromCommandLine:
-    case apps::mojom::LaunchSource::kFromBackgroundMode:
-    case apps::mojom::LaunchSource::kFromNewTabPage:
-    case apps::mojom::LaunchSource::kFromIntentUrl:
-    case apps::mojom::LaunchSource::kFromOsLogin:
-    case apps::mojom::LaunchSource::kFromProtocolHandler:
-    case apps::mojom::LaunchSource::kFromUrlHandler:
+    case apps::LaunchSource::kFromAppListRecommendation:
+    case apps::LaunchSource::kFromShelf:
+    case apps::LaunchSource::kFromFileManager:
+    case apps::LaunchSource::kFromLink:
+    case apps::LaunchSource::kFromOmnibox:
+    case apps::LaunchSource::kFromChromeInternal:
+    case apps::LaunchSource::kFromKeyboard:
+    case apps::LaunchSource::kFromOtherApp:
+    case apps::LaunchSource::kFromMenu:
+    case apps::LaunchSource::kFromInstalledNotification:
+    case apps::LaunchSource::kFromTest:
+    case apps::LaunchSource::kFromArc:
+    case apps::LaunchSource::kFromSharesheet:
+    case apps::LaunchSource::kFromReleaseNotesNotification:
+    case apps::LaunchSource::kFromFullRestore:
+    case apps::LaunchSource::kFromSmartTextContextMenu:
+    case apps::LaunchSource::kFromDiscoverTabNotification:
+    case apps::LaunchSource::kFromManagementApi:
+    case apps::LaunchSource::kFromKiosk:
+    case apps::LaunchSource::kFromCommandLine:
+    case apps::LaunchSource::kFromBackgroundMode:
+    case apps::LaunchSource::kFromNewTabPage:
+    case apps::LaunchSource::kFromIntentUrl:
+    case apps::LaunchSource::kFromOsLogin:
+    case apps::LaunchSource::kFromProtocolHandler:
+    case apps::LaunchSource::kFromUrlHandler:
       break;
   }
 
@@ -851,7 +851,9 @@ void WebAppPublisherHelper::LaunchAppWithFiles(
 
   DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
-      app_id, event_flags, launch_source, display::kInvalidDisplayId,
+      app_id, event_flags,
+      apps::ConvertMojomLaunchSourceToLaunchSource(launch_source),
+      display::kInvalidDisplayId,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {
@@ -867,10 +869,10 @@ void WebAppPublisherHelper::LaunchAppWithFiles(
 void WebAppPublisherHelper::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
+    apps::IntentPtr intent,
+    apps::LaunchSource launch_source,
+    apps::WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
   CHECK(intent);
 
   if (IsShuttingDown()) {
@@ -879,14 +881,14 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+  if (app_id == crostini::kTerminalSystemAppId) {
     int64_t display_id =
         window_info ? window_info->display_id : display::kInvalidDisplayId;
     crostini::LaunchTerminalWithIntent(
         profile_, display_id, std::move(intent),
         base::BindOnce(
-            [](apps::mojom::Publisher::LaunchAppWithIntentCallback callback,
-               bool success, const std::string& failure_reason) {
+            [](base::OnceCallback<void(bool)> callback, bool success,
+               const std::string& failure_reason) {
               if (!success) {
                 LOG(WARNING) << "Launch terminal failed: " << failure_reason;
               }
@@ -901,14 +903,13 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
       app_id, event_flags, std::move(intent), launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
       base::BindOnce(
-          [](apps::mojom::Publisher::LaunchAppWithIntentCallback
-                 success_callback,
-             apps::mojom::LaunchSource launch_source,
+          [](base::OnceCallback<void(bool)> success_callback,
+             apps::LaunchSource launch_source,
              const std::vector<content::WebContents*>& web_contentses) {
 // TODO(crbug.com/1214763): Set ArcWebContentsData for Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
             for (content::WebContents* web_contents : web_contentses) {
-              if (launch_source == apps::mojom::LaunchSource::kFromArc) {
+              if (launch_source == apps::LaunchSource::kFromArc) {
                 // Add a flag to remember this tab originated in the ARC
                 // context.
                 web_contents->SetUserData(
@@ -931,7 +932,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithParams(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Terminal SWA has custom launch code and manages its own restore data.
-  if (params.app_id == crostini::kCrostiniTerminalSystemAppId) {
+  if (params.app_id == crostini::kTerminalSystemAppId) {
     crostini::LaunchTerminalHome(profile_, params.display_id);
     return nullptr;
   }
@@ -1087,10 +1088,12 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
 void WebAppPublisherHelper::SetRunOnOsLoginMode(
     const std::string& app_id,
     apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
-  PersistRunOnOsLoginUserChoice(
-      &provider_->registrar(), &provider_->os_integration_manager(),
-      &provider_->sync_bridge(), app_id,
-      ConvertOsLoginModeToWebAppConstants(run_on_os_login_mode));
+  provider_->command_manager().ScheduleCommand(
+      RunOnOsLoginCommand::CreateForSetLoginMode(
+          &provider_->registrar(), &provider_->os_integration_manager(),
+          &provider_->sync_bridge(), app_id,
+          ConvertOsLoginModeToWebAppConstants(run_on_os_login_mode),
+          base::DoNothing()));
 }
 
 RunOnOsLoginMode WebAppPublisherHelper::ConvertOsLoginModeToWebAppConstants(
@@ -1178,7 +1181,7 @@ content::WebContents* WebAppPublisherHelper::ExecuteContextMenuCommand(
 
   apps::AppLaunchParams params(
       app_id, ConvertDisplayModeToAppLaunchContainer(display_mode),
-      WindowOpenDisposition::CURRENT_TAB, apps::mojom::LaunchSource::kFromMenu,
+      WindowOpenDisposition::CURRENT_TAB, apps::LaunchSource::kFromMenu,
       display_id);
 
   auto menu_item = shortcut_id_map_.find(shortcut_id);
@@ -1535,13 +1538,13 @@ const WebApp* WebAppPublisherHelper::GetWebApp(const AppId& app_id) const {
 void WebAppPublisherHelper::LaunchAppWithIntentImpl(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
+    apps::IntentPtr intent,
+    apps::LaunchSource launch_source,
     int64_t display_id,
     base::OnceCallback<void(const std::vector<content::WebContents*>&)>
         callback) {
-  bool is_file_handling_launch = intent->files && !intent->files->empty() &&
-                                 !apps_util::IsShareIntent(intent);
+  bool is_file_handling_launch =
+      intent && !intent->files.empty() && !intent->IsShareIntent();
   auto params = apps::CreateAppLaunchParamsForIntent(
       app_id, event_flags, launch_source, display_id,
       ConvertDisplayModeToAppLaunchContainer(

@@ -67,6 +67,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2139300032719313227">Reštartovanie systému Chrome OS</translation>
 <translation id="2151406531797534936">Reštartujte Chrome</translation>
 <translation id="2174917724755363426">Inštalácia nie je dokončená. Naozaj ju chcete zrušiť?</translation>
+<translation id="223889379102603431">Informácie o tom, ako Chrome spravuje koreňové certifikáty</translation>
 <translation id="2258103955319320201">Ak chcete získať prístup k obsahu Chromu vo všetkých svojich zariadeniach, prihláste sa a zapnite synchronizáciu</translation>
 <translation id="2290014774651636340">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chrome budú zakázané.</translation>
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>
@@ -79,6 +80,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2401189691232800402">Systém Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome sa pokúša exportovať vaše heslá. Ak to chcete povoliť, zadajte heslo systému Windows.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
+<translation id="2494974097748878569">Asistent Google v Chrome</translation>
 <translation id="2534507159460261402">Google Pay (skopírované do Chromu)</translation>
 <translation id="2559253115192232574">Neskôr môže web, ktorý navštívite, požiadať Chrome o vaše záujmy, aby vám mohol prispôsobiť zobrazované reklamy. Chrome môže zdieľať až tri záujmy.</translation>
 <translation id="2563121210305478421">Chcete Chrome znova spustiť?</translation>
@@ -157,6 +159,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3865754807470779944">Máte nainštalovaný Chrome verzie <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Otvoriť odkaz v okne inko&amp;gnito Chromu</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
+<translation id="3999683152997576765">Môžete si prezrieť témy záujmu, pomocou ktorých vám weby zobrazujú reklamy, a odstrániť ich. Chrome odhaduje záujmy na základe nedávnej histórie prehliadania.</translation>
 <translation id="4035053306113201399">Aktualizácia sa použije po reštartovaní systému Chrome OS.</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať Google Chrome</translation>
@@ -278,6 +281,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6739177684496155661">Chcete pokračovať v novom profile Chromu?</translation>
 <translation id="6750954913813541382">Chrome odošle text zadaný v prehliadači Googlu s cieľom opraviť pravopisné chyby</translation>
 <translation id="677276454032249905">Chcete Chrome napriek tomu ukončiť?</translation>
+<translation id="6785872064505734160">Asistent Google v Chrome môže za vás dokončiť akcie na weboch</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="6881299373831449287">Aktualizuje sa Chrome</translation>
 <translation id="6885412569789873916">Aplikácie pre Chrome beta verzie</translation>
@@ -350,6 +354,7 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 <translation id="8129812357326543296">Informácie o prehliadači &amp;Google Chrome</translation>
 <translation id="813913629614996137">Prebieha inicializácia...</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>
+<translation id="8270775718612349140">Certifikáty, ktoré spravuje Chrome</translation>
 <translation id="8286862437124483331">Prehliadač Google Chrome sa pokúša zobraziť heslá. Ak to chcete povoliť, zadajte svoje heslo systému Windows.</translation>
 <translation id="828798499196665338">Tvoj rodič vypol „Povolenia pre weby, aplikácie a rozšírenia“ v Chrome. Povolenie tohto rozšírenia (<ph name="EXTENSION_TYPE_PARAMETER" />) je zakázané.</translation>
 <translation id="8290100596633877290">Google Chrome zlyhal. Chcete ho spustiť znova?</translation>

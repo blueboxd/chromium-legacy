@@ -7,13 +7,16 @@
 #include <algorithm>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/services/screen_ai/proto/chrome_screen_ai.pb.h"
+#include "components/services/screen_ai/proto/test_proto_loader.h"
 #include "components/services/screen_ai/proto/view_hierarchy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -27,9 +30,14 @@ namespace {
 // Set to 'true' to get debug protos.
 #define WRITE_DEBUG_PROTO false
 
-constexpr int kMaxChildInTemplate = 3;
+// Test definitions for ProtoConvertorViewHierarchyTest.
+constexpr int kProtoConversionTestCasesCount = 5;
+const char* kProtoConversionSampleInputFileNameFormat = "sample%i_ax_tree.json";
+const char* kProtoConversionSampleExpectedFileNameFormat =
+    "sample%i_expected_proto.pbtxt";
 
-// A dummy tree node definition.
+// A dummy tree node definition for PreOrderTreeGeneration.
+constexpr int kMaxChildInTemplate = 3;
 struct NodeTemplate {
   ui::AXNodeID node_id;
   int child_count;
@@ -54,7 +62,7 @@ ui::AXTreeUpdate CreateAXTreeUpdateFromTemplate(int root_id,
 
 int GetAxNodeID(const ::screenai::UiElement& ui_element) {
   for (const auto& attribute : ui_element.attributes()) {
-    if (attribute.name() == "/axnode/node_id")
+    if (attribute.name() == "axnode_id")
       return attribute.int_value();
   }
   return static_cast<int>(ui::kInvalidAXNodeID);
@@ -63,12 +71,12 @@ int GetAxNodeID(const ::screenai::UiElement& ui_element) {
 base::FilePath GetTestFilePath(const base::StringPiece file_name) {
   base::FilePath path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &path));
-  return path.Append(FILE_PATH_LITERAL("components/test/data/screen_ai"))
+  return path.AppendASCII("components/test/data/screen_ai")
       .AppendASCII(file_name);
 }
 
 void WriteDebugProto(const std::string& serialized_proto,
-                     const char* file_name) {
+                     const std::string& file_name) {
   if (!WRITE_DEBUG_PROTO)
     return;
 
@@ -83,16 +91,6 @@ void WriteDebugProto(const std::string& serialized_proto,
     LOG(INFO) << "Debug proto is written to: " << path;
   else
     LOG(ERROR) << "Could not write debug proto to: " << path;
-}
-
-std::string GetStringAttribute(const screenai::UiElement& ui_element,
-                               const std::string& attribute_name) {
-  for (int i = 0; i < ui_element.attributes_size(); i++) {
-    const auto& attrib = ui_element.attributes(i);
-    if (attrib.has_name() && attrib.name() == attribute_name)
-      return attrib.string_value();
-  }
-  return std::string();
 }
 
 template <class T>
@@ -181,8 +179,6 @@ void ExpectViewHierarchyProtos(screenai::ViewHierarchy& generated,
     EXPECT_EQ(generated_uie.id(), expected_uie.id());
     EXPECT_EQ(generated_uie.type(), expected_uie.type());
     EXPECT_EQ(generated_uie.parent_id(), expected_uie.parent_id());
-    EXPECT_EQ(GetStringAttribute(generated_uie, "text"),
-              GetStringAttribute(expected_uie, "text"));
 
     EXPECT_EQ(generated_uie.child_ids_size(), expected_uie.child_ids_size());
     int min_length =
@@ -199,29 +195,55 @@ void ExpectViewHierarchyProtos(screenai::ViewHierarchy& generated,
                         kPixelDifferenceThreshold);
 
     // Attributes may have different orders in the two protos.
-    std::map<std::string, int> attribute_index;
+    std::map<std::string, int> attribute_indices_map;
     for (int j = 0; j < expected_uie.attributes_size(); j++)
-      attribute_index[expected_uie.attributes(j).name()] = j;
+      attribute_indices_map[expected_uie.attributes(j).name()] = j;
 
+    int expected_attributes_count = expected_uie.attributes_size();
     for (int j = 0; j < generated_uie.attributes_size(); j++) {
       const ::screenai::UiElementAttribute& generated_attrib =
           generated_uie.attributes(j);
 
       const auto& expected_attrib_index =
-          attribute_index.find(generated_attrib.name());
-      EXPECT_NE(expected_attrib_index, attribute_index.end())
-          << "Could not find attribute: " << generated_attrib.name();
-      if (expected_attrib_index != attribute_index.end()) {
+          attribute_indices_map.find(generated_attrib.name());
+      bool attribute_found_in_expected =
+          (expected_attrib_index != attribute_indices_map.end());
+
+      if (attribute_found_in_expected) {
         ExpectAttributes(generated_attrib, expected_uie.attributes(
                                                expected_attrib_index->second));
+        // Remove expected attributes from |attribute_indices_map|, leaving
+        // missing attributes for reporting.
+        attribute_indices_map.erase(expected_attrib_index);
+        continue;
       }
+      // TODO(https://crbug.com/1278249): Follow up why visibility is
+      // sometimes not passed.
+      if (generated_attrib.name() != "/extras/styles/visibility")
+        EXPECT_TRUE(attribute_found_in_expected) << generated_attrib.name();
+      else
+        expected_attributes_count++;
     }
 
-    // TODO(https://crbug.com/1278249): Ensure all expected attributes are
-    // generated.
-    // EXPECT_EQ(generated_uie.attributes().size(),
-    //           expected_uie.attributes().size());
+    EXPECT_EQ(expected_attributes_count, generated_uie.attributes_size());
   }
+}
+
+void LoadViewHierarchyTextProto(const base::FilePath& file_path,
+                                screenai::ViewHierarchy& proto) {
+  std::string file_content;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &file_content))
+      << "Failed to read expected proto from " << file_path;
+
+  base::FilePath descriptor_path;
+  EXPECT_TRUE(
+      base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &descriptor_path));
+  descriptor_path = descriptor_path.AppendASCII(
+      "gen/components/services/screen_ai/proto/view_hierarchy.descriptor");
+
+  test_proto_loader::TestProtoLoader loader;
+  ASSERT_TRUE(loader.ParseFromText(descriptor_path, file_content, proto))
+      << "Failed to parse expected proto.";
 }
 
 }  // namespace
@@ -392,12 +414,30 @@ TEST_F(ProtoConvertorTest, PreOrderTreeGeneration) {
   }
 }
 
-TEST_F(ProtoConvertorTest, ViewHierarchyProtoGenerationTest) {
-  // TODO(https://crbug.com/1278249): Add more tests.
-  const base::FilePath kInputJsonPath =
-      GetTestFilePath("sample_01_ax_tree.json");
-  const base::FilePath kExpectedProtoPath =
-      GetTestFilePath("sample_01_expected_proto.pbtxt");
+class ProtoConvertorViewHierarchyTest : public ::testing::TestWithParam<int> {
+ public:
+  ProtoConvertorViewHierarchyTest() = default;
+  ~ProtoConvertorViewHierarchyTest() = default;
+
+ protected:
+  const base::FilePath GetInputFilePath() {
+    return GetTestFilePath(base::StringPrintf(
+        kProtoConversionSampleInputFileNameFormat, GetParam()));
+  }
+
+  const base::FilePath GetExpectedFilePath() {
+    return GetTestFilePath(base::StringPrintf(
+        kProtoConversionSampleExpectedFileNameFormat, GetParam()));
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(TestCases,
+                         ProtoConvertorViewHierarchyTest,
+                         testing::Range(0, kProtoConversionTestCasesCount));
+
+TEST_P(ProtoConvertorViewHierarchyTest, EndToEndTest) {
+  const base::FilePath kInputJsonPath = GetInputFilePath();
+  const base::FilePath kExpectedProtoPath = GetExpectedFilePath();
 
   // Load JSON file.
   std::string file_content;
@@ -407,7 +447,9 @@ TEST_F(ProtoConvertorTest, ViewHierarchyProtoGenerationTest) {
   ASSERT_TRUE(json.has_value());
 
   // Convert JSON file to AX tree update.
-  ui::AXTreeUpdate tree_update = ui::AXTreeUpdateFromJSON(json.value());
+  ui::AXTreeUpdate tree_update = ui::AXTreeUpdateFromJSON(
+      json.value(),
+      &screen_ai::GetScreen2xToChromeRoleConversionMapForTesting());
   ASSERT_GT(tree_update.nodes.size(), 0u);
 
   // Convert AX Tree to Screen2x proto.
@@ -417,14 +459,14 @@ TEST_F(ProtoConvertorTest, ViewHierarchyProtoGenerationTest) {
   ASSERT_TRUE(generated_view_hierarchy.ParseFromString(serialized_proto))
       << "Failed to parse created proto.";
 
-  WriteDebugProto(serialized_proto, "proto_convertor_output.pbtxt");
+  WriteDebugProto(
+      serialized_proto,
+      base::StringPrintf("proto_convertor_sample_%i_output.pbtxt", GetParam()));
 
   // Load expected Proto.
-  ASSERT_TRUE(base::ReadFileToString(kExpectedProtoPath, &file_content))
-      << "Failed to read expected proto from " << kExpectedProtoPath;
   screenai::ViewHierarchy expected_view_hierarchy;
-  ASSERT_TRUE(expected_view_hierarchy.ParseFromString(file_content))
-      << "Failed to parse expected proto.";
+  ASSERT_NO_FATAL_FAILURE(
+      LoadViewHierarchyTextProto(kExpectedProtoPath, expected_view_hierarchy));
 
   // Compare protos.
   ASSERT_NO_FATAL_FAILURE(ExpectViewHierarchyProtos(generated_view_hierarchy,

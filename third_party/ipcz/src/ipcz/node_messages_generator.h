@@ -54,6 +54,21 @@ IPCZ_MSG_BEGIN(ConnectFromNonBrokerToBroker,
   IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
 IPCZ_MSG_END()
 
+// Shares a new buffer to support allocation of blocks of `block_size` bytes.
+// The sender must initialize an appropriate BlockAllocator within the buffer's
+// memory before sending this message.
+IPCZ_MSG_BEGIN(AddBlockBuffer, IPCZ_MSG_ID(14), IPCZ_MSG_VERSION(0))
+  // The ID of the new buffer as allocated by the NodeLinkMemory on the NodeLink
+  // transmitting this message.
+  IPCZ_MSG_PARAM(BufferId, id)
+
+  // The size of blocks which can be allocated from within this buffer.
+  IPCZ_MSG_PARAM(uint32_t, block_size)
+
+  // A handle to the driver-managed, read-write-mappable buffer.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(buffer)
+IPCZ_MSG_END()
+
 // Conveys the contents of a parcel.
 IPCZ_MSG_BEGIN(AcceptParcel, IPCZ_MSG_ID(20), IPCZ_MSG_VERSION(0))
   // The SublinkId linking the source and destination Routers along the
@@ -100,6 +115,21 @@ IPCZ_MSG_BEGIN(RouteClosed, IPCZ_MSG_ID(22), IPCZ_MSG_VERSION(0))
   // to know, for example, that it must still expect some additional parcels to
   // arrive before completely forgetting about the route's link(s).
   IPCZ_MSG_PARAM(SequenceNumber, sequence_length)
+IPCZ_MSG_END()
+
+// Notifies a node that the Router it has bound to `sublink` (on the
+// transmitting NodeLink) now has an allocated RouterLinkState in the fragment
+// identified by `descriptor`.
+IPCZ_MSG_BEGIN(SetRouterLinkState, IPCZ_MSG_ID(23), IPCZ_MSG_VERSION(0))
+  IPCZ_MSG_PARAM(SublinkId, sublink)
+  IPCZ_MSG_PARAM(FragmentDescriptor, descriptor)
+IPCZ_MSG_END()
+
+// Hints to the target router that it should flush its state. Generally sent to
+// catalyze route reduction or elicit some other state change which was blocked
+// on some other work being done first by the sender of this message.
+IPCZ_MSG_BEGIN(FlushRouter, IPCZ_MSG_ID(36), IPCZ_MSG_VERSION(0))
+  IPCZ_MSG_PARAM(SublinkId, sublink)
 IPCZ_MSG_END()
 
 IPCZ_MSG_END_INTERFACE()

@@ -7,7 +7,9 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
+#include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/tab_matcher.h"
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -27,11 +29,17 @@ void OpenTabProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  // Remove the keyword from input if we're in keyword mode for a starter pack
+  // engine.
+  AutocompleteInput adjusted_input =
+      KeywordProvider::AdjustInputForStarterPackEngines(
+          input, client_->GetTemplateURLService());
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Preprocess the query into lowercase terms.
   std::vector<std::u16string> query_terms;
   for (const std::u16string& term :
-       base::SplitString(base::i18n::ToLower(input.text()), u" ",
+       base::SplitString(base::i18n::ToLower(adjusted_input.text()), u" ",
                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     query_terms.push_back(term);
   }
@@ -47,7 +55,7 @@ void OpenTabProvider::Start(const AutocompleteInput& input,
     for (const std::u16string& query_term : query_terms) {
       if (title.find(query_term) != std::string::npos) {
         matches_.push_back(
-            CreateOpenTabMatch(input.text(), web_contents->GetTitle(), url));
+            CreateOpenTabMatch(adjusted_input, web_contents->GetTitle(), url));
         break;
       }
     }
@@ -56,7 +64,7 @@ void OpenTabProvider::Start(const AutocompleteInput& input,
 }
 
 AutocompleteMatch OpenTabProvider::CreateOpenTabMatch(
-    const std::u16string& input_text,
+    const AutocompleteInput& input,
     const std::u16string& title,
     const GURL& url) {
   DCHECK(url.is_valid());
@@ -76,17 +84,21 @@ AutocompleteMatch OpenTabProvider::CreateOpenTabMatch(
   match.allowed_to_be_default_match = true;
 
   match.contents = base::UTF8ToUTF16(url.spec());
-  auto contents_terms = FindTermMatches(input_text, match.contents);
+  auto contents_terms = FindTermMatches(input.text(), match.contents);
   match.contents_class = ClassifyTermMatches(
       contents_terms, match.contents.size(),
       ACMatchClassification::MATCH | ACMatchClassification::URL,
       ACMatchClassification::URL);
 
   match.description = title;
-  auto description_terms = FindTermMatches(input_text, match.description);
+  auto description_terms = FindTermMatches(input.text(), match.description);
   match.description_class = ClassifyTermMatches(
       description_terms, match.description.size(), ACMatchClassification::MATCH,
       ACMatchClassification::NONE);
+
+  if (InKeywordMode(input)) {
+    match.from_keyword = true;
+  }
 
   return match;
 }

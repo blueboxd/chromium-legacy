@@ -9,8 +9,8 @@
 
 #include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
-#include "ash/components/login/auth/key.h"
-#include "ash/components/login/auth/saml_password_attributes.h"
+#include "ash/components/login/auth/public/key.h"
+#include "ash/components/login/auth/public/saml_password_attributes.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
@@ -70,12 +70,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
+#include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/dbus/attestation/fake_attestation_client.h"
-#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -1636,9 +1636,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
 // Tests that clicking back on the SAML page successfully closes the oobe
 // dialog. Reopens a dialog and checks that SAML IdP authentication page is
 // loaded and authenticating there is successful.
-// TODO(https://crbug.com/1102738) flaky test - partially fixed but keeping the
-// test disabled since there is still some instabillity observed under load.
-IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
+IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialNext) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,

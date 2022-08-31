@@ -59,6 +59,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Ash.Cellular.SimLock.Policy.Notification.Event"
+    enum="SimLockNotificationEvent" expires_after="2022-12-31">
+  <owner>hsuregan@chromium.org</owner>
+  <owner>nikhilcn@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records events on the notification shown when the SIM is locked and admin
+    has restricted users from PIN locking their SIMs. These are emitted once the
+    notification is shown and once when the user interacts with it.
+  </summary>
+</histogram>
+
 <histogram name="Network.Ash.VPN.{VPNProviderType}.ConfigurationSource"
     enum="VPNConfigurationSource" expires_after="2022-12-31">
   <owner>chadduffin@chromium.org</owner>
@@ -305,7 +317,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.BlockNonManagedCellularBehavior"
-    enum="NetworkBlockNonManagedCellularBehavior" expires_after="2022-11-01">
+    enum="NetworkBlockNonManagedCellularBehavior" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -364,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.EuiccStatusUploadResult"
-    enum="BooleanSuccess" expires_after="2022-11-01">
+    enum="BooleanSuccess" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -401,7 +413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.ServiceAtLogin.Count"
-    units="units" expires_after="2022-11-06">
+    units="units" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivit@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -412,7 +424,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.StatusAtLogin"
-    enum="NetworkESimPolicyStatusAtLogin" expires_after="2022-11-01">
+    enum="NetworkESimPolicyStatusAtLogin" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -497,7 +509,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Cellular.ESim.RequestPendingProfiles.OperationResult"
     enum="NetworkCellularESimRequestPendingProfilesResult"
-    expires_after="2022-11-06">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -523,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.ServiceAtLogin.Count" units="units"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivit@google.com</owner>
   <summary>
@@ -533,7 +545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.SetupFlowResult"
-    enum="ESimSetupFlowResult" expires_after="2022-11-01">
+    enum="ESimSetupFlowResult" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -580,7 +592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Usage.Count" enum="NetworkCellularUsage"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -641,7 +653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.PrepareCellularConnection.OperationResult"
-    enum="NetworkCellularPrepareForConnectionResult" expires_after="2022-11-06">
+    enum="NetworkCellularPrepareForConnectionResult" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -666,7 +678,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.PSim.ServiceAtLogin.Count" units="units"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-system-services-networking@google.com</owner>
   <summary>
@@ -2980,6 +2992,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NetworkService.MemoryCache.BlockedByRequestHeaderReason"
+    enum="NetworkServiceMemoryCacheBlockedByRequestHeaderReason"
+    expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records a reason why a request cannot be served from the in-memory cache due
+    to request header checks. Recorded when the in-memory cache tries to serve a
+    stored response.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.MemoryCache.ContentLength.{RequestDestination}"
+    units="bytes" expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Size of a response body that is going to be stored to the network service
+    in-memory cache. Recorded before a response is going to be stored to the
+    in-memory cache. If the size is larger than a configurable limit, the
+    response won't be stored in the in-memory cache. This histogram is recorded
+    for {RequestDestination}.
+  </summary>
+  <token key="RequestDestination" variants="RequestDestination"/>
+</histogram>
+
 <histogram name="NetworkService.MemoryCache.EntryStatus"
     enum="NetworkServiceMemoryCacheEntryStatus" expires_after="2022-10-05">
   <owner>bashi@chromium.org</owner>
@@ -2990,6 +3028,16 @@ chromium-metrics-reviews@google.com.
     and the request satisfies preconditions. Preconditions include: CORS checks
     passed, the request was a valid GET request, and the request didn't force
     network access etc. See NetworkServiceMemoryCache::CanServe() for details.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.MemoryCache.FreshnessAtStore" units="seconds"
+    expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records freshness of a response when it is going to be stored into the
+    in-memory cache. The range is from 1 seconds to 864000 seconds (10 days).
   </summary>
 </histogram>
 
@@ -3052,7 +3100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -3066,7 +3114,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantDataAccess" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>

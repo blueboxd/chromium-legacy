@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Tarix</translation>
 <translation id="1645954272419197032">Qurilma axborotini tasdiqlang</translation>
 <translation id="1662989795263954667">Toʻxtatildi – Siyoh tugadi</translation>
+<translation id="1664796644829245314">Razm solish: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Ichki oʻrnatilgan VPN</translation>
 <translation id="1672499492233627739">Veb kamera video tasmasi</translation>
 <translation id="1676557873873341166">Video yozib olinmoqda</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferensiya</translation>
 <translation id="1852934301711881861">ChromeOS Flex tizimini oʻrnatish</translation>
 <translation id="1856388568474281774">Pastga strelka</translation>
+<translation id="1858620243986915808">Skrinshot biriktirish</translation>
 <translation id="1871569928317311284">Tungi mavzuni faolsizlantirish</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tungi rejimdan chiqish</translation>
@@ -797,6 +799,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7978412674231730200">Xususiy kalit</translation>
 <translation id="7982789257301363584">Tarmoq</translation>
 <translation id="7994702968232966508">EAP usuli</translation>
+<translation id="8018928621986160031">“<ph name="FILE_LOCATION" />” manziliga saqlandi</translation>
 <translation id="802154636333426148">Yuklab olib bo‘lmadi</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Avtomatik rangli rejimni yoqish</translation>
@@ -865,6 +868,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="8576249514688522074">Faolsizlantirildi</translation>
 <translation id="8620617069779373398">Rouming holati</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">URL havolasi:</translation>
 <translation id="8660881923941176839">funt</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> tarmoqqa ulanish</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> versiyasiga yangilash va oʻchirib yoqish</translation>

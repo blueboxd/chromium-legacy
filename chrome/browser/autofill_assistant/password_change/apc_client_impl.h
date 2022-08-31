@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
@@ -17,12 +18,11 @@
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class ApcExternalActionDelegate;
-
-// TODO(crbug.com/1322419): Observe the SidePanel so that we can destruct
-// Onboarding, ScriptExecution, etc. on close.
+class ApcScrimManager;
 
 // Implementation of the ApcClient interface that attaches itself to a
 // `WebContents`.
@@ -36,12 +36,16 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   ApcClientImpl& operator=(const ApcClientImpl&) = delete;
 
   // ApcClient:
-  void Start(const GURL& url,
-             const std::string& username,
-             bool skip_login,
-             ResultCallback callback) override;
+  void Start(
+      const GURL& url,
+      const std::string& username,
+      bool skip_login,
+      ResultCallback callback,
+      absl::optional<DebugRunInformation> debug_run_information) override;
   void Stop(bool success) override;
   bool IsRunning() const override;
+  void PromptForConsent() override;
+  void RevokeConsent(const std::vector<int>& description_grd_ids) override;
 
  protected:
   // The following protected methods are factory functions that may be
@@ -62,6 +66,10 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   // password manager, translation dialogs and permissions. Protected to allow
   // for overrides by test classes.
   virtual autofill_assistant::RuntimeManager* GetRuntimeManager();
+
+  // Creates the ApcScrimManager used to apply a scrim over the webcontent
+  // during script runs.
+  virtual std::unique_ptr<ApcScrimManager> CreateApcScrimManager();
 
   explicit ApcClientImpl(content::WebContents* web_contents);
 
@@ -99,6 +107,9 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
   // This is used during triggers from the leak warning.
   bool skip_login_;
 
+  // If set, contains the parameters for a debug run.
+  absl::optional<DebugRunInformation> debug_run_information_;
+
   // The state of the `ApcClient` to avoid that a run is started while
   // another is already ongoing in the tab.
   bool is_running_ = false;
@@ -112,6 +123,9 @@ class ApcClientImpl : public content::WebContentsUserData<ApcClientImpl>,
 
   // The coordinator for the side panel.
   std::unique_ptr<AssistantSidePanelCoordinator> side_panel_coordinator_;
+
+  // Manages the scrim shown during a password change run.
+  std::unique_ptr<ApcScrimManager> scrim_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

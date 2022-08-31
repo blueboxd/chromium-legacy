@@ -68,6 +68,7 @@
 <translation id="2139300032719313227">ChromeOS রিস্টার্ট করুন</translation>
 <translation id="2151406531797534936">এখনই Chrome রিস্টার্ট করুন</translation>
 <translation id="2174917724755363426">ইনস্টলেশন শেষ হয়নি। আপনি কি সত্যিই বাতিল করতে চান?</translation>
+<translation id="223889379102603431">Chrome কীভাবে মূল সার্টিফিকেট ম্যানেজ করে সেই বিষয়ে তথ্য</translation>
 <translation id="2258103955319320201">সব ডিভাইস জুড়ে Chrome ব্রাউজারে থাকা ডেটা অ্যাক্সেস করতে, প্রথমে সাইন-ইন করে সিঙ্ক চালু করুন।</translation>
 <translation id="2290014774651636340">Google এপিআই কীগুলি অনুপস্থিত৷ Google Chrome-এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
@@ -80,6 +81,7 @@
 <translation id="2401189691232800402">ChromeOS সিস্টেম</translation>
 <translation id="2467438592969358367">Google Chrome আপনার পাসওয়ার্ড এক্সপোর্ট করতে চাইছে। অনুমতি দিতে Windows এর পাসওয়ার্ড টাইপ করুন।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
+<translation id="2494974097748878569">Chrome-এ Google অ্যাসিস্ট্যান্ট</translation>
 <translation id="2534507159460261402">Google Pay (Chrome এ কপি করা হয়েছে)</translation>
 <translation id="2559253115192232574">পরে, আপনি যে সাইটটি দেখেন সেটি আপনার দেখা বিজ্ঞাপনগুলিকে পছন্দমতো করার জন্য Chrome-কে আপনার আগ্রহগুলি দেখতে বলতে পারে। Chrome সর্বাধিক ৩টি আগ্রহ শেয়ার করতে পারে।</translation>
 <translation id="2563121210305478421">Chrome আবার লঞ্চ করবেন?</translation>
@@ -158,6 +160,7 @@
 <translation id="3865754807470779944">Chrome ভার্সন <ph name="PRODUCT_VERSION" /> ইনস্টল করা আছে</translation>
 <translation id="3873044882194371212">Chrome-এ ছদ্মবেশী উইন্ডোতে লিঙ্ক খুলুন</translation>
 <translation id="3889417619312448367">Google Chrome আনইনস্টল করুন</translation>
+<translation id="3999683152997576765">আগ্রহের যেসব বিষয়ের উপর ভিত্তি করে সাইট আপনাকে বিজ্ঞাপন দেখায়, আপনি সেগুলি দেখতে ও সরিয়ে দিতে পারবেন। Chrome আপনার সাম্প্রতিক ব্রাউজিং ইতিহাসের উপর ভিত্তি করে আপনার আগ্রহ সম্পর্কে ধারণা করতে পারে।</translation>
 <translation id="4035053306113201399">আপডেটটি প্রয়োগ করতে ChromeOS আবার চালু করা প্রয়োজন।</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ ভার্সনে উপলভ্য।</translation>
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
@@ -278,6 +281,7 @@
 <translation id="6739177684496155661">নতুন Chrome প্রোফাইলে কাজ চালিয়ে যেতে চান?</translation>
 <translation id="6750954913813541382">বানান ভুল ঠিক করতে, আপনি ব্রাউজারে যে টেক্সট লেখেন Chrome সেটি Google-এ পাঠায়</translation>
 <translation id="677276454032249905">তা স্বত্তেও Chrome বন্ধ করতে চান?</translation>
+<translation id="6785872064505734160">Chrome-এ Google Assistant আপনার হয়ে সমস্ত ওয়েবসাইটে বিভিন্ন অ্যাকশন সম্পূর্ণ করতে পারে</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6881299373831449287">Chrome আপডেট হচ্ছে</translation>
 <translation id="6885412569789873916">Chrome বিটা অ্যাপ</translation>
@@ -350,6 +354,7 @@
 <translation id="8129812357326543296">&amp;Google Chrome সম্বন্ধে</translation>
 <translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>
 <translation id="8255190535488645436">Google Chrome আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করছে৷</translation>
+<translation id="8270775718612349140">Chrome দ্বারা ম্যানেজ করা সার্টিফিকেট</translation>
 <translation id="8286862437124483331">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে। এটির অনুমতি দিতে আপনার Windows পাসওয়ার্ড টাইপ করুন।</translation>
 <translation id="828798499196665338">তোমার অভিভাবক Chrome-এ "সাইট, অ্যাপ ও এক্সটেনশনের অনুমতি" বন্ধ করে দিয়েছেন। এই <ph name="EXTENSION_TYPE_PARAMETER" /> চালু করার অনুমতি নেই।</translation>
 <translation id="8290100596633877290">হোয়া! Google Chrome ক্র্যাশ হয়েছে৷ এখনই পুনঃলঞ্চ করবেন?</translation>

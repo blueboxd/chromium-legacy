@@ -11,6 +11,7 @@
 <translation id="1185134272377778587">Про Chromium</translation>
 <translation id="1203500561924088507">Дякуємо за встановлення. Щоб почати використовувати пакет <ph name="BUNDLE_NAME" />, потрібно перезапустити веб-переглядач.</translation>
 <translation id="1315551408014407711">Налаштуйте новий профіль Chromium</translation>
+<translation id="1385859895174722837">Google Асистент у Chromium</translation>
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
 <translation id="1524282610922162960">Поділитися вкладкою Chromium</translation>
@@ -22,6 +23,7 @@
 Дозволи, надані веб-сайтам і додаткам, можуть діяти для цього облікового запису. Ви можете керувати своїми обліковими записами Google у <ph name="SETTINGS_LINK_BEGIN" />Налаштуваннях<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Завантаження...</translation>
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
+<translation id="17264556997921157">Ви можете переглядати й вилучати цікаві теми, на основі яких сайти показують вам оголошення. Chromium оцінює, які теми вас цікавлять, за вашою нещодавньою історією веб-перегляду.</translation>
 <translation id="1774152462503052664">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="1779356040007214683">Щоб зробити Chromium безпечнішим, ми вимкнути деякі розширення, джерелом яких не є <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, і які, можливо, було додано без вашого відома.</translation>
 <translation id="1808667845054772817">Перевстановити Chromium</translation>
@@ -40,6 +42,7 @@
 <translation id="2018879682492276940">Помилка встановлення. Повторіть спробу.</translation>
 <translation id="2020032459870799438">Щоб перевірити, чи відомі порушення безпеки даних або інші проблеми не заторкнули інші ваші паролі, <ph name="BEGIN_LINK" />увійдіть у Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Укажіть, чи включати історію Chromium, щоб ми краще персоналізували роботу сервісів Google</translation>
+<translation id="2088953378266246249">Інформація про те, як Chromium керує кореневими сертифікатами</translation>
 <translation id="2174178932569897599">Налаштувати Chromium</translation>
 <translation id="2174917724755363426">Встановлення не завершено. Скасувати його?</translation>
 <translation id="2185166961232948079">Chromium – Вхід у мережу– <ph name="PAGE_TITLE" /></translation>
@@ -101,6 +104,7 @@
 <translation id="3474745554856756813">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">Комбінація клавіш <ph name="SHORTCUT" /> перемикає профілі Chromium</translation>
 <translation id="3509308970982693815">Закрийте всі вікна Chromium і повторіть спробу.</translation>
+<translation id="3518180795744733843">Google Асистент може замість вас завершувати дії на різних веб-сайтах у Chromium</translation>
 <translation id="3533435340678213462">З міркувань конфіденційності ми автоматично видаляємо ваші інтереси через 4 тижні. Якщо ви й надалі переглядатимете веб-сторінки, відповідний інтерес може знову з’явитися в списку. Щоб Chromium не враховував певні інтереси, їх можна вилучити.</translation>
 <translation id="3567254597502212821">Ваша історія веб-перегляду – перелік сайтів, які ви відвідали через Chromium на цьому пристрої.</translation>
 <translation id="3575459661164320785">Виявлено шкідливе програмне забезпечення на вашому комп’ютері. Chromium може видалити його, відновити налаштування та вимкнути розширення, щоб веб-переглядач знову працював належним чином.</translation>
@@ -363,6 +367,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="9185526690718004400">Перезапустити, щоб оновити &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium може працювати неналежним чином, оскільки більше не підтримується у Windows XP та Windows Vista</translation>
+<translation id="942598560705308788">Сертифікати, якими керує Chromium</translation>
 <translation id="945990405696787151">Щоб отримувати майбутні оновлення Chromium, потрібна операційна система macOS 10.13 або новішої версії. На цьому комп’ютері встановлено OS X 10.11.</translation>
 <translation id="965162752251293939">Хто користується веб-переглядачем Chromium?</translation>
 <translation id="967427899662692980">Отримайте найвищий рівень безпеки в Chromium</translation>

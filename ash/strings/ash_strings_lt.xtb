@@ -27,6 +27,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="1111021433905331574">Klaviatūros foninio apšvietimo spalvą galite pakeisti skiltyje „Nustatymai“ &gt; „<ph name="APP_TITLE" />“</translation>
 <translation id="112308213915226829">Automatiškai slėpti lentyną</translation>
 <translation id="1142002900084379065">Naujausios nuotraukos</translation>
+<translation id="114451698114044150">Automatinio mastelio keitimo parinktis įjungta.</translation>
 <translation id="1148499908455722006">Atidaryti <ph name="USER_NAME" /> informacijos dialogo langą</translation>
 <translation id="1150989369772528668">Kalendorius</translation>
 <translation id="1153356358378277386">Susieti įrenginiai</translation>
@@ -165,6 +166,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Atrakinimas piršto antspaudu</translation>
 <translation id="1888656773939766144">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Spustelėkite patvirtinimo mygtuką, kad išsaugotumėte pakeitimus. Ankstesni nustatymai bus atkurti po <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="1908992311423394684">Naujas įdiegimas</translation>
 <translation id="1915307458270490472">Baigti</translation>
 <translation id="1918022425394817322">Fotoaparato peržiūra pridėta viršutiniame dešiniajame kampe</translation>
 <translation id="1919743966458266018">Pakeistas užduočių tvarkytuvės atidarymo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
@@ -305,6 +307,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2814448776515246190">Dalinio vaizdo užfiksavimas</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
+<translation id="2822551631199737692">Naudojamas fotoaparatas</translation>
 <translation id="2825224105325558319">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra buvo pakeista į <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Lentyna</translation>
 <translation id="2831035692318564937">Įjungta iki saulėtekio</translation>
@@ -447,6 +450,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3593039967545720377">Pasiekite iškarpinės istoriją paspaudę <ph name="SHORTCUT_KEY_NAME" /> ir V, kad peržiūrėtumėte iškarpinę. Jei norite pradėti, nukopijuokite elementą.</translation>
 <translation id="3593646411856133110">Perbraukite aukštyn ir laikykite, kad peržiūrėtumėte atidarytas programas</translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
+<translation id="3600061223661453002">Išjungta</translation>
 <translation id="3604801046548457007">Sukurtas darbalaukis „<ph name="DESK_TITILE" />“</translation>
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="3615926715408477684">Įgalinus mobiliojo ryšio duomenis bus įgalintas „Bluetooth“</translation>
@@ -489,7 +493,6 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="3804737937830804242">Sutraukti fotoaparatą</translation>
 <translation id="3826099427150913765">Perjungti į slaptažodį</translation>
 <translation id="383058930331066723">Akumuliatoriaus tausojimo priemonės režimas įjungtas</translation>
-<translation id="3835880383832568924">Jei norite peržiūrėti naujinius, atidarykite Sparčiųjų klavišų programą</translation>
 <translation id="383629559565718788">Rodyti klaviatūros nustatymus</translation>
 <translation id="384082539148746321">Ištrinti šabloną?</translation>
 <translation id="3842239759367498783">Toliau skaityti iš mobiliojo įrenginio „<ph name="TITLE" />“</translation>
@@ -807,6 +810,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="5682642926269496722">„Google Assistant“ nepasiekiamas dabartinėje naudotojo paskyroje.</translation>
 <translation id="5689633613396158040">Naudojant „Nakties šviesos“ funkciją bus patogiau žiūrėti į ekraną ar skaityti prietemoje. Palieskite, kad pakeistumėte, kokiu metu įjungiama funkcija „Nakties šviesa“, arba ją visiškai išjungtumėte.</translation>
 <translation id="5691772641933328258">Kontrolinis kodas neatpažintas</translation>
+<translation id="5693255400847650006">Naudojamas mikrofonas</translation>
 <translation id="570390244361237317">„Visos programos“; naudokite rodyklių klavišus, kad pasiektumėte visas programas</translation>
 <translation id="5707775774148071965">Įrenginys palaiko didesnį duomenų dažnį nei laidas. Įrenginio našumas gali būti apribotas.</translation>
 <translation id="5710450975648804523">Netrukdymo režimas įjungtas</translation>
@@ -965,6 +969,7 @@ Naujas įdiegimas</translation>
 <translation id="6637729079642709226">Laiko keitimas</translation>
 <translation id="6641720045729354415">Perjungti subtitrus realiuoju laiku. <ph name="STATE_TEXT" /></translation>
 <translation id="6643169293433369663">Anuliuoti rūšiavimo tvarką pagal pavadinimą</translation>
+<translation id="6649641931981131786">Koreguokite fotoaparatą, kad būtumėte matomi ekrano centre.</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> norėtų patvirtinti, kad tai jūs</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
@@ -981,6 +986,7 @@ Naujas įdiegimas</translation>
 <translation id="6723839937902243910">Maitinimas</translation>
 <translation id="6727969043791803658">Prisijungta, akumuliatoriaus įkrovos lygis: <ph name="BATTERY_PERCENTAGE" /> proc.</translation>
 <translation id="6732800389263199929">Dar <ph name="COUNT" /></translation>
+<translation id="6737983188036277605">Naudojamas fotoaparatas ir mikrofonas</translation>
 <translation id="6739144137573853180">EIKITE Į NUSTATYMUS</translation>
 <translation id="6751052314767925245">Įgalino jūsų administratorius</translation>
 <translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
@@ -1005,6 +1011,7 @@ Naujas įdiegimas</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Liko vienas skaitmuo}one{Liko # skaitmuo}few{Liko # skaitmenys}many{Liko # skaitmens}other{Liko # skaitmenų}}</translation>
 <translation id="6867938213751067702">Failo <ph name="FILENAME" /> atsisiuntimas pristabdytas</translation>
 <translation id="6878400149835617132">Spartusis klavišas išjungtas</translation>
+<translation id="6878709625737492815">Automatinio mastelio keitimo parinktis išjungta.</translation>
 <translation id="6884665277231944629">Grįžti į šiandieną</translation>
 <translation id="6886172995547742638">Gali sumažėti „<ph name="DEVICE_TYPE" />“ įrenginio našumas. Naudokite sertifikuotą <ph name="PREFERRED_MINIMUM_POWER" /> W ar didesnės galios USB-C maitinimo adapterį.</translation>
 <translation id="688631446150864480">Norėdami perjungti langus, paspauskite rodyklę žemyn</translation>
@@ -1012,7 +1019,6 @@ Naujas įdiegimas</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="6901883536534621389">Išbandykite naršymo gestus</translation>
 <translation id="6919251195245069855">Nepavyko atpažinti išmaniosios kortelės. Bandykite dar kartą.</translation>
-<translation id="6921188888306725546">Patobulinti spartieji klavišai</translation>
 <translation id="6931576957638141829">Išsaugoti į</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6960565108681981554">Nesuaktyvinta. Susisiekite su operatoriumi.</translation>
@@ -1085,6 +1091,7 @@ Naujas įdiegimas</translation>
 <translation id="7378203170292176219">Vilkdami pasirinkite norimą įrašyti vietą</translation>
 <translation id="7378594059915113390">Medijos valdikliai</translation>
 <translation id="7378889811480108604">Akumuliatoriaus tausojimo priemonės režimas išjungtas</translation>
+<translation id="7382680553121047388">Įjungta</translation>
 <translation id="7384028040782072252">Norėdami pertvarkyti programas, spustelėkite bet kur dešiniuoju klavišu</translation>
 <translation id="7392563512730092880">Bet kada vėliau galėsite nustatyti skiltyje „Nustatymai“.</translation>
 <translation id="7405710164030118432">Jei norite atrakinti įrenginį, įveskite „Family Link“ tėvų prieigos kodą</translation>
@@ -1167,6 +1174,7 @@ Naujas įdiegimas</translation>
 <translation id="7868900307798234037">Atrakinama naudojant kontrolinį kodą</translation>
 <translation id="7872195908557044066">Administratorius iš naujo nustato jūsų „eSIM“ kortelę. Palaukite kelias minutes.</translation>
 <translation id="7872786842639831132">Išjungta</translation>
+<translation id="7875280185395705476">Automatinis mastelio keitimas</translation>
 <translation id="7875575368831396199">Panašu, kad „Bluetooth“ ryšys išjungtas jūsų „<ph name="DEVICE_TYPE" />“ įrenginyje. Įjunkite „Bluetooth“, kad galėtumėte naudoti „Phone Hub“.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Grąžinkite ankstesnę įrenginio versiją dabar}=1{Grąžinkite ankstesnę įrenginio versiją per 1 sekundę}one{Grąžinkite ankstesnę įrenginio versiją per # sekundę}few{Grąžinkite ankstesnę įrenginio versiją per # sekundes}many{Grąžinkite ankstesnę įrenginio versiją per # sekundės}other{Grąžinkite ankstesnę įrenginio versiją per # sekundžių}}</translation>
 <translation id="7886169021410746335">Koreguokite privatumo nustatymus</translation>
@@ -1287,6 +1295,7 @@ Naujas įdiegimas</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> rekomenduoja atnaujinti „<ph name="DEVICE_TYPE" />“</translation>
 <translation id="8563862697512465947">Pranešimų nustatymai</translation>
 <translation id="857201607579416096">Meniu perkeltas į apatinį dešinįjį ekrano kampą.</translation>
+<translation id="8576288697319745668">Perjungti automatinį mastelio keitimą. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">–<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Rūšiuokite programas pagal pavadinimą arba spalvą</translation>
 <translation id="8614517853887502247">„<ph name="APP_1_TITLE" />“ ir „<ph name="APP_2_TITLE" />“ pranešimai paslėpti, nes įjungta peržiūros apsauga</translation>

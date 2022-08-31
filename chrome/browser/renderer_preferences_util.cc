@@ -37,10 +37,10 @@
 #include "ui/views/controls/textfield/textfield.h"
 #endif
 
-#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if defined(USE_AURA) && BUILDFLAG(IS_LINUX)
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "ui/views/linux_ui/linux_ui.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 namespace {
@@ -159,8 +159,8 @@ void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
   prefs->caret_blink_interval = views::Textfield::GetCaretBlinkInterval();
 #endif
 
-#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-  views::LinuxUI* linux_ui = views::LinuxUI::instance();
+#if defined(USE_AURA) && BUILDFLAG(IS_LINUX)
+  ui::LinuxUi* linux_ui = ui::LinuxUi::instance();
   if (linux_ui) {
     if (ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme()) {
       prefs->focus_ring_color = linux_ui->GetFocusRingColor();

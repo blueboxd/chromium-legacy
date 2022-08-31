@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ParagraphUtils} from '/select_to_speak/paragraph_utils.js';
+import {ParagraphUtils} from './paragraph_utils.js';
 
 /**
  * Creates a AutomationNode-like object.
@@ -49,31 +49,31 @@ export function generateTestNodeGroup() {
     role: 'inlineTextBox',
     name: 'The first',
     indexInParent: 0,
-    parent: text1
+    parent: text1,
   });
   const inlineText2 = createMockNode({
     role: 'inlineTextBox',
     name: ' sentence.',
     indexInParent: 1,
-    parent: text1
+    parent: text1,
   });
 
   const text2 = createMockNode({
     name: 'The second sentence is longer.',
     role: 'staticText',
-    parent: paragraph
+    parent: paragraph,
   });
   const inlineText3 = createMockNode({
     role: 'inlineTextBox',
     name: 'The second',
     indexInParent: 0,
-    parent: text2
+    parent: text2,
   });
   const inlineText4 = createMockNode({
     role: 'inlineTextBox',
     name: ' sentence is longer.',
     indexInParent: 1,
-    parent: text2
+    parent: text2,
   });
 
   const text3 = createMockNode(

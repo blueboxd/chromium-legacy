@@ -45,7 +45,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -91,11 +90,11 @@ const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
 };
 
 // The size of the symbol image used in the 'Clear Browsing Data' view.
-NSInteger kSymbolPointSize = 22;
+const CGFloat kSymbolPointSize = 22;
 
 // Specific symbols used in the 'Clear Browsing Data' view.
-NSString* kCachedDataSymbol = @"photo.on.rectangle";
-NSString* kAutofillDataSymbol = @"wand.and.rays";
+NSString* const kCachedDataSymbol = @"photo.on.rectangle";
+NSString* const kAutofillDataSymbol = @"wand.and.rays";
 
 // Returns the symbol coresponding to the given itemType.
 UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
@@ -580,43 +579,31 @@ static NSDictionary* imageNamesByItemTypes = @{
 }
 
 - (TableViewLinkHeaderFooterItem*)footerGoogleAccountAndMyActivityItem {
-  UIImage* image = ios::provider::GetBrandedImage(
-      ios::provider::BrandedImage::kClearBrowsingDataAccountActivity);
-
   return [self
       footerItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT_AND_HISTORY
-                     URL:kClearBrowsingDataMyActivityUrlInFooterURL
-                   image:image];
+                     URL:kClearBrowsingDataMyActivityUrlInFooterURL];
 }
 
 - (TableViewLinkHeaderFooterItem*)footerSavedSiteDataItem {
-  UIImage* image = ios::provider::GetBrandedImage(
-      ios::provider::BrandedImage::kClearBrowsingDataSiteData);
-
   return [self
       footerItemWithType:ItemTypeFooterSavedSiteData
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA
-                     URL:kClearBrowsingDataLearnMoreURL
-                   image:image];
+                     URL:kClearBrowsingDataLearnMoreURL];
 }
 
 - (TableViewLinkHeaderFooterItem*)footerClearSyncAndSavedSiteDataItem {
-  UIImage* infoIcon = [ChromeIcon infoIcon];
-  UIImage* image = TintImage(infoIcon, [[MDCPalette greyPalette] tint500]);
   return [self
       footerItemWithType:ItemTypeFooterClearSyncAndSavedSiteData
                  titleID:
                      IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA
-                     URL:kClearBrowsingDataLearnMoreURL
-                   image:image];
+                     URL:kClearBrowsingDataLearnMoreURL];
 }
 
 - (TableViewLinkHeaderFooterItem*)footerItemWithType:
                                       (ClearBrowsingDataItemType)itemType
                                              titleID:(int)titleMessageID
-                                                 URL:(const char[])URL
-                                               image:(UIImage*)image {
+                                                 URL:(const char[])URL {
   TableViewLinkHeaderFooterItem* footerItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);

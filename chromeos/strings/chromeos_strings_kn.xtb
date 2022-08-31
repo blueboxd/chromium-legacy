@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">ಇತಿಹಾಸ</translation>
 <translation id="1645954272419197032">ಸಾಧನದ ಮಾಹಿತಿಯನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="1662989795263954667">ನಿಲ್ಲಿಸಲಾಗಿದೆ - ಇಂಕ್ ಖಾಲಿಯಾಗಿದೆ</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> ಅನ್ನು ಪೂರ್ವವೀಕ್ಷಿಸಿ</translation>
 <translation id="1668469839109562275">ಬಿಲ್ಟ್-ಇನ್ VPN</translation>
 <translation id="1672499492233627739">ವೆಬ್‌ಕ್ಯಾಮ್ ವೀಡಿಯೊ ಫೀಡ್</translation>
 <translation id="1676557873873341166">ವೀಡಿಯೊ ಕ್ಯಾಪ್ಚರ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">ವೀಡಿಯೊ ಕಾನ್ಫರೆನ್ಸಿಂಗ್</translation>
 <translation id="1852934301711881861">ChromeOS Flex ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="1856388568474281774">ಡೌನ್ ಆ್ಯರೋ</translation>
+<translation id="1858620243986915808">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ಲಗತ್ತಿಸಿ</translation>
 <translation id="1871569928317311284">ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ಕತ್ತಲೆ ಮೋಡ್ ಆಫ್ ಮಾಡಿ</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">ಖಾಸಗಿ ಕೀಲಿ</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
 <translation id="7994702968232966508">EAP ವಿಧಾನ</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" ಗೆ ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="802154636333426148">ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ಸ್ವಯಂಚಾಲಿತ ಬಣ್ಣದ ಮೋಡ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">ಪ್ರಾರಂಭಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="8620617069779373398">ರೋಮಿಂಗ್ ಸ್ಥಿತಿ</translation>
 <translation id="8655295600908251630">ಚಾನಲ್</translation>
+<translation id="8655828773034788261">URL ಹಂಚಿಕೊಳ್ಳಿ:</translation>
 <translation id="8660881923941176839">ಪೌಂಡ್‌ಗಳು</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸೇರಿಕೊಳ್ಳಿ</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> ಗೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ ಮತ್ತು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>

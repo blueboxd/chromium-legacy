@@ -34,6 +34,12 @@ const char kAutofillEnableRankingFormulaDescription[] =
     "When enabled, Autofill will use a new ranking formula to rank Autofill "
     "data model suggestions such as credit cards or profiles";
 
+const char kAutofillEnableRemadeDownstreamMetricsName[] =
+    "Enable remade Autofill Downstream metrics logging";
+const char kAutofillEnableRemadeDownstreamMetricsDescription[] =
+    "When enabled, some extra metrics logging for Autofill Downstream will "
+    "start.";
+
 const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
     "Enable sending billing customer number in GetUploadDetails";
 const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
@@ -295,10 +301,6 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
-const char kEnableNewDownloadAPIName[] = "Enable new download API";
-const char kEnableNewDownloadAPIDescription[] =
-    "Enable new download API (restricted to iOS 15.0+).";
-
 const char kEnableUnicornAccountSupportName[] =
     "Enable Unicorn account support";
 const char kEnableUnicornAccountSupportDescription[] =
@@ -339,6 +341,11 @@ const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
     " or the toolbar";
+
+const char kFeedBackgroundRefreshName[] = "Enable feed background refresh";
+const char kFeedBackgroundRefreshDescription[] =
+    "Schedules a feed background refresh after some minimum period of time has "
+    "passed after the last refresh.";
 
 const char kFillingAcrossAffiliatedWebsitesName[] =
     "Fill passwords across affiliated websites.";
@@ -412,10 +419,6 @@ const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
 
-const char kLazilyCreateWebStateOnRestorationName[] = "Unrealized WebStates";
-const char kLazilyCreateWebStateOnRestorationDescription[] =
-    "Create WebState in unrealized state upon session restoration.";
-
 const char kLeakDetectionUnauthenticatedName[] =
     "Leak detection for signed out users";
 const char kLeakDetectionUnauthenticatedDescription[] =
@@ -474,6 +477,10 @@ extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
     "Checks if NTP view hierarchy is broken and fixes it if necessary.";
+
+const char kOmniboxHttpsUpgradesName[] = "Omnibox HTTPS upgrades";
+const char kOmniboxHttpsUpgradesDescription[] =
+    "Enables HTTPS upgrades for omnibox navigations typed without a scheme";
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
@@ -692,12 +699,6 @@ const char kToolbarContainerDescription[] =
 extern const char kTrendingQueriesModuleName[] = "Show Trending Queries module";
 extern const char kTrendingQueriesModuleDescription[] =
     "When enabled, the trending queries module will be shown in the NTP";
-
-extern const char kUIViewWindowObservingName[] =
-    "Support KVO on UIView's window property.";
-extern const char kUIViewWindowObservingDescription[] =
-    "When enabled, all instances of UIView can be observed with KVO on thei "
-    "`window` property.";
 
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
     "Update history entry points in Incognito.";

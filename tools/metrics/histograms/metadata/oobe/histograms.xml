@@ -202,6 +202,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="OOBE.HidDetectionScreen.HidDisconnected" enum="HidType"
+    expires_after="2023-05-06">
+  <owner>gordonseto@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the type of a connected human interface device (HID) that is
+    disconnected. This metric is emitted each time a HID is disconnected during
+    the HID detection screen in OOBE. It does not include devices disconnected
+    before the screen is shown or after the screen is hidden.
+  </summary>
+</histogram>
+
 <histogram name="OOBE.MarketingOptInScreen.BackendConnector"
     enum="MarketingOptInBackendConnectorEvent" expires_after="2022-11-30">
   <owner>rrsilva@google.com</owner>
@@ -261,6 +273,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks all user actions on the PinSetup screen. Recorded when user clicks on
     buttons on the PinSetup screen or when screen is automatically skipped.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.QuickStart.FastPairAdvertising" enum="BooleanSuccess"
+    expires_after="2023-07-07">
+  <owner>bhartmire@google.com</owner>
+  <owner>hansenmichael@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Count of successful and failed attempts to start Fast Pair BLE
+    advertisement. Recorded when the FastPairAdvertiser attempts to register an
+    advertisement.
   </summary>
 </histogram>
 
@@ -489,6 +513,27 @@ chromium-metrics-reviews@google.com.
     Time required for ChromeOS to load the First Run WebUI (i.e. out-of-box
     experience). Recorded at most once per Chrome lifetime (if OOBE is shown).
   </summary>
+</histogram>
+
+<histogram name="OOBE.WebViewLoader.FirstLoadResult.{WebViewID}"
+    enum="OobeWebViewLoadResult" expires_after="2023-07-12">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records the first result of loading the webview {WebViewID} in OOBE flow.
+    This metric is emitted every time a webview in OOBE is loaded using OOBE
+    WebViewLoader. Only the first load result of each load is emitted, ignoring
+    the re-load results.
+  </summary>
+  <token key="WebViewID">
+    <variant name="ArcTosView"/>
+    <variant name="ConsolidatedConsentArcTosWebview"/>
+    <variant name="ConsolidatedConsentCrosEulaWebview"/>
+    <variant name="ConsolidatedConsentGoogleEulaWebview"/>
+    <variant name="ConsolidatedConsentPrivacyPolicyWebview"/>
+    <variant name="GuestTosCrosEulaWebview"/>
+    <variant name="GuestTosGoogleEulaWebview"/>
+  </token>
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.A11yUserActions"

@@ -124,6 +124,11 @@ CompositorGpuThread::GetSharedContextState() {
   attribs.angle_context_virtualization_group_number =
       gl::AngleContextVirtualizationGroup::kDrDc;
 
+  // Compositor thread context doesn't need access textures and semaphores
+  // created with other contexts.
+  attribs.global_texture_share_group = false;
+  attribs.global_semaphore_share_group = false;
+
   // Create a new gl context. Note that this gl context is not part of same
   // share group which gpu main thread uses. Hence this context does not share
   // GL resources with the contexts created on gpu main thread.
@@ -260,6 +265,35 @@ void CompositorGpuThread::OnMemoryAllocatedChange(
 void CompositorGpuThread::OnBackgrounded() {
   if (watchdog_thread_)
     watchdog_thread_->OnBackgrounded();
+
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CompositorGpuThread::OnBackgroundedOnCompositorGpuThread,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CompositorGpuThread::OnBackgroundedOnCompositorGpuThread() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+
+  if (shared_context_state_) {
+    shared_context_state_->PurgeMemory(
+        base::MemoryPressureListener::MemoryPressureLevel::
+            MEMORY_PRESSURE_LEVEL_CRITICAL);
+  }
+}
+
+void CompositorGpuThread::OnBackgroundCleanup() {
+  if (!task_runner()->BelongsToCurrentThread()) {
+    task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&CompositorGpuThread::OnBackgroundCleanup,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  if (shared_context_state_) {
+    shared_context_state_->MarkContextLost();
+    shared_context_state_.reset();
+  }
 }
 
 void CompositorGpuThread::OnForegrounded() {

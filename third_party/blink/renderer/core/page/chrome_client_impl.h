@@ -160,7 +160,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
-  void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override;
+  void OutermostMainFrameScrollOffsetChanged() const override;
   void ResizeAfterLayout() const override;
   void MainFrameLayoutUpdated() const override;
   void ShowMouseOverURL(const HitTestResult&) override;
@@ -197,14 +197,13 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool immediate) override;
   void RequestUnbufferedInputEvents(LocalFrame*) override;
   void SetTouchAction(LocalFrame*, TouchAction) override;
+  void SetPanAction(LocalFrame*, mojom::blink::PanAction pan_action) override;
 
   void AttachRootLayer(scoped_refptr<cc::Layer>,
                        LocalFrame* local_root) override;
 
-  void AttachCompositorAnimationTimeline(cc::AnimationTimeline*,
-                                         LocalFrame*) override;
-  void DetachCompositorAnimationTimeline(cc::AnimationTimeline*,
-                                         LocalFrame*) override;
+  cc::AnimationHost* GetCompositorAnimationHost(LocalFrame&) const override;
+  cc::AnimationTimeline* GetScrollAnimationTimeline(LocalFrame&) const override;
 
   void EnterFullscreen(LocalFrame&,
                        const FullscreenOptions*,

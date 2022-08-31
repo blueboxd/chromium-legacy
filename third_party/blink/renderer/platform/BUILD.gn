@@ -781,6 +781,8 @@ component("platform") {
     "graphics/color_space_gamut.h",
     "graphics/color_space_profile_data.cc",
     "graphics/color_space_profile_data.h",
+    "graphics/compositing/adjust_mask_layer_geometry.cc",
+    "graphics/compositing/adjust_mask_layer_geometry.h",
     "graphics/compositing/chunk_to_layer_mapper.cc",
     "graphics/compositing/chunk_to_layer_mapper.h",
     "graphics/compositing/content_layer_client_impl.cc",
@@ -1467,6 +1469,8 @@ component("platform") {
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
     "webrtc/webrtc_video_utils.h",
+    "widget/compositing/categorized_worker_pool.cc",
+    "widget/compositing/categorized_worker_pool.h",
     "widget/compositing/layer_tree_settings.cc",
     "widget/compositing/layer_tree_settings.h",
     "widget/compositing/layer_tree_view.cc",
@@ -2176,6 +2180,7 @@ source_set("blink_platform_unittests_sources") {
     "weborigin/security_policy_test.cc",
     "webrtc/convert_to_webrtc_video_frame_buffer_test.cc",
     "webrtc/webrtc_video_frame_adapter_test.cc",
+    "widget/compositing/categorized_worker_pool_unittest.cc",
     "widget/compositing/layer_tree_settings_unittest.cc",
     "widget/compositing/layer_tree_view_unittest.cc",
     "widget/compositing/render_frame_metadata_observer_impl_unittest.cc",
@@ -2459,7 +2464,10 @@ fuzzer_test("open_type_math_support_fuzzer") {
     ":blink_fuzzer_test_support",
     ":platform",
   ]
-  seed_corpus = "//third_party/blink/web_tests/external/wpt/fonts/math"
+  seed_corpuses = [
+    "//third_party/blink/web_tests/external/wpt/fonts/math",
+    "//testing/libfuzzer/fuzzers/woff2_corpus",
+  ]
 }
 
 # Fuzzer for blink::StretchyOperatorShaper
@@ -2469,7 +2477,10 @@ fuzzer_test("stretchy_operator_shaper_fuzzer") {
     ":blink_fuzzer_test_support",
     ":platform",
   ]
-  seed_corpus = "//third_party/blink/web_tests/external/wpt/fonts/math"
+  seed_corpuses = [
+    "//third_party/blink/web_tests/external/wpt/fonts/math",
+    "//testing/libfuzzer/fuzzers/woff2_corpus",
+  ]
 }
 
 # Fuzzer for blink::MHTMLParser.

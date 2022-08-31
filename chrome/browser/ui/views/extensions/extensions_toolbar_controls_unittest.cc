@@ -13,9 +13,12 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/permissions_manager_waiter.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view_utils.h"
 #include "url/origin.h"
 
@@ -221,12 +224,11 @@ TEST_F(
   // Change the extension to run only on click using the context
   // menu. The extension should request access to the current site.
   {
-    content::WindowedNotificationObserver permissions_observer(
-        extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        content::NotificationService::AllSources());
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     context_menu.ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK, 0);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
     EXPECT_TRUE(IsRequestAccessButtonVisible());
     EXPECT_EQ(
         request_access_button()->GetText(),
@@ -236,12 +238,11 @@ TEST_F(
   // Change the extension to run only on site using the context
   // menu. The extension should not request access to the current site.
   {
-    content::WindowedNotificationObserver permissions_observer(
-        extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        content::NotificationService::AllSources());
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     context_menu.ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE, 0);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
     EXPECT_FALSE(IsRequestAccessButtonVisible());
   }
 }
@@ -355,7 +356,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
     extensions::PermissionsManagerWaiter manager_waiter(
         extensions::PermissionsManager::Get(profile()));
     manager->AddUserPermittedSite(url_origin);
-    manager_waiter.WaitForPermissionsChange();
+    manager_waiter.WaitForUserPermissionsSettingsChange();
     WaitForAnimation();
     EXPECT_FALSE(IsRequestAccessButtonVisible());
   }
@@ -365,7 +366,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
     extensions::PermissionsManagerWaiter manager_waiter(
         extensions::PermissionsManager::Get(profile()));
     manager->AddUserRestrictedSite(url_origin);
-    manager_waiter.WaitForPermissionsChange();
+    manager_waiter.WaitForUserPermissionsSettingsChange();
     WaitForAnimation();
     EXPECT_FALSE(IsRequestAccessButtonVisible());
   }
@@ -376,7 +377,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
     extensions::PermissionsManagerWaiter manager_waiter(
         extensions::PermissionsManager::Get(profile()));
     manager->RemoveUserRestrictedSite(url_origin);
-    manager_waiter.WaitForPermissionsChange();
+    manager_waiter.WaitForUserPermissionsSettingsChange();
     WaitForAnimation();
     EXPECT_TRUE(IsRequestAccessButtonVisible());
   }

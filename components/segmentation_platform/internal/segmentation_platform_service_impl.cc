@@ -30,6 +30,7 @@
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/field_trial_register.h"
+#include "components/segmentation_platform/public/input_context.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/trigger_context.h"
 
@@ -142,6 +143,37 @@ SegmentSelectionResult SegmentationPlatformServiceImpl::GetCachedSegmentResult(
   return selector->GetCachedSegmentResult();
 }
 
+void SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand(
+    const std::string& segmentation_key,
+    scoped_refptr<InputContext> input_context,
+    SegmentSelectionCallback callback) {
+  if (!storage_initialized_) {
+    // If the platform isn't fully initialized, cache the input arguments to run
+    // later.
+    pending_actions_.push_back(base::BindOnce(
+        &SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand,
+        weak_ptr_factory_.GetWeakPtr(), segmentation_key,
+        std::move(input_context), std::move(callback)));
+    return;
+  }
+
+  CHECK(segment_selectors_.find(segmentation_key) != segment_selectors_.end());
+  auto& selector = segment_selectors_.at(segmentation_key);
+
+  // Wrap callback to record metrics.
+  auto wrapped_callback = base::BindOnce(
+      [](const std::string& segmentation_key, base::Time start_time,
+         SegmentSelectionCallback callback,
+         const SegmentSelectionResult& result) -> void {
+        stats::RecordOnDemandSegmentSelectionDuration(
+            segmentation_key, result, base::Time::Now() - start_time);
+        std::move(callback).Run(result);
+      },
+      segmentation_key, base::Time::Now(), std::move(callback));
+  selector->GetSelectedSegmentOnDemand(input_context,
+                                       std::move(wrapped_callback));
+}
+
 CallbackId
 SegmentationPlatformServiceImpl::RegisterOnDemandSegmentSelectionCallback(
     const std::string& segmentation_key,
@@ -177,6 +209,8 @@ void SegmentationPlatformServiceImpl::OnTrigger(
   const TriggerType trigger = trigger_context->trigger_type();
   if (clients_for_trigger_.find(trigger) == clients_for_trigger_.end())
     return;
+  // This method is scheduled to be deprecated.
+  NOTREACHED();
   scoped_refptr<InputContext> input_context =
       base::MakeRefCounted<InputContext>(*trigger_context);
   for (const auto& segmentation_key : clients_for_trigger_[trigger]) {

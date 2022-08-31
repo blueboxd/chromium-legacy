@@ -12,9 +12,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1184931
   "health.ProbeBatteryMetrics",
 
-  # b/196705842
-  "apps.LaunchGalleryLanguage",
-
   # crbug.com/1242415
   "hwsec.AttestationEnrollOnly",
   "hwsec.ChapsAttributePolicy",
@@ -77,9 +74,6 @@ tast_disabled_tests_from_chrome_all = [
   "security.NetworkListenersARC",
   "security.SELinuxProcessesARC",
 
-  # https://crbug.com/1282369
-  "apps.LaunchHelpAppOffline",
-
   # https://crbug.com/1282370
   "arc.Boot.vm_with_per_vcpu_core_scheduling",
 
@@ -102,10 +96,6 @@ tast_disabled_tests_from_chrome_all = [
   "policy.JavaScriptAllowedForUrls",
   "policy.JavaScriptBlockedForUrls",
   "policy.ImagesForURLCheck.default",
-
-  # https://crbug.com/1302469 (http://b/222407003)
-  "inputs.PhysicalKeyboardKoreanTyping",
-  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
 
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
@@ -160,8 +150,6 @@ tast_disabled_tests_from_chrome_all = [
   "arc.StartStop.vm",
 
   # https://crbug.com/1309492
-  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
-  "inputs.VirtualKeyboardChangeInput.a11y",
   "arc.DragDrop.chrome_to_android",
 
   # https://crbug.com/1311081
@@ -230,11 +218,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1335176
   "policy.ScreenBrightnessPercent",
 
-  # b/233264555
-  "inputs.PhysicalKeyboardEmojiSuggestion",
-  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
-  "inputs.PhysicalKeyboardEmojiSuggestion.incognito",
-
   # http://b/229032436
   "health.DiagnosticsRun.captive_portal",
   "health.DiagnosticsRun.cpu_cache",
@@ -268,11 +251,11 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.RestartApp.stable",
   "crostini.RestartApp.clamshell_stable",
 
+  # http://b/238600197
+  "crostini.FilesAppWatch.buster_stable",
+
   # http://crbug.com/1335213
   "arc.WindowState.clamshell",
-
-  # http://crbug.com/1338201
-  "ui.ChromeCrashLoggedIn.gpu_process_breakpad",
 
   # http://crbug.com/1309278
   "policy.ChromeOsLockOnIdleSuspend",
@@ -285,6 +268,9 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1341076
   "launcher.BubbleLaunchApp.disable_launcher_app_sort",
+
+  # https://crbug.com/1236234
+  "lacros.AudioPlay",
 ]
 
 # To create filters to be used on specific builders add them like this:

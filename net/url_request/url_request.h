@@ -715,12 +715,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     return traffic_annotation_;
   }
 
-  bool Supports(const net::SourceStream::SourceType& type) const {
-    if (!accepted_stream_types_)
-      return true;
-    return accepted_stream_types_->contains(type);
-  }
-
   const absl::optional<base::flat_set<net::SourceStream::SourceType>>&
   accepted_stream_types() const {
     return accepted_stream_types_;
@@ -1061,8 +1055,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   int pervasive_payloads_index_for_logging_ = -1;
 
   // A SHA-256 checksum of the response and selected headers, stored as
-  // upper-case hexadecimal. This is only used if the
-  // LOAD_USE_SINGLE_KEYED_CACHE flag is set. On failure to match the cache
+  // upper-case hexadecimal. If this is set to a non-empty value the transaction
+  // will attempt to use the single-keyed cache. On failure to match the cache
   // entry will be marked as unusable and will not be re-used.
   std::string expected_response_checksum_;
 

@@ -20,6 +20,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/color_conversion_sk_filter_cache.h"
+#include "ui/gfx/geometry/mask_filter_info.h"
 #include "ui/latency/latency_info.h"
 
 class SkColorFilter;
@@ -122,6 +123,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const absl::optional<gfx::Rect>& scissor_rect,
       const absl::optional<gfx::MaskFilterInfo>& mask_filter_info,
       const gfx::Transform* cdt);
+  void PrepareGradient(
+      const absl::optional<gfx::MaskFilterInfo>& mask_filter_info);
 
   // Further modify the canvas as needed to apply the effects represented by
   // |rpdq_params|. Call Prepare[Paint|Color]OrCanvasForRPDQ when possible,
@@ -215,9 +218,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                           const DrawRPDQParams* rpdq_params,
                           DrawQuadParams* params);
 
-  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                           const DrawRPDQParams* rpdq_params,
-                           DrawQuadParams* params);
   void DrawTextureQuad(const TextureDrawQuad* quad,
                        const DrawRPDQParams* rpdq_params,
                        DrawQuadParams* params);
@@ -249,6 +249,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // quads. The default values perform no adjustment.
   sk_sp<SkColorFilter> GetColorSpaceConversionFilter(
       const gfx::ColorSpace& src,
+      absl::optional<gfx::HDRMetadata> src_hdr_metadata,
       const gfx::ColorSpace& dst,
       float resource_offset = 0.0f,
       float resource_multiplier = 1.0f);

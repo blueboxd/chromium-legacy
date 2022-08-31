@@ -27,6 +27,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
+#include "components/omnibox/browser/open_tab_provider.h"
 
 class ClipboardProvider;
 class DocumentProvider;
@@ -196,6 +197,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   VoiceSuggestProvider* voice_suggest_provider() const {
     return voice_suggest_provider_;
   }
+  OpenTabProvider* open_tab_provider() const { return open_tab_provider_; }
 
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -283,13 +285,6 @@ class AutocompleteController : public AutocompleteProviderListener,
   // relevance before this is called.
   void UpdateAssociatedKeywords(AutocompleteResult* result);
 
-  // Updates |result| with the suggestion group ID to header string mapping as
-  // well as the set of hidden suggestion group IDs.
-  // Called for zero-prefix suggestions only. This call is followed by
-  // AutocompleteResult::GroupAndDemoteMatchesWithHeaders() which groups and
-  // demotes matches with suggestion group IDs to the bottom of the result set.
-  void UpdateHeaderInfoFromZeroSuggestProvider(AutocompleteResult* result);
-
   // For each group of contiguous matches from the same TemplateURL, show the
   // provider name as a description on the first match in the group. Starter
   // Pack matches show their URLs as descriptions instead of the provider name.
@@ -359,6 +354,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   raw_ptr<ClipboardProvider> clipboard_provider_;
 
   raw_ptr<VoiceSuggestProvider> voice_suggest_provider_;
+
+  raw_ptr<OpenTabProvider> open_tab_provider_;
 
   // Input passed to Start.
   AutocompleteInput input_;

@@ -180,6 +180,7 @@
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_href.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -2054,8 +2055,8 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
   // returns the viewport-visible rect in the root frame's coordinate space.
   // MapToVisualRectInAncestorSpace applies ancestors' frame's clipping but does
   // not apply (overflow) element clipping.
-  GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(
-      nullptr, rect, kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
+  GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(nullptr,
+                                                                        rect);
 
   // TODO(layout-dev): Callers of this method don't expect the offset of the
   // local frame root from a remote top-level frame to be applied here. They
@@ -2555,6 +2556,17 @@ void Element::showPopUp(ExceptionState& exception_state) {
     }
   }
 
+  // Fire the show event (bubbles, not cancelable).
+  Event* event = Event::CreateBubble(event_type_names::kShow);
+  event->SetTarget(this);
+  auto result = DispatchEvent(*event);
+  DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
+
+  // The 'show' event handler could have changed this pop-up, e.g. by changing
+  // its type, removing it from the document, or calling showPopUp().
+  if (!HasValidPopupAttribute() || !isConnected() || popupOpen())
+    return;
+
   GetPopupData()->setAnimationFinishedListener(nullptr);
   GetPopupData()->setPreviouslyFocusedElement(
       should_restore_focus ? document.FocusedElement() : nullptr);
@@ -2574,11 +2586,6 @@ void Element::showPopUp(ExceptionState& exception_state) {
   PseudoStateChanged(CSSSelector::kPseudoTopLayer);
 
   SetPopupFocusOnShow();
-  // Fire the show event (bubbles, not cancelable).
-  Event* event = Event::CreateBubble(event_type_names::kShow);
-  event->SetTarget(this);
-  auto result = DispatchEvent(*event);
-  DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
 }
 
 // static
@@ -2899,7 +2906,7 @@ const Element* NearestOpenAncestralPopupRecursive(
     // to catch invoking elements that should not light dismiss a pop-up, even
     // if they weren't used to show it.
     if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-      recurse_and_update(form_control->togglePopupElement().element);
+      recurse_and_update(form_control->popupTargetElement().element);
     }
     // Include the anchor elements for all showing pop-ups.
     if (anchors_to_popups.Contains(element)) {
@@ -2919,17 +2926,17 @@ const Element* NearestOpenAncestralPopupRecursive(
 // DOM flat tree parents, or through either anchor or invoker relationships.
 // Anchor relationships are formed by the anchor attribute on a pop-up, pointing
 // to another node in the tree. Invoker relationships are formed by invoking
-// elements, which are HTMLFormControlElements having togglepopup, showpopup, or
-// hidepopup attributes pointing to a pop-up element. There can be multiple
-// pop-ups that point to a single anchor element, and there can be multiple
-// invoking elements for a single pop-up. Additionally, an anchor for one pop-up
-// can be an invoker for a different pop-up. For these reasons, this function
-// needs to do a recursive tree walk up from the provided node, plus all
-// associated anchors and invokers, returning the highest (on the stack) pop-up
-// that is found. If the inclusive parameter is true, the highest pop-up found
-// during the tree-walk is included in the search. If it is false, the |node|
-// parameter must be a pop-up, and the highest pop-up *below* that starting pop-
-// up will be returned.
+// elements, which are HTMLFormControlElements having popuptoggletarget,
+// popupshowtarget, or popuphidetarget attributes pointing to a pop-up element.
+// There can be multiple pop-ups that point to a single anchor element, and
+// there can be multiple invoking elements for a single pop-up. Additionally, an
+// anchor for one pop-up can be an invoker for a different pop-up. For these
+// reasons, this function needs to do a recursive tree walk up from the provided
+// node, plus all associated anchors and invokers, returning the highest (on the
+// stack) pop-up that is found. If the inclusive parameter is true, the highest
+// pop-up found during the tree-walk is included in the search. If it is false,
+// the |node| parameter must be a pop-up, and the highest pop-up *below* that
+// starting pop- up will be returned.
 const Element* Element::NearestOpenAncestralPopup(const Node* node,
                                                   bool inclusive) {
   DCHECK(node);
@@ -2989,8 +2996,8 @@ void Element::HandlePopupLightDismiss(const Event& event) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (event.GetEventPath().IsEmpty())
     return;
-  DCHECK_NE(Event::kNone, event.eventPhase());
-  if (event.eventPhase() == Event::kBubblingPhase)
+  DCHECK_NE(Event::PhaseType::kNone, event.eventPhase());
+  if (event.eventPhase() == Event::PhaseType::kBubblingPhase)
     return;
   // Ensure that shadow DOM event retargeting is considered when computing
   // the event target node.
@@ -3052,6 +3059,58 @@ Element* Element::anchorElement() const {
   if (!IsInTreeScope())
     return nullptr;
   return GetTreeScope().getElementById(anchor_id);  // may be null
+}
+
+void Element::MaybeTriggerHoverPopup(Element* popup_element) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (!popup_element || !popup_element->HasValidPopupAttribute())
+    return;
+  // Remove this element from hoverPopupTasks always.
+  popup_element->GetPopupData()->hoverPopupTasks().erase(this);
+  // Only trigger the pop-up if the hoverpopup attribute still points to the
+  // same pop-up, and the pop-up is in the tree and still not showing.
+  if (popup_element->IsInTreeScope() && !popup_element->popupOpen() &&
+      popup_element == GetTreeScope().getElementById(
+                           FastGetAttribute(html_names::kHoverpopupAttr))) {
+    popup_element->showPopUp(ASSERT_NO_EXCEPTION);
+  }
+}
+
+void Element::HandlePopupHovered(bool hovered) {
+  if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+    return;
+  if (!FastHasAttribute(html_names::kHoverpopupAttr) || !IsInTreeScope())
+    return;
+  Element* popup_element = GetTreeScope().getElementById(
+      FastGetAttribute(html_names::kHoverpopupAttr));
+  if (!popup_element || !popup_element->HasValidPopupAttribute())
+    return;
+  if (hovered) {
+    auto& hover_tasks = popup_element->GetPopupData()->hoverPopupTasks();
+    DCHECK(!hover_tasks.Contains(this));
+
+    // When we enter an element, we'll post a delayed task for the pop-up we're
+    // targeting. It's possible that multiple nested elements have hoverpopup
+    // attributes pointing to the same pop-up, and in that case, we want to
+    // trigger on the first of them that reaches its timeout threshold.
+    hover_tasks.insert(
+        this,
+        PostDelayedCancellableTask(
+            *GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault),
+            FROM_HERE,
+            WTF::Bind(&Element::MaybeTriggerHoverPopup,
+                      WrapWeakPersistent(this),
+                      WrapWeakPersistent(popup_element)),
+            base::Seconds(GetComputedStyle()->HoverPopUpDelay())));
+  } else {
+    // If we have a task still waiting, cancel it.
+    popup_element->GetPopupData()->hoverPopupTasks().Take(this).Cancel();
+    // TODO(masonf): Still need to implement the code to hide this pop-up after
+    // a configurable delay. That needs to work even if the pop-up wasn't
+    // triggered by a hoverpopup attribute. E.g. a regular pop-up that gets
+    // hidden after it has not been hovered for n seconds. This should connect
+    // to the HoverPopUpHideDelay() computed style value.
+  }
 }
 
 void Element::SetNeedsRepositioningForSelectMenu(bool flag) {
@@ -3298,6 +3357,11 @@ AtomicString Element::LocalNameForSelectorMatching() const {
   if (IsHTMLElement() || !IsA<HTMLDocument>(GetDocument()))
     return localName();
   return localName().LowerASCII();
+}
+
+bool Element::IsHTMLWithTagName(const String& tag_name) const {
+  return html_names::xhtmlNamespaceURI == namespaceURI() &&
+         localName() == String(tag_name).LowerASCII();
 }
 
 const AtomicString& Element::LocateNamespacePrefix(
@@ -3638,8 +3702,10 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
-    if (!performing_reattach)
+    if (!performing_reattach) {
       data->ClearPseudoElements();
+      data->ClearContainerQueryData();
+    }
 
     if (ElementAnimations* element_animations = data->GetElementAnimations()) {
       if (!performing_reattach) {
@@ -4449,8 +4515,10 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     AttachContext reattach_context;
     reattach_context.parent =
         LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
-    if (reattach_context.parent && reattach_context.parent->ForceLegacyLayout())
+    if (reattach_context.parent &&
+        reattach_context.parent->ForceLegacyLayoutForChildren()) {
       reattach_context.force_legacy_layout = true;
+    }
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
@@ -6649,7 +6717,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
   StyleRequest style_request;
   style_request.pseudo_id = pseudo_element_specifier;
   style_request.type = StyleRequest::kForComputedStyle;
-  if (StyleResolver::UsesHighlightPseudoInheritance(pseudo_element_specifier)) {
+  if (UsesHighlightPseudoInheritance(pseudo_element_specifier)) {
     const ComputedStyle* highlight_element_style = nullptr;
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
     if (parent && parent->GetComputedStyle()->HighlightData()) {
@@ -7023,7 +7091,7 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
     const AtomicString& pseudo_argument) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, and should never be stored in StyleCachedData.
-  DCHECK(!StyleResolver::UsesHighlightPseudoInheritance(pseudo_id));
+  DCHECK(!UsesHighlightPseudoInheritance(pseudo_id));
 
   const ComputedStyle* style = GetComputedStyle();
 
@@ -7049,7 +7117,7 @@ scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
     const StyleRequest& request) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, where we have the actual StyleRecalcContext.
-  DCHECK(!StyleResolver::UsesHighlightPseudoInheritance(request.pseudo_id));
+  DCHECK(!UsesHighlightPseudoInheritance(request.pseudo_id));
 
   return StyleForPseudoElement(
       StyleRecalcContext::FromInclusiveAncestors(*this), request);
@@ -8237,6 +8305,7 @@ void Element::SetHovered(bool hovered) {
     return;
 
   GetDocument().UserActionElements().SetHovered(this, hovered);
+  HandlePopupHovered(hovered);
 
   const ComputedStyle* style = GetComputedStyle();
   if (!style || style->AffectedByHover()) {
@@ -8723,9 +8792,6 @@ bool Element::IsDocumentElement() const {
 }
 
 bool Element::IsReplacedElementRespectingCSSOverflow() const {
-  // TODO(khushalsagar): Add the following elements:
-  // 1) SVGElement
-  // 2) HTMLFrameOwnerElement
   // See https://github.com/w3c/csswg-drafts/issues/7144 for details on enabling
   // ink overflow for replaced elements.
   if (GetPseudoId() == kPseudoIdPageTransitionIncomingImage ||
@@ -8736,7 +8802,11 @@ bool Element::IsReplacedElementRespectingCSSOverflow() const {
     return false;
 
   return IsA<HTMLVideoElement>(this) || IsA<HTMLCanvasElement>(this) ||
-         IsA<HTMLImageElement>(this);
+         IsA<HTMLImageElement>(this) ||
+         (IsA<SVGSVGElement>(this) &&
+          To<SVGSVGElement>(this)->IsOutermostSVGSVGElement() &&
+          !IsDocumentElement()) ||
+         IsA<HTMLFrameOwnerElement>(this);
 }
 
 const ComputedStyle* Element::StyleForPositionFallback(unsigned index) {

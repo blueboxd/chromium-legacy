@@ -9,7 +9,10 @@
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
@@ -49,6 +52,12 @@ void BruschettaLauncher::EnsureRunning(
   callbacks_.AddUnsafe(std::move(callback));
   if (!launch_in_progress) {
     EnsureDlcInstalled();
+    // If we're not complete after 4 minutes time out the entire launch.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BruschettaLauncher::OnTimeout,
+                       weak_factory_.GetWeakPtr()),
+        base::Seconds(240));
   }
 }
 
@@ -133,7 +142,25 @@ void BruschettaLauncher::OnStartVm(
     return;
   }
 
+  auto* tracker = guest_os::GuestOsSessionTracker::GetForProfile(profile_);
+  subscription_ = tracker->RunOnceContainerStarted(
+      guest_os::GuestId{guest_os::VmType::BRUSCHETTA, vm_name_, "penguin"},
+      base::BindOnce(&BruschettaLauncher::OnContainerRunning,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void BruschettaLauncher::OnContainerRunning(guest_os::GuestInfo info) {
   callbacks_.Notify(BruschettaResult::kSuccess);
+}
+
+void BruschettaLauncher::OnTimeout() {
+  // These are no-ops if empty so safe to always call.
+  subscription_.reset();
+  callbacks_.Notify(BruschettaResult::kTimeout);
+
+  // We don't actually abort or cancel the launch, let it keep going in the
+  // background in case it's really slow for some reason then the next time they
+  // try it might succeed.
 }
 
 base::WeakPtr<BruschettaLauncher> BruschettaLauncher::GetWeakPtr() {

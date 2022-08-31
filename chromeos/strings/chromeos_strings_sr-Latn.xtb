@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Pokreni test punjenja</translation>
 <translation id="1631385268983122904">Još ne sastavljajte uređaj</translation>
-<translation id="1639239467298939599">Učitavanje</translation>
+<translation id="1639239467298939599">Učitava se</translation>
 <translation id="1641857168437328880">Uvlačenje dokumenta (jednostrano)</translation>
 <translation id="1643449475550628585">Menjajte sliku pozadine svakog dana</translation>
 <translation id="1644574205037202324">Istorija</translation>
 <translation id="1645954272419197032">Potvrdite informacije o uređaju</translation>
 <translation id="1662989795263954667">Zaustavljeno – nema više mastila</translation>
+<translation id="1664796644829245314">Pregled za <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Ugrađeni VPN</translation>
 <translation id="1672499492233627739">Video fid veb-kamere</translation>
 <translation id="1676557873873341166">Snima se video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Video konferencije</translation>
 <translation id="1852934301711881861">Instaliraj Chrome OS Flex</translation>
 <translation id="1856388568474281774">Strelica nadole</translation>
+<translation id="1858620243986915808">Priložite snimak ekrana</translation>
 <translation id="1871569928317311284">Isključite tamnu temu</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Isključite tamni režim</translation>
@@ -667,7 +669,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6692996468359469499">Pronađite informacije u vezi sa vašim izborom</translation>
 <translation id="6704062477274546131">DNS razrešavanje</translation>
-<translation id="6721744718589119342">Možda ćemo vam imejlom zatražiti više informacija ili novosti</translation>
+<translation id="6721744718589119342">Dozvoljavam da imejlom zatražite dodatne informacije</translation>
 <translation id="6723839937902243910">Energija</translation>
 <translation id="6723847290197874913">Pozadinsko osvetljenje tastature</translation>
 <translation id="672609503628871915">Prikaži šta je novo</translation>
@@ -797,6 +799,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="7978412674231730200">Privatni ključ</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7994702968232966508">EAP metod</translation>
+<translation id="8018928621986160031">Sačuvano je na listi „<ph name="FILE_LOCATION" />“</translation>
 <translation id="802154636333426148">Preuzimanje nije uspelo</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Omogućite režim autopodešavanja boja</translation>
@@ -865,6 +868,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="8576249514688522074">Nije pokrenuto</translation>
 <translation id="8620617069779373398">Status rominga</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Deli URL:</translation>
 <translation id="8660881923941176839">funte</translation>
 <translation id="8662671328352114214">Pridružite se <ph name="TYPE" /> mreži</translation>
 <translation id="8671972493856476349">Ažuriraj na <ph name="VERSION_NUMBER" /> i restartuj</translation>

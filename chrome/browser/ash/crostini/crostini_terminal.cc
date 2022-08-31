@@ -20,13 +20,11 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_installer.h"
-#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
-#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +39,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
@@ -55,7 +54,7 @@ namespace crostini {
 
 // web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
 //     GURL("chrome-untrusted://terminal/html/terminal.html"))
-const char kCrostiniTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
+const char kTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
 
 const char kTerminalHomePath[] = "html/terminal.html#home";
 
@@ -131,9 +130,9 @@ void LaunchTerminalImpl(Profile* profile,
     chrome::AddTabAt(browser, url, /*index=*/1, /*foreground=*/true);
   }
   auto info = std::make_unique<app_restore::AppLaunchInfo>(
-      kCrostiniTerminalSystemAppId, browser->session_id().id(),
-      params.container, params.disposition, params.display_id,
-      std::vector<base::FilePath>{}, nullptr);
+      kTerminalSystemAppId, browser->session_id().id(), params.container,
+      params.disposition, params.display_id, std::vector<base::FilePath>{},
+      nullptr);
   full_restore::SaveAppLaunchInfo(browser->profile()->GetPath(),
                                   std::move(info));
 }
@@ -143,7 +142,7 @@ void LaunchTerminalImpl(Profile* profile,
 void RemoveTerminalFromRegistry(PrefService* prefs) {
   DictionaryPrefUpdate update(prefs, guest_os::prefs::kGuestOsRegistry);
   base::Value* apps = update.Get();
-  apps->RemoveKey(kCrostiniTerminalSystemAppId);
+  apps->RemoveKey(kTerminalSystemAppId);
 }
 
 const std::string& GetTerminalHomeUrl() {
@@ -233,68 +232,70 @@ void LaunchTerminalWithUrl(Profile* profile,
       base::BindOnce(LaunchTerminalImpl, profile, url, std::move(*params)));
 }
 
-void LaunchTerminalWithIntent(Profile* profile,
-                              int64_t display_id,
-                              apps::mojom::IntentPtr intent,
-                              CrostiniSuccessCallback callback) {
-  // Check if crostini is installed.
-  if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
-    crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
-        CrostiniUISurface::kAppList);
-    return std::move(callback).Run(false, "Crostini not installed");
-  }
+void LaunchTerminalWithIntent(
+    Profile* profile,
+    int64_t display_id,
+    apps::IntentPtr intent,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  // Look for vm_name and container_name in intent->extras, and for backcompat
+  // reasons default to the original crostini container if nothing is specified.
+  guest_os::GuestId guest_id = DefaultContainerId();
 
-  // Look for vm_name and container_name in intent->extras.
-  guest_os::GuestId container_id = DefaultContainerId();
+  // We only have vm and container name, so don't usually know the type. Don't
+  // need it though so leave it as unknown.
+  guest_id.vm_type = guest_os::VmType::UNKNOWN;
   std::string settings_profile;
-  if (intent && intent->extras.has_value()) {
-    for (const auto& extra : intent->extras.value()) {
+  if (intent && !intent->extras.empty()) {
+    for (const auto& extra : intent->extras) {
       if (extra.first == "vm_name") {
-        container_id.vm_name = extra.second;
+        guest_id.vm_name = extra.second;
       } else if (extra.first == "container_name") {
-        container_id.container_name = extra.second;
+        guest_id.container_name = extra.second;
       } else if (extra.first == kSettingsProfileUrlParam) {
         settings_profile = extra.second;
       }
     }
   }
 
-  // Check if we need to show recovery.
-  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
-  if (crostini_manager->IsUncleanStartup()) {
-    ShowCrostiniRecoveryView(profile, crostini::CrostiniUISurface::kAppList,
-                             kCrostiniTerminalSystemAppId, display_id, {},
-                             base::DoNothing());
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile)
+                       ->TerminalProviderRegistry();
+  auto* provider = registry->Get(guest_id);
+
+  if (!provider) {
+    if (guest_id.vm_name == DefaultContainerId().vm_name &&
+        !CrostiniFeatures::Get()->IsEnabled(profile)) {
+      // It used to be that running the terminal without Crostini installed
+      // would bring up the installer, so keep that behaviour. Only applies to
+      // the default Crostini VM, anything else is only accessible if the target
+      // VM is installed.
+      crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
+          CrostiniUISurface::kAppList);
+      return std::move(callback).Run(false, "Crostini not installed");
+    } else {
+      // Could happen if, e.g. a guest got disabled between listing and
+      // selecting targets.
+      return std::move(callback).Run(false, "Unrecognised Guest Id");
+    }
+  }
+
+  std::string message;
+  if (provider->RecoveryRequired(display_id)) {
     return std::move(callback).Run(false, "Recovery required");
   }
 
   // Use first file (if any) as cwd.
   std::string cwd;
-  CrostiniManager::RestartOptions options;
-  auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
-  if (intent && intent->files && intent->files->size()) {
-    GURL gurl = intent->files.value()[0]->url;
+  if (intent && !intent->files.empty()) {
+    GURL gurl = intent->files[0]->url;
     storage::ExternalMountPoints* mount_points =
         storage::ExternalMountPoints::GetSystemInstance();
     storage::FileSystemURL url = mount_points->CrackURL(
         gurl, blink::StorageKey(url::Origin::Create(gurl)));
-    base::FilePath path;
-    if (file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-            profile, url, &path)) {
-      cwd = path.value();
-      if (url.mount_filesystem_id() !=
-              file_manager::util::GetCrostiniMountPointName(profile) &&
-          !share_path->IsPathShared(container_id.vm_name, url.path())) {
-        options.share_paths.push_back(url.path());
-      }
-    } else {
-      LOG(WARNING) << "Failed to parse: " << gurl;
-    }
+
+    cwd = provider->PrepareCwd(url);
   }
 
-  CrostiniManager::GetForProfile(profile)->RestartCrostiniWithOptions(
-      container_id, std::move(options), base::DoNothing());
-  GURL url = GenerateTerminalURL(profile, settings_profile, container_id, cwd,
+  GURL url = GenerateTerminalURL(profile, settings_profile, guest_id, cwd,
                                  /*terminal_args=*/{});
   LaunchTerminalWithUrl(profile, display_id, url);
   std::move(callback).Run(true, "");
@@ -403,7 +404,7 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile) {
   });
 
   const base::Value* settings = profile->GetPrefs()->GetDictionary(
-      crostini::prefs::kCrostiniTerminalSettings);
+      guest_os::prefs::kGuestOsTerminalSettings);
   for (const auto item : settings->DictItems()) {
     // Only record settings for /hterm/profiles/default/.
     if (!base::StartsWith(item.first, kSettingPrefix,
@@ -427,7 +428,7 @@ std::string GetTerminalSettingBackgroundColor(
                           kSettingsKeyBackgroundColor);
   };
   const base::Value* settings = profile->GetPrefs()->GetDictionary(
-      crostini::prefs::kCrostiniTerminalSettings);
+      guest_os::prefs::kGuestOsTerminalSettings);
   // 1. Use 'settings_profile' url param.
   std::string settings_profile;
   if (net::GetValueForKeyInQuery(url, kSettingsProfileUrlParam,
@@ -451,7 +452,7 @@ std::string GetTerminalSettingBackgroundColor(
 
 bool GetTerminalSettingPassCtrlW(Profile* profile) {
   const base::Value* value = profile->GetPrefs()->GetDictionary(
-      crostini::prefs::kCrostiniTerminalSettings);
+      guest_os::prefs::kGuestOsTerminalSettings);
   return value->FindBoolKey(kSettingPassCtrlW).value_or(kDefaultPassCtrlW);
 }
 
@@ -472,7 +473,7 @@ std::string ShortcutIdFromContainerId(Profile* profile,
   // Find terminal profile from prefs.
   const base::Value::Dict& settings =
       profile->GetPrefs()
-          ->GetDictionary(crostini::prefs::kCrostiniTerminalSettings)
+          ->GetDictionary(guest_os::prefs::kGuestOsTerminalSettings)
           ->GetDict();
   const base::Value::List* vsh_ids = settings.FindList("/vsh/profile-ids");
   if (vsh_ids) {
@@ -514,7 +515,7 @@ std::vector<std::pair<std::string, std::string>> GetSSHConnections(
   std::vector<std::pair<std::string, std::string>> result;
   const base::Value::Dict& settings =
       profile->GetPrefs()
-          ->GetDictionary(crostini::prefs::kCrostiniTerminalSettings)
+          ->GetDictionary(guest_os::prefs::kGuestOsTerminalSettings)
           ->GetDict();
   const base::Value::List* ids = settings.FindList("/nassh/profile-ids");
   if (!ids) {
@@ -570,7 +571,7 @@ void AddTerminalMenuShortcuts(
     auto* provider = registry->Get(id);
     apps::AddShortcutCommandItem(
         next_command_id++,
-        ShortcutIdFromContainerId(profile, *provider->CrostiniContainerId()),
+        ShortcutIdFromContainerId(profile, provider->GuestId()),
         provider->Label(), crostini_mascot_icon, &menu_items);
   }
 
@@ -597,7 +598,7 @@ bool ExecuteTerminalMenuShortcutCommand(Profile* profile,
       return false;
     }
     const base::Value* settings = profile->GetPrefs()->GetDictionary(
-        crostini::prefs::kCrostiniTerminalSettings);
+        guest_os::prefs::kGuestOsTerminalSettings);
     const std::string* settings_profile =
         settings->FindStringKey(GetSettingsKey(kSettingsPrefixNassh, *profileId,
                                                kSettingsKeyTerminalProfile));
@@ -605,7 +606,8 @@ bool ExecuteTerminalMenuShortcutCommand(Profile* profile,
       return base::EscapeQueryParamValue(v, /*use_plus=*/true);
     };
     std::string settings_profile_param;
-    if (settings_profile && !settings_profile->empty()) {
+    if (settings_profile && !settings_profile->empty() &&
+        *settings_profile != kSettingsProfileDefault) {
       settings_profile_param = base::StrCat(
           {"?", kSettingsProfileUrlParam, "=", escape(*settings_profile)});
     }
@@ -620,7 +622,7 @@ bool ExecuteTerminalMenuShortcutCommand(Profile* profile,
   if (!shortcut_value || *shortcut_value != kShortcutValueTerminal) {
     return false;
   }
-  apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
+  auto intent = std::make_unique<apps::Intent>(apps_util::kIntentActionView);
   intent->extras = ExtrasFromShortcutId(std::move(*shortcut));
   LaunchTerminalWithIntent(profile, display_id, std::move(intent),
                            base::DoNothing());

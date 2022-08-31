@@ -85,11 +85,15 @@ const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
     "AutofillEnableOffersInClankKeyboardAccessory",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, some extra metrics logging for Autofill Downstream will start.
+const base::Feature kAutofillEnableRemadeDownstreamMetrics{
+    "AutofillEnableRemadeDownstreamMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether we send billing customer number in GetUploadDetails
 // preflight call.
 const base::Feature kAutofillEnableSendingBcnInGetUploadDetails{
     "AutofillEnableSendingBcnInGetUploadDetails",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
@@ -197,12 +201,6 @@ const base::FeatureParam<int> kAutofillSaveCardUiExperimentSelectorInNumber{
 const base::Feature kAutofillShowUnmaskedCachedCardInManualFillingView{
     "AutofillShowUnmaskedCachedCardInManualFillingView",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, merchant bound virtual cards will be suggested even if we don't
-// detect all of the card number, exp date and CVC fields in the payment form.
-const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm{
-    "AutofillSuggestVirtualCardsOnIncompleteForm",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.

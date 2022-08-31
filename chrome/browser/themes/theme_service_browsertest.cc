@@ -19,9 +19,10 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/buildflags.h"
 #include "ui/color/color_provider.h"
+#include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/views/linux_ui/linux_ui.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 namespace {
@@ -160,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, GetColorForToolbarButton) {
   // true in dark mode and GTK.
   ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(false);
 #if BUILDFLAG(USE_GTK)
-  views::LinuxUI::instance()->SetUseSystemThemeCallback(
+  ui::LinuxUi::instance()->SetUseSystemThemeCallback(
       base::BindRepeating([](aura::Window* window) { return false; }));
 #endif  // BUILDFLAG(USE_GTK)
   ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();

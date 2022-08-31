@@ -262,6 +262,10 @@
     "channel": "stable",
     "extension_types": ["extension"]
   },
+  "downloads.ui": {
+    "channel": "stable",
+    "extension_types": ["extension"]
+  },
   "enterprise.deviceAttributes": [{
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
@@ -551,7 +555,7 @@
   }, {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "platforms": ["chromeos"],
+    "platforms": ["chromeos", "lacros"],
     "allowlist": [
       "EC3DE21E048B67319893889529354DFBFA96FD23"  // Smart Card Connector
     ]
@@ -829,6 +833,11 @@
       "A9A9FC0228ADF541F0334F22BEFB8F9C245B21D7"   // https://crbug.com/839189
     ]
   }],
+  "sidePanel": {
+    "channel": "canary",
+    "extension_types": ["extension"],
+    "min_manifest_version": 3
+  },
   "speechRecognitionPrivate": {
     "channel": "stable",
     "extension_types": ["extension"],

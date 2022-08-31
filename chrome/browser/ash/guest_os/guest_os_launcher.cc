@@ -22,7 +22,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/dbus/vm_launch/launch.pb.h"
+#include "chromeos/ash/components/dbus/vm_launch/launch.pb.h"
 
 namespace guest_os::launcher {
 
@@ -115,7 +115,7 @@ void LaunchBruschetta(Profile* profile,
               ResponseType::Unexpected("Failed to launch Bruschetta"));
           return;
         }
-        std::move(callback).Run(Success(name, /*container_name=*/""));
+        std::move(callback).Run(Success(name, /*container_name=*/"penguin"));
       },
       name, std::move(callback)));
 }

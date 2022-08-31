@@ -890,6 +890,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldRemoveSyncMetadataWhenReadAllLoginsFails) {
 
 TEST_F(PasswordSyncBridgeTest,
        ShouldRemoveSyncMetadataWhenSpecificsCacheContainsSupportedFields) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       syncer::kCacheBaseEntitySpecificsInMetadata);
@@ -920,6 +921,9 @@ TEST_F(PasswordSyncBridgeTest,
   auto bridge = std::make_unique<PasswordSyncBridge>(
       mock_processor().CreateForwardingProcessor(), mock_password_store_sync(),
       base::DoNothing());
+
+  histogram_tester.ExpectUniqueSample("PasswordManager.SyncMetadataReadError",
+                                      4, 1);
 }
 
 TEST_F(
@@ -941,6 +945,34 @@ TEST_F(
         sync_pb::EntityMetadata entity_metadata;
         *entity_metadata.mutable_possibly_trimmed_base_specifics() =
             entity_specifics;
+        auto metadata_ptr =
+            std::make_unique<sync_pb::EntityMetadata>(entity_metadata);
+        metadata_batch->AddMetadata("storage_key", std::move(metadata_ptr));
+        return metadata_batch;
+      });
+
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/syncer::HasNotInitialSyncDone(),
+                                    /*entities=*/testing::SizeIs(1))));
+  EXPECT_CALL(*mock_sync_metadata_store_sync(), DeleteAllSyncMetadata())
+      .Times(0);
+
+  auto bridge = std::make_unique<PasswordSyncBridge>(
+      mock_processor().CreateForwardingProcessor(), mock_password_store_sync(),
+      base::DoNothing());
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldNotRemoveSyncMetadataWhenSpecificsCacheIsEmpty) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      syncer::kCacheBaseEntitySpecificsInMetadata);
+
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        // Create entity with empty `possibly_trimmed_base_specifics`.
+        auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
+        sync_pb::EntityMetadata entity_metadata;
         auto metadata_ptr =
             std::make_unique<sync_pb::EntityMetadata>(entity_metadata);
         metadata_batch->AddMetadata("storage_key", std::move(metadata_ptr));

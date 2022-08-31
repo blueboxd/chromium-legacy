@@ -570,6 +570,7 @@ class BASE_EXPORT GSL_OWNER Value {
    public:
     using iterator = CheckedContiguousIterator<Value>;
     using const_iterator = CheckedContiguousConstIterator<Value>;
+    using value_type = Value;
 
     List();
 
@@ -628,6 +629,12 @@ class BASE_EXPORT GSL_OWNER Value {
     // iterator to the value following the removed value.
     iterator erase(iterator pos);
     const_iterator erase(const_iterator pos);
+
+    // Remove the values in the range [`first`, `last`). Returns iterator to the
+    // first value following the removed range, which is `last`. If `first` ==
+    // `last`, removes nothing and returns `last`.
+    iterator erase(iterator first, iterator last);
+    const_iterator erase(const_iterator first, const_iterator last);
 
     // Creates a deep copy of this dictionary.
     List Clone() const;
@@ -901,10 +908,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // dots.
   const std::string* FindStringPath(StringPiece path) const;
   std::string* FindStringPath(StringPiece path);
-  // DEPRECATED: Use `Value::Dict::FindBlobByDottedPath()`, or
-  // `Value::Dict::FindBlob()` if the path only has one component, i.e. has no
-  // dots.
-  const BlobStorage* FindBlobPath(StringPiece path) const;
   // DEPRECATED: Use `Value::Dict::FindDictByDottedPath()`, or
   // `Value::Dict::FindDict()` if the path only has one component, i.e. has no
   // dots.
@@ -1033,12 +1036,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // If the current object can be converted into the given type, the value is
   // returned through the `out_value` parameter and true is returned;
   // otherwise, false is returned and `out_value` is unchanged.
-  // ListValue::From is the equivalent for std::unique_ptr conversions.
-  //
-  // DEPRECATED: prefer direct use `base::Value::List` where possible, or
-  // `GetIfList()` otherwise.
-  bool GetAsList(ListValue** out_value);
-  bool GetAsList(const ListValue** out_value) const;
   // DictionaryValue::From is the equivalent for std::unique_ptr conversions.
   //
   // DEPRECATED: prefer direct use `base::Value::Dict` where possible, or
@@ -1146,13 +1143,6 @@ class BASE_EXPORT GSL_OWNER Value {
   friend bool operator!=(const Value::List& lhs, const Value& rhs) {
     return !(lhs == rhs);
   }
-
-  // Compares if two Value objects have equal contents.
-  // DEPRECATED, use `operator==(const Value& lhs, const Value& rhs)` instead.
-  // TODO(crbug.com/646113): Delete this and migrate callsites.
-  //
-  // DEPRECATED: prefer direct use of the equality operator instead.
-  bool Equals(const Value* other) const;
 
   // Estimates dynamic memory usage. Requires tracing support
   // (enable_base_tracing gn flag), otherwise always returns 0. See
@@ -1425,15 +1415,6 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
-
-  // Convenience forms of `Get()`.  Modifies `out_value` (and returns true)
-  // only if the index is valid and the Value at that index can be returned
-  // in the specified form.
-  // `out_value` is optional and will only be set if non-NULL.
-  //
-  // DEPRECATED: prefer `Value::List::operator[]` + `GetIfDict()`.
-  bool GetDictionary(size_t index, const DictionaryValue** out_value) const;
-  bool GetDictionary(size_t index, DictionaryValue** out_value);
 
   // Appends a Value to the end of the list.
   // DEPRECATED: prefer `Value::List::Append()`.

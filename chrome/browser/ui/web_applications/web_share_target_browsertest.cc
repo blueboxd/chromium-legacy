@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "content/public/browser/web_contents.h"
@@ -92,10 +93,10 @@ base::FilePath StoreSharedFile(const base::FilePath& directory,
 
 content::WebContents* LaunchWebAppWithIntent(Profile* profile,
                                              const web_app::AppId& app_id,
-                                             apps::mojom::IntentPtr&& intent) {
+                                             apps::IntentPtr&& intent) {
   apps::AppLaunchParams params = apps::CreateAppLaunchParamsForIntent(
       app_id,
-      /*event_flags=*/0, apps::mojom::LaunchSource::kFromSharesheet,
+      /*event_flags=*/0, apps::LaunchSource::kFromSharesheet,
       display::kDefaultDisplayId, apps::LaunchContainer::kLaunchContainerWindow,
       std::move(intent), profile);
 
@@ -137,7 +138,7 @@ class FakeSharesheet : public crosapi::mojom::Sharesheet {
       crosapi::mojom::Sharesheet::ShowBubbleCallback callback) override {
     LaunchWebAppWithIntent(
         profile_, selected_app_id_,
-        apps_util::ConvertCrosapiToAppServiceIntent(intent, profile_));
+        apps_util::CreateAppServiceIntentFromCrosapi(intent, profile_));
   }
   void ShowBubbleWithOnClosed(
       const std::string& window_id,
@@ -163,7 +164,7 @@ class WebShareTargetBrowserTest : public WebAppControllerBrowserTest {
   }
 
   content::WebContents* LaunchAppWithIntent(const AppId& app_id,
-                                            apps::mojom::IntentPtr&& intent,
+                                            apps::IntentPtr&& intent,
                                             const GURL& expected_url) {
     DCHECK(intent);
     ui_test_utils::UrlLoadObserver url_observer(
@@ -245,7 +246,8 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareUsingFileURL) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
 
-  apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
+  auto intent =
+      std::make_unique<apps::Intent>(apps_util::kIntentActionSendMultiple);
   {
     const base::FilePath first_csv =
         StoreSharedFile(scoped_temp_dir.GetPath(), "first.csv", "1,2,3,4,5");
@@ -255,18 +257,16 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareUsingFileURL) {
     std::vector<base::FilePath> file_paths({first_csv, second_csv});
 
     intent->mime_type = "text/csv";
-    intent->files = std::vector<apps::mojom::IntentFilePtr>{};
     for (const base::FilePath& file_path : file_paths) {
       int64_t file_size = 0;
       base::GetFileSize(file_path, &file_size);
-      auto file = apps::mojom::IntentFile::New();
+      auto file =
+          std::make_unique<apps::IntentFile>(net::FilePathToFileURL(file_path));
       file->file_name = base::SafeBaseName::Create(file_path);
       file->file_size = file_size;
       file->mime_type = "text/csv";
-      file->url = net::FilePathToFileURL(file_path);
-      intent->files->push_back(std::move(file));
+      intent->files.push_back(std::move(file));
     }
-    intent->action = apps_util::kIntentActionSendMultiple;
   }
 
   content::WebContents* const web_contents =
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareImageWithText) {
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const base::FilePath directory = PrepareWebShareDirectory(profile());
 
-  apps::mojom::IntentPtr intent;
+  apps::IntentPtr intent;
   {
     const base::FilePath first_svg =
         StoreSharedFile(directory, "first.svg", "picture");
@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareAudio) {
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const base::FilePath directory = PrepareWebShareDirectory(profile());
 
-  apps::mojom::IntentPtr intent;
+  apps::IntentPtr intent;
   {
     const base::FilePath first_weba =
         StoreSharedFile(directory, "first.weba", "a");
@@ -347,9 +347,9 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, PostBlank) {
       embedded_test_server()->GetURL("/web_share_target/poster.html");
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
 
-  apps::mojom::IntentPtr intent = apps_util::CreateShareIntentFromText(
-      /*share_text=*/std::string(),
-      /*share_title=*/std::string());
+  apps::IntentPtr intent = apps_util::MakeShareIntent(
+      /*text=*/std::string(),
+      /*title=*/std::string());
 
   content::WebContents* const web_contents =
       LaunchAppWithIntent(app_id, std::move(intent), share_target_url());
@@ -374,9 +374,9 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, PostLink) {
   const std::string shared_title = "Hyperlink";
   const std::string shared_link = "https://example.org/a?b=c&d=e%20#f";
 
-  apps::mojom::IntentPtr intent = apps_util::CreateShareIntentFromText(
-      /*share_text=*/shared_link,
-      /*share_title=*/shared_title);
+  apps::IntentPtr intent = apps_util::MakeShareIntent(
+      /*text=*/shared_link,
+      /*title=*/shared_title);
 
   content::WebContents* const web_contents =
       LaunchAppWithIntent(app_id, std::move(intent), share_target_url());
@@ -407,9 +407,9 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, GetLink) {
   const GURL expected_url(share_target_url().spec() +
                           "?headline=My+News&link=http://example.com/news");
 
-  apps::mojom::IntentPtr intent = apps_util::CreateShareIntentFromText(
-      /*share_text=*/shared_link,
-      /*share_title=*/shared_title);
+  apps::IntentPtr intent = apps_util::MakeShareIntent(
+      /*text=*/shared_link,
+      /*title=*/shared_title);
 
   content::WebContents* const web_contents =
       LaunchAppWithIntent(app_id, std::move(intent), expected_url);

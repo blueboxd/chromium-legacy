@@ -11,6 +11,7 @@
 <translation id="1185134272377778587">Par Chromium</translation>
 <translation id="1203500561924088507">Pateicamies, ka veicāt instalēšanu. Pirms <ph name="BUNDLE_NAME" /> izmantošanas ir jārestartē pārlūkprogramma.</translation>
 <translation id="1315551408014407711">Jaunā Chromium profila iestatīšana</translation>
+<translation id="1385859895174722837">Google asistents pārlūkprogrammā Chromium</translation>
 <translation id="1396446129537741364">Chromium mēģina rādīt paroles.</translation>
 <translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
 <translation id="1524282610922162960">Chromium cilnes kopīgošana</translation>
@@ -22,6 +23,7 @@
 Uz šo kontu var attiekties atļaujas, ko esat jau piešķīris vietnēm un lietotnēm. Varat pārvaldīt savus Google kontus sadaļā <ph name="SETTINGS_LINK_BEGIN" />Iestatījumi<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Notiek lejupielāde...</translation>
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
+<translation id="17264556997921157">Varat skatīt un noņemt interešu tēmas, kas vietnēs tiek izmantotas reklāmu rādīšanai. Pārlūkā Chromium tiek aptuveni noteiktas jūsu intereses, ņemot vērā neseno pārlūkošanas vēsturi.</translation>
 <translation id="1774152462503052664">Ļaut Chromium darboties fonā</translation>
 <translation id="1779356040007214683">Lai uzlabotu Chromium drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un, iespējams, tika pievienoti, jums nezinot.</translation>
 <translation id="1808667845054772817">Pārinstalēt Chromium</translation>
@@ -40,6 +42,7 @@ Uz šo kontu var attiekties atļaujas, ko esat jau piešķīris vietnēm un liet
 <translation id="2018879682492276940">Instalēšana neizdevās. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="2020032459870799438">Lai pārbaudītu, vai jūsu pārējās paroles ir aizsargātas pret datu pārkāpumiem un citām drošības problēmām, <ph name="BEGIN_LINK" />pierakstieties pārlūkā Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Izvēlieties, vai iekļaut Chromium vēsturi, lai iegūtu personalizētākas iespējas Google pakalpojumos.</translation>
+<translation id="2088953378266246249">Informācija par to, kā Chromium pārvalda savus saknes sertifikātus</translation>
 <translation id="2174178932569897599">Pielāgot pārlūkprogrammu Chromium</translation>
 <translation id="2174917724755363426">Instalēšana nav pabeigta. Vai tiešām vēlaties atcelt?</translation>
 <translation id="2185166961232948079">Chromium — pierakstīšanās tīklā — <ph name="PAGE_TITLE" /></translation>
@@ -101,6 +104,7 @@ Uz šo kontu var attiekties atļaujas, ko esat jau piešķīris vietnēm un liet
 <translation id="3474745554856756813">Veicot šo darbību, no šīs ierīces tiks dzēsts(-i) <ph name="ITEMS_COUNT" /> vienums(-i). Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chromium kā <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">Lai pārslēgtos starp Chromium profiliem, izmantojiet īsinājumtaustiņu <ph name="SHORTCUT" />.</translation>
 <translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
+<translation id="3518180795744733843">Google asistents pārlūkprogrammā Chromium var veikt darbības vietnēs jūsu vārdā.</translation>
 <translation id="3533435340678213462">Lai aizsargātu jūsu konfidencialitāti, mēs automātiski dzēšam intereses, kas ir glabātas ilgāk par četrām nedēļām. Intereses var tikt atkārtoti pievienotas sarakstam, kad turpināsiet pārlūkošanu. Varat arī noņemt intereses, ja nevēlaties, lai Chromium tās apsvērtu.</translation>
 <translation id="3567254597502212821">Jūsu pārlūkošanas vēsture, kurā tiek reģistrētas vietnes, ko šajā ierīcē apmeklējat ar pārlūku Chromium.</translation>
 <translation id="3575459661164320785">Jūsu datorā ir kaitīga programmatūra. Pārlūkprogramma Chromium var to noņemt, atjaunot jūsu iestatījumus un atspējot paplašinājumus, lai atkal pareizi darbotos.</translation>
@@ -360,6 +364,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="9185526690718004400">Atkārtoti palaist, lai atjauninātu &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS ienākošie savienojumi)</translation>
 <translation id="93478295209880648">Iespējams, Chromium nedarbosies pareizi, jo tas vairs netiek atbalstīts operētājsistēmās Windows XP un Windows Vista.</translation>
+<translation id="942598560705308788">Chromium pārvaldītie sertifikāti</translation>
 <translation id="945990405696787151">Lai saņemtu turpmākus Chromium atjauninājumus, ir nepieciešama operētājsistēma macOS 10.13 vai jaunāka versija. Šajā datorā tiek izmantota OS X 10.11 versija.</translation>
 <translation id="965162752251293939">Kas izmanto pārlūku Chromium?</translation>
 <translation id="967427899662692980">Visaugstākais Chromium drošības līmenis</translation>

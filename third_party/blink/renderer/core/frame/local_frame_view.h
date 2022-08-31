@@ -115,7 +115,6 @@ class RootFrameViewport;
 class ScrollableArea;
 class Scrollbar;
 class ScrollingCoordinator;
-class ScrollingCoordinatorContext;
 class TransformState;
 class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
@@ -126,6 +125,7 @@ struct PhysicalOffset;
 struct PhysicalRect;
 
 enum class PaintBenchmarkMode;
+enum class PaintArtifactCompositorUpdateReason;
 
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
@@ -248,7 +248,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ForceUpdateViewportIntersections();
 
-  void SetPaintArtifactCompositorNeedsUpdate();
+  void SetPaintArtifactCompositorNeedsUpdate(
+      PaintArtifactCompositorUpdateReason);
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
@@ -331,6 +332,9 @@ class CORE_EXPORT LocalFrameView final
   void UpdateDocumentAnnotatedRegions() const;
 
   void DidAttachDocument();
+
+  void ClearRootScroller();
+  void InitializeRootScroller();
 
   void AddPartToUpdate(LayoutEmbeddedObject&);
 
@@ -724,9 +728,8 @@ class CORE_EXPORT LocalFrameView final
   cc::Layer* RootCcLayer();
   const cc::Layer* RootCcLayer() const;
 
-  ScrollingCoordinatorContext* GetScrollingContext() const;
   cc::AnimationHost* GetCompositorAnimationHost() const;
-  cc::AnimationTimeline* GetCompositorAnimationTimeline() const;
+  cc::AnimationTimeline* GetScrollAnimationTimeline() const;
 
   LayoutShiftTracker& GetLayoutShiftTracker() { return *layout_shift_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
@@ -742,6 +745,7 @@ class CORE_EXPORT LocalFrameView final
   // features::kLocalFrameRootPrePostFCPMetrics is enabled, creating it if
   // necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
+  void ResetUkmAggregatorForTesting();
 
   // Report the First Contentful Paint signal to the LocalFrameView.
   // This causes Deferred Commits to be restarted and tells the UKM
@@ -1154,9 +1158,6 @@ class CORE_EXPORT LocalFrameView final
 
   LifecycleData lifecycle_data_;
 
-  // Lazily created, but should only be created on a local frame root's view.
-  mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
-
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
 
@@ -1179,7 +1180,7 @@ class CORE_EXPORT LocalFrameView final
   Member<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
 
-  // This will be nullptr iff !frame_->IsMainFrame().
+  // Non-null in the outermost main frame of an ordinary page only.
   Member<MobileFriendlinessChecker> mobile_friendliness_checker_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;

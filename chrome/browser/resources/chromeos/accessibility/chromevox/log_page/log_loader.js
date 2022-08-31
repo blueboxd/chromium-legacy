@@ -8,7 +8,10 @@
  */
 
 goog.require('BackgroundBridge');
-goog.require('LogStore');
+goog.require('BaseLog');
+goog.require('EventLog');
 goog.require('LogType');
-goog.require('Msgs');
+goog.require('SpeechLog');
+goog.require('TextLog');
+goog.require('TreeDumper');
 goog.require('TreeLog');

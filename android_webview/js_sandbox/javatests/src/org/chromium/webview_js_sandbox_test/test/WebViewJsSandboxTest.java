@@ -16,9 +16,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.js_sandbox.client.EvaluationFailedException;
+import org.chromium.android_webview.js_sandbox.client.IsolateSettings;
 import org.chromium.android_webview.js_sandbox.client.IsolateTerminatedException;
 import org.chromium.android_webview.js_sandbox.client.JsIsolate;
 import org.chromium.android_webview.js_sandbox.client.JsSandbox;
+import org.chromium.android_webview.js_sandbox.client.SandboxDeadException;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
@@ -31,6 +33,11 @@ import java.util.concurrent.TimeUnit;
 /** Instrumentation test for JsSandboxService. */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class WebViewJsSandboxTest {
+    // This value is somewhat arbitrary. It might need bumping if V8 snapshots become significantly
+    // larger in future. However, we don't want it too large as that will make the tests slower and
+    // require more memory.
+    private static final long REASONABLE_HEAP_SIZE = 100 * 1024 * 1024;
+
     @Test
     @MediumTest
     public void testSimpleJsEvaluation() throws Throwable {
@@ -469,6 +476,74 @@ public class WebViewJsSandboxTest {
             String result = resultFuture1.get(5, TimeUnit.SECONDS);
 
             Assert.assertEquals(expected, result);
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testHeapSizeAdjustment() throws Throwable {
+        final String code = "\"PASS\"";
+        final String expected = "PASS";
+        final long[] heapSizes = {
+                0,
+                REASONABLE_HEAP_SIZE,
+                REASONABLE_HEAP_SIZE - 1,
+                REASONABLE_HEAP_SIZE + 1,
+                REASONABLE_HEAP_SIZE + 4095,
+                REASONABLE_HEAP_SIZE + 4096,
+                REASONABLE_HEAP_SIZE + 65535,
+                REASONABLE_HEAP_SIZE + 65536,
+                1L << 50,
+        };
+        Context context = ContextUtils.getApplicationContext();
+        ListenableFuture<JsSandbox> JsSandboxFuture = JsSandbox.newConnectedInstanceAsync(context);
+        try (JsSandbox jsSandbox = JsSandboxFuture.get(5, TimeUnit.SECONDS)) {
+            Assume.assumeTrue(jsSandbox.isFeatureSupported(JsSandbox.ISOLATE_MAX_HEAP_SIZE));
+            for (long heapSize : heapSizes) {
+                IsolateSettings isolateStartupParameters = new IsolateSettings();
+                isolateStartupParameters.setMaxHeapSizeBytes(heapSize);
+                try (JsIsolate jsIsolate = jsSandbox.createIsolate(isolateStartupParameters)) {
+                    ListenableFuture<String> resultFuture = jsIsolate.evaluateJavascriptAsync(code);
+                    String result = resultFuture.get(5, TimeUnit.SECONDS);
+                    Assert.assertEquals(expected, result);
+                } catch (Throwable e) {
+                    throw new AssertionError(
+                            "Failed to evaluate JavaScript using max heap size setting " + heapSize,
+                            e);
+                }
+            }
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testHeapSizeEnforced() throws Throwable {
+        final long maxHeapSize = REASONABLE_HEAP_SIZE;
+        // We need to beat the v8 optimizer to ensure it really allocates the required memory.
+        // Note that we're allocating an array of elements - not bytes.
+        final String code = "this.array = Array(" + maxHeapSize + ").fill(Math.random(), 0);"
+                + "var arrayLength = this.array.length;"
+                + "var sum = 0;"
+                + "for (var i = 0; i < arrayLength; i++) {"
+                + " sum+=this.array[i];"
+                + "}";
+        Context context = ContextUtils.getApplicationContext();
+        ListenableFuture<JsSandbox> JsSandboxFuture = JsSandbox.newConnectedInstanceAsync(context);
+        try (JsSandbox jsSandbox = JsSandboxFuture.get(5, TimeUnit.SECONDS)) {
+            Assume.assumeTrue(jsSandbox.isFeatureSupported(JsSandbox.ISOLATE_MAX_HEAP_SIZE));
+            IsolateSettings isolateStartupParameters = new IsolateSettings();
+            isolateStartupParameters.setMaxHeapSizeBytes(maxHeapSize);
+            try (JsIsolate jsIsolate = jsSandbox.createIsolate(isolateStartupParameters)) {
+                ListenableFuture<String> resultFuture = jsIsolate.evaluateJavascriptAsync(code);
+                try {
+                    resultFuture.get(10, TimeUnit.SECONDS);
+                    Assert.fail("Should have thrown.");
+                } catch (ExecutionException e) {
+                    if (!(e.getCause() instanceof SandboxDeadException)) {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 }

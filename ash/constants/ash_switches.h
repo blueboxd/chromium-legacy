@@ -209,6 +209,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kInstallSystemExtension[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosAvailabilityIgnore[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromeAdditionalArgs[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLacrosChromeAdditionalArgsFile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromeAdditionalEnv[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromePath[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosMojoSocketForTesting[];
@@ -232,7 +234,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeForceTabletFirstRun[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeLargeScreenSpecialScaling[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeScreenshotDirectory[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeShowBlazeyScreen[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeTimerInterval[];

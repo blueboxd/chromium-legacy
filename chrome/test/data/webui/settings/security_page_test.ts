@@ -7,10 +7,16 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SafeBrowsingSetting, SettingsSecurityPageElement} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode} from 'chrome://settings/settings.js';
+// <if expr="chrome_root_store_supported">
+import {OpenWindowProxyImpl} from 'chrome://settings/settings.js';
+// </if>
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isChildVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+// <if expr="chrome_root_store_supported">
+import {TestOpenWindowProxy} from './test_open_window_proxy.js';
+// </if>
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
 
 // clang-format on
@@ -38,11 +44,15 @@ suite('CrSettingsSecurityPageTest', function() {
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let testPrivacyBrowserProxy: TestPrivacyPageBrowserProxy;
   let page: SettingsSecurityPageElement;
+  // <if expr="chrome_root_store_supported">
+  let openWindowProxy: TestOpenWindowProxy;
+  // </if>
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       enableSecurityKeysSubpage: true,
       showHttpsOnlyModeSetting: true,
+      showChromeRootStoreCertificates: true,
     });
   });
 
@@ -51,6 +61,10 @@ suite('CrSettingsSecurityPageTest', function() {
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
     testPrivacyBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.setInstance(testPrivacyBrowserProxy);
+    // <if expr="chrome_root_store_supported">
+    openWindowProxy = new TestOpenWindowProxy();
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
+    // </if>
     document.body.innerHTML = '';
     page = document.createElement('settings-security-page');
     page.prefs = pagePrefs();
@@ -69,6 +83,17 @@ suite('CrSettingsSecurityPageTest', function() {
   test('NativeCertificateManager', function() {
     page.shadowRoot!.querySelector<HTMLElement>('#manageCertificates')!.click();
     return testPrivacyBrowserProxy.whenCalled('showManageSSLCertificates');
+  });
+  // </if>
+
+  // <if expr="chrome_root_store_supported">
+  test('ChromeRootStorePage', async function() {
+    const row =
+        page.shadowRoot!.querySelector<HTMLElement>('#chromeCertificates');
+    assertTrue(!!row);
+    row.click();
+    const url = await openWindowProxy.whenCalled('openURL');
+    assertEquals(url, loadTimeData.getString('chromeRootStoreHelpCenterURL'));
   });
   // </if>
 
@@ -433,7 +458,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [enhancedClickedResult, enhancedClickedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions.SAFE_BROWSING_ENHANCED_PROTECTION_CLICKED,
@@ -450,7 +475,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [enhancedExpandedResult, enhancedExpandedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions
@@ -468,7 +493,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [standardExpandedResult, standardExpandedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions
@@ -486,7 +511,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [disableClickedResult, disableClickedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions.SAFE_BROWSING_DISABLE_SAFE_BROWSING_CLICKED,
@@ -504,7 +529,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [disableDeniedResult, disableDeniedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions
@@ -527,7 +552,7 @@ suite('CrSettingsSecurityPageTest', function() {
     const [disableConfirmedResult, disableConfirmedAction] = await Promise.all([
       testMetricsBrowserProxy.whenCalled(
           'recordSafeBrowsingInteractionHistogram'),
-      testMetricsBrowserProxy.whenCalled('recordAction')
+      testMetricsBrowserProxy.whenCalled('recordAction'),
     ]);
     assertEquals(
         SafeBrowsingInteractions

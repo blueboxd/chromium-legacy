@@ -54,7 +54,7 @@ class ManagementTransitionScreen extends ManagementTransitionScreenBase {
        * String that represents management entity for the user. Can be domain or
        * admin name.
        */
-      managementEntity_: String
+      managementEntity_: String,
     };
   }
 
@@ -148,7 +148,7 @@ class ManagementTransitionScreen extends ManagementTransitionScreenBase {
    * @private
    */
   onAcceptAndContinue_() {
-    chrome.send('finishManagementTransition');
+    this.userActed(['finish-management-transition']);
   }
 }
 

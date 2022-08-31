@@ -58,6 +58,10 @@ bool SideSearchTabContentsHelper::HandleKeyboardEvent(
   return delegate_ ? delegate_->HandleKeyboardEvent(source, event) : false;
 }
 
+content::WebContents* SideSearchTabContentsHelper::GetTabWebContents() {
+  return web_contents();
+}
+
 content::WebContents* SideSearchTabContentsHelper::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
@@ -202,7 +206,7 @@ SideSearchTabContentsHelper::SideSearchTabContentsHelper(
       content::WebContentsUserData<SideSearchTabContentsHelper>(*web_contents) {
   config_observation_.Observe(GetConfig());
   if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    CreateUnifiedSideSearchController(web_contents);
+    CreateUnifiedSideSearchController(this, web_contents);
   }
 }
 

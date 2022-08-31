@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/webui/projector_app/projector_screencast.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -54,7 +55,7 @@ void ProjectorAppClientImpl::RegisterProfilePrefs(
       ash::prefs::kProjectorViewerOnboardingShowCount, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(ash::prefs::kProjectorAllowByPolicy,
-                                /*default_value=*/false);
+                                /*default_value=*/true);
   registry->RegisterBooleanPref(
       ash::prefs::kProjectorDogfoodForFamilyLinkEnabled,
       /*default_value=*/false);
@@ -120,7 +121,7 @@ void ProjectorAppClientImpl::NotifyScreencastsPendingStatusChanged(
     observer.OnScreencastsPendingStatusChanged(pending_screencast);
 }
 
-bool ProjectorAppClientImpl::ShouldDownloadSoda() {
+bool ProjectorAppClientImpl::ShouldDownloadSoda() const {
   return soda_installation_controller_ &&
          soda_installation_controller_->ShouldDownloadSoda(
              GetLocaleLanguageCode());
@@ -147,7 +148,7 @@ void ProjectorAppClientImpl::OnSodaInstalled() {
     observer.OnSodaInstalled();
 }
 
-void ProjectorAppClientImpl::OpenFeedbackDialog() {
+void ProjectorAppClientImpl::OpenFeedbackDialog() const {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   constexpr char kProjectorAppFeedbackCategoryTag[] = "FromProjectorApp";
   chrome::ShowFeedbackPage(GURL(ash::kChromeUITrustedProjectorUrl), profile,
@@ -158,4 +159,10 @@ void ProjectorAppClientImpl::OpenFeedbackDialog() {
                            /*extra_diagnostics=*/std::string());
   // TODO(crbug/1048368): Communicate the dialog failing to open by returning an
   // error string. For now, assume that the dialog has opened successfully.
+}
+
+void ProjectorAppClientImpl::GetScreencast(
+    const std::string& screencast_id,
+    ash::ProjectorAppClient::OnGetScreencastCallback callback) {
+  screencast_manager_.GetScreencast(screencast_id, std::move(callback));
 }

@@ -17,7 +17,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 import '../i18n_setup.js';
 
@@ -31,9 +31,9 @@ import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getTemplate} from './security_keys_bio_enroll_dialog.html.js';
 
-import {Ctap2Status, Enrollment, EnrollmentResponse, SampleResponse, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl,} from './security_keys_browser_proxy.js';
+import {getTemplate} from './security_keys_bio_enroll_dialog.html.js';
+import {Ctap2Status, Enrollment, EnrollmentResponse, SampleResponse, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl} from './security_keys_browser_proxy.js';
 import {SettingsSecurityKeysPinFieldElement} from './security_keys_pin_field.js';
 
 export enum BioEnrollDialogPage {

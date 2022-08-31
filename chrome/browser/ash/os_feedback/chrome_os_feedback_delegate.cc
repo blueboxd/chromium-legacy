@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/os_feedback/os_feedback_screenshot_manager.h"
@@ -27,6 +28,9 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/feedback/child_web_dialog.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/feedback/content/content_tracing_manager.h"
 #include "components/feedback/feedback_common.h"
 #include "components/feedback/feedback_data.h"
@@ -233,6 +237,36 @@ void ChromeOsFeedbackDelegate::OpenDiagnosticsApp() {
 
 void ChromeOsFeedbackDelegate::OpenExploreApp() {
   ash::LaunchSystemWebAppAsync(profile_, ash::SystemWebAppType::HELP);
+}
+
+void ChromeOsFeedbackDelegate::OpenMetricsDialog() {
+  OpenWebDialog(GURL(chrome::kChromeUIHistogramsURL));
+}
+
+void ChromeOsFeedbackDelegate::OpenSystemInfoDialog() {
+  // TODO(http://b/239701119): Make the sys_info.html page a separate WebUI.
+  // For now, use the old Feedback tool's sys_info.html.
+  GURL systemInfoUrl =
+      GURL(base::StrCat({chrome::kChromeUIFeedbackURL, "html/sys_info.html"}));
+  OpenWebDialog(systemInfoUrl);
+}
+
+void ChromeOsFeedbackDelegate::OpenWebDialog(GURL url) {
+  Browser* feedback_browser = ash::FindSystemWebAppBrowser(
+      profile_, ash::SystemWebAppType::OS_FEEDBACK);
+
+  gfx::NativeWindow window = feedback_browser->window()->GetNativeWindow();
+
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+
+  ChildWebDialog* child_dialog = new ChildWebDialog(
+      profile_, widget, url,
+      /*title=*/std::u16string(),
+      /*modal_type=*/ui::MODAL_TYPE_NONE, /*dialog_width=*/640,
+      /*dialog_height=*/400, /*can_resize=*/true,
+      /*can_minimize=*/true);
+
+  child_dialog->Show();
 }
 
 }  // namespace ash

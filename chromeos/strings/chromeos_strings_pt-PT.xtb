@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1621067168122174824">Executar teste de carregamento</translation>
 <translation id="1631385268983122904">Não monte já o dispositivo</translation>
-<translation id="1639239467298939599">A carregar</translation>
+<translation id="1639239467298939599">A carregar…</translation>
 <translation id="1641857168437328880">Alimentador de documentos (um lado)</translation>
 <translation id="1643449475550628585">Alterar imagem de fundo diariamente</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1645954272419197032">Confirme as informações do dispositivo</translation>
 <translation id="1662989795263954667">Parada – Sem tinta</translation>
+<translation id="1664796644829245314">Pré-visualizar <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN incorporada</translation>
 <translation id="1672499492233627739">Feed de vídeo da câmara Web</translation>
 <translation id="1676557873873341166">A gravar vídeo</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videoconferências</translation>
 <translation id="1852934301711881861">Instalar ChromeOS Flex</translation>
 <translation id="1856388568474281774">Seta para baixo</translation>
+<translation id="1858620243986915808">Anexar captura de ecrã</translation>
 <translation id="1871569928317311284">Desativar tema escuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Desativar modo escuro</translation>
@@ -797,6 +799,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="7978412674231730200">Chave privada</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7994702968232966508">Método EAP</translation>
+<translation id="8018928621986160031">Guardado em "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Falha ao transferir</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Ativar modo de cor automática</translation>
@@ -865,6 +868,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="8576249514688522074">Não iniciada</translation>
 <translation id="8620617069779373398">Estado do roaming</translation>
 <translation id="8655295600908251630">Canal</translation>
+<translation id="8655828773034788261">Partilhar URL:</translation>
 <translation id="8660881923941176839">libras</translation>
 <translation id="8662671328352114214">Ligar à rede <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Atualizar para <ph name="VERSION_NUMBER" /> e reiniciar</translation>

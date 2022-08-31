@@ -23,7 +23,7 @@
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1647582022260550163">مطمئنید می‌خواهید اجازه‌ها را بازنشانی کنید و کوکی‌ها و داده‌های سایت را پاک کنید؟</translation>
 <translation id="1660204651932907780">به سایت‌ها اجازه داده شود صدا پخش کنند (توصیه می‌شود)</translation>
-<translation id="1677097821151855053">از کوکی‌ها و دیگر داده‌های سایت برای به‌خاطر سپردن شما استفاده می‌شود؛ برای مثال ورود به سیستم یا نمایش آگهی‌های شخصی‌شده. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
+<translation id="1677097821151855053">از کوکی‌ها و دیگر داده‌های سایت برای به‌خاطر سپردن شما استفاده می‌شود؛ برای مثال ورود به سیستم یا نمایش آگهی‌های شخصی‌‏سازی‌‏شده. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
 <translation id="1688867105868176567">داده‌های سایت پاک شود؟</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">بازنشانی مجوزها</translation>
 <translation id="301521992641321250">مسدود‌شده به‌طور خودکار</translation>
 <translation id="3069226013421428034">ورود به سیستم شخص ثالث برای سایت خاصی مجاز می‌شود.</translation>
+<translation id="3109724472072898302">جمع شده</translation>
 <translation id="3114012059975132928">پخش‌کننده ویدیو</translation>
 <translation id="3115898365077584848">نمایش دادن اطلاعات</translation>
 <translation id="3123473560110926937">در برخی سایت‌ها مسدود می‌شود</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">بی‌صدا کردن ویدیو</translation>
 <translation id="3596414637720633074">مسدود کردن کوکی‌های شخص ثالث در «حالت ناشناس»</translation>
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
+<translation id="3628308229821498208">جستجوهای پیشنهادی</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3763247130972274048">در سمت راست یا چپ ویدیو دو ضربه سریع بزنید تا ۱۰ ثانیه رد شود</translation>
 <translation id="3797520601150691162">زمینه تیره برای سایت خاصی استفاده نشود</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">«<ph name="APP_NAME" />» حذف نصب شود؟</translation>
+<translation id="6262191102408817757">براساس آخرین برگه شما</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> و <ph name="PERMISSION_2" /> مسدود هستند</translation>
 <translation id="6270391203985052864">سایت‌ها می‌توانند برای ارسال اعلان درخواست دهند</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">مسدود کردن نمایش پنجره‌های بازشو و هدایت‌ها در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
+<translation id="7203150201908454328">باز شده</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">مسدود کردن سایت‌ها برای پخش محتوای محافظت‌شده</translation>
 <translation id="7577900504646297215">مدیریت علایق</translation>
 <translation id="7594634374516752650">به دستگاه بلوتوث متصل است</translation>
+<translation id="7641339528570811325">پاک کردن داده‌های محصول مرور…</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7781829728241885113">دیروز</translation>

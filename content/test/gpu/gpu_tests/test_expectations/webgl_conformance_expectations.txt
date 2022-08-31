@@ -26,7 +26,7 @@
 #         arm
 #         google google-0xffff
 #         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912
+#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -40,13 +40,13 @@
 #         angle-vulkan ]
 # Skia Renderer
 # tags: [ skia-renderer-dawn
-#         skia-renderer-disabled
 #         skia-renderer-gl
 #         skia-renderer-vulkan ]
 # SwiftShader
 # tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ mesa_lt_19.1 ]
+# tags: [ mesa_lt_19.1
+#         mesa_ge_21.0 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -238,7 +238,6 @@ crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 # fail, etc.)
 crbug.com/1175419 [ fuchsia ] conformance/extensions/khr-parallel-shader-compile.html [ Skip ]
 crbug.com/angleproject/5259 [ fuchsia ] conformance/uniforms/uniform-default-values.html [ Skip ]
-crbug.com/1143392 [ fuchsia ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 crbug.com/871352 [ fuchsia ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/1143424 [ fuchsia ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/478572 [ fuchsia ] deqp/data/gles2/shaders/functions.html [ Skip ]
@@ -341,10 +340,6 @@ crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/m
 
 # Flaky timeouts on multiple platforms - at least Linux/Mac/Win
 crbug.com/1254497 conformance/misc/type-conversion-test.html [ RetryOnFailure ]
-
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ win debug ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 ####################
 # Fuchsia failures #
@@ -476,10 +471,6 @@ crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ F
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1240443 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ mac debug ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
-
 crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
 # TODO(kbr): uncomment the following expectation after test has
@@ -508,8 +499,6 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] conformance/uniforms
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/acos/acos_001_to_006.html [ Failure ]
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/asin/asin_001_to_006.html [ Failure ]
 crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
-# TODO(senorblanco): uncomment or remove this after the CTS roll that splits the test
-# crbug.com/angleproject/6486 [ mac angle-metal passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Mac / Passthrough command decoder / Metal / Intel
 crbug.com/angleproject/4846 [ mac angle-metal passthrough intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
@@ -592,10 +581,6 @@ crbug.com/611943 [ android android-nexus-5 ] conformance/glsl/misc/struct-equals
 crbug.com/478572 [ android android-nexus-5 ] deqp/data/gles2/shaders/linkage.html [ Failure ]
 crbug.com/678850 [ android android-nexus-5 ] conformance/more/functions/vertexAttribPointerBadArgs.html [ Failure ]
 crbug.com/678850 [ android android-nexus-5 ] conformance/attribs/gl-vertexattribpointer.html [ Failure ]
-
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ android android-nexus-5 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-bvec4.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-ivec3.html [ Failure ]
@@ -720,9 +705,6 @@ crbug.com/1080380 [ chromeos chromeos-board-kevin ] conformance/offscreencanvas/
 crbug.com/1080380 [ chromeos chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
 crbug.com/1108368 [ chromeos chromeos-board-kevin ] conformance/misc/shader-precision-format.html [ Failure ]
 
-# Flaky test on chromeos-amd64-generic-rel.
-crbug.com/1227774 [ chromeos chromeos-board-amd64-generic ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
-
 # Failing on chromeos-amd64-generic-rel.
 crbug.com/1232446 [ chromeos chromeos-board-amd64-generic ] conformance/rendering/gl-scissor-test.html [ Failure ]
 crbug.com/1271227 [ chromeos chromeos-board-amd64-generic ] conformance/attribs/gl-bindAttribLocation-aliasing.html [ RetryOnFailure ]
@@ -736,6 +718,9 @@ crbug.com/angleproject/5038 [ chromeos no-passthrough ] conformance/extensions/e
 
 crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_sRGB [ Failure ]
 crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+
+# Failures on validating command decoder only; won't fix.
+crbug.com/angleproject/5038 [ linux intel display-server-wayland no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 ########################
 # SwiftShader failures #

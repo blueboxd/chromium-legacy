@@ -70,6 +70,9 @@ chromium-metrics-reviews@google.com.
       summary="Chrome Home shown after a pull-to-refresh"/>
   <variant name="IPH_ContextualPageActions_PriceTracking"
       summary="contextual page price tracking action in the top toolbar"/>
+  <variant name="IPH_ContextualPageActions_PriceTrackingActionChip"
+      summary="action chip variant of contextual page price tracking action
+               in the top toolbar"/>
   <variant name="IPH_ContextualSearchInPanelHelp"
       summary="promoting longpress from within the panel"/>
   <variant name="IPH_ContextualSearchOptIn"
@@ -240,7 +243,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the

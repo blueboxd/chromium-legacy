@@ -89,7 +89,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
 
   bool return_as_stream = transfer_mode.fromMaybe("") ==
                           Page::PrintToPDF::TransferModeEnum::ReturnAsStream;
-  print_to_pdf::PdfPrintManager::FromWebContents(web_contents_.get())
+  HeadlessPrintManager::FromWebContents(web_contents_.get())
       ->PrintToPdf(
           web_contents_->GetPrimaryMainFrame(), page_ranges.fromMaybe(""),
           std::move(absl::get<printing::mojom::PrintPagesParamsPtr>(
@@ -103,15 +103,14 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
 }
 
 #if BUILDFLAG(ENABLE_PRINTING)
-void PageHandler::PDFCreated(
-    bool return_as_stream,
-    std::unique_ptr<PrintToPDFCallback> callback,
-    print_to_pdf::PdfPrintManager::PrintResult print_result,
-    scoped_refptr<base::RefCountedMemory> data) {
+void PageHandler::PDFCreated(bool return_as_stream,
+                             std::unique_ptr<PrintToPDFCallback> callback,
+                             print_to_pdf::PdfPrintResult print_result,
+                             scoped_refptr<base::RefCountedMemory> data) {
   std::unique_ptr<base::DictionaryValue> response;
-  if (print_result != print_to_pdf::PdfPrintManager::PRINT_SUCCESS) {
+  if (print_result != print_to_pdf::PdfPrintResult::PRINT_SUCCESS) {
     callback->sendFailure(Response::ServerError(
-        print_to_pdf::PdfPrintManager::PrintResultToString(print_result)));
+        print_to_pdf::PdfPrintResultToString(print_result)));
     return;
   }
 

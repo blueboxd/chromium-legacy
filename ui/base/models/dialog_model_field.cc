@@ -234,14 +234,14 @@ DialogModelCombobox::DialogModelCombobox(
     : DialogModelField(pass_key, model, kCombobox, id, params.accelerators_),
       label_(std::move(label)),
       accessible_name_(params.accessible_name_),
-      selected_index_(combobox_model->GetDefaultIndex()),
+      selected_index_(combobox_model->GetDefaultIndex().value()),
       combobox_model_(std::move(combobox_model)),
       callback_(params.callback_) {}
 
 DialogModelCombobox::~DialogModelCombobox() = default;
 
 void DialogModelCombobox::OnSelectedIndexChanged(base::PassKey<DialogModelHost>,
-                                                 int selected_index) {
+                                                 size_t selected_index) {
   selected_index_ = selected_index;
 }
 

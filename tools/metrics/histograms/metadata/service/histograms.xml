@@ -347,7 +347,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-11-13">
+    enum="ServiceWorkerStatusCode" expires_after="2023-01-15">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -371,7 +371,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-11-13">
+    enum="ServiceWorkerStatusCode" expires_after="2023-01-15">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -708,7 +708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.RegisteredStorageKeyCount" units="origins"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -852,7 +852,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToScriptEvaluationStart"
-    units="ms" expires_after="2022-11-06">
+    units="ms" expires_after="2023-01-15">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -878,7 +878,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Purpose"
-    enum="ServiceWorkerMetrics.EventType" expires_after="2022-11-06">
+    enum="ServiceWorkerMetrics.EventType" expires_after="2023-01-15">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1019,7 +1019,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.{operation}Time" units="ms"
-    expires_after="2022-08-24">
+    expires_after="2023-07-19">
   <owner>cduvall@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>

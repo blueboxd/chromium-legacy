@@ -104,9 +104,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       content::NavigationHandle* navigation_handle,
       ShouldClassifyUrlCallback start_phishing_classification,
       WebContents* web_contents,
-      ClientSideDetectionService* csd_service,
+      base::WeakPtr<ClientSideDetectionService> csd_service,
       SafeBrowsingDatabaseManager* database_manager,
-      ClientSideDetectionHost* host)
+      base::WeakPtr<ClientSideDetectionHost> host)
       : web_contents_(web_contents),
         csd_service_(csd_service),
         database_manager_(database_manager),
@@ -137,7 +137,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       DontClassifyForPhishing(NO_CLASSIFY_CHROME_UI_PAGE);
     }
 
-    if (csd_service_->IsLocalResource(remote_endpoint_.address())) {
+    if (csd_service_ &&
+        csd_service_->IsLocalResource(remote_endpoint_.address())) {
       DontClassifyForPhishing(NO_CLASSIFY_LOCAL_RESOURCE);
     }
 
@@ -146,7 +147,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       DontClassifyForPhishing(NO_CLASSIFY_UNSUPPORTED_MIME_TYPE);
     }
 
-    if (csd_service_->IsPrivateIPAddress(remote_endpoint_.address())) {
+    if (csd_service_ &&
+        csd_service_->IsPrivateIPAddress(remote_endpoint_.address())) {
       DontClassifyForPhishing(NO_CLASSIFY_PRIVATE_IP);
     }
 
@@ -161,14 +163,14 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     }
 
     // Don't start classification if |url_| is allowlisted by enterprise policy.
-    if (host_->delegate_->GetPrefs() &&
+    if (host_ && host_->delegate_->GetPrefs() &&
         IsURLAllowlistedByPolicy(url_, *host_->delegate_->GetPrefs())) {
       DontClassifyForPhishing(NO_CLASSIFY_ALLOWLISTED_BY_POLICY);
     }
 
     // If the tab has a delayed warning, ignore this second verdict. We don't
     // want to immediately undelay a page that's already blocked as phishy.
-    if (host_->delegate_->HasSafeBrowsingUserInteractionObserver()) {
+    if (host_ && host_->delegate_->HasSafeBrowsingUserInteractionObserver()) {
       DontClassifyForPhishing(NO_CLASSIFY_HAS_DELAYED_WARNING);
     }
 
@@ -297,7 +299,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // In that case we're just trying to show the warning.
     // If we're dumping features for debugging, ignore the cache.
     bool is_phishing;
-    if (!HasDebugFeatureDirectory() &&
+    if (!HasDebugFeatureDirectory() && host_ && csd_service_ &&
         csd_service_->GetValidCachedResult(url_, &is_phishing)) {
       // Since we are already on the UI thread, this is safe.
       host_->MaybeShowPhishingWarning(/*is_from_cache=*/true, url_,
@@ -312,7 +314,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // a chance to fix misclassifications.
     // If we're dumping features for debugging, allow us to exceed the report
     // limit.
-    if (!HasDebugFeatureDirectory() && !csd_service_->IsInCache(url_) &&
+    if (!HasDebugFeatureDirectory() && csd_service_ &&
+        !csd_service_->IsInCache(url_) &&
         csd_service_->OverPhishingReportLimit()) {
       DontClassifyForPhishing(NO_CLASSIFY_TOO_MANY_REPORTS);
     }
@@ -335,11 +338,11 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   std::string mime_type_;
   net::IPEndPoint remote_endpoint_;
   raw_ptr<WebContents> web_contents_;
-  raw_ptr<ClientSideDetectionService> csd_service_;
+  base::WeakPtr<ClientSideDetectionService> csd_service_;
   // We keep a ref pointer here just to make sure the safe browsing
   // database manager stays alive long enough.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  raw_ptr<ClientSideDetectionHost> host_;
+  base::WeakPtr<ClientSideDetectionHost> host_;
 
   ShouldClassifyUrlCallback start_phishing_classification_cb_;
 };
@@ -435,7 +438,8 @@ void ClientSideDetectionHost::DidFinishNavigation(
       navigation_handle,
       base::BindOnce(&ClientSideDetectionHost::OnPhishingPreClassificationDone,
                      weak_factory_.GetWeakPtr()),
-      web_contents(), csd_service_, database_manager_.get(), this);
+      web_contents(), csd_service_, database_manager_.get(),
+      weak_factory_.GetWeakPtr());
   classification_request_->Start();
 }
 
@@ -543,6 +547,20 @@ void ClientSideDetectionHost::PhishingDetectionDone(
     if (!verdict->is_phishing())
       return;
 
+    raw_ptr<VerdictCacheManager> cache_manager = delegate_->GetCacheManager();
+    if (cache_manager) {
+      ChromeUserPopulation::PageLoadToken token =
+          cache_manager->GetPageLoadToken(current_url_);
+      // It's possible that the token is not found because real time URL check
+      // is not performed for this navigation. Create a new page load token in
+      // this case.
+      if (!token.has_token_value()) {
+        token = cache_manager->CreatePageLoadToken(current_url_);
+      }
+      verdict->mutable_population()->mutable_page_load_tokens()->Add()->Swap(
+          &token);
+    }
+
     if (CanGetAccessToken()) {
       token_fetcher_->Start(
           base::BindOnce(&ClientSideDetectionHost::OnGotAccessToken,
@@ -595,7 +613,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(bool is_from_cache,
 }
 
 void ClientSideDetectionHost::set_client_side_detection_service(
-    ClientSideDetectionService* service) {
+    base::WeakPtr<ClientSideDetectionService> service) {
   csd_service_ = service;
 }
 

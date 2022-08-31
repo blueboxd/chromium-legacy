@@ -20,7 +20,7 @@ import {onMessageReceived} from '../trusted/wallpaper/untrusted_message_handler.
 export function selectCollection(collectionId: string) {
   const event: constants.SelectCollectionEvent = {
     type: constants.EventType.SELECT_COLLECTION,
-    collectionId
+    collectionId,
   };
   onMessageReceived(event);
 }
@@ -30,7 +30,7 @@ export function selectCollection(collectionId: string) {
  */
 export function selectGooglePhotosCollection() {
   const event: constants.SelectGooglePhotosCollectionEvent = {
-    type: constants.EventType.SELECT_GOOGLE_PHOTOS_COLLECTION
+    type: constants.EventType.SELECT_GOOGLE_PHOTOS_COLLECTION,
   };
   onMessageReceived(event);
 }
@@ -40,18 +40,7 @@ export function selectGooglePhotosCollection() {
  */
 export function selectLocalCollection() {
   const event: constants.SelectLocalCollectionEvent = {
-    type: constants.EventType.SELECT_LOCAL_COLLECTION
-  };
-  onMessageReceived(event);
-}
-
-/**
- * Select an image. Sent from untrusted to trusted.
- */
-export function selectImage(assetId: bigint) {
-  const event: constants.SelectImageEvent = {
-    type: constants.EventType.SELECT_IMAGE,
-    assetId
+    type: constants.EventType.SELECT_LOCAL_COLLECTION,
   };
   onMessageReceived(event);
 }
@@ -79,14 +68,6 @@ export function validateReceivedData(event: constants.Events): boolean {
       return Array.isArray(event.images) &&
           event.images.every(
               image => isDefaultImage(image) || isFilePath(image));
-    case constants.EventType.SEND_IMAGE_TILES: {
-      // Images array may be empty.
-      return Array.isArray(event.tiles);
-    }
-    case constants.EventType.SEND_CURRENT_WALLPAPER_ASSET_ID:
-    case constants.EventType.SEND_PENDING_WALLPAPER_ASSET_ID: {
-      return event.assetId === null || typeof event.assetId === 'bigint';
-    }
     case constants.EventType.SEND_VISIBLE: {
       return typeof event.visible === 'boolean';
     }

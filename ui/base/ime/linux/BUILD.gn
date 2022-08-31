@@ -12,19 +12,13 @@ component("linux") {
   sources = [
     "fake_input_method_context.cc",
     "fake_input_method_context.h",
-    "fake_input_method_context_factory.cc",
-    "fake_input_method_context_factory.h",
     "input_method_auralinux.cc",
     "input_method_auralinux.h",
     "linux_input_method_context.h",
     "linux_input_method_context_factory.cc",
     "linux_input_method_context_factory.h",
-    "linux_input_method_context_wrapper.cc",
-    "linux_input_method_context_wrapper.h",
     "text_edit_command_auralinux.cc",
     "text_edit_command_auralinux.h",
-    "text_edit_key_bindings_delegate_auralinux.cc",
-    "text_edit_key_bindings_delegate_auralinux.h",
   ]
 
   defines = [ "IS_UI_BASE_IME_LINUX_IMPL" ]
@@ -39,7 +33,15 @@ component("linux") {
     ]
   }
 
-  # TODO(crbug.com/1199385): Remove this on unifying lacros and linux desktop
-  # behavior again.
-  deps = [ "//build:chromeos_buildflags" ]
+  deps = [
+    "//ui/base",
+
+    # TODO(crbug.com/1199385): Remove this on unifying lacros and linux desktop
+    # behavior again.
+    "//build:chromeos_buildflags",
+  ]
+
+  if (is_linux) {
+    deps += [ "//ui/linux:linux_ui" ]
+  }
 }

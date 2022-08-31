@@ -8,7 +8,9 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.components.autofill_assistant.guided_browsing.qr_code.AssistantQrCodeDelegate;
-import org.chromium.components.autofill_assistant.guided_browsing.qr_code.utils.AssistantQrCodePermissionUtils;
+import org.chromium.components.autofill_assistant.guided_browsing.qr_code.permission.AssistantQrCodePermissionCallback;
+import org.chromium.components.autofill_assistant.guided_browsing.qr_code.permission.AssistantQrCodePermissionCoordinator;
+import org.chromium.components.autofill_assistant.guided_browsing.qr_code.permission.AssistantQrCodePermissionType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -16,9 +18,13 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Creates and represents the QR Code camera scan UI.
  */
 public class AssistantQrCodeCameraScanCoordinator {
-    /** Callbacks to parent dialog. */
+    /**
+     * Callbacks to parent dialog.
+     */
     public interface DialogCallbacks {
-        /** Called when component UI is to be dismissed. */
+        /**
+         * Called when component UI is to be dismissed.
+         */
         void dismiss();
     }
 
@@ -27,6 +33,7 @@ public class AssistantQrCodeCameraScanCoordinator {
     private final AssistantQrCodeCameraScanModel mCameraScanModel;
     private final AssistantQrCodeCameraScanView mCameraScanView;
     private AssistantQrCodeCameraScanBinder.ViewHolder mViewHolder;
+    private final AssistantQrCodePermissionCoordinator mPermissionCoordinator;
 
     /**
      * The AssistantQrCodeCameraScanCoordinator constructor.
@@ -38,11 +45,22 @@ public class AssistantQrCodeCameraScanCoordinator {
         mWindowAndroid = windowAndroid;
         mCameraScanModel = cameraScanModel;
 
+        mPermissionCoordinator = new AssistantQrCodePermissionCoordinator(mContext, mWindowAndroid,
+                mCameraScanModel.getCameraPermissionModel(), AssistantQrCodePermissionType.CAMERA,
+                new AssistantQrCodePermissionCallback() {
+                    @Override
+                    public void onPermissionsChanged(boolean hasPermission) {
+                        if (mCameraScanView != null) {
+                            mCameraScanView.onPermissionsChanged(hasPermission);
+                        }
+                    }
+                });
+
         AssistantQrCodeCameraCallbacks cameraCallbacks =
                 new AssistantQrCodeCameraCallbacks(context, cameraScanModel, dialogCallbacks);
         mCameraScanView = new AssistantQrCodeCameraScanView(context,
-                cameraCallbacks::onPreviewFrame, cameraCallbacks::onError,
-                new AssistantQrCodeCameraScanView.Delegate() {
+                mPermissionCoordinator.getView(), cameraCallbacks::onPreviewFrame,
+                cameraCallbacks::onError, new AssistantQrCodeCameraScanView.Delegate() {
                     @Override
                     public void onScanCancelled() {
                         AssistantQrCodeDelegate delegate =
@@ -52,19 +70,12 @@ public class AssistantQrCodeCameraScanCoordinator {
                         }
                         dialogCallbacks.dismiss();
                     }
-
-                    @Override
-                    public void promptForCameraPermission() {
-                        AssistantQrCodePermissionUtils.promptForCameraPermission(
-                                windowAndroid, cameraScanModel);
-                    }
                 });
 
         mViewHolder = new AssistantQrCodeCameraScanBinder.ViewHolder(mCameraScanView);
         PropertyModelChangeProcessor.create(
                 cameraScanModel, mViewHolder, new AssistantQrCodeCameraScanBinder());
-
-        updatePermissionSettings();
+        mPermissionCoordinator.updatePermissionSettings();
     }
 
     public View getView() {
@@ -72,7 +83,7 @@ public class AssistantQrCodeCameraScanCoordinator {
     }
 
     public void resume() {
-        updatePermissionSettings();
+        mPermissionCoordinator.updatePermissionSettings();
         mCameraScanModel.set(AssistantQrCodeCameraScanModel.IS_ON_FOREGROUND, true);
     }
 
@@ -84,13 +95,6 @@ public class AssistantQrCodeCameraScanCoordinator {
         mCameraScanView.stopCamera();
         // Explicitly clean up view holder.
         mViewHolder = null;
-    }
-
-    /** Updates the permission settings with the latest values. */
-    private void updatePermissionSettings() {
-        mCameraScanModel.set(AssistantQrCodeCameraScanModel.HAS_CAMERA_PERMISSION,
-                AssistantQrCodePermissionUtils.hasCameraPermission(mContext));
-        mCameraScanModel.set(AssistantQrCodeCameraScanModel.CAN_PROMPT_FOR_CAMERA_PERMISSION,
-                AssistantQrCodePermissionUtils.canPromptForCameraPermission(mWindowAndroid));
+        mPermissionCoordinator.destroy();
     }
 }

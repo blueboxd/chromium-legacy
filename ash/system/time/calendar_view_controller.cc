@@ -22,15 +22,6 @@
 
 namespace ash {
 
-namespace {
-
-// The percentage of a normal row height, which (percentage * row_height) will
-// be used as the `CalendarView` height when the `CalendarEventListView` is
-// expanded.
-constexpr float kExpandedCalendarViewHeightScale = 1.1;
-
-}  // namespace
-
 CalendarViewController::CalendarViewController()
     : currently_shown_date_(base::Time::Now()),
       calendar_open_time_(base::TimeTicks::Now()),
@@ -138,12 +129,6 @@ int CalendarViewController::GetExpandedRowIndex() const {
   return expanded_row_index_;
 }
 
-int CalendarViewController::GetRowHeightWithEventListView() const {
-  //`is_event_list_showing_` may not be true because this is called before the
-  // animation begins.
-  return kExpandedCalendarViewHeightScale * row_height_;
-}
-
 int CalendarViewController::GetTodayRowTopHeight() const {
   return (today_row_ - 1) * row_height_;
 }
@@ -214,6 +199,17 @@ void CalendarViewController::OnCalendarEventWillLaunch() {
   UmaHistogramMediumTimes("Ash.Calendar.UserJourneyTime.EventLaunched",
                           base::TimeTicks::Now() - calendar_open_time_);
   user_journey_time_recorded_ = true;
+}
+
+void CalendarViewController::OnTodaysEventFetchComplete() {
+  // Only record this once per lifetime of the CalendarView (and therefore the
+  // controller).
+  if (todays_date_cell_fetch_recorded_)
+    return;
+
+  UmaHistogramMediumTimes("Ash.Calendar.TimeToSeeTodaysEventDots",
+                          base::TimeTicks::Now() - calendar_open_time_);
+  todays_date_cell_fetch_recorded_ = true;
 }
 
 bool CalendarViewController::IsSelectedDateInCurrentMonth() {

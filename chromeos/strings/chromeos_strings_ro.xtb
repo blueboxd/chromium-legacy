@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1645954272419197032">Confirmă informațiile dispozitivului</translation>
 <translation id="1662989795263954667">Oprită – Cerneală epuizată</translation>
+<translation id="1664796644829245314">Previzualizează <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Rețea VPN încorporată</translation>
 <translation id="1672499492233627739">Feed video de la camera web</translation>
 <translation id="1676557873873341166">Se înregistrează un videoclip</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Conferințe video</translation>
 <translation id="1852934301711881861">Instalează sistemul de operare Chrome Flex</translation>
 <translation id="1856388568474281774">Săgeată în jos</translation>
+<translation id="1858620243986915808">Atașează o captură de ecran</translation>
 <translation id="1871569928317311284">Dezactivează tema întunecată</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Dezactivează modul întunecat</translation>
@@ -797,6 +799,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7978412674231730200">Cheie privată</translation>
 <translation id="7982789257301363584">Rețea</translation>
 <translation id="7994702968232966508">Metodă EAP</translation>
+<translation id="8018928621986160031">S-au salvat în <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Activează modul de culoare automată</translation>
@@ -865,6 +868,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8576249514688522074">Neinițializată</translation>
 <translation id="8620617069779373398">Stare roaming</translation>
 <translation id="8655295600908251630">Canal</translation>
+<translation id="8655828773034788261">Trimite adresa URL:</translation>
 <translation id="8660881923941176839">livre</translation>
 <translation id="8662671328352114214">Conectează-te la rețeaua <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Actualizează la <ph name="VERSION_NUMBER" /> și repornește</translation>

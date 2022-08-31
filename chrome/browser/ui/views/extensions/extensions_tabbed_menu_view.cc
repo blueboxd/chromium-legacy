@@ -64,8 +64,6 @@ constexpr size_t kCustomizeByExtensionIndex = 2;
 constexpr bool kDontShowCombobox = false;
 constexpr bool kShowCombobox = true;
 
-ExtensionsTabbedMenuView* g_extensions_dialog = nullptr;
-
 // Adds a new tab in `tabbed_pane` at `index` with the given `contents` and
 // `footer`.
 void CreateTab(raw_ptr<views::TabbedPane> tabbed_pane,
@@ -239,7 +237,15 @@ ExtensionsTabbedMenuView::ExtensionsTabbedMenuView(
   // appropriately.
   SetPaintClientToLayer(true);
 
-  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
+  // ExtensionsTabbedMenuView::GetAccessibleWindowTitle always returns an empty
+  // string. This was done because the title is already spoken via the call to
+  // SetTitle(). Should that change, kAttributeExplicitlyEmpty will not be
+  // appropriate.
+  ax::mojom::NameFrom name_from =
+      GetAccessibleWindowTitle().empty()
+          ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+          : ax::mojom::NameFrom::kAttribute;
+  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle(), name_from);
 
   toolbar_model_observation_.Observe(toolbar_model_.get());
   browser_->tab_strip_model()->AddObserver(this);
@@ -254,59 +260,15 @@ ExtensionsTabbedMenuView::ExtensionsTabbedMenuView(
 }
 
 ExtensionsTabbedMenuView::~ExtensionsTabbedMenuView() {
-  g_extensions_dialog = nullptr;
-
   // Note: No need to call TabStripModel::RemoveObserver(), because it's handled
   // directly within TabStripModelObserver::~TabStripModelObserver().
-}
-
-// static
-views::Widget* ExtensionsTabbedMenuView::ShowBubble(
-    views::View* anchor_view,
-    Browser* browser,
-    ExtensionsContainer* extensions_container_,
-    ExtensionsToolbarButton::ButtonType button_type,
-    bool allow_pining) {
-  DCHECK(!g_extensions_dialog);
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kExtensionsMenuAccessControl));
-  g_extensions_dialog = new ExtensionsTabbedMenuView(
-      anchor_view, browser, extensions_container_, button_type, allow_pining);
-  views::Widget* widget =
-      views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog);
-  widget->Show();
-  return widget;
-}
-
-// static
-bool ExtensionsTabbedMenuView::IsShowing() {
-  return g_extensions_dialog != nullptr;
-}
-
-// static
-void ExtensionsTabbedMenuView::Hide() {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kExtensionsMenuAccessControl));
-  if (IsShowing()) {
-    g_extensions_dialog->GetWidget()->Close();
-    // Set the dialog to nullptr since `GetWidget->Close()` is not synchronous.
-    g_extensions_dialog = nullptr;
-  }
-}
-
-// static
-ExtensionsTabbedMenuView*
-ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting() {
-  return g_extensions_dialog;
 }
 
 std::vector<InstalledExtensionMenuItemView*>
 ExtensionsTabbedMenuView::GetInstalledItemsForTesting() const {
   std::vector<InstalledExtensionMenuItemView*> menu_item_views;
-  if (IsShowing()) {
-    for (views::View* view : installed_items_->children())
-      menu_item_views.push_back(GetAsInstalledExtensionMenuItem(view));
-  }
+  for (views::View* view : installed_items_->children())
+    menu_item_views.push_back(GetAsInstalledExtensionMenuItem(view));
   return menu_item_views;
 }
 
@@ -366,6 +328,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionAdded(
 
   MaybeCreateAndInsertSiteAccessItem(action_id);
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -385,6 +348,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionRemoved(
               GetSiteAccessMenuItem(has_access_.items, action_id));
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -395,6 +359,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionUpdated(
   UpdateSiteAccessMenuItems({action_id});
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -404,6 +369,7 @@ void ExtensionsTabbedMenuView::OnToolbarModelInitialized() {
   DCHECK(requests_access_.items->children().empty());
   DCHECK(has_access_.items->children().empty());
   Populate();
+  SizeToContents();
 }
 
 void ExtensionsTabbedMenuView::OnToolbarPinnedActionsChanged() {
@@ -445,7 +411,7 @@ void ExtensionsTabbedMenuView::Populate() {
   ConsistencyCheck();
 }
 
-void ExtensionsTabbedMenuView::UserPermissionsSettingsChanged(
+void ExtensionsTabbedMenuView::OnUserPermissionsSettingsChanged(
     const extensions::PermissionsManager::UserPermissionsSettings& settings) {
   UpdateSiteAccessMenuItems(toolbar_model_->action_ids());
   UpdateSiteAccessTab();
@@ -459,6 +425,7 @@ void ExtensionsTabbedMenuView::Update() {
   UpdateSiteAccessMenuItems(action_ids);
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -764,12 +731,6 @@ void ExtensionsTabbedMenuView::UpdateSiteAccessTab() {
         break;
     }
   }
-
-  // Site access tab updates can happen during the menu construction, and
-  // afterwards. The dialog bubble is created after constructing the menu,
-  // therefore we can only resize the contents when the dialog exists.
-  if (g_extensions_dialog)
-    SizeToContents();
 }
 
 void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility(
@@ -849,7 +810,7 @@ std::vector<SiteAccessMenuItemView*>
 ExtensionsTabbedMenuView::GetVisibleMenuItemsOf(
     ExtensionsTabbedMenuView::SiteAccessSection section) const {
   std::vector<SiteAccessMenuItemView*> menu_items;
-  if (IsShowing() && section.container->GetVisible()) {
+  if (section.container->GetVisible()) {
     for (views::View* item : section.items->children())
       menu_items.push_back(GetAsSiteAccessMenuItem(item));
   }

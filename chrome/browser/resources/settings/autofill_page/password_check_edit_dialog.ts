@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../icons.html.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 import './passwords_shared.css.js';
 
@@ -154,8 +154,8 @@ export class SettingsPasswordCheckEditDialogElement extends
    */
   private getSiteOrApp_(): string {
     return this.i18n(
-        this.item!.isAndroidCredential ? 'editCompromisedPasswordApp' :
-                                         'editCompromisedPasswordSite');
+        this.item!.isAndroidCredential ? 'editPasswordAppLabel' :
+                                         'editPasswordWebsiteLabel');
   }
 }
 

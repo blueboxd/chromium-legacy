@@ -116,7 +116,7 @@
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "chrome/browser/lacros/cert/client_cert_store_lacros.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 namespace {
@@ -221,7 +221,7 @@ void UpdateLegacyCookieSettings(Profile* profile) {
 }
 
 void UpdateStorageAccessSettings(Profile* profile) {
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
     ContentSettingsForOneType settings;
     HostContentSettingsMapFactory::GetForProfile(profile)
         ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS, &settings);
@@ -548,7 +548,7 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       std::move(settings_for_legacy_cookie_access);
 
   ContentSettingsForOneType settings_for_storage_access;
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
     host_content_settings_map->GetSettingsForOneType(
         ContentSettingsType::STORAGE_ACCESS, &settings_for_storage_access);
   }
@@ -925,7 +925,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   cert_verifier_creation_params->nss_full_path.reset();
   if (profile_->IsMainProfile()) {
     const crosapi::mojom::DefaultPathsPtr& default_paths =
-        chromeos::BrowserInitParams::Get()->default_paths;
+        chromeos::BrowserParamsProxy::Get()->DefaultPaths();
     // `default_paths` can be nullptr in tests.
     if (default_paths && default_paths->user_nss_database.has_value()) {
       cert_verifier_creation_params->nss_full_path =

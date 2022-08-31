@@ -571,8 +571,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return nullptr;
 
   const bool maximized = window_state->IsMaximized();
-  if (!window_state->IsNormalOrSnapped() && !maximized)
+  if (!maximized && !window_state->IsNormalOrSnapped() &&
+      !window_state->IsFloated()) {
     return nullptr;
+  }
 
   // TODO(https://crbug.com/1084695): Disable dragging maximized ARC windows
   // from the caption. This is because ARC does not currently handle setting
@@ -887,18 +889,22 @@ void WorkspaceWindowResizer::CompleteDrag() {
     // metrics recording inside WindowState::OnWMEvent.
     WMEventType type;
     switch (snap_type_) {
-      case SnapType::kPrimary:
-        type = WM_EVENT_SNAP_PRIMARY;
+      case SnapType::kPrimary: {
         window_state()->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
-        break;
-      case SnapType::kSecondary:
-        type = WM_EVENT_SNAP_SECONDARY;
+        const WindowSnapWMEvent snap_primary_event(WM_EVENT_SNAP_PRIMARY);
+        window_state()->OnWMEvent(&snap_primary_event);
+        return;
+      }
+      case SnapType::kSecondary: {
         window_state()->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
-        break;
+        const WindowSnapWMEvent snap_secondary_event(WM_EVENT_SNAP_SECONDARY);
+        window_state()->OnWMEvent(&snap_secondary_event);
+        return;
+      }
       case SnapType::kMaximize:
         type = WM_EVENT_MAXIMIZE;
         base::RecordAction(base::UserMetricsAction("WindowDrag_Maximize"));
@@ -965,6 +971,11 @@ void WorkspaceWindowResizer::CompleteDrag() {
     // disable the animation here.
     ScopedAnimationDisabler disabler(window_state()->window());
     window_state()->Restore();
+    return;
+  }
+
+  // Drag/Resize a floated window won't change window restore bounds.
+  if (window_state()->IsFloated()) {
     return;
   }
 
@@ -1696,7 +1707,7 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
         window_state->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
 
-        const WMEvent event(WM_EVENT_SNAP_PRIMARY);
+        const WindowSnapWMEvent event(WM_EVENT_SNAP_PRIMARY);
         window_state->OnWMEvent(&event);
       }
       break;
@@ -1706,7 +1717,7 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
         window_state->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
 
-        const WMEvent event(WM_EVENT_SNAP_SECONDARY);
+        const WindowSnapWMEvent event(WM_EVENT_SNAP_SECONDARY);
         window_state->OnWMEvent(&event);
       }
       break;

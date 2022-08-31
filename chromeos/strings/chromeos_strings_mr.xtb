@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1621067168122174824">चार्ज चाचणी रन करा</translation>
 <translation id="1631385268983122904">अद्याप डिव्हाइस परत एकत्र करू नका</translation>
-<translation id="1639239467298939599">लोड करीत आहे</translation>
+<translation id="1639239467298939599">लोड करत आहे</translation>
 <translation id="1641857168437328880">दस्तऐवज फीडर (एक बाजू असलेले)</translation>
 <translation id="1643449475550628585">वॉलपेपर इमेज रोज बदला</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645954272419197032">कृपया डिव्हाइसची माहिती कंफर्म करा</translation>
 <translation id="1662989795263954667">थांबले - शाई संपली आहे</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> चे पूर्वावलोकन करा</translation>
 <translation id="1668469839109562275">बिल्ट-इन VPN</translation>
 <translation id="1672499492233627739">वेबकॅम व्हिडिओ फीड</translation>
 <translation id="1676557873873341166">व्हिडिओ घेत आहे</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">व्हिडिओ कॉंफरन्सिंग</translation>
 <translation id="1852934301711881861">ChromeOS Flex इंस्टॉल करा</translation>
 <translation id="1856388568474281774">डाउन अ‍ॅरो</translation>
+<translation id="1858620243986915808">स्क्रीनशॉट अटॅच करा</translation>
 <translation id="1871569928317311284">गडद थीम बंद करा</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">गडद मोड बंद करा</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">प्रायव्हेट की</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7994702968232966508">EAP पद्धत</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" वर सेव्ह केले</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ऑटो कलर मोड सुरू करा</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">सुरुवात केलेली नाही</translation>
 <translation id="8620617069779373398">रोमिंग स्थिती</translation>
 <translation id="8655295600908251630">खाडी</translation>
+<translation id="8655828773034788261">URL शेअर करा:</translation>
 <translation id="8660881923941176839">पाउंड</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्कमध्‍‍‍‍ये सामील व्‍हा</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> वर अपडेट करा आणि रीस्टार्ट करा</translation>

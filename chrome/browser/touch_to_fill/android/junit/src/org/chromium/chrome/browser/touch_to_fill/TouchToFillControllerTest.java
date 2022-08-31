@@ -46,8 +46,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordHistogramJni;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
@@ -75,7 +74,7 @@ import java.util.Collections;
  * properly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE)
 public class TouchToFillControllerTest {
     private static final GURL TEST_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
     private static final String TEST_SUBDOMAIN_URL = "https://subdomain.example.xyz";
@@ -98,9 +97,6 @@ public class TouchToFillControllerTest {
     @Mock
     private LargeIconBridge mMockIconBridge;
 
-    @Mock
-    private RecordHistogram.Natives mMockRecordHistogram;
-
     // Can't be local, as it has to be initialized by initMocks.
     @Captor
     private ArgumentCaptor<LargeIconBridge.LargeIconCallback> mCallbackArgumentCaptor;
@@ -111,10 +107,9 @@ public class TouchToFillControllerTest {
 
     @Before
     public void setUp() {
-        ShadowRecordHistogram.reset();
+        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
-        mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);
         when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
                 .then(inv -> format(inv.getArgument(0)));
         when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(

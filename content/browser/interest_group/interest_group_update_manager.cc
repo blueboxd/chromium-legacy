@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/interest_group_storage.h"
+#include "content/browser/interest_group/interest_group_update.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
@@ -29,6 +30,8 @@
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace content {
 
 namespace {
 
@@ -83,14 +86,13 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // must match `name` and `owner`, respectively, if either is specified. Returns
 // true if the check passes, and false otherwise.
 [[nodiscard]] bool ValidateNameAndOwnerIfPresent(
-    const url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     const base::Value::Dict& dict) {
   const std::string* maybe_owner = dict.FindString("owner");
-  if (maybe_owner && url::Origin::Create(GURL(*maybe_owner)) != owner)
+  if (maybe_owner && url::Origin::Create(GURL(*maybe_owner)) != group_key.owner)
     return false;
   const std::string* maybe_name = dict.FindString("name");
-  if (maybe_name && *maybe_name != name)
+  if (maybe_name && *maybe_name != group_key.name)
     return false;
   return true;
 }
@@ -99,7 +101,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // true iff the JSON is valid and the copy completed.
 [[nodiscard]] bool TryToCopyExecutionMode(
     const base::Value::Dict& dict,
-    blink::InterestGroup& interest_group_update) {
+    InterestGroupUpdate& interest_group_update) {
   const std::string* maybe_execution_mode = dict.FindString("executionMode");
   if (!maybe_execution_mode)
     return true;
@@ -117,7 +119,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // completed.
 [[nodiscard]] bool TryToCopyTrustedBiddingSignalsKeys(
     const base::Value::Dict& dict,
-    blink::InterestGroup& interest_group_update) {
+    InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_update_trusted_bidding_signals_keys =
       dict.FindList("trustedBiddingSignalsKeys");
   if (!maybe_update_trusted_bidding_signals_keys)
@@ -167,7 +169,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // Copies the `ads` list JSON field into `interest_group_update`, returns true
 // iff the JSON is valid and the copy completed.
 [[nodiscard]] bool TryToCopyAds(const base::Value::Dict& dict,
-                                blink::InterestGroup& interest_group_update) {
+                                InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_ads = dict.FindList("ads");
   if (!maybe_ads)
     return true;
@@ -183,7 +185,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // returns true iff the JSON is valid and the copy completed.
 [[nodiscard]] bool TryToCopyAdComponents(
     const base::Value::Dict& dict,
-    blink::InterestGroup& interest_group_update) {
+    InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_ads = dict.FindList("adComponents");
   if (!maybe_ads)
     return true;
@@ -195,24 +197,21 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   return true;
 }
 
-absl::optional<blink::InterestGroup> ParseUpdateJson(
-    const url::Origin& owner,
-    const std::string& name,
+absl::optional<InterestGroupUpdate> ParseUpdateJson(
+    const blink::InterestGroupKey& group_key,
     const data_decoder::DataDecoder::ValueOrError& result) {
   // TODO(crbug.com/1186444): Report to devtools.
-  if (result.error) {
+  if (!result.has_value()) {
     return absl::nullopt;
   }
-  const base::Value::Dict* dict = result.value->GetIfDict();
+  const base::Value::Dict* dict = result->GetIfDict();
   if (!dict) {
     return absl::nullopt;
   }
-  if (!ValidateNameAndOwnerIfPresent(owner, name, *dict)) {
+  if (!ValidateNameAndOwnerIfPresent(group_key, *dict)) {
     return absl::nullopt;
   }
-  blink::InterestGroup interest_group_update;
-  interest_group_update.owner = owner;
-  interest_group_update.name = name;
+  InterestGroupUpdate interest_group_update;
   const base::Value* maybe_priority_value = dict->Find("priority");
   if (maybe_priority_value) {
     // If the field is specified, it must be an integer or a double.
@@ -247,20 +246,10 @@ absl::optional<blink::InterestGroup> ParseUpdateJson(
   if (!TryToCopyAdComponents(*dict, interest_group_update)) {
     return absl::nullopt;
   }
-  if (!interest_group_update.IsValid()) {
-    return absl::nullopt;
-  }
-  // If not specified by the update make sure the field is not specified.
-  // This must occur after the IsValid check since priority is required for a
-  // valid interest group, while an update should just keep the existing value.
-  if (!maybe_priority_value)
-    interest_group_update.priority.reset();
   return interest_group_update;
 }
 
 }  // namespace
-
-namespace content {
 
 InterestGroupUpdateManager::InterestGroupUpdateManager(
     InterestGroupManagerImpl* manager,
@@ -426,18 +415,18 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
             base::BindOnce(&InterestGroupUpdateManager::
                                DidUpdateInterestGroupsOfOwnerNetFetch,
                            weak_factory_.GetWeakPtr(), simple_url_loader_it,
-                           std::move(storage_group.interest_group.owner),
-                           std::move(storage_group.interest_group.name)),
+                           blink::InterestGroupKey(
+                               std::move(storage_group.interest_group.owner),
+                               std::move(storage_group.interest_group.name))),
             kMaxUpdateSize);
   }
 }
 
 void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerNetFetch(
     UrlLoadersList::iterator simple_url_loader_it,
-    url::Origin owner,
-    std::string name,
+    blink::InterestGroupKey group_key,
     std::unique_ptr<std::string> fetch_body) {
-  DCHECK_EQ(owner, owners_to_update_.FrontOwner());
+  DCHECK_EQ(group_key.owner, owners_to_update_.FrontOwner());
   DCHECK_GT(num_in_flight_updates_, 0);
   DCHECK(!waiting_on_db_read_);
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
@@ -445,7 +434,7 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerNetFetch(
   url_loaders_.erase(simple_url_loader_it);
   // TODO(crbug.com/1186444): Report HTTP error info to devtools.
   if (!fetch_body) {
-    ReportUpdateFailed(owner, name,
+    ReportUpdateFailed(group_key,
                        /*delay_type=*/simple_url_loader->NetError() ==
                                net::ERR_INTERNET_DISCONNECTED
                            ? UpdateDelayType::kNoInternet
@@ -458,23 +447,42 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerNetFetch(
       *fetch_body,
       base::BindOnce(
           &InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerJsonParse,
-          weak_factory_.GetWeakPtr(), std::move(owner), std::move(name)));
+          weak_factory_.GetWeakPtr(), std::move(group_key)));
 }
 
 void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerJsonParse(
-    url::Origin owner,
-    std::string name,
+    blink::InterestGroupKey group_key,
     data_decoder::DataDecoder::ValueOrError result) {
-  DCHECK_EQ(owner, owners_to_update_.FrontOwner());
+  DCHECK_EQ(group_key.owner, owners_to_update_.FrontOwner());
   DCHECK_GT(num_in_flight_updates_, 0);
   DCHECK(!waiting_on_db_read_);
-  absl::optional<blink::InterestGroup> interest_group_update =
-      ParseUpdateJson(owner, name, result);
+  absl::optional<InterestGroupUpdate> interest_group_update =
+      ParseUpdateJson(group_key, result);
   if (!interest_group_update) {
-    ReportUpdateFailed(owner, name, UpdateDelayType::kParseFailure);
+    ReportUpdateFailed(group_key, UpdateDelayType::kParseFailure);
     return;
   }
-  UpdateInterestGroup(std::move(*interest_group_update));
+  UpdateInterestGroup(group_key, std::move(*interest_group_update));
+}
+
+void InterestGroupUpdateManager::UpdateInterestGroup(
+    const blink::InterestGroupKey& group_key,
+    InterestGroupUpdate update) {
+  manager_->UpdateInterestGroup(
+      group_key, std::move(update),
+      base::BindOnce(
+          &InterestGroupUpdateManager::OnUpdateInterestGroupCompleted,
+          weak_factory_.GetWeakPtr(), group_key));
+}
+
+void InterestGroupUpdateManager::OnUpdateInterestGroupCompleted(
+    const blink::InterestGroupKey& group_key,
+    bool success) {
+  if (!success) {
+    ReportUpdateFailed(group_key, UpdateDelayType::kParseFailure);
+    return;
+  }
+  OnOneUpdateCompleted();
 }
 
 void InterestGroupUpdateManager::OnOneUpdateCompleted() {
@@ -483,19 +491,12 @@ void InterestGroupUpdateManager::OnOneUpdateCompleted() {
   MaybeContinueUpdatingCurrentOwner();
 }
 
-void InterestGroupUpdateManager::UpdateInterestGroup(
-    blink::InterestGroup group) {
-  manager_->UpdateInterestGroup(std::move(group));
-  OnOneUpdateCompleted();
-}
-
 void InterestGroupUpdateManager::ReportUpdateFailed(
-    const url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     UpdateDelayType delay_type) {
   if (delay_type != UpdateDelayType::kNoInternet) {
     manager_->ReportUpdateFailed(
-        owner, name,
+        group_key,
         /*parse_failure=*/delay_type == UpdateDelayType::kParseFailure);
   }
 

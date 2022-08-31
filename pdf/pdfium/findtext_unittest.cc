@@ -35,6 +35,8 @@ class FindTextTestClient : public TestClient {
     EXPECT_EQ(case_sensitive, expected_case_sensitive_);
     std::u16string haystack = std::u16string(string);
     std::u16string needle = std::u16string(term);
+    EXPECT_FALSE(haystack.empty());
+    EXPECT_FALSE(needle.empty());
 
     std::vector<SearchStringResult> results;
 
@@ -58,7 +60,13 @@ class FindTextTestClient : public TestClient {
 };
 
 void ExpectInitialSearchResults(FindTextTestClient& client, int count) {
-  DCHECK_GT(count, 0);
+  DCHECK_GE(count, 0);
+
+  if (count == 0) {
+    EXPECT_CALL(client,
+                NotifyNumberOfFindResultsChanged(0, /*final_result=*/true));
+    return;
+  }
 
   InSequence sequence;
 
@@ -128,6 +136,42 @@ TEST_F(FindTextTest, FindFancyQuotationMarkText) {
   // don't, using right apostrophe instead of a single quotation mark
   std::u16string term = {'d', 'o', 'n', 0x2019, 't'};
   engine->StartFind(base::UTF16ToUTF8(term), /*case_sensitive=*/true);
+}
+
+TEST_F(FindTextTest, FindHiddenCroppedText) {
+  FindTextTestClient client(/*expected_case_sensitive=*/true);
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world_cropped.pdf"));
+  ASSERT_TRUE(engine);
+
+  // The word "Hello" is cropped out.
+  ExpectInitialSearchResults(client, 0);
+  engine->StartFind("Hello", /*case_sensitive=*/true);
+}
+
+TEST_F(FindTextTest, FindVisibleCroppedText) {
+  FindTextTestClient client(/*expected_case_sensitive=*/true);
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world_cropped.pdf"));
+  ASSERT_TRUE(engine);
+
+  // Only one instance of the word "world" is visible. The other is cropped out.
+  ExpectInitialSearchResults(client, 1);
+  engine->StartFind("world", /*case_sensitive=*/true);
+}
+
+TEST_F(FindTextTest, FindVisibleCroppedTextRepeatedly) {
+  FindTextTestClient client(/*expected_case_sensitive=*/true);
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world_cropped.pdf"));
+  ASSERT_TRUE(engine);
+
+  // Only one instance of the word "world" is visible. The other is cropped out.
+  // These 2 find operations should not trigger https://crbug.com/1344057.
+  ExpectInitialSearchResults(client, 1);
+  engine->StartFind("worl", /*case_sensitive=*/true);
+  ExpectInitialSearchResults(client, 1);
+  engine->StartFind("world", /*case_sensitive=*/true);
 }
 
 TEST_F(FindTextTest, SelectFindResult) {

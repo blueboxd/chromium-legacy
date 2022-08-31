@@ -6,20 +6,19 @@
  * @fileoverview Handles speech parsing for dictation.
  */
 
-import {InputController} from '/accessibility_common/dictation/input_controller.js';
-import {Macro} from '/accessibility_common/dictation/macros/macro.js';
-import {InputTextStrategy} from '/accessibility_common/dictation/parse/input_text_strategy.js';
-import {ParseStrategy} from '/accessibility_common/dictation/parse/parse_strategy.js';
-import {PumpkinParseStrategy} from '/accessibility_common/dictation/parse/pumpkin_parse_strategy.js';
-import {SimpleParseStrategy} from '/accessibility_common/dictation/parse/simple_parse_strategy.js';
+import {InputController} from '../input_controller.js';
+import {LocaleInfo} from '../locale_info.js';
+import {Macro} from '../macros/macro.js';
+
+import {InputTextStrategy} from './input_text_strategy.js';
+import {ParseStrategy} from './parse_strategy.js';
+import {PumpkinParseStrategy} from './pumpkin_parse_strategy.js';
+import {SimpleParseStrategy} from './simple_parse_strategy.js';
 
 /** SpeechParser handles parsing spoken transcripts into Macros. */
 export class SpeechParser {
   /** @param {!InputController} inputController to interact with the IME. */
   constructor(inputController) {
-    /** @private {boolean} */
-    this.isRTLLocale_ = false;
-
     /** @private {!InputController} */
     this.inputController_ = inputController;
 
@@ -33,19 +32,18 @@ export class SpeechParser {
     this.pumpkinParseStrategy_ = null;
   }
 
-  /**
-   * @param {string} locale The Dictation recognition locale. Only some locales
-   *     are supported by Pumpkin.
-   * @return {!Promise}
-   */
-  async initialize(locale) {
-    this.isRTLLocale_ = SpeechParser.RTLLocales.has(locale);
+  /** @return {!Promise} */
+  async refresh() {
+    if (!LocaleInfo.areCommandsSupported()) {
+      this.simpleParseStrategy_ = null;
+      this.pumpkinParseStrategy_ = null;
+      return;
+    }
 
-    // Initialize additional parsing strategies.
-    this.simpleParseStrategy_ =
-        new SimpleParseStrategy(this.inputController_, this.isRTLLocale_);
-    this.pumpkinParseStrategy_ = await PumpkinParseStrategy.create(
-        this.inputController_, this.isRTLLocale_, locale);
+    //  Initialize additional parsing strategies.
+    this.simpleParseStrategy_ = new SimpleParseStrategy(this.inputController_);
+    this.pumpkinParseStrategy_ =
+        await PumpkinParseStrategy.create(this.inputController_);
   }
 
   /**
@@ -74,10 +72,3 @@ export class SpeechParser {
         this.inputTextStrategy_.parse(text));
   }
 }
-
-// All RTL locales from Dictation::GetAllSupportedLocales.
-SpeechParser.RTLLocales = new Set([
-  'ar-AE', 'ar-BH', 'ar-DZ', 'ar-EG', 'ar-IL', 'ar-IQ', 'ar-JO',
-  'ar-KW', 'ar-LB', 'ar-MA', 'ar-OM', 'ar-PS', 'ar-QA', 'ar-SA',
-  'ar-TN', 'ar-YE', 'fa-IR', 'iw-IL', 'ur-IN', 'ur-PK'
-]);

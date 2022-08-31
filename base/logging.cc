@@ -10,7 +10,7 @@
 // build time. Try not to raise this limit unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 350000
+#pragma clang max_tokens_here 470000
 #endif  // NACL_TC_REV
 
 #ifdef BASE_CHECK_H_
@@ -299,8 +299,9 @@ uint64_t TickCount() {
 #if BUILDFLAG(IS_WIN)
   return GetTickCount();
 #elif BUILDFLAG(IS_FUCHSIA)
-  return zx_clock_get_monotonic() /
-         static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
+  return static_cast<uint64_t>(
+      zx_clock_get_monotonic() /
+      static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond));
 #elif BUILDFLAG(IS_APPLE)
   return mach_absolute_time();
 #elif BUILDFLAG(IS_NACL)
@@ -910,7 +911,7 @@ LogMessage::~LogMessage() {
     // Skip the final character of |str_newline|, since LogMessage() will add
     // a newline.
     const auto message = base::StringPiece(str_newline).substr(message_start_);
-    GetScopedFxLogger().LogMessage(file_, line_,
+    GetScopedFxLogger().LogMessage(file_, static_cast<uint32_t>(line_),
                                    message.substr(0, message.size() - 1),
                                    LogSeverityToFuchsiaLogSeverity(severity_));
 #endif  // BUILDFLAG(IS_FUCHSIA)
@@ -1002,8 +1003,22 @@ LogMessage::~LogMessage() {
   }
 }
 
-std::string LogMessage::GetMessageWithoutPrefix() const {
-  return str().substr(message_start_);
+std::string LogMessage::BuildCrashString() const {
+  return BuildCrashString(file(), line(), str().c_str() + message_start_);
+}
+
+std::string LogMessage::BuildCrashString(const char* file,
+                                         int line,
+                                         const char* message_without_prefix) {
+  // Only log last path component.
+  if (file) {
+    const char* slash = strrchr(file, '/');
+    if (slash) {
+      file = slash + 1;
+    }
+  }
+
+  return base::StringPrintf("%s:%d: %s", file, line, message_without_prefix);
 }
 
 // writes the common header info to the stream

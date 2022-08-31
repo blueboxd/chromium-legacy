@@ -9,6 +9,7 @@
 #include "ash/components/audio/sounds.h"
 #include "ash/components/login/auth/authenticator.h"
 #include "ash/components/login/auth/extended_authenticator.h"
+#include "ash/components/login/auth/public/auth_failure.h"
 #include "ash/components/login/session/session_termination_manager.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
@@ -75,6 +76,10 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -204,6 +209,7 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
 }
 
 void ScreenLocker::Init() {
+  VLOG(1) << "ScreenLocker::Init()";
   input_method::InputMethodManager* imm =
       input_method::InputMethodManager::Get();
   saved_ime_state_ = imm->GetActiveIMEState();
@@ -609,6 +615,7 @@ void ScreenLocker::HandleShowLockScreenRequest() {
 
 // static
 void ScreenLocker::Show() {
+  VLOG(1) << "ScreenLocker::Show()";
   base::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(base::CurrentUIThread::IsSet());
 
@@ -643,11 +650,28 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
-  SessionControllerClientImpl::Get()->RunUnlockAnimation(base::BindOnce([]() {
-    session_manager::SessionManager::Get()->SetSessionState(
-        session_manager::SessionState::ACTIVE);
-    ScreenLocker::ScheduleDeletion();
-  }));
+  SessionControllerClientImpl::Get()->RunUnlockAnimation(
+      base::BindOnce(&ScreenLocker::OnUnlockAnimationFinished));
+}
+
+void ScreenLocker::ResetToLockedState() {
+  LoginScreen::Get()->GetModel()->SetFingerprintState(
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId(),
+      FingerprintState::AVAILABLE_DEFAULT);
+  screen_locker_->unlock_started_ = false;
+}
+
+// static
+void ScreenLocker::OnUnlockAnimationFinished(bool aborted) {
+  if (aborted) {
+    // Reset state that was impacted by successful auth.
+    screen_locker_->ResetToLockedState();
+    return;
+  }
+
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  ScreenLocker::ScheduleDeletion();
 }
 
 void ScreenLocker::RefreshPinAndFingerprintTimeout() {

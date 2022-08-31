@@ -8,13 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/aura/aura_export.h"
 #include "ui/display/screen.h"
-
-namespace ui {
-class PlatformScreen;
-}
+#include "ui/ozone/public/platform_screen.h"
 
 namespace aura {
 
@@ -48,12 +46,16 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
   display::Display GetPrimaryDisplay() const override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+  std::unique_ptr<display::Screen::ScreenSaverSuspender> SuspendScreenSaver()
+      override;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
   bool IsScreenSaverActive() const override;
   base::TimeDelta CalculateIdleTime() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
   std::string GetCurrentWorkspace() override;
-  std::vector<base::Value> GetGpuExtraInfo(
+  base::Value::List GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info) override;
 
   // Returns the NativeWindow associated with the AcceleratedWidget.
@@ -65,11 +67,27 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
  protected:
   ui::PlatformScreen* platform_screen() { return platform_screen_.get(); }
 
+ private:
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
-  bool SetScreenSaverSuspended(bool suspend) override;
+  class ScreenSaverSuspenderOzone
+      : public display::Screen::ScreenSaverSuspender {
+   public:
+    explicit ScreenSaverSuspenderOzone(
+        std::unique_ptr<ui::PlatformScreen::PlatformScreenSaverSuspender>
+            suspender);
+
+    ScreenSaverSuspenderOzone(const ScreenSaverSuspenderOzone&) = delete;
+    ScreenSaverSuspenderOzone& operator=(const ScreenSaverSuspenderOzone&) =
+        delete;
+
+    ~ScreenSaverSuspenderOzone() override;
+
+   private:
+    std::unique_ptr<ui::PlatformScreen::PlatformScreenSaverSuspender>
+        suspender_;
+  };
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 
- private:
   gfx::AcceleratedWidget GetAcceleratedWidgetForWindow(
       aura::Window* window) const;
 

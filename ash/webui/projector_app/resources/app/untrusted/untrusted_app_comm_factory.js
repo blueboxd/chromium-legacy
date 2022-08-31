@@ -118,7 +118,11 @@ const CLIENT_DELEGATE = {
   sendXhr(url, method, requestBody, useCredentials, headers) {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'sendXhr', [
-          url, method, requestBody ? requestBody : '', !!useCredentials, headers
+          url,
+          method,
+          requestBody ? requestBody : '',
+          !!useCredentials,
+          headers,
         ]);
   },
 
@@ -185,7 +189,6 @@ const CLIENT_DELEGATE = {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'getScreencast', [screencastId]);
   },
-
 };
 
 /**
@@ -223,7 +226,6 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('onSodaInstallError', (args) => {
       getAppElement().onSodaInstallError();
     });
-
     this.registerMethod('onScreencastsStateChange', (pendingScreencasts) => {
       getAppElement().onScreencastsStateChange(pendingScreencasts);
     });
@@ -234,7 +236,6 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     return this.targetWindow_;
   }
 }
-
 
 /**
  * This is a class that is used to setup the duplex communication channels

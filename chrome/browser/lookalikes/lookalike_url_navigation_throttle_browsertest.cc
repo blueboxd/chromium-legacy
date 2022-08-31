@@ -842,13 +842,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // Advance clock to force a fetch of new engaged sites list.
   test_clock()->Advance(base::Hours(1));
 
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContentsConsoleObserver console_observer(tab);
-  console_observer.SetPattern("Chrome has determined that*character-wsap.com*");
-
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  console_observer.Wait();
 
   histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
   histograms.ExpectBucketCount(
@@ -1553,6 +1547,26 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // interstitial.
   TestInterstitialNotShown(browser(),
                            embedded_test_server()->GetURL("example.net", "/"));
+}
+
+// Test Combo Squatting heuristic. In this test, if kNavigatedUrl is
+// Combo Squatting, the metrics should be recorded but no interstitial
+// page (full page warning) is shown.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       ComboSquatting_ShouldRecordMetricsWithoutUI) {
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("google-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
+
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kComboSquatting);
+  CheckUkm({kNavigatedUrl}, "TriggeredByInitialUrl", false);
 }
 
 scoped_refptr<net::X509Certificate> LoadCertificate() {

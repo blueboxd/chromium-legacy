@@ -196,17 +196,19 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     return drag_controller_ && drag_controller_->started_drag();
   }
 
-  bool IsMutating() const {
-    return drag_controller_ && drag_controller_->is_mutating();
+  void TabWasAdded() {
+    if (drag_controller_)
+      drag_controller_->TabWasAdded();
   }
 
-  bool IsDraggingWindow() const {
-    return drag_controller_ && drag_controller_->is_dragging_window();
+  void OnTabWillBeRemoved(content::WebContents* contents) {
+    if (drag_controller_)
+      drag_controller_->OnTabWillBeRemoved(contents);
   }
 
-  bool IsDraggingTab(content::WebContents* contents) const {
-    return contents && drag_controller_ &&
-           drag_controller_->IsDraggingTab(contents);
+  bool CanRemoveTabIfDragging(content::WebContents* contents) const {
+    return drag_controller_ ? drag_controller_->CanRemoveTabDuringDrag(contents)
+                            : true;
   }
 
   void MaybeStartDrag(TabSlotView* source,
@@ -527,6 +529,12 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
       tab_strip_->tab_container_->group_views()[header->group().value()]
           ->highlight()
           ->SetVisible(true);
+      // Make sure the bounds of the group views are up to date right now
+      // instead of waiting for subsequent drag events - if we are dragging a
+      // window by a group header, we won't get any more events. See
+      // https://crbug.com/1344774.
+      tab_strip_->tab_container_->UpdateTabGroupVisuals(
+          header->group().value());
     }
 
     tab_strip_->tab_container_->SetTabSlotVisibility();
@@ -1000,17 +1008,11 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data) {
   for (TabStripObserver& observer : observers_)
     observer.OnTabAdded(model_index);
 
-  // Stop dragging when a new tab is added and dragging a window. Doing
-  // otherwise results in a confusing state if the user attempts to reattach. We
-  // could allow this and make TabDragController update itself during the add,
-  // but this comes up infrequently enough that it's not worth the complexity.
-  //
   // At the start of AddTabAt() the model and tabs are out sync. Any queries to
   // find a tab given a model index can go off the end of |tabs_|. As such, it
   // is important that we complete the drag *after* adding the tab so that the
   // model and tabstrip are in sync.
-  if (!drag_context_->IsMutating() && drag_context_->IsDraggingWindow())
-    EndDrag(END_DRAG_COMPLETE);
+  drag_context_->TabWasAdded();
 
   Profile* profile = controller_->GetProfile();
   if (profile) {
@@ -1049,11 +1051,10 @@ void TabStrip::MoveTab(int from_model_index,
 void TabStrip::RemoveTabAt(content::WebContents* contents,
                            int model_index,
                            bool was_active) {
-  // OnTabWillBeRemoved should have ended any ongoing drags already - unless the
-  // call is coming from inside the house! (i.e. the TabDragController is doing
-  // the removing as part of reverting a drag)
-  DCHECK(!drag_context_->IsDragSessionActive() ||
-         drag_context_->GetDragController()->is_mutating());
+  // OnTabWillBeRemoved should have ended any ongoing drags containing
+  // `contents` already - unless the call is coming from inside the house! (i.e.
+  // the TabDragController is doing the removing as part of reverting a drag)
+  DCHECK(drag_context_->CanRemoveTabIfDragging(contents));
   tab_container_->RemoveTab(model_index, was_active);
 
   UpdateHoverCard(nullptr, HoverCardUpdateType::kTabRemoved);
@@ -1066,10 +1067,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
 void TabStrip::OnTabWillBeRemoved(content::WebContents* contents,
                                   int model_index) {
-  // End the drag before we remove a tab that's being dragged, to avoid complex
-  // special cases that could result.
-  if (!drag_context_->IsMutating() && drag_context_->IsDraggingTab(contents))
-    EndDrag(END_DRAG_COMPLETE);
+  drag_context_->OnTabWillBeRemoved(contents);
 }
 
 void TabStrip::SetTabData(int model_index, TabRendererData data) {
@@ -1093,8 +1091,8 @@ void TabStrip::AddTabToGroup(absl::optional<tab_groups::TabGroupId> group,
   // Expand the group if the tab that is getting grouped is the active tab. This
   // can result in the group expanding in a series of actions where the final
   // active tab is not in the group.
-  if (model_index == selected_tabs_.active() && group.has_value() &&
-      IsGroupCollapsed(group.value())) {
+  if (static_cast<size_t>(model_index) == selected_tabs_.active() &&
+      group.has_value() && IsGroupCollapsed(group.value())) {
     ToggleTabGroupCollapsedState(
         group.value(), ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
   }
@@ -1213,11 +1211,12 @@ bool TabStrip::ShouldDrawStrokes() const {
 }
 
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
-  DCHECK_GE(new_selection.active(), 0)
+  DCHECK(new_selection.active().has_value())
       << "We should never transition to a state where no tab is active.";
-  Tab* const new_active_tab = tab_at(new_selection.active());
-  Tab* const old_active_tab =
-      selected_tabs_.active() >= 0 ? tab_at(selected_tabs_.active()) : nullptr;
+  Tab* const new_active_tab = tab_at(new_selection.active().value());
+  Tab* const old_active_tab = selected_tabs_.active().has_value()
+                                  ? tab_at(selected_tabs_.active().value())
+                                  : nullptr;
 
   if (new_active_tab != old_active_tab) {
     if (old_active_tab) {
@@ -1239,7 +1238,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
     tab_container_->layout_helper()->SetActiveTab(selected_tabs_.active(),
                                                   new_selection.active());
     if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
-      tab_container_->ScrollTabToVisible(new_selection.active());
+      tab_container_->ScrollTabToVisible(new_selection.active().value());
     }
   }
 
@@ -1284,12 +1283,20 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   }
 }
 
+void TabStrip::ScrollTowardsTrailingTabs(int offset) {
+  tab_container_->ScrollTabContainerByOffset(offset);
+}
+
+void TabStrip::ScrollTowardsLeadingTabs(int offset) {
+  tab_container_->ScrollTabContainerByOffset(-offset);
+}
+
 void TabStrip::OnWidgetActivationChanged(views::Widget* widget, bool active) {
-  if (active && selected_tabs_.active() >= 0) {
+  if (active && selected_tabs_.active().has_value()) {
     // When the browser window is activated, fire a selection event on the
     // currently active tab, to help enable per-tab modes in assistive
     // technologies.
-    tab_at(selected_tabs_.active())
+    tab_at(selected_tabs_.active().value())
         ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
   UpdateHoverCard(nullptr, HoverCardUpdateType::kEvent);
@@ -1373,9 +1380,10 @@ void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
 
   if (IsValidModelIndex(model_index)) {
     if (!tab->IsActive()) {
-      int current_selection = selected_tabs_.active();
-      base::UmaHistogramSparse("Tabs.DesktopTabOffsetOfSwitch",
-                               current_selection - model_index);
+      if (selected_tabs_.active().has_value()) {
+        base::UmaHistogramSparse("Tabs.DesktopTabOffsetOfSwitch",
+                                 selected_tabs_.active().value() - model_index);
+      }
       base::UmaHistogramSparse("Tabs.DesktopTabOffsetFromLeftOfSwitch",
                                model_index);
       base::UmaHistogramSparse("Tabs.DesktopTabOffsetFromRightOfSwitch",
@@ -1623,8 +1631,12 @@ void TabStrip::UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) {
 }
 
 bool TabStrip::ShowDomainInHoverCards() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const auto* app_controller = GetBrowser()->app_controller();
-  return !app_controller || !app_controller->system_app();
+  if (app_controller && app_controller->system_app())
+    return false;
+#endif
+  return true;
 }
 
 bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {

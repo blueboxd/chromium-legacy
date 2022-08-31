@@ -8,7 +8,7 @@
  */
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './cups_printers_entry.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -30,8 +30,9 @@ import {CupsPrintersEntryListBehavior, CupsPrintersEntryListBehaviorInterface} f
  */
 const SettingsCupsNearbyPrintersElementBase = mixinBehaviors(
     [
-      CupsPrintersEntryListBehavior, ListPropertyUpdateBehavior,
-      WebUIListenerBehavior
+      CupsPrintersEntryListBehavior,
+      ListPropertyUpdateBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -251,7 +252,7 @@ class SettingsCupsNearbyPrintersElement extends
       detail: {
         resultCode,
         printerName,
-      }
+      },
     });
     this.dispatchEvent(event);
   }
@@ -300,7 +301,7 @@ class SettingsCupsNearbyPrintersElement extends
         'open-manufacturer-model-dialog-for-specified-printer', {
           bubbles: true,
           composed: true,
-          detail: {item: /** @type {CupsPrinterInfo} */ (printer)}
+          detail: {item: /** @type {CupsPrinterInfo} */ (printer)},
         });
     this.dispatchEvent(openManufacturerDialogEvent);
   }

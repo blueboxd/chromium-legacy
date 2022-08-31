@@ -1,5 +1,10 @@
-{
+def main(request, response):
+  config = request.server.config
+  host = config.browser_host + ":" + str(config.ports["https"][0])
+  return """
+{{
   "provider_urls": [
-    "https://web-platform.test:8444/credential-management/support/fedcm.json"
+    "https://{0}/credential-management/support/fedcm.json"
   ]
-}
+}}
+""".format(host)

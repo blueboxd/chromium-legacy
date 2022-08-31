@@ -13,7 +13,7 @@
 
 import './passwords_list_handler.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './avatar_icon.js';
 import './passwords_shared.css.js';
 import './password_list_item.js';
@@ -200,12 +200,14 @@ export class PasswordsDeviceSectionElement extends
         },
         reflectToAttribute: true,
       },
+
+      focusConfig: Object,
     };
   }
 
   static get observers() {
     return [
-      'maybeRedirectToPasswordsPage_(isUserAllowedToAccessPage_, currentRoute_)'
+      'maybeRedirectToPasswordsPage_(isUserAllowedToAccessPage_, currentRoute_)',
     ];
   }
 
@@ -226,6 +228,7 @@ export class PasswordsDeviceSectionElement extends
   private currentRoute_: Route|null;
   private devicePasswordsLabel_: string;
   private isPasswordViewPageEnabled_: boolean;
+  focusConfig: Map<string, string|(() => void)>;
   private accountStorageOptInStateListener_:
       AccountStorageOptInStateChangedListener|null = null;
 
@@ -270,17 +273,19 @@ export class PasswordsDeviceSectionElement extends
   }
 
   private computeAllDevicePasswords_(): MultiStorePasswordUiEntry[] {
-    return this.savedPasswords.filter(p => p.isPresentOnDevice());
+    return this.savedPasswords.filter(
+        p => p.storedIn !== chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT);
   }
 
   private computeDeviceOnlyPasswords_(): MultiStorePasswordUiEntry[] {
     return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && !p.isPresentInAccount());
+        p => p.storedIn === chrome.passwordsPrivate.PasswordStoreSet.DEVICE);
   }
 
   private computeDeviceAndAccountPasswords_(): MultiStorePasswordUiEntry[] {
     return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && p.isPresentInAccount());
+        p => p.storedIn ===
+            chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT);
   }
 
   private computeIsUserAllowedToAccessPage_(): boolean {

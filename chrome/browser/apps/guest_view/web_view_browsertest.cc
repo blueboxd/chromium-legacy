@@ -44,7 +44,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -3864,10 +3864,10 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
                          testing::Bool(),
                          WebViewTest::DescribeParams);
 
-// https://crbug.com/1087381
+// TODO(crbug.com/1087381): Flaky on mac
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if BUILDFLAG(IS_CHROMEOS) ||                                  \
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) ||             \
     ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
      defined(ADDRESS_SANITIZER))
 #define MAYBE_Shim_TestZoomAPI DISABLED_Shim_TestZoomAPI

@@ -650,25 +650,22 @@ apps::mojom::IntentFilterPtr CreateLockScreenFilterMojom() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1253219): Use FilePaths in intents to avoid dependency on
-// File Manager.
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types) {
   auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
-  return CreateShareIntentFromFiles(file_urls, mime_types);
+  return MakeShareIntent(file_urls, mime_types);
 }
 
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types,
     const std::string& share_text,
     const std::string& share_title) {
   auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
-  return CreateShareIntentFromFiles(file_urls, mime_types, share_text,
-                                    share_title);
+  return MakeShareIntent(file_urls, mime_types, share_text, share_title);
 }
 
 base::flat_map<std::string, std::string> CreateArcIntentExtras(
@@ -688,6 +685,9 @@ base::flat_map<std::string, std::string> CreateArcIntentExtras(
     // Slice off the "S." prefix for the key.
     extras.insert(std::make_pair(kIntentExtraStartType + kIntentPrefixLength,
                                  intent->start_type.value()));
+  }
+  if (!intent->extras.empty()) {
+    extras.insert(intent->extras.begin(), intent->extras.end());
   }
   return extras;
 }
@@ -709,6 +709,9 @@ base::flat_map<std::string, std::string> CreateArcIntentExtras(
     // Slice off the "S." prefix for the key.
     extras.insert(std::make_pair(kIntentExtraStartType + kIntentPrefixLength,
                                  intent->start_type.value()));
+  }
+  if (intent->extras.has_value()) {
+    extras.insert(intent->extras->begin(), intent->extras->end());
   }
   return extras;
 }
@@ -799,11 +802,11 @@ const char* ConvertArcToAppServiceIntentAction(const std::string& arc_action) {
 }
 
 std::string CreateLaunchIntent(const std::string& package_name,
-                               const apps::mojom::IntentPtr& intent) {
+                               const apps::IntentPtr& intent) {
   // If |intent| has |ui_bypassed|, |url| or |data|, it is too complex to
   // convert to a string, so return the empty string.
-  if (intent->ui_bypassed != apps::mojom::OptionalBool::kUnknown ||
-      intent->url.has_value() || intent->data.has_value()) {
+  if (intent->ui_bypassed.has_value() || intent->url.has_value() ||
+      intent->data.has_value()) {
     return std::string();
   }
 
@@ -815,10 +818,8 @@ std::string CreateLaunchIntent(const std::string& package_name,
                             ConvertAppServiceToArcIntentAction(intent->action));
 
   // Convert categories.
-  if (intent->categories.has_value()) {
-    for (const auto& category : intent->categories.value()) {
-      ret += base::StringPrintf("%s=%s;", arc::kCategory, category.c_str());
-    }
+  for (const auto& category : intent->categories) {
+    ret += base::StringPrintf("%s=%s;", arc::kCategory, category.c_str());
   }
 
   // Set launch flags.
@@ -861,10 +862,8 @@ std::string CreateLaunchIntent(const std::string& package_name,
                               intent->start_type.value().c_str());
   }
 
-  if (intent->extras.has_value()) {
-    for (auto it : intent->extras.value()) {
-      ret += base::StringPrintf("%s=%s;", it.first.c_str(), it.second.c_str());
-    }
+  for (auto it : intent->extras) {
+    ret += base::StringPrintf("%s=%s;", it.first.c_str(), it.second.c_str());
   }
 
   ret += arc::kEndSuffix;

@@ -1173,7 +1173,7 @@ HangWatchState::HangWatchState(HangWatcher::ThreadType thread_type)
 #if BUILDFLAG(IS_MAC)
   uint64_t thread_id;
   pthread_threadid_np(pthread_self(), &thread_id);
-  thread_id_ = thread_id;
+  thread_id_ = checked_cast<PlatformThreadId>(thread_id);
 #else
   thread_id_ = PlatformThread::CurrentId();
 #endif

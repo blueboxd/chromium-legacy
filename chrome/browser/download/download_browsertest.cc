@@ -98,6 +98,7 @@
 #include "components/reputation/core/safety_tip_test_utils.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/safe_browsing_service_interface.h"
+#include "components/safe_browsing/content/common/file_type_policies_test_util.h"
 #include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -537,7 +538,7 @@ void CreateCompletedDownload(content::DownloadManager* download_manager,
 bool IsDownloadSurfaceVisible(BrowserWindow* window) {
   return base::FeatureList::IsEnabled(safe_browsing::kDownloadBubble)
              ? window->GetDownloadBubbleUIController()
-                   ->display_controller_for_testing()
+                   ->GetDownloadDisplayController()
                    ->download_display_for_testing()
                    ->IsShowingDetails()
              : window->IsDownloadShelfVisible();
@@ -3692,19 +3693,15 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
 // Test that we show a dangerous downloads warning for a dangerous file
 // downloaded through a blob: URL.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
-#if BUILDFLAG(IS_WIN)
-  // On Windows, if SafeBrowsing is enabled, certain file types (.exe, .cab,
+  safe_browsing::FileTypePoliciesTestOverlay scoped_dangerous =
+      safe_browsing::ScopedMarkAllFilesDangerousForTesting();
+
+  // If SafeBrowsing is enabled, certain file types (.exe, .cab,
   // .msi) will be handled by the DownloadProtectionService. However, if the URL
   // is non-standard (e.g. blob:) then those files won't be handled by the
   // DPS. We should be showing the dangerous download warning for any file
   // considered dangerous and isn't handled by the DPS.
-  const char kFilename[] = "foo.exe";
-#else
-  const char kFilename[] = "foo.swf";
-#endif
-
-  std::string path("downloads/download-dangerous-blob.html?filename=");
-  path += kFilename;
+  std::string path("downloads/download-dangerous-blob.html?filename=foo.evil");
 
   // Need to use http urls because the blob js doesn't work on file urls for
   // security reasons.
@@ -5310,6 +5307,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
+  safe_browsing::FileTypePoliciesTestOverlay scoped_dangerous =
+      safe_browsing::ScopedMarkAllFilesDangerousForTesting();
+
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safe_browsing::SetExtendedReportingPrefForTests(prefs, true);
@@ -5363,7 +5363,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   ASSERT_TRUE(updated_downloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
+// TODO the test is flaky on Mac. See https://crbug.com/1345657.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_FeedbackServiceKeepDownload DISABLED_FeedbackServiceKeepDownload
+#else
+#define MAYBE_FeedbackServiceKeepDownload FeedbackServiceKeepDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
+  // Make all file types DANGEROUS for testing.
+  safe_browsing::FileTypePoliciesTestOverlay scoped_dangerous =
+      safe_browsing::ScopedMarkAllFilesDangerousForTesting();
+
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safe_browsing::SetExtendedReportingPrefForTests(prefs, true);

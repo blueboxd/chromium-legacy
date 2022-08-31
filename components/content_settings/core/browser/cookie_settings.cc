@@ -18,6 +18,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/features.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"
@@ -54,10 +55,11 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
       ContentSettingsType::COOKIES, provider_id);
 }
 
-void CookieSettings::GetCookieSettings(
-    ContentSettingsForOneType* settings) const {
+ContentSettingsForOneType CookieSettings::GetCookieSettings() const {
+  ContentSettingsForOneType settings;
   host_content_settings_map_->GetSettingsForOneType(
-      ContentSettingsType::COOKIES, settings);
+      ContentSettingsType::COOKIES, &settings);
+  return settings;
 }
 
 void CookieSettings::RegisterProfilePrefs(
@@ -202,8 +204,7 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
   // our checking logic.
   // We'll perform this check after we know if we will |block| or not to avoid
   // performing extra work in scenarios we already allow.
-  if (block &&
-      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  if (block && base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
     ContentSetting host_setting = host_content_settings_map_->GetContentSetting(
         url, first_party_url, ContentSettingsType::STORAGE_ACCESS);
 

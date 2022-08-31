@@ -1554,6 +1554,9 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetMainFrameClipsContent(!prefs.record_whole_document);
 
+  RuntimeEnabledFeatures::SetStylusHandwritingEnabled(
+      prefs.stylus_handwriting_enabled);
+
   settings->SetSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->SetSpatialNavigationEnabled(prefs.spatial_navigation_enabled);
@@ -1967,12 +1970,12 @@ void WebViewImpl::DidAttachLocalMainFrame() {
               ->GetAgentGroupScheduler()
               .DefaultTaskRunner()));
 
+  auto& viewport = GetPage()->GetVisualViewport();
   if (does_composite_) {
     // When attaching a local main frame, set up any state on the compositor.
     MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
     MainFrameImpl()->FrameWidgetImpl()->SetPrefersReducedMotion(
         web_preferences_.prefers_reduced_motion);
-    auto& viewport = GetPage()->GetVisualViewport();
     MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
@@ -1980,6 +1983,19 @@ void WebViewImpl::DidAttachLocalMainFrame() {
     // progress is made and BeginMainFrames are explicitly asked for.
     scoped_defer_main_frame_update_ =
         MainFrameImpl()->FrameWidgetImpl()->DeferMainFrameUpdate();
+  }
+
+  // It's possible that at the time that `local_frame` attached its document it
+  // was provisional so it couldn't initialize the root scroller. Try again now
+  // that the frame has been attached; this is a no-op if the root scroller is
+  // already initialized.
+  if (viewport.IsActiveViewport()) {
+    DCHECK(local_frame->GetDocument());
+    // DidAttachLocalMainFrame can be called before a new document is attached
+    // so ensure we don't try to initialize the root scroller on a stopped
+    // document.
+    if (local_frame->GetDocument()->IsActive())
+      local_frame->View()->InitializeRootScroller();
   }
 }
 
@@ -3521,17 +3537,23 @@ void WebViewImpl::PageScaleFactorChanged() {
   local_main_frame_host_remote_->ScaleFactorChanged(viewport.Scale());
 
   if (dev_tools_emulator_->HasViewportOverride()) {
-    TransformationMatrix device_emulation_transform =
-        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
-    SetDeviceEmulationTransform(device_emulation_transform);
+    // TODO(bokan): Can HasViewportOverride be set on a nested main frame? If
+    // not, we can enforce that when setting it and DCHECK IsOutermostMainFrame
+    // instead.
+    if (MainFrameImpl()->IsOutermostMainFrame()) {
+      TransformationMatrix device_emulation_transform =
+          dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
+      SetDeviceEmulationTransform(device_emulation_transform);
+    }
   }
 }
 
-void WebViewImpl::MainFrameScrollOffsetChanged() {
+void WebViewImpl::OutermostMainFrameScrollOffsetChanged() {
   DCHECK(MainFrameImpl());
+  DCHECK(MainFrameImpl()->IsOutermostMainFrame());
   if (dev_tools_emulator_->HasViewportOverride()) {
     TransformationMatrix device_emulation_transform =
-        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+        dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
     SetDeviceEmulationTransform(device_emulation_transform);
   }
 }
@@ -3777,7 +3799,6 @@ gfx::Size WebViewImpl::GetPreferredSizeForTest() {
 }
 
 void WebViewImpl::StopDeferringMainFrameUpdate() {
-  DCHECK(MainFrameImpl());
   scoped_defer_main_frame_update_ = nullptr;
 }
 

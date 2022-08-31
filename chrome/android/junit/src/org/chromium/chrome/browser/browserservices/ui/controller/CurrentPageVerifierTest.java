@@ -193,13 +193,13 @@ public class CurrentPageVerifierTest {
                 false /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */,
                 false /* isReload */);
         for (CustomTabTabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
-            tabObserver.onDidStartNavigation(mTab, navigation);
+            tabObserver.onDidStartNavigationInPrimaryMainFrame(mTab, navigation);
         }
 
         navigation.didFinish(gurl, false /* isErrorPage */, true /* hasCommitted */,
                 false /* isFragmentNavigation */, false /* isDownload */,
                 false /* isValidSearchFormUrl */, 0 /* pageTransition */, 0 /* errorCode*/,
-                200 /* httpStatusCode*/);
+                200 /* httpStatusCode*/, false /* isExternalProtocol */);
         for (CustomTabTabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidFinishNavigation(mTab, navigation);
         }

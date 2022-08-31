@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/shared_image_backing_d3d.h"
+#include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/win/mf_helpers.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -242,10 +242,9 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
     }
   }
 
-  auto shared_image_backings =
-      gpu::SharedImageBackingD3D::CreateFromVideoTexture(
-          mailboxes, dxgi_format, size, usage, texture, array_slice,
-          std::move(dxgi_shared_handle_state));
+  auto shared_image_backings = gpu::D3DImageBacking::CreateFromVideoTexture(
+      mailboxes, dxgi_format, size, usage, texture, array_slice,
+      std::move(dxgi_shared_handle_state));
   if (shared_image_backings.empty()) {
     std::move(on_error_cb)
         .Run(std::move(D3D11Status::Codes::kCreateSharedImageFailed));

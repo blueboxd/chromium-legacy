@@ -13,19 +13,18 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/privacy_budget/identifiability_study_state.h"
+#include "chrome/browser/privacy_budget/privacy_budget_browsertest_util.h"
 #include "chrome/browser/privacy_budget/privacy_budget_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
@@ -41,10 +40,6 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_test_helper.h"
 #include "components/unified_consent/unified_consent_service.h"
-#include "components/variations/service/buildflags.h"
-#include "content/public/browser/back_forward_cache.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -63,17 +58,17 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "url/gurl.h"
 
-class Profile;
-
-namespace ukm {
-class UkmService;
-}  // namespace ukm
-
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
 #else
 #include "chrome/test/base/in_process_browser_test.h"
 #endif
+
+class Profile;
+
+namespace ukm {
+class UkmService;
+}  // namespace ukm
 
 namespace {
 
@@ -86,135 +81,31 @@ uint64_t HashFeature(const blink::mojom::WebFeature& feature) {
       .ToUkmMetricHash();
 }
 
-// This test runs on Android as well as desktop platforms.
-class PrivacyBudgetBrowserTestBase : public SyncTest {
+class EnableRandomSampling {
  public:
-  PrivacyBudgetBrowserTestBase() : SyncTest(SINGLE_CLIENT) {}
-
-  content::WebContents* web_contents() {
-    return chrome_test_utils::GetActiveWebContents(this);
-  }
-
-  static ukm::UkmService* ukm_service() {
-    return g_browser_process->GetMetricsServicesManager()->GetUkmService();
-  }
-
-  static PrefService* local_state() { return g_browser_process->local_state(); }
-
-  bool EnableUkmRecording() {
-    // 1. Enable sync.
-    Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
-    sync_test_harness_ = metrics::test::InitializeProfileForSync(
-        profile, GetFakeServer()->AsWeakPtr());
-    EXPECT_TRUE(sync_test_harness_->SetupSync());
-
-    // 2. Signal consent for UKM reporting.
-    unified_consent::UnifiedConsentService* consent_service =
-        UnifiedConsentServiceFactory::GetForProfile(profile);
-    if (consent_service != nullptr)
-      consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
-
-    // 3. Enable metrics reporting.
-    is_metrics_reporting_enabled_ = true;
-    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-        &is_metrics_reporting_enabled_);
-
-    // UpdateUploadPermissions causes the MetricsServicesManager to look at the
-    // consent signals and re-evaluate whether reporting should be enabled.
-    g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
-        true);
-
-    // The following sequence synchronously completes UkmService initialization
-    // (if it wasn't initialized yet) and flushes any accumulated metrics.
-    ukm::UkmTestHelper ukm_test_helper(ukm_service());
-    ukm_test_helper.BuildAndStoreLog();
-    std::unique_ptr<ukm::Report> report_to_discard =
-        ukm_test_helper.GetUkmReport();
-
-    return ukm::UkmTestHelper(ukm_service()).IsRecordingEnabled();
-  }
-
-  bool DisableUkmRecording() {
-    EXPECT_TRUE(is_metrics_reporting_enabled_)
-        << "DisableUkmRecording() should only be called after "
-           "EnableUkmRecording()";
-    is_metrics_reporting_enabled_ = false;
-    g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
-        true);
-    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-        nullptr);
-    return !ukm::UkmTestHelper(ukm_service()).IsRecordingEnabled();
-  }
-
-  void TearDown() override {
-    if (is_metrics_reporting_enabled_) {
-      ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-          nullptr);
-    }
-  }
-
- private:
-  bool is_metrics_reporting_enabled_ = false;
-  std::unique_ptr<SyncServiceImplHarness> sync_test_harness_;
-};
-
-class PrivacyBudgetBrowserTestWithScopedConfig
-    : public PrivacyBudgetBrowserTestBase {
- public:
-  PrivacyBudgetBrowserTestWithScopedConfig() {
-    privacy_budget_config_.Apply(test::ScopedPrivacyBudgetConfig::Parameters());
-    feature_list_.InitAndEnableFeatureWithParameters(
-        ukm::kUkmFeature,
-        base::FieldTrialParams{{"WhitelistEntries", "Identifiability"}});
-  }
+  EnableRandomSampling()
+      : privacy_budget_config_(
+            test::ScopedPrivacyBudgetConfig::Presets::kEnableRandomSampling) {}
 
  private:
   test::ScopedPrivacyBudgetConfig privacy_budget_config_;
-  base::test::ScopedFeatureList feature_list_;
 };
+
+class PrivacyBudgetBrowserTestEnableRandomSampling
+    : private EnableRandomSampling,
+      public PlatformBrowserTest {};
 
 class PrivacyBudgetBrowserTestWithTestRecorder
-    : public PrivacyBudgetBrowserTestWithScopedConfig {
- public:
-  void SetUpOnMainThread() override {
-    PrivacyBudgetBrowserTestBase::SetUpOnMainThread();
-    // Do an initial empty navigation then create the recorder to make sure we
-    // start on a clean slate. This clears the platform differences in between
-    // Android and Desktop.
-    content::NavigateToURLBlockUntilNavigationsComplete(web_contents(),
-                                                        GURL("about:blank"), 1);
-    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
-  }
-
-  ukm::TestUkmRecorder& recorder() { return *ukm_recorder_; }
-
- private:
-  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
-};
+    : private EnableRandomSampling,
+      public PrivacyBudgetBrowserTestBaseWithTestRecorder {};
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestEnableRandomSampling,
                        BrowserSideSettingsIsActive) {
   ASSERT_TRUE(base::FeatureList::IsEnabled(features::kIdentifiabilityStudy));
   const auto* settings = blink::IdentifiabilityStudySettings::Get();
   EXPECT_TRUE(settings->IsActive());
-}
-
-// When UKM resets the Client ID for some reason the study should reset its
-// local state as well.
-IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
-                       UkmClientIdChangesResetStudyState) {
-  EXPECT_TRUE(blink::IdentifiabilityStudySettings::Get()->IsActive());
-  ASSERT_TRUE(EnableUkmRecording());
-
-  local_state()->SetString(prefs::kPrivacyBudgetSeenSurfaces, "1,2,3");
-
-  ASSERT_TRUE(DisableUkmRecording());
-
-  EXPECT_TRUE(
-      local_state()->GetString(prefs::kPrivacyBudgetSeenSurfaces).empty())
-      << "Active surface list still exists after resetting client ID";
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
@@ -386,7 +277,6 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
                                                       GURL("about:blank"), 1);
 
   // Wait for the metrics to come down the pipe.
-  content::RunAllTasksUntilIdle();
   run_loop.Run();
 
   auto merged_entries = recorder().GetMergedEntriesByName(
@@ -457,7 +347,6 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
                                                       GURL("about:blank"), 1);
 
   // Wait for the metrics to come down the pipe.
-  content::RunAllTasksUntilIdle();
   run_loop.Run();
 
   auto merged_entries = recorder().GetMergedEntriesByName(
@@ -498,14 +387,98 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithTestRecorder,
   }
 }
 
-// Fails on Window, see https://crbug.com/1268787
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_IncludesMetadata DISABLED_IncludesMetadata
-#else
-#define MAYBE_IncludesMetadata IncludesMetadata
-#endif
-IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithScopedConfig,
-                       MAYBE_IncludesMetadata) {
+namespace {
+
+// Test class that allows to enable UKM recording.
+class PrivacyBudgetBrowserTestWithUkmRecording : private EnableRandomSampling,
+                                                 public SyncTest {
+ public:
+  PrivacyBudgetBrowserTestWithUkmRecording() : SyncTest(SINGLE_CLIENT) {}
+
+  static ukm::UkmService* ukm_service() {
+    return g_browser_process->GetMetricsServicesManager()->GetUkmService();
+  }
+
+  static PrefService* local_state() { return g_browser_process->local_state(); }
+
+  bool EnableUkmRecording() {
+    // 1. Enable sync.
+    Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
+    sync_test_harness_ = metrics::test::InitializeProfileForSync(
+        profile, GetFakeServer()->AsWeakPtr());
+    EXPECT_TRUE(sync_test_harness_->SetupSync());
+
+    // 2. Signal consent for UKM reporting.
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile);
+    if (consent_service != nullptr)
+      consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+
+    // 3. Enable metrics reporting.
+    is_metrics_reporting_enabled_ = true;
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        &is_metrics_reporting_enabled_);
+
+    // UpdateUploadPermissions causes the MetricsServicesManager to look at the
+    // consent signals and re-evaluate whether reporting should be enabled.
+    g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
+        true);
+
+    // The following sequence synchronously completes UkmService initialization
+    // (if it wasn't initialized yet) and flushes any accumulated metrics.
+    ukm::UkmTestHelper ukm_test_helper(ukm_service());
+    ukm_test_helper.BuildAndStoreLog();
+    std::unique_ptr<ukm::Report> report_to_discard =
+        ukm_test_helper.GetUkmReport();
+
+    ukm_service()->SetSamplingForTesting(1);
+    return ukm::UkmTestHelper(ukm_service()).IsRecordingEnabled();
+  }
+
+  bool DisableUkmRecording() {
+    EXPECT_TRUE(is_metrics_reporting_enabled_)
+        << "DisableUkmRecording() should only be called after "
+           "EnableUkmRecording()";
+    is_metrics_reporting_enabled_ = false;
+    g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
+        true);
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        nullptr);
+    return !ukm::UkmTestHelper(ukm_service()).IsRecordingEnabled();
+  }
+
+  void TearDown() override {
+    if (is_metrics_reporting_enabled_) {
+      ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+          nullptr);
+    }
+  }
+
+ private:
+  bool is_metrics_reporting_enabled_ = false;
+  std::unique_ptr<SyncServiceImplHarness> sync_test_harness_;
+};
+
+}  // namespace
+
+// When UKM resets the Client ID for some reason the study should reset its
+// local state as well.
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithUkmRecording,
+                       UkmClientIdChangesResetStudyState) {
+  EXPECT_TRUE(blink::IdentifiabilityStudySettings::Get()->IsActive());
+  ASSERT_TRUE(EnableUkmRecording());
+
+  local_state()->SetString(prefs::kPrivacyBudgetSeenSurfaces, "1,2,3");
+
+  ASSERT_TRUE(DisableUkmRecording());
+
+  EXPECT_TRUE(
+      local_state()->GetString(prefs::kPrivacyBudgetSeenSurfaces).empty())
+      << "Active surface list still exists after resetting client ID";
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestWithUkmRecording,
+                       IncludesMetadata) {
   ASSERT_TRUE(base::FeatureList::IsEnabled(features::kIdentifiabilityStudy));
   ASSERT_TRUE(EnableUkmRecording());
 
@@ -589,23 +562,31 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetGroupConfigBrowserTest, LoadsAGroup) {
   ASSERT_TRUE(settings->IsActive());
 }
 
-// The following test requires that the testing config defined in
-// testing/variations/fieldtrial_testing_config.json is applied. The testing
-// config is only applied by default if 1) the
-// "disable_fieldtrial_testing_config" GN flag is set to false, and 2) the build
-// is a non-Chrome branded build.
-#if BUILDFLAG(FIELDTRIAL_TESTING_ENABLED) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
 namespace {
-class PrivacyBudgetFieldtrialConfigTest : public PrivacyBudgetBrowserTestBase {
+
+class PrivacyBudgetAssignedBlockSamplingConfigTest
+    : public PlatformBrowserTest {
  public:
-  // This surface is blocked in fieldtrial_testing_config.json.
+  PrivacyBudgetAssignedBlockSamplingConfigTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kIdentifiabilityStudy,
+        {{features::kIdentifiabilityStudyBlockedMetrics.name, "44033,44289"},
+         {features::kIdentifiabilityStudyBlockedTypes.name, "13,25,28"},
+         {features::kIdentifiabilityStudyBlockWeights.name, "5202,37515,34582"},
+         {features::kIdentifiabilityStudyBlocks.name,
+          // Define three blocks of surfaces.
+          "9129224;865032;8710152;8678920;9305096,"
+          "1722309467823238416;3972031034286914064,"
+          "3873813933275956760;7532279523433960728;13014994009983628312,"},
+         {features::kIdentifiabilityStudyGeneration.name, "7"}});
+  }
+
   static constexpr auto kBlockedSurface =
       blink::IdentifiableSurface::FromMetricHash(44033);
 
-  // This surface is not mentioned in fieldtrial_testing_config.json and is
-  // not blocked by default. It should be considered allowed, but its metrics
-  // will not be recorded because it is not one of the active surfaces.
+  // This surface is not mentioned above and is not blocked by default. It
+  // should be considered allowed, but its metrics will not be recorded because
+  // it is not one of the active surfaces.
   static constexpr auto kAllowedInactiveSurface =
       blink::IdentifiableSurface::FromMetricHash(44290);
 
@@ -613,21 +594,13 @@ class PrivacyBudgetFieldtrialConfigTest : public PrivacyBudgetBrowserTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-const blink::IdentifiableSurface
-    PrivacyBudgetFieldtrialConfigTest::kBlockedSurface;
-const blink::IdentifiableSurface
-    PrivacyBudgetFieldtrialConfigTest::kAllowedInactiveSurface;
 }  // namespace
 
-// //testing/variations/fieldtrial_testing_config.json defines a set of
-// parameters that should effectively enable the identifiability study for
-// browser tests. This test verifies that those settings work. This isn't
-// testing whether fieldtrial work, but rather we are testing if the process
-// picks up the config correctly since it is non-trivial.
-IN_PROC_BROWSER_TEST_F(PrivacyBudgetFieldtrialConfigTest,
-                       LoadsSettingsFromFieldTrialConfig) {
+// This test checks that the Identifiability Study configuration is picked up
+// correctly from the field trial parameters.
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetAssignedBlockSamplingConfigTest,
+                       LoadsSettingsFromFieldTrialParameters) {
   ASSERT_TRUE(base::FeatureList::IsEnabled(features::kIdentifiabilityStudy));
-  ASSERT_TRUE(EnableUkmRecording());
 
   const auto* settings = blink::IdentifiabilityStudySettings::Get();
   EXPECT_TRUE(settings->IsActive());
@@ -648,5 +621,63 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetFieldtrialConfigTest,
       blink::IdentifiableSurface::Type::kMediaCapabilities_DecodingInfo));
 }
 
-#endif  // BUILDFLAG(FIELDTRIAL_TESTING_ENABLED) &&
-        // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+namespace {
+
+class PrivacyBudgetBrowserTestActiveSampling : public PlatformBrowserTest {
+ public:
+  PrivacyBudgetBrowserTestActiveSampling() {
+    test::ScopedPrivacyBudgetConfig::Parameters params;
+    params.enabled = true;
+    params.enable_active_sampling = true;
+    params.actively_sampled_fonts = {"Arial", "Helvetica"};
+    privacy_budget_config_.Apply(params);
+  }
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
+    PlatformBrowserTest::CreatedBrowserMainParts(parts);
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+  }
+
+  ukm::TestUkmRecorder& ukm_recorder() { return *ukm_recorder_; }
+
+ private:
+  test::ScopedPrivacyBudgetConfig privacy_budget_config_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTestActiveSampling,
+                       ActiveSamplingIsPerformed) {
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      chrome_test_utils::GetActiveWebContents(this), GURL("about:blank"), 1);
+  content::RunAllTasksUntilIdle();
+  auto merged_entries = ukm_recorder().GetMergedEntriesByName(
+      ukm::builders::Identifiability::kEntryName);
+
+  std::vector<uint64_t> reported_surface_keys;
+  for (const auto& entry : merged_entries) {
+    for (const auto& metric : entry.second->metrics) {
+      reported_surface_keys.push_back(metric.first);
+    }
+  }
+
+  uint64_t key_model = blink::IdentifiableSurface::FromTypeAndToken(
+                           blink::IdentifiableSurface::Type::
+                               kNavigatorUAData_GetHighEntropyValues,
+                           blink::IdentifiableToken("model"))
+                           .ToUkmMetricHash();
+  uint64_t key_arial =
+      blink::IdentifiableSurface::FromTypeAndToken(
+          blink::IdentifiableSurface::Type::kFontFamilyAvailable,
+          blink::IdentifiableToken("arial"))
+          .ToUkmMetricHash();
+  uint64_t key_helvetica =
+      blink::IdentifiableSurface::FromTypeAndToken(
+          blink::IdentifiableSurface::Type::kFontFamilyAvailable,
+          blink::IdentifiableToken("helvetica"))
+          .ToUkmMetricHash();
+  EXPECT_THAT(reported_surface_keys,
+              testing::IsSupersetOf({key_model, key_arial, key_helvetica}));
+}

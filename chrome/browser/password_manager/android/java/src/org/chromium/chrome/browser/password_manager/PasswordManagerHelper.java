@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.UNIFIED_PASSWO
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +19,7 @@ import android.os.SystemClock;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.common.base.Optional;
 
 import org.chromium.base.Callback;
@@ -24,7 +27,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
+import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerBackendException;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
+import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper.PasswordCheckBackendException;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncService;
@@ -38,7 +43,10 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** A helper class for showing PasswordSettings. */
+/**
+ * A helper class for showing PasswordSettings.
+ * TODO(crbug.com/1345232): Split up this class
+ **/
 public class PasswordManagerHelper {
     // Key for the argument with which PasswordsSettings will be launched. The value for
     // this argument should be part of the ManagePasswordsReferrer enum, which contains
@@ -60,6 +68,9 @@ public class PasswordManagerHelper {
     }
 
     private static final String UPM_VARIATION_FEATURE_PARAM = "stage";
+
+    // Referrer string for the Google Play Store when installing GMS Core package
+    private static final String STORE_REFERER = "chrome_upm";
 
     // Loading dialog is dismissed with this delay after sending an intent to prevent
     // the old activity from showing up before the new one is shown.
@@ -95,8 +106,6 @@ public class PasswordManagerHelper {
     private static final String LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM =
             "PasswordManager.ModalLoadingDialog.PasswordCheckup.Outcome";
 
-    private static PasswordCheckupClientMetricsRecorder sPasswordCheckupMetricsRecorderForTesting;
-
     /**
      *  The identifier of the loading dialog outcome.
      *
@@ -128,17 +137,16 @@ public class PasswordManagerHelper {
      * @param context used to show the UI to manage passwords.
      */
     public static void showPasswordSettings(Context context, @ManagePasswordsReferrer int referrer,
-            SettingsLauncher settingsLauncher, CredentialManagerLauncher credentialManagerLauncher,
-            SyncService syncService,
+            SettingsLauncher settingsLauncher, SyncService syncService,
             ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
         RecordHistogram.recordEnumeratedHistogram("PasswordManager.ManagePasswordsReferrer",
                 referrer, ManagePasswordsReferrer.MAX_VALUE + 1);
 
-        if (credentialManagerLauncher != null && canUseUpmCheckup()) {
+        if (canUseUpm()) {
             LoadingModalDialogCoordinator loadingDialogCoordinator =
                     LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
-            launchTheCredentialManager(
-                    referrer, credentialManagerLauncher, syncService, loadingDialogCoordinator);
+            launchTheCredentialManager(referrer, syncService, loadingDialogCoordinator,
+                    modalDialogManagerSupplier, context);
             return;
         }
 
@@ -148,22 +156,42 @@ public class PasswordManagerHelper {
                 context, PASSWORD_SETTINGS_CLASS, fragmentArgs));
     }
 
-    // TODO(crbug.com/1327294): Make sure we rely on the same util in all places that need
-    // to check whether UPM can be used (for password check as well as for all other cases that
-    // share the same preconditions, e.g. launching the credential manager).
-    public static boolean canUseUpmCheckup() {
+    /**
+     * Checks the availability and status of the UPM feature.
+     * All clients should check this before trying to use UPM methods.
+     * Checks for the UPM to be anabled and downstream backend to be available.
+     *
+     * TODO(crbug.com/1327294): Make sure we rely on the same util in all places that need
+     * to check whether UPM can be used (for password check as well as for all other cases that
+     * share the same preconditions, e.g. launching the credential manager).
+     *
+     * TODO(crbug.com/1345232): pass syncService and prefService instances as parameters
+     *
+     * @return True if Unified Password Manager can be used, false otherwise.
+     */
+    public static boolean canUseUpm() {
         SyncService syncService = SyncService.get();
         PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
         return PasswordManagerHelper.usesUnifiedPasswordManagerUI() && syncService != null
                 && hasChosenToSyncPasswords(syncService)
                 && !prefService.getBoolean(
-                        Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS);
+                        Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS)
+                && PasswordManagerBackendSupportHelper.getInstance().isBackendPresent();
     }
 
+    /**
+     * Launches the Password Checkup UI from Google Play Services.
+     *
+     * @param context used to show the loading dialog.
+     * @param referrer the place that requested to show the UI.
+     * @param syncService the service to query about the sync status.
+     * @param modalDialogManagerSupplier The supplier of the ModalDialogManager to be used by
+     *         loading dialog.
+     */
     public static void showPasswordCheckup(Context context, @PasswordCheckReferrer int referrer,
-            PasswordCheckupClientHelper checkupClient, SyncService syncService,
+            SyncService syncService,
             ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
-        if (!usesUnifiedPasswordManagerUI()) return;
+        assert canUseUpm();
 
         Optional<String> account = hasChosenToSyncPasswords(syncService)
                 ? Optional.of(CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()))
@@ -172,7 +200,8 @@ public class PasswordManagerHelper {
         LoadingModalDialogCoordinator loadingDialogCoordinator =
                 LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
 
-        launchPasswordCheckup(referrer, checkupClient, account, loadingDialogCoordinator);
+        launchPasswordCheckup(
+                referrer, account, loadingDialogCoordinator, modalDialogManagerSupplier, context);
     }
 
     /**
@@ -180,19 +209,28 @@ public class PasswordManagerHelper {
      * PasswordSpecifics then saves it to the ChromeSync module.
      *
      * @param referrer the place that requested to start a check.
-     * @param checkupClient the {@link PasswordCheckupClientHelper} instance to launch the checkup
-     *         with.
      * @param accountName the account name that is syncing passwords. If no value was provided local
      *         account will be used
      * @param successCallback callback called when password check finishes successfully
      * @param failureCallback callback called if password check encountered an error
      */
     public static void runPasswordCheckupInBackground(@PasswordCheckReferrer int referrer,
-            PasswordCheckupClientHelper checkupClient, Optional<String> accountName,
-            Callback<Void> successCallback, Callback<Exception> failureCallback) {
+            Optional<String> accountName, Callback<Void> successCallback,
+            Callback<Exception> failureCallback) {
+        assert canUseUpm();
+
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         PasswordCheckOperation.RUN_PASSWORD_CHECKUP);
+
+        PasswordCheckupClientHelper checkupClient;
+        try {
+            checkupClient = getPasswordCheckupClientHelper();
+        } catch (Exception exception) {
+            failureCallback.onResult(exception);
+            return;
+        }
+
         checkupClient.runPasswordCheckupInBackground(referrer, accountName,
                 result
                 -> {
@@ -209,19 +247,28 @@ public class PasswordManagerHelper {
      * Asynchronously returns the number of breached credentials for the provided account.
      *
      * @param referrer the place that requested number of breached credentials.
-     * @param checkupClient the {@link PasswordCheckupClientHelper} instance to request the count
-     *         with.
      * @param accountName the account name that is syncing passwords. If no value was provided local
      *         account will be used.
      * @param successCallback callback called with the number of breached passwords.
      * @param failureCallback callback called if encountered an error.
      */
     public static void getBreachedCredentialsCount(@PasswordCheckReferrer int referrer,
-            PasswordCheckupClientHelper checkupClient, Optional<String> accountName,
-            Callback<Integer> successCallback, Callback<Exception> failureCallback) {
+            Optional<String> accountName, Callback<Integer> successCallback,
+            Callback<Exception> failureCallback) {
+        assert canUseUpm();
+
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         PasswordCheckOperation.GET_BREACHED_CREDENTIALS_COUNT);
+
+        PasswordCheckupClientHelper checkupClient;
+        try {
+            checkupClient = getPasswordCheckupClientHelper();
+        } catch (Exception exception) {
+            failureCallback.onResult(exception);
+            return;
+        }
+
         checkupClient.getBreachedCredentialsCount(referrer, accountName,
                 result
                 -> {
@@ -308,11 +355,39 @@ public class PasswordManagerHelper {
         prefs.setBoolean(Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS, false);
     }
 
+    public static void launchGmsUpdate(Context context) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String deepLinkUrl = "market://details?id="
+                + GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE + "&referrer=" + STORE_REFERER;
+
+        intent.setPackage("com.android.vending");
+        intent.setData(Uri.parse(deepLinkUrl));
+        intent.putExtra("callerId", context.getPackageName());
+
+        // Request for overlay flow, Play Store will fallback to the default
+        // behaviour if overlay is not available.
+        // TODO(crbug.com/1348506): Use AlleyOop v3 overlay UI after fixing Chrome restart
+        // during the GMS Core installation.
+        // intent.putExtra("overlay", true);
+
+        context.startActivity(intent);
+    }
+
     @VisibleForTesting
     static void launchTheCredentialManager(@ManagePasswordsReferrer int referrer,
-            CredentialManagerLauncher credentialManagerLauncher, SyncService syncService,
-            LoadingModalDialogCoordinator loadingDialogCoordinator) {
-        if (!hasChosenToSyncPasswords(syncService)) return;
+            SyncService syncService, LoadingModalDialogCoordinator loadingDialogCoordinator,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier, Context context) {
+        assert canUseUpm();
+
+        CredentialManagerLauncher credentialManagerLauncher;
+        try {
+            credentialManagerLauncher = getCredentialManagerLauncher();
+        } catch (CredentialManagerBackendException exception) {
+            if (exception.errorCode != CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED) return;
+
+            showGmsUpdateDialog(modalDialogManagerSupplier, context);
+            return;
+        }
 
         loadingDialogCoordinator.show();
 
@@ -331,10 +406,20 @@ public class PasswordManagerHelper {
     }
 
     @VisibleForTesting
-    static void launchPasswordCheckup(@PasswordCheckReferrer int referrer,
-            PasswordCheckupClientHelper checkupClient, Optional<String> account,
-            LoadingModalDialogCoordinator loadingDialogCoordinator) {
-        assert checkupClient != null;
+    static void launchPasswordCheckup(@PasswordCheckReferrer int referrer, Optional<String> account,
+            LoadingModalDialogCoordinator loadingDialogCoordinator,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier, Context context) {
+        assert canUseUpm();
+
+        PasswordCheckupClientHelper checkupClient;
+        try {
+            checkupClient = getPasswordCheckupClientHelper();
+        } catch (PasswordCheckBackendException exception) {
+            if (exception.errorCode != CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED) return;
+
+            showGmsUpdateDialog(modalDialogManagerSupplier, context);
+            return;
+        }
 
         loadingDialogCoordinator.show();
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
@@ -498,5 +583,59 @@ public class PasswordManagerHelper {
                 throw new AssertionError(
                         "Unexpected state for metrics recording: " + loadingDialogState);
         }
+    }
+
+    private static void showGmsUpdateDialog(
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier, Context context) {
+        ModalDialogManager modalDialogManager = modalDialogManagerSupplier.get();
+        if (modalDialogManager == null) return;
+
+        OutdatedGmsCoreDialog dialog =
+                new OutdatedGmsCoreDialog(modalDialogManager, context, isAccepted -> {
+                    if (isAccepted) launchGmsUpdate(context);
+                });
+        dialog.show();
+    }
+
+    // TODO(crbug.com/1327578): Exceptions should be thrown by factory, remove this method.
+    private static PasswordCheckupClientHelper getPasswordCheckupClientHelper()
+            throws PasswordCheckBackendException {
+        PasswordCheckupClientHelper helper =
+                PasswordCheckupClientHelperFactory.getInstance().createHelper();
+        if (helper != null) return helper;
+
+        if (PasswordManagerBackendSupportHelper.getInstance().isUpdateNeeded()) {
+            throw new PasswordCheckBackendException("Backend version is not supported.",
+                    CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
+        }
+        if (!PasswordManagerBackendSupportHelper.getInstance().isBackendPresent()) {
+            throw new PasswordCheckBackendException(
+                    "Backend downstream implementation is not available.",
+                    CredentialManagerError.BACKEND_NOT_AVAILABLE);
+        }
+
+        throw new PasswordCheckBackendException(
+                "Can not instantiate backend client.", CredentialManagerError.UNCATEGORIZED);
+    }
+
+    // TODO(crbug.com/1346239): Exceptions should be thrown by factory, remove this method.
+    private static CredentialManagerLauncher getCredentialManagerLauncher()
+            throws CredentialManagerBackendException {
+        CredentialManagerLauncher launcher =
+                CredentialManagerLauncherFactory.getInstance().createLauncher();
+        if (launcher != null) return launcher;
+
+        if (PasswordManagerBackendSupportHelper.getInstance().isUpdateNeeded()) {
+            throw new CredentialManagerBackendException("Backend version is not supported.",
+                    CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
+        }
+        if (!PasswordManagerBackendSupportHelper.getInstance().isBackendPresent()) {
+            throw new CredentialManagerBackendException(
+                    "Backend downstream implementation is not available.",
+                    CredentialManagerError.BACKEND_NOT_AVAILABLE);
+        }
+
+        throw new CredentialManagerBackendException(
+                "Can not instantiate backend client.", CredentialManagerError.UNCATEGORIZED);
     }
 }

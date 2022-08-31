@@ -44,6 +44,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
@@ -738,6 +739,9 @@ Document::Document(const DocumentInit& initializer,
       load_event_progress_(kLoadEventCompleted),
       is_freezing_in_progress_(false),
       script_runner_(MakeGarbageCollected<ScriptRunner>(this)),
+      script_runner_delayer_(MakeGarbageCollected<ScriptRunnerDelayer>(
+          script_runner_,
+          ScriptRunner::DelayReason::kMilestone)),
       xml_version_("1.0"),
       xml_standalone_(kStandaloneUnspecified),
       has_xml_declaration_(0),
@@ -803,6 +807,9 @@ Document::Document(const DocumentInit& initializer,
               ? MakeGarbageCollected<RenderBlockingResourceManager>(*this)
               : nullptr),
       data_(MakeGarbageCollected<DocumentData>(GetExecutionContext())) {
+  if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
+    script_runner_delayer_->Activate();
+
   if (GetFrame()) {
     DCHECK(GetFrame()->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *GetFrame()->GetPage());
@@ -2630,8 +2637,11 @@ void Document::AttachCompositorTimeline(cc::AnimationTimeline* timeline) const {
   if (timeline->IsScrollTimeline() && timeline->animation_host())
     return;
 
-  GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(timeline,
-                                                                 GetFrame());
+  if (cc::AnimationHost* host =
+          GetPage()->GetChromeClient().GetCompositorAnimationHost(
+              *GetFrame())) {
+    host->AddAnimationTimeline(timeline);
+  }
 }
 
 void Document::ClearFocusedElementIfNeeded() {
@@ -3011,12 +3021,10 @@ Document& Document::AXObjectCacheOwner() const {
   // Every document has its own axObjectCache if accessibility is enabled,
   // except for page popups, which share the axObjectCache of their owner.
   Document* doc = const_cast<Document*>(this);
-  if (doc->GetFrame() && doc->GetFrame()->PagePopupOwner()) {
+  auto* frame = doc->GetFrame();
+  if (frame && frame->HasPagePopupOwner()) {
     DCHECK(!doc->ax_object_cache_);
-    return doc->GetFrame()
-        ->PagePopupOwner()
-        ->GetDocument()
-        .AXObjectCacheOwner();
+    return frame->PagePopupOwner()->GetDocument().AXObjectCacheOwner();
   }
   return *doc;
 }
@@ -3097,6 +3105,16 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
     return nullptr;
 
   return cache_owner.ax_object_cache_.Get();
+}
+
+bool Document::HasAXObjectCache() const {
+  auto& cache_owner = AXObjectCacheOwner();
+
+  // If the LayoutView is gone then we are in the process of destruction.
+  if (!cache_owner.layout_view_)
+    return false;
+
+  return cache_owner.ax_object_cache_;
 }
 
 CanvasFontCache* Document::GetCanvasFontCache() {
@@ -4178,14 +4196,12 @@ void Document::writeln(v8::Isolate* isolate,
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
   write(text->toString(), EnteredDOMWindow(isolate), exception_state);
 }
 
 void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
   writeln(text->toString(), EnteredDOMWindow(isolate), exception_state);
 }
 
@@ -4979,7 +4995,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     // and other non-user internal interventions.
     if (params.type != mojom::blink::FocusType::kNone &&
         params.type != mojom::blink::FocusType::kScript)
-      last_focus_type_ = params.type;
+      SetLastFocusType(params.type);
 
     for (auto& observer : focused_element_change_observers_)
       observer->DidChangeFocus();
@@ -6203,18 +6219,18 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
     return promise;
   }
 
-  if (!data_->has_trust_tokens_answerer_.is_bound()) {
+  if (!data_->trust_token_query_answerer_.is_bound()) {
     GetFrame()->GetBrowserInterfaceBroker().GetInterface(
-        data_->has_trust_tokens_answerer_.BindNewPipeAndPassReceiver(
+        data_->trust_token_query_answerer_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
-    data_->has_trust_tokens_answerer_.set_disconnect_handler(
-        WTF::Bind(&Document::HasTrustTokensAnswererConnectionError,
+    data_->trust_token_query_answerer_.set_disconnect_handler(
+        WTF::Bind(&Document::TrustTokenQueryAnswererConnectionError,
                   WrapWeakPersistent(this)));
   }
 
-  data_->pending_has_trust_tokens_resolvers_.insert(resolver);
+  data_->pending_trust_token_query_resolvers_.insert(resolver);
 
-  data_->has_trust_tokens_answerer_->HasTrustTokens(
+  data_->trust_token_query_answerer_->HasTrustTokens(
       issuer_origin,
       WTF::Bind(
           [](WeakPersistent<ScriptPromiseResolver> resolver,
@@ -6223,7 +6239,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
             // If there was a Mojo connection error, the promise was already
             // resolved and deleted.
             if (!base::Contains(
-                    document->data_->pending_has_trust_tokens_resolvers_,
+                    document->data_->pending_trust_token_query_resolvers_,
                     resolver)) {
               return;
             }
@@ -6241,7 +6257,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
                   "have exceeded its number-of-issuers limit?)"));
             }
 
-            document->data_->pending_has_trust_tokens_resolvers_.erase(
+            document->data_->pending_trust_token_query_resolvers_.erase(
                 resolver);
           },
           WrapWeakPersistent(resolver), WrapWeakPersistent(this)));
@@ -6249,16 +6265,16 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
   return promise;
 }
 
-void Document::HasTrustTokensAnswererConnectionError() {
-  data_->has_trust_tokens_answerer_.reset();
-  for (const auto& resolver : data_->pending_has_trust_tokens_resolvers_) {
+void Document::TrustTokenQueryAnswererConnectionError() {
+  data_->trust_token_query_answerer_.reset();
+  for (const auto& resolver : data_->pending_trust_token_query_resolvers_) {
     ScriptState* state = resolver->GetScriptState();
     ScriptState::Scope scope(state);
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         state->GetIsolate(), DOMExceptionCode::kOperationError,
-        "Internal error retrieving hasTrustToken response."));
+        "Internal error retrieving trust token response."));
   }
-  data_->pending_has_trust_tokens_resolvers_.clear();
+  data_->pending_trust_token_query_resolvers_.clear();
 }
 
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {
@@ -6743,11 +6759,39 @@ void Document::setAllowDeclarativeShadowRoots(bool val) {
       val ? AllowState::kAllow : AllowState::kDeny;
 }
 
+void Document::MaybeExecuteDelayedAsyncScripts(
+    MilestoneForDelayedAsyncScript milestone) {
+  if (!base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
+    return;
+
+  switch (features::kDelayAsyncScriptExecutionDelayParam.Get()) {
+    case features::DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing:
+      // Notify the ScriptRunner if the first paint has been recorded and
+      // we're delaying async scripts until first paint or finished parsing
+      // (whichever comes first).
+      script_runner_delayer_->Deactivate();
+      break;
+    case features::DelayAsyncScriptDelayType::kFinishedParsing:
+      // Notify the ScriptRunner if we're finished parsing and we're delaying
+      // async scripts until finished parsing occurs.
+      if (milestone == MilestoneForDelayedAsyncScript::kFinishedParsing)
+        script_runner_delayer_->Deactivate();
+      break;
+  }
+}
+
+void Document::MarkFirstPaint() {
+  MaybeExecuteDelayedAsyncScripts(MilestoneForDelayedAsyncScript::kFirstPaint);
+}
+
 void Document::FinishedParsing() {
   DCHECK(!GetScriptableDocumentParser() || !parser_->IsParsing());
   DCHECK(!GetScriptableDocumentParser() || ready_state_ != kLoading);
   SetParsingState(kInDOMContentLoaded);
   DocumentParserTiming::From(*this).MarkParserStop();
+
+  MaybeExecuteDelayedAsyncScripts(
+      MilestoneForDelayedAsyncScript::kFinishedParsing);
 
   // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
   // dispatched in a queued task, see https://crbug.com/425790
@@ -7436,8 +7480,7 @@ void Document::PerformScrollSnappingTasks() {
   if (!snap_coordinator.AnySnapContainerDataNeedsUpdate())
     return;
   snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
-  if (RuntimeEnabledFeatures::ScrollSnapAfterLayoutEnabled())
-    snap_coordinator.ResnapAllContainersIfNeeded();
+  snap_coordinator.ResnapAllContainersIfNeeded();
 }
 
 void Document::SetContextFeatures(ContextFeatures& features) {
@@ -8016,6 +8059,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(css_target_);
   visitor->Trace(current_script_stack_);
   visitor->Trace(script_runner_);
+  visitor->Trace(script_runner_delayer_);
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);

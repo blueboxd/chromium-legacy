@@ -467,6 +467,9 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kEventPath:
       type = protocol::Audits::DeprecationIssueTypeEnum::EventPath;
       break;
+    case DeprecationIssueType::kExpectCTHeader:
+      type = protocol::Audits::DeprecationIssueTypeEnum::ExpectCTHeader;
+      break;
     case DeprecationIssueType::kGeolocationInsecureOrigin:
       type =
           protocol::Audits::DeprecationIssueTypeEnum::GeolocationInsecureOrigin;
@@ -502,6 +505,14 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           MediaSourceDurationTruncatingBuffered;
       break;
+    case DeprecationIssueType::kNavigateEventRestoreScroll:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          NavigateEventRestoreScroll;
+      break;
+    case DeprecationIssueType::kNavigateEventTransitionWhile:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          NavigateEventTransitionWhile;
+      break;
     case DeprecationIssueType::kNoSysexWebMIDIWithoutPermission:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           NoSysexWebMIDIWithoutPermission;
@@ -524,6 +535,10 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kOpenWebDatabaseInsecureContext:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           OpenWebDatabaseInsecureContext;
+      break;
+    case DeprecationIssueType::kOverflowVisibleOnReplacedElement:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          OverflowVisibleOnReplacedElement;
       break;
     case DeprecationIssueType::kPictureSourceSrc:
       type = protocol::Audits::DeprecationIssueTypeEnum::PictureSourceSrc;

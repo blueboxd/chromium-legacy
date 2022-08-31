@@ -63,7 +63,6 @@ void RegisterContentSchemes(bool should_lock_registry) {
   url::AddStandardScheme(kChromeUIUntrustedScheme, url::SCHEME_WITH_HOST);
   url::AddStandardScheme(kGuestScheme, url::SCHEME_WITH_HOST);
   url::AddStandardScheme(kChromeErrorScheme, url::SCHEME_WITH_HOST);
-
   for (auto& scheme : schemes.standard_schemes)
     url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
@@ -104,6 +103,9 @@ void RegisterContentSchemes(bool should_lock_registry) {
   if (schemes.allow_non_standard_schemes_in_origins)
     url::EnableNonStandardSchemesForAndroidWebView();
 #endif
+
+  for (auto& [scheme, handler] : schemes.predefined_handler_schemes)
+    url::AddPredefinedHandlerScheme(scheme.c_str(), handler.c_str());
 
   // This should only be registered if the
   // kEnableServiceWorkerForChromeUntrusted feature is enabled but checking

@@ -474,6 +474,7 @@ DocumentLoader::DocumentLoader(
     }
   }
 
+  frame_->SetAncestorOrSelfHasCSPEE(params_->ancestor_or_self_has_cspee);
   frame_->Client()->DidCreateDocumentLoader(this);
 }
 
@@ -825,6 +826,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
     navigation_api->UpdateForNavigation(*history_item_, type);
+  if (!frame_)
+    return;
 
   // Aything except a history.pushState/replaceState is considered a new
   // navigation that resets whether the user has scrolled and fires popstate.
@@ -838,11 +841,9 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     // exists (https://crbug.com/705550).
     if (!same_item_sequence_number) {
       scoped_refptr<SerializedScriptValue> state_object =
-          history_item ? history_item->StateObject() : nullptr;
-      DCHECK(!state_object || type == WebFrameLoadType::kBackForward);
-      frame_->DomWindow()->StatePopped(
-          state_object ? std::move(state_object)
-                       : SerializedScriptValue::NullValue());
+          history_item ? history_item->StateObject()
+                       : SerializedScriptValue::NullValue();
+      frame_->DomWindow()->DispatchPopstateEvent(std::move(state_object));
     }
   }
 }
@@ -2339,7 +2340,7 @@ void DocumentLoader::CommitNavigation() {
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
     security_init.ApplyPermissionsPolicy(
         *frame_.Get(), response_, frame_policy_,
-        Agent::IsDirectSocketEnabled() ? initial_permissions_policy_
+        Agent::IsIsolatedApplication() ? initial_permissions_policy_
                                        : absl::nullopt);
 
     // |document_policy_| is parsed in document loader because it is
@@ -2374,6 +2375,10 @@ void DocumentLoader::CommitNavigation() {
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
+  if (!response_.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+    Deprecation::CountDeprecation(frame_->DomWindow(),
+                                  mojom::blink::WebFeature::kExpectCTHeader);
+  }
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -2391,7 +2396,8 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_window_name =
-      previous_window && frame_->IsMainFrame() && !frame_->Loader().Opener() &&
+      previous_window && frame_->IsOutermostMainFrame() &&
+      !frame_->Loader().Opener() &&
       !frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
           previous_window->GetSecurityOrigin());
   if (should_clear_window_name) {
@@ -2404,7 +2410,7 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_cross_site_cross_browsing_context_group_window_name =
-      previous_window && frame_->IsMainFrame() &&
+      previous_window && frame_->IsOutermostMainFrame() &&
       is_cross_site_cross_browsing_context_group_;
   if (should_clear_cross_site_cross_browsing_context_group_window_name) {
     // TODO(shuuran): CrossSiteCrossBrowsingContextGroupSetNulledName will just

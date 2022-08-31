@@ -752,6 +752,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermissionID::kDiagnostics);
   skip.insert(APIPermissionID::kDns);
   skip.insert(APIPermissionID::kDownloadsShelf);
+  skip.insert(APIPermissionID::kDownloadsUi);
   skip.insert(APIPermissionID::kFontSettings);
   skip.insert(APIPermissionID::kFullscreen);
   skip.insert(APIPermissionID::kGcm);
@@ -766,6 +767,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermissionID::kPrinterProvider);
   skip.insert(APIPermissionID::kSearch);
   skip.insert(APIPermissionID::kSessions);
+  skip.insert(APIPermissionID::kSidePanel);
   skip.insert(APIPermissionID::kStorage);
   skip.insert(APIPermissionID::kSystemCpu);
   skip.insert(APIPermissionID::kSystemDisplay);

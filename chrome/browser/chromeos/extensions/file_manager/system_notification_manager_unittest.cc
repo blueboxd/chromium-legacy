@@ -27,7 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -1390,8 +1390,8 @@ TEST_F(SystemNotificationManagerTest, Errors) {
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kGoogleDrive);
   EXPECT_EQ(notification_strings.message,
-            u"\"fake.txt\" was not uploaded. There is not enough free space in "
-            u"your Google Drive.");
+            u"There is not enough free space in your Google Drive to complete "
+            u"the upload.");
 
   // Setup for the no local space error.
   sync_error.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_LOCAL_SPACE;

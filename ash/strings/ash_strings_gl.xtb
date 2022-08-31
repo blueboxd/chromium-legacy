@@ -27,6 +27,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1111021433905331574">Podes cambiar a cor da luz traseira do teclado en Configuración &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
 <translation id="1142002900084379065">Fotos recentes</translation>
+<translation id="114451698114044150">O zoom automático está activado.</translation>
 <translation id="1148499908455722006">Abrir cadro de diálogo de información para <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
@@ -165,6 +166,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1882897271359938046">Proxectando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear coa impresión dixital</translation>
 <translation id="1888656773939766144">O dispositivo (<ph name="DISPLAY_NAME" />) non é compatible cunha resolución de <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A resolución cambiouse a <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Para conservar este cambio, fai clic en Confirmar. A configuración anterior restaurarase en <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="1908992311423394684">Instalada recentemente</translation>
 <translation id="1915307458270490472">Deter</translation>
 <translation id="1918022425394817322">Cámara axustada á esquina superior dereita</translation>
 <translation id="1919743966458266018">Cambiou o atallo que abre o xestor de tarefas. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -305,6 +307,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="2805756323405976993">Aplicacións</translation>
 <translation id="2814448776515246190">Captura parcial</translation>
 <translation id="2819276065543622893">Pecharase a túa sesión agora.</translation>
+<translation id="2822551631199737692">Estase utilizando a cámara</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> non admite <ph name="SPECIFIED_RESOLUTION" />. A resolución cambiouse a <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2831035692318564937">Activado ata o amencer</translation>
@@ -447,6 +450,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="3593039967545720377">Para acceder ao historial do teu portapapeis, preme <ph name="SHORTCUT_KEY_NAME" /> + V. Copia un elemento para comezar.</translation>
 <translation id="3593646411856133110">Pasa o dedo cara arriba e mantén premida a pantalla para ver as aplicacións abertas</translation>
 <translation id="3595596368722241419">Batería completa</translation>
+<translation id="3600061223661453002">Desactivado</translation>
 <translation id="3604801046548457007">Creouse o escritorio <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">A liña braille está conectada.</translation>
 <translation id="3615926715408477684">Ao activar os datos móbiles habilitarase o Bluetooth</translation>
@@ -490,7 +494,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="3804737937830804242">Contraer a cámara</translation>
 <translation id="3826099427150913765">Cambiar ao contrasinal</translation>
 <translation id="383058930331066723">Está activado o modo de aforro de batería</translation>
-<translation id="3835880383832568924">Para ver as novidades, abre a aplicación Atallos</translation>
 <translation id="383629559565718788">Mostrar a configuración do teclado</translation>
 <translation id="384082539148746321">Queres eliminar o modelo?</translation>
 <translation id="3842239759367498783">Continúa coa lectura desde o dispositivo móbil <ph name="TITLE" /></translation>
@@ -808,6 +811,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5682642926269496722">O Asistente de Google non está dispoñible para a conta de usuario actual.</translation>
 <translation id="5689633613396158040">Luz nocturna fai que sexa máis fácil mirar a pantalla ou ler con pouca luz. Toca para cambiar a hora á que se activa a función mencionada ou para desactivala completamente.</translation>
 <translation id="5691772641933328258">Non se recoñeceu a impresión dixital</translation>
+<translation id="5693255400847650006">Estase utilizando o micrófono</translation>
 <translation id="570390244361237317">Todas as aplicacións. Desprázate coas teclas de frecha para acceder a todas as aplicacións</translation>
 <translation id="5707775774148071965">O teu dispositivo admite unha velocidade de datos maior que o cable. O rendemento do dispositivo podería verse limitado.</translation>
 <translation id="5710450975648804523">O modo Non molestar está activado</translation>
@@ -966,6 +970,7 @@ Nova instalación</translation>
 <translation id="6637729079642709226">Cambiar hora</translation>
 <translation id="6641720045729354415">Activar/desactivar función Subtítulos instantáneos. <ph name="STATE_TEXT" /></translation>
 <translation id="6643169293433369663">Desfacer orde de clasificación por nome</translation>
+<translation id="6649641931981131786">Axustar cámara para colocarte no centro da pantalla.</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> quere confirmar a túa identidade</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Introduce esta clave de acceso nese dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Contrasinal</translation>
@@ -982,6 +987,7 @@ Nova instalación</translation>
 <translation id="6723839937902243910">A</translation>
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
 <translation id="6732800389263199929"><ph name="COUNT" /> máis</translation>
+<translation id="6737983188036277605">Estanse utilizando a cámara e o micrófono</translation>
 <translation id="6739144137573853180">IR A CONFIGURACIÓN</translation>
 <translation id="6751052314767925245">Función aplicada polo teu administrador</translation>
 <translation id="6751826523481687655">O rastrexo do rendemento está activado</translation>
@@ -1006,6 +1012,7 @@ Nova instalación</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Falta un díxito}other{Faltan # díxitos}}</translation>
 <translation id="6867938213751067702">Púxose en pausa a descarga de <ph name="FILENAME" /></translation>
 <translation id="6878400149835617132">Desactivouse o atallo</translation>
+<translation id="6878709625737492815">O zoom automático está desactivado.</translation>
 <translation id="6884665277231944629">Volver a hoxe</translation>
 <translation id="6886172995547742638">O rendemento do dispositivo (<ph name="DEVICE_TYPE" />) pode empeorar. Usa un adaptador de corrente USB‑C de <ph name="PREFERRED_MINIMUM_POWER" /> W ou máis.</translation>
 <translation id="688631446150864480">Premer frecha abaixo para cambiar de ventá</translation>
@@ -1013,7 +1020,6 @@ Nova instalación</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6901883536534621389">Proba a navegar con xestos</translation>
 <translation id="6919251195245069855">Non se puido recoñecer a tarxeta intelixente. Téntao de novo.</translation>
-<translation id="6921188888306725546">Melloráronse os atallos de teclado</translation>
 <translation id="6931576957638141829">Gardar en</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6960565108681981554">Non activada. Contacta co teu operador.</translation>
@@ -1086,6 +1092,7 @@ Nova instalación</translation>
 <translation id="7378203170292176219">Arrastra para seleccionar a zona que queiras gravar</translation>
 <translation id="7378594059915113390">Controis de contido multimedia</translation>
 <translation id="7378889811480108604">Está desactivado o modo de aforro de batería</translation>
+<translation id="7382680553121047388">Activado</translation>
 <translation id="7384028040782072252">Fai clic co botón dereito en calquera parte da pantalla para reordenar as aplicacións</translation>
 <translation id="7392563512730092880">Tamén podes configurar esta función máis tarde desde Configuración.</translation>
 <translation id="7405710164030118432">Para desbloquear o dispositivo, introduce o código de acceso parental de Family Link</translation>
@@ -1168,6 +1175,7 @@ Nova instalación</translation>
 <translation id="7868900307798234037">Desbloqueo con impresión dixital</translation>
 <translation id="7872195908557044066">O teu administrador está restablecendo a eSIM. Agarda uns minutos.</translation>
 <translation id="7872786842639831132">Desactivado</translation>
+<translation id="7875280185395705476">Zoom automát.</translation>
 <translation id="7875575368831396199">Parece que tes o Bluetooth desactivado no dispositivo (<ph name="DEVICE_TYPE" />). Para utilizar a función O meu teléfono, activa o Bluetooth.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Cambia o dispositivo a unha versión anterior agora}=1{Cambia o dispositivo a unha versión anterior no prazo de 1 segundo}other{Cambia o dispositivo a unha versión anterior no prazo de # segundos}}</translation>
 <translation id="7886169021410746335">Axustar a configuración de privacidade</translation>
@@ -1288,6 +1296,7 @@ Nova instalación</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> recoméndache actualizar o teu dispositivo (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="8563862697512465947">Configuración de notificacións</translation>
 <translation id="857201607579416096">O menú moveuse á esquina inferior dereita da pantalla.</translation>
+<translation id="8576288697319745668">Activar/desactivar zoom automático. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Ordena as túas aplicacións por nome ou cor</translation>
 <translation id="8614517853887502247">Ocultáronse notificacións das aplicacións <ph name="APP_1_TITLE" /> e <ph name="APP_2_TITLE" /> porque está activada a protección fronte a usuarios non desexados</translation>

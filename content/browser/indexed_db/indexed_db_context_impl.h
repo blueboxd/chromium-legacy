@@ -86,10 +86,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
-  void DeleteForBucket(const blink::StorageKey& storage_key,
-                       DeleteForBucketCallback callback) override;
-  void DeleteForBucket(const storage::BucketLocator& bucket_locator,
-                       DeleteForBucketCallback callback);
+  void DeleteForStorageKey(const blink::StorageKey& storage_key,
+                           DeleteForStorageKeyCallback callback) override;
   void ForceClose(const blink::StorageKey& storage_key,
                   storage::mojom::ForceCloseReason reason,
                   base::OnceClosure callback) override;
@@ -151,6 +149,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
       GetDatabaseKeysForTestingCallback callback) override;
   void ForceInitializeFromFilesForTesting(
       ForceInitializeFromFilesForTestingCallback callback) override;
+
+  void DeleteBucketData(const storage::BucketLocator& bucket_locator,
+                        base::OnceCallback<void(bool success)> callback);
 
   IndexedDBFactoryImpl* GetIDBFactory();
 
@@ -217,10 +218,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const std::u16string& database_name,
       const std::u16string& object_store_name);
 
-  // In unittests where the quota_manager_proxy is mocked, this is how you can
-  // skip the bucket lookup and fake its existence.
-  void RegisterBucketLocatorToSkipQuotaLookupForTesting(
-      const storage::BucketLocator& bucket_locator);
+  // In unit tests where you want to verify usage, this is an easy way to get
+  // the path to populate data at.
+  base::FilePath GetLevelDBPathForTesting(
+      const storage::BucketLocator& bucket_locator) const;
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBContextImpl>;
@@ -242,9 +243,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       const absl::optional<storage::BucketLocator>& bucket_locator);
   void GetUsageImpl(GetUsageCallback usage_callback);
-  void DeleteForBucketImpl(
-      DeleteForBucketCallback callback,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
   void ForceCloseImpl(
       const storage::mojom::ForceCloseReason reason,
       base::OnceClosure closure,
@@ -255,6 +253,12 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DownloadBucketDataImpl(
       DownloadBucketDataCallback callback,
       const absl::optional<storage::BucketLocator>& bucket_locator);
+
+  void OnGotBucketsForDeletion(
+      base::OnceCallback<void(bool)> callback,
+      storage::QuotaErrorOr<std::set<storage::BucketInfo>> buckets);
+  void DoDeleteBucketData(const storage::BucketLocator& bucket_locator,
+                          base::OnceCallback<void(bool)> callback);
 
   void ShutdownOnIDBSequence();
 
@@ -290,20 +294,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void GetOrCreateDefaultBucket(const blink::StorageKey& storage_key,
                                 DidGetBucketLocatorCallback callback);
 
-  // This function provides an easy way to wrap the common operation: find
-  // bucket in `bucket_id_to_bucket_locator_` if it exists, otherwise look
-  // it up in the `quota_manager_proxy_`, cache it, and then run the callback.
-  void GetBucketById(const storage::BucketId& bucket_id,
-                     DidGetBucketLocatorCallback callback);
-
   // TODO(crbug.com/1315371): We need a way to map the StorageKey to a single
   // valid BucketLocator for legacy API purposes. This member should be removed
   // as it blocks the use of non-default named buckets.
   std::map<blink::StorageKey, storage::BucketLocator>
       storage_key_to_bucket_locator_;
-
-  std::map<storage::BucketId, storage::BucketLocator>
-      bucket_id_to_bucket_locator_;
 
   const scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   IndexedDBDispatcherHost dispatcher_host_;

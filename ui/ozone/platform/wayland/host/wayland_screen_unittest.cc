@@ -565,7 +565,7 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   EXPECT_EQ(widget_at_screen_point, gfx::kNullAcceleratedWidget);
 
   // Set a focus to the main window. Now, that focused window must be returned.
-  window_->SetPointerFocus(true);
+  SetPointerFocusedWindow(window_.get());
   widget_at_screen_point =
       platform_screen_->GetAcceleratedWidgetAtScreenPoint(gfx::Point(10, 10));
   EXPECT_EQ(widget_at_screen_point, window_->GetWidget());
@@ -590,8 +590,8 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
 
   // Imagine the mouse enters a menu window, which is located on top of the main
   // window, and gathers focus.
-  window_->SetPointerFocus(false);
-  menu_window->SetPointerFocus(true);
+  SetPointerFocusedWindow(menu_window.get());
+
   widget_at_screen_point = platform_screen_->GetAcceleratedWidgetAtScreenPoint(
       gfx::Point(menu_window->GetBoundsInPixels().x() + 1,
                  menu_window->GetBoundsInPixels().y() + 1));
@@ -599,15 +599,14 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
 
   // Whenever a mouse pointer leaves the menu window, the accelerated widget
   // of that focused window must be returned.
-  window_->SetPointerFocus(true);
-  menu_window->SetPointerFocus(false);
+  SetPointerFocusedWindow(window_.get());
   widget_at_screen_point =
       platform_screen_->GetAcceleratedWidgetAtScreenPoint(gfx::Point(0, 0));
   EXPECT_EQ(widget_at_screen_point, window_->GetWidget());
 
   // Reset the focus to avoid crash on dtor as long as there is no real pointer
   // object.
-  window_->SetPointerFocus(false);
+  SetPointerFocusedWindow(nullptr);
 
   // Part 2: test that the window is found when display's scale changes.
   // Update scale.
@@ -620,7 +619,7 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   // Translate the point to dip.
   auto point_in_screen =
       gfx::ScaleToRoundedPoint(menu_bounds_px.origin(), 1.f / 2);
-  menu_window->SetPointerFocus(true);
+  SetPointerFocusedWindow(menu_window.get());
   widget_at_screen_point =
       platform_screen_->GetAcceleratedWidgetAtScreenPoint(point_in_screen);
   EXPECT_EQ(widget_at_screen_point, menu_window->GetWidget());
@@ -632,7 +631,7 @@ TEST_P(WaylandScreenTest, GetLocalProcessWidgetAtPoint) {
             gfx::kNullAcceleratedWidget);
 
   // Set a focus to the main window. Now, that focused window must be returned.
-  window_->SetPointerFocus(true);
+  SetPointerFocusedWindow(window_.get());
   EXPECT_EQ(platform_screen_->GetLocalProcessWidgetAtPoint(point, {}),
             window_->GetWidget());
 
@@ -642,10 +641,6 @@ TEST_P(WaylandScreenTest, GetLocalProcessWidgetAtPoint) {
   EXPECT_EQ(
       platform_screen_->GetLocalProcessWidgetAtPoint(point, {w - 1, w, w + 1}),
       gfx::kNullAcceleratedWidget);
-
-  // Reset the focus to avoid crash on dtor as long as there is no real pointer
-  // object.
-  window_->SetPointerFocus(false);
 }
 
 TEST_P(WaylandScreenTest, GetDisplayMatching) {
@@ -987,6 +982,35 @@ TEST_P(WaylandScreenTest, SetWindowScale) {
   EXPECT_EQ(window_->ui_scale_, kForcedUIScale);
 
   display::Display::ResetForceDeviceScaleFactorForTesting();
+}
+
+// Regression test for https://crbug.com/1346534.
+//
+// Scenario: With (at least) one output connected and a surface, with no output
+// associated yet, ie: wl_surface.enter event not received yet for that surface,
+// which implies in its scale being set to the primary output's scale at its
+// initialization, any primary output scale update (or other properties that
+// lead to scale change) must be propagated to the window.
+TEST_P(WaylandScreenTest, SetWindowScaleWithoutEnteredOutput) {
+  // Test pre-conditions: single output setup whereas |output_| is the primary
+  // output managed by |output_manager_|, with initial scale == 1.
+  ASSERT_TRUE(output_);
+  ASSERT_EQ(1, output_->GetScale());
+
+  // Ensure |surface_| has not entered any wl_output. Assuming |window_| has
+  // been already initialized with |output_|'s scale.
+  wl_surface_send_leave(surface_->resource(), output_->resource());
+  Sync();
+  ASSERT_EQ(0u, window_->GetPreferredEnteredOutputId());
+
+  // Change |output_|'s scale and make sure |window_|'s scale is update
+  // accordingly.
+  output_->SetScale(2);
+  output_->Flush();
+  Sync();
+
+  EXPECT_EQ(window_->window_scale(), 2);
+  EXPECT_EQ(window_->ui_scale(), 2);
 }
 
 // Checks that output transform is properly translated into Display orientation.

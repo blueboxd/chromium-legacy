@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -178,4 +178,4 @@ void PortalDetectorStrategy::OnDetectionCompleted() {
   backoff_entry_->InformOfRequest(false);
 }
 
-}  // namespace chromeos
+}  // namespace ash

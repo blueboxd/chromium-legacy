@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1621067168122174824">تشغيل اختبار فحص البطارية</translation>
 <translation id="1631385268983122904">لا يمكنك تجميع الجهاز بعد.</translation>
-<translation id="1639239467298939599">جارٍ التحميل.</translation>
+<translation id="1639239467298939599">جارٍ التحميل</translation>
 <translation id="1641857168437328880">وحدة تغذية المستندات (وجه واحد)</translation>
 <translation id="1643449475550628585">تغيير صورة الخلفية يوميًا</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1645954272419197032">مطلوب تأكيد معلومات الجهاز</translation>
 <translation id="1662989795263954667">توقّفت الطابعة - نفد الحبر</translation>
+<translation id="1664796644829245314">معاينة <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">الشبكة الافتراضية الخاصة المُدمجة</translation>
 <translation id="1672499492233627739">خلاصة فيديو كاميرا الويب</translation>
 <translation id="1676557873873341166">تسجيل فيديو</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">اختبار اجتماعات الفيديو</translation>
 <translation id="1852934301711881861">‏تثبيت نظام التشغيل ChromeOS Flex</translation>
 <translation id="1856388568474281774">السهم المتّجه للأسفل</translation>
+<translation id="1858620243986915808">إرفاق لقطة شاشة</translation>
 <translation id="1871569928317311284">إيقاف تشغيل المظهر الداكن</translation>
 <translation id="1874612839560830905">‏وحدة النقل العظمى (MTU)</translation>
 <translation id="188114911237521550">إيقاف تشغيل الوضع المُعتِم</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">مفتاح خاص</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="7994702968232966508">‏طريقة EAP</translation>
+<translation id="8018928621986160031">تم الحفظ في "<ph name="FILE_LOCATION" />".</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">تفعيل وضع الألوان التلقائية</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">غير مهيأة</translation>
 <translation id="8620617069779373398">حالة التجوال</translation>
 <translation id="8655295600908251630">القناة</translation>
+<translation id="8655828773034788261">‏مشاركة عنوان URL:</translation>
 <translation id="8660881923941176839">رطل</translation>
 <translation id="8662671328352114214">الانضمام إلى شبكة <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">التحديث إلى الإصدار <ph name="VERSION_NUMBER" /> ثم إعادة التشغيل</translation>
@@ -876,7 +880,7 @@
 <translation id="871560550817059752">تعذَّرت الطباعة - نفد الحبر</translation>
 <translation id="8717030727630712160">جارٍ استئناف عملية الإصلاح…</translation>
 <translation id="8723108084122415655">وقت استجابة الشبكة غير التلقائية أعلى من الحد الأقصى.</translation>
-<translation id="8725066075913043281">أعد المحاولة</translation>
+<translation id="8725066075913043281">إعادة المحاولة</translation>
 <translation id="8726019395068607495">توقّفت الطابعة - باب الطابعة مفتوح</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8747900814994928677">تأكيد التغيير</translation>

@@ -47,6 +47,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -314,7 +315,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
 
     csd_host_ =
         ChromeClientSideDetectionHostDelegate::CreateHost(web_contents());
-    csd_host_->set_client_side_detection_service(csd_service_.get());
+    csd_host_->set_client_side_detection_service(csd_service_->GetWeakPtr());
     csd_host_->set_ui_manager(ui_manager_.get());
     csd_host_->set_database_manager(database_manager_.get());
     csd_host_->set_tick_clock_for_testing(&clock_);
@@ -1272,6 +1273,30 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
                 .GetAllSamples("SBClientPhishing.PhishingDetectionDuration")
                 .front()
                 .min);
+}
+
+TEST_F(ClientSideDetectionHostTest, PopulatesPageLoadToken) {
+  if (base::FeatureList::IsEnabled(kClientSideDetectionKillswitch))
+    GTEST_SKIP();
+
+  GURL url("http://phishing.example.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_client_score(1.0);
+  verdict.set_is_phishing(true);
+
+  EXPECT_CALL(*csd_service_, GetModelStr())
+      .WillRepeatedly(ReturnRef(model_str_));
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+
+  std::unique_ptr<ClientPhishingRequest> verdict_sent;
+  EXPECT_CALL(*csd_service_, SendClientReportPhishingRequest(_, _, _))
+      .WillOnce(MoveArg<0>(&verdict_sent));
+  PhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  ASSERT_EQ(1, verdict_sent->population().page_load_tokens_size());
 }
 
 class ClientSideDetectionHostDebugFeaturesTest

@@ -68,6 +68,7 @@
 <translation id="2139300032719313227">Перазапусціце Chrome OS</translation>
 <translation id="2151406531797534936">Перазапусціце Chrome</translation>
 <translation id="2174917724755363426">Усталяванне не завершана. Вы сапраўды хочаце скасаваць яго?</translation>
+<translation id="223889379102603431">Інфармацыя пра тое, як Chrome кіруе сваімі каранёвымі сертыфікатамі</translation>
 <translation id="2258103955319320201">Каб мець доступ да даных Chrome на ўсіх сваіх прыладах, увайдзіце ва ўліковы запіс, а затым уключыце сінхранізацыю</translation>
 <translation id="2290014774651636340">Адсутнічаюць ключы Google API. Некаторыя функцыі Google Chrome будуць выключаны.</translation>
 <translation id="2290095356545025170">Сапраўды выдаліць Google Chrome?</translation>
@@ -80,6 +81,7 @@
 <translation id="2401189691232800402">Сістэма Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome запытвае дазвол на экспартаванне вашых пароляў. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="2485422356828889247">Выдаліць</translation>
+<translation id="2494974097748878569">Памочнік Google у Chrome</translation>
 <translation id="2534507159460261402">Google Pay (скапіравана з Chrome)</translation>
 <translation id="2559253115192232574">Пасля гэтага сайты, якія вы наведваеце, могуць запытваць у браўзера Chrome інфармацыю пра вашы інтарэсы, каб персаналізаваць для вас рэкламу. Chrome можа абагуліць не больш за 3 інтарэсы.</translation>
 <translation id="2563121210305478421">Перазапусціць Chrome?</translation>
@@ -158,6 +160,7 @@
 <translation id="3865754807470779944">Усталявана версія Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Адкрыць спасылку ў акне &amp;інкогніта Chrome</translation>
 <translation id="3889417619312448367">Выдаленне Google Chrome</translation>
+<translation id="3999683152997576765">Вы можаце праглядаць і выдаляць цікавыя вам тэмы, якія сайты выкарыстоўваюць для паказу вам рэкламы. Chrome вызначае вашы інтарэсы на аснове нядаўняй гісторыі прагляду вамі сайтаў.</translation>
 <translation id="4035053306113201399">Каб прымяніць абнаўленне, трэба перазапусціць Chrome OS.</translation>
 <translation id="4050175100176540509">У апошняй версіі з'явіліся важныя паляпшэнні сістэмы бяспекі і новыя функцыі.</translation>
 <translation id="4053720452172726777">Наладжвайце Google Chrome і кіруйце ім</translation>
@@ -279,6 +282,7 @@
 <translation id="6739177684496155661">Працягнуць працу ў новым профілі Chrome?</translation>
 <translation id="6750954913813541382">Для выпраўлення арфаграфічных памылак Chrome адпраўляе ў Google тэкст, які вы набіраеце ў браўзеры</translation>
 <translation id="677276454032249905">Усё роўна выйсці з Chrome?</translation>
+<translation id="6785872064505734160">Памочнік Google у браўзеры Chrome можа завяршаць за вас дзеянні на розных вэб-сайтах</translation>
 <translation id="683440813066116847">Уваходнае правіла для Google Chrome Canary, якое дазваляе трафік mDNS.</translation>
 <translation id="6881299373831449287">Ідзе абнаўленне браўзера Chrome</translation>
 <translation id="6885412569789873916">Праграмы бэта-версіі Chrome</translation>
@@ -351,6 +355,7 @@
 <translation id="8129812357326543296">Пра &amp;Google Chrome</translation>
 <translation id="813913629614996137">Ідзе ініцыялізацыя...</translation>
 <translation id="8255190535488645436">Google Chrome выкарыстоўвае вашу камеру і мікрафон.</translation>
+<translation id="8270775718612349140">Сертыфікаты, якімі кіруе Chrome</translation>
 <translation id="8286862437124483331">Google Chrome спрабуе паказаць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="828798499196665338">Бацькі выключылі "Дазволы для сайтаў, праграм і пашырэнняў" для Chrome. Уключэнне гэтага элемента (<ph name="EXTENSION_TYPE_PARAMETER" />) забаронена.</translation>
 <translation id="8290100596633877290">Памылка! Збой браўзера Google Chrome. Перазапусціць яго?</translation>

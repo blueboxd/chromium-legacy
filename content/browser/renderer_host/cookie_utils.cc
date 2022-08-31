@@ -124,6 +124,8 @@ void EmitCookieWarningsAndMetrics(
   bool cookie_has_not_been_refreshed_in_301_to_350_days = false;
   bool cookie_has_not_been_refreshed_in_351_to_400_days = false;
 
+  bool cookie_has_domain_non_ascii = false;
+
   for (const network::mojom::CookieOrLineWithAccessResultPtr& cookie :
        cookie_details->cookie_list) {
     if (ShouldReportDevToolsIssueForStatus(cookie->access_result.status)) {
@@ -204,12 +206,22 @@ void EmitCookieWarningsAndMetrics(
           status.HasWarningReason(
               net::CookieInclusionStatus::
                   WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION);
+
+      cookie_has_domain_non_ascii =
+          cookie_has_domain_non_ascii ||
+          status.HasWarningReason(
+              net::CookieInclusionStatus::WARN_DOMAIN_NON_ASCII) ||
+          status.HasExclusionReason(
+              net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
     }
 
     partitioned_cookies_exist =
         partitioned_cookies_exist ||
         (cookie->cookie_or_line->is_cookie() &&
-         cookie->cookie_or_line->get_cookie().IsPartitioned());
+         cookie->cookie_or_line->get_cookie().IsPartitioned() &&
+         // Ignore nonced partition keys since this metric is meant to track
+         // usage of the Partitioned attribute.
+         !cookie->cookie_or_line->get_cookie().PartitionKey()->nonce());
 
     breaking_context_downgrade =
         breaking_context_downgrade ||
@@ -331,6 +343,11 @@ void EmitCookieWarningsAndMetrics(
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh,
         blink::mojom::WebFeature::kCookieHasNotBeenRefreshedIn351To400Days);
+  }
+
+  if (cookie_has_domain_non_ascii) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCookieDomainNonASCII);
   }
 }
 

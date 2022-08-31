@@ -40,7 +40,8 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
       optimization_guide::EntityMetadataProvider* entity_metadata_provider,
       site_engagement::SiteEngagementScoreProvider* engagement_score_provider,
       optimization_guide::NewOptimizationGuideDecider*
-          optimization_guide_decider);
+          optimization_guide_decider,
+      base::flat_set<std::string> mid_blocklist);
   ~OnDeviceClusteringBackend() override;
 
   // ClusteringBackend:
@@ -84,6 +85,7 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
 
   // Clusters |visits| on background thread.
   static std::vector<history::Cluster> ClusterVisitsOnBackgroundThread(
+      ClusteringRequestSource clustering_request_source,
       bool engagement_score_provider_is_valid,
       std::vector<history::ClusterVisit> visits,
       base::flat_map<std::string, optimization_guide::EntityMetadata>
@@ -123,6 +125,10 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
   base::TimeTicks engagement_score_cache_last_refresh_timestamp_;
   // URL host to score mapping.
   base::HashingLRUCache<std::string, float> engagement_score_cache_;
+
+  // The set of mid strings that should be blocked from included in the backend
+  // for both clustering and keywords.
+  base::flat_set<std::string> mid_blocklist_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

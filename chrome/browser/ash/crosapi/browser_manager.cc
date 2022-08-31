@@ -310,6 +310,26 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
       ResourcesFileSharingMode::kError)
     params.enable_resource_file_sharing = false;
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kLacrosChromeAdditionalArgsFile)) {
+    const base::FilePath path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            ash::switches::kLacrosChromeAdditionalArgsFile);
+    std::string data;
+    if (!base::ReadFileToString(path, &data)) {
+      PLOG(WARNING) << "Unable to read from lacros additional args file "
+                    << path.value();
+    }
+    std::vector<base::StringPiece> delimited_flags =
+        base::SplitStringPieceUsingSubstr(data, "\n", base::TRIM_WHITESPACE,
+                                          base::SPLIT_WANT_NONEMPTY);
+
+    for (const auto& flag : delimited_flags) {
+      if (flag[0] != '#')
+        params.lacros_additional_args.emplace_back(flag);
+    }
+  }
+
   return params;
 }
 
@@ -414,12 +434,14 @@ BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
     const gfx::Rect& bounds,
     ui::WindowShowState show_state,
     int32_t active_tab_index,
-    const std::string& app_name)
+    const std::string& app_name,
+    int32_t restore_window_id)
     : urls(urls),
       bounds(bounds),
       show_state(show_state),
       active_tab_index(active_tab_index),
-      app_name(app_name) {}
+      app_name(app_name),
+      restore_window_id(restore_window_id) {}
 
 BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
     RestoreFromDeskTemplate&&) = default;
@@ -711,7 +733,8 @@ void BrowserManager::CreateBrowserWithRestoredData(
     const gfx::Rect& bounds,
     const ui::WindowShowState show_state,
     int32_t active_tab_index,
-    const std::string& app_name) {
+    const std::string& app_name,
+    int32_t restore_window_id) {
   auto result = MaybeStart(browser_util::InitialBrowserAction(
       mojom::InitialBrowserAction::kDoNotOpenWindow));
   // The service will not be available, return immediately.
@@ -719,7 +742,7 @@ void BrowserManager::CreateBrowserWithRestoredData(
     return;
 
   windows_to_restore_.emplace_back(urls, bounds, show_state, active_tab_index,
-                                   app_name);
+                                   app_name, restore_window_id);
   if (result == MaybeStartResult::kRunning)
     RestoreWindowsFromTemplate();
 }
@@ -1093,6 +1116,9 @@ void BrowserManager::StartWithLogFile(
   for (const auto& flag : delimited_flags)
     argv.emplace_back(flag);
 
+  argv.insert(argv.end(), params.lacros_additional_args.begin(),
+              params.lacros_additional_args.end());
+
   // Forward flag for zero copy video capture to Lacros if it is enabled.
   if (switches::IsVideoCaptureUseGpuMemoryBufferEnabled()) {
     argv.emplace_back(
@@ -1115,7 +1141,7 @@ void BrowserManager::StartWithLogFile(
 
   base::ScopedFD startup_fd = browser_util::CreateStartupData(
       environment_provider_.get(), std::move(initial_browser_action),
-      !keep_alive_features_.empty());
+      !keep_alive_features_.empty(), lacros_selection_);
   if (startup_fd.is_valid()) {
     // Hardcoded to use FD 3 to make the ash-chrome's behavior more predictable.
     // Lacros-chrome should not depend on the hardcoded value though. Instead
@@ -1270,7 +1296,9 @@ void BrowserManager::OnLacrosChromeTerminated() {
   SetState(State::STOPPED);
   // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
   // abnormally (e.g. crashes). For now, assume the user meant to close it.
-  SetLaunchOnLoginPref(false);
+  // Relaunch lacros-chrome if it was closed due to ash shutting down.
+  // Note that this only matters for side-by-side lacros.
+  SetLaunchOnLoginPref(shutdown_requested_);
 
   is_terminated_ = true;
 
@@ -1620,7 +1648,8 @@ void BrowserManager::RestoreWindowsFromTemplate() {
   for (const auto& data : windows_to_restore_) {
     crosapi::mojom::DeskTemplateStatePtr additional_state =
         crosapi::mojom::DeskTemplateState::New(data.urls, data.active_tab_index,
-                                               data.app_name);
+                                               data.app_name,
+                                               data.restore_window_id);
     crosapi::CrosapiManager::Get()
         ->crosapi_ash()
         ->desk_template_ash()

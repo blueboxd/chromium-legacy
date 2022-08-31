@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">Nollaa luvat</translation>
 <translation id="301521992641321250">Estetty automaattisesti</translation>
 <translation id="3069226013421428034">Salli kolmannen osapuolen sisäänkirjautuminen tietylle sivustolle.</translation>
+<translation id="3109724472072898302">Tiivistetty</translation>
 <translation id="3114012059975132928">Videosoitin</translation>
 <translation id="3115898365077584848">Näytä tiedot</translation>
 <translation id="3123473560110926937">Estetty tietyillä sivustoilla</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">Mykistä video</translation>
 <translation id="3596414637720633074">Kolmannen osapuolen evästeiden estäminen incognito-tilassa</translation>
 <translation id="3600792891314830896">Mykistä ääniä toistavat sivustot</translation>
+<translation id="3628308229821498208">Ehdotetut haut</translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
 <translation id="3763247130972274048">Ohita 10 sekuntia kaksoisnapauttamalla videota vasemmalle tai oikealle</translation>
 <translation id="3797520601150691162">Älä käytä tummaa teemaa tietyllä sivustolla</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
 <translation id="6216432067784365534">Vaihtoehdot: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Poistetaanko <ph name="APP_NAME" />?</translation>
+<translation id="6262191102408817757">Perustuu viimeisimpään välilehteen</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ja <ph name="PERMISSION_2" /> estetty</translation>
 <translation id="6270391203985052864">Sivustot saavat pyytää lupaa lähettää ilmoituksia</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
@@ -256,7 +259,7 @@
 <translation id="6912998170423641340">Estä sivustoja lukemasta tekstiä ja kuvia leikepöydältä</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6981982820502123353">Esteettömyys</translation>
+<translation id="6981982820502123353">Saavutettavuus</translation>
 <translation id="6992289844737586249">Pyydä lupaa, kun sivustot yrittävät käyttää mikrofonia (suositus).</translation>
 <translation id="7000754031042624318">Poistettu käytöstä Android-asetuksissa</translation>
 <translation id="7016516562562142042">Sallittu nykyisellä hakukoneella</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">Estä ponnahdusikkunoiden näyttäminen sivustoilla (suositus)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kt</translation>
 <translation id="7180611975245234373">Päivitä</translation>
+<translation id="7203150201908454328">Laajennettu</translation>
 <translation id="723171743924126238">Valitse kuvat</translation>
 <translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valittu</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">Estä sivustoja toistamasta suojattua sisältöä</translation>
 <translation id="7577900504646297215">Ylläpidä kiinnostuksen kohteita</translation>
 <translation id="7594634374516752650">Yhdistetty Bluetooth-laitteeseen</translation>
+<translation id="7641339528570811325">Poista selaustiedot…</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peru</translation>
 <translation id="7781829728241885113">Eilen</translation>

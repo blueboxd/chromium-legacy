@@ -30,7 +30,6 @@
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -67,10 +66,12 @@
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
-#include "third_party/skia/include/third_party/skcms/skcms.h"
+#include "third_party/skia/modules/skcms/skcms.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_transform.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
+#include "ui/gfx/geometry/linear_gradient.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -242,7 +243,6 @@ bool IsAAForcedOff(const DrawQuad* quad) {
     case DrawQuad::Material::kTiledContent:
       return TileDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     case DrawQuad::Material::kYuvVideoContent:
-    case DrawQuad::Material::kStreamVideoContent:
     case DrawQuad::Material::kTextureContent:
       // This is done to match the behaviour of GLRenderer and we can revisit it
       // later.
@@ -320,12 +320,16 @@ sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
   // MakeModeFilter treats fixed color as src, and input color as dst.
   // kDstIn is (srcAlpha * dstColor, srcAlpha * dstAlpha) so this makes the
   // output color equal to input color * alpha.
+  // TODO(michaelludwig): Update to pass alpha_as_color as-is once
+  // skbug.com/13637 is resolved (adds Blend + SkColor4f variation).
   sk_sp<SkColorFilter> opacity =
       SkColorFilters::Blend(alpha_as_color.toSkColor(), SkBlendMode::kDstIn);
-  if (in) {
+  // Opaque (alpha = 1.0) and kDstIn returns nullptr to signal a no-op, so that
+  // case should just return 'in'.
+  if (opacity) {
     return opacity->makeComposed(std::move(in));
   } else {
-    return opacity;
+    return in;
   }
 }
 
@@ -1102,10 +1106,6 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), rpdq_params,
                          params);
       break;
-    case DrawQuad::Material::kStreamVideoContent:
-      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), rpdq_params,
-                          params);
-      break;
     case DrawQuad::Material::kTextureContent:
       DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), rpdq_params, params);
       break;
@@ -1158,6 +1158,9 @@ void SkiaRenderer::PrepareCanvas(
     current_canvas_->clipRRect(
         static_cast<SkRRect>(mask_filter_info->rounded_corner_bounds()),
         /*doAntiAlias=*/true);
+
+    if (mask_filter_info->HasGradientMask())
+      PrepareGradient(mask_filter_info);
   }
 
   if (cdt) {
@@ -1165,6 +1168,89 @@ void SkiaRenderer::PrepareCanvas(
     gfx::TransformToFlattenedSkMatrix(*cdt, &m);
     current_canvas_->concat(m);
   }
+}
+
+#define MaskColor(a) SkColorSetARGB(a, a, a, a);
+
+void SkiaRenderer::PrepareGradient(
+    const absl::optional<gfx::MaskFilterInfo>& mask_filter_info) {
+  if (!mask_filter_info || !mask_filter_info->HasGradientMask())
+    return;
+
+  const gfx::RectF rect = mask_filter_info->bounds();
+  const absl::optional<gfx::LinearGradient>& gradient_mask =
+      mask_filter_info->gradient_mask();
+  const int16_t angle = gradient_mask->angle() % 360;
+
+  // For positive angles, the start point is the bottom left rect point. For
+  // negative angles, the start point is the upper left rect point.
+  bool negative = angle < 0;
+  SkPoint start_end[2];
+  start_end[0] = {0, negative ? 0 : rect.height()};
+
+  // We explicitly specify the end point when cos(angle) = 0 and for axis
+  // aligned angles, where complex computation is not required to determine the
+  // end point.
+  switch (std::abs(angle)) {
+    case 0:
+      ABSL_FALLTHROUGH_INTENDED;
+    case 180:
+      ABSL_FALLTHROUGH_INTENDED;
+    case 360:
+      start_end[1] = {rect.width(), negative ? 0 : rect.height()};
+      break;
+    case 90:
+      ABSL_FALLTHROUGH_INTENDED;
+    case 270:
+      start_end[1] = {0, negative ? rect.height() : 0};
+      break;
+    // For non-axis aligned angles, the end point is the intersection of
+    // the gradient line and the normal line. The normal line is orthogonal to
+    // the gradient line and intersects the corner diagonal from the start
+    // point.
+    // Positive angle gradient line example:
+    //     +
+    //  +-/-------+
+    //  |/ )      |
+    //  +---------+
+    //
+    // Negative angle gradient line example:
+    //  +---------+
+    //  |\ )      |
+    //  +-\-------+
+    //     +
+    default: {
+      // TODO(crbug.com/1039003): add computation for angles >90 deg.
+      float rad_angle = gfx::DegToRad(static_cast<float>(angle));
+      float s = std::sin(rad_angle);
+      float c = std::cos(rad_angle);
+      float t = std::tan(rad_angle);
+
+      float a = rect.width() * t;
+      float b = rect.height() - a;
+      float cc = b * s;
+      float d = cc * c;
+      float e = cc * s;
+      float end_x = (rect.width() + d);
+      float end_y = negative ? (a + e) : (rect.height() - a - e);
+
+      start_end[1] = {end_x, end_y};
+    }
+  }
+
+  SkScalar positions[gfx::LinearGradient::kMaxStepSize];
+  SkColor gradient_colors[gfx::LinearGradient::kMaxStepSize];
+
+  size_t i = 0;
+  for (; i < gradient_mask->step_count(); ++i) {
+    positions[i] = gradient_mask->steps()[i].percent / 100.f;
+    gradient_colors[i] = MaskColor(gradient_mask->steps()[i].alpha);
+  }
+
+  SkPoint::Offset(start_end, /*count=*/2, rect.x(), rect.y());
+  sk_sp<SkShader> gradient = SkGradientShader::MakeLinear(
+      start_end, gradient_colors, positions, /*count=*/i, SkTileMode::kClamp);
+  current_canvas_->clipShader(std::move(gradient));
 }
 
 void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
@@ -1423,10 +1509,10 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   // Determine final rounded rect clip geometry. We transform it from target
   // space to window space to make batching and canvas preparation easier
   // (otherwise we'd have to separate those two matrices in the CDT).
-  if (ShouldApplyRoundedCorner(quad)) {
+  if (ShouldApplyRoundedCorner(quad) || ShouldApplyGradientMask(quad)) {
     // Transform by the window and projection matrix to go from target to
     // device space, which should always be a scale+translate.
-    SkRRect corner_bounds = SkRRect(
+    SkRRect corner_bounds = static_cast<SkRRect>(
         quad->shared_quad_state->mask_filter_info.rounded_corner_bounds());
     SkMatrix to_device;
     gfx::TransformToFlattenedSkMatrix(target_to_device, &to_device);
@@ -1434,16 +1520,20 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     // SkRRect::transform should always succeed here, since we know
     // corner_bounds is not empty and 'to_device' should just be scale+translate
     SkRRect device_bounds;
-    if (corner_bounds.transform(to_device, &device_bounds)) {
-      params.mask_filter_info.emplace(
-          gfx::MaskFilterInfo(gfx::RRectF(device_bounds)));
-    } else {
+    if (!corner_bounds.transform(to_device, &device_bounds)) {
       // TODO(crbug/1220004): We used to assert transform succeeded, but an
       // unreproduceable fuzzer test case could trip it. To be safe, and to
       // match the most likely scenario that the device transform has scale=0,
       // just force the clip to empty so we don't draw anything.
-      params.mask_filter_info.emplace(
-          gfx::MaskFilterInfo(gfx::RRectF(SkRRect::MakeEmpty())));
+      params.mask_filter_info.emplace(gfx::RRectF(SkRRect::MakeEmpty()));
+    } else {
+      if (ShouldApplyGradientMask(quad)) {
+        params.mask_filter_info.emplace(
+            gfx::RRectF(device_bounds),
+            quad->shared_quad_state->mask_filter_info.gradient_mask().value());
+      } else {
+        params.mask_filter_info.emplace(gfx::RRectF(device_bounds));
+      }
     }
   }
 
@@ -1625,6 +1715,9 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
   if (ShouldApplyRoundedCorner(quad))
     return nullptr;
 
+  if (ShouldApplyGradientMask(quad))
+    return nullptr;
+
   // The quad type knows how to apply RPDQ filters, and the quad settings can
   // be merged into the RPDQs settings in CalculateBypassParams.
   return quad;
@@ -1788,7 +1881,6 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
 
   DCHECK_NE(new_quad->material, DrawQuad::Material::kCompositorRenderPass);
   if (new_quad->material != DrawQuad::Material::kAggregatedRenderPass &&
-      new_quad->material != DrawQuad::Material::kStreamVideoContent &&
       new_quad->material != DrawQuad::Material::kTextureContent &&
       new_quad->material != DrawQuad::Material::kTiledContent)
     return true;
@@ -2111,48 +2203,6 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   DrawColoredQuad(quad->color, rpdq_params, params);
 }
 
-void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                                       const DrawRPDQParams* rpdq_params,
-                                       DrawQuadParams* params) {
-  TRACE_EVENT0("viz", "SkiaRenderer::DrawStreamVideoQuad");
-  DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
-
-  sk_sp<SkColorSpace> override_color_space;
-
-  // Force SRGB color space if we don't want real color space from media
-  // decoder.
-  if (!use_real_color_space_for_stream_video_)
-    override_color_space = SkColorSpace::MakeSRGB();
-
-  ScopedSkImageBuilder builder(this, quad->resource_id(),
-                               /*maybe_concurrent_reads=*/true,
-                               kUnpremul_SkAlphaType, kTopLeft_GrSurfaceOrigin,
-                               override_color_space);
-  const SkImage* image = builder.sk_image();
-  if (!image)
-    return;
-
-  gfx::RectF uv_rect = gfx::ScaleRect(
-      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
-      image->width(), image->height());
-  params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
-      uv_rect, gfx::RectF(quad->rect), params->visible_rect);
-
-  // Use provided resource size if not empty, otherwise use the full image size
-  // as the content area
-  gfx::RectF valid_texel_bounds =
-      quad->resource_size_in_pixels().IsEmpty()
-          ? gfx::RectF(image->width(), image->height())
-          : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
-
-  if (rpdq_params) {
-    SkPaint paint = params->paint(GetContentColorFilter());
-    DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
-  } else {
-    AddQuadToBatch(image, valid_texel_bounds, params);
-  }
-}
-
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
                                    const DrawRPDQParams* rpdq_params,
                                    DrawQuadParams* params) {
@@ -2160,11 +2210,15 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   const gfx::ColorSpace& src_color_space =
       resource_provider()->GetColorSpace(quad->resource_id());
   const bool needs_color_conversion_filter =
-      quad->is_video_frame && src_color_space.IsHDR();
+      ((quad->is_video_frame && src_color_space.IsHDR()) ||
+       src_color_space.IsToneMappedByDefault()) &&
+      // Don't do color conversions for stream video.
+      !quad->is_stream_video;
 
   sk_sp<SkColorSpace> override_color_space;
-  if (needs_color_conversion_filter)
+  if (needs_color_conversion_filter) {
     override_color_space = CurrentRenderPassSkColorSpace();
+  }
 
     // TODO(b/221643955): Some Chrome OS tests rely on the old GLRenderer
     // behavior of skipping color space conversions if the quad's color space is
@@ -2174,6 +2228,12 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (!src_color_space.IsValid())
     override_color_space = CurrentRenderPassSkColorSpace();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Force SRGB color space if we don't want real color space from media
+  // decoder.
+  if (!use_real_color_space_for_stream_video_ && quad->is_stream_video) {
+    override_color_space = SkColorSpace::MakeSRGB();
+  }
 
   ScopedSkImageBuilder builder(
       this, quad->resource_id(), /*maybe_concurrent_reads=*/true,
@@ -2282,6 +2342,16 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     }
   }
 
+  if (needs_color_conversion_filter) {
+    // Skia won't perform color conversion.
+    const gfx::ColorSpace dst_color_space = CurrentRenderPassColorSpace();
+    DCHECK(SkColorSpace::Equals(image->colorSpace(),
+                                CurrentRenderPassSkColorSpace().get()));
+    sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
+        src_color_space, quad->hdr_metadata, dst_color_space);
+    paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
+  }
+
   // From gl_renderer, the final src color will be
   // vertexAlpha * (textureColor + backgroundColor * (1 - textureAlpha)), where
   // vertexAlpha is the quad's alpha * interpolated per-vertex alpha
@@ -2301,17 +2371,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
       paint.setColorFilter(cf->makeComposed(paint.refColorFilter()));
   }
 
-  if (needs_color_conversion_filter) {
-    // Skia won't perform color conversion.
-    const gfx::ColorSpace dst_color_space = CurrentRenderPassColorSpace();
-    DCHECK(SkColorSpace::Equals(image->colorSpace(),
-                                CurrentRenderPassSkColorSpace().get()));
-    sk_sp<SkColorFilter> color_filter =
-        GetColorSpaceConversionFilter(src_color_space, dst_color_space);
-    paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
-  }
-
-  if (!rpdq_params) {
+  if (!rpdq_params && !quad->is_stream_video) {
     // Reset the paint's alpha, since it started as params.opacity and that
     // is now applied outside of the paint's alpha.
     paint.setAlphaf(quad_alpha);
@@ -2441,8 +2501,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       quad->ya_tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
 
   sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-      src_color_space, dst_color_space, quad->resource_offset,
-      quad->resource_multiplier);
+      src_color_space, quad->hdr_metadata, dst_color_space,
+      quad->resource_offset, quad->resource_multiplier);
 
   auto content_color_filter = GetContentColorFilter();
   if (content_color_filter)
@@ -2589,11 +2649,12 @@ void SkiaRenderer::ScheduleOverlays() {
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     const gfx::ColorSpace& src,
+    absl::optional<gfx::HDRMetadata> src_hdr_metadata,
     const gfx::ColorSpace& dst,
     float resource_offset,
     float resource_multiplier) {
   return color_filter_cache_.Get(
-      src, dst, resource_offset, resource_multiplier,
+      src, dst, resource_offset, resource_multiplier, src_hdr_metadata,
       current_frame()->display_color_spaces.GetSDRMaxLuminanceNits(),
       current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative());
 }

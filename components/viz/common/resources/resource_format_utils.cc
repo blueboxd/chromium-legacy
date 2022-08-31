@@ -421,6 +421,10 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     // candidate.
     case RED_8:
 #endif
+#if BUILDFLAG(IS_MAC)
+    case BGRX_8888:
+    case RGBX_8888:
+#endif
     case R16_EXT:
     case RGBA_4444:
     case RGBA_8888:
@@ -436,13 +440,15 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     case RED_8:
 #endif
+#if !BUILDFLAG(IS_MAC)
+    case BGRX_8888:
+    case RGBX_8888:
+#endif
     case RGB_565:
     case LUMINANCE_F16:
     case BGR_565:
     case RG_88:
     case RG16_EXT:
-    case RGBX_8888:
-    case BGRX_8888:
     case YVU_420:
     case YUV_420_BIPLANAR:
     case P010:
@@ -633,54 +639,6 @@ wgpu::TextureFormat ToDawnFormat(ResourceFormat format) {
 
 WGPUTextureFormat ToWGPUFormat(ResourceFormat format) {
   return static_cast<WGPUTextureFormat>(ToDawnFormat(format));
-}
-
-size_t AlphaBitsForSkColorType(SkColorType color_type) {
-  switch (color_type) {
-    case kAlpha_8_SkColorType:
-      return 8;
-    case kRGB_565_SkColorType:
-      return 0;
-    case kARGB_4444_SkColorType:
-      return 4;
-    case kRGBA_8888_SkColorType:
-      return 8;
-    case kRGB_888x_SkColorType:
-      return 0;
-    case kBGRA_8888_SkColorType:
-      return 8;
-    case kRGBA_1010102_SkColorType:
-    case kBGRA_1010102_SkColorType:
-      return 2;
-    case kRGB_101010x_SkColorType:
-    case kBGR_101010x_SkColorType:
-    case kGray_8_SkColorType:
-      return 0;
-    case kRGBA_F16Norm_SkColorType:
-    case kRGBA_F16_SkColorType:
-      return 16;
-    case kRGBA_F32_SkColorType:
-      return 32;
-    case kR8G8_unorm_SkColorType:
-      return 0;
-    case kA16_float_SkColorType:
-      return 16;
-    case kR16G16_float_SkColorType:
-      return 0;
-    case kA16_unorm_SkColorType:
-      return 16;
-    case kR16G16_unorm_SkColorType:
-      return 0;
-    case kR16G16B16A16_unorm_SkColorType:
-      return 16;
-    case kSRGBA_8888_SkColorType:
-      return 8;
-    case kR8_unorm_SkColorType:
-      return 0;
-    case kUnknown_SkColorType:
-    default:
-      return 0;
-  }
 }
 
 }  // namespace viz

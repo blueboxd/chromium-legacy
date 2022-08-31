@@ -16,6 +16,8 @@ TabletModeFloatWindowResizer::TabletModeFloatWindowResizer(
     WindowState* window_state)
     : WindowResizer(window_state) {
   DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  // TODO(sophiewen): Remove this once the untuck window widget is implemented.
+  Shell::Get()->float_controller()->MaybeUntuckFloatedWindow();
 }
 
 TabletModeFloatWindowResizer::~TabletModeFloatWindowResizer() {
@@ -34,7 +36,7 @@ void TabletModeFloatWindowResizer::Drag(const gfx::PointF& location_in_parent,
 void TabletModeFloatWindowResizer::CompleteDrag() {
   aura::Window* float_window = GetTarget();
   auto* float_controller = Shell::Get()->float_controller();
-  DCHECK(float_controller->IsFloated(float_window));
+  DCHECK(WindowState::Get(float_window)->IsFloated());
   float_controller->OnDragCompleted(last_location_in_parent_);
 }
 
@@ -43,7 +45,18 @@ void TabletModeFloatWindowResizer::RevertDrag() {
 }
 
 void TabletModeFloatWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
-  // TODO(crbug.com/1338715): Tuck the window to the side on fling or swipe.
+  const ui::GestureEventDetails& details = event->details();
+  bool left, up;
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
+    left = details.velocity_x() < 0.f;
+    up = details.velocity_y() < 0.f;
+  } else {
+    DCHECK_EQ(ui::ET_GESTURE_SWIPE, event->type());
+    left = details.swipe_left();
+    up = details.swipe_up();
+  }
+
+  Shell::Get()->float_controller()->OnFlingOrSwipe(left, up);
 }
 
 }  // namespace ash

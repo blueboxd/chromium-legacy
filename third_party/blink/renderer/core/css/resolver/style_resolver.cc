@@ -615,6 +615,7 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   // matches one of its containing shadow hosts (see MatchForRelation).
   for (const Element* element = &part_matching_element; element;
        element = element->OwnerShadowHost()) {
+    // Consider the ::part rules for the given scope.
     TreeScope& tree_scope = element->GetTreeScope();
     if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
       ElementRuleCollector::PartRulesScope scope(
@@ -626,12 +627,17 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
       collector.FinishAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
     }
 
-    // If the host doesn't forward any parts using exportparts= then the element
-    // is unreachable from any scope further above and we can stop.
-    if (element->HasPartNamesMap())
-      current_names.PushMap(*element->PartNamesMap());
-    else if (element != &part_matching_element)
-      return;
+    // If we have now considered the :host/:host() ::part rules in our own tree
+    // scope and the ::part rules in the scope directly above...
+    if (element != &part_matching_element) {
+      // ...then subsequent containing tree scopes require mapping part names
+      // through @exportparts before considering ::part rules. If no parts are
+      // forwarded, the element is now unreachable and we can stop.
+      if (element->HasPartNamesMap())
+        current_names.PushMap(*element->PartNamesMap());
+      else
+        return;
+    }
   }
 }
 
@@ -1681,8 +1687,7 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
     if (state.Style()->StyleType() == kPseudoIdMarker)
       filter = filter.Add(CSSProperty::kValidForMarker, false);
     if (IsHighlightPseudoElement(state.Style()->StyleType())) {
-      if (StyleResolver::UsesHighlightPseudoInheritance(
-              state.Style()->StyleType())) {
+      if (UsesHighlightPseudoInheritance(state.Style()->StyleType())) {
         filter = filter.Add(CSSProperty::kValidForHighlight, false);
       } else {
         filter = filter.Add(CSSProperty::kValidForHighlightLegacy, false);
@@ -1929,15 +1934,6 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
   }
 
   return true;
-}
-
-bool StyleResolver::UsesHighlightPseudoInheritance(PseudoId pseudo_id) {
-  // ::highlight() pseudos use highlight inheritance rather than originating
-  // inheritance even if highlight inheritance is not enabled for the other
-  // pseudos.
-  return ((IsHighlightPseudoElement(pseudo_id) &&
-           RuntimeEnabledFeatures::HighlightInheritanceEnabled()) ||
-          pseudo_id == PseudoId::kPseudoIdHighlight);
 }
 
 const CSSValue* StyleResolver::ComputeValue(

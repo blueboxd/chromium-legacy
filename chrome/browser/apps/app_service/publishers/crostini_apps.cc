@@ -126,9 +126,11 @@ void CrostiniApps::LaunchAppWithParams(AppLaunchParams&& params,
   if (params.intent) {
     LaunchAppWithIntent(
         params.app_id, event_flags, ConvertIntentToMojomIntent(params.intent),
-        params.launch_source, std::move(window_info), base::DoNothing());
+        ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+        std::move(window_info), base::DoNothing());
   } else {
-    Launch(params.app_id, event_flags, params.launch_source,
+    Launch(params.app_id, event_flags,
+           ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
            std::move(window_info));
   }
   // TODO(crbug.com/1244506): Add launch return value.
@@ -172,7 +174,7 @@ void CrostiniApps::LaunchAppWithIntent(const std::string& app_id,
   crostini::LaunchCrostiniAppWithIntent(
       profile_, app_id,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
-      std::move(intent), /*args=*/{},
+      ConvertMojomIntentToIntent(intent), /*args=*/{},
       base::BindOnce(
           [](LaunchAppWithIntentCallback callback, bool success,
              const std::string& failure_reason) {
@@ -196,7 +198,8 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
 
   if (menu_type == apps::mojom::MenuType::kShelf) {
-    AddCommandItem(ash::MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW, &menu_items);
+    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW,
+                   &menu_items);
   }
 
   if (crostini::IsUninstallable(profile_, app_id)) {
@@ -204,7 +207,7 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
   }
 
   if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
-    AddCommandItem(ash::MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
                    &menu_items);
   }
 

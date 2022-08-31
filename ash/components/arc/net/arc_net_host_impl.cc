@@ -27,14 +27,14 @@
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -72,15 +72,6 @@ std::vector<const chromeos::NetworkState*> GetHostActiveNetworks() {
   GetStateHandler()->GetActiveNetworkListByType(
       chromeos::NetworkTypePattern::Default(), &active_networks);
   return active_networks;
-}
-
-bool IsDeviceOwner() {
-  // Check whether the logged-in Chrome OS user is allowed to add or remove WiFi
-  // networks. The user account state changes immediately after boot. There is a
-  // small window when this may return an incorrect state. However, after things
-  // settle down this is guranteed to reflect the correct user account state.
-  return user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() ==
-         user_manager::UserManager::Get()->GetOwnerAccountId();
 }
 
 std::string TranslateEapMethod(arc::mojom::EapMethod method) {
@@ -625,7 +616,7 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   // Otherwise retrieve list of configured or visible WiFi networks.
   bool configured_only = type == mojom::GetNetworksRequestType::CONFIGURED_ONLY;
   chromeos::NetworkTypePattern network_pattern =
-      chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
+      ash::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
 
   chromeos::NetworkStateHandler::NetworkStateList network_states;
   GetStateHandler()->GetNetworkListByType(
@@ -673,12 +664,6 @@ void ArcNetHostImpl::CreateNetworkFailureCallback(
 
 void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                    CreateNetworkCallback callback) {
-  if (!IsDeviceOwner()) {
-    NET_LOG(ERROR) << "Only device owner can create WiFi networks";
-    std::move(callback).Run(std::string());
-    return;
-  }
-
   // TODO(b/195653632): Populate the shill EAP properties from the mojo
   // WifiConfiguration object.
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
@@ -749,12 +734,6 @@ bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
 
 void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
                                    ForgetNetworkCallback callback) {
-  if (!IsDeviceOwner()) {
-    NET_LOG(ERROR) << "Only device owner can remove WiFi networks";
-    std::move(callback).Run(mojom::NetworkResult::FAILURE);
-    return;
-  }
-
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
     NET_LOG(ERROR) << "Could not retrieve Service path from GUID " << guid;
@@ -766,7 +745,7 @@ void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
   // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
-  GetManagedConfigurationHandler()->RemoveConfiguration(
+  GetManagedConfigurationHandler()->RemoveConfigurationFromCurrentProfile(
       path,
       base::BindOnce(&ForgetNetworkSuccessCallback,
                      std::move(split_callback.first)),
@@ -1087,8 +1066,7 @@ void ArcNetHostImpl::TranslateEapCredentialsToDictWithCertID(
     dict.SetStringKey(
         shill::kEapCertIdProperty,
         base::StringPrintf("%i:%s", slot_id.value(), cert_id.value().c_str()));
-    dict.SetStringKey(shill::kEapPinProperty,
-                      chromeos::client_cert::kDefaultTPMPin);
+    dict.SetStringKey(shill::kEapPinProperty, ash::client_cert::kDefaultTPMPin);
   }
 
   if (cred->subject_match.has_value()) {

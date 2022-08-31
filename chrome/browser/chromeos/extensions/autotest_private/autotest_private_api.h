@@ -16,6 +16,7 @@
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom-forward.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
@@ -410,6 +411,8 @@ class AutotestPrivateIsSystemWebAppOpenFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateIsSystemWebAppOpenFunction() override;
   ResponseAction Run() override;
+
+  void OnSystemWebAppsInstalled();
 };
 
 class AutotestPrivateLaunchArcAppFunction : public ExtensionFunction {
@@ -440,6 +443,19 @@ class AutotestPrivateLaunchSystemWebAppFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateLaunchSystemWebAppFunction() override;
   ResponseAction Run() override;
+
+  void OnSystemWebAppsInstalled();
+};
+
+class AutotestPrivateLaunchFilesAppToPathFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchFilesAppToPath",
+                             AUTOTESTPRIVATE_LAUNCHFILESAPPTOPATH)
+
+ private:
+  ~AutotestPrivateLaunchFilesAppToPathFunction() override;
+  ResponseAction Run() override;
+  void OnShowItemInFolder(platform_util::OpenOperationResult result);
 };
 
 class AutotestPrivateCloseAppFunction : public ExtensionFunction {
@@ -582,7 +598,7 @@ class AutotestPrivateInstallBorealisFunction : public ExtensionFunction {
   ~AutotestPrivateInstallBorealisFunction() override;
   ResponseAction Run() override;
 
-  void Complete(bool was_successful);
+  void Complete(std::string error_or_empty);
 
   std::unique_ptr<InstallationObserver> installation_observer_;
 };

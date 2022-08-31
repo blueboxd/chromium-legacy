@@ -189,11 +189,11 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler_callbacks.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
@@ -298,11 +298,24 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::WelcomeView::kScreenId, "network"},
     {chromeos::TermsOfServiceScreenView::kScreenId, "tos"}};
 
+std::string GetLegacyUmaOobeScreenName(const OobeScreenId& screen_id) {
+  // Make sure to use initial UMA name if the name has changed.
+  std::string uma_name = screen_id.name;
+  for (const auto& entry : kLegacyUmaOobeScreenNames) {
+    if (entry.screen.AsId() == screen_id) {
+      uma_name = entry.uma_name;
+      break;
+    }
+  }
+  uma_name[0] = std::toupper(uma_name[0]);
+  return uma_name;
+}
+
 void RecordUMAHistogramForOOBEStepShownStatus(
     OobeScreenId screen,
     WizardController::ScreenShownStatus status) {
-  std::string screen_name = screen.name;
-  screen_name[0] = std::toupper(screen_name[0]);
+  // Legacy histogram, requires old screen names.
+  std::string screen_name = GetLegacyUmaOobeScreenName(screen);
   std::string histogram_name = "OOBE.StepShownStatus." + screen_name;
   base::UmaHistogramEnumeration(histogram_name, status);
 }
@@ -310,23 +323,14 @@ void RecordUMAHistogramForOOBEStepShownStatus(
 void RecordUMAHistogramForOOBEStepCompletionTime(OobeScreenId screen,
                                                  const std::string& exit_reason,
                                                  base::TimeDelta step_time) {
-  // Fetch screen name; make sure to use initial UMA name if the name has
-  // changed.
-  std::string screen_name = screen.name;
-  for (const auto& entry : kLegacyUmaOobeScreenNames) {
-    if (entry.screen.AsId() == screen) {
-      screen_name = entry.uma_name;
-      break;
-    }
-  }
-
-  screen_name[0] = std::toupper(screen_name[0]);
-  std::string histogram_name = "OOBE.StepCompletionTime." + screen_name;
+  // Legacy histogram, requires old screen names.
+  std::string uma_name = GetLegacyUmaOobeScreenName(screen);
+  std::string histogram_name = "OOBE.StepCompletionTime." + uma_name;
 
   base::UmaHistogramMediumTimes(histogram_name, step_time);
 
-  // Use for this Histogram real screen names.
-  screen_name = screen.name;
+  // Use for this histogram real screen names.
+  std::string screen_name = screen.name;
   screen_name[0] = std::toupper(screen_name[0]);
   std::string histogram_name_with_reason =
       "OOBE.StepCompletionTimeByExitReason." + screen_name + "." + exit_reason;
@@ -597,7 +601,8 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ResetScreen>(
-      oobe_ui->GetView<ResetScreenHandler>(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<ResetScreenHandler>()->AsWeakPtr(),
+      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DemoSetupScreen>(
@@ -609,7 +614,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnEnableAdbSideloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableDebuggingScreen>(
-      oobe_ui->GetView<EnableDebuggingScreenHandler>(),
+      oobe_ui->GetView<EnableDebuggingScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskEnableScreen>(
@@ -625,7 +630,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnLocaleSwitchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<TermsOfServiceScreen>(
-      oobe_ui->GetView<TermsOfServiceScreenHandler>(),
+      oobe_ui->GetView<TermsOfServiceScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<SyncConsentScreen>(
@@ -645,7 +650,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<WrongHWIDScreen>(
-      oobe_ui->GetView<WrongHWIDScreenHandler>(),
+      oobe_ui->GetView<WrongHWIDScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LacrosDataMigrationScreen>(
@@ -668,7 +673,7 @@ WizardController::CreateScreens() {
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
   append(std::make_unique<ManagementTransitionScreen>(
-      oobe_ui->GetView<ManagementTransitionScreenHandler>(),
+      oobe_ui->GetView<ManagementTransitionScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnManagementTransitionScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateRequiredScreen>(
@@ -681,7 +686,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MultiDeviceSetupScreen>(
-      oobe_ui->GetView<MultiDeviceSetupScreenHandler>(),
+      oobe_ui->GetView<MultiDeviceSetupScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnMultiDeviceSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<PinSetupScreen>(
@@ -697,11 +702,11 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnGestureNavigationScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MarketingOptInScreen>(
-      oobe_ui->GetView<MarketingOptInScreenHandler>(),
+      oobe_ui->GetView<MarketingOptInScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<PackagedLicenseScreen>(
-      oobe_ui->GetView<PackagedLicenseScreenHandler>(),
+      oobe_ui->GetView<PackagedLicenseScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnPackagedLicenseScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<GaiaScreen>(
@@ -1201,7 +1206,7 @@ void WizardController::OnConsolidatedConsentScreenExit(
       break;
     case ConsolidatedConsentScreen::Result::BACK_DEMO:
       DCHECK(demo_setup_controller_);
-      ShowNetworkScreen();
+      ShowDemoModePreferencesScreen();
       break;
   }
 }
@@ -1401,7 +1406,7 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       DCHECK(demo_setup_controller_);
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
-      ShowEulaScreen();
+      ShowDemoModePreferencesScreen();
       break;
     case NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT:
     case NetworkScreen::Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT:
@@ -1410,19 +1415,10 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       PerformPostEulaActions();
       InitiateOOBEUpdate();
       break;
-    case NetworkScreen::Result::CONNECTED_DEMO_CONSOLIDATED_CONSENT:
-    case NetworkScreen::Result::
-        NOT_APPLICABLE_CONNECTED_DEMO_CONSOLIDATED_CONSENT:
-      DCHECK(demo_setup_controller_);
-      demo_setup_controller_->set_demo_config(
-          DemoSession::DemoModeConfig::kOnline);
-      MaybeTakeTPMOwnership();
-      PerformPostEulaActions();
-      InitiateOOBEUpdate();
-      break;
     case NetworkScreen::Result::BACK_DEMO:
       DCHECK(demo_setup_controller_);
-      ShowDemoModePreferencesScreen();
+      demo_setup_controller_.reset();
+      ShowWelcomeScreen();
       break;
     case NetworkScreen::Result::BACK_REGULAR:
       DCHECK(!demo_setup_controller_);
@@ -1453,7 +1449,12 @@ void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
       OnEulaAccepted(false /*usage_statistics_reporting_enabled*/);
       break;
     case EulaScreen::Result::BACK:
+      DCHECK(!demo_setup_controller_);
       ShowNetworkScreen();
+      break;
+    case EulaScreen::Result::BACK_DEMO_MODE:
+      DCHECK(demo_setup_controller_);
+      ShowDemoModePreferencesScreen();
       break;
   }
 }
@@ -1647,11 +1648,17 @@ void WizardController::OnDemoPreferencesScreenExit(
 
   switch (result) {
     case DemoPreferencesScreen::Result::COMPLETED:
-      ShowNetworkScreen();
+      ShowEulaScreen();
+      break;
+    case DemoPreferencesScreen::Result::COMPLETED_CONSOLIDATED_CONSENT:
+      demo_setup_controller_->set_demo_config(
+          DemoSession::DemoModeConfig::kOnline);
+      MaybeTakeTPMOwnership();
+      PerformPostEulaActions();
+      InitiateOOBEUpdate();
       break;
     case DemoPreferencesScreen::Result::CANCELED:
-      demo_setup_controller_.reset();
-      ShowWelcomeScreen();
+      ShowNetworkScreen();
       break;
   }
 }
@@ -2009,7 +2016,7 @@ void WizardController::PerformPostEulaActions() {
   NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
       NetworkStateHandler::kDefaultCheckPortalList);
   GetAutoEnrollmentController()->Start();
-  network_portal_detector::GetInstance()->Enable(true);
+  network_portal_detector::GetInstance()->Enable();
 }
 
 void WizardController::PerformOOBECompletedActions() {
@@ -2265,8 +2272,10 @@ bool WizardController::HandleAccelerator(LoginAcceleratorAction action) {
 }
 
 void WizardController::StartDemoModeSetup() {
+  // Start Demo Mode by initiate demo set up controller and showing the first
+  // network screen in demo mode setup flow.
   demo_setup_controller_ = std::make_unique<DemoSetupController>();
-  ShowDemoModePreferencesScreen();
+  ShowNetworkScreen();
 }
 
 void WizardController::SimulateDemoModeSetupForTesting(

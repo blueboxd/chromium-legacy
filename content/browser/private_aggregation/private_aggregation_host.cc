@@ -47,7 +47,7 @@ struct PrivateAggregationHost::ReceiverContext {
 
 PrivateAggregationHost::PrivateAggregationHost(
     base::RepeatingCallback<void(AggregatableReportRequest,
-                                 PrivateAggregationBudgetKey::Api)>
+                                 PrivateAggregationBudgetKey)>
         on_report_request_received)
     : on_report_request_received_(std::move(on_report_request_received)) {}
 
@@ -72,6 +72,12 @@ void PrivateAggregationHost::SendHistogramReport(
     std::vector<mojom::AggregatableReportHistogramContributionPtr>
         contribution_ptrs,
     mojom::AggregationServiceMode aggregation_mode) {
+  // TODO(alexmt): Consider updating or making a FeatureParam.
+  static constexpr char kFledgeReportingPath[] =
+      "/.well-known/private-aggregation/report-fledge";
+  static constexpr char kSharedStorageReportingPath[] =
+      "/.well-known/private-aggregation/report-shared-storage";
+
   const url::Origin& reporting_origin =
       receiver_set_.current_context().worklet_origin;
   DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin));
@@ -81,6 +87,13 @@ void PrivateAggregationHost::SendHistogramReport(
       contribution_ptrs,
       [](const mojom::AggregatableReportHistogramContributionPtr&
              contribution_ptr) { return contribution_ptr.is_null(); }));
+
+  if (contribution_ptrs.size() > kMaxNumberOfContributions) {
+    // TODO(crbug.com/1323324): Add histograms for monitoring failures here,
+    // possibly broken out by failure reason.
+    mojo::ReportBadMessage("Too many contributions");
+    return;
+  }
 
   std::vector<mojom::AggregatableReportHistogramContribution> contributions;
   contributions.reserve(contribution_ptrs.size());
@@ -93,18 +106,31 @@ void PrivateAggregationHost::SendHistogramReport(
       AggregationServicePayloadContents::Operation::kHistogram,
       std::move(contributions), aggregation_mode);
 
+  base::Time now = base::Time::Now();
+
   AggregatableReportSharedInfo shared_info(
       /*scheduled_report_time=*/GetScheduledReportTime(
-          /*report_issued_time=*/base::Time::Now()),
+          /*report_issued_time=*/now),
       /*report_id=*/base::GUID::GenerateRandomV4(), reporting_origin,
       AggregatableReportSharedInfo::DebugMode::kDisabled,
       /*additional_fields=*/base::Value::Dict(),
       /*api_version=*/kApiReportVersion,
       /*api_identifier=*/kApiIdentifier);
 
+  std::string reporting_path;
+  switch (receiver_set_.current_context().api_for_budgeting) {
+    case PrivateAggregationBudgetKey::Api::kFledge:
+      reporting_path = kFledgeReportingPath;
+      break;
+    case PrivateAggregationBudgetKey::Api::kSharedStorage:
+      reporting_path = kSharedStorageReportingPath;
+      break;
+  }
+
   absl::optional<AggregatableReportRequest> report_request =
       AggregatableReportRequest::Create(std::move(payload_contents),
-                                        std::move(shared_info));
+                                        std::move(shared_info),
+                                        std::move(reporting_path));
   if (!report_request.has_value()) {
     // TODO(crbug.com/1323324): Add histograms for monitoring failures here,
     // possibly broken out by failure reason.
@@ -112,9 +138,16 @@ void PrivateAggregationHost::SendHistogramReport(
     return;
   }
 
-  on_report_request_received_.Run(
-      std::move(report_request.value()),
-      receiver_set_.current_context().api_for_budgeting);
+  absl::optional<PrivateAggregationBudgetKey> budget_key =
+      PrivateAggregationBudgetKey::Create(
+          /*origin=*/reporting_origin, /*api_invocation_time=*/now,
+          /*api=*/receiver_set_.current_context().api_for_budgeting);
+
+  // The origin should be potentially trustworthy.
+  DCHECK(budget_key.has_value());
+
+  on_report_request_received_.Run(std::move(report_request.value()),
+                                  std::move(budget_key.value()));
 }
 
 }  // namespace content

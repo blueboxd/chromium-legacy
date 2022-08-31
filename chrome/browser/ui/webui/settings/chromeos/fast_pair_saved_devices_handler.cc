@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/fast_pair_saved_devices_handler.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder_impl.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
@@ -86,6 +87,7 @@ void FastPairSavedDevicesHandler::HandleRemoveSavedDevice(
 
 void FastPairSavedDevicesHandler::OnSavedDeviceDeleted(bool success) {
   QP_LOG(INFO) << __func__ << ": " << (success ? "success" : "failed");
+  ash::quick_pair::RecordSavedDevicesRemoveResult(/*success=*/success);
 }
 
 void FastPairSavedDevicesHandler::HandleLoadSavedDevicePage(
@@ -99,6 +101,7 @@ void FastPairSavedDevicesHandler::HandleLoadSavedDevicePage(
     return;
 
   loading_saved_device_page_ = true;
+  loading_start_time_ = base::TimeTicks::Now();
   ash::quick_pair::FastPairRepository::Get()->GetSavedDevices(
       base::BindOnce(&FastPairSavedDevicesHandler::OnGetSavedDevices,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -120,9 +123,14 @@ void FastPairSavedDevicesHandler::OnGetSavedDevices(
   if (devices.empty()) {
     QP_LOG(VERBOSE) << __func__ << ": No devices saved to the user's account";
     base::Value::List saved_devices_list;
+    ash::quick_pair::RecordSavedDevicesCount(
+        /*num_devices=*/saved_devices_list.size());
     FireWebUIListener(kSavedDevicesListMessage,
                       base::Value(std::move(saved_devices_list)));
     loading_saved_device_page_ = false;
+    base::TimeDelta total_load_time =
+        base::TimeTicks::Now() - loading_start_time_;
+    ash::quick_pair::RecordSavedDevicesTotalUxLoadTime(total_load_time);
     return;
   }
 
@@ -221,9 +229,14 @@ void FastPairSavedDevicesHandler::DecodingUrlsFinished() {
         /*account_key=*/account_key));
   }
 
+  ash::quick_pair::RecordSavedDevicesCount(
+      /*num_devices=*/saved_devices_list.size());
   FireWebUIListener(kSavedDevicesListMessage,
                     base::Value(std::move(saved_devices_list)));
   QP_LOG(VERBOSE) << __func__ << ": Sending device list";
+  base::TimeDelta total_load_time =
+      base::TimeTicks::Now() - loading_start_time_;
+  ash::quick_pair::RecordSavedDevicesTotalUxLoadTime(total_load_time);
 
   // We reset the state here for another page load that may happened while
   // chrome://os-settings is open, since our decoding tasks are completed.

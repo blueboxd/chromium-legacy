@@ -30,7 +30,6 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/common/viz_utils.h"
-#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display_embedder/image_context_impl.h"
@@ -50,7 +49,7 @@
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
@@ -80,6 +79,10 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "components/viz/service/display/dc_layer_overlay.h"
+#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
@@ -277,7 +280,7 @@ std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
 
   // Even with Vulkan/Dawn compositing, the SharedImageFactory constructor
   // always initializes a GL-backed SharedImage factory to fall back on.
-  // Creating the SharedImageBackingFactoryGLTexture invokes GL API calls, so
+  // Creating the GLTextureImageBackingFactory invokes GL API calls, so
   // we need to ensure there is a current GL context.
   if (!context_state->MakeCurrent(nullptr, true /* need_gl */)) {
     LOG(ERROR) << "Failed to make current during initialization.";
@@ -716,7 +719,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   }
 }
 
-std::unique_ptr<gpu::SharedImageRepresentationSkia>
+std::unique_ptr<gpu::SkiaImageRepresentation>
 SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
     ResourceFormat resource_format,
     const gfx::Size& size,
@@ -938,7 +941,7 @@ bool SkiaOutputSurfaceImplOnGpu::CreateSurfacesForNV12Planes(
 
     SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
 
-    std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+    std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>
         scoped_write = representation->BeginScopedWriteAccess(
             /*final_msaa_count=*/1, surface_props, &plane_data.begin_semaphores,
             &plane_data.end_semaphores,
@@ -980,7 +983,7 @@ bool SkiaOutputSurfaceImplOnGpu::ImportSurfacesForNV12Planes(
 
     SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
 
-    std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+    std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>
         scoped_write = representation->BeginScopedWriteAccess(
             /*final_msaa_count=*/1, surface_props, &plane_data.begin_semaphores,
             &plane_data.end_semaphores,
@@ -1336,7 +1339,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
 ReleaseCallback
 SkiaOutputSurfaceImplOnGpu::CreateDestroyCopyOutputResourcesOnGpuThreadCallback(
-    std::unique_ptr<gpu::SharedImageRepresentationSkia> representation) {
+    std::unique_ptr<gpu::SkiaImageRepresentation> representation) {
   copy_output_images_.push_back(std::move(representation));
 
   auto closure_on_gpu_thread = base::BindOnce(
@@ -1396,8 +1399,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   DCHECK(scoped_output_device_paint_ || !from_framebuffer);
 
   SkSurface* surface;
-  std::unique_ptr<gpu::SharedImageRepresentationSkia> backing_representation;
-  std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<gpu::SkiaImageRepresentation> backing_representation;
+  std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>
       scoped_access;
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
@@ -1604,20 +1607,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
 
 void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
-  TRACE_EVENT1("viz", "SkiaOutputSurfaceImplOnGpu::ScheduleOverlays",
-               "num_overlays", overlays.size());
-
-  constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
-  constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
-  constexpr int kHistogramTimeBuckets = 50;
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
-  output_device_->ScheduleOverlays(std::move(overlays));
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Gpu.OutputSurface.ScheduleOverlaysUs",
-      base::TimeTicks::Now() - start_time, kHistogramMinTime, kHistogramMaxTime,
-      kHistogramTimeBuckets);
+  overlays_ = std::move(overlays);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
@@ -2012,6 +2002,23 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
         output_surface_plane_->damage_rect = frame->sub_buffer_rect;
     }
 
+    if (overlays_.size()) {
+      TRACE_EVENT1("viz", "SkiaOutputDevice->ScheduleOverlays()",
+                   "num_overlays", overlays_.size());
+
+      constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
+      constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
+      constexpr int kHistogramTimeBuckets = 50;
+      base::TimeTicks start_time = base::TimeTicks::Now();
+
+      output_device_->ScheduleOverlays(std::move(overlays_));
+
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "Gpu.OutputSurface.ScheduleOverlaysUs",
+          base::TimeTicks::Now() - start_time, kHistogramMinTime,
+          kHistogramMaxTime, kHistogramTimeBuckets);
+    }
+
     output_device_->SetViewportSize(frame->size);
     output_device_->SchedulePrimaryPlane(output_surface_plane_);
 
@@ -2035,8 +2042,9 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
     }
   }
 
-  // Reset the primary plane information even on skipped swap.
+  // Reset the overlay plane information even on skipped swap.
   output_surface_plane_.reset();
+  overlays_.clear();
 
   destroy_after_swap_.clear();
   context_state_->UpdateSkiaOwnedMemorySize();

@@ -48,6 +48,7 @@
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
@@ -129,6 +130,16 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
     return client;
   owned_client = std::make_unique<T>();
   return owned_client.get();
+}
+
+template <typename T>
+mojo::PendingAssociatedRemote<T> CreateStubRemoteIfNeeded(
+    mojo::PendingAssociatedRemote<T> remote) {
+  if (remote.is_valid())
+    return remote;
+  mojo::AssociatedRemote<T> stub_remote;
+  std::ignore = stub_remote.BindNewEndpointAndPassDedicatedReceiver();
+  return stub_remote.Unbind();
 }
 
 viz::FrameSinkId AllocateFrameSinkId() {
@@ -306,9 +317,7 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      mojom::blink::TreeScopeType::kDocument, client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetRemoteAssociatedInterfaces(), RemoteFrameToken());
+      mojom::blink::TreeScopeType::kDocument, client, RemoteFrameToken());
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -318,18 +327,42 @@ WebRemoteFrameImpl* CreateRemoteChild(
     const WebString& name,
     scoped_refptr<SecurityOrigin> security_origin,
     TestWebRemoteFrameClient* client) {
+  mojom::FrameReplicationStatePtr replicated_state =
+      mojom::FrameReplicationState::New();
+  replicated_state->name = name.Utf8();
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebRemoteFrameImpl>(parent.CreateRemoteChild(
-      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetRemoteAssociatedInterfaces(), RemoteFrameToken(),
-      /*devtools_frame_token=*/base::UnguessableToken(), nullptr));
+      mojom::blink::TreeScopeType::kDocument, client, RemoteFrameToken(),
+      /*devtools_frame_token=*/base::UnguessableToken(), /*opener=*/nullptr,
+      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+          mojo::NullAssociatedRemote()),
+      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+          .BindNewEndpointAndPassDedicatedReceiver(),
+      std::move(replicated_state)));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
   frame->GetFrame()->SetReplicatedOrigin(std::move(security_origin), false);
   return frame;
+}
+
+void SwapRemoteFrame(
+    WebFrame* old_frame,
+    WebRemoteFrame* new_remote_frame,
+    mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost> frame_host) {
+  mojom::FrameReplicationStatePtr replicated_state =
+      mojom::FrameReplicationState::New();
+  // Preserve the frame's name on swap.
+  replicated_state->name =
+      WebFrame::ToCoreFrame(*old_frame)->Tree().GetName().Utf8();
+
+  old_frame->Swap(new_remote_frame,
+                  CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+                      std::move(frame_host)),
+                  mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+                      .BindNewEndpointAndPassDedicatedReceiver(),
+                  std::move(replicated_state));
 }
 
 WebViewHelper::WebViewHelper(
@@ -465,11 +498,13 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
   web_remote_frame_client = CreateDefaultClientIfNeeded(
       web_remote_frame_client, owned_web_remote_frame_client);
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
-      web_view_, web_remote_frame_client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      web_remote_frame_client->GetRemoteAssociatedInterfaces(),
-      RemoteFrameToken(), /*devtools_frame_token=*/base::UnguessableToken(),
-      opener);
+      web_view_, web_remote_frame_client, RemoteFrameToken(),
+      /*devtools_frame_token=*/base::UnguessableToken(), opener,
+      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+          mojo::NullAssociatedRemote()),
+      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+          .BindNewEndpointAndPassDedicatedReceiver(),
+      mojom::FrameReplicationState::New());
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)
@@ -814,9 +849,7 @@ void TestWebFrameClient::DidMeaningfulLayout(
   }
 }
 
-TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : associated_interface_provider_(new AssociatedInterfaceProvider(nullptr)) {
-}
+TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;
 
 void TestWebRemoteFrameClient::Bind(
     WebRemoteFrame* frame,
@@ -852,7 +885,16 @@ void TestWebFrameWidget::DispatchThroughCcInputHandler(
   GetWidgetInputHandlerManager()->DispatchEvent(
       std::make_unique<WebCoalescedInputEvent>(event.Clone(),
                                                ui::LatencyInfo()),
-      mojom::blink::WidgetInputHandler::DispatchEventCallback());
+      base::BindOnce(
+          [](WeakMember<TestWebFrameWidget> widget,
+             mojom::blink::InputEventResultSource, const ui::LatencyInfo&,
+             mojom::blink::InputEventResultState,
+             mojom::blink::DidOverscrollParamsPtr overscroll,
+             mojom::blink::TouchActionOptionalPtr) {
+            if (widget)
+              widget->last_overscroll_ = std::move(overscroll);
+          },
+          this));
   FlushInputHandlerTasks();
 }
 
@@ -1004,6 +1046,9 @@ TestWidgetInputHandlerHost::BindNewRemote() {
 
 void TestWidgetInputHandlerHost::SetTouchActionFromMain(
     cc::TouchAction touch_action) {}
+
+void TestWidgetInputHandlerHost::SetPanAction(
+    mojom::blink::PanAction pan_action) {}
 
 void TestWidgetInputHandlerHost::DidOverscroll(
     mojom::blink::DidOverscrollParamsPtr params) {}

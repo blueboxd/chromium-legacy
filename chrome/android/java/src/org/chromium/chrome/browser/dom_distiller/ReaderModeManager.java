@@ -228,8 +228,8 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
 
         mCustomTabNavigationDelegate = new InterceptNavigationDelegate() {
             @Override
-            public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle,
-                    GURL escapedUrl, boolean applyUserGestureCarryover) {
+            public boolean shouldIgnoreNavigation(
+                    NavigationHandle navigationHandle, GURL escapedUrl) {
                 if (DomDistillerUrlUtils.isDistilledPage(navigationHandle.getUrl())
                         || navigationHandle.isExternalProtocol()) {
                     return false;
@@ -405,8 +405,8 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
             private int mLastDistillerPageIndex;
 
             @Override
-            public void didStartNavigation(NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame() || navigation.isSameDocument()) return;
+            public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigation) {
+                if (navigation.isSameDocument()) return;
 
                 // Reader Mode should not pollute the navigation stack. To avoid this, watch for
                 // navigations and prepare to remove any that are "chrome-distiller" urls.
@@ -426,6 +426,11 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
                     mDistillationStatus = DistillationStatus.STARTED;
                     mReaderModePageUrl = navigation.getUrl();
                 }
+            }
+
+            @Override
+            public void didStartNavigationNoop(NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
 
             @Override

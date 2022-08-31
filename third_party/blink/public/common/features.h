@@ -121,8 +121,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // finds.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageStaleOriginPurgeRecurringInterval;
-// Length of time that an origin must be inactive for it to be deemed stale
-// and hence necessary to auto-purge.
+// Length of time between origin creation and origin expiration. When an
+// origin's data is older than this threshold, it will be auto-purged.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageOriginStalenessThreshold;
 
@@ -190,7 +190,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kSpeculationRulesPrefetchProxy;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
-BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kCssSelectorFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kDropInputEventsBeforeFirstPaint;
@@ -621,6 +620,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsMetaNameAcceptCH;
 
+BLINK_COMMON_EXPORT extern const base::Feature kClientHintsMetaEquivDelegateCH;
+
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
 // requesting an origin agent cluster, but in the same process.
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -681,6 +682,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kUserAgentFrozenBuildVersion;
 
+// If enabled, the platform and oscpu of the User-Agent string will be reduced.
+BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentPlatformOsCpu;
+
 // If enabled, we only report FCP if there’s a successful commit to the
 // compositor. Otherwise, FCP may be reported if first BeginMainFrame results in
 // a commit failure (see crbug.com/1257607).
@@ -691,6 +695,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kSecureContextFixForWorkers;
 // If enabled, the `getDisplayMedia()` family of APIs will ask for NV12 frames,
 // which should trigger a zero-copy path in the tab capture code.
 BLINK_COMMON_EXPORT extern const base::Feature kZeroCopyTabCapture;
+
+// If enabled, the `CropTarget.fromElement()` method will allow for the use
+// of additional element tag tyeps, instead of just <div> and <iframe>.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kRegionCaptureExperimentalSubtypes;
 
 // Experiment for measuring how often an overridden User-Agent string is made by
 // appending or prepending to the original User-Agent string.
@@ -721,6 +730,20 @@ BLINK_COMMON_EXPORT extern const base::Feature kEstablishGpuChannelAsync;
 // thread.
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeScriptSourceOffThread;
 
+// If enabled, async script execution will be delayed than usual.
+// See https://crbug.com/1340837.
+BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptExecution;
+enum class DelayAsyncScriptDelayType {
+  kFinishedParsing,
+  kFirstPaintOrFinishedParsing,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
+    kDelayAsyncScriptExecutionDelayParam;
+
+// If enabled, parser-blocking scripts are force-deferred.
+// https://crbug.com/1339112
+BLINK_COMMON_EXPORT extern const base::Feature kForceDeferScriptIntervention;
+
 // If enabled, allows MediaStreamVideoSource objects to be restarted by a
 // successful source switch. Normally, switching the source would only allowed
 // on streams that are in started state. However, changing the source also first
@@ -728,10 +751,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDecodeScriptSourceOffThread;
 // to do a change directly on a paused stream.
 BLINK_COMMON_EXPORT extern const base::Feature
     kAllowSourceSwitchOnPausedVideoMediaStream;
-
-// Kill switch for firing popstate immediately, instead of deferring it until
-// after onload.
-BLINK_COMMON_EXPORT extern const base::Feature kDispatchPopstateSync;
 
 // If enabled, expose non-standard stats in the WebRTC getStats API.
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcExposeNonStandardStats;
@@ -775,10 +794,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kFileSystemUrlNavigation;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEarlyExitOnNoopClassOrStyleChange;
 
-// Enables correct PreFCP and PostFCP metrics for non-main local frame roots.
-// See https://crbug.com/1330675.
-BLINK_COMMON_EXPORT extern const base::Feature kLocalFrameRootPrePostFCPMetrics;
-
 // Stylus handwriting recognition to text input feature.
 BLINK_COMMON_EXPORT extern const base::Feature kStylusWritingToInput;
 
@@ -795,6 +810,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kTimedHTMLParserBudget;
 // This flag is meant to be a temporary kill switch to disable
 // CSSOverflowForReplacedElements, if necessary, due to compat issues.
 BLINK_COMMON_EXPORT extern const base::Feature kCSSOverflowForReplacedElements;
+
+// Allows reading/writing unsanitized content from/to the clipboard. Currently,
+// it is only applicable to HTML format. See crbug.com/1268679.
+BLINK_COMMON_EXPORT extern const base::Feature kClipboardUnsanitizedContent;
 
 }  // namespace features
 }  // namespace blink

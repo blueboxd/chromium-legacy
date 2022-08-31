@@ -26,7 +26,7 @@ Polymer({
       reflectToAttribute: true,
       observer: 'disabledChanged_',
       computed: 'computeDisabled_(deviceState, deviceState.inhibitReason,' +
-          'disableItem)'
+          'disableItem)',
     },
 
     /**
@@ -81,13 +81,6 @@ Polymer({
     buttonLabel: {
       type: String,
       computed: 'getButtonLabel_(item)',
-    },
-
-    /** Expose the aria role attribute as "button". */
-    role: {
-      type: String,
-      reflectToAttribute: true,
-      value: 'button',
     },
 
     /**

@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -30,13 +31,13 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
 
 using web_app::test::CrosapiParam;
@@ -169,6 +170,15 @@ class WebAppRegistrarTest : public WebAppTest {
 
  private:
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
+};
+
+class WebAppRegistrarTest_TabStrip : public WebAppRegistrarTest {
+ public:
+  WebAppRegistrarTest_TabStrip() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kDesktopPWAsTabStrip};
 };
 
 TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
@@ -973,91 +983,6 @@ TEST_F(WebAppRegistrarTest,
             registrar().GetEffectiveDisplayModeFromManifest(app_id));
 }
 
-TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
-  controller().Init();
-
-  auto web_app = test::CreateWebApp();
-  const AppId app_id = web_app->app_id();
-  RegisterApp(std::move(web_app));
-
-  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id).value);
-
-  PersistRunOnOsLoginUserChoice(
-      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
-      app_id, RunOnOsLoginMode::kWindowed);
-  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id).value);
-
-  PersistRunOnOsLoginUserChoice(
-      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
-      app_id, RunOnOsLoginMode::kMinimized);
-  EXPECT_EQ(RunOnOsLoginMode::kMinimized,
-            registrar().GetAppRunOnOsLoginMode(app_id).value);
-}
-
-TEST_F(WebAppRegistrarTest, RunOnOsLoginModesWithPolicy) {
-  controller().Init();
-
-  auto web_app_default = test::CreateWebApp();
-  auto web_app_default2 = test::CreateWebApp(GURL("https:/default2.example/"));
-  auto web_app_windowed = test::CreateWebApp(GURL("https://windowed.example/"));
-  auto web_app_allowed = test::CreateWebApp(GURL("https://allowed.example/"));
-  const AppId app_id_default = web_app_default->app_id();
-  const AppId app_id_default2 = web_app_default2->app_id();
-  const AppId app_id_windowed = web_app_windowed->app_id();
-  const AppId app_id_allowed = web_app_allowed->app_id();
-
-  RegisterApp(std::move(web_app_default));
-  RegisterApp(std::move(web_app_default2));
-  RegisterApp(std::move(web_app_windowed));
-  RegisterApp(std::move(web_app_allowed));
-
-  PersistRunOnOsLoginUserChoice(
-      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
-      app_id_default2, RunOnOsLoginMode::kWindowed);
-  PersistRunOnOsLoginUserChoice(
-      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
-      app_id_allowed, RunOnOsLoginMode::kWindowed);
-
-  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id_default).value);
-  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id_default2).value);
-  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id_windowed).value);
-  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id_allowed).value);
-
-  const char kWebAppSettingWithDefaultConfiguration[] = R"([
-    {
-      "manifest_id": "https://windowed.example/",
-      "run_on_os_login": "run_windowed"
-    },
-    {
-      "manifest_id": "https://allowed.example/",
-      "run_on_os_login": "allowed"
-    },
-    {
-      "manifest_id": "*",
-      "run_on_os_login": "blocked"
-    }
-  ])";
-
-  test::SetWebAppSettingsListPref(profile(),
-                                  kWebAppSettingWithDefaultConfiguration);
-  controller().policy_manager().RefreshPolicySettingsForTesting();
-
-  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id_default).value);
-  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id_default2).value);
-  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id_windowed).value);
-  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id_allowed).value);
-}
-
 TEST_F(WebAppRegistrarTest, WindowControlsOverlay) {
   controller().Init();
 
@@ -1205,6 +1130,42 @@ TEST_F(WebAppRegistrarTest, TestIsDefaultManagementInstalled) {
   EXPECT_FALSE(registrar().IsInstalledByDefaultManagement(app_id1));
 }
 
+TEST_F(WebAppRegistrarTest_TabStrip, TabbedAppNewTabUrl) {
+  controller().Init();
+
+  auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
+  AppId app_id = web_app->app_id();
+  GURL new_tab_url = GURL("https://example.com/path/newtab");
+
+  blink::Manifest::NewTabButtonParams new_tab_button_params;
+  new_tab_button_params.url = new_tab_url;
+  TabStrip tab_strip;
+  tab_strip.new_tab_button = new_tab_button_params;
+
+  web_app->SetDisplayMode(DisplayMode::kTabbed);
+  web_app->SetTabStrip(tab_strip);
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(registrar().GetAppNewTabUrl(app_id), new_tab_url);
+}
+
+TEST_F(WebAppRegistrarTest_TabStrip, TabbedAppAutoNewTabUrl) {
+  controller().Init();
+
+  auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
+  AppId app_id = web_app->app_id();
+
+  TabStrip tab_strip;
+  tab_strip.new_tab_button = TabStrip::Visibility::kAuto;
+
+  web_app->SetDisplayMode(DisplayMode::kTabbed);
+  web_app->SetTabStrip(tab_strip);
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(registrar().GetAppNewTabUrl(app_id),
+            registrar().GetAppStartUrl(app_id));
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 class WebAppRegistrarAshTest : public WebAppTest, public WithCrosapiParam {
@@ -1289,24 +1250,9 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
-enum class SystemWebAppsInLacrosParam {
-  kDisabled = 0,
-  kEnabled = 1,
-};
+using WebAppRegistrarLacrosTest = WebAppTest;
 
-class WebAppRegistrarLacrosTest
-    : public WebAppTest,
-      public testing::WithParamInterface<SystemWebAppsInLacrosParam> {
- public:
-  WebAppRegistrarLacrosTest() {
-    if (GetParam() == SystemWebAppsInLacrosParam::kEnabled) {
-      EnableSystemWebAppsInLacrosForTesting();
-    }
-  }
-  ~WebAppRegistrarLacrosTest() override = default;
-};
-
-TEST_P(WebAppRegistrarLacrosTest, SourceSupported) {
+TEST_F(WebAppRegistrarLacrosTest, SwaSourceNotSupported) {
   const GURL example_url("https://example.com/my-app/start");
   const GURL swa_url("chrome://swa/start");
   const GURL uninstalling_url("https://example.com/uninstalling/start");
@@ -1340,21 +1286,13 @@ TEST_P(WebAppRegistrarLacrosTest, SourceSupported) {
   EXPECT_TRUE(registrar.GetAppUserDisplayMode(example_id).has_value());
   EXPECT_EQ(registrar.CountUserInstalledApps(), 1);
 
-  if (GetParam() == SystemWebAppsInLacrosParam::kEnabled) {
-    EXPECT_EQ(CountApps(registrar.GetApps()), 2);
+  // System web apps are managed by Ash, excluded in Lacros
+  // WebAppRegistrar.
+  EXPECT_EQ(CountApps(registrar.GetApps()), 1);
 
-    EXPECT_EQ(registrar.FindAppWithUrlInScope(swa_url), swa_id);
-    EXPECT_EQ(registrar.GetAppScope(swa_id), GURL("chrome://swa/"));
-    EXPECT_TRUE(registrar.GetAppUserDisplayMode(swa_id).has_value());
-  } else {
-    // System web apps are managed by Ash, excluded in Lacros
-    // WebAppRegistrar.
-    EXPECT_EQ(CountApps(registrar.GetApps()), 1);
-
-    EXPECT_FALSE(registrar.FindAppWithUrlInScope(swa_url).has_value());
-    EXPECT_TRUE(registrar.GetAppScope(swa_id).is_empty());
-    EXPECT_FALSE(registrar.GetAppUserDisplayMode(swa_id).has_value());
-  }
+  EXPECT_FALSE(registrar.FindAppWithUrlInScope(swa_url).has_value());
+  EXPECT_TRUE(registrar.GetAppScope(swa_id).is_empty());
+  EXPECT_FALSE(registrar.GetAppUserDisplayMode(swa_id).has_value());
 
   EXPECT_FALSE(registrar.FindAppWithUrlInScope(uninstalling_url).has_value());
   EXPECT_EQ(registrar.GetAppScope(uninstalling_id),
@@ -1363,11 +1301,6 @@ TEST_P(WebAppRegistrarLacrosTest, SourceSupported) {
   EXPECT_FALSE(base::Contains(registrar.GetAppIds(), uninstalling_id));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppRegistrarLacrosTest,
-    ::testing::Values(SystemWebAppsInLacrosParam::kDisabled,
-                      SystemWebAppsInLacrosParam::kEnabled));
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace web_app

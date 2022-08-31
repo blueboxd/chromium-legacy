@@ -384,6 +384,7 @@ namespace {
   [self.containedViewController.view removeFromSuperview];
   [self.containedViewController removeFromParentViewController];
   self.containedViewController = nil;
+  self.ntpViewController.feedHeaderViewController = nil;
   self.ntpViewController = nil;
   self.feedHeaderViewController = nil;
   self.alertCoordinator = nil;
@@ -608,6 +609,14 @@ namespace {
   }
 }
 
+- (void)selectFeedType:(FeedType)feedType {
+  if (!self.ntpViewController.viewDidAppear) {
+    self.selectedFeed = feedType;
+    return;
+  }
+  [self handleFeedSelected:feedType];
+}
+
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -619,6 +628,10 @@ namespace {
         self.feedHeaderViewController.followingFeedSortType =
             (FollowingFeedSortType)self.prefService->GetInteger(
                 prefs::kNTPFollowingFeedSortType);
+        // Update the header so that it's synced with the currently selected
+        // feed, which could have been changed when a new web state was
+        // inserted.
+        [self.feedHeaderViewController updateForSelectedFeed];
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
@@ -645,8 +658,6 @@ namespace {
   // Saves scroll position before changing feed.
   CGFloat scrollPosition = [self.ntpViewController scrollPosition];
 
-  [self.feedMetricsRecorder recordFeedSelected:feedType];
-
   if (feedType == FeedTypeFollowing) {
     // Clears dot and notifies service that the Following feed content has
     // been seen.
@@ -668,9 +679,19 @@ namespace {
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
   DCHECK([self isFollowingFeedAvailable]);
+
+  if (self.feedHeaderViewController.followingFeedSortType == sortType) {
+    return;
+  }
+
+  [self.ntpViewController setContentOffsetToTop];
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
+
+  // Changing the sort type affects the scroll position, so update the feed
+  // layout.
+  [self updateFeedLayout];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -679,7 +700,7 @@ namespace {
 }
 
 - (BOOL)isFollowingFeedAvailable {
-  return IsWebChannelsEnabled() &&
+  return IsWebChannelsEnabled() && self.authService &&
          self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
@@ -976,7 +997,7 @@ namespace {
 }
 
 - (BOOL)isContentHeaderSticky {
-  return [self isFollowingFeedAvailable];
+  return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible];
 }
 
 #pragma mark - PrefObserverDelegate
@@ -1064,18 +1085,7 @@ namespace {
 
   // Requests feeds here if the correct flags and prefs are enabled.
   if ([self shouldFeedBeVisible]) {
-    FeedModelConfiguration* discoverFeedConfiguration =
-        [FeedModelConfiguration discoverFeedModelConfiguration];
-    self.discoverFeedService->CreateFeedModel(discoverFeedConfiguration);
-
     if ([self isFollowingFeedAvailable]) {
-      FeedModelConfiguration* followingFeedConfiguration =
-          [FeedModelConfiguration
-              followingModelConfigurationWithSortType:
-                  (FollowingFeedSortType)self.prefService->GetInteger(
-                      prefs::kNTPFollowingFeedSortType)];
-      self.discoverFeedService->CreateFeedModel(followingFeedConfiguration);
-
       switch (self.selectedFeed) {
         case FeedTypeDiscover:
           self.feedViewController = [self discoverFeed];
@@ -1119,6 +1129,10 @@ namespace {
     return nil;
   }
 
+  FeedModelConfiguration* discoverFeedConfiguration =
+      [FeedModelConfiguration discoverFeedModelConfiguration];
+  self.discoverFeedService->CreateFeedModel(discoverFeedConfiguration);
+
   UIViewController* discoverFeed =
       self.discoverFeedService->NewDiscoverFeedViewControllerWithConfiguration(
           [self feedViewControllerConfiguration]);
@@ -1130,6 +1144,12 @@ namespace {
   if (tests_hook::DisableDiscoverFeed()) {
     return nil;
   }
+
+  FeedModelConfiguration* followingFeedConfiguration = [FeedModelConfiguration
+      followingModelConfigurationWithSortType:
+          (FollowingFeedSortType)self.prefService->GetInteger(
+              prefs::kNTPFollowingFeedSortType)];
+  self.discoverFeedService->CreateFeedModel(followingFeedConfiguration);
 
   UIViewController* followingFeed =
       self.discoverFeedService->NewFollowingFeedViewControllerWithConfiguration(

@@ -43,6 +43,9 @@ HTML_FILENAME = os.path.join('webgpu-cts', 'test_page.html')
 
 JAVASCRIPT_DURATION = 'javascript_duration'
 
+# These are tests that, for whatever reason, don't like being run in parallel.
+SERIAL_TESTS = {}
+
 
 async def StartWebsocketServer() -> None:
   async def HandleWebsocketConnection(
@@ -120,9 +123,8 @@ class WebGpuCtsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def Name(cls) -> str:
     return 'webgpu_cts'
 
-  @classmethod
-  def CanRunInParallel(cls) -> bool:
-    return True
+  def CanRunInParallel(self) -> bool:
+    return self.shortName() not in SERIAL_TESTS
 
   @classmethod
   def AddCommandlineArgs(cls, parser: ct.CmdArgParser) -> None:
@@ -163,6 +165,7 @@ class WebGpuCtsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls) -> None:
     super(WebGpuCtsIntegrationTest, cls).SetUpProcess()
+    cls.SetClassVariablesFromOptions(cls.child.context.finder_options)
 
     cls.SetUpWebsocketServer()
     browser_args = [
@@ -175,6 +178,8 @@ class WebGpuCtsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         # since it could technically be hit on any platform.
         '--disable-backgrounding-occluded-windows',
     ]
+    if cls._use_webgpu_adapter:
+      browser_args.append('--use-webgpu-adapter=%s' % cls._use_webgpu_adapter)
     if cls._enable_dawn_backend_validation:
       if sys.platform == 'win32':
         browser_args.append('--enable-dawn-backend-validation=partial')
@@ -220,11 +225,21 @@ class WebGpuCtsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     super(WebGpuCtsIntegrationTest, cls).TearDownProcess()
 
   @classmethod
-  def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
+  def SetClassVariablesFromOptions(cls, options: ct.ParsedCmdArgs):
+    """Sets class member variables from parsed command line options.
+
+    This was historically done once in GenerateGpuTests, but that relied on the
+    process always being the same, which is not the case if running tests in
+    parallel.
+    """
     if options.override_timeout:
       cls._test_timeout = options.override_timeout
     cls._enable_dawn_backend_validation = options.enable_dawn_backend_validation
     cls._use_webgpu_adapter = options.use_webgpu_adapter
+
+  @classmethod
+  def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
+    cls.SetClassVariablesFromOptions(options)
     if cls._test_list is None:
       p = subprocess.run([
           sys.executable, LIST_SCRIPT, '--js-out-dir',
@@ -297,9 +312,14 @@ class WebGpuCtsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                       log_str)
       elif status == 'fail':
         self.fail(log_str)
-    finally:
+    except asyncio.TimeoutError:
       if JAVASCRIPT_DURATION not in self.additionalTags:
         self.additionalTags[JAVASCRIPT_DURATION] = '%.9fs' % timeout
+      raise
+    except websockets.exceptions.ConnectionClosedOK as e:
+      raise RuntimeError(
+          'Detected closed websocket - likely caused by renderer crash') from e
+    finally:
       WebGpuCtsIntegrationTest.total_tests_run += 1
 
   @classmethod

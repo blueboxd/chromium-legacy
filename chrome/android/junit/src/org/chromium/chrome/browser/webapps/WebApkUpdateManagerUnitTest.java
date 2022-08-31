@@ -23,9 +23,9 @@ import android.text.TextUtils;
 import org.json.JSONArray;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
@@ -37,7 +37,8 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.PathUtils;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
@@ -53,8 +54,11 @@ import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.browserservices.intents.WebappIcon;
 import org.chromium.chrome.browser.browserservices.intents.WebappInfo;
 import org.chromium.chrome.browser.browserservices.intents.WebappIntentUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.components.webapps.WebApkDistributor;
@@ -75,20 +79,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Unit tests for WebApkUpdateManager.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class, ShadowUrlUtilities.class})
+@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 @LooperMode(LooperMode.Mode.LEGACY)
-@Ignore // https://crbug.com/1306225
+@EnableFeatures(ChromeFeatureList.WEB_APK_UNIQUE_ID)
 public class WebApkUpdateManagerUnitTest {
     @Rule
     public MockWebappDataStorageClockRule mClockRule = new MockWebappDataStorageClockRule();
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
+
+    @Rule
+    public final TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
     private static final String UNBOUND_WEBAPK_PACKAGE_NAME = "com.webapk.test_package";
@@ -102,6 +108,7 @@ public class WebApkUpdateManagerUnitTest {
     private static final String SCOPE_URL = "/";
     private static final String NAME = "Long Name";
     private static final String SHORT_NAME = "Short Name";
+    private static final String MANIFEST_ID = "manifestId";
     private static final String PRIMARY_ICON_URL = "/icon.png";
     private static final String PRIMARY_ICON_MURMUR2_HASH = "3";
     private static final @DisplayMode.EnumType int DISPLAY_MODE = DisplayMode.UNDEFINED;
@@ -152,11 +159,11 @@ public class WebApkUpdateManagerUnitTest {
 
         @Override
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
-                String scope, String name, String shortName, String primaryIconUrl,
-                String primaryIconData, boolean isPrimaryIconMaskable, String splashIconUrl,
-                String splashIconData, boolean isSplashIconMaskable, String[] iconUrls,
-                String[] iconHashes, @DisplayMode.EnumType int displayMode, int orientation,
-                long themeColor, long backgroundColor, String shareTargetAction,
+                String scope, String name, String shortName, String manifestId, String appKey,
+                String primaryIconUrl, String primaryIconData, boolean isPrimaryIconMaskable,
+                String splashIconUrl, String splashIconData, boolean isSplashIconMaskable,
+                String[] iconUrls, String[] iconHashes, @DisplayMode.EnumType int displayMode,
+                int orientation, long themeColor, long backgroundColor, String shareTargetAction,
                 String shareTargetParamTitle, String shareTargetParamText,
                 boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
                 String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,
@@ -181,6 +188,7 @@ public class WebApkUpdateManagerUnitTest {
         private Callback<Boolean> mStoreUpdateRequestCallback;
         private TestWebApkUpdateDataFetcher mFetcher;
         private String mUpdateName;
+        private String mAppKey;
         private boolean mDestroyedFetcher;
 
         /**
@@ -233,6 +241,14 @@ public class WebApkUpdateManagerUnitTest {
             return mUpdateName;
         }
 
+        /**
+         * Returns the "app_key" from the requested update. Null if an update has not been
+         * requested.
+         */
+        public String requestedAppKey() {
+            return mAppKey;
+        }
+
         public boolean destroyedFetcher() {
             return mDestroyedFetcher;
         }
@@ -279,6 +295,7 @@ public class WebApkUpdateManagerUnitTest {
                 Callback<Boolean> callback) {
             mStoreUpdateRequestCallback = callback;
             mUpdateName = info.name();
+            mAppKey = info.appKey();
             writeRandomTextToFile(updateRequestPath);
         }
 
@@ -294,6 +311,8 @@ public class WebApkUpdateManagerUnitTest {
         public String scopeUrl;
         public String name;
         public String shortName;
+        public String id;
+        public String appKey;
         public Map<String, String> iconUrlToMurmur2HashMap;
         public String primaryIconUrl;
         public Bitmap primaryIcon;
@@ -380,6 +399,8 @@ public class WebApkUpdateManagerUnitTest {
         metaData.putInt(WebApkMetaDataKeys.DEFAULT_BACKGROUND_COLOR_ID,
                 FakeDefaultBackgroundColorResource.ID);
         metaData.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, WEB_MANIFEST_URL);
+        metaData.putString(WebApkMetaDataKeys.WEB_MANIFEST_ID, manifestData.id);
+        metaData.putString(WebApkMetaDataKeys.APP_KEY, manifestData.appKey);
 
         String iconUrlsAndIconMurmur2Hashes = "";
         for (Map.Entry<String, String> mapEntry : manifestData.iconUrlToMurmur2HashMap.entrySet()) {
@@ -435,6 +456,8 @@ public class WebApkUpdateManagerUnitTest {
         manifestData.scopeUrl = SCOPE_URL;
         manifestData.name = NAME;
         manifestData.shortName = SHORT_NAME;
+        manifestData.id = MANIFEST_ID;
+        manifestData.appKey = MANIFEST_ID;
 
         manifestData.iconUrlToMurmur2HashMap = new HashMap<>();
         manifestData.iconUrlToMurmur2HashMap.put(PRIMARY_ICON_URL, PRIMARY_ICON_MURMUR2_HASH);
@@ -480,7 +503,7 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.themeColor, manifestData.backgroundColor,
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
                 false /* isSplashIconMaskable*/, kPackageName, -1, WEB_MANIFEST_URL,
-                manifestData.startUrl, null /* manifestId*/, null /* appId*/,
+                manifestData.startUrl, manifestData.id, manifestData.appKey,
                 WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap, shareTarget,
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
                 null /* shareData */, manifestData.shortcuts /* shortcutItems */,
@@ -602,7 +625,7 @@ public class WebApkUpdateManagerUnitTest {
 
     @Before
     public void setUp() {
-        ShadowRecordHistogram.reset();
+        UmaRecorderHolder.resetForTesting();
 
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
@@ -797,6 +820,7 @@ public class WebApkUpdateManagerUnitTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
+        assertEquals(MANIFEST_ID, updateManager.requestedAppKey());
 
         // Check that the {@link WebApkUpdateDataFetcher} has been destroyed. This prevents
         // {@link #onGotManifestData()} from getting called.
@@ -842,6 +866,7 @@ public class WebApkUpdateManagerUnitTest {
         onGotManifestData(updateManager, defaultManifestData());
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
+        assertEquals(MANIFEST_ID, updateManager.requestedAppKey());
 
         assertTrue(updateManager.destroyedFetcher());
     }
@@ -1424,7 +1449,7 @@ public class WebApkUpdateManagerUnitTest {
 
     private void verifyHistograms(String name, int expectedCallCount) {
         assertEquals("Histogram record count doesn't match.", expectedCallCount,
-                ShadowRecordHistogram.getHistogramTotalCountForTesting(name));
+                RecordHistogram.getHistogramTotalCountForTesting(name));
     }
 
     @Test
@@ -1557,5 +1582,56 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(updateManager.updateCheckStarted());
         updateManager.onGotManifestData(/* fetchedIntentDataProvider= */ null,
                 /* primaryIconUrl= */ null, /* splashIconUrl= */ null);
+    }
+
+    @Test
+    public void testManifestIdChangeShouldNotUpdate() {
+        ManifestData androidData = defaultManifestData();
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.id = MANIFEST_ID + "1";
+        assertFalse(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
+    }
+
+    @Test
+    public void testAppKeyNotChangeWhenUpdate() {
+        ManifestData androidData = defaultManifestData();
+        androidData.appKey = WEB_MANIFEST_URL;
+        registerWebApk(WEBAPK_PACKAGE_NAME, androidData, REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager();
+        updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.appKey = "another id";
+        // Set a different backgroundColor to trigger an update.
+        fetchedData.backgroundColor = DIFFERENT_BACKGROUND_COLOR;
+        onGotManifestData(updateManager, fetchedData);
+
+        assertTrue(updateManager.updateRequested());
+        assertEquals(WEB_MANIFEST_URL, updateManager.requestedAppKey());
+    }
+
+    /**
+     * Tests that WebAPK updates keeps the default appKey when no value specified from the WebAPK's
+     * Android Manifest <meta-data>.
+     */
+    @Test
+    public void testEmptyManifestAppKeyHasDefault() {
+        ManifestData androidData = defaultManifestData();
+        androidData.id = null;
+        androidData.appKey = null;
+
+        registerWebApk(WEBAPK_PACKAGE_NAME, androidData, REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager();
+        updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        onGotDifferentData(updateManager);
+        assertTrue(updateManager.updateRequested());
+        assertEquals(WEB_MANIFEST_URL, updateManager.requestedAppKey());
     }
 }

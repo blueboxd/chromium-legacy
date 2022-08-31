@@ -17,12 +17,7 @@ import './wallpaper_preview_element.js';
 import './wallpaper_selected_element.js';
 import './wallpaper_subpage_element.js';
 import '../../untrusted/collections_grid.js';
-import '../../untrusted/images_grid.js';
 import '../../css/wallpaper.css.js';
-
-import {WallpaperObserver} from './wallpaper_observer.js';
-
-WallpaperObserver.initWallpaperObserverIfNeeded();
 
 function reload(): void {
   window.location.reload();

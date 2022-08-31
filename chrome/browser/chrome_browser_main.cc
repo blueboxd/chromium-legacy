@@ -82,6 +82,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/privacy_budget/active_sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -189,6 +190,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -971,10 +973,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   MediaCaptureDevicesDispatcher::GetInstance();
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  process_singleton_ = std::make_unique<ChromeProcessSingleton>(
-      user_data_dir_,
-      base::BindRepeating(
-          &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
+  process_singleton_ = std::make_unique<ChromeProcessSingleton>(user_data_dir_);
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Android's first run is done in Java instead of native.
@@ -1316,7 +1315,10 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
   // Allow ProcessSingleton to process messages.
-  process_singleton_->Unlock();
+  // This is done here instead of just relying on the main message loop's start
+  // to avoid rendezvous in RunLoops that may precede MainMessageLoopRun.
+  process_singleton_->Unlock(base::BindRepeating(
+      &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
@@ -1866,6 +1868,14 @@ void ChromeBrowserMainParts::OnFirstIdle() {
         base::BindOnce(&base::Process::CleanUpStaleProcessStates));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+  if (blink::IdentifiabilityStudySettings::Get()->IsActive()) {
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(&ActivelySampleIdentifiableSurfaces));
+  }
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {

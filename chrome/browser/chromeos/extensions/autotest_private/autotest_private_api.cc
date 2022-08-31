@@ -18,7 +18,7 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_pref_names.h"
@@ -92,6 +92,7 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
@@ -939,7 +940,7 @@ class DisplaySmoothnessTracker {
     DCHECK_EQ(windows.size(), 1u);
     auto* root_window = windows[0];
     throughput_.push_back(
-        root_window->GetHost()->compositor()->GetAverageThroughput());
+        100 - root_window->GetHost()->compositor()->GetPercentDroppedFrames());
   }
 
   aura::WindowTracker root_window_tracker_;
@@ -2162,7 +2163,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateWaitForSystemWebAppsInstallFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ash::SystemWebAppManager* swa_manager =
-      ash::SystemWebAppManager::GetForTest(profile);
+      ash::SystemWebAppManager::Get(profile);
 
   if (!swa_manager)
     return RespondNow(Error("System Web Apps are not available for profile."));
@@ -2189,7 +2190,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ash::SystemWebAppManager* swa_manager =
-      ash::SystemWebAppManager::GetForTest(profile);
+      ash::SystemWebAppManager::Get(profile);
 
   if (!swa_manager)
     return RespondNow(Error("System Web Apps are not available for profile."));
@@ -2206,7 +2207,7 @@ void AutotestPrivateGetRegisteredSystemWebAppsFunction::
     OnSystemWebAppsInstalled() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ash::SystemWebAppManager* swa_manager =
-      ash::SystemWebAppManager::GetForTest(profile);
+      ash::SystemWebAppManager::Get(profile);
   std::vector<api::autotest_private::SystemWebApp> result;
   for (const auto& type_and_info : swa_manager->system_app_delegates()) {
     api::autotest_private::SystemWebApp system_web_app;
@@ -2219,10 +2220,11 @@ void AutotestPrivateGetRegisteredSystemWebAppsFunction::
     absl::optional<web_app::AppId> app_id =
         swa_manager->GetAppIdForSystemApp(type_and_info.first);
     if (app_id) {
-      system_web_app.start_url = web_app::WebAppProvider::GetForTest(profile)
-                                     ->registrar()
-                                     .GetAppLaunchUrl(*app_id)
-                                     .spec();
+      system_web_app.start_url =
+          ash::SystemWebAppManager::GetWebAppProvider(profile)
+              ->registrar()
+              .GetAppLaunchUrl(*app_id)
+              .spec();
     }
     result.push_back(std::move(system_web_app));
   }
@@ -2245,22 +2247,37 @@ AutotestPrivateIsSystemWebAppOpenFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateIsSystemWebAppOpenFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForTest(profile);
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::Get(profile);
 
-  if (!provider)
-    return RespondNow(Error("Web Apps are not available for profile."));
+  if (!swa_manager)
+    return RespondNow(Error("System web Apps are not available for profile."));
 
   std::unique_ptr<api::autotest_private::IsSystemWebAppOpen::Params> params(
       api::autotest_private::IsSystemWebAppOpen::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsSystemWebAppOpenFunction " << params->app_id;
+
+  swa_manager->on_apps_synchronized().Post(
+      FROM_HERE,
+      base::BindOnce(
+          &AutotestPrivateIsSystemWebAppOpenFunction::OnSystemWebAppsInstalled,
+          this));
+  return RespondLater();
+}
+
+void AutotestPrivateIsSystemWebAppOpenFunction::OnSystemWebAppsInstalled() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  std::unique_ptr<api::autotest_private::IsSystemWebAppOpen::Params> params(
+      api::autotest_private::IsSystemWebAppOpen::Params::Create(args()));
   absl::optional<ash::SystemWebAppType> app_type =
       ash::GetSystemWebAppTypeForAppId(profile, params->app_id);
-  if (!app_type)
-    return RespondNow(Error("No system web app is found by given app id."));
+  if (!app_type) {
+    Respond(Error("No system web app is found by given app id."));
+    return;
+  }
 
-  return RespondNow(OneArgument(base::Value(
+  Respond(OneArgument(base::Value(
       ash::FindSystemWebAppBrowser(profile, *app_type) != nullptr)));
 }
 
@@ -2328,26 +2345,84 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ash::SystemWebAppManager* swa_manager =
-      ash::SystemWebAppManager::GetForTest(profile);
-  if (!swa_manager)
-    return RespondNow(Error("System Web Apps not enabled for profile."));
+      ash::SystemWebAppManager::Get(profile);
 
+  if (!swa_manager)
+    return RespondNow(Error("System Web Apps are not available for profile."));
+
+  swa_manager->on_apps_synchronized().Post(
+      FROM_HERE,
+      base::BindOnce(
+          &AutotestPrivateLaunchSystemWebAppFunction::OnSystemWebAppsInstalled,
+          this));
+  return RespondLater();
+}
+
+void AutotestPrivateLaunchSystemWebAppFunction::OnSystemWebAppsInstalled() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::Get(profile);
+
+  std::unique_ptr<api::autotest_private::LaunchSystemWebApp::Params> params(
+      api::autotest_private::LaunchSystemWebApp::Params::Create(args()));
   absl::optional<ash::SystemWebAppType> app_type;
+
   for (const auto& type_and_info : swa_manager->system_app_delegates()) {
     if (type_and_info.second->GetInternalName() == params->app_name) {
       app_type = type_and_info.first;
       break;
     }
   }
-  if (!app_type.has_value())
-    return RespondNow(Error("No mapped system web app found"));
+  if (!app_type.has_value()) {
+    Respond(Error("No mapped system web app found"));
+    return;
+  }
 
   ash::SystemAppLaunchParams swa_params;
   swa_params.url = GURL(params->url);
   ash::LaunchSystemWebAppAsync(profile, *app_type, swa_params);
   ash::FlushSystemWebAppLaunchesForTesting(profile);
 
-  return RespondNow(NoArguments());
+  Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateLaunchFilesAppToPathFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateLaunchFilesAppToPathFunction::
+    ~AutotestPrivateLaunchFilesAppToPathFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateLaunchFilesAppToPathFunction::Run() {
+  std::unique_ptr<api::autotest_private::LaunchFilesAppToPath::Params> params(
+      api::autotest_private::LaunchFilesAppToPath::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  base::FilePath absolute_path(params->absolute_path);
+  if (!absolute_path.IsAbsolute()) {
+    return RespondNow(Error("Supplied path is not absolute"));
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  file_manager::util::ShowItemInFolder(
+      profile, std::move(absolute_path),
+      base::BindOnce(
+          &AutotestPrivateLaunchFilesAppToPathFunction::OnShowItemInFolder,
+          this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateLaunchFilesAppToPathFunction::OnShowItemInFolder(
+    platform_util::OpenOperationResult result) {
+  if (result != platform_util::OpenOperationResult::OPEN_SUCCEEDED) {
+    DVLOG(1) << "Failed navigating to folder with error: " << result;
+    Respond(Error("Failed trying to open the supplied path"));
+    return;
+  }
+
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2666,8 +2741,9 @@ AutotestPrivateShowPluginVMInstallerFunction::Run() {
 class AutotestPrivateInstallBorealisFunction::InstallationObserver
     : public borealis::BorealisInstaller::Observer {
  public:
-  InstallationObserver(Profile* profile,
-                       base::OnceCallback<void(bool)> completion_callback)
+  InstallationObserver(
+      Profile* profile,
+      base::OnceCallback<void(std::string)> completion_callback)
       : observation_(this),
         completion_callback_(std::move(completion_callback)) {
     observation_.Observe(
@@ -2687,9 +2763,12 @@ class AutotestPrivateInstallBorealisFunction::InstallationObserver
   void OnStateUpdated(
       borealis::BorealisInstaller::InstallingState new_state) override {}
 
-  void OnInstallationEnded(borealis::BorealisInstallResult result) override {
+  void OnInstallationEnded(borealis::BorealisInstallResult result,
+                           const std::string& error_description) override {
     std::move(completion_callback_)
-        .Run(result == borealis::BorealisInstallResult::kSuccess);
+        .Run(result == borealis::BorealisInstallResult::kSuccess
+                 ? ""
+                 : "Failed to install Borealis: " + error_description);
   }
 
   void OnCancelInitiated() override {}
@@ -2698,7 +2777,7 @@ class AutotestPrivateInstallBorealisFunction::InstallationObserver
   base::ScopedObservation<borealis::BorealisInstaller,
                           borealis::BorealisInstaller::Observer>
       observation_;
-  base::OnceCallback<void(bool)> completion_callback_;
+  base::OnceCallback<void(std::string)> completion_callback_;
 };
 
 AutotestPrivateInstallBorealisFunction::
@@ -2716,11 +2795,12 @@ AutotestPrivateInstallBorealisFunction::Run() {
   return RespondLater();
 }
 
-void AutotestPrivateInstallBorealisFunction::Complete(bool was_successful) {
-  if (was_successful) {
+void AutotestPrivateInstallBorealisFunction::Complete(
+    std::string error_or_empty) {
+  if (error_or_empty.empty()) {
     Respond(NoArguments());
   } else {
-    Respond(Error("Failed to install borealis"));
+    Respond(Error(error_or_empty));
   }
 }
 
@@ -4509,7 +4589,7 @@ ExtensionFunction::ResponseAction AutotestPrivateCloseAppWindowFunction::Run() {
 // AutotestPrivateInstallPWAForCurrentURL
 ///////////////////////////////////////////////////////////////////////////////
 
-// Used to notify when when a certain URL contains a WPA.
+// Used to notify when when a certain URL contains a PWA.
 class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     : public webapps::AppBannerManager::Observer {
  public:
@@ -4566,7 +4646,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
   webapps::AppBannerManager* app_banner_manager_;
 };
 
-// Used to notify when a WPA is installed.
+// Used to notify when a PWA is installed.
 class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
     : public web_app::WebAppInstallManagerObserver {
  public:
@@ -4574,8 +4654,9 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
       Profile* profile,
       base::OnceCallback<void(const web_app::AppId&)> callback)
       : callback_(std::move(callback)) {
-    observation_.Observe(
-        &web_app::WebAppProvider::GetForTest(profile)->install_manager());
+    auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
+    if (provider)
+      observation_.Observe(&provider->install_manager());
   }
 
   PWAInstallManagerObserver(const PWAInstallManagerObserver&) = delete;
@@ -5695,7 +5776,7 @@ AutotestPrivateGetDisplaySmoothnessFunction::Run() {
 
   auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
   const uint32_t smoothness =
-      root_window->GetHost()->compositor()->GetAverageThroughput();
+      100 - root_window->GetHost()->compositor()->GetPercentDroppedFrames();
   return RespondNow(
       ArgumentList(api::autotest_private::GetDisplaySmoothness::Results::Create(
           smoothness)));

@@ -257,6 +257,26 @@ void RecordSourceIdConsistency(bool all_valid, bool all_unique) {
                             consistency);
 }
 
+// Dump verbose log with
+// --vmodule=layer_tree_host_impl=3 for renderer only, or
+// --vmodule=layer_tree_host_impl=4 for all clients.
+bool VerboseLogEnabled() {
+  if (!VLOG_IS_ON(3))
+    return false;
+  if (VLOG_IS_ON(4))
+    return true;
+  const char* client_name = GetClientNameForMetrics();
+  return client_name && strcmp(client_name, "Renderer") == 0;
+}
+
+const char* ClientNameForVerboseLog() {
+  const char* client_name = GetClientNameForMetrics();
+  return client_name ? client_name : "<unknown client>";
+}
+
+#define VERBOSE_LOG() \
+  VLOG_IF(3, VerboseLogEnabled()) << ClientNameForVerboseLog() << ": "
+
 }  // namespace
 
 void LayerTreeHostImpl::DidUpdateScrollAnimationCurve() {
@@ -516,16 +536,16 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   compositor_frame_reporting_controller_ = nullptr;
 }
 
-ThreadedInputHandler& LayerTreeHostImpl::GetInputHandler() {
+InputHandler& LayerTreeHostImpl::GetInputHandler() {
   DCHECK(input_delegate_) << "Requested InputHandler when one wasn't bound. "
                              "Call BindToInputHandler to bind to one";
-  return static_cast<ThreadedInputHandler&>(*input_delegate_.get());
+  return static_cast<InputHandler&>(*input_delegate_.get());
 }
 
-const ThreadedInputHandler& LayerTreeHostImpl::GetInputHandler() const {
+const InputHandler& LayerTreeHostImpl::GetInputHandler() const {
   DCHECK(input_delegate_) << "Requested InputHandler when one wasn't bound. "
                              "Call BindToInputHandler to bind to one";
-  return static_cast<const ThreadedInputHandler&>(*input_delegate_.get());
+  return static_cast<const InputHandler&>(*input_delegate_.get());
 }
 
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
@@ -627,19 +647,12 @@ void LayerTreeHostImpl::FinishCommit(
   for (auto& benchmark : state.benchmarks)
     ScheduleMicroBenchmark(std::move(benchmark));
 
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host=3
-  if (VLOG_IS_ON(3)) {
-    const char* client_name = GetClientNameForMetrics();
-    if (!client_name)
-      client_name = "<unknown client>";
-    VLOG(3) << "After finishing (" << client_name
-            << ") commit on impl, the sync tree:"
-            << "\nproperty_trees:\n"
-            << tree->property_trees()->ToString() << "\n"
-            << "cc::LayerImpls:\n"
-            << tree->LayerListAsJson();
-  }
+  // Dump property trees and layers if VerboseLogEnabled().
+  VERBOSE_LOG() << "After finishing commit on impl, the sync tree:"
+                << "\nproperty_trees:\n"
+                << tree->property_trees()->ToString() << "\n"
+                << "cc::LayerImpls:\n"
+                << tree->LayerListAsJson();
 }
 
 void LayerTreeHostImpl::PullLayerTreeHostPropertiesFrom(
@@ -1081,7 +1094,7 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 
   // Quad data can be quite large, so only dump render passes if we are
   // logging verbosely or viz.quads tracing category is enabled.
-  bool quads_enabled = VLOG_IS_ON(3);
+  bool quads_enabled = VerboseLogEnabled();
   if (!quads_enabled) {
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
                                        &quads_enabled);
@@ -1605,14 +1618,8 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
 
   DrawResult draw_result = CalculateRenderPasses(frame);
 
-  // Dump render passes and draw quads if run with:
-  //   --vmodule=layer_tree_host_impl=3
-  if (VLOG_IS_ON(3)) {
-    const char* client_name = GetClientNameForMetrics();
-    VLOG(3) << "Prepare to draw ("
-            << (client_name ? client_name : "<unknown client>") << ")\n"
-            << frame->ToString();
-  }
+  // Dump render passes and draw quads if VerboseLogEnabled().
+  VERBOSE_LOG() << "Prepare to draw\n" << frame->ToString();
 
   if (draw_result != DRAW_SUCCESS) {
     DCHECK(!resourceless_software_draw_);
@@ -2264,8 +2271,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
 
-  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
-  metadata.root_background_color = active_tree_->background_color().toSkColor();
+  metadata.root_background_color = active_tree_->background_color();
   metadata.may_throttle_if_undrawn_frames = may_throttle_if_undrawn_frames_;
 
   if (active_tree_->has_presentation_callbacks()) {
@@ -2466,13 +2472,10 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
   lag_tracking_manager_.CollectScrollEventsFromFrame(frame_token,
                                                      events_metrics);
 
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host_impl=3
-  if (VLOG_IS_ON(3)) {
-    VLOG(3) << "Submitting a frame:\n"
-            << viz::TransitionUtils::RenderPassListToString(
-                   compositor_frame.render_pass_list);
-  }
+  // Dump property trees and layers if VerboseLogEnabled().
+  VERBOSE_LOG() << "Submitting a frame:\n"
+                << viz::TransitionUtils::RenderPassListToString(
+                       compositor_frame.render_pass_list);
 
   base::TimeTicks submit_time = base::TimeTicks::Now();
   {
@@ -3400,19 +3403,12 @@ void LayerTreeHostImpl::ActivateSyncTree() {
       AllocateLocalSurfaceId();
   }
 
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host_impl=3
-  if (VLOG_IS_ON(3)) {
-    const char* client_name = GetClientNameForMetrics();
-    if (!client_name)
-      client_name = "<unknown client>";
-    VLOG(3) << "After activating (" << client_name
-            << ") sync tree, the active tree:"
-            << "\nproperty_trees:\n"
-            << active_tree_->property_trees()->ToString() << "\n"
-            << "cc::LayerImpls:\n"
-            << active_tree_->LayerListAsJson();
-  }
+  // Dump property trees and layers if VerboseLogEnabled().
+  VERBOSE_LOG() << "After activating sync tree, the active tree:"
+                << "\nproperty_trees:\n"
+                << active_tree_->property_trees()->ToString() << "\n"
+                << "cc::LayerImpls:\n"
+                << active_tree_->LayerListAsJson();
 }
 
 void LayerTreeHostImpl::ActivateStateForImages() {
@@ -4134,6 +4130,8 @@ LayerTreeHostImpl::ProcessCompositorDeltas() {
   commit_data->is_scroll_active =
       input_delegate_ && GetInputHandler().IsCurrentlyScrolling();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
+  // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
+  // https://crbug.com/845097
   DCHECK(settings().is_for_scalable_page ||
          commit_data->page_scale_delta == 1.f);
   commit_data->top_controls_delta =

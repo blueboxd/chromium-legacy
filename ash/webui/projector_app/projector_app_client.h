@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
@@ -26,6 +27,8 @@ class Value;
 }  // namespace base
 
 namespace ash {
+
+struct ProjectorScreencast;
 
 struct NewScreencastPrecondition;
 
@@ -77,6 +80,12 @@ using PendingScreencastSet =
 // ProjectorApp.
 class ProjectorAppClient {
  public:
+  // The callback used by GetScreencast API, which involves multiple async
+  // steps.
+  using OnGetScreencastCallback =
+      base::OnceCallback<void(std::unique_ptr<ProjectorScreencast>,
+                              const std::string& errorMsg)>;
+
   // Interface for observing events on the ProjectorAppClient.
   class Observer : public base::CheckedObserver {
    public:
@@ -124,7 +133,7 @@ class ProjectorAppClient {
   virtual const PendingScreencastSet& GetPendingScreencasts() const = 0;
 
   // Checks if device is eligible to trigger SODA installer.
-  virtual bool ShouldDownloadSoda() = 0;
+  virtual bool ShouldDownloadSoda() const = 0;
 
   // Triggers the installation of SODA (Speech On-Device API) binary and the
   // corresponding language pack for projector.
@@ -142,7 +151,12 @@ class ProjectorAppClient {
   virtual void OnSodaInstalled() = 0;
 
   // Triggers the opening of the Chrome feedback dialog.
-  virtual void OpenFeedbackDialog() = 0;
+  virtual void OpenFeedbackDialog() const = 0;
+
+  // TODO(b/236857019): Wire up ProjectorMessageHandler.
+  // Populates a screencast object in |callback| for given |screencast_id|.
+  virtual void GetScreencast(const std::string& screencast_id,
+                             OnGetScreencastCallback callback) = 0;
 
  protected:
   ProjectorAppClient();

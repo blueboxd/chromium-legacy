@@ -12,7 +12,6 @@ NSWindowFullscreenNotificationWaiter::NSWindowFullscreenNotificationWaiter(
   // We only support one NSWindowFullscreenNotificationWaiter instance at once.
   DCHECK(!instance_);
   instance_ = this;
-  ;
 }
 
 NSWindowFullscreenNotificationWaiter::~NSWindowFullscreenNotificationWaiter() {
@@ -62,5 +61,18 @@ void NSWindowFullscreenNotificationWaiter::NotifyFullscreenTransitionComplete(
 // static
 NSWindowFullscreenNotificationWaiter*
     NSWindowFullscreenNotificationWaiter::instance_ = nullptr;
+
+// static
+void NSWindowFakedForTesting::SetEnabled(bool enabled) {
+  enabled_ = enabled;
+}
+
+// static
+bool NSWindowFakedForTesting::IsEnabled() {
+  return enabled_;
+}
+
+// static
+bool NSWindowFakedForTesting::enabled_ = false;
 
 }  // namespace ui

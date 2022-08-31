@@ -54,7 +54,6 @@
 <translation id="1435838927755162558">Share folder with Parallels Desktop</translation>
 <translation id="1439919885608649279">Person with flowers</translation>
 <translation id="1471718551822868769">Slovak</translation>
-<translation id="1474339897586437869">"<ph name="FILENAME" />" was not uploaded. There is not enough free space in your Google Drive.</translation>
 <translation id="1482884275703521657">Finnish</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1497522201463361063">Unable to rename "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
@@ -139,6 +138,7 @@
 <translation id="2148716181193084225">Today</translation>
 <translation id="2163152940313951844">Invalid character: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portuguese with US international PC keyboard</translation>
+<translation id="2193661397560634290"><ph name="SPACE_USED" /> used</translation>
 <translation id="2198315389084035571">Simplified Chinese</translation>
 <translation id="22085916256174561">Korean</translation>
 <translation id="2208919847696382164">Install with Linux</translation>
@@ -185,8 +185,10 @@
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
 <translation id="255937426064304553">US international</translation>
 <translation id="2563185590376525700">Frog</translation>
+<translation id="2570012981255377263">Your recent files will appear here</translation>
 <translation id="2578394532502990878">Tamil phonetic</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2593644851255584939">Your administrator requires you to disable SIM lock.</translation>
 <translation id="2602810353103180630">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator. Details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
@@ -194,6 +196,7 @@
 <translation id="2621713457727696555">Secured</translation>
 <translation id="2638942478653899953">Google Drive could not be reached. Please <ph name="BEGIN_LINK" />log out<ph name="END_LINK" /> and log back in.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
+<translation id="2653059201992392941">You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="2663066752008346276">Burmese/Myanmar with Myansan keyboard</translation>
 <translation id="2664412712123763093">File location</translation>
 <translation id="2718540689505416944">Install app with Linux</translation>
@@ -201,6 +204,7 @@
 <translation id="2724954091494693138">Turkish with F-keyboard</translation>
 <translation id="2732839045120506979">Vietnamese VNI</translation>
 <translation id="2735623501230989521">Give Parallels Desktop permission to access files in the <ph name="FOLDER_NAME" /> folder</translation>
+<translation id="2764206540577097904">You’ve used all of your individual Google Workspace storage.</translation>
 <translation id="2771816809568414714">Cheese</translation>
 <translation id="2781645665747935084">Belgian</translation>
 <translation id="2782104745158847185">Error installing Linux application</translation>
@@ -221,6 +225,7 @@
 <translation id="2943503720238418293">Use a shorter name</translation>
 <translation id="2949781154072577687">Formatting <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
+<translation id="2958458230122209142">Storage low <ph name="REMAINING_PERCENTAGE" />% left of your <ph name="TOTAL_SPACE" /> individual storage.</translation>
 <translation id="2977940621473452797">This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. Please search the Chrome Web Store for a suitable replacement app.</translation>
 <translation id="2984337792991268709">Today <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">Restoring <ph name="COUNT" /> items…</translation>
@@ -342,7 +347,6 @@
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
-<translation id="3991446849494482687">This will also disable the SIM lock setting on the device.</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4017788180641807848">English (US) with Workman keyboard</translation>
 <translation id="4040753847560036377">Incorrect PUK</translation>
@@ -488,7 +492,6 @@
 <translation id="5159560892333415631">Empty bin</translation>
 <translation id="5163869187418756376">Sharing failed. Please check your connection and try again later.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
-<translation id="5170477580121653719">Google Drive space left: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Thumbnail view</translation>
 <translation id="5194713942430106590">Click to sort the column in ascending order.</translation>
 <translation id="5211614973734216083">Faroese</translation>
@@ -530,6 +533,7 @@
 <translation id="5489067830765222292">Latvian</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" /> filter is off.</translation>
 <translation id="5494920125229734069">Select all</translation>
+<translation id="5500104704744051184">You won't be able to use this network until you enter the PUK</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Dots</translation>
 <translation id="5522908512596376669">File list has changed to list view.</translation>
@@ -545,6 +549,7 @@
 <translation id="5625294776298156701">Tamil with Tamil99 keyboard</translation>
 <translation id="5633226425545095130">Moving this item will share it with everyone who can see the shared folder '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">Listen</translation>
+<translation id="5665074015635552640">Your recent videos will appear here</translation>
 <translation id="5669691691057771421">Enter new PIN</translation>
 <translation id="5678784840044122290">The Linux application will be available within your Terminal and may also show an icon in your Launcher.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Can't disconnect from an archive or virtual disk<ph name="END_BOLD" />
@@ -635,6 +640,7 @@
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
 <translation id="642282551015776456">This name may not be used as a file or folder name</translation>
 <translation id="6423031066725912715">Vietnamese with TCVN keyboard</translation>
+<translation id="6430271654280079150">You have 1 remaining attempt.</translation>
 <translation id="6485131920355264772">Failed to retrieve space info</translation>
 <translation id="6495925982925244349">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, details</translation>
 <translation id="649877868557234318">Extracting <ph name="FILE_NAME" /> to <ph name="FOLDER_NAME" /></translation>
@@ -669,6 +675,7 @@
 <translation id="6823166707458800069">All files saved in this folder are backed up online automatically.</translation>
 <translation id="6825883775269213504">Russian</translation>
 <translation id="6847101934483209767">Removed <ph name="ENTRY_NAME" /> from selection.</translation>
+<translation id="6848194403851638089"><ph name="ORGANIZATION_NAME" /> has used all of its Google Workspace storage.</translation>
 <translation id="6856459657722366306">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>
 <translation id="6861394552169064235">Persian</translation>
 <translation id="6862635236584086457">All files saved in this folder are backed up online automatically</translation>
@@ -687,6 +694,7 @@
     <ph name="FILE_COUNT" /> found</translation>
 <translation id="6935521024859866267">Upside Down</translation>
 <translation id="6943836128787782965">HTTP get failed</translation>
+<translation id="6945604978460872381">Your recent documents will appear here</translation>
 <translation id="6949408524333579394">Serbian transliteration</translation>
 <translation id="6954309393500027528">Pasting this file is blocked by your administrator</translation>
 <translation id="6960565108681981554">Not activated. Contact your operator.</translation>
@@ -700,6 +708,7 @@
 <translation id="6989942356279143254">Swedish</translation>
 <translation id="6990081529015358884">You have run out of space</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
+<translation id="7008426324576352165">Your organisation requires more storage to complete the upload.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installation failed.</translation>
 <translation id="7031639531908619281">Turkish</translation>
@@ -733,6 +742,7 @@
 <translation id="7295662345261934369">Share with others</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
 <translation id="7309413087278791451">German (Belgium)</translation>
+<translation id="7313374447885864533">Your recent audio files will appear here</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="7343393116438664539">Vietnamese Telex</translation>
 <translation id="7357762654218998920">This file type is not supported. <ph name="BEGIN_LINK_HELP" />Learn more<ph name="END_LINK_HELP" /> about opening files on Chrome OS.</translation>
@@ -866,6 +876,7 @@
 <translation id="8342318071240498787">A file or a directory with the same name already exists.</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="8372852072747894550">Greek</translation>
+<translation id="8384716930968677505">Your recent images will appear here</translation>
 <translation id="8386903983509584791">Scan completed</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> extracted.</translation>
 <translation id="8395901698320285466">Dimensions</translation>
@@ -901,6 +912,7 @@
 <translation id="8579285237314169903">Syncing <ph name="NUMBER_OF_FILES" /> items...</translation>
 <translation id="8600173386174225982">File list has changed to thumbnail view.</translation>
 <translation id="8601932370724196034">Crostini image file</translation>
+<translation id="8608515571837163082">An incorrect PIN was entered too many times. Enter the 8-digit Personal Unblocking Key (PUK) provided by the operator.</translation>
 <translation id="8609695766746872526">Icelandic</translation>
 <translation id="863903787380594467">Incorrect PIN. You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – port</translation>
@@ -932,11 +944,13 @@
 <translation id="8919081441417203123">Danish</translation>
 <translation id="8965697826696209160">There is not enough space.</translation>
 <translation id="8997962250644902079">Chinese (Traditional) Pinyin</translation>
+<translation id="8998871447376656508">There is not enough free space in your Google Drive to complete the upload.</translation>
 <translation id="9003940392834790328">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, details</translation>
 <translation id="9017798300203431059">Russian phonetic</translation>
 <translation id="9034924485347205037">Linux files</translation>
 <translation id="9035012421917565900">The items cannot be moved back into '<ph name="DESTINATION_NAME" />', so you won't be able to undo this action.</translation>
 <translation id="9035689366572880647">Enter current PIN</translation>
+<translation id="9037777873893411148">*Org storage full</translation>
 <translation id="9038620279323455325">The file named '<ph name="FILE_NAME" />' already exists. Please choose a different name.</translation>
 <translation id="9046895021617826162">Connection failed</translation>
 <translation id="9065512565307033593">If you fail to verify, your network access will be disabled.</translation>

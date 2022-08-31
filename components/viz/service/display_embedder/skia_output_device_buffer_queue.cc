@@ -24,8 +24,8 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -59,10 +59,9 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
  public:
   OverlayData() = default;
 
-  OverlayData(
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation,
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
-          scoped_read_access)
+  OverlayData(std::unique_ptr<gpu::OverlayImageRepresentation> representation,
+              std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
+                  scoped_read_access)
       : representation_(std::move(representation)),
         scoped_read_access_(std::move(scoped_read_access)),
         ref_(1) {
@@ -111,7 +110,7 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
 
   bool unique() const { return ref_ == 1; }
   const gpu::Mailbox& mailbox() const { return representation_->mailbox(); }
-  gpu::SharedImageRepresentationOverlay::ScopedReadAccess* scoped_read_access()
+  gpu::OverlayImageRepresentation::ScopedReadAccess* scoped_read_access()
       const {
     return scoped_read_access_.get();
   }
@@ -123,8 +122,8 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     ref_ = 0;
   }
 
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+  std::unique_ptr<gpu::OverlayImageRepresentation> representation_;
+  std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
       scoped_read_access_;
   int ref_ = 0;
 };
@@ -191,7 +190,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
   // TODO(vasilyt): We should not need this when we stop using
-  // SharedImageBackingGLImage.
+  // GLImageBacking.
   if (context_state_->context_lost()) {
     for (auto& overlay : overlays_) {
       overlay.OnContextLost();
@@ -431,7 +430,7 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
       pending_overlay_mailboxes_.emplace_back(mailbox);
     }
 
-    gfx::GpuFenceHandle acquire_fence;
+    std::unique_ptr<gfx::GpuFence> acquire_fence;
     if (context_state_->GrContextIsGL() && access &&
         (access->representation()->usage() &
          gpu::SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING) &&
@@ -447,12 +446,11 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 
       // Dup the fence - it must be inserted into each shared image before
       // ScopedReadAccess is created.
-      acquire_fence = current_frame_fence->GetGpuFenceHandle().Clone();
+      acquire_fence = std::make_unique<gfx::GpuFence>(
+          current_frame_fence->GetGpuFenceHandle().Clone());
     }
 
-    presenter_->ScheduleOverlayPlane(
-        overlay, access,
-        std::make_unique<gfx::GpuFence>(std::move(acquire_fence)));
+    presenter_->ScheduleOverlayPlane(overlay, access, std::move(acquire_fence));
   }
 }
 
@@ -606,7 +604,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   // MacOS it needs context to be current.
 #if BUILDFLAG(IS_APPLE)
   // TODO(vasilyt): We shouldn't need this after we stop using
-  // SharedImageBackingGLImage as backing.
+  // GLImageBacking as backing.
   if (!context_state_->MakeCurrent(nullptr)) {
     for (auto& overlay : overlays_) {
       overlay.OnContextLost();
@@ -739,7 +737,7 @@ void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage() {
   if (!needs_background_image_)
     return;
 
-  gpu::SharedImageRepresentationOverlay::ScopedReadAccess* access = nullptr;
+  gpu::OverlayImageRepresentation::ScopedReadAccess* access = nullptr;
   OutputPresenter::OverlayPlaneCandidate candidate;
 #if defined(USE_OZONE)
   candidate.color_space = color_space_;

@@ -167,6 +167,7 @@ gfx::Rect UnittestingSystemAppDelegate::GetDefaultBounds(
   }
   return gfx::Rect();
 }
+
 Browser* UnittestingSystemAppDelegate::LaunchAndNavigateSystemWebApp(
     Profile* profile,
     web_app::WebAppProvider* provider,

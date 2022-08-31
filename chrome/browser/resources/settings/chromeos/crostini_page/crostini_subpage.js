@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import '../../controls/settings_toggle_button.js';
 import './crostini_confirmation_dialog.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './crostini_disk_resize_dialog.js';
 import './crostini_disk_resize_confirmation_dialog.js';
 import './crostini_port_forwarding.js';
@@ -51,8 +51,10 @@ const ConfirmationState = {
  */
 const SettingsCrostiniSubpageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, PrefsBehavior, RouteOriginBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      PrefsBehavior,
+      RouteOriginBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -243,7 +245,7 @@ class SettingsCrostiniSubpageElement extends
   static get observers() {
     return [
       'onCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
-      'onArcEnabledChanged_(prefs.arc.enabled.value)'
+      'onArcEnabledChanged_(prefs.arc.enabled.value)',
     ];
   }
 

@@ -27,12 +27,13 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/linux/linux_ui.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/qt/qt_interface.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/linux_ui/linux_ui.h"
 
 namespace qt {
 
@@ -115,10 +116,12 @@ class QtNativeTheme : public ui::NativeThemeAura {
   raw_ptr<QtInterface> const shim_;
 };
 
-QtUi::QtUi(std::unique_ptr<views::LinuxUI> fallback_linux_ui)
+QtUi::QtUi(std::unique_ptr<ui::LinuxUi> fallback_linux_ui)
     : fallback_linux_ui_(std::move(fallback_linux_ui)) {}
 
-QtUi::~QtUi() = default;
+QtUi::~QtUi() {
+  shell_dialog_linux::Finalize();
+}
 
 std::unique_ptr<ui::LinuxInputMethodContext> QtUi::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate) const {
@@ -134,7 +137,7 @@ gfx::FontRenderParams QtUi::GetDefaultFontRenderParams() const {
 void QtUi::GetDefaultFontDescription(std::string* family_out,
                                      int* size_pixels_out,
                                      int* style_out,
-                                     gfx::Font::Weight* weight_out,
+                                     int* weight_out,
                                      gfx::FontRenderParams* params_out) const {
   if (family_out)
     *family_out = font_family_;
@@ -149,7 +152,7 @@ void QtUi::GetDefaultFontDescription(std::string* family_out,
 }
 
 ui::SelectFileDialog* QtUi::CreateSelectFileDialog(
-    ui::SelectFileDialog::Listener* listener,
+    void* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy) const {
   return fallback_linux_ui_ ? fallback_linux_ui_->CreateSelectFileDialog(
                                   listener, std::move(policy))
@@ -174,6 +177,7 @@ bool QtUi::Initialize() {
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(&QtUi::AddNativeColorMixer, base::Unretained(this)));
   FontChanged();
+  shell_dialog_linux::Initialize();
 
   return true;
 }
@@ -267,12 +271,12 @@ bool QtUi::AnimationsEnabled() const {
   return shim_->GetAnimationDurationMs() > 0;
 }
 
-std::unique_ptr<views::NavButtonProvider> QtUi::CreateNavButtonProvider() {
+std::unique_ptr<ui::NavButtonProvider> QtUi::CreateNavButtonProvider() {
   // QT prefers server-side decorations.
   return nullptr;
 }
 
-views::WindowFrameProvider* QtUi::GetWindowFrameProvider(bool solid_frame) {
+ui::WindowFrameProvider* QtUi::GetWindowFrameProvider(bool solid_frame) {
   // QT prefers server-side decorations.
   return nullptr;
 }
@@ -294,26 +298,13 @@ int QtUi::GetCursorThemeSize() {
   return 0;
 }
 
-std::vector<std::string> QtUi::GetAvailableSystemThemeNamesForTest() const {
-  // In QT, themes are binary plugins that are loaded on start and can't be
-  // changed at runtime.  The style may change, but there's no common interface
-  // for doing this from a client.  Return a single empty theme here to
-  // represent the current theme.
-  return {std::string()};
-}
-
-void QtUi::SetSystemThemeByNameForTest(const std::string& theme_name) {
-  // Ensure we only get passed the "current theme" name that we returned from
-  // GetAvailableSystemThemeNamesForTest() above.
-  DCHECK(theme_name.empty());
-}
-
-ui::NativeTheme* QtUi::GetNativeTheme() const {
+ui::NativeTheme* QtUi::GetNativeThemeImpl() const {
   return native_theme_.get();
 }
 
-bool QtUi::MatchEvent(const ui::Event& event,
-                      std::vector<ui::TextEditCommandAuraLinux>* commands) {
+bool QtUi::GetTextEditCommandsForEvent(
+    const ui::Event& event,
+    std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // QT doesn't have "key themes" (eg. readline bindings) like GTK.
   return false;
 }
@@ -344,15 +335,14 @@ void QtUi::FontChanged() {
     font_size_pixels_ = font_size_points_ * GetDeviceScaleFactor();
   }
   font_style_ = desc.is_italic ? gfx::Font::ITALIC : gfx::Font::NORMAL;
-  font_weight_ =
-      static_cast<gfx::Font::Weight>(QtWeightToCssWeight(desc.weight));
+  font_weight_ = QtWeightToCssWeight(desc.weight);
 
   gfx::FontRenderParamsQuery query;
   query.families = {font_family_};
   query.pixel_size = font_size_pixels_;
   query.point_size = font_size_points_;
   query.style = font_style_;
-  query.weight = font_weight_;
+  query.weight = static_cast<gfx::Font::Weight>(font_weight_);
 
   gfx::FontRenderParams fc_params;
   gfx::QueryFontconfig(query, &fc_params, nullptr);
@@ -501,8 +491,8 @@ absl::optional<SkColor> QtUi::GetColor(int id, bool use_custom_frame) const {
   }
 }
 
-std::unique_ptr<views::LinuxUI> CreateQtUi(
-    std::unique_ptr<views::LinuxUI> fallback_linux_ui) {
+std::unique_ptr<ui::LinuxUi> CreateQtUi(
+    std::unique_ptr<ui::LinuxUi> fallback_linux_ui) {
   return std::make_unique<QtUi>(std::move(fallback_linux_ui));
 }
 

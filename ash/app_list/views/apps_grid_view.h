@@ -25,10 +25,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/animation_abort_handle.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
@@ -63,6 +61,7 @@ class AppsGridRowChangeAnimator;
 class GhostImageView;
 class AppsGridViewTest;
 class ScrollableAppsGridViewTest;
+class PagedAppsGridViewTestBase;
 
 // AppsGridView displays a grid of app icons. It is used for:
 // - The main grid of apps in the launcher
@@ -314,8 +313,6 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Returns true if any animation is running within the view.
   bool IsAnimationRunningForTest();
-  // Cancel any animations currently running within the view.
-  void CancelAnimationsForTest();
 
   AppsGridViewFolderDelegate* folder_delegate() const {
     return folder_delegate_;
@@ -578,7 +575,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   // TODO(crbug.com/1211608): Move cardified state members to PagedAppsGridView.
   bool cardified_state_ = false;
 
-  int bounds_animation_for_cardified_state_in_progress_ = 0;
+  bool bounds_animation_for_cardified_state_in_progress_ = false;
 
   // Tile spacing between the tile views.
   int horizontal_tile_padding_ = 0;
@@ -601,6 +598,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   friend class PagedAppsGridView;
   friend class PagedViewStructure;
   friend class AppsGridRowChangeAnimator;
+  friend class PagedAppsGridViewTestBase;
 
   enum DropTargetRegion {
     NO_TARGET,

@@ -6,12 +6,15 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
@@ -28,6 +31,8 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -48,7 +53,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-
 // Whether we are warning about a dangerous/malicious download.
 bool is_download_warning(download::DownloadItemMode mode) {
   return (mode == download::DownloadItemMode::kDangerous) ||
@@ -63,7 +67,6 @@ ui::ImageModel GetDefaultIcon() {
 
 constexpr int kDownloadButtonHeight = 24;
 constexpr int kDownloadSubpageIconMargin = 8;
-constexpr gfx::Insets kDownloadBubbleRowInsets(8);
 // Num of columns in the table layout, the width of which progress bar will
 // span. The 6 columns are Download Icon, Padding, Status text, Padding,
 // Main Button, Subpage Icon.
@@ -75,8 +78,9 @@ class TransparentButton : public HoverButton {
   METADATA_HEADER(TransparentButton);
 
   explicit TransparentButton(PressedCallback callback,
-                             const std::u16string& text)
-      : HoverButton(callback, text) {}
+                             const std::u16string& text,
+                             DownloadBubbleRowView* row_view)
+      : HoverButton(callback, text), row_view_(row_view) {}
   ~TransparentButton() override = default;
 
   // Forward dragging and capture loss events, since this class doesn't have
@@ -91,27 +95,51 @@ class TransparentButton : public HoverButton {
     parent()->OnMouseCaptureLost();
     HoverButton::OnMouseCaptureLost();
   }
+
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
+    if (reverse) {
+      row_view_->UpdateQuickActionsVisibilityAndFocus(
+          /*visible=*/true, /*request_focus_on_last=*/true);
+    }
+  }
+
+ private:
+  raw_ptr<DownloadBubbleRowView> row_view_;
 };
 
 BEGIN_METADATA(TransparentButton, HoverButton)
 END_METADATA
 }  // namespace
 
-void DownloadBubbleRowView::UpdateBubbleUIInfo() {
+bool DownloadBubbleRowView::UpdateBubbleUIInfo(bool initial_setup) {
   auto mode = download::GetDesiredDownloadItemMode(model_.get());
   auto state = model_->GetState();
-  bool mode_unchanged = (mode_ == mode);
   bool is_paused = model_->IsPaused();
-  if (mode_unchanged && (state_ == state) && (is_paused_ == is_paused)) {
-    return;
+  if (!initial_setup && (mode_ == mode) && (state_ == state) &&
+      (is_paused_ == is_paused)) {
+    return false;
   }
-
   mode_ = mode;
   state_ = state;
   is_paused_ = is_paused;
 
-  // If either of mode or state changes, we might need to change UI.
-  ui_info_ = model_->GetBubbleUIInfo();
+  // If either of mode or state changes, or if it is the initial setup,
+  // we might need to change UI.
+  ui_info_ = model_->GetBubbleUIInfo(
+      download::IsDownloadBubbleV2Enabled(browser_->profile()));
+  return true;
+}
+
+void DownloadBubbleRowView::UpdateRow(bool initial_setup) {
+  bool ui_info_changed = UpdateBubbleUIInfo(initial_setup);
+  if (ui_info_changed) {
+    RecordMetricsOnUpdate();
+    LoadIcon();
+    UpdateButtons();
+  }
+  RecordDownloadDisplayed();
+  UpdateLabels();
+  UpdateProgressBar();
 }
 
 void DownloadBubbleRowView::AddedToWidget() {
@@ -119,6 +147,16 @@ void DownloadBubbleRowView::AddedToWidget() {
   current_scale_ = screen->GetDisplayNearestView(GetWidget()->GetNativeView())
                        .device_scale_factor();
   LoadIcon();
+  auto* focus_manager = GetFocusManager();
+  if (focus_manager) {
+    focus_manager->AddFocusChangeListener(this);
+  }
+}
+
+void DownloadBubbleRowView::RemovedFromWidget() {
+  auto* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->RemoveFocusChangeListener(this);
 }
 
 void DownloadBubbleRowView::OnThemeChanged() {
@@ -168,6 +206,17 @@ void DownloadBubbleRowView::LoadIcon() {
     return;
   }
 
+  if (bubble_controller_->ShouldShowIncognitoIcon(model_.get())) {
+    if (last_overriden_icon_ == &kIncognitoIcon)
+      return;
+    last_overriden_icon_ = &kIncognitoIcon;
+    SetIconFromImageModel(
+        /*use_over_last_override=*/true,
+        ui::ImageModel::FromVectorIcon(kIncognitoIcon, ui::kColorIcon,
+                                       GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
+    return;
+  }
+
   last_overriden_icon_ = nullptr;
 
   base::FilePath file_path = model_->GetTargetFilePath();
@@ -203,16 +252,18 @@ DownloadBubbleRowView::DownloadBubbleRowView(
     DownloadUIModel::DownloadUIModelPtr model,
     DownloadBubbleRowListView* row_list_view,
     DownloadBubbleUIController* bubble_controller,
-    DownloadBubbleNavigationHandler* navigation_handler)
+    DownloadBubbleNavigationHandler* navigation_handler,
+    Browser* browser)
     : model_(std::move(model)),
       context_menu_(
           std::make_unique<DownloadShelfContextMenuView>(model_->GetWeakPtr(),
                                                          bubble_controller)),
       row_list_view_(row_list_view),
       bubble_controller_(bubble_controller),
-      navigation_handler_(navigation_handler) {
+      navigation_handler_(navigation_handler),
+      browser_(browser) {
   model_->SetDelegate(this);
-  SetBorder(views::CreateEmptyBorder(kDownloadBubbleRowInsets));
+  SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
 
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -239,13 +290,13 @@ DownloadBubbleRowView::DownloadBubbleRowView(
                     views::LayoutAlignment::kStart,
                     views::TableLayout::kFixedSize,
                     views::TableLayout::ColumnSize::kUsePreferred, 0, 0);
-  // Two rows, one for download, one for the progress bar.
-  layout->AddRows(2, 1.0f);
+  // Three rows, one for name, one for status, and one for the progress bar.
+  layout->AddRows(3, 1.0f);
 
   hover_button_ = AddChildView(std::make_unique<TransparentButton>(
       base::BindRepeating(&DownloadBubbleRowView::OnMainButtonPressed,
                           base::Unretained(this)),
-      std::u16string()));
+      std::u16string(), this));
   hover_button_->set_context_menu_controller(this);
   hover_button_->SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON);
   layout->SetChildViewIgnoredByLayout(hover_button_, true);
@@ -257,28 +308,11 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   icon_->SetPaintToLayer();
   icon_->layer()->SetFillsBoundsOpaquely(false);
 
-  auto* label_wrapper = AddChildView(std::make_unique<views::FlexLayoutView>());
-  label_wrapper->SetCanProcessEventsWithinSubtree(false);
-  label_wrapper->SetOrientation(views::LayoutOrientation::kVertical);
-  primary_label_ = label_wrapper->AddChildView(std::make_unique<views::Label>(
+  primary_label_ = AddChildView(std::make_unique<views::Label>(
       model_->GetFileNameToReportUser().LossyDisplayName(),
       views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY));
   primary_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  primary_label_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width=*/true));
-
-  secondary_label_ = label_wrapper->AddChildView(std::make_unique<views::Label>(
-      model_->GetStatusText(), views::style::CONTEXT_LABEL,
-      views::style::STYLE_SECONDARY));
-  secondary_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  secondary_label_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width=*/true));
+  primary_label_->SetCanProcessEventsWithinSubtree(false);
 
   main_button_holder_ = AddChildView(std::make_unique<views::FlexLayoutView>());
   cancel_button_ =
@@ -305,6 +339,18 @@ DownloadBubbleRowView::DownloadBubbleRowView(
       AddMainPageButton(DownloadCommands::RETRY,
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_RETRY));
 
+  // Note that the addition order of these quick actions matches the visible
+  // order, i.e. buttons added first will appear first (left in LTR)
+  quick_action_holder_ = main_button_holder_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  resume_action_ = AddQuickAction(DownloadCommands::RESUME);
+  pause_action_ = AddQuickAction(DownloadCommands::PAUSE);
+  open_when_complete_action_ =
+      AddQuickAction(DownloadCommands::OPEN_WHEN_COMPLETE);
+  cancel_action_ = AddQuickAction(DownloadCommands::CANCEL);
+  show_in_folder_action_ = AddQuickAction(DownloadCommands::SHOW_IN_FOLDER);
+  quick_action_holder_->SetVisible(false);
+
   subpage_icon_holder_ =
       AddChildView(std::make_unique<views::FlexLayoutView>());
   subpage_icon_holder_->SetCanProcessEventsWithinSubtree(false);
@@ -313,6 +359,17 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   subpage_icon_->SetImage(ui::ImageModel::FromVectorIcon(
       vector_icons::kSubmenuArrowIcon, ui::kColorIcon));
   subpage_icon_->SetVisible(false);
+
+  // Empty cell under icon_
+  AddChildView(std::make_unique<views::FlexLayoutView>());
+
+  secondary_label_ = AddChildView(std::make_unique<views::Label>(
+      model_->GetStatusText(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_SECONDARY));
+  secondary_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // The 4 columns are filename text, Padding, Main Button, Subpage Icon.
+  secondary_label_->SetProperty(views::kTableColAndRowSpanKey, gfx::Size(4, 1));
+  secondary_label_->SetCanProcessEventsWithinSubtree(false);
 
   // TODO(bhatiarohit): Remove the progress bar holder view here.
   // Currently the animation does not show up on deep scanning without
@@ -339,11 +396,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   progress_bar_->SetVisible(false);
 
   // Set up initial state.
-  mode_ = download::GetDesiredDownloadItemMode(model_.get());
-  state_ = model_->GetState();
-  is_paused_ = model_->IsPaused();
-  ui_info_ = model_->GetBubbleUIInfo();
-  OnDownloadUpdated();
+  UpdateRow(/*initial_setup=*/true);
 }
 
 views::View::Views DownloadBubbleRowView::GetChildrenInZOrder() {
@@ -369,12 +422,12 @@ bool DownloadBubbleRowView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!dragging_) {
     dragging_ = ExceededDragThreshold(event.location() - *drag_start_point_);
   } else if ((model_->GetState() == download::DownloadItem::COMPLETE) &&
-             model_->download()) {
+             model_->GetDownloadItem()) {
     const gfx::Image* const file_icon =
         g_browser_process->icon_manager()->LookupIconFromFilepath(
             model_->GetTargetFilePath(), IconLoader::SMALL, current_scale_);
     const views::Widget* const widget = GetWidget();
-    DragDownloadItem(model_->download(), file_icon,
+    DragDownloadItem(model_->GetDownloadItem(), file_icon,
                      widget ? widget->GetNativeView() : nullptr);
     RecordDownloadBubbleDragInfo(DownloadDragInfo::DRAG_STARTED);
   }
@@ -393,6 +446,27 @@ void DownloadBubbleRowView::OnMouseCaptureLost() {
   }
 }
 
+void DownloadBubbleRowView::OnWillChangeFocus(views::View* before,
+                                              views::View* now) {
+  if (now) {
+    UpdateQuickActionsVisibilityAndFocus(/*visible=*/Contains(now),
+                                         /*request_focus_on_last=*/false);
+  }
+}
+
+void DownloadBubbleRowView::UpdateQuickActionsVisibilityAndFocus(
+    bool visible,
+    bool request_focus_on_last) {
+  quick_action_holder_->SetVisible(visible);
+  // Update focus only if focus received from a different row.
+  bool should_set_focus = request_focus_on_last && GetFocusManager() &&
+                          !Contains(GetFocusManager()->GetFocusedView());
+  if (should_set_focus && ui_info_.quick_actions.size() != 0) {
+    GetActionButtonForCommand(ui_info_.quick_actions.back().command)
+        ->RequestFocus();
+  }
+}
+
 void DownloadBubbleRowView::Layout() {
   views::View::Layout();
   hover_button_->SetBoundsRect(GetLocalBounds());
@@ -407,7 +481,25 @@ void DownloadBubbleRowView::OnMainButtonPressed() {
   }
 }
 
-void DownloadBubbleRowView::UpdateButtonsForItems() {
+void DownloadBubbleRowView::UpdateButtons() {
+  resume_action_->SetVisible(false);
+  pause_action_->SetVisible(false);
+  open_when_complete_action_->SetVisible(false);
+  cancel_action_->SetVisible(false);
+  show_in_folder_action_->SetVisible(false);
+  open_when_complete_action_->SetVisible(false);
+  for (const auto& action : ui_info_.quick_actions) {
+    views::ImageButton* action_button =
+        GetActionButtonForCommand(action.command);
+    action_button->SetImageModel(
+        views::Button::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(*(action.icon), ui::kColorIcon,
+                                       GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
+    action_button->SetAccessibleName(action.hover_text);
+    action_button->SetTooltipText(action.hover_text);
+    action_button->SetVisible(true);
+  }
+
   cancel_button_->SetVisible(ui_info_.primary_button_command ==
                              DownloadCommands::CANCEL);
   discard_button_->SetVisible(ui_info_.primary_button_command ==
@@ -424,6 +516,7 @@ void DownloadBubbleRowView::UpdateButtonsForItems() {
                              DownloadCommands::REVIEW);
   retry_button_->SetVisible(ui_info_.primary_button_command ==
                             DownloadCommands::RETRY);
+
   subpage_icon_->SetVisible(ui_info_.has_subpage);
   subpage_icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(ui_info_.has_subpage ? kDownloadSubpageIconMargin : 0)));
@@ -483,13 +576,17 @@ void DownloadBubbleRowView::RecordMetricsOnUpdate() {
   }
 }
 
+void DownloadBubbleRowView::RecordDownloadDisplayed() {
+  if (!model_->GetEphemeralWarningUiShownTime().has_value() &&
+      model_->IsEphemeralWarning()) {
+    model_->SetEphemeralWarningUiShownTime(base::Time::Now());
+    bubble_controller_->ScheduleCancelForEphemeralWarning(
+        model_->GetDownloadItem()->GetGuid());
+  }
+}
+
 void DownloadBubbleRowView::OnDownloadUpdated() {
-  RecordMetricsOnUpdate();
-  UpdateBubbleUIInfo();
-  UpdateLabels();
-  LoadIcon();
-  UpdateButtonsForItems();
-  UpdateProgressBar();
+  UpdateRow(/*initial_setup=*/false);
 }
 
 void DownloadBubbleRowView::OnDownloadOpened() {
@@ -508,14 +605,14 @@ void DownloadBubbleRowView::OnDownloadDestroyed(const ContentId& id) {
   }
 }
 
-raw_ptr<views::MdTextButton> DownloadBubbleRowView::AddMainPageButton(
+views::MdTextButton* DownloadBubbleRowView::AddMainPageButton(
     DownloadCommands::Command command,
     const std::u16string& button_string) {
   // base::Unretained is fine as DownloadBubbleRowView owns the discard button
   // and the model, and has an ownership ancestry in
   // DownloadToolbarButtonView, which also owns bubble_controller. So, if the
   // discard button is alive, so should be its parents and their owned fields.
-  raw_ptr<views::MdTextButton> button =
+  views::MdTextButton* button =
       main_button_holder_->AddChildView(std::make_unique<views::MdTextButton>(
           base::BindRepeating(
               &DownloadBubbleUIController::ProcessDownloadButtonPress,
@@ -523,7 +620,40 @@ raw_ptr<views::MdTextButton> DownloadBubbleRowView::AddMainPageButton(
               base::Unretained(model_.get()), command),
           button_string));
   button->SetMaxSize(gfx::Size(0, kDownloadButtonHeight));
+  button->SetVisible(false);
   return button;
+}
+
+views::ImageButton* DownloadBubbleRowView::AddQuickAction(
+    DownloadCommands::Command command) {
+  views::ImageButton* quick_action = quick_action_holder_->AddChildView(
+      views::CreateVectorImageButton(base::BindRepeating(
+          &DownloadBubbleUIController::ProcessDownloadButtonPress,
+          base::Unretained(bubble_controller_), base::Unretained(model_.get()),
+          command)));
+  InstallCircleHighlightPathGenerator(quick_action);
+  quick_action->SetBorder(
+      views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ICON)));
+  quick_action->SetVisible(false);
+  return quick_action;
+}
+
+views::ImageButton* DownloadBubbleRowView::GetActionButtonForCommand(
+    DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::RESUME:
+      return resume_action_;
+    case DownloadCommands::PAUSE:
+      return pause_action_;
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+      return open_when_complete_action_;
+    case DownloadCommands::CANCEL:
+      return cancel_action_;
+    case DownloadCommands::SHOW_IN_FOLDER:
+      return show_in_folder_action_;
+    default:
+      return nullptr;
+  }
 }
 
 void DownloadBubbleRowView::ShowContextMenuForViewImpl(

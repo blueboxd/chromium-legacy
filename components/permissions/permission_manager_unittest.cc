@@ -29,6 +29,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
@@ -314,6 +315,11 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
 #if BUILDFLAG(IS_ANDROID)
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         GetDefaultProtectedMediaIdentifierPermissionStatus());
+  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
+                        PermissionStatus::DENIED);
+#else
+  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
+                        PermissionStatus::ASK);
 #endif
 }
 
@@ -332,6 +338,14 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   SetPermission(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+                        PermissionStatus::GRANTED);
+
+  SetPermission(ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW);
+  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
+                        PermissionStatus::DENIED);
+#else
+  SetPermission(ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW);
+  CheckPermissionStatus(PermissionType::WINDOW_PLACEMENT,
                         PermissionStatus::GRANTED);
 #endif
 }
@@ -747,6 +761,45 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
 
   EXPECT_FALSE(IsPermissionOverridableByDevTools(PermissionType::GEOLOCATION,
                                                  kLocalHost));
+}
+
+TEST_F(PermissionManagerTest, ResetPermission) {
+#if BUILDFLAG(IS_ANDROID)
+  CheckPermissionStatus(PermissionType::NOTIFICATIONS, PermissionStatus::ASK);
+  SetPermission(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  CheckPermissionStatus(PermissionType::NOTIFICATIONS,
+                        PermissionStatus::GRANTED);
+
+  ResetPermission(PermissionType::NOTIFICATIONS, url(), url());
+
+  CheckPermissionStatus(PermissionType::NOTIFICATIONS, PermissionStatus::ASK);
+#else
+  const char* kOrigin1 = "https://example.com";
+
+  NavigateAndCommit(GURL(kOrigin1));
+  content::RenderFrameHost* rfh = main_rfh();
+
+  EXPECT_EQ(PermissionStatus::ASK, GetPermissionStatusForCurrentDocument(
+                                       PermissionType::NOTIFICATIONS, rfh));
+
+  PermissionRequestManager::CreateForWebContents(web_contents());
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(web_contents());
+  auto prompt_factory = std::make_unique<MockPermissionPromptFactory>(manager);
+  prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory->DocumentOnLoadCompletedInPrimaryMainFrame();
+
+  RequestPermissionFromCurrentDocument(PermissionType::NOTIFICATIONS, rfh);
+
+  EXPECT_EQ(PermissionStatus::GRANTED, GetPermissionStatusForCurrentDocument(
+                                           PermissionType::NOTIFICATIONS, rfh));
+
+  ResetPermission(PermissionType::NOTIFICATIONS, GURL(kOrigin1),
+                  GURL(kOrigin1));
+
+  EXPECT_EQ(PermissionStatus::ASK, GetPermissionStatusForCurrentDocument(
+                                       PermissionType::NOTIFICATIONS, rfh));
+#endif
 }
 
 TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {

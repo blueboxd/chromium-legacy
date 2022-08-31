@@ -359,6 +359,17 @@ struct ExtractCallableRunTypeImpl<Callable, R (Callable::*)(Args...) const> {
   using Type = R(Args...);
 };
 
+template <typename Callable, typename R, typename... Args>
+struct ExtractCallableRunTypeImpl<Callable, R (Callable::*)(Args...) noexcept> {
+  using Type = R(Args...);
+};
+
+template <typename Callable, typename R, typename... Args>
+struct ExtractCallableRunTypeImpl<Callable,
+                                  R (Callable::*)(Args...) const noexcept> {
+  using Type = R(Args...);
+};
+
 // Evaluated to RunType of the given callable type.
 // Example:
 //   auto f = [](int, char*) { return 0.1; };
@@ -410,10 +421,11 @@ struct ForceVoidReturn<R(Args...)> {
 template <typename Functor, typename SFINAE>
 struct FunctorTraits;
 
-// For empty callable types.
-// This specialization is intended to allow binding captureless lambdas, based
-// on the fact that captureless lambdas are empty while capturing lambdas are
-// not. This also allows any functors as far as it's an empty class.
+// For callable types.
+// This specialization handles lambdas (captureless and capturing) and functors
+// with a call operator. Capturing lambdas and stateful functors are explicitly
+// disallowed by BindImpl().
+//
 // Example:
 //
 //   // Captureless lambdas are allowed.
@@ -430,12 +442,12 @@ struct FunctorTraits;
 //   };
 template <typename Functor>
 struct FunctorTraits<Functor,
-                     std::enable_if_t<IsCallableObject<Functor>::value &&
-                                      std::is_empty_v<Functor>>> {
+                     std::enable_if_t<IsCallableObject<Functor>::value>> {
   using RunType = ExtractCallableRunType<Functor>;
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = false;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = std::is_empty_v<Functor>;
 
   template <typename RunFunctor, typename... RunArgs>
   static ExtractReturnType<RunType> Invoke(RunFunctor&& functor,
@@ -451,6 +463,7 @@ struct FunctorTraits<R (*)(Args...)> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename Function, typename... RunArgs>
   static R Invoke(Function&& function, RunArgs&&... args) {
@@ -467,6 +480,7 @@ struct FunctorTraits<R(__stdcall*)(Args...)> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename... RunArgs>
   static R Invoke(R(__stdcall* function)(Args...), RunArgs&&... args) {
@@ -481,6 +495,7 @@ struct FunctorTraits<R(__fastcall*)(Args...)> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename... RunArgs>
   static R Invoke(R(__fastcall* function)(Args...), RunArgs&&... args) {
@@ -511,6 +526,7 @@ struct FunctorTraits<R (^)(Args...)> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename BlockType, typename... RunArgs>
   static R Invoke(BlockType&& block, RunArgs&&... args) {
@@ -533,6 +549,7 @@ struct FunctorTraits<base::mac::ScopedBlock<R (^)(Args...)>> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename BlockType, typename... RunArgs>
   static R Invoke(BlockType&& block, RunArgs&&... args) {
@@ -554,6 +571,7 @@ struct FunctorTraits<R (Receiver::*)(Args...)> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -570,6 +588,7 @@ struct FunctorTraits<R (Receiver::*)(Args...) const> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -588,6 +607,7 @@ struct FunctorTraits<R (__stdcall Receiver::*)(Args...)> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -604,6 +624,7 @@ struct FunctorTraits<R (__stdcall Receiver::*)(Args...) const> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = false;
+  static constexpr bool is_stateless = true;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -654,6 +675,7 @@ struct FunctorTraits<OnceCallback<R(Args...)>> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = true;
+  static constexpr bool is_stateless = true;
 
   template <typename CallbackType, typename... RunArgs>
   static R Invoke(CallbackType&& callback, RunArgs&&... args) {
@@ -670,6 +692,7 @@ struct FunctorTraits<RepeatingCallback<R(Args...)>> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
   static constexpr bool is_callback = true;
+  static constexpr bool is_stateless = true;
 
   template <typename CallbackType, typename... RunArgs>
   static R Invoke(CallbackType&& callback, RunArgs&&... args) {
@@ -1269,6 +1292,10 @@ decltype(auto) BindImpl(Functor&& functor, Args&&... args) {
   using UnwrappedArgsList =
       MakeUnwrappedTypeList<kIsOnce, FunctorTraits::is_method, Args&&...>;
   using BoundParamsList = typename Helper::BoundParamsList;
+  static_assert(
+      MakeFunctorTraits<Functor>::is_stateless,
+      "Capturing lambdas and stateful lambdas are intentionally not supported. "
+      "Please use base::Bind{Once,Repeating} directly to bind arguments.");
   static_assert(
       AssertBindArgsValidity<std::make_index_sequence<Helper::num_bounds>,
                              BoundArgsList, UnwrappedArgsList,

@@ -8,8 +8,9 @@
 namespace ash {
 
 // A living catalog that registers notifications.
-// Current values should not be renumbered or removed.
-// To deprecate add a 'DEPRECATED_' prefix to the entry.
+// Current values should not be renumbered or removed. Please keep in sync with
+// "NotificationCatalogName" in tools/metrics/histograms/enums.xml.
+// To deprecate comment out the entry.
 enum class NotificationCatalogName {
   kNone = 0,
   kTestCatalogName = 1,
@@ -21,9 +22,9 @@ enum class NotificationCatalogName {
   kDockError = 7,
   KDockDisplayError = 8,
   kDockThunderboltError = 9,
-  kLowPowerCharger = 10,
+  kWilcoLowPowerCharger = 10,
   kDeprecatedAccelerator = 11,
-  kShortcutsChanged = 12,
+  // [Deprecated] kShortcutsChanged = 12,
   kDockedMagnifierEnabled = 13,
   kHighContrastEnabled = 14,
   kFullScreenMagnifierEnabled = 15,
@@ -60,7 +61,7 @@ enum class NotificationCatalogName {
   kSMS = 46,
   kAssistantNotification = 47,
   kFastPair = 48,
-  kPowerNotifier = 49,
+  // [Deprecated] kPowerNotifier = 49,
   kBatteryNotifier = 50,
   kMicrophoneMute = 51,
   kCast = 52,
@@ -92,7 +93,7 @@ enum class NotificationCatalogName {
   kCapsLock = 78,
   kNightLight = 79,
   kPluginVMUninstaller = 80,
-  kTPMAutoUpdate = 81,
+  // [Deprecated] kTPMAutoUpdate = 81,
   kIt2MeConfirmation = 82,
   kHPSNotify = 83,
   kNearbyShare = 84,
@@ -109,7 +110,7 @@ enum class NotificationCatalogName {
   kEcheAppInactivity = 95,
   kEcheAppFromWebWithoutButton = 96,
   kEcheAppScreenLock = 97,
-  kAccessibility = 98,
+  // [Deprecated] kAccessibility = 98,
   kProjector = 99,
   kWebsiteApproval = 100,
   kArcMigrationGuide = 101,
@@ -148,13 +149,27 @@ enum class NotificationCatalogName {
   kDownloadNotification = 134,
   kAdaptiveCharging = 135,
   kManagedSimLock = 136,
-  kMaxValue = kManagedSimLock
+  kSpokenFeedbackEnabled = 137,
+  kBrailleDisplayConnected = 138,
+  kSpokenFeedbackBrailleEnabled = 139,
+  kSwitchAccessEnabled = 140,
+  kSpeechRecognitionFilesDownloaded = 141,
+  kSpeechRecognitionFilesFailed = 142,
+  kLowPowerCharger = 143,
+  kLowPowerAdapter = 144,
+  kTPMAutoUpdatePlanned = 145,
+  kTPMAutoUpdateOnReboot = 146,
+  kPrivacyIndicators = 147,
+  kTailoredSecurityDisabled = 148,
+  kTailoredSecurityEnabled = 149,
+  kTailoredSecurityPromotion = 150,
+  kMaxValue = kTailoredSecurityPromotion
 };
 
 // A living catalog that registers toasts.
 // Current values should not be renumbered or removed. Please keep in sync with
 // "ToastCatalogName" in tools/metrics/histograms/enums.xml.
-// To deprecate add a 'DEPRECATED_' prefix to the entry.
+// To deprecate comment out the entry.
 enum class ToastCatalogName {
   kVirtualDesksLimitMax = 0,
   kVirtualDesksLimitMin = 1,

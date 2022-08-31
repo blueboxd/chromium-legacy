@@ -37,8 +37,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -589,26 +590,7 @@ void TabStripModel::ActivateTabAt(int index,
 
   scrubbing_metrics_.IncrementPressCount(user_gesture);
 
-  TabSwitchEventLatencyRecorder::EventType event_type;
-  switch (user_gesture.type) {
-    case TabStripUserGestureDetails::GestureType::kMouse:
-      event_type = TabSwitchEventLatencyRecorder::EventType::kMouse;
-      break;
-    case TabStripUserGestureDetails::GestureType::kKeyboard:
-      event_type = TabSwitchEventLatencyRecorder::EventType::kKeyboard;
-      break;
-    case TabStripUserGestureDetails::GestureType::kTouch:
-      event_type = TabSwitchEventLatencyRecorder::EventType::kTouch;
-      break;
-    case TabStripUserGestureDetails::GestureType::kWheel:
-      event_type = TabSwitchEventLatencyRecorder::EventType::kWheel;
-      break;
-    default:
-      event_type = TabSwitchEventLatencyRecorder::EventType::kOther;
-      break;
-  }
-  tab_switch_event_latency_recorder_.BeginLatencyTiming(user_gesture.time_stamp,
-                                                        event_type);
+  tab_switch_event_latency_recorder_.BeginLatencyTiming(user_gesture);
   ui::ListSelectionModel new_model = selection_model_;
   new_model.SetSelectedIndex(index);
   SetSelection(
@@ -918,22 +900,22 @@ bool TabStripModel::ToggleSelectionAt(int index) {
   if (!delegate()->IsTabStripEditable())
     return false;
   CHECK(ContainsIndex(index));
+  const size_t index_size_t = static_cast<size_t>(index);
   ui::ListSelectionModel new_model = selection_model();
-  if (selection_model_.IsSelected(index)) {
+  if (selection_model_.IsSelected(index_size_t)) {
     if (selection_model_.size() == 1) {
       // One tab must be selected and this tab is currently selected so we can't
       // unselect it.
       return false;
     }
-    new_model.RemoveIndexFromSelection(index);
-    new_model.set_anchor(index);
-    if (new_model.active() == index ||
-        new_model.active() == ui::ListSelectionModel::kUnselectedIndex)
+    new_model.RemoveIndexFromSelection(index_size_t);
+    new_model.set_anchor(index_size_t);
+    if (!new_model.active().has_value() || new_model.active() == index_size_t)
       new_model.set_active(*new_model.selected_indices().begin());
   } else {
-    new_model.AddIndexToSelection(index);
-    new_model.set_anchor(index);
-    new_model.set_active(index);
+    new_model.AddIndexToSelection(index_size_t);
+    new_model.set_anchor(index_size_t);
+    new_model.set_active(index_size_t);
   }
   SetSelection(std::move(new_model), TabStripModelObserver::CHANGE_REASON_NONE,
                /*triggered_by_other_operation=*/false);
@@ -953,7 +935,7 @@ bool TabStripModel::IsTabSelected(int index) const {
 }
 
 void TabStripModel::SetSelectionFromModel(ui::ListSelectionModel source) {
-  CHECK_NE(ui::ListSelectionModel::kUnselectedIndex, source.active());
+  CHECK(source.active().has_value());
   SetSelection(std::move(source), TabStripModelObserver::CHANGE_REASON_NONE,
                /*triggered_by_other_operation=*/false);
 }
@@ -1479,9 +1461,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandSendTabToSelf: {
-      send_tab_to_self::SendTabToSelfBubbleController::
-          CreateOrGetFromWebContents(GetWebContentsAt(context_index))
-              ->ShowBubble();
+      send_tab_to_self::ShowBubble(GetWebContentsAt(context_index));
       break;
     }
 
@@ -2017,8 +1997,9 @@ TabStripSelectionChange TabStripModel::SetSelection(
 
 #if DCHECK_IS_ON()
   // Validate that |new_model| only selects tabs that actually exist.
-  DCHECK(ContainsIndex(new_model.active()));
-  for (int selected_index : new_model.selected_indices()) {
+  DCHECK(new_model.active().has_value());
+  DCHECK(ContainsIndex(new_model.active().value()));
+  for (size_t selected_index : new_model.selected_indices()) {
     DCHECK(ContainsIndex(selected_index));
   }
 #endif
@@ -2036,12 +2017,10 @@ TabStripSelectionChange TabStripModel::SetSelection(
       // thing in this block so that the start time is saved before any changes
       // that might affect compositing.
       if (selection.new_contents) {
-        auto input_event_timestamp =
-            tab_switch_event_latency_recorder_.input_event_timestamp();
+        auto details = tab_switch_event_latency_recorder_.details();
         // input_event_timestamp may be null in some cases, e.g. in tests.
         selection.new_contents->SetTabSwitchStartTime(
-            !input_event_timestamp.is_null() ? input_event_timestamp
-                                             : base::TimeTicks::Now(),
+            details.has_value() ? details->time_stamp : base::TimeTicks::Now(),
             resource_coordinator::ResourceCoordinatorTabHelper::IsLoaded(
                 selection.new_contents));
       }
@@ -2602,8 +2581,9 @@ void TabStripModel::OnActiveTabChanged(
         ForgetOpener(old_contents);
     }
   }
+  DCHECK(selection.new_model.active().has_value());
   content::WebContents* new_opener =
-      GetOpenerOfWebContentsAt(selection.new_model.active());
+      GetOpenerOfWebContentsAt(selection.new_model.active().value());
 
   if ((reason & TabStripModelObserver::CHANGE_REASON_USER_GESTURE) &&
       new_opener != old_opener &&

@@ -63,8 +63,8 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -2678,8 +2678,8 @@ void CrostiniManager::OnContainerStarted(
   running_containers_.emplace(
       signal.vm_name(),
       ContainerInfo(signal.container_name(), signal.container_username(),
-                    signal.container_homedir(), signal.ipv4_address()));
-
+                    signal.container_homedir(), signal.ipv4_address(),
+                    signal.sftp_vsock_port()));
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, container_id, CrostiniResult::SUCCESS);
 
@@ -3959,7 +3959,7 @@ void CrostiniManager::RegisterContainer(const guest_os::GuestId& container_id) {
     auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
                          ->TerminalProviderRegistry();
     terminal_provider_ids_[container_id] = registry->Register(
-        std::make_unique<CrostiniTerminalProvider>(container_id));
+        std::make_unique<CrostiniTerminalProvider>(profile_, container_id));
   }
   if (CrostiniFeatures::Get()->IsMultiContainerAllowed(profile_) &&
       container_id != DefaultContainerId()) {
@@ -3992,8 +3992,8 @@ void CrostiniManager::UnregisterAllContainers() {
                                 ->TerminalProviderRegistry();
   for (const auto& pair : terminal_provider_ids_) {
     terminal_registry->Unregister(pair.second);
-    terminal_provider_ids_.erase(pair.first);
   }
+  terminal_provider_ids_.clear();
 }
 
 }  // namespace crostini

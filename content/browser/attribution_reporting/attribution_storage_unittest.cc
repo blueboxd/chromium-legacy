@@ -22,6 +22,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
@@ -37,10 +38,13 @@
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/public/browser/storage_partition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -65,9 +69,10 @@ const int kMaxConversions = 3;
 // Default delay for when a report should be sent for testing.
 constexpr base::TimeDelta kReportDelay = base::Milliseconds(5);
 
-base::RepeatingCallback<bool(const url::Origin&)> GetMatcher(
+StoragePartition::StorageKeyMatcherFunction GetMatcher(
     const url::Origin& to_delete) {
-  return base::BindRepeating(std::equal_to<url::Origin>(), to_delete);
+  return base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                             blink::StorageKey(to_delete));
 }
 
 }  // namespace
@@ -710,7 +715,7 @@ TEST_F(AttributionStorageTest, ClearDataNullFilter) {
                                                 .Build()));
   }
 
-  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  auto null_filter = StoragePartition::StorageKeyMatcherFunction();
   storage()->ClearData(base::Time::Now(), base::Time::Now(), null_filter);
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), SizeIs(5));
 }
@@ -797,7 +802,7 @@ TEST_F(AttributionStorageTest, DeleteAll) {
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
 
-  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  auto null_filter = StoragePartition::StorageKeyMatcherFunction();
   storage()->ClearData(base::Time::Min(), base::Time::Max(), null_filter);
 
   // Verify that everything is deleted.
@@ -820,7 +825,7 @@ TEST_F(AttributionStorageTest, DeleteAllNullDeleteBegin) {
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
 
-  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  auto null_filter = StoragePartition::StorageKeyMatcherFunction();
   storage()->ClearData(base::Time(), base::Time::Max(), null_filter);
 
   // Verify that everything is deleted.
@@ -1109,6 +1114,66 @@ TEST_F(AttributionStorageTest,
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(6));
 }
 
+TEST_F(AttributionStorageTest, DestinationLimitResultMetric) {
+  base::HistogramTester histograms;
+
+  delegate()->set_max_destinations_per_source_site_reporting_origin(1);
+  delegate()->set_delete_expired_sources_frequency(base::Milliseconds(10));
+
+  const base::TimeDelta expiry = base::Milliseconds(5);
+
+  const auto store_source = [&](const char* impression_origin,
+                                const char* reporting_origin,
+                                const char* destination_origin) {
+    return storage()
+        ->StoreSource(
+            SourceBuilder()
+                .SetImpressionOrigin(
+                    url::Origin::Create(GURL(impression_origin)))
+                .SetReportingOrigin(url::Origin::Create(GURL(reporting_origin)))
+                .SetConversionOrigin(
+                    url::Origin::Create(GURL(destination_origin)))
+                .SetExpiry(expiry)
+                .Build())
+        .status;
+  };
+
+  // Allowed by pending, allowed by unexpired.
+  store_source("https://s.test", "https://a.r.test", "https://d1.test");
+
+  // Dropped by pending, dropped by expired.
+  store_source("https://s.test", "https://a.r.test", "https://d2.test");
+
+  EXPECT_EQ(
+      AttributionTrigger::EventLevelResult::kSuccess,
+      MaybeCreateAndStoreEventLevelReport(
+          TriggerBuilder()
+              .SetReportingOrigin(url::Origin::Create(GURL("https://a.r.test")))
+              .SetDestinationOrigin(
+                  url::Origin::Create(GURL("https://d1.test")))
+              .Build()));
+
+  // Allowed by pending, dropped by unexpired (but still stored).
+  store_source("https://s.test", "https://a.r.test", "https://d2.test");
+
+  task_environment_.FastForwardBy(expiry);
+
+  // Allowed by pending, allowed by unexpired.
+  store_source("https://s.test", "https://a.r.test", "https://d3.test");
+
+  static constexpr char kMetric[] =
+      "Conversions.UniqueDestinationLimitForUnexpiredSourcesResult";
+
+  // kAllowedByPendingAllowedByUnexpired = 0
+  histograms.ExpectBucketCount(kMetric, 0, 2);
+
+  // kAllowedByPendingDroppedByUnexpired = 1
+  histograms.ExpectBucketCount(kMetric, 1, 1);
+
+  // kDroppedByPendingDroppedByUnexpired = 3
+  histograms.ExpectBucketCount(kMetric, 3, 1);
+}
+
 TEST_F(AttributionStorageTest,
        MaxAttributionDestinationsPerSource_AppliesToNavigationSources) {
   delegate()->set_max_destinations_per_source_site_reporting_origin(1);
@@ -1132,6 +1197,39 @@ TEST_F(AttributionStorageTest,
           .SetConversionOrigin(url::Origin::Create(GURL("https://a.example/")))
           .SetSourceType(AttributionSourceType::kNavigation)
           .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
+          .SetSourceType(AttributionSourceType::kEvent)
+          .Build());
+
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
+}
+
+TEST_F(AttributionStorageTest,
+       MaxAttributionDestinationsPerSource_CountsUnexpiredSources) {
+  delegate()->set_max_destinations_per_source_site_reporting_origin(1);
+  delegate()->set_delete_expired_rate_limits_frequency(base::Milliseconds(10));
+
+  const base::TimeDelta expiry = base::Milliseconds(5);
+
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetConversionOrigin(url::Origin::Create(GURL("https://a.example/")))
+          .SetSourceType(AttributionSourceType::kNavigation)
+          .SetExpiry(expiry)
+          .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
+          .SetSourceType(AttributionSourceType::kEvent)
+          .Build());
+
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
+
+  task_environment_.FastForwardBy(expiry);
+  EXPECT_THAT(storage()->GetActiveSources(), IsEmpty());
+
   storage()->StoreSource(
       SourceBuilder()
           .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
@@ -1836,7 +1934,7 @@ TEST_F(AttributionStorageTest, GetNextEventReportTime) {
   const auto origin_a = url::Origin::Create(GURL("https://a.example/"));
   const auto origin_b = url::Origin::Create(GURL("https://b.example/"));
 
-  EXPECT_EQ(storage()->GetNextReportTime(), absl::nullopt);
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), absl::nullopt);
 
   storage()->StoreSource(SourceBuilder().SetReportingOrigin(origin_a).Build());
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
@@ -1844,6 +1942,9 @@ TEST_F(AttributionStorageTest, GetNextEventReportTime) {
                 TriggerBuilder().SetReportingOrigin(origin_a).Build()));
 
   const base::Time report_time_a = base::Time::Now() + kReportDelay;
+
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_a), absl::nullopt);
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
   storage()->StoreSource(SourceBuilder().SetReportingOrigin(origin_b).Build());
@@ -1853,13 +1954,9 @@ TEST_F(AttributionStorageTest, GetNextEventReportTime) {
 
   const base::Time report_time_b = base::Time::Now() + kReportDelay;
 
-  EXPECT_EQ(storage()->GetNextReportTime(), report_time_a);
-
-  task_environment_.FastForwardBy(report_time_a - base::Time::Now());
-  EXPECT_EQ(storage()->GetNextReportTime(), report_time_b);
-
-  task_environment_.FastForwardBy(report_time_b - base::Time::Now());
-  EXPECT_EQ(storage()->GetNextReportTime(), absl::nullopt);
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_a), report_time_b);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_b), absl::nullopt);
 }
 
 TEST_F(AttributionStorageTest, GetAttributionReports_Shuffles) {
@@ -2110,10 +2207,7 @@ TEST_F(AttributionStorageTest, MaxAggregatableBudgetPerSource) {
 
 TEST_F(AttributionStorageTest,
        GetAttributionReports_SetsRandomizedTriggerRate) {
-  delegate()->set_randomized_response_rates({
-      .navigation = .2,
-      .event = .4,
-  });
+  delegate()->set_randomized_response_rates(/*navigation=*/.2, /*event=*/.4);
 
   const auto origin1 = url::Origin::Create(GURL("https://r1.test"));
   const auto origin2 = url::Origin::Create(GURL("https://r2.test"));
@@ -2147,7 +2241,7 @@ TEST_F(AttributionStorageTest,
 TEST_F(AttributionStorageTest, GetNextReportTime) {
   delegate()->set_max_attributions_per_source(1);
 
-  EXPECT_EQ(storage()->GetNextReportTime(), absl::nullopt);
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), absl::nullopt);
 
   storage()->StoreSource(TestAggregatableSourceProvider().GetBuilder().Build());
 
@@ -2156,6 +2250,9 @@ TEST_F(AttributionStorageTest, GetNextReportTime) {
 
   const base::Time report_time_a = base::Time::Now() + kReportDelay;
 
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_a), absl::nullopt);
+
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
   EXPECT_EQ(AttributionTrigger::AggregatableResult::kSuccess,
@@ -2163,6 +2260,10 @@ TEST_F(AttributionStorageTest, GetNextReportTime) {
                 DefaultAggregatableTriggerBuilder().Build()));
 
   const base::Time report_time_b = base::Time::Now() + kReportDelay;
+
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_a), report_time_b);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_b), absl::nullopt);
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -2173,16 +2274,10 @@ TEST_F(AttributionStorageTest, GetNextReportTime) {
 
   base::Time report_time_c = base::Time::Now() + kReportDelay;
 
-  EXPECT_EQ(storage()->GetNextReportTime(), report_time_a);
-
-  task_environment_.FastForwardBy(report_time_a - base::Time::Now());
-  EXPECT_EQ(storage()->GetNextReportTime(), report_time_b);
-
-  task_environment_.FastForwardBy(report_time_b - base::Time::Now());
-  EXPECT_EQ(storage()->GetNextReportTime(), report_time_c);
-
-  task_environment_.FastForwardBy(report_time_c - base::Time::Now());
-  EXPECT_EQ(storage()->GetNextReportTime(), absl::nullopt);
+  EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_a), report_time_b);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_b), report_time_c);
+  EXPECT_EQ(storage()->GetNextReportTime(report_time_c), absl::nullopt);
 }
 
 TEST_F(AttributionStorageTest, SourceEventIdSanitized) {

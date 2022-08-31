@@ -11,10 +11,6 @@ namespace arc {
 const base::Feature kBootCompletedBroadcastFeature{
     "ArcBootCompletedBroadcast", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls experimental Compat snap feature for ARC.
-const base::Feature kCompatSnapFeature{"ArcCompatSnapFeature",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls experimental Custom Tabs feature for ARC.
 const base::Feature kCustomTabsExperimentFeature{
     "ArcCustomTabsExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -68,9 +64,15 @@ const base::Feature kEnableUnmanagedToManagedTransitionFeature{
 const base::Feature kEnableUsap{"ArcEnableUsap",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether ARCVM uses virtio-blk for /data in Android storage.
+// Controls whether to use virtio-blk for Android /data instead of using
+// virtio-fs.
 const base::Feature kEnableVirtioBlkForData{"ArcEnableVirtioBlkForData",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to use the LVM-provided disk as the backend device for
+// Android /data instead of using the concierge-provided disk.
+const base::FeatureParam<bool> kEnableVirtioBlkForDataUseLvm{
+    &kEnableVirtioBlkForData, "use_lvm", false};
 
 // Controls experimental file picker feature for ARC.
 const base::Feature kFilePickerExperimentFeature{

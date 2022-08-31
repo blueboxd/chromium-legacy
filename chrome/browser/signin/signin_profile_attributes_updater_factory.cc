@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_profile_attributes_updater.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 SigninProfileAttributesUpdater*
@@ -25,9 +24,7 @@ SigninProfileAttributesUpdaterFactory::GetInstance() {
 }
 
 SigninProfileAttributesUpdaterFactory::SigninProfileAttributesUpdaterFactory()
-    : BrowserContextKeyedServiceFactory(
-          "SigninProfileAttributesUpdater",
-          BrowserContextDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("SigninProfileAttributesUpdater") {
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 
@@ -37,9 +34,11 @@ SigninProfileAttributesUpdaterFactory::
 KeyedService* SigninProfileAttributesUpdaterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+
   // Some tests don't have a ProfileManager, disable this service.
-  if (!g_browser_process->profile_manager())
+  if (!g_browser_process->profile_manager()) {
     return nullptr;
+  }
 
   return new SigninProfileAttributesUpdater(
       IdentityManagerFactory::GetForProfile(profile),

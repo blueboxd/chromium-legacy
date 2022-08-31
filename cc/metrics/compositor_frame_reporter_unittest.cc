@@ -32,12 +32,12 @@ using ::testing::NotNull;
 class CompositorFrameReporterTest : public testing::Test {
  public:
   CompositorFrameReporterTest() : pipeline_reporter_(CreatePipelineReporter()) {
-    AdvanceNowByMs(1);
+    AdvanceNowByUs(1);
     dropped_frame_counter_.set_total_counter(&total_frame_counter_);
   }
 
  protected:
-  base::TimeTicks AdvanceNowByMs(int advance_ms) {
+  base::TimeTicks AdvanceNowByUs(int advance_ms) {
     test_tick_clock_.Advance(base::Microseconds(advance_ms));
     return test_tick_clock_.NowTicks();
   }
@@ -57,44 +57,86 @@ class CompositorFrameReporterTest : public testing::Test {
     breakdown->update_layers = base::Microseconds(1);
 
     // Advance now by the sum of the breakdowns.
-    AdvanceNowByMs(10 + 9 + 8 + 7 + 6 + 5 + 3 + 2 + 1);
+    AdvanceNowByUs(10 + 9 + 8 + 7 + 6 + 5 + 3 + 2 + 1);
 
     return breakdown;
   }
 
   viz::FrameTimingDetails BuildVizBreakdown() {
     viz::FrameTimingDetails viz_breakdown;
-    viz_breakdown.received_compositor_frame_timestamp = AdvanceNowByMs(1);
-    viz_breakdown.draw_start_timestamp = AdvanceNowByMs(2);
-    viz_breakdown.swap_timings.swap_start = AdvanceNowByMs(3);
-    viz_breakdown.swap_timings.swap_end = AdvanceNowByMs(4);
-    viz_breakdown.presentation_feedback.timestamp = AdvanceNowByMs(5);
+    viz_breakdown.received_compositor_frame_timestamp = AdvanceNowByUs(1);
+    viz_breakdown.draw_start_timestamp = AdvanceNowByUs(2);
+    viz_breakdown.swap_timings.swap_start = AdvanceNowByUs(3);
+    viz_breakdown.swap_timings.swap_end = AdvanceNowByUs(4);
+    viz_breakdown.presentation_feedback.timestamp = AdvanceNowByUs(5);
     return viz_breakdown;
   }
 
   std::unique_ptr<EventMetrics> SetupEventMetrics(
       std::unique_ptr<EventMetrics> metrics) {
     if (metrics) {
-      AdvanceNowByMs(3);
+      AdvanceNowByUs(3);
       metrics->SetDispatchStageTimestamp(
           EventMetrics::DispatchStage::kRendererCompositorStarted);
-      AdvanceNowByMs(3);
+      AdvanceNowByUs(3);
       metrics->SetDispatchStageTimestamp(
           EventMetrics::DispatchStage::kRendererCompositorFinished);
     }
     return metrics;
   }
 
+  // Sets up the dispatch durations of each EventMetrics according to
+  // stage_durations. Stages with a duration of -1 will be skipped.
+  std::unique_ptr<EventMetrics> SetupEventMetricsWithDispatchTimes(
+      std::unique_ptr<EventMetrics> metrics,
+      const std::vector<int>& stage_durations) {
+    if (metrics) {
+      int num_stages = stage_durations.size();
+      // Start indexing from 1 because the 0th index held duration from
+      // kGenerated to kArrivedInRendererCompositor, which was already used in
+      // when the EventMetrics was created.
+      for (int i = 1; i < num_stages; i++) {
+        if (stage_durations[i] >= 0) {
+          AdvanceNowByUs(stage_durations[i]);
+          metrics->SetDispatchStageTimestamp(
+              EventMetrics::DispatchStage(i + 1));
+        }
+      }
+    }
+    return metrics;
+  }
+
   std::unique_ptr<EventMetrics> CreateEventMetrics(ui::EventType type) {
-    const base::TimeTicks event_time = AdvanceNowByMs(3);
-    AdvanceNowByMs(3);
+    const base::TimeTicks event_time = AdvanceNowByUs(3);
+    AdvanceNowByUs(3);
     return SetupEventMetrics(
         EventMetrics::CreateForTesting(type, event_time, &test_tick_clock_));
   }
 
+  // Creates EventMetrics with elements in stage_durations representing each
+  // dispatch stage's desired duration respectively, with the 0th index
+  // representing the duration from kGenerated to kArrivedInRendererCompositor.
+  // stage_durations must have at least 1 element for the first required stage
+  // Use -1 for stages that want to be skipped.
+  std::unique_ptr<EventMetrics> CreateScrollUpdateEventMetricsWithDispatchTimes(
+      bool is_inertial,
+      ScrollUpdateEventMetrics::ScrollUpdateType scroll_update_type,
+      const std::vector<int>& stage_durations) {
+    DCHECK_GT((int)stage_durations.size(), 0);
+    const base::TimeTicks event_time = AdvanceNowByUs(3);
+    AdvanceNowByUs(stage_durations[0]);
+    // Creates a kGestureScrollUpdate event.
+    return SetupEventMetricsWithDispatchTimes(
+        ScrollUpdateEventMetrics::CreateForTesting(
+            ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel,
+            is_inertial, scroll_update_type, /*delta=*/10.0f, event_time,
+            &test_tick_clock_),
+        stage_durations);
+  }
+
   std::unique_ptr<EventMetrics> CreateScrollBeginMetrics() {
-    const base::TimeTicks event_time = AdvanceNowByMs(3);
-    AdvanceNowByMs(3);
+    const base::TimeTicks event_time = AdvanceNowByUs(3);
+    AdvanceNowByUs(3);
     return SetupEventMetrics(ScrollEventMetrics::CreateForTesting(
         ui::ET_GESTURE_SCROLL_BEGIN, ui::ScrollInputType::kWheel,
         /*is_inertial=*/false, event_time, &test_tick_clock_));
@@ -103,8 +145,8 @@ class CompositorFrameReporterTest : public testing::Test {
   std::unique_ptr<EventMetrics> CreateScrollUpdateEventMetrics(
       bool is_inertial,
       ScrollUpdateEventMetrics::ScrollUpdateType scroll_update_type) {
-    const base::TimeTicks event_time = AdvanceNowByMs(3);
-    AdvanceNowByMs(3);
+    const base::TimeTicks event_time = AdvanceNowByUs(3);
+    AdvanceNowByUs(3);
     return SetupEventMetrics(ScrollUpdateEventMetrics::CreateForTesting(
         ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel, is_inertial,
         scroll_update_type, /*delta=*/10.0f, event_time, &test_tick_clock_));
@@ -113,8 +155,8 @@ class CompositorFrameReporterTest : public testing::Test {
   std::unique_ptr<EventMetrics> CreatePinchEventMetrics(
       ui::EventType type,
       ui::ScrollInputType input_type) {
-    const base::TimeTicks event_time = AdvanceNowByMs(3);
-    AdvanceNowByMs(3);
+    const base::TimeTicks event_time = AdvanceNowByUs(3);
+    AdvanceNowByUs(3);
     return SetupEventMetrics(PinchEventMetrics::CreateForTesting(
         type, input_type, event_time, &test_tick_clock_));
   }
@@ -144,6 +186,16 @@ class CompositorFrameReporterTest : public testing::Test {
     return reporter;
   }
 
+  std::vector<base::TimeDelta> IntToTimeDeltaVector(
+      std::vector<int> int_vector) {
+    std::vector<base::TimeDelta> timedelta_vector;
+    size_t vector_size = int_vector.size();
+    for (size_t i = 0; i < vector_size; i++) {
+      timedelta_vector.push_back(base::Microseconds(int_vector[i]));
+    }
+    return timedelta_vector;
+  }
+
   // This should be defined before |pipeline_reporter_| so it is created before
   // and destroyed after that.
   base::SimpleTestTickClock test_tick_clock_;
@@ -161,25 +213,25 @@ TEST_F(CompositorFrameReporterTest, MainFrameAbortedReportingTest) {
       Now());
   EXPECT_EQ(0u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
   EXPECT_EQ(1u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
   EXPECT_EQ(2u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
       Now());
   EXPECT_EQ(3u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   EXPECT_EQ(4u, pipeline_reporter_->stage_history_size_for_testing());
@@ -206,12 +258,12 @@ TEST_F(CompositorFrameReporterTest, ReplacedByNewReporterReportingTest) {
                                  Now());
   EXPECT_EQ(0u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
   EXPECT_EQ(1u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(2);
+  AdvanceNowByUs(2);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kReplacedByNewReporter,
       Now());
@@ -230,13 +282,13 @@ TEST_F(CompositorFrameReporterTest, SubmittedFrameReportingTest) {
       CompositorFrameReporter::StageType::kActivation, Now());
   EXPECT_EQ(0u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
   EXPECT_EQ(1u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(2);
+  AdvanceNowByUs(2);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   EXPECT_EQ(2u, pipeline_reporter_->stage_history_size_for_testing());
@@ -266,12 +318,12 @@ TEST_F(CompositorFrameReporterTest, SubmittedDroppedFrameReportingTest) {
       CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
   EXPECT_EQ(0u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                  Now());
   EXPECT_EQ(1u, pipeline_reporter_->stage_history_size_for_testing());
 
-  AdvanceNowByMs(2);
+  AdvanceNowByUs(2);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame,
       Now());
@@ -313,24 +365,24 @@ TEST_F(CompositorFrameReporterTest,
       std::make_move_iterator(std::end(event_metrics_ptrs)));
   std::vector<base::TimeTicks> event_times = GetEventTimestamps(events_metrics);
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
       Now());
   pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
 
-  const base::TimeTicks presentation_time = AdvanceNowByMs(3);
+  const base::TimeTicks presentation_time = AdvanceNowByUs(3);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
       presentation_time);
@@ -405,24 +457,24 @@ TEST_F(CompositorFrameReporterTest,
       std::make_move_iterator(std::end(event_metrics_ptrs)));
   std::vector<base::TimeTicks> event_times = GetEventTimestamps(events_metrics);
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
       Now());
   pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   viz::FrameTimingDetails viz_breakdown = BuildVizBreakdown();
   pipeline_reporter_->SetVizBreakdown(viz_breakdown);
   pipeline_reporter_->TerminateFrame(
@@ -493,24 +545,24 @@ TEST_F(CompositorFrameReporterTest,
       std::make_move_iterator(std::end(event_metrics_ptrs)));
   std::vector<base::TimeTicks> event_times = GetEventTimestamps(events_metrics);
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
       Now());
   pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   viz::FrameTimingDetails viz_breakdown = BuildVizBreakdown();
   pipeline_reporter_->SetVizBreakdown(viz_breakdown);
   pipeline_reporter_->TerminateFrame(
@@ -575,24 +627,24 @@ TEST_F(CompositorFrameReporterTest,
       std::make_move_iterator(std::begin(event_metrics_ptrs)),
       std::make_move_iterator(std::end(event_metrics_ptrs)));
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
       Now());
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::
           kSubmitCompositorFrameToPresentationCompositorFrame,
       Now());
   pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
 
-  AdvanceNowByMs(3);
+  AdvanceNowByUs(3);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame,
       Now());
@@ -718,6 +770,315 @@ TEST_F(CompositorFrameReporterTest, PartialUpdateDependentQueues) {
   DCHECK_EQ(
       kMaxOwnedPartialUpdateDependents,
       pipeline_reporter_->owned_partial_update_dependents_size_for_testing());
+}
+
+TEST_F(CompositorFrameReporterTest, StageLatencyGeneralPrediction) {
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
+                                 Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kActivation, Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(3);
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
+
+  int kNumOfStages =
+      static_cast<int>(CompositorFrameReporter::StageType::kStageTypeCount);
+
+  // predictions when this is the very first prediction
+  std::vector<base::TimeDelta> expected_latency_predictions1(
+      kNumOfStages - 1, base::Microseconds(3));
+  expected_latency_predictions1.push_back(base::Microseconds(21));
+
+  // predictions when there exists a previous prediction
+  std::vector<base::TimeDelta> expected_latency_predictions2 = {
+      base::Microseconds(1), base::Microseconds(0), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(2), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(12)};
+
+  std::vector<base::TimeDelta> actual_latency_predictions1(
+      kNumOfStages, base::Microseconds(-1));
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions1);
+
+  std::vector<base::TimeDelta> actual_latency_predictions2 = {
+      base::Microseconds(1), base::Microseconds(0), base::Microseconds(4),
+      base::Microseconds(0), base::Microseconds(2), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(10)};
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions2);
+
+  EXPECT_EQ(expected_latency_predictions1, actual_latency_predictions1);
+  EXPECT_EQ(expected_latency_predictions2, actual_latency_predictions2);
+
+  pipeline_reporter_ = nullptr;
+}
+
+TEST_F(CompositorFrameReporterTest, StageLatencyAllZeroPrediction) {
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
+                                 Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kActivation, Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
+
+  int kNumOfStages =
+      static_cast<int>(CompositorFrameReporter::StageType::kStageTypeCount);
+
+  // predictions when this is the very first prediction
+  std::vector<base::TimeDelta> expected_latency_predictions1(
+      kNumOfStages, base::Microseconds(-1));
+
+  // predictions when there exists a previous prediction
+  std::vector<base::TimeDelta> expected_latency_predictions2 = {
+      base::Microseconds(1), base::Microseconds(0), base::Microseconds(4),
+      base::Microseconds(0), base::Microseconds(2), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(10)};
+
+  std::vector<base::TimeDelta> actual_latency_predictions1(
+      kNumOfStages, base::Microseconds(-1));
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions1);
+
+  std::vector<base::TimeDelta> actual_latency_predictions2 = {
+      base::Microseconds(1), base::Microseconds(0), base::Microseconds(4),
+      base::Microseconds(0), base::Microseconds(2), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(10)};
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions2);
+
+  EXPECT_EQ(expected_latency_predictions1, actual_latency_predictions1);
+  EXPECT_EQ(expected_latency_predictions2, actual_latency_predictions2);
+
+  pipeline_reporter_ = nullptr;
+}
+
+TEST_F(CompositorFrameReporterTest, StageLatencyLargeDurationPrediction) {
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByUs(10000000);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now());
+
+  AdvanceNowByUs(5000000);
+  pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
+                                 Now());
+
+  AdvanceNowByUs(6000000);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndCommitToActivation, Now());
+
+  AdvanceNowByUs(1000000);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kActivation, Now());
+
+  AdvanceNowByUs(0);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(2000000);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+
+  AdvanceNowByUs(10000000);
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
+
+  int kNumOfStages =
+      static_cast<int>(CompositorFrameReporter::StageType::kStageTypeCount);
+
+  // predictions when this is the very first prediction
+  std::vector<base::TimeDelta> expected_latency_predictions1 = {
+      base::Microseconds(10000000), base::Microseconds(5000000),
+      base::Microseconds(6000000),  base::Microseconds(1000000),
+      base::Microseconds(0),        base::Microseconds(2000000),
+      base::Microseconds(10000000), base::Microseconds(34000000)};
+
+  // predictions when there exists a previous prediction
+  std::vector<base::TimeDelta> expected_latency_predictions2 = {
+      base::Microseconds(2500000), base::Microseconds(1250000),
+      base::Microseconds(1500003), base::Microseconds(250000),
+      base::Microseconds(1),       base::Microseconds(500002),
+      base::Microseconds(2500000), base::Microseconds(8500007)};
+
+  std::vector<base::TimeDelta> actual_latency_predictions1(
+      kNumOfStages, base::Microseconds(-1));
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions1);
+
+  std::vector<base::TimeDelta> actual_latency_predictions2 = {
+      base::Microseconds(1), base::Microseconds(0), base::Microseconds(4),
+      base::Microseconds(0), base::Microseconds(2), base::Microseconds(3),
+      base::Microseconds(0), base::Microseconds(10)};
+  pipeline_reporter_->CalculateStageLatencyPrediction(
+      actual_latency_predictions2);
+
+  EXPECT_EQ(expected_latency_predictions1, actual_latency_predictions1);
+  EXPECT_EQ(expected_latency_predictions2, actual_latency_predictions2);
+
+  pipeline_reporter_ = nullptr;
+}
+
+// Tests that when a frame is presented to the user, event latency predictions
+// are reported properly.
+TEST_F(CompositorFrameReporterTest, EventLatencyDispatchPredictions) {
+  std::vector<int> dispatch_times = {300, 300, 300, 300, 300};
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      CreateScrollUpdateEventMetricsWithDispatchTimes(
+          false, ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
+          dispatch_times)};
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  EventMetrics::List events_metrics = {
+      std::make_move_iterator(std::begin(event_metrics_ptrs)),
+      std::make_move_iterator(std::end(event_metrics_ptrs))};
+  pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
+
+  int kNumDispatchStages =
+      static_cast<int>(EventMetrics::DispatchStage::kMaxValue) + 1;
+
+  // Test with no previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions1 =
+      IntToTimeDeltaVector(std::vector<int>{300, 300, 300, 300, 300, 1500});
+  std::vector<base::TimeDelta> actual_dispatch_predictions1(
+      kNumDispatchStages, base::Microseconds(-1));
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions1);
+
+  // Test with all previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions2 =
+      IntToTimeDeltaVector(std::vector<int>{262, 300, 412, 225, 450, 1649});
+  std::vector<base::TimeDelta> actual_dispatch_predictions2 =
+      IntToTimeDeltaVector(std::vector<int>{250, 300, 450, 200, 500, 1600});
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions2);
+
+  // Test with some previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions3 =
+      IntToTimeDeltaVector(std::vector<int>{375, 450, 300, 300, 300, 1725});
+  std::vector<base::TimeDelta> actual_dispatch_predictions3 =
+      IntToTimeDeltaVector(std::vector<int>{400, 500, 300, -1, -1, 1200});
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions3);
+
+  for (int i = 0; i < kNumDispatchStages; i++) {
+    EXPECT_EQ(expected_dispatch_predictions1[i],
+              actual_dispatch_predictions1[i]);
+    EXPECT_EQ(expected_dispatch_predictions2[i],
+              actual_dispatch_predictions2[i]);
+    EXPECT_EQ(expected_dispatch_predictions3[i],
+              actual_dispatch_predictions3[i]);
+  }
+
+  pipeline_reporter_ = nullptr;
+}
+
+// Tests that when a new frame with missing dispatch stages is presented to the
+// user, event latency predictions are reported properly.
+TEST_F(CompositorFrameReporterTest,
+       EventLatencyDispatchPredictionsWithMissingStages) {
+  // Invalid EventLatency stage durations will cause program to crash, validity
+  // checked in event_latency_tracing_recorder.cc.
+  std::vector<int> dispatch_times = {400, 600, 700, -1, -1};
+  std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
+      CreateScrollUpdateEventMetricsWithDispatchTimes(
+          false, ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
+          dispatch_times)};
+  EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
+  EventMetrics::List events_metrics = {
+      std::make_move_iterator(std::begin(event_metrics_ptrs)),
+      std::make_move_iterator(std::end(event_metrics_ptrs))};
+  pipeline_reporter_->AddEventsMetrics(std::move(events_metrics));
+
+  int kNumDispatchStages =
+      static_cast<int>(EventMetrics::DispatchStage::kMaxValue) + 1;
+
+  // Test with no previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions1 =
+      IntToTimeDeltaVector(std::vector<int>{400, 600, 700, -1, -1, 1700});
+  std::vector<base::TimeDelta> actual_dispatch_predictions1(
+      kNumDispatchStages, base::Microseconds(-1));
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions1);
+
+  // Test with all previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions2 =
+      IntToTimeDeltaVector(std::vector<int>{250, 375, 475, 200, 500, 1800});
+  std::vector<base::TimeDelta> actual_dispatch_predictions2 =
+      IntToTimeDeltaVector(std::vector<int>{200, 300, 400, 200, 500, 1600});
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions2);
+
+  // Test with some previous stage predictions.
+  std::vector<base::TimeDelta> expected_dispatch_predictions3 =
+      IntToTimeDeltaVector(std::vector<int>{400, 525, 745, -1, -1, 1670});
+  std::vector<base::TimeDelta> actual_dispatch_predictions3 =
+      IntToTimeDeltaVector(std::vector<int>{400, 500, 760, -1, -1, 1660});
+  pipeline_reporter_->SetEventLatencyPredictions(actual_dispatch_predictions3);
+
+  for (int i = 0; i < kNumDispatchStages; i++) {
+    EXPECT_EQ(expected_dispatch_predictions1[i],
+              actual_dispatch_predictions1[i]);
+    EXPECT_EQ(expected_dispatch_predictions2[i],
+              actual_dispatch_predictions2[i]);
+    EXPECT_EQ(expected_dispatch_predictions3[i],
+              actual_dispatch_predictions3[i]);
+  }
+
+  pipeline_reporter_ = nullptr;
 }
 
 }  // namespace

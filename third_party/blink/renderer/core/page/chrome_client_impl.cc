@@ -584,10 +584,8 @@ void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }
 
-void ChromeClientImpl::MainFrameScrollOffsetChanged(
-    LocalFrame& main_frame) const {
-  DCHECK(main_frame.IsMainFrame());
-  web_view_->MainFrameScrollOffsetChanged();
+void ChromeClientImpl::OutermostMainFrameScrollOffsetChanged() const {
+  web_view_->OutermostMainFrameScrollOffsetChanged();
 }
 
 float ChromeClientImpl::ClampPageScaleFactorToLimits(float scale) const {
@@ -865,22 +863,18 @@ void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
     widget->SetRootLayer(std::move(root_layer));
 }
 
-void ChromeClientImpl::AttachCompositorAnimationTimeline(
-    cc::AnimationTimeline* compositor_timeline,
-    LocalFrame* local_frame) {
-  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
-  FrameWidget* widget = local_frame->GetWidgetForLocalRoot();
+cc::AnimationHost* ChromeClientImpl::GetCompositorAnimationHost(
+    LocalFrame& local_frame) const {
+  FrameWidget* widget = local_frame.GetWidgetForLocalRoot();
   DCHECK(widget);
-  widget->AnimationHost()->AddAnimationTimeline(compositor_timeline);
+  return widget->AnimationHost();
 }
 
-void ChromeClientImpl::DetachCompositorAnimationTimeline(
-    cc::AnimationTimeline* compositor_timeline,
-    LocalFrame* local_frame) {
-  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
-  FrameWidget* widget = local_frame->GetWidgetForLocalRoot();
+cc::AnimationTimeline* ChromeClientImpl::GetScrollAnimationTimeline(
+    LocalFrame& local_frame) const {
+  FrameWidget* widget = local_frame.GetWidgetForLocalRoot();
   DCHECK(widget);
-  widget->AnimationHost()->RemoveAnimationTimeline(compositor_timeline);
+  return widget->ScrollAnimationTimeline();
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,
@@ -1149,6 +1143,17 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
     return;
 
   widget->ProcessTouchAction(touch_action);
+}
+
+void ChromeClientImpl::SetPanAction(LocalFrame* frame,
+                                    mojom::blink::PanAction pan_action) {
+  DCHECK(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetImpl* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+
+  widget->SetPanAction(pan_action);
 }
 
 void ChromeClientImpl::DidAssociateFormControlsAfterLoad(LocalFrame* frame) {

@@ -20,13 +20,13 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/linux/linux_ui.h"
 #include "ui/platform_window/extensions/desk_extension.h"
 #include "ui/platform_window/extensions/pinned_mode_extension.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
-#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -259,7 +259,7 @@ gfx::Rect DesktopWindowTreeHostLinux::GetGuessedFullScreenSizeInPx() const {
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
     const Widget::InitParams& params,
     ui::PlatformWindowInitProperties* properties) {
-  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  const ui::LinuxUi* linux_ui = ui::LinuxUi::instance();
   properties->prefer_dark_theme = linux_ui && linux_ui->PreferDarkTheme();
 
   // Set the background color on startup to make the initial flickering
@@ -295,7 +295,7 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
 
 base::flat_map<std::string, std::string>
 DesktopWindowTreeHostLinux::GetKeyboardLayoutMap() {
-  if (auto* linux_ui = LinuxUI::instance())
+  if (auto* linux_ui = ui::LinuxUi::instance())
     return linux_ui->GetKeyboardLayoutMap();
   return WindowTreeHostPlatform::GetKeyboardLayoutMap();
 }

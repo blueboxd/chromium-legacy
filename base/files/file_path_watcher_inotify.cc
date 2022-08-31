@@ -113,9 +113,14 @@ class InotifyReaderThreadDelegate final : public PlatformThread::Delegate {
 // http://crbug.com/38174
 class InotifyReader {
  public:
-  using Watch = int;  // Watch descriptor used by AddWatch() and RemoveWatch().
-  static constexpr Watch kInvalidWatch = -1;
-  static constexpr Watch kWatchLimitExceeded = -2;
+  // Watch descriptor used by AddWatch() and RemoveWatch().
+#if BUILDFLAG(IS_ANDROID)
+  using Watch = uint32_t;
+#else
+  using Watch = int;
+#endif
+  static constexpr Watch kInvalidWatch = static_cast<Watch>(-1);
+  static constexpr Watch kWatchLimitExceeded = static_cast<Watch>(-2);
 
   InotifyReader(const InotifyReader&) = delete;
   InotifyReader& operator=(const InotifyReader&) = delete;
@@ -297,23 +302,22 @@ void InotifyReaderThreadDelegate::ThreadMain() {
     int buffer_size;
     int ioctl_result = HANDLE_EINTR(ioctl(inotify_fd_, FIONREAD, &buffer_size));
 
-    if (ioctl_result != 0) {
+    if (ioctl_result != 0 || buffer_size < 0) {
       DPLOG(WARNING) << "ioctl failed";
       return;
     }
 
-    std::vector<char> buffer(buffer_size);
+    std::vector<char> buffer(static_cast<size_t>(buffer_size));
 
-    ssize_t bytes_read =
-        HANDLE_EINTR(read(inotify_fd_, &buffer[0], buffer_size));
+    ssize_t bytes_read = HANDLE_EINTR(
+        read(inotify_fd_, buffer.data(), static_cast<size_t>(buffer_size)));
 
     if (bytes_read < 0) {
       DPLOG(WARNING) << "read from inotify fd failed";
       return;
     }
 
-    ssize_t i = 0;
-    while (i < bytes_read) {
+    for (size_t i = 0; i < static_cast<size_t>(bytes_read);) {
       inotify_event* event = reinterpret_cast<inotify_event*>(&buffer[i]);
       size_t event_size = sizeof(inotify_event) + event->len;
       DCHECK(i + event_size <= static_cast<size_t>(bytes_read));
@@ -353,12 +357,13 @@ InotifyReader::Watch InotifyReader::AddWatch(const FilePath& path,
   AutoLock auto_lock(lock_);
 
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::WILL_BLOCK);
-  Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
-                                  IN_ATTRIB | IN_CREATE | IN_DELETE |
-                                      IN_CLOSE_WRITE | IN_MOVE | IN_ONLYDIR);
-
-  if (watch == kInvalidWatch)
+  const int watch_int =
+      inotify_add_watch(inotify_fd_, path.value().c_str(),
+                        IN_ATTRIB | IN_CREATE | IN_DELETE | IN_CLOSE_WRITE |
+                            IN_MOVE | IN_ONLYDIR);
+  if (watch_int == -1)
     return kInvalidWatch;
+  const Watch watch = static_cast<Watch>(watch_int);
 
   watchers_[watch].emplace(std::make_pair(
       watcher, WatcherEntry{watcher->GetTaskRunner(), watcher->GetWeakPtr()}));
@@ -397,7 +402,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
 
   // In racing conditions, RemoveWatch() could grab `lock_` first and remove
   // the entry for `event->wd`.
-  auto watchers_it = watchers_.find(event->wd);
+  auto watchers_it = watchers_.find(static_cast<Watch>(event->wd));
   if (watchers_it == watchers_.end())
     return;
 
@@ -407,7 +412,8 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
     watcher_entry.task_runner->PostTask(
         FROM_HERE,
         BindOnce(&FilePathWatcherImpl::OnFilePathChanged, watcher_entry.watcher,
-                 event->wd, child, event->mask & (IN_CREATE | IN_MOVED_TO),
+                 static_cast<Watch>(event->wd), child,
+                 event->mask & (IN_CREATE | IN_MOVED_TO),
                  event->mask & (IN_DELETE | IN_MOVED_FROM),
                  event->mask & IN_ISDIR));
   }

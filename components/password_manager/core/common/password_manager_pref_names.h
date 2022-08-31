@@ -32,6 +32,12 @@ extern const char kCredentialsEnableAutosignin[];
 // this setting instead.
 extern const char kCredentialsEnableService[];
 
+#if BUILDFLAG(IS_IOS)
+// The value of this preference determines whether the user had enabled the
+// credential provider in their iOS settings at startup.
+extern const char kCredentialProviderEnabledOnStartup[];
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
 // Boolean controlling whether the password manager allows automatic signing in
 // through Credential Management API. This pref is not synced. Its value is set
@@ -75,6 +81,11 @@ extern const char kPasswordsPrefWithNewLabelUsed[];
 // of user-unresolvable errors received on communication with Google Mobile
 // Services.
 extern const char kUnenrolledFromGoogleMobileServicesDueToErrors[];
+
+// Integer value indicating the Google Mobile Services API error code that
+// caused the last unenrollment from the UPM experience. Only set if
+// |kUnenrolledFromGoogleMobileServicesDueToErrors| is true.
+extern const char kUnenrolledFromGoogleMobileServicesAfterApiErrorCode[];
 #endif
 
 #if BUILDFLAG(IS_WIN)

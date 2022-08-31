@@ -11,6 +11,7 @@
 <translation id="1185134272377778587">‏لمحة عن Chromium</translation>
 <translation id="1203500561924088507">شكرًا على التثبيت. عليك إعادة تشغيل المتصفِّح قبل استخدام <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1315551408014407711">‏إعداد ملفك الشخصي الجديد على Chromium</translation>
+<translation id="1385859895174722837">‏"مساعد Google" في Chromium</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
 <translation id="1524282610922162960">‏مشاركة علامة تبويب Chromium</translation>
@@ -20,6 +21,7 @@
 <translation id="1632539827495546968">‏إذا أردت استخدام هذا الحساب لمرة واحدة فقط، يمكنك استخدام <ph name="GUEST_LINK_BEGIN" />وضع الضيف<ph name="GUEST_LINK_END" /> في متصفّح Chromium. وإذا أردت إضافة حساب لمستخدم آخر، <ph name="LINK_BEGIN" />أضِف مستخدمًا جديدًا<ph name="LINK_END" /> إلى <ph name="DEVICE_TYPE" />، مع العِلم بأنّ الأذونات التي سبق لك منحها إلى المواقع الإلكترونية والتطبيقات يمكن أن تنطبق على هذا الحساب. يمكنك إدارة حساباتك على Google من خلال <ph name="SETTINGS_LINK_BEGIN" />الإعدادات<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">جارٍ التنزيل...</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
+<translation id="17264556997921157">‏يمكنك الاطّلاع على المواضيع التي تهمّك وتستخدمها المواقع الإلكترونية لعرض الإعلانات لك، وبإمكانك كذلك إزالة ما تشاء من هذه المواضيع. ويعمل Chromium على تقديم تقديرات حول اهتماماتك بناءً على سجل التصفّح الأخير.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم إيقاف بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
@@ -36,6 +38,7 @@
 <translation id="2018879682492276940">تعذّر التثبيت. يُرجى إعادة المحاولة.</translation>
 <translation id="2020032459870799438">‏للتحقُّق مما إذا كانت كلمات المرور الأخرى آمنة من عمليات اختراق البيانات ومشاكل الأمان الأخرى، يُرجى <ph name="BEGIN_LINK" />تسجيل الدخول إلى Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">‏اختَر ما إذا كنت تريد تضمين سجلّ Chromium للحصول على تجارب أكثر تخصيصًا في خدمات Google.</translation>
+<translation id="2088953378266246249">‏معلومات حول الآلية التي يُدير بها متصفّح Chromium شهادات الجذر الخاصة به</translation>
 <translation id="2174178932569897599">‏تخصيص Chromium</translation>
 <translation id="2174917724755363426">لم يكتمل التثبيت. هل تريد فعلاً الإلغاء؟</translation>
 <translation id="2185166961232948079">‏Chromium - تسجيل الدخول إلى الشبكة - <ph name="PAGE_TITLE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3474745554856756813">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">‏يعمل الاختصار <ph name="SHORTCUT" /> على التبديل بين الملفات الشخصية على Chromium.</translation>
 <translation id="3509308970982693815">‏يُرجى إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
+<translation id="3518180795744733843">‏يستطيع "مساعد Google" في Chromium إكمال الإجراءات التي تريد تنفيذها على المواقع الإلكترونية.</translation>
 <translation id="3533435340678213462">‏لحماية خصوصيتك، نحذف تلقائيًا اهتماماتك التي يمر عليها أكثر من أربعة أسابيع. وفي حال بحثت عن أحد الاهتمامات مرّة آخرى، سيظهر في القائمة من جديد. يمكنك إزالة الاهتمامات التي لا تريد أن يضيفها Chromium إلى قائمة اهتماماتك.</translation>
 <translation id="3567254597502212821">‏سجلّ تصفّحك، وهو سجل يشمل المواقع الإلكترونية التي زرتها باستخدام Chromium على هذا الجهاز.</translation>
 <translation id="3575459661164320785">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
@@ -359,6 +363,7 @@
 <translation id="9185526690718004400">‏إعادة تشغيل متصفِّح Chromium لتحديثه</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">‏قد لا يعمل Chromium بشكل صحيح لأنه لم يعد مدعومًا على أنظمة التشغيل Windows XP أو Windows Vista.</translation>
+<translation id="942598560705308788">‏الشهادات التي يديرها متصفّح Chromium</translation>
 <translation id="945990405696787151">‏للحصول على تحديثات Chromium في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.13 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل OS X 10.11.</translation>
 <translation id="965162752251293939">‏مَن يستخدم Chromium؟</translation>
 <translation id="967427899662692980">‏الحصول على أعلى مستوى من الأمان في متصفِّح Chromium</translation>

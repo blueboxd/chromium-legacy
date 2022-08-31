@@ -66,9 +66,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(features::kBlockInsecurePrivateNetworkRequestsFromUnknown),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(features::kPrivateNetworkAccessPermissionPrompt),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kPrivateNetworkAccessForWorkers),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
@@ -85,6 +82,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kClientHintsMetaNameAcceptCH),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(blink::features::kClientHintsMetaEquivDelegateCH),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kClientHintThirdPartyDelegation),
@@ -141,6 +141,11 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // Override for --reduce-user-agent-minor-version.
     {switches::kReduceUserAgentMinorVersion,
      std::cref(blink::features::kReduceUserAgentMinorVersion),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+
+    // Override for --reduce-user-agent-platform-oscpu.
+    {switches::kReduceUserAgentPlatformOsCpu,
+     std::cref(blink::features::kReduceUserAgentPlatformOsCpu),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 

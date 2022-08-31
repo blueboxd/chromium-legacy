@@ -19,7 +19,7 @@ export class EditingUtil {
    * @param {string} insertPhrase The phrase to be inserted.
    * @return {!{
    *  value: string,
-   *  index: number
+   *  caretIndex: number
    * }}
    */
   static replacePhrase(value, caretIndex, deletePhrase, insertPhrase) {
@@ -56,7 +56,7 @@ export class EditingUtil {
 
     return {
       value: newLeft + rightOfCaret,
-      index: newIndex,
+      caretIndex: newIndex,
     };
   }
 
@@ -73,7 +73,7 @@ export class EditingUtil {
    * @param {string} beforePhrase
    * @return {!{
    *  value: string,
-   *  index: number
+   *  caretIndex: number
    * }}
    */
   static insertBefore(value, caretIndex, insertPhrase, beforePhrase) {
@@ -92,7 +92,7 @@ export class EditingUtil {
 
     return {
       value: newLeft + rightOfCaret,
-      index: newIndex,
+      caretIndex: newIndex,
     };
   }
 
@@ -158,7 +158,7 @@ export class EditingUtil {
    * previous sentence can be found, returns 0.
    * @param {string} value The current value of the text field.
    * @param {number} caretIndex
-   * @return {number|null}
+   * @return {number}
    */
   static navPrevSent(value, caretIndex) {
     let encounteredText = false;
@@ -194,7 +194,7 @@ export class EditingUtil {
    * to maintain proper spacing between text.
    * @param {string} value The current value of the text field.
    * @param {number} caretIndex
-   * @param {string} text
+   * @param {string} commitText
    * @return {string}
    */
   static smartSpacing(value, caretIndex, commitText) {
@@ -238,11 +238,13 @@ export class EditingUtil {
    * return value: 'Goodnight world'
    * @param {string} value The current value of the text field.
    * @param {number} caretIndex
-   * @param {string} text
+   * @param {string} commitText
    * @return {string}
    */
   static smartCapitalization(value, caretIndex, commitText) {
     if (EditingUtil.BEGINS_WITH_PUNCTUATION_REGEX_.test(commitText)) {
+      // If `commitText` begins with punctuation, then it's assumed that it's
+      // already correctly capitalized.
       return commitText;
     }
 
@@ -251,7 +253,7 @@ export class EditingUtil {
     }
 
     const leftOfCaret = value.substring(0, caretIndex).trim();
-    return EditingUtil.ENDS_WITH_PUNCTUATION_REGEX_.test(leftOfCaret) ?
+    return EditingUtil.ENDS_WITH_END_OF_SENTENCE_REGEX_.test(leftOfCaret) ?
         EditingUtil.capitalize_(commitText) :
         EditingUtil.lowercase_(commitText);
   }
@@ -310,10 +312,18 @@ export class EditingUtil {
 }
 
 /**
+ * Includes full-width symbols that are commonly used in Japanese.
  * @private {!RegExp}
  * @const
  */
-EditingUtil.END_OF_SENTENCE_REGEX_ = /[;!.?]/;
+EditingUtil.END_OF_SENTENCE_REGEX_ = /[;!.?。．？！]/;
+
+/**
+ * Similar to above, but looks for a match at the end of a string.
+ * @private {!RegExp}
+ * @const
+ */
+EditingUtil.ENDS_WITH_END_OF_SENTENCE_REGEX_ = /[;!.?。．？！]$/;
 
 /**
  * @private {!RegExp}
@@ -332,18 +342,11 @@ EditingUtil.ENDS_WITH_WHITESPACE_REGEX_ = /\s$/;
  * @const
  */
 EditingUtil.PUNCTUATION_REGEX_ =
-    /[-$#"()*;:<>\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]/g;
+    /[-$#"()*;:<>\\\/\{\}\[\]+='~`!@_.,?%。．？！\u2022\u25e6\u25a0]/g;
 
 /**
  * @private {!RegExp}
  * @const
  */
 EditingUtil.BEGINS_WITH_PUNCTUATION_REGEX_ =
-    /^[-$#"()*;:<>\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]/;
-
-/**
- * @private {!RegExp}
- * @const
- */
-EditingUtil.ENDS_WITH_PUNCTUATION_REGEX_ =
-    /[-$#"()*;:<>\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]$/;
+    /^[-$#"()*;:<>\\\/\{\}\[\]+='~`!@_.,?%。．？！\u2022\u25e6\u25a0]/;

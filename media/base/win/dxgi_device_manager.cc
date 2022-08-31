@@ -91,12 +91,16 @@ DXGIDeviceManager::DXGIDeviceManager(
     CHROME_LUID luid)
     : mf_dxgi_device_manager_(std::move(mf_dxgi_device_manager)),
       d3d_device_reset_token_(d3d_device_reset_token),
-      luid_(luid) {}
+      luid_(luid) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 DXGIDeviceManager::~DXGIDeviceManager() = default;
 
 HRESULT DXGIDeviceManager::ResetDevice(
     Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   constexpr uint32_t kDeviceFlags =
       D3D11_CREATE_DEVICE_VIDEO_SUPPORT | D3D11_CREATE_DEVICE_BGRA_SUPPORT;
   const D3D_FEATURE_LEVEL kFeatureLevels[] = {
@@ -148,6 +152,8 @@ HRESULT DXGIDeviceManager::ResetDevice(
 
 HRESULT DXGIDeviceManager::CheckDeviceRemovedAndGetDevice(
     Microsoft::WRL::ComPtr<ID3D11Device>* new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   Microsoft::WRL::ComPtr<ID3D11Device> device = GetDevice();
   HRESULT hr = device ? device->GetDeviceRemovedReason() : MF_E_UNEXPECTED;
   if (FAILED(hr)) {
@@ -196,6 +202,8 @@ HRESULT DXGIDeviceManager::RegisterWithMediaSource(
 }
 
 Microsoft::WRL::ComPtr<ID3D11Device> DXGIDeviceManager::GetDevice() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DXGIDeviceScopedHandle device_handle(mf_dxgi_device_manager_.Get());
   return device_handle.GetDevice();
 }
@@ -203,6 +211,16 @@ Microsoft::WRL::ComPtr<ID3D11Device> DXGIDeviceManager::GetDevice() {
 Microsoft::WRL::ComPtr<IMFDXGIDeviceManager>
 DXGIDeviceManager::GetMFDXGIDeviceManager() {
   return mf_dxgi_device_manager_;
+}
+
+void DXGIDeviceManager::OnGpuInfoUpdate(CHROME_LUID luid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (luid.HighPart != luid_.HighPart || luid.LowPart != luid_.LowPart) {
+    luid_ = luid;
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    ResetDevice(device);
+  }
 }
 
 }  // namespace media

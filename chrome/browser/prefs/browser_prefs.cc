@@ -47,7 +47,6 @@
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
-#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_origin_decider.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
+#include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -74,7 +74,7 @@
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
@@ -259,6 +259,7 @@
 #include "chrome/browser/new_tab_page/modules/safe_browsing/safe_browsing_handler.h"
 #include "chrome/browser/new_tab_page/modules/task_module/task_module_service.h"
 #include "chrome/browser/new_tab_page/promos/promo_service.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -401,10 +402,10 @@
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/fast_transition_observer.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
+#include "chromeos/ash/components/network/network_metadata_store.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/services/bluetooth_config/bluetooth_power_controller_impl.h"
 #include "chromeos/services/bluetooth_config/device_name_manager_impl.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
@@ -773,6 +774,8 @@ const char kPrivacySandboxFlocDataAccessibleSince[] =
     "privacy_sandbox.floc_data_accessible_since";
 const char kStabilityCrashCount[] =
     "user_experience_metrics.stability.crash_count";
+const char kPrivacySandboxApisEnabledV2Init[] =
+    "privacy_sandbox.apis_enabled_v2_init";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -1021,6 +1024,7 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 07/2022
   registry->RegisterBooleanPref(kPrivacySandboxFlocEnabled, true);
   registry->RegisterBooleanPref(kPrivacySandboxFlocDataAccessibleSince, false);
+  registry->RegisterBooleanPref(kPrivacySandboxApisEnabledV2Init, false);
 }
 
 }  // namespace
@@ -1061,6 +1065,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ProfileAttributesStorage::RegisterPrefs(registry);
   ProfileNetworkContextService::RegisterLocalStatePrefs(registry);
   profiles::RegisterPrefs(registry);
+#if BUILDFLAG(IS_ANDROID)
+  PushMessagingServiceImpl::RegisterPrefs(registry);
+#endif
   RegisterScreenshotPrefs(registry);
   safe_browsing::RegisterLocalStatePrefs(registry);
   secure_origin_allowlist::RegisterPrefs(registry);
@@ -1146,7 +1153,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::FastTransitionObserver::RegisterPrefs(registry);
   ash::HWDataUsageController::RegisterLocalStatePrefs(registry);
   ash::KerberosCredentialsManager::RegisterLocalStatePrefs(registry);
-  ash::KioskAppManager::RegisterPrefs(registry);
+  ash::KioskAppManager::RegisterLocalStatePrefs(registry);
   ash::KioskCryptohomeRemover::RegisterPrefs(registry);
   ash::language_prefs::RegisterPrefs(registry);
   chromeos::local_search_service::SearchMetricsReporter::
@@ -1209,6 +1216,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_MAC)
   confirm_quit::RegisterLocalState(registry);
   QuitWithAppsController::RegisterPrefs(registry);
+  enterprise_connectors::RegisterLocalPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
   AppShimRegistry::Get()->RegisterLocalPrefs(registry);
 #endif
@@ -1307,7 +1315,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   permissions::PermissionActionsHistory::RegisterProfilePrefs(registry);
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
-  policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   prefetch::RegisterPredictionOptionsProfilePrefs(registry);
@@ -1439,11 +1446,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ntp_tiles::CustomLinksManagerImpl::RegisterProfilePrefs(registry);
   PhotosService::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
+  policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
   PromoService::RegisterProfilePrefs(registry);
   RegisterReadAnythingProfilePrefs(registry);
   settings::SettingsUI::RegisterProfilePrefs(registry);
-  send_tab_to_self::SendTabToSelfBubbleController::RegisterProfilePrefs(
-      registry);
+  send_tab_to_self::RegisterProfilePrefs(registry);
   signin::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);
   tab_search_prefs::RegisterProfilePrefs(registry);
@@ -1538,12 +1545,14 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ProjectorAppClientImpl::RegisterProfilePrefs(registry);
   ash::floating_workspace_util::RegisterProfilePrefs(registry);
   policy::RebootNotificationsScheduler::RegisterProfilePrefs(registry);
+  ash::KioskAppManager::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   lacros_prefs::RegisterProfilePrefs(registry);
   chromeos::ProxyConfigServiceLacros::RegisterProfilePrefs(registry);
   lacros_prefs::RegisterExtensionControlledAshPrefs(registry);
+  KioskSessionServiceLacros::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -2003,6 +2012,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 07/2022
   profile_prefs->ClearPref(kPrivacySandboxFlocEnabled);
   profile_prefs->ClearPref(kPrivacySandboxFlocDataAccessibleSince);
+  profile_prefs->ClearPref(kPrivacySandboxApisEnabledV2Init);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

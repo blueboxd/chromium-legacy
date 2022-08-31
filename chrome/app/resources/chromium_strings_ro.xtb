@@ -11,6 +11,7 @@
 <translation id="1185134272377778587">Despre Chromium</translation>
 <translation id="1203500561924088507">Mulțumim pentru instalare. Înainte să folosești <ph name="BUNDLE_NAME" /> trebuie să repornești browserul.</translation>
 <translation id="1315551408014407711">Configurează noul profil Chromium</translation>
+<translation id="1385859895174722837">Asistentul Google în Chromium</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="1414495520565016063">V-ați conectat la Chromium!</translation>
 <translation id="1524282610922162960">Distribuie o filă Chromium</translation>
@@ -22,6 +23,7 @@
 Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot aplica acestui cont. Îți poți gestiona Conturile Google din <ph name="SETTINGS_LINK_BEGIN" />Setări<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Se descarcă…</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
+<translation id="17264556997921157">Poți să vezi și să elimini subiecte de interes folosite de site-uri pentru a-ți afișa anunțuri. Chromium îți estimează interesele pe baza istoricului tău de navigare recent.</translation>
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="1808667845054772817">Reinstalați Chromium</translation>
@@ -40,6 +42,7 @@ Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot apl
 <translation id="2018879682492276940">Nu s-a instalat. Încearcă din nou.</translation>
 <translation id="2020032459870799438">Ca să verifici dacă celelalte parole sunt protejate împotriva încălcării securității datelor și a altor probleme de securitate, <ph name="BEGIN_LINK" />conectează-te la Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Alege dacă se include istoricul Chromium pentru experiențe mai personalizate în serviciile Google</translation>
+<translation id="2088953378266246249">Informații despre modul în care Chromium gestionează certificatele rădăcină</translation>
 <translation id="2174178932569897599">Personalizează Chromium</translation>
 <translation id="2174917724755363426">Instalarea nu este finalizată. Sigur anulezi?</translation>
 <translation id="2185166961232948079">Chromium – conectare la rețea – <ph name="PAGE_TITLE" /></translation>
@@ -101,6 +104,7 @@ Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot apl
 <translation id="3474745554856756813">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> poate comuta între profilurile Chromium</translation>
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
+<translation id="3518180795744733843">În Chromium, Asistentul Google poate să realizeze pentru tine acțiuni pe site-uri</translation>
 <translation id="3533435340678213462">Pentru a-ți proteja confidențialitatea, ștergem automat categoriile de interese mai vechi de patru săptămâni. Pe măsură ce navighezi, o categorie de interese poate să reapară în listă. Sau poți elimina categoriile de interese pe care nu dorești ca Chromium să le ia în considerare.</translation>
 <translation id="3567254597502212821">istoricul tău de navigare, o evidență a site-urilor pe care le-ai accesat folosind Chromium pe acest dispozitiv;</translation>
 <translation id="3575459661164320785">Ai software dăunător pe computer. Chromium poate să îl elimine, să restabilească setările și să dezactiveze extensiile pentru ca browserul să funcționeze normal din nou.</translation>
@@ -361,6 +365,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="9185526690718004400">Relansează pentru a actualiza &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Windows XP sau Windows Vista</translation>
+<translation id="942598560705308788">Certificate gestionate de Chromium</translation>
 <translation id="945990405696787151">Pentru a primi actualizările Chromium viitoare, vei avea nevoie de macOS 10.13 sau o versiune ulterioară. Acest computer folosește OS X 10.11.</translation>
 <translation id="965162752251293939">Cine folosește Chromium?</translation>
 <translation id="967427899662692980">Beneficiază de cel mai înalt nivel de securitate de la Chromium</translation>

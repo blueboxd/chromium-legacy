@@ -97,6 +97,7 @@ class RemoteAppsApitest : public policy::DevicePolicyCrosBrowserTest,
     ash::SessionStateWaiter(session_manager::SessionState::ACTIVE).Wait();
   }
 
+  // TODO(b/239145899): Refactor to not use MGS setup any more.
   void SetUpDeviceLocalAccountPolicy() {
     enterprise_management::DeviceLocalAccountsProto* const
         device_local_accounts =
@@ -198,6 +199,16 @@ IN_PROC_BROWSER_TEST_P(RemoteAppsApitest, AddAppBadIconUrl) {
 
   extensions::ResultCatcher catcher;
   LoadExtensionAndRunTest("AddAppBadIconUrl");
+
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
+IN_PROC_BROWSER_TEST_P(RemoteAppsApitest, AddAppNoIconUrl) {
+  if (GetParam() != kApiExtensionRelativePath)
+    GTEST_SKIP() << "iconUrl validation not done for Mojo API";
+
+  extensions::ResultCatcher catcher;
+  LoadExtensionAndRunTest("AddAppNoIconUrl");
 
   ASSERT_TRUE(catcher.GetNextResult());
 }

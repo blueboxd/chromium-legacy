@@ -92,6 +92,7 @@
 #include "services/network/is_browser_initiated.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_service.h"
+#include "services/network/network_service_memory_cache.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
 #include "services/network/proxy_config_service_mojo.h"
@@ -116,12 +117,12 @@
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
 #include "services/network/trust_tokens/expiry_inspecting_record_expiry_delegate.h"
-#include "services/network/trust_tokens/has_trust_tokens_answerer.h"
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/sqlite_trust_token_persister.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "services/network/trust_tokens/trust_token_query_answerer.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
@@ -534,6 +535,9 @@ NetworkContext::NetworkContext(
       url_request_context_->net_log(), url_request_context_);
   resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
+  if (base::FeatureList::IsEnabled(features::kNetworkServiceMemoryCache))
+    memory_cache_ = std::make_unique<NetworkServiceMemoryCache>(this);
+
   if (params_->http_auth_static_network_context_params) {
     http_auth_merged_preferences_.SetAllowDefaultCredentials(
         params_->http_auth_static_network_context_params
@@ -742,13 +746,15 @@ void NetworkContext::SetClient(
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
-      base::MakeRefCounted<ResourceSchedulerClient>(
-          current_resource_scheduler_client_id_,
-          IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
-          resource_scheduler_.get(),
-          url_request_context_->network_quality_estimator());
-  current_resource_scheduler_client_id_.Increment();
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
+  if (!base::FeatureList::IsEnabled(features::kDisableResourceScheduler)) {
+    resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
+        current_resource_scheduler_client_id_,
+        IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
+        resource_scheduler_.get(),
+        url_request_context_->network_quality_estimator());
+    current_resource_scheduler_client_id_.Increment();
+  }
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -799,8 +805,8 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
       std::move(receiver));
 }
 
-void NetworkContext::GetHasTrustTokensAnswerer(
-    mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+void NetworkContext::GetTrustTokenQueryAnswerer(
+    mojo::PendingReceiver<mojom::TrustTokenQueryAnswerer> receiver,
     const url::Origin& top_frame_origin) {
   // Only called when Trust Tokens is enabled, i.e. trust_token_store_ is
   // non-null.
@@ -814,13 +820,13 @@ void NetworkContext::GetHasTrustTokensAnswerer(
       network_service_->trust_token_key_commitments();
 
   // It's safe to dereference |suitable_top_frame_origin| here as, during the
-  // process of vending the HasTrustTokensAnswerer, the browser ensures that
+  // process of vending the TrustTokenQueryAnswerer, the browser ensures that
   // the requesting context's top frame origin is suitable for Trust Tokens.
-  auto answerer = std::make_unique<HasTrustTokensAnswerer>(
+  auto answerer = std::make_unique<TrustTokenQueryAnswerer>(
       std::move(*suitable_top_frame_origin), trust_token_store_.get(),
       key_commitment_getter);
 
-  has_trust_tokens_answerers_.Add(std::move(answerer), std::move(receiver));
+  trust_token_query_answerers_.Add(std::move(answerer), std::move(receiver));
 }
 
 void NetworkContext::GetStoredTrustTokenCounts(
@@ -1548,6 +1554,12 @@ void NetworkContext::MaybeEnqueueSCTReport(
                                              signed_certificate_timestamps);
 }
 
+void NetworkContext::SetCTLogListAlwaysTimelyForTesting() {
+  if (!ct_policy_enforcer_)
+    return;
+  ct_policy_enforcer_->SetCTLogListAlwaysTimelyForTesting(true);
+}
+
 void NetworkContext::SetSCTAuditingMode(mojom::SCTAuditingMode mode) {
   sct_auditing_handler()->SetMode(mode);
 }
@@ -1571,6 +1583,14 @@ void NetworkContext::OnCTLogListUpdated(
 
 void NetworkContext::CanSendSCTAuditingReport(
     base::OnceCallback<void(bool)> callback) {
+  // If the NetworkContextClient hasn't been set yet or has disconnected for
+  // some reason, just return `false`. (One case where this could occur is when
+  // restarting SCTAuditingReporter instances loaded form disk at startup -- see
+  // crbug.com/1347180 for more details on that case.)
+  if (!client_) {
+    std::move(callback).Run(false);
+    return;
+  }
   client_->OnCanSendSCTAuditingReport(std::move(callback));
 }
 
@@ -2183,10 +2203,7 @@ const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
 }
 
 NetworkServiceMemoryCache* NetworkContext::GetMemoryCache() {
-  if (!base::FeatureList::IsEnabled(features::kNetworkServiceMemoryCache)) {
-    return nullptr;
-  }
-  return &memory_cache_;
+  return memory_cache_.get();
 }
 
 size_t NetworkContext::NumOpenWebTransports() const {

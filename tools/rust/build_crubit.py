@@ -35,12 +35,20 @@ from update_rust import (CHROMIUM_DIR, RUST_REVISION, RUST_SUB_REVISION,
                          STAGE0_JSON_SHA256, THIRD_PARTY_DIR,
                          GetPackageVersion)
 
-# Trunk on 2022-06-13.
-CRUBIT_REVISION = '0a25665ed0df6d4f067bfd5855be1c24d2df3f6c'
+# Trunk on 2022-07-14.
+#
+# The revision specified below should typically be the same as the
+# `crubit_revision` specified in the //DEPS file.  More details and roll
+# instructions can be found in tools/rust/README.md.
+#
+# TODO(https://crbug.com/1329611): Move `CRUBIT_REVISION` to `update_rust.py`
+# (see WIP CL: https://crrev.com/c/3718281).
+CRUBIT_REVISION = 'd9b0ad4c09b46328dcc7a5ec28ce86cca56e0389'
 CRUBIT_SUB_REVISION = 1
 
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
-CRUBIT_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'crubit')
+CRUBIT_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'crubit', 'src')
+BAZEL_EXE = os.path.join(CHROMIUM_DIR, 'tools', 'bazel', 'bazel')
 
 
 def RunCommand(command, env=None, cwd=None, fail_hard=True):
@@ -131,7 +139,7 @@ def BuildCrubit(gcc_toolchain_path):
     #     2. extra_args += ["--dynamic_mode=off"]
 
     # Run bazel build ...
-    args = ["bazel", "build", "rs_bindings_from_cc:rs_bindings_from_cc_impl"]
+    args = [BAZEL_EXE, "build", "rs_bindings_from_cc:rs_bindings_from_cc_impl"]
     RunCommand(args + extra_args, env=env, cwd=CRUBIT_SRC_DIR)
 
 
@@ -139,7 +147,7 @@ def ShutdownBazel():
     # This needs to use the same arguments as BuildCrubit, because otherwise
     # we get: WARNING: Running Bazel server needs to be killed, because the
     # startup options are different.
-    RunCommand(["bazel", "shutdown"], cwd=CRUBIT_SRC_DIR)
+    RunCommand([BAZEL_EXE, "shutdown"], cwd=CRUBIT_SRC_DIR)
 
 
 def main():

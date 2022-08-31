@@ -11,54 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/containers/contains.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/one_shot_event.h"
-#include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/version.h"
-#include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/system_web_app_background_task.h"
-#include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/manifest_update_manager.h"
-#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
-#include "chrome/browser/web_applications/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
-#include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
-#include "components/webapps/browser/install_result_code.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/url_data_source.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/url_constants.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
-#include "url/origin.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -71,6 +23,20 @@
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/one_shot_event.h"
+#include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/version.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_background_task.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ash/web_applications/camera_app/camera_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/ash/web_applications/connectivity_diagnostics_system_web_app_info.h"
@@ -92,14 +58,43 @@
 #include "chrome/browser/ash/web_applications/shimless_rma_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/shortcut_customization_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/terminal_system_web_app_info.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/manifest_update_manager.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"  // nogncheck
+#include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
+#include "components/webapps/browser/install_result_code.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/url_data_source.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
+#include "url/origin.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
 #include "chrome/browser/ash/web_applications/sample_system_web_app_info.h"
 #endif  // !defined(OFFICIAL_BUILD)
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace ash {
 
@@ -110,7 +105,6 @@ namespace {
 const int kInstallFailureAttempts = 3;
 
 SystemWebAppDelegateMap CreateSystemWebApps(Profile* profile) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::vector<std::unique_ptr<SystemWebAppDelegate>> info_vec;
   // TODO(crbug.com/1051229): Currently unused, will be hooked up
   // post-migration. We're making delegates for everything, and will then use
@@ -150,16 +144,13 @@ SystemWebAppDelegateMap CreateSystemWebApps(Profile* profile) {
   SystemWebAppDelegateMap delegate_map;
   for (auto& info : info_vec) {
     if (info->IsAppEnabled() ||
-        base::FeatureList::IsEnabled(::features::kEnableAllSystemWebApps)) {
+        base::FeatureList::IsEnabled(features::kEnableAllSystemWebApps)) {
       // Gets `type` before std::move().
       SystemWebAppType type = info->GetType();
       delegate_map.emplace(type, std::move(info));
     }
   }
   return delegate_map;
-#else
-  return {};
-#endif
 }
 
 bool HasSystemWebAppScheme(const GURL& url) {
@@ -220,26 +211,27 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
           std::string(kInstallResultHistogramName) + ".Profiles." +
           web_app::GetProfileCategoryForLogging(profile)),
       pref_service_(profile_->GetPrefs()) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    // Always update in tests.
-    update_policy_ = UpdatePolicy::kAlwaysUpdate;
-
-    // Populate with real system apps if the test asks for it.
-    if (base::FeatureList::IsEnabled(::features::kEnableAllSystemWebApps))
-      system_app_delegates_ = CreateSystemWebApps(profile_);
-
-    return;
-  }
+  // Always create delegates because many System Web App WebUIs are disabled
+  // when the delegate is not present and we need them in tests. Tests can
+  // override the list of delegates with SetSystemAppsForTesting().
+  system_app_delegates_ = CreateSystemWebApps(profile_);
 
 #if defined(OFFICIAL_BUILD)
-  // Official builds should trigger updates whenever the version number changes.
-  update_policy_ = UpdatePolicy::kOnVersionChange;
+  const bool is_official = true;
 #else
-  // Dev builds should update every launch.
-  update_policy_ = UpdatePolicy::kAlwaysUpdate;
+  const bool is_official = false;
 #endif
+  const bool is_test =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
 
-  system_app_delegates_ = CreateSystemWebApps(profile_);
+  if (is_test || !is_official) {
+    // Tests and non-official builds should always update.
+    update_policy_ = UpdatePolicy::kAlwaysUpdate;
+  } else {
+    // Official builds should trigger updates whenever the version number
+    // changes.
+    update_policy_ = UpdatePolicy::kOnVersionChange;
+  }
 }
 
 SystemWebAppManager::~SystemWebAppManager() {
@@ -252,18 +244,12 @@ SystemWebAppManager::~SystemWebAppManager() {
 
 // static
 SystemWebAppManager* SystemWebAppManager::Get(Profile* profile) {
-  if (!web_app::AreSystemWebAppsSupported())
-    return nullptr;
-
   return GetForLocalAppsUnchecked(profile);
 }
 
 // static
 web_app::WebAppProvider* SystemWebAppManager::GetWebAppProvider(
     Profile* profile) {
-  if (!web_app::AreSystemWebAppsSupported())
-    return nullptr;
-
   return web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
 }
 
@@ -306,7 +292,15 @@ void SystemWebAppManager::StopBackgroundTasks() {
 }
 
 bool SystemWebAppManager::IsAppEnabled(SystemWebAppType type) const {
-  return IsSystemWebAppEnabled(system_app_delegates_, type);
+  if (base::FeatureList::IsEnabled(features::kEnableAllSystemWebApps))
+    return true;
+
+  const SystemWebAppDelegate* delegate =
+      GetSystemWebApp(system_app_delegates_, type);
+  if (!delegate)
+    return false;
+
+  return delegate->IsAppEnabled();
 }
 
 void SystemWebAppManager::SetSubsystems(
@@ -374,9 +368,9 @@ void SystemWebAppManager::Start() {
       web_app_policy_manager_->GetDisabledSystemWebApps();
 
   for (const auto& app : system_app_delegates_) {
+    bool is_disabled = base::Contains(disabled_system_apps, app.first);
     install_options_list.push_back(CreateInstallOptionsForSystemApp(
-        app.first, *app.second, should_force_install_apps,
-        base::Contains(disabled_system_apps, app.first)));
+        app.first, *app.second, should_force_install_apps, is_disabled));
   }
 
   const bool exceeded_retries = CheckAndIncrementRetryAttempts();
@@ -385,6 +379,13 @@ void SystemWebAppManager::Start() {
         << "Exceeded SWA install retry attempts.  Skipping installation, will "
            "retry on next OS update or when locale changes.";
     return;
+  }
+
+  // In tests, only install System Web Apps if `InstallSystemAppsForTesting()`
+  // or `SetSystemAppsForTesting()` has been called.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) &&
+      skip_app_installation_in_test_) {
+    install_options_list.clear();
   }
 
   externally_managed_app_manager_->SynchronizeInstalledApps(
@@ -402,7 +403,7 @@ void SystemWebAppManager::Shutdown() {
 void SystemWebAppManager::InstallSystemAppsForTesting() {
   on_apps_synchronized_ = std::make_unique<base::OneShotEvent>();
   on_tasks_started_ = std::make_unique<base::OneShotEvent>();
-  system_app_delegates_ = CreateSystemWebApps(profile_);
+  skip_app_installation_in_test_ = false;
   Start();
 
   // Wait for the System Web Apps to install.
@@ -508,9 +509,8 @@ SystemWebAppManager::GetCapturingSystemAppForURL(const GURL& url) const {
   if (!delegate->ShouldCaptureNavigations())
     return absl::nullopt;
 
-    // TODO(crbug://1051229): Expand ShouldCaptureNavigation to take a GURL, and
-    // move this into the camera one.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug://1051229): Expand ShouldCaptureNavigation to take a GURL, and
+  // move this into the camera one.
   if (type == SystemWebAppType::CAMERA) {
     GURL::Replacements replacements;
     replacements.ClearQuery();
@@ -518,7 +518,6 @@ SystemWebAppManager::GetCapturingSystemAppForURL(const GURL& url) const {
     if (url.ReplaceComponents(replacements).spec() != kChromeUICameraAppMainURL)
       return absl::nullopt;
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return type;
 }
@@ -533,6 +532,7 @@ void SystemWebAppManager::OnWebAppUiManagerDestroyed() {
 
 void SystemWebAppManager::SetSystemAppsForTesting(
     SystemWebAppDelegateMap system_apps) {
+  skip_app_installation_in_test_ = false;
   system_app_delegates_ = std::move(system_apps);
 }
 
@@ -629,11 +629,11 @@ void SystemWebAppManager::OnAppsSynchronized(
 
   // TODO(qjw): Figure out where install_results come from, decide if
   // installation failures need to be handled
-  pref_service_->SetString(::prefs::kSystemWebAppLastUpdateVersion,
+  pref_service_->SetString(prefs::kSystemWebAppLastUpdateVersion,
                            CurrentVersion().GetString());
-  pref_service_->SetString(::prefs::kSystemWebAppLastInstalledLocale,
+  pref_service_->SetString(prefs::kSystemWebAppLastInstalledLocale,
                            CurrentLocale());
-  pref_service_->SetInteger(::prefs::kSystemWebAppInstallFailureCount, 0);
+  pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount, 0);
 
   // Report install duration only if the install pipeline actually installs
   // all the apps (e.g. on version upgrade).
@@ -677,17 +677,17 @@ void SystemWebAppManager::StartBackgroundTasks() const {
 }
 
 bool SystemWebAppManager::ShouldForceInstallApps() const {
-  if (base::FeatureList::IsEnabled(::features::kAlwaysReinstallSystemWebApps))
+  if (base::FeatureList::IsEnabled(features::kAlwaysReinstallSystemWebApps))
     return true;
 
   if (update_policy_ == UpdatePolicy::kAlwaysUpdate)
     return true;
 
   base::Version current_installed_version(
-      pref_service_->GetString(::prefs::kSystemWebAppLastUpdateVersion));
+      pref_service_->GetString(prefs::kSystemWebAppLastUpdateVersion));
 
   const std::string& current_installed_locale(
-      pref_service_->GetString(::prefs::kSystemWebAppLastInstalledLocale));
+      pref_service_->GetString(prefs::kSystemWebAppLastInstalledLocale));
 
   // If Chrome version rolls back for some reason, ensure System Web Apps are
   // always in sync with Chrome version.
@@ -703,32 +703,32 @@ bool SystemWebAppManager::ShouldForceInstallApps() const {
 
 void SystemWebAppManager::UpdateLastAttemptedInfo() {
   base::Version last_attempted_version(
-      pref_service_->GetString(::prefs::kSystemWebAppLastAttemptedVersion));
+      pref_service_->GetString(prefs::kSystemWebAppLastAttemptedVersion));
 
   const std::string& last_attempted_locale(
-      pref_service_->GetString(::prefs::kSystemWebAppLastAttemptedLocale));
+      pref_service_->GetString(prefs::kSystemWebAppLastAttemptedLocale));
 
   const bool is_retry = last_attempted_version.IsValid() &&
                         last_attempted_version == CurrentVersion() &&
                         last_attempted_locale == CurrentLocale();
   if (!is_retry) {
-    pref_service_->SetInteger(::prefs::kSystemWebAppInstallFailureCount, 0);
+    pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount, 0);
   }
 
-  pref_service_->SetString(::prefs::kSystemWebAppLastAttemptedVersion,
+  pref_service_->SetString(prefs::kSystemWebAppLastAttemptedVersion,
                            CurrentVersion().GetString());
-  pref_service_->SetString(::prefs::kSystemWebAppLastAttemptedLocale,
+  pref_service_->SetString(prefs::kSystemWebAppLastAttemptedLocale,
                            CurrentLocale());
   pref_service_->CommitPendingWrite();
 }
 
 bool SystemWebAppManager::CheckAndIncrementRetryAttempts() {
   int installation_failures =
-      pref_service_->GetInteger(::prefs::kSystemWebAppInstallFailureCount);
+      pref_service_->GetInteger(prefs::kSystemWebAppInstallFailureCount);
   bool reached_retry_limit = installation_failures > kInstallFailureAttempts;
 
   if (!reached_retry_limit) {
-    pref_service_->SetInteger(::prefs::kSystemWebAppInstallFailureCount,
+    pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount,
                               installation_failures + 1);
     pref_service_->CommitPendingWrite();
     return false;

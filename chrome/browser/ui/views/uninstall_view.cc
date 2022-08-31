@@ -128,7 +128,7 @@ void UninstallView::OnDialogAccepted() {
     user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
   if (change_default_browser_ && change_default_browser_->GetChecked()) {
     BrowsersMap::const_iterator i = browsers_->begin();
-    std::advance(i, browsers_combo_->GetSelectedIndex());
+    std::advance(i, browsers_combo_->GetSelectedIndex().value());
     base::LaunchOptions options;
     options.start_hidden = true;
     base::LaunchProcess(i->second, options);
@@ -139,13 +139,13 @@ void UninstallView::OnDialogCancelled() {
   user_selection_ = chrome::RESULT_CODE_UNINSTALL_USER_CANCEL;
 }
 
-int UninstallView::GetItemCount() const {
+size_t UninstallView::GetItemCount() const {
   DCHECK(!browsers_->empty());
   return browsers_->size();
 }
 
-std::u16string UninstallView::GetItemAt(int index) const {
-  DCHECK_LT(index, static_cast<int>(browsers_->size()));
+std::u16string UninstallView::GetItemAt(size_t index) const {
+  DCHECK_LT(index, browsers_->size());
   BrowsersMap::const_iterator i = browsers_->begin();
   std::advance(i, index);
   return base::WideToUTF16(i->first);

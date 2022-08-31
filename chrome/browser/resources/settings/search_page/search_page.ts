@@ -15,7 +15,7 @@ import '../controls/extension_controlled_indicator.js';
 import '../i18n_setup.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
@@ -52,7 +52,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
         type: Array,
         value() {
           return [];
-        }
+        },
       },
 
       /** Filter applied to search engines. */
@@ -74,7 +74,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   }
 
   prefs: Object;
-  private searchEnginesPageTitle_: String;
+  private searchEnginesPageTitle_: string;
   private isActiveSearchEnginesFlagEnabled_: boolean;
   private searchEngines_: SearchEngine[];
   private searchEnginesFilter_: string;
@@ -109,7 +109,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
     this.dispatchEvent(new CustomEvent('refresh-pref', {
       bubbles: true,
       composed: true,
-      detail: 'default_search_provider.enabled'
+      detail: 'default_search_provider.enabled',
     }));
   }
 
@@ -128,7 +128,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
     return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
   }
 
-  private computeSearchEnginesPageTitle_(): String {
+  private computeSearchEnginesPageTitle_(): string {
     return this.isActiveSearchEnginesFlagEnabled_ ?
         this.i18n('searchEnginesManageSiteSearch') :
         this.i18n('searchEnginesManage');

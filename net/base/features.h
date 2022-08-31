@@ -33,9 +33,6 @@ NET_EXPORT extern const base::Feature kAvoidH2Reprioritization;
 // origin requests are restricted to contain at most the source origin.
 NET_EXPORT extern const base::Feature kCapReferrerToOriginOnCrossOrigin;
 
-// Enables the ParsedCookie domain attribute to be the empty string.
-NET_EXPORT extern const base::Feature kCookieDomainAttributeEmptyString;
-
 // Support for altering the parameters used for DNS transaction timeout. See
 // ResolveContext::SecureTransactionTimeout().
 NET_EXPORT extern const base::Feature kDnsTransactionDynamicTimeouts;
@@ -455,6 +452,19 @@ NET_EXPORT extern const base::FeatureParam<int>
 
 NET_EXPORT extern const base::FeatureParam<int>
     kOptimizeNetworkBuffersFilterSourceStreamBufferSize;
+
+NET_EXPORT extern const base::FeatureParam<bool>
+    kOptimizeNetworkBuffersInputStreamCheckAvailable;
+
+// Enable the Storage Access API. https://crbug.com/989663.
+NET_EXPORT extern const base::Feature kStorageAccessAPI;
+
+// Set the default number of "automatic" implicit storage access grants per
+// third party origin that can be granted. This can be overridden via
+// experimentation to allow for field trials to validate the default setting.
+NET_EXPORT extern const int kStorageAccessAPIDefaultImplicitGrantLimit;
+NET_EXPORT extern const base::FeatureParam<int>
+    kStorageAccessAPIImplicitGrantLimit;
 
 }  // namespace net::features
 

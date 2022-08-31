@@ -58,7 +58,7 @@ class UserNoteInstanceTest : public UserNoteBaseTest {
 
     // Original text, target URL and selector are not used in these tests.
     auto target = std::make_unique<UserNoteTarget>(
-        type, /*original_text=*/"", GURL("https://www.example.com/"),
+        type, /*original_text=*/u"", GURL("https://www.example.com/"),
         /*selector=*/"");
     UserNoteService::ModelMapEntry entry(
         std::make_unique<UserNote>(id, GetTestUserNoteMetadata(),
@@ -75,8 +75,8 @@ class UserNoteInstanceTest : public UserNoteBaseTest {
         entry_it->second.model->GetSafeRef(), manager, simulate_attach_rect);
   }
 
-  bool IsNoteInstanceInitialized(UserNoteInstance* instance) {
-    return instance->is_initialized_;
+  bool IsAttachmentFinished(UserNoteInstance* instance) {
+    return instance->finished_attachment_;
   }
 };
 
@@ -99,7 +99,7 @@ TEST_F(UserNoteInstanceTest, InitializeHighlightSkipForPageLevelNote) {
   // The mocks ensure the callback is invoked synchronously, so verifications
   // can happen immediately.
   EXPECT_TRUE(callback_called);
-  EXPECT_TRUE(IsNoteInstanceInitialized(instance.get()));
+  EXPECT_FALSE(IsAttachmentFinished(instance.get()));
   EXPECT_EQ(instance->rect(), empty_rect);
 }
 
@@ -124,7 +124,7 @@ TEST_F(UserNoteInstanceTest, InitializeHighlightTextNote) {
   // The mocks ensure the callback is invoked synchronously, so verifications
   // can happen immediately.
   EXPECT_TRUE(callback_called);
-  EXPECT_TRUE(IsNoteInstanceInitialized(instance.get()));
+  EXPECT_TRUE(IsAttachmentFinished(instance.get()));
   EXPECT_EQ(instance->rect(), rect);
 }
 

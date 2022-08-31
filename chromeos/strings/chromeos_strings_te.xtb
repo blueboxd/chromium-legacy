@@ -20,7 +20,7 @@
 <translation id="1165039591588034296">ఎర్రర్</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> ద్వారా ఈ <ph name="DEVICE_TYPE" /> మేనేజ్ చేయబడుతోంది.</translation>
 <translation id="1175951029573070619">మోస్తరుగా ఉంది (<ph name="SIGNAL_STRENGTH" />)</translation>
-<translation id="1181037720776840403">తీసివేయి</translation>
+<translation id="1181037720776840403">తీసివేయండి</translation>
 <translation id="1190378975642195988">బేస్ యాక్సిలెరోమీటర్</translation>
 <translation id="1195447618553298278">తెలియని ఎర్రర్.</translation>
 <translation id="1196959502276349371">వెర్షన్ <ph name="VERSION" /></translation>
@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">కెమెరా</translation>
 <translation id="1621067168122174824">ఛార్జ్ పరీక్షను రన్ చేయండి</translation>
 <translation id="1631385268983122904">ఇప్పుడే పరికరాన్ని అసెంబుల్ చేయవద్దు</translation>
-<translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
+<translation id="1639239467298939599">లోడ్ చేస్తోంది</translation>
 <translation id="1641857168437328880">డాక్యుమెంట్ ఫీడర్ (ఒక వైపున)</translation>
 <translation id="1643449475550628585">ప్రతిరోజూ వాల్‌పేపర్ ఇమేజ్‌ను మార్చండి</translation>
 <translation id="1644574205037202324">హిస్టరీ</translation>
 <translation id="1645954272419197032">దయచేసి పరికర సమాచారాన్ని నిర్ధారించండి</translation>
 <translation id="1662989795263954667">ఆగిపోయింది - ఇంక్ లేదు</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />ను ప్రివ్యూ చేయండి</translation>
 <translation id="1668469839109562275">బిల్ట్-ఇన్ VPN</translation>
 <translation id="1672499492233627739">వెబ్‌క్యామ్ వీడియో ఫీడ్</translation>
 <translation id="1676557873873341166">వీడియో తీస్తోంది</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">వీడియో మీటింగ్‌ నిర్వహించడం</translation>
 <translation id="1852934301711881861">ChromeOS Flexను ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="1856388568474281774">కింది వైపు బాణం</translation>
+<translation id="1858620243986915808">స్క్రీన్‌షాట్‌ను అటాచ్ చేయండి</translation>
 <translation id="1871569928317311284">ముదురు రంగు రూపాన్ని ఆఫ్ చేయండి</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">డార్క్ మోడ్‌ను ఆఫ్ చేయండి</translation>
@@ -269,7 +271,7 @@
 <translation id="3336855445806447827">ఖచ్చితంగా తెలియదు</translation>
 <translation id="3340011300870565703">పరికరంలో కుడి వైపు బడ్ బ్యాటరీ స్థాయి <ph name="BATTERY_PERCENTAGE" />% ఉంది.</translation>
 <translation id="3368922792935385530">కనెక్ట్ అయింది</translation>
-<translation id="3369013195428705271">మీరు ఖచ్చితంగా ప్రింట్ చరిత్ర మొత్తాన్ని క్లియర్ చేయాలనుకుంటున్నారా? మీ కొనసాగుతున్న ప్రింట్ టాస్క్‌లు క్లియర్ చేయబడవు.</translation>
+<translation id="3369013195428705271">మీరు ఖచ్చితంగా ప్రింట్ హిస్టరీ మొత్తాన్ని క్లియర్ చేయాలనుకుంటున్నారా? మీ కొనసాగుతున్న ప్రింట్ టాస్క్‌లు క్లియర్ చేయబడవు.</translation>
 <translation id="3383751554789092165">అవసరానికి తగినట్లు పరికర సమాచారాన్ని మార్చండి.</translation>
 <translation id="3404249063913988450">స్క్రీన్ సేవర్‌ను ఎనేబుల్ చేయి</translation>
 <translation id="3404770484521709967">భాగాలు సరిగ్గా ఇన్‌స్టాల్ చేయబడ్డాయి.</translation>
@@ -317,7 +319,7 @@
 <translation id="3771294271822695279">వీడియో ఫైళ్లు</translation>
 <translation id="3774059845329307709">సీరియల్ నంబర్</translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
-<translation id="38114475217616659">చరిత్ర మొత్తాన్ని క్లియర్ చేయి</translation>
+<translation id="38114475217616659">హిస్టరీ మొత్తాన్ని క్లియర్ చేయండి</translation>
 <translation id="3820172043799983114">PIN చెల్లదు.</translation>
 <translation id="3824259034819781947">ఫైల్స్‌ను జోడించండి</translation>
 <translation id="3838338534323494292">కొత్త పాస్‌వర్డ్</translation>
@@ -471,7 +473,7 @@
 <translation id="500920857929044050">పరీక్షను ఆపండి</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">మీ స్క్రీన్ ఇన్‌యాక్టివ్‌గా ఉన్నప్పుడు, ఫోటోలు, సమయం, వాతావరణం, మీడియా సమాచారాన్ని చూపిస్తుంది.</translation>
-<translation id="5039804452771397117">అనుమతించు</translation>
+<translation id="5039804452771397117">అనుమతించండి</translation>
 <translation id="5044978354634658544">USBని ఇన్‌సర్ట్ చేయండి</translation>
 <translation id="5049856988445523908">SIM లాక్ చేయబడింది (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">గ్రూప్‌ పేరు</translation>
@@ -659,7 +661,7 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> రిపేర్ నుండి నిష్క్రమించండి</translation>
 <translation id="6618744767048954150">రన్ అవుతున్నాయి</translation>
 <translation id="6620487321149975369">ప్రింట్ టాస్క్‌లను మాన్యువల్‌గా తీసివేసేంత వరకు అవి హిస్టరీలో అలాగే ఉంటాయి</translation>
-<translation id="6643016212128521049">క్లియర్ చేయి</translation>
+<translation id="6643016212128521049">క్లియర్ చేయండి</translation>
 <translation id="6647510110698214773">ఎన్‌క్రిప్షన్ అల్గారిథమ్</translation>
 <translation id="6650062777702288430">కాన/అక్షరాలు, అంకెలు ఉండే స్విచ్</translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">వ్యక్తిగత కీ</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="7994702968232966508">EAP పద్ధతి</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"కు సేవ్ చేయబడింది</translation>
 <translation id="802154636333426148">డౌన్‌లోడ్ విఫలమైంది</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ఆటోమేటిక్ రంగు మోడ్‌ను ఎనేబుల్ చేయండి</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">ప్రారంభం కాలేదు</translation>
 <translation id="8620617069779373398">రోమింగ్ స్థితి</translation>
 <translation id="8655295600908251630">ఛానల్</translation>
+<translation id="8655828773034788261">URLను షేర్ చేయండి:</translation>
 <translation id="8660881923941176839">పౌండ్‌లు</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> నెట్‌వర్క్‌లో చేరండి</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" />‌కు అప్‌డేట్ చేసి &amp; రీస్టార్ట్ చేయండి</translation>
@@ -880,7 +884,7 @@
 <translation id="8730621377337864115">పూర్తయింది</translation>
 <translation id="8747900814994928677">మార్పును నిర్ధారించండి</translation>
 <translation id="8764414543112028321">WireGuard</translation>
-<translation id="87646919272181953">Google ఫోటోల ఆల్బమ్</translation>
+<translation id="87646919272181953">Google Photos ఆల్బమ్</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="879568662008399081">ఈ నెట్‌వర్క్‌లో క్యాప్టివ్ పోర్టల్ ఉండవచ్చు</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>
@@ -938,7 +942,7 @@
 <translation id="9126720536733509015">పలు పేజీలను ఒక PDFగా సేవ్ చేయండి</translation>
 <translation id="9137526406337347448">Google సేవలు</translation>
 <translation id="9138630967333032450">ఎడమ వైపు షిఫ్ట్</translation>
-<translation id="9148058034647219655">నిష్క్రమించు</translation>
+<translation id="9148058034647219655">నిష్క్రమించండి</translation>
 <translation id="9149391708638971077">మెమరీ పరీక్షను రన్ చేయండి</translation>
 <translation id="9173638680043580060">నిమిషం కంటే తక్కువ సమయం మిగిలి ఉంది</translation>
 <translation id="917720651393141712">టెస్ట్ చేయండి</translation>

@@ -209,6 +209,13 @@ AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
   // one suggestion with a valid offer details url before adding the footer.
   DCHECK(suggestions.size() > 0);
   if (!footer_offer_details_url.is_empty()) {
+    // Add the footer separator since we will now have a footer in the offers
+    // suggestions popup.
+    suggestions.emplace_back();
+    suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+
+    // Add the footer suggestion that navigates the user to the promo code
+    // details page in the offers suggestions popup.
     suggestions.emplace_back(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_PROMO_CODE_SUGGESTIONS_FOOTER_TEXT));
     Suggestion& suggestion = suggestions.back();
@@ -409,22 +416,16 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
     if (image)
       suggestion.custom_icon = *image;
   }
-
+#if BUILDFLAG(IS_ANDROID)
+  // The card art icon should always be shown at the start of the suggestion.
+  suggestion.is_icon_at_start = true;
+#endif  // BUILDFLAG(IS_ANDROID)
   return suggestion;
 }
 
 bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
     const CreditCard* candidate_card,
     const FormStructure& form_structure) const {
-  // If the form is an incomplete form and the incomplete form experiment is
-  // disabled, do not offer a virtual card option. We will likely not be able to
-  // fill in all information, and the user doesn't have the info either.
-  if (!IsCompleteCreditCardFormIncludingCvcField(form_structure) &&
-      !base::FeatureList::IsEnabled(
-          features::kAutofillSuggestVirtualCardsOnIncompleteForm)) {
-    return false;
-  }
-
   switch (candidate_card->record_type()) {
     case CreditCard::MASKED_SERVER_CARD:
       return candidate_card->virtual_card_enrollment_state() ==

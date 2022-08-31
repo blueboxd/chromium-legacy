@@ -65,6 +65,7 @@
 <translation id="2139300032719313227">Chrome OS を再起動してください</translation>
 <translation id="2151406531797534936">Chrome を今すぐ再起動してください</translation>
 <translation id="2174917724755363426">インストールは完了していません。キャンセルしてもよろしいですか？</translation>
+<translation id="223889379102603431">Chrome でのルート証明書の管理方法に関する情報</translation>
 <translation id="2258103955319320201">お使いのすべてのデバイスで Chrome ブラウザの設定やデータを使用するには、ログインして同期を有効にしてください。</translation>
 <translation id="2290014774651636340">Google API キーが欠落しています。Google Chrome の一部の機能は無効になります。</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
@@ -77,6 +78,7 @@
 <translation id="2401189691232800402">Chrome OS システム</translation>
 <translation id="2467438592969358367">Google Chrome からパスワードをエクスポートするための許可を求められています。許可するには Windows のパスワードを入力してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="2494974097748878569">Chrome の Google アシスタント</translation>
 <translation id="2534507159460261402">Google Pay（Chrome にコピー）</translation>
 <translation id="2559253115192232574">その後、アクセスしたサイトは、表示する広告をカスタマイズするために、Chrome にユーザーの興味 / 関心を提示するよう依頼できます。Chrome では、興味 / 関心を 3 つまで共有できます。</translation>
 <translation id="2563121210305478421">Chrome を再起動しますか？</translation>
@@ -155,6 +157,7 @@
 <translation id="3865754807470779944">Chrome のバージョン <ph name="PRODUCT_VERSION" /> がインストールされています</translation>
 <translation id="3873044882194371212">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
+<translation id="3999683152997576765">サイトでの広告表示に使用される興味 / 関心のトピックを表示、削除できます。Chrome では最近の閲覧履歴に基づいてユーザーの興味 / 関心を推定します。</translation>
 <translation id="4035053306113201399">更新を適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
@@ -272,6 +275,7 @@
 <translation id="6739177684496155661">新しい Chrome プロファイルで続行しますか？</translation>
 <translation id="6750954913813541382">スペルミスを修正するために、ブラウザに入力したテキストが Chrome から Google に送信されます</translation>
 <translation id="677276454032249905">今すぐ Chrome を終了しますか？</translation>
+<translation id="6785872064505734160">Chrome の Google アシスタントは、ユーザーに代わってウェブサイトでの操作を完了できます</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="6881299373831449287">Chrome を更新しています</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>
@@ -344,6 +348,7 @@
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
+<translation id="8270775718612349140">Chrome で管理されている証明書</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="828798499196665338">保護者が Chrome の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を有効にすることはできません。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>

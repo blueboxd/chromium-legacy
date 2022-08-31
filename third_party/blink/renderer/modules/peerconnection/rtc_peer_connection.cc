@@ -148,7 +148,8 @@ const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
 
 base::LazyInstance<RTCPeerConnection::RtcPeerConnectionHandlerFactoryCallback>::
-    Leaky g_create_rpc_peer_connection_handler_callback_;
+    Leaky g_create_rpc_peer_connection_handler_callback_ =
+        LAZY_INSTANCE_INITIALIZER;
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const int64_t kMaxPeerConnections = 500;
@@ -312,16 +313,6 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       !RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
     web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
   }
-  // Only on Fuchsia is it still possible to overwrite the default sdpSemantics
-  // value in JavaScript.
-  // TODO(https://crbug.com/1302249): Don't support Plan B on Fuchsia either,
-  // delete Plan B from all of Chromium.
-#if BUILDFLAG(IS_FUCHSIA)
-  if (configuration->hasSdpSemantics() &&
-      configuration->sdpSemantics() == "plan-b") {
-    web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
-  }
-#endif
   if (web_configuration.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     Deprecation::CountDeprecation(
         context, WebFeature::kRTCPeerConnectionSdpSemanticsPlanB);
@@ -1200,9 +1191,7 @@ void RTCPeerConnection::UpdateIceConnectionState() {
   DCHECK_EQ(webrtc::SdpSemantics::kUnifiedPlan, sdp_semantics_);
   auto new_state = ComputeIceConnectionState();
   if (ice_connection_state_ != new_state) {
-    peer_handler_->TrackIceConnectionStateChange(
-        RTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
-        new_state);
+    peer_handler_->TrackIceConnectionStateChange(new_state);
   }
   ChangeIceConnectionState(new_state);
 }
@@ -2731,15 +2720,12 @@ void RTCPeerConnection::DidChangeIceConnectionState(
   DCHECK(GetExecutionContext()->IsContextThread());
   if (sdp_semantics_ == webrtc::SdpSemantics::kUnifiedPlan) {
     // Unified plan relies on UpdateIceConnectionState() instead.
-    peer_handler_->TrackIceConnectionStateChange(
-        RTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy,
-        new_state);
-  } else {
-    peer_handler_->TrackIceConnectionStateChange(
-        RTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
-        new_state);
-    ChangeIceConnectionState(new_state);
+    return;
   }
+  // Plan B only.
+  // TODO(https://crbug.com/1302249): Delete this.
+  peer_handler_->TrackIceConnectionStateChange(new_state);
+  ChangeIceConnectionState(new_state);
 }
 
 void RTCPeerConnection::DidChangePeerConnectionState(

@@ -26,7 +26,7 @@
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -109,6 +109,10 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const ash::disks::DiskMountManager::MountPointInfo& mount_point,
       const ash::disks::Disk* disk);
   static std::unique_ptr<Volume> CreateForProvidedFileSystem(
+      const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
+      MountContext mount_context);
+  static std::unique_ptr<Volume> CreateForFuseBoxProvidedFileSystem(
+      const base::FilePath& mount_path,
       const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
       MountContext mount_context);
   static std::unique_ptr<Volume> CreateForMTP(const base::FilePath& mount_path,
@@ -508,6 +512,14 @@ class VolumeManager : public KeyedService,
                                  const std::string& label,
                                  bool read_only,
                                  int error);
+  void OnFuseboxAttachStorageProvidedFileSystem(
+      const std::string& subdir,
+      const std::string& fsid,
+      const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
+      MountContext volume_context,
+      int error);
+
+  void ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(std::string* volume_id) const;
 
   SnapshotManager* snapshot_manager() { return snapshot_manager_.get(); }
 
@@ -516,6 +528,7 @@ class VolumeManager : public KeyedService,
   }
 
  private:
+  void RestoreProvidedFileSystems();
   void OnDiskMountManagerRefreshed(bool success);
   void OnStorageMonitorInitialized();
   void DoAttachMtpStorage(const storage_monitor::StorageInfo& info,

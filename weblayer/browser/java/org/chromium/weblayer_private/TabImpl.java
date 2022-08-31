@@ -227,6 +227,7 @@ public final class TabImpl extends ITab.Stub {
         @Override
         protected void onVerticalScrollDirectionChanged(
                 boolean directionUp, float currentScrollRatio) {
+            super.onVerticalScrollDirectionChanged(directionUp, currentScrollRatio);
             try {
                 mClient.onScrollNotification(directionUp
                                 ? ScrollNotificationType.DIRECTION_CHANGED_UP
@@ -275,11 +276,17 @@ public final class TabImpl extends ITab.Stub {
 
         mWebContentsObserver = new WebContentsObserver() {
             @Override
-            public void didStartNavigation(NavigationHandle navigationHandle) {
-                if (navigationHandle.isInPrimaryMainFrame() && !navigationHandle.isSameDocument()) {
+            public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
+                if (!navigationHandle.isSameDocument()) {
                     hideFindInPageUiAndNotifyClient();
                 }
             }
+
+            @Override
+            public void didStartNavigationNoop(NavigationHandle navigationHandle) {
+                if (!navigationHandle.isInPrimaryMainFrame()) return;
+            }
+
             @Override
             public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
                 ensureDisplayCutoutController();

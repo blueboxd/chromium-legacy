@@ -151,9 +151,10 @@ class WebContentsVideoCaptureDeviceBrowserTest
 
         // viz::SoftwareRenderer does not do color space management. Otherwise
         // (normal case), be strict about color differences.
-        const int max_color_diff = IsSoftwareCompositingTest()
-                                       ? kVeryLooseMaxColorDifference
-                                       : kMaxColorDifference;
+        const int max_color_diff =
+            (IsSoftwareCompositingTest() || !IsGpuRastrizationEnabled())
+                ? kVeryLooseMaxColorDifference
+                : kMaxColorDifference;
 
         // Determine the average RGB color in the three regions-of-interest in
         // the frame.
@@ -232,7 +233,10 @@ class WebContentsVideoCaptureDeviceBrowserTest
           // point, it means the frame we got did not match both expected and
           // tolerated colors.
           ADD_FAILURE() << "Observed frame that did not match both expected "
-                           "and tolerated colors. PNG dump:\n"
+                           "and tolerated colors. color="
+                        << color_string
+                        << ", tolerated_color=" << tolerated_color_string
+                        << ", PNG dump:\n"
                         << cc::GetPNGDataUrl(rgb_frame);
           return;
         }

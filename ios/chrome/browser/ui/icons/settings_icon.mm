@@ -10,7 +10,17 @@
 #error "This file requires ARC support."
 #endif
 
-NSInteger kSettingsRootSymbolImagePointSize = 18;
+const CGFloat kSettingsRootSymbolImagePointSize = 18;
+
+// Custom symbol names.
+NSString* const kSyncDisabledSymbol = @"arrow_triangle_slash_circlepath";
+
+// Default symbol names.
+NSString* const kSyncErrorSymbol =
+    @"exclamationmark.arrow.triangle.2.circlepath";
+NSString* const kSyncEnabledSymbol = @"arrow.triangle.2.circlepath";
+NSString* const kDefaultBrowserSymbol = @"app.badge.checkmark";
+NSString* const kPrivacySecuritySymbol = @"checkerboard.shield";
 
 namespace {
 
@@ -24,12 +34,12 @@ UIImageSymbolConfiguration* kDefaultSettingsRootSymbolConfiguration =
 
 }  // namespace
 
-UIImage* DefaultSettingsRootSymbol(NSString* symbolName) {
+UIImage* DefaultSettingsRootSymbol(NSString* symbol_name) {
   return DefaultSymbolWithConfiguration(
-      symbolName, kDefaultSettingsRootSymbolConfiguration);
+      symbol_name, kDefaultSettingsRootSymbolConfiguration);
 }
 
-UIImage* CustomSettingsRootSymbol(NSString* symbolName) {
-  return CustomSymbolWithConfiguration(symbolName,
+UIImage* CustomSettingsRootSymbol(NSString* symbol_name) {
+  return CustomSymbolWithConfiguration(symbol_name,
                                        kDefaultSettingsRootSymbolConfiguration);
 }

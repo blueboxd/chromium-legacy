@@ -20,7 +20,7 @@ suite('PaymentSectionUiTest', function() {
     // Initializing with fake prefs
     const section = document.createElement('settings-payments-section');
     section.prefs = {
-      autofill: {credit_card_enabled: {}, credit_card_fido_auth_enabled: {}}
+      autofill: {credit_card_enabled: {}, credit_card_fido_auth_enabled: {}},
     };
     document.body.appendChild(section);
 
@@ -96,14 +96,8 @@ suite('PaymentsSection', function() {
 
   // Fakes the existence of a platform authenticator.
   function addFakePlatformAuthenticator() {
-    if (!window.PublicKeyCredential) {
-      (window.PublicKeyCredential as PublicKeyCredential) = {} as
-          PublicKeyCredential;
-    }
-    window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable =
-        function() {
-      return Promise.resolve(true);
-    };
+    (PaymentsManagerImpl.getInstance() as TestPaymentsManager)
+        .setIsUserVerifyingPlatformAuthenticatorAvailable(true);
   }
 
 
@@ -213,7 +207,7 @@ suite('PaymentsSection', function() {
     assertEquals(
         creditCard.metadata!.summaryLabel,
         rowShadowRoot.querySelector<HTMLElement>(
-                         '#creditCardLabel')!.textContent);
+                         '#creditCardLabel')!.textContent!.trim());
     assertEquals(
         creditCard.expirationMonth + '/' + creditCard.expirationYear,
         rowShadowRoot.querySelector<HTMLElement>(
@@ -821,7 +815,7 @@ suite('PaymentsSection', function() {
     addFakePlatformAuthenticator();
     const section = createPaymentsSection(/*creditCards=*/[], /*upiIds=*/[], {
       credit_card_enabled: {value: true},
-      credit_card_fido_auth_enabled: {value: true}
+      credit_card_fido_auth_enabled: {value: true},
     });
     assertTrue(section.shadowRoot!
                    .querySelector<SettingsToggleButtonElement>(
@@ -834,7 +828,7 @@ suite('PaymentsSection', function() {
     addFakePlatformAuthenticator();
     const section = createPaymentsSection(/*creditCards=*/[], /*upiIds=*/[], {
       credit_card_enabled: {value: true},
-      credit_card_fido_auth_enabled: {value: false}
+      credit_card_fido_auth_enabled: {value: false},
     });
     assertFalse(section.shadowRoot!
                     .querySelector<SettingsToggleButtonElement>(

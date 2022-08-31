@@ -180,6 +180,8 @@ class CORE_EXPORT HTMLElement : public Element {
   // https://html.spec.whatwg.org/C/#potentially-render-blocking
   virtual bool IsPotentiallyRenderBlocking() const { return false; }
 
+  bool IsSupportedByRegionCapture() const override;
+
  protected:
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
   enum AllowZero { kDontAllowZeroValues, kAllowZeroValues };
@@ -264,13 +266,11 @@ class CORE_EXPORT HTMLElement : public Element {
       const QualifiedName& attr_name);
 
   void OnDirAttrChanged(const AttributeModificationParams&);
-  void OnFocusgroupAttrChanged(const AttributeModificationParams&);
   void OnFormAttrChanged(const AttributeModificationParams&);
   void OnLangAttrChanged(const AttributeModificationParams&);
   void OnNonceAttrChanged(const AttributeModificationParams&);
-  void OnTabIndexAttrChanged(const AttributeModificationParams&);
-  void OnXMLLangAttrChanged(const AttributeModificationParams&);
-  void OnPopupAttrChanged(const AttributeModificationParams&);
+
+  void ReparseAttribute(const AttributeModificationParams&);
 };
 
 template <typename T>

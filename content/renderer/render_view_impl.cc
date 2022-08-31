@@ -153,10 +153,10 @@ void RenderViewImpl::Initialize(
   } else {
     RenderFrameProxy::CreateFrameProxy(
         agent_scheduling_group_, params->main_frame->get_remote_params()->token,
-        params->main_frame->get_remote_params()->routing_id,
         params->opener_frame_token, routing_id_, absl::nullopt,
         blink::mojom::TreeScopeType::kDocument /* ignored for main frames */,
         std::move(params->replication_state), params->devtools_main_frame_token,
+        std::move(params->main_frame->get_remote_params()->frame_interfaces),
         std::move(
             params->main_frame->get_remote_params()->main_frame_interfaces));
   }
@@ -165,13 +165,8 @@ void RenderViewImpl::Initialize(
   if (params->window_was_opened_by_another_window)
     GetWebView()->SetOpenedByDOM();
 
-  GetContentClient()->renderer()->WebViewCreated(webview_);
-
-#if BUILDFLAG(IS_ANDROID)
-  // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
-  // HandleNavigation codepath.
-  was_created_by_renderer_ = was_created_by_renderer;
-#endif
+  GetContentClient()->renderer()->WebViewCreated(webview_,
+                                                 was_created_by_renderer);
 }
 
 RenderViewImpl::~RenderViewImpl() {

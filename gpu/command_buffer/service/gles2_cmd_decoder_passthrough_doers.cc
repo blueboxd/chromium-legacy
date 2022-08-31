@@ -21,8 +21,8 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
@@ -4885,7 +4885,8 @@ GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
   resources_->texture_object_map.RemoveClientID(texture_client_id);
   resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
   resources_->texture_shared_image_map[texture_client_id] =
-      PassthroughResources::SharedImageData(std::move(shared_image), api());
+      PassthroughResources::SharedImageData(std::move(shared_image), api(),
+                                            feature_info_.get());
 
   return error::kNoError;
 }
@@ -4932,20 +4933,6 @@ error::Error GLES2DecoderPassthroughImpl::DoEndSharedImageAccessDirectCHROMIUM(
     return error::kNoError;
   }
   found->second.EndAccess();
-  return error::kNoError;
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::DoBeginBatchReadAccessSharedImageCHROMIUM() {
-  DCHECK(group_->shared_image_manager());
-  group_->shared_image_manager()->BeginBatchReadAccess();
-  return error::kNoError;
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::DoEndBatchReadAccessSharedImageCHROMIUM() {
-  DCHECK(group_->shared_image_manager());
-  group_->shared_image_manager()->EndBatchReadAccess();
   return error::kNoError;
 }
 

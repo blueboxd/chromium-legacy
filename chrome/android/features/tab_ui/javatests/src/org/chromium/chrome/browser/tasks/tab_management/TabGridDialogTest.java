@@ -37,6 +37,7 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.GRID_TAB_SWITC
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPROVEMENTS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickNthTabInDialog;
@@ -113,7 +114,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.test.util.NightModeTestUtils;
-import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.util.ColorUtils;
 
 import java.util.concurrent.ExecutionException;
@@ -125,7 +126,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 @Features.EnableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID,
-    TAB_GROUPS_FOR_TABLETS,GRID_TAB_SWITCHER_FOR_TABLETS})
+    TAB_GROUPS_FOR_TABLETS,GRID_TAB_SWITCHER_FOR_TABLETS, TAB_STRIP_IMPROVEMENTS})
 public class TabGridDialogTest {
     // clang-format on
     private static final String CUSTOMIZED_TITLE1 = "wfh tips";
@@ -562,8 +563,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    // TODO Enable for Tablets (crbug.com/1342387)
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
@@ -571,6 +570,10 @@ public class TabGridDialogTest {
     public void testSelectionEditorPosition() {
         // clang-format on;
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        // Position in portrait mode.
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+
         View parentView = cta.getCompositorViewHolderForTesting();
         createTabs(cta, false, 3);
         enterTabSwitcher(cta);
@@ -698,6 +701,7 @@ public class TabGridDialogTest {
     @DisableIf.
     Build(sdk_is_greater_than = VERSION_CODES.N_MR1, message = "https://crbug.com/1124336")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1124336")
+    @DisableIf.Device(type = UiDisableIf.TABLET)
     public void testDialogInitialShowFromStrip() throws Exception {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabsWithThumbnail(mActivityTestRule, 2, 0, "about:blank");
@@ -922,7 +926,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisableIf.Device(type = UiDisableIf.TABLET)
     @Features.EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", START_SURFACE_BASE_PARAMS + "/single"})
     public void testDialogSetup_WithStartSurface() throws Exception {
@@ -963,10 +967,10 @@ public class TabGridDialogTest {
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", START_SURFACE_BASE_PARAMS + "/single"})
-    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.M,
-            message = "crbug.com/1119899, crbug.com/1131545")
-    public void
-    testUndoClosureInDialog_WithStartSurface() throws Exception {
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.M, message = "crbug.com/1119899, crbug.com/1131545")
+    @DisableIf.Device(type = UiDisableIf.TABLET)
+    public void testUndoClosureInDialog_WithStartSurface() throws Exception {
         // Create a tab group with 2 tabs.
         finishActivity(mActivityTestRule.getActivity());
         createThumbnailBitmapAndWriteToFile(0);
@@ -1258,13 +1262,16 @@ public class TabGridDialogTest {
         View parentView = cta.findViewById(TabUiTestHelper.getTabSwitcherParentId(cta));
         Rect parentRect = new Rect();
         parentView.getGlobalVisibleRect(parentRect);
-
-        onView(isDialog ? withId(contentViewId) : withId(contentViewId)).check((v, e) -> {
+        int[] parentLoc = new int[2];
+        parentView.getLocationOnScreen(parentLoc);
+        onView(withId(contentViewId)).check((v, e) -> {
             int[] location = new int[2];
             v.getLocationOnScreen(location);
+            int relLoc0 = location[0] - parentLoc[0];
+            int relLoc1 = location[1] - parentLoc[1];
             // Check the position.
-            assertEquals(sideMargin, location[0]);
-            assertEquals(topMargin + parentRect.top, location[1]);
+            assertEquals(sideMargin, relLoc0);
+            assertEquals(topMargin, relLoc1);
             // Check the size.
             assertEquals(parentView.getHeight() - 2 * topMargin, v.getHeight());
             assertEquals(parentView.getWidth() - 2 * sideMargin, v.getWidth());

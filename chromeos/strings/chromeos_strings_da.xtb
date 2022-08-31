@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kør opladningstest</translation>
 <translation id="1631385268983122904">Du skal ikke samle enheden endnu.</translation>
-<translation id="1639239467298939599">Indlæser...</translation>
+<translation id="1639239467298939599">Indlæser</translation>
 <translation id="1641857168437328880">Dokumentindføring (én side)</translation>
 <translation id="1643449475550628585">Skift baggrundsbillede dagligt</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1645954272419197032">Bekræft enhedsoplysninger</translation>
 <translation id="1662989795263954667">Stoppet – Mangler blæk</translation>
+<translation id="1664796644829245314">Se forhåndsvisning af <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Indbygget VPN</translation>
 <translation id="1672499492233627739">Videofeed fra webcam</translation>
 <translation id="1676557873873341166">Optager video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videomøder</translation>
 <translation id="1852934301711881861">Installer ChromeOS Flex</translation>
 <translation id="1856388568474281774">Pil ned</translation>
+<translation id="1858620243986915808">Vedhæft screenshot</translation>
 <translation id="1871569928317311284">Deaktiver Mørkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Deaktiver mørk tilstand</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">Privat nøgle</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
+<translation id="8018928621986160031">Gemt i "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Download mislykkedes</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktivér tilstanden med automatisk farve</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">Ikke startet</translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Del webadresse:</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8662671328352114214">Opret forbindelse til <ph name="TYPE" />-netværk</translation>
 <translation id="8671972493856476349">Opdater til <ph name="VERSION_NUMBER" />, og genstart</translation>

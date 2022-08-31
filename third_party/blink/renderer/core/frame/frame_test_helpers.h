@@ -155,6 +155,14 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
+// Call Swap with a `new_remote_frame` stubbing out the mojo channels if
+// necessary.
+void SwapRemoteFrame(
+    WebFrame* old_frame,
+    WebRemoteFrame* new_remote_frame,
+    mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost> =
+        mojo::NullAssociatedRemote());
+
 class TestWebFrameWidgetHost : public mojom::blink::WidgetHost,
                                public mojom::blink::FrameWidgetHost {
  public:
@@ -272,6 +280,9 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   // WebFrameWidgetImpl::Resize) to set the initial size of the viewport.
   //
   void DispatchThroughCcInputHandler(const WebInputEvent& event);
+  const mojom::blink::DidOverscrollParamsPtr& last_overscroll() const {
+    return last_overscroll_;
+  }
 
   using WebFrameWidgetImpl::GetOriginalScreenInfo;
 
@@ -286,6 +297,7 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   bool ShouldAutoDetermineCompositingToLCDTextSetting() override {
     return false;
   }
+  bool AllowsScrollResampling() override { return false; }
 
  private:
   cc::FakeLayerTreeFrameSink* last_created_frame_sink_ = nullptr;
@@ -297,6 +309,7 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   std::unique_ptr<TestWidgetInputHandlerHost> widget_input_handler_host_;
   viz::FrameSinkId frame_sink_id_;
   std::unique_ptr<TestWebFrameWidgetHost> widget_host_;
+  mojom::blink::DidOverscrollParamsPtr last_overscroll_;
 };
 
 class TestWebViewClient : public WebViewClient {
@@ -601,15 +614,10 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 
   // WebRemoteFrameClient:
   void FrameDetached(DetachType) override;
-  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
-    return associated_interface_provider_.get();
-  }
 
  private:
   // If set to a non-null value, self-deletes on frame detach.
   std::unique_ptr<TestWebRemoteFrameClient> self_owned_;
-
-  std::unique_ptr<AssociatedInterfaceProvider> associated_interface_provider_;
 
   // This is null from when the client is created until it is initialized with
   // Bind().
@@ -621,6 +629,7 @@ class TestWidgetInputHandlerHost : public mojom::blink::WidgetInputHandlerHost {
   mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> BindNewRemote();
 
   void SetTouchActionFromMain(cc::TouchAction touch_action) override;
+  void SetPanAction(mojom::blink::PanAction pan_action) override;
   void DidOverscroll(mojom::blink::DidOverscrollParamsPtr params) override;
   void DidStartScrollingViewport() override;
   void ImeCancelComposition() override;

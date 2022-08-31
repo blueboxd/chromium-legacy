@@ -25,9 +25,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
@@ -36,11 +33,11 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/network_permissions_updater.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/mojom/permission_set.mojom.h"
@@ -93,6 +90,22 @@ class PermissionsUpdaterShutdownNotifierFactory
   }
   ~PermissionsUpdaterShutdownNotifierFactory() override {}
 };
+
+// Returns an URLPatternSet containing the sites that the user has indicated
+// extensions are always allowed to run on.
+URLPatternSet GetUserPermittedPatternSet(
+    content::BrowserContext& browser_context) {
+  PermissionsManager* permissions_manager =
+      PermissionsManager::Get(&browser_context);
+  URLPatternSet user_permitted_sites;
+  for (const url::Origin& origin :
+       permissions_manager->GetUserPermissionsSettings().permitted_sites) {
+    user_permitted_sites.AddOrigin(Extension::kValidHostPermissionSchemes,
+                                   origin);
+  }
+
+  return user_permitted_sites;
+}
 
 }  // namespace
 
@@ -160,8 +173,8 @@ void PermissionsUpdater::NetworkPermissionsUpdateHelper::UpdatePermissions(
   NetworkPermissionsUpdateHelper* helper = new NetworkPermissionsUpdateHelper(
       browser_context,
       base::BindOnce(&PermissionsUpdater::NotifyPermissionsUpdated,
-                     browser_context, event_type, extension,
-                     changed.Clone(), std::move(completion_callback)));
+                     browser_context, event_type, extension, changed.Clone(),
+                     std::move(completion_callback)));
 
   // After an asynchronous call below, the helper will call
   // NotifyPermissionsUpdated if the profile is still valid.
@@ -301,24 +314,52 @@ void PermissionsUpdater::RevokeOptionalPermissions(
     const PermissionSet& permissions,
     RemoveType remove_type,
     base::OnceClosure completion_callback) {
-  // TODO(devlin): Ideally, we'd have this CHECK in place, but unit tests are
-  // currently violating it.
   CHECK(PermissionsParser::GetOptionalPermissions(&extension)
             .Contains(permissions))
       << "Cannot remove optional permissions that are not "
       << "specified in the manifest.";
 
   // Revoked optional permissions are removed from granted and runtime-granted
-  // permissions only if the user, and not the extension, removed them. This
-  // allows the extension to add them again without prompting the user. They are
-  // always removed from the active set, which is the set of permissions the
-  // the extension currently requests.
+  // permissions only if the user, and not the extension, removed them (i.e.,
+  // `remove_type` == REMOVE_HARD). This allows the extension to add them again
+  // without prompting the user. They are always removed from the active set,
+  // which is the set of permissions the extension currently requests.
   int permissions_store_mask = kActivePermissions;
-  if (remove_type == REMOVE_HARD)
+  if (remove_type == REMOVE_HARD) {
     permissions_store_mask |= kGrantedPermissions | kRuntimeGrantedPermissions;
 
-  RemovePermissionsImpl(extension, permissions, permissions_store_mask,
-                        permissions, std::move(completion_callback));
+    // We don't allow the hard-removal of user-permitted sites on a per-
+    // extension basis. Instead, these permissions must be removed by removing
+    // the user-permitted site entry. If this changes, we'll need to adjust
+    // this to add back these sites, as we do in RevokeRuntimePermissions().
+#if DCHECK_IS_ON()
+    URLPatternSet user_permitted_sites =
+        GetUserPermittedPatternSet(*browser_context_);
+    PermissionSet user_permitted_set(
+        APIPermissionSet(), ManifestPermissionSet(),
+        user_permitted_sites.Clone(), user_permitted_sites.Clone());
+    std::unique_ptr<const PermissionSet> user_permitted_being_removed =
+        PermissionSet::CreateIntersection(
+            permissions, user_permitted_set,
+            URLPatternSet::IntersectionBehavior::kDetailed);
+    DCHECK(user_permitted_being_removed->effective_hosts().is_empty())
+        << "Attempting to hard-remove optional permission to user-permitted "
+           "sites: "
+        << user_permitted_being_removed->effective_hosts();
+#endif
+  }
+
+  // Revoking optional permissions is usually done by the extension, so we allow
+  // revoking user-permitted sites (the extension can opt-out of having
+  // permissions). So in this case, the new active permissions are simply the
+  // current active minus any revoked permissions.
+  std::unique_ptr<const PermissionSet> new_active_permissions =
+      PermissionSet::CreateDifference(
+          extension.permissions_data()->active_permissions(), permissions);
+
+  RemovePermissionsImpl(extension, std::move(new_active_permissions),
+                        permissions, permissions_store_mask,
+                        std::move(completion_callback));
 }
 
 void PermissionsUpdater::RevokeRuntimePermissions(
@@ -331,34 +372,16 @@ void PermissionsUpdater::RevokeRuntimePermissions(
   // only has https://maps.google.com/*.
   const PermissionSet& active =
       extension.permissions_data()->active_permissions();
+
   // Unlike adding permissions, we should know that any permissions we remove
   // are a superset of the permissions the extension has active (because we only
   // allow removal origins and the extension can't have a broader origin than
-  // what it has granted).
+  // what it has granted). Because of this, we can just look for any patterns
+  // contained in both sets.
   std::unique_ptr<const PermissionSet> active_permissions_to_remove =
       PermissionSet::CreateIntersection(
           active, permissions,
           URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth);
-  // One exception: If we're revoking a permission like "<all_urls>", we need
-  // to make sure it doesn't revoke the included chrome://favicon permission.
-  std::set<URLPattern> removable_explicit_hosts;
-  bool needs_adjustment = false;
-  for (const auto& pattern : active_permissions_to_remove->explicit_hosts()) {
-    bool is_chrome_favicon = pattern.scheme() == content::kChromeUIScheme &&
-                             pattern.host() == chrome::kChromeUIFaviconHost;
-    if (is_chrome_favicon)
-      needs_adjustment = true;
-    else
-      removable_explicit_hosts.insert(pattern);
-  }
-  if (needs_adjustment) {
-    // Tedious, because PermissionSets are const. :(
-    active_permissions_to_remove = std::make_unique<PermissionSet>(
-        active_permissions_to_remove->apis().Clone(),
-        active_permissions_to_remove->manifest_permissions().Clone(),
-        URLPatternSet(removable_explicit_hosts),
-        active_permissions_to_remove->scriptable_hosts().Clone());
-  }
 
   CHECK(extension.permissions_data()->active_permissions().Contains(
       *active_permissions_to_remove))
@@ -366,14 +389,61 @@ void PermissionsUpdater::RevokeRuntimePermissions(
   CHECK(GetRevokablePermissions(&extension)->Contains(permissions))
       << "Cannot remove non-revokable permissions.";
 
-  // Removing runtime-granted permissions does not remove permissions from
-  // the granted permissions store. This is done to ensure behavior taken with
-  // the runtime host permissions feature is confined to when the experiment is
-  // enabled. Similarly, since the runtime-granted permissions were never added
-  // to the active permissions stored in prefs, they are also not removed.
+  // Calculate a set of permissions to keep active on the extension, even if
+  // they were included in the removal set. This includes chrome://favicon
+  // (which would be included in `active_permissions_to_remove` if the removal
+  // set is <all_urls>) and any sites the user indicated all extensions may
+  // always run on.
+  std::unique_ptr<const PermissionSet> permissions_to_keep;
+  {
+    URLPatternSet explicit_hosts;
+    URLPatternSet scriptable_hosts;
+
+    // Don't allow removing chrome://favicon, if it was previously granted.
+    for (const auto& pattern : active_permissions_to_remove->explicit_hosts()) {
+      bool is_chrome_favicon = pattern.scheme() == content::kChromeUIScheme &&
+                               pattern.host() == chrome::kChromeUIFaviconHost;
+      if (is_chrome_favicon) {
+        explicit_hosts.AddPattern(pattern);
+        break;
+      }
+    }
+
+    // If the corresponding feature is enabled, add in user-permitted sites.
+    if (base::FeatureList::IsEnabled(
+            extensions_features::kExtensionsMenuAccessControl)) {
+      URLPatternSet always_permitted_set =
+          GetUserPermittedPatternSet(*browser_context_);
+      explicit_hosts.AddPatterns(always_permitted_set);
+      scriptable_hosts.AddPatterns(always_permitted_set);
+    }
+
+    PermissionSet permitted_set(APIPermissionSet(), ManifestPermissionSet(),
+                                std::move(explicit_hosts),
+                                std::move(scriptable_hosts));
+
+    permissions_to_keep = PermissionSet::CreateIntersection(
+        *active_permissions_to_remove, permitted_set,
+        URLPatternSet::IntersectionBehavior::kDetailed);
+  }
+
+  // Calculate the new set of active permissions. This is the current
+  // permissions minus the permissions to remove, but then adding back in any
+  // of the permissions we've explicitly identified as those we should keep.
+  std::unique_ptr<const PermissionSet> new_active_permissions =
+      PermissionSet::CreateDifference(active, *active_permissions_to_remove);
+  new_active_permissions =
+      PermissionSet::CreateUnion(*new_active_permissions, *permissions_to_keep);
+
+  // Runtime permissions have a separate store in prefs.
+  // Note that we remove all the permissions in `permissions` from
+  // runtime-granted permissions. User-permitted sites are granted
+  // separately, and not considered runtime-granted permissions. This ensures
+  // that when a user changes a site from permitted to non-permitted or vice
+  // versa, and extension's specific stored permissions are unaffected.
   constexpr int permissions_store_mask = kRuntimeGrantedPermissions;
-  RemovePermissionsImpl(extension, *active_permissions_to_remove,
-                        permissions_store_mask, permissions,
+  RemovePermissionsImpl(extension, std::move(new_active_permissions),
+                        permissions, permissions_store_mask,
                         std::move(completion_callback));
 }
 
@@ -442,8 +512,10 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
   // by enterprise policy, we should not update the active permissions set in
   // preferences. That way, if the enterprise policy is changed, the removed
   // permissions would be re-added.
-  constexpr bool update_active_prefs = true;
-  SetPermissions(extension, std::move(total), update_active_prefs);
+  ExtensionPrefs::Get(browser_context_)
+      ->SetDesiredActivePermissions(extension->id(), *total);
+
+  SetPermissions(extension, std::move(total));
   NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, REMOVED, extension, *successfully_removed,
       base::DoNothing());
@@ -495,7 +567,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   } else {
     desired_permissions_wrapper =
         PermissionsManager::Get(browser_context_)
-            ->GetExtensionDesiredPermissionsFromPrefs(*extension);
+            ->GetBoundedExtensionDesiredPermissions(*extension);
     desired_permissions = desired_permissions_wrapper.get();
   }
 
@@ -506,9 +578,18 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   if (GetDelegate())
     GetDelegate()->InitializePermissions(extension, &granted_permissions);
 
-  bool update_active_permissions = false;
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
-    update_active_permissions = true;
+    // Set the desired permissions in prefs.
+    // - For new installs, this initializes the desired active permissions.
+    // - For updates, this ensures the desired active permissions contain any
+    //   newly-added permissions and removes any no-longer-requested
+    //   permissions.
+    // - For pref corruption, this resets the prefs to a sane state.
+    // - This also resets prefs from https://crbug.com/1343643, in which
+    //   desired active permissions may not have included all required
+    //   permissions.
+    ExtensionPrefs::Get(browser_context_)
+        ->SetDesiredActivePermissions(extension->id(), *desired_permissions);
 
     extension->permissions_data()->SetContextId(
         util::GetBrowserContextId(browser_context_));
@@ -517,8 +598,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
     ApplyPolicyHostRestrictions(*extension);
   }
 
-  SetPermissions(extension, std::move(granted_permissions),
-                 update_active_permissions);
+  SetPermissions(extension, std::move(granted_permissions));
 }
 
 void PermissionsUpdater::AddPermissionsForTesting(
@@ -530,8 +610,7 @@ void PermissionsUpdater::AddPermissionsForTesting(
 
 void PermissionsUpdater::SetPermissions(
     const Extension* extension,
-    std::unique_ptr<const PermissionSet> new_active,
-    bool update_prefs) {
+    std::unique_ptr<const PermissionSet> new_active) {
   // Calculate the withheld permissions as any permissions that were required,
   // but are not in the active set.
   const PermissionSet& required =
@@ -556,13 +635,6 @@ void PermissionsUpdater::SetPermissions(
 
   extension->permissions_data()->SetPermissions(std::move(new_active),
                                                 std::move(new_withheld));
-
-  if (update_prefs) {
-    ExtensionPrefs::Get(browser_context_)
-        ->SetActivePermissions(
-            extension->id(),
-            extension->permissions_data()->active_permissions());
-  }
 }
 
 // static
@@ -572,7 +644,8 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     scoped_refptr<const Extension> extension,
     std::unique_ptr<const PermissionSet> changed,
     base::OnceClosure completion_callback) {
-  if (changed->IsEmpty() && event_type != POLICY) {
+  if ((changed->IsEmpty() && event_type != POLICY) ||
+      browser_context->ShutdownStarted()) {
     std::move(completion_callback).Run();
     return;
   }
@@ -598,10 +671,8 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   // Notify other APIs or interested parties.
   UpdatedExtensionPermissionsInfo info =
       UpdatedExtensionPermissionsInfo(extension.get(), *changed, reason);
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-      content::Source<Profile>(profile),
-      content::Details<UpdatedExtensionPermissionsInfo>(&info));
+  PermissionsManager::Get(browser_context)
+      ->NotifyExtensionPermissionsUpdated(info);
 
   // Send the new permissions to the renderers.
   for (RenderProcessHost::iterator host_iterator(
@@ -676,27 +747,28 @@ void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
 void PermissionsUpdater::AddPermissionsImpl(
     const Extension& extension,
     const PermissionSet& active_permissions_to_add,
-    int permissions_store_mask,
-    const PermissionSet& prefs_permissions_to_add,
+    int prefs_permissions_store_mask,
+    const PermissionSet& permissions_to_add_to_prefs,
     base::OnceClosure completion_callback) {
   std::unique_ptr<const PermissionSet> new_active = PermissionSet::CreateUnion(
       active_permissions_to_add,
       extension.permissions_data()->active_permissions());
 
-  bool update_active_prefs = (permissions_store_mask & kActivePermissions) != 0;
-  SetPermissions(&extension, std::move(new_active), update_active_prefs);
+  SetPermissions(&extension, std::move(new_active));
 
-  if ((permissions_store_mask & kGrantedPermissions) != 0) {
-    // TODO(devlin): Could we only grant |permissions|, rather than all those
-    // in the active permissions? In theory, all other active permissions have
-    // already been granted.
-    GrantActivePermissions(&extension);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+  if ((prefs_permissions_store_mask & kActivePermissions) != 0) {
+    prefs->AddDesiredActivePermissions(extension.id(),
+                                       permissions_to_add_to_prefs);
   }
 
-  if ((permissions_store_mask & kRuntimeGrantedPermissions) != 0) {
-    ExtensionPrefs::Get(browser_context_)
-        ->AddRuntimeGrantedPermissions(extension.id(),
-                                       prefs_permissions_to_add);
+  if ((prefs_permissions_store_mask & kGrantedPermissions) != 0) {
+    prefs->AddGrantedPermissions(extension.id(), permissions_to_add_to_prefs);
+  }
+
+  if ((prefs_permissions_store_mask & kRuntimeGrantedPermissions) != 0) {
+    prefs->AddRuntimeGrantedPermissions(extension.id(),
+                                        permissions_to_add_to_prefs);
   }
 
   NetworkPermissionsUpdateHelper::UpdatePermissions(
@@ -706,33 +778,35 @@ void PermissionsUpdater::AddPermissionsImpl(
 
 void PermissionsUpdater::RemovePermissionsImpl(
     const Extension& extension,
-    const PermissionSet& active_permissions_to_remove,
-    int permissions_store_mask,
-    const PermissionSet& prefs_permissions_to_remove,
+    std::unique_ptr<const PermissionSet> new_active_permissions,
+    const PermissionSet& permissions_to_remove_from_prefs,
+    int prefs_permissions_store_mask,
     base::OnceClosure completion_callback) {
-  std::unique_ptr<const PermissionSet> new_active =
-      PermissionSet::CreateDifference(
-          extension.permissions_data()->active_permissions(),
-          active_permissions_to_remove);
-
-  bool update_active_prefs = (permissions_store_mask & kActivePermissions) != 0;
-  SetPermissions(&extension, std::move(new_active), update_active_prefs);
+  SetPermissions(&extension, std::move(new_active_permissions));
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+  if ((prefs_permissions_store_mask & kActivePermissions) != 0) {
+    prefs->RemoveDesiredActivePermissions(extension.id(),
+                                          permissions_to_remove_from_prefs);
+  }
+
   // NOTE: Currently, this code path is only reached in unit tests. See comment
   // above REMOVE_HARD in the header file.
-  if ((permissions_store_mask & kGrantedPermissions) != 0) {
+  if ((prefs_permissions_store_mask & kGrantedPermissions) != 0) {
     prefs->RemoveGrantedPermissions(extension.id(),
-                                    prefs_permissions_to_remove);
+                                    permissions_to_remove_from_prefs);
   }
 
-  if ((permissions_store_mask & kRuntimeGrantedPermissions) != 0) {
+  if ((prefs_permissions_store_mask & kRuntimeGrantedPermissions) != 0) {
     prefs->RemoveRuntimeGrantedPermissions(extension.id(),
-                                           prefs_permissions_to_remove);
+                                           permissions_to_remove_from_prefs);
   }
 
+  // For the notification, we consider the changed set to be the set of
+  // permissions to remove from preferences, rather than the new active
+  // permissions (which can include things like user-permitted sites).
   NetworkPermissionsUpdateHelper::UpdatePermissions(
-      browser_context_, REMOVED, &extension, active_permissions_to_remove,
+      browser_context_, REMOVED, &extension, permissions_to_remove_from_prefs,
       std::move(completion_callback));
 }
 

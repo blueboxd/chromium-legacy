@@ -14,6 +14,7 @@
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapk/webapk_icon_hasher.h"
 #include "components/webapps/browser/android/webapk/webapk_types.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -28,6 +29,7 @@ namespace webapps {
 // splash icon URL is unknown.
 std::unique_ptr<std::string> BuildProtoInBackground(
     const webapps::ShortcutInfo& shortcut_info,
+    const GURL& app_key,
     const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
     const std::string& splash_icon_data,
@@ -42,6 +44,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
 // Runs |callback| on the calling thread when complete.
 void BuildProto(
     const webapps::ShortcutInfo& shortcut_info,
+    const GURL& app_key,
     const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
     const std::string& splash_icon_data,
@@ -59,6 +62,7 @@ void BuildProto(
 bool StoreUpdateRequestToFileInBackground(
     const base::FilePath& update_request_path,
     const webapps::ShortcutInfo& shortcut_info,
+    const GURL& app_key,
     const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
     const std::string& splash_icon_data,

@@ -66,6 +66,7 @@
 <translation id="2139300032719313227">Reiniciar Chrome OS</translation>
 <translation id="2151406531797534936">Reinicia Chrome ahora</translation>
 <translation id="2174917724755363426">No se completó la instalación. ¿Confirmas que quieres cancelarla?</translation>
+<translation id="223889379102603431">Información sobre cómo administra Chrome sus certificados raíz.</translation>
 <translation id="2258103955319320201">A fin de ver el contenido de tu navegador Chrome en todos tus dispositivos, accede a tu cuenta y activa la sincronización</translation>
 <translation id="2290014774651636340">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Google Chrome.</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
@@ -78,6 +79,7 @@
 <translation id="2401189691232800402">Sistema de Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome desea exportar tus contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
+<translation id="2494974097748878569">Asistente de Google en Chrome</translation>
 <translation id="2534507159460261402">Google Pay (copiada en Chrome)</translation>
 <translation id="2559253115192232574">Luego, los sitios que visites pueden consultar tus intereses con Chrome para personalizar los anuncios que te muestran. Chrome puede compartir hasta 3 intereses.</translation>
 <translation id="2563121210305478421">¿Quieres reiniciar Chrome?</translation>
@@ -156,6 +158,7 @@
 <translation id="3865754807470779944">Se instaló la versión de Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Abrir vínculo en una ventana de navegación de incó&amp;gnito de Chrome</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
+<translation id="3999683152997576765">Puedes ver y quitar los temas de interés que usan los sitios para mostrarte anuncios. Chrome estima tus intereses en función de tu historial de navegación reciente.</translation>
 <translation id="4035053306113201399">Chrome OS debe reiniciarse para que se aplique la actualización.</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personalizar y controlar Google Chrome</translation>
@@ -274,6 +277,7 @@
 <translation id="6739177684496155661">¿Deseas continuar en un nuevo perfil de Chrome?</translation>
 <translation id="6750954913813541382">Para corregir los errores ortográficos, Chrome envía a Google lo que escribes en el navegador</translation>
 <translation id="677276454032249905">¿Deseas salir de Chrome de todos modos?</translation>
+<translation id="6785872064505734160">El Asistente de Google en Chrome puede completar acciones por ti en diferentes sitios web</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
 <translation id="6881299373831449287">Actualizando Chrome</translation>
 <translation id="6885412569789873916">Apps de Chrome Beta</translation>
@@ -288,7 +292,7 @@
 Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web y apps. Puedes administrar tus Cuentas de Google en <ph name="SETTINGS_LINK_BEGIN" />Configuración<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7062128746136194023">Tu padre o madre desactivaron la opción "Permisos para sitios, apps y extensiones" para Chrome. No se permite agregar esta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="7085332316435785646">Elige si quieres incluir el historial de Chrome para tener experiencias más personalizadas en los servicios de Google</translation>
-<translation id="7088681679121566888">Chrome está actualizado</translation>
+<translation id="7088681679121566888">Chrome está actualizado.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
 <translation id="7099479769133613710">Reiniciar para actualizar Chrome OS</translation>
 <translation id="7106741999175697885">Administrador de tareas - Google Chrome</translation>
@@ -346,6 +350,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>
+<translation id="8270775718612349140">Certificados administrados por Chrome</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="828798499196665338">Tu padre o madre desactivaron la opción "Permisos para sitios, apps y extensiones" para Chrome. No se permite habilitar esta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>

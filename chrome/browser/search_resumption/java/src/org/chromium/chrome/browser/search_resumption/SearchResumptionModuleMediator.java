@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.search_resumption;
 
-import android.view.View;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
@@ -14,106 +13,197 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.search_resumption.SearchResumptionModuleUtils.ModuleNotShownReason;
+import org.chromium.chrome.browser.search_resumption.SearchResumptionUserData.SuggestionResult;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
 /**
  * This class holds querying search suggestions related business logic.
  */
-public class SearchResumptionModuleMediator
-        implements OnSuggestionsReceivedListener, SignInStateObserver {
-    static final String ACTION_CLICK = "SearchResumptionModule.NTP.Click";
-    private static final String ACTION_SHOW = "SearchResumptionModule.NTP.Show";
-
+public class SearchResumptionModuleMediator implements OnSuggestionsReceivedListener,
+                                                       SignInStateObserver,
+                                                       SyncService.SyncStateChangedListener {
     private final ViewStub mStub;
     private final Tab mTabToTrackSuggestion;
+    private final Tab mCurrentTab;
     private final SearchResumptionTileBuilder mTileBuilder;
     private final SigninManager mSignInManager;
+    private final SyncService mSyncService;
     private AutocompleteController mAutoComplete;
-    private SearchResumptionContainerView mSuggestionTilesContainerView;
+    private PropertyModel mModel;
+    // Set the default values of these variable true since all of them have been checked before
+    // creating the coordinator in SearchResumptionModuleUtils#shouldShowSearchResumptionModule.
+    private boolean mIsDefaultSearchEngineGoogle = true;
+    private boolean mIsSignedIn = true;
+    private boolean mHasKeepEverythingSynced = true;
+    private boolean mUseNewServiceEnabled;
 
-    private @Nullable View mModuleLayoutView;
+    private @Nullable SearchResumptionModuleView mModuleLayoutView;
+    private @Nullable SearchResumptionModuleBridge mSearchResumptionModuleBridge;
 
-    SearchResumptionModuleMediator(ViewStub moduleStub, Tab tabToTrack, Profile profile,
-            SearchResumptionTileBuilder tileBuilder) {
+    SearchResumptionModuleMediator(ViewStub moduleStub, Tab tabToTrack, Tab currentTab,
+            Profile profile, SearchResumptionTileBuilder tileBuilder,
+            SuggestionResult cachedSuggestions) {
         mStub = moduleStub;
         mTabToTrackSuggestion = tabToTrack;
+        mCurrentTab = currentTab;
         mTileBuilder = tileBuilder;
-        start(profile);
+        mUseNewServiceEnabled = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.SEARCH_RESUMPTION_MODULE_ANDROID,
+                SearchResumptionModuleUtils.USE_NEW_SERVICE_PARAM, false);
+
+        if (cachedSuggestions != null) {
+            showCachedSuggestions(cachedSuggestions);
+        } else {
+            start(profile);
+        }
         mSignInManager = IdentityServicesProvider.get().getSigninManager(profile);
         mSignInManager.addSignInStateObserver(this);
+        mSyncService = SyncService.get();
+        mSyncService.addSyncStateChangedListener(this);
         TemplateUrlServiceFactory.get().addObserver(this::onTemplateURLServiceChanged);
     }
 
     @Override
     public void onSuggestionsReceived(
             AutocompleteResult autocompleteResult, String inlineAutocompleteText, boolean isFinal) {
-        if (!isFinal || mModuleLayoutView != null
-                || !shouldShowSuggestionModule(autocompleteResult.getSuggestionsList())) {
+        if (!isFinal || mModel != null) return;
+
+        if (!shouldShowSuggestionModule(autocompleteResult.getSuggestionsList())) {
+            SearchResumptionModuleUtils.recordModuleNotShownReason(
+                    ModuleNotShownReason.NOT_ENOUGH_RESULT);
             return;
         }
-        showSearchSuggestionModule(autocompleteResult);
+
+        showSearchSuggestionModule(
+                autocompleteResult.getSuggestionsList(), false /* useCachedResults */);
+    }
+
+    /**
+     * SyncService.SyncStateChangedListener implementation, listens to sync state changes.
+     */
+    @Override
+    public void syncStateChanged() {
+        mHasKeepEverythingSynced = mSyncService.hasKeepEverythingSynced();
+        updateVisbility();
     }
 
     @Override
     public void onSignedIn() {
-        setVisibility(true);
+        mIsSignedIn = true;
+        updateVisbility();
     }
 
     @Override
     public void onSignedOut() {
-        setVisibility(false);
+        mIsSignedIn = false;
+        updateVisbility();
+    }
+
+    /**
+     * Called when the search suggestions are available using the new service API.
+     * @param suggestionTexts The display texts of the suggestions.
+     * @param suggestionUrls The URLs of the suggestions.
+     */
+    void onSuggestionsAvailable(String[] suggestionTexts, GURL[] suggestionUrls) {
+        if (mModel != null) return;
+
+        if (!shouldShowSuggestionModule(suggestionUrls, suggestionTexts)) {
+            SearchResumptionModuleUtils.recordModuleNotShownReason(
+                    ModuleNotShownReason.NOT_ENOUGH_RESULT);
+            return;
+        }
+
+        showSearchSuggestionModule(suggestionTexts, suggestionUrls, false /* useCachedResults */);
     }
 
     /**
      * Inflates the search_resumption_layout and shows the suggestions on the module.
-     * @param autocompleteResult The suggestions to show on the module.
+     * @param autocompleteMatches The suggestions to show on the module.
      */
-    void showSearchSuggestionModule(AutocompleteResult autocompleteResult) {
-        if (mModuleLayoutView != null) return;
+    void showSearchSuggestionModule(
+            List<AutocompleteMatch> autocompleteMatches, boolean useCachedResults) {
+        if (!initializeModule()) return;
 
-        mModuleLayoutView = mStub.inflate();
-        mSuggestionTilesContainerView =
-                mModuleLayoutView.findViewById(R.id.search_resumption_module_tiles_container);
-        mTileBuilder.buildSuggestionTile(
-                autocompleteResult.getSuggestionsList(), mSuggestionTilesContainerView);
+        mTileBuilder.buildSuggestionTile(autocompleteMatches,
+                mModuleLayoutView.findViewById(R.id.search_resumption_module_tiles_container));
+        SearchResumptionModuleUtils.recordModuleShown(useCachedResults);
+        if (!useCachedResults) {
+            SearchResumptionUserData.getInstance().cacheSuggestions(
+                    mCurrentTab, mTabToTrackSuggestion.getUrl(), autocompleteMatches);
+        }
+    }
 
-        mModuleLayoutView.setVisibility(View.VISIBLE);
-        RecordUserAction.record(ACTION_SHOW);
+    /**
+     * Inflates the search_resumption_layout and shows the suggestions on the module.
+     */
+    void showSearchSuggestionModule(String[] texts, GURL[] urls, boolean useCachedResults) {
+        if (!initializeModule()) return;
+
+        mTileBuilder.buildSuggestionTile(texts, urls,
+                mModuleLayoutView.findViewById(R.id.search_resumption_module_tiles_container));
+        SearchResumptionModuleUtils.recordModuleShown(useCachedResults);
+        if (!useCachedResults) {
+            SearchResumptionUserData.getInstance().cacheSuggestions(
+                    mCurrentTab, mTabToTrackSuggestion.getUrl(), texts, urls);
+        }
     }
 
     void destroy() {
-        mAutoComplete.removeOnSuggestionsReceivedListener(this);
-        if (mSuggestionTilesContainerView != null) {
-            mSuggestionTilesContainerView.destroy();
+        if (mAutoComplete != null) {
+            mAutoComplete.removeOnSuggestionsReceivedListener(this);
+        }
+        if (mModuleLayoutView != null) {
+            mModuleLayoutView.destroy();
+        }
+        if (mSearchResumptionModuleBridge != null) {
+            mSearchResumptionModuleBridge.destroy();
         }
         TemplateUrlServiceFactory.get().removeObserver(this::onTemplateURLServiceChanged);
         mSignInManager.removeSignInStateObserver(this);
+        mSyncService.removeSyncStateChangedListener(this);
     }
 
     /**
      * Starts the querying the search suggestions based on the Tab to track.
      */
     private void start(Profile profile) {
-        if (!ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.SEARCH_RESUMPTION_MODULE_ANDROID,
-                    SearchResumptionModuleUtils.USE_NEW_SERVICE_PARAM, false)) {
+        if (!mUseNewServiceEnabled) {
             mAutoComplete = AutocompleteController.getForProfile(profile);
             mAutoComplete.addOnSuggestionsReceivedListener(this);
             int pageClassification = getPageClassification();
             mAutoComplete.startZeroSuggest("", mTabToTrackSuggestion.getUrl().getSpec(),
                     pageClassification, mTabToTrackSuggestion.getTitle());
         } else {
-            // TODO(hanxi): Switches to use a new KeyedService instead of Autocomplete API.
+            mSearchResumptionModuleBridge = new SearchResumptionModuleBridge(profile);
+            mSearchResumptionModuleBridge.fetchSuggestions(
+                    mTabToTrackSuggestion.getUrl().getSpec(), this::onSuggestionsAvailable);
+        }
+    }
+
+    private void showCachedSuggestions(SuggestionResult cachedSuggestions) {
+        if (mUseNewServiceEnabled) {
+            showSearchSuggestionModule(cachedSuggestions.getSuggestionTexts(),
+                    cachedSuggestions.getSuggestionUrls(), true /* useCachedResults */);
+        } else {
+            showSearchSuggestionModule(
+                    cachedSuggestions.getSuggestions(), true /* useCachedResults */);
         }
     }
 
@@ -149,14 +239,66 @@ public class SearchResumptionModuleMediator
         return false;
     }
 
-    private void setVisibility(boolean isVisible) {
-        if (mModuleLayoutView == null) return;
+    /**
+     * Returns whether to show the search resumption module. Only showing the module if at least
+     * {@link SearchResumptionTileBuilder#MAX_TILES_NUMBER} -1 suggestions are given.
+     */
+    private boolean shouldShowSuggestionModule(GURL[] urls, String[] texts) {
+        if (urls.length != texts.length
+                || urls.length < SearchResumptionTileBuilder.MAX_TILES_NUMBER - 1) {
+            return false;
+        }
 
-        mModuleLayoutView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        int count = 0;
+        for (int i = 0; i < urls.length; i++) {
+            if (SearchResumptionTileBuilder.isSuggestionValid(texts[i])) {
+                count++;
+            }
+            if (count >= SearchResumptionTileBuilder.MAX_TILES_NUMBER - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Inflates the module and initializes the property model.
+     * @return Whether the module is inflated.
+     */
+    private boolean initializeModule() {
+        if (mModel != null) return false;
+
+        mModuleLayoutView = (SearchResumptionModuleView) mStub.inflate();
+        mModel = new PropertyModel(SearchResumptionModuleProperties.ALL_KEYS);
+        PropertyModelChangeProcessor.create(
+                mModel, mModuleLayoutView, new SearchResumptionModuleViewBinder());
+        mModel.set(SearchResumptionModuleProperties.EXPAND_COLLAPSE_CLICK_CALLBACK,
+                this::onExpandedOrCollapsed);
+        return true;
+    }
+
+    private void updateVisbility() {
+        if (mModel != null) {
+            mModel.set(SearchResumptionModuleProperties.IS_VISIBLE,
+                    mIsDefaultSearchEngineGoogle && mIsSignedIn && mHasKeepEverythingSynced);
+        }
+    }
+
+    /**
+     * Saves the user's choice of expanding/collapsing of the suggestions in the SharedPreference.
+     */
+    @VisibleForTesting
+    void onExpandedOrCollapsed(Boolean expanded) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.SEARCH_RESUMPTION_MODULE_COLLAPSE_ON_NTP, !expanded);
+        RecordUserAction.record(expanded ? SearchResumptionModuleUtils.ACTION_EXPAND
+                                         : SearchResumptionModuleUtils.ACTION_COLLAPSE);
     }
 
     @VisibleForTesting
     void onTemplateURLServiceChanged() {
-        setVisibility(TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+        mIsDefaultSearchEngineGoogle =
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
+        updateVisbility();
     }
 }

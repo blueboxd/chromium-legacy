@@ -40,6 +40,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -138,6 +139,18 @@ Page* CreatePage(ChromeClient& chrome_client, WebViewImpl& opener_web_view) {
       main_settings.GetPreferredColorScheme());
   page->GetSettings().SetForceDarkModeEnabled(
       main_settings.GetForceDarkModeEnabled());
+
+  const MediaFeatureOverrides* media_feature_overrides =
+      opener_web_view.GetPage()->GetMediaFeatureOverrides();
+  if (media_feature_overrides &&
+      media_feature_overrides->GetPreferredColorScheme().has_value()) {
+    page->SetMediaFeatureOverride(
+        "prefers-color-scheme",
+        media_feature_overrides->GetPreferredColorScheme().value() ==
+                mojom::blink::PreferredColorScheme::kDark
+            ? "dark"
+            : "light");
+  }
   return page;
 }
 
@@ -219,14 +232,13 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->widget_base_->RequestAnimationAfterDelay(delay);
   }
 
-  void AttachCompositorAnimationTimeline(cc::AnimationTimeline* timeline,
-                                         LocalFrame*) override {
-    popup_->widget_base_->AnimationHost()->AddAnimationTimeline(timeline);
+  cc::AnimationHost* GetCompositorAnimationHost(LocalFrame&) const override {
+    return popup_->widget_base_->AnimationHost();
   }
 
-  void DetachCompositorAnimationTimeline(cc::AnimationTimeline* timeline,
-                                         LocalFrame*) override {
-    popup_->widget_base_->AnimationHost()->RemoveAnimationTimeline(timeline);
+  cc::AnimationTimeline* GetScrollAnimationTimeline(
+      LocalFrame&) const override {
+    return popup_->widget_base_->ScrollAnimationTimeline();
   }
 
   const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override {
@@ -396,7 +408,7 @@ WebPagePopupImpl::WebPagePopupImpl(
   if (AXObjectCache* cache = frame->GetDocument()->ExistingAXObjectCache())
     cache->ChildrenChanged(&popup_client_->OwnerElement());
 
-  page_->AnimationHostInitialized(*widget_base_->AnimationHost(), nullptr);
+  page_->DidInitializeCompositing(*widget_base_->AnimationHost());
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -562,7 +574,7 @@ void WebPagePopupImpl::Update() {
 }
 
 void WebPagePopupImpl::DestroyPage() {
-  page_->WillCloseAnimationHost(nullptr);
+  page_->WillStopCompositing();
   page_->WillBeDestroyed();
   page_.Clear();
 }

@@ -21,7 +21,6 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
 
   // RendererScheduler implementation.
   std::unique_ptr<Thread> CreateMainThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
   WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
@@ -32,7 +31,6 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
 #endif
-  bool IsHighPriorityWorkAnticipated() override;
   void Shutdown() override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;

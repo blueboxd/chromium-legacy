@@ -48,7 +48,7 @@ class BASE_EXPORT WorkQueue {
   // Assigns the current set index.
   void AssignSetIndex(size_t work_queue_set_index);
 
-  Value AsValue(TimeTicks now) const;
+  Value::List AsValue(TimeTicks now) const;
 
   // Returns true if the |tasks_| is empty. This method ignores any fences.
   bool Empty() const { return tasks_.empty(); }
@@ -163,7 +163,29 @@ class BASE_EXPORT WorkQueue {
   void CollectTasksOlderThan(TaskOrder reference,
                              std::vector<const Task*>* result) const;
 
+  // This is for an experiment where we try different WorkQueue capacities
+  // when deleting tasks in RemoveAllCanceledTasksFromFront() (see
+  // crbug.com/1347892). Tests spawn threads around the time FeatureList is
+  // initialized, which creates race conditions as WorkQueue is trying to read
+  // the Feature while threads spawn. To solve this, we store the value of the
+  // Feature in a std::atomic<bool> and initialize it once in SetInstance(), and
+  // read this atomic value instead of calling IsEnabled().
+  static void ConfigureCapacityFieldTrial();
+  static bool IsDifferentWorkQueueCapacitiesEnabled();
+
  private:
+  enum StackCapacity : size_t {
+    kSmall = 4,
+    kMedium = 16,
+    kLarge = 24,
+    kDefault = 8,
+  };
+
+  static size_t GetStackCapacityChoice();
+
+  template <size_t stack_capacity>
+  bool RemoveAllCancelledTasksFromFrontImpl();
+
   bool InsertFenceImpl(Fence fence);
 
   TaskQueueImpl::TaskDeque tasks_;

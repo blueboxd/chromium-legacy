@@ -63,19 +63,15 @@ if (optimize_webui) {
 preprocess_if_expr("preprocess") {
   defines = chrome_grit_defines
   out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = ts_files
+  in_files = ts_files + html_files + icons_html_files + css_files
 }
 
 preprocess_if_expr("preprocess_generated") {
   defines = chrome_grit_defines
-  deps = [
-    ":css_wrapper_files",
-    ":css_wrapper_files_old",
-    ":html_wrapper_files",
-  ]
+  deps = [ ":css_wrapper_files_old" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = html_wrapper_files + css_wrapper_files + css_wrapper_files_old
+  in_files = css_wrapper_files_old
 }
 
 grit("resources") {
@@ -106,49 +102,7 @@ if (is_chromeos_ash) {
   js_type_check("closure_compile_local") {
     is_polymer3 = true
     closure_flags = settings_closure_flags
-    deps = [
-      ":extension_control_browser_proxy",
-      ":i18n_setup",
-      ":lifetime_browser_proxy",
-      ":router",
-      ":setting_id_param_util",
-      ":settings",
-    ]
-  }
-
-  js_library("settings") {
-    sources =
-        [ "$root_gen_dir/chrome/browser/resources/settings/tsc/settings.js" ]
-    deps = [
-      ":i18n_setup",
-      ":lifetime_browser_proxy",
-    ]
-    extra_deps = [ ":build_ts" ]
-  }
-
-  js_library("extension_control_browser_proxy") {
-    sources = [ "$root_gen_dir/chrome/browser/resources/settings/tsc/extension_control_browser_proxy.js" ]
-    deps = [ "//ui/webui/resources/js:cr.m" ]
-    externs_list = [ "$externs_path/chrome_send.js" ]
-    extra_deps = [ ":build_ts" ]
-  }
-
-  js_library("i18n_setup") {
-    sources =
-        [ "$root_gen_dir/chrome/browser/resources/settings/tsc/i18n_setup.js" ]
-    deps = [ "//ui/webui/resources/js:load_time_data.m" ]
-    extra_deps = [ ":build_ts" ]
-  }
-
-  js_library("lifetime_browser_proxy") {
-    sources = [ "$root_gen_dir/chrome/browser/resources/settings/tsc/lifetime_browser_proxy.js" ]
-    deps = [ "//ui/webui/resources/js:cr.m" ]
-    extra_deps = [ ":build_ts" ]
-  }
-
-  js_library("open_window_proxy") {
-    sources = [ "$root_gen_dir/chrome/browser/resources/settings/tsc/open_window_proxy.js" ]
-    extra_deps = [ ":build_ts" ]
+    deps = [ ":router" ]
   }
 
   js_library("router") {
@@ -158,15 +112,6 @@ if (is_chromeos_ash) {
     ]
     externs_list = [ "$externs_path/metrics_private.js" ]
   }
-
-  js_library("setting_id_param_util") {
-    sources = [ "$root_gen_dir/chrome/browser/resources/settings/tsc/setting_id_param_util.js" ]
-    deps = [
-      ":router",
-      "//ui/webui/resources/js:load_time_data.m",
-    ]
-    extra_deps = [ ":build_ts" ]
-  }
 }
 
 html_to_js("css_wrapper_files_old") {
@@ -174,11 +119,19 @@ html_to_js("css_wrapper_files_old") {
 }
 
 html_to_wrapper("html_wrapper_files") {
+  deps = [ ":preprocess" ]
+  in_folder = "$target_gen_dir/$preprocess_folder"
+  out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = html_files + icons_html_files
+  minify = optimize_webui
 }
 
 css_to_wrapper("css_wrapper_files") {
+  deps = [ ":preprocess" ]
+  in_folder = "$target_gen_dir/$preprocess_folder"
+  out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = css_files
+  minify = optimize_webui
 }
 
 ts_library("build_ts") {
@@ -217,6 +170,8 @@ ts_library("build_ts") {
   }
 
   extra_deps = [
+    ":css_wrapper_files",
+    ":html_wrapper_files",
     ":preprocess",
     ":preprocess_generated",
   ]

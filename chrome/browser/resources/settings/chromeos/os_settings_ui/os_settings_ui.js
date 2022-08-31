@@ -18,7 +18,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../os_settings_menu/os_settings_menu.js';
 import '../os_settings_main/os_settings_main.js';
 import '../os_toolbar/os_toolbar.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../prefs/prefs.js';
 import '../../settings_vars.css.js';
 
@@ -29,6 +29,8 @@ import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {Debouncer, html, microTask, mixinBehaviors, PolymerElement, timeOut} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
+import {SettingChangeValue} from '../../mojom-webui/search/user_action_recorder.mojom-webui.js';
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {setGlobalScrollTarget} from '../global_scroll_target_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSettingChange} from '../metrics_recorder.js';
@@ -51,10 +53,11 @@ assert(
  */
 const OsSettingsUiElementBase = mixinBehaviors(
     [
-      CrContainerShadowBehavior, FindShortcutBehavior,
+      CrContainerShadowBehavior,
+      FindShortcutBehavior,
       // Calls currentRouteChanged() in attached(),so ensure other behaviors
       // run their attached() first.
-      RouteObserverBehavior
+      RouteObserverBehavior,
     ],
     PolymerElement);
 
@@ -393,11 +396,7 @@ class OsSettingsUiElement extends OsSettingsUiElementBase {
       return;
     }
 
-    const setting =
-        /** @type {!chromeos.settings.mojom.Setting} */ (settingMetric.setting);
-    const value = /** @type {!chromeos.settings.mojom.SettingChangeValue} */ (
-        settingMetric.value);
-    recordSettingChange(setting, value);
+    recordSettingChange(settingMetric.setting, settingMetric.value);
   }
 
   /**

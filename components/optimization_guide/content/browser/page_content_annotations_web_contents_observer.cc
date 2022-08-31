@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/common/google_util.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -118,13 +119,15 @@ PageContentAnnotationsWebContentsObserver::
         content::WebContents* web_contents,
         PageContentAnnotationsService* page_content_annotations_service,
         TemplateURLService* template_url_service,
-        OptimizationGuideDecider* optimization_guide_decider)
+        OptimizationGuideDecider* optimization_guide_decider,
+        prerender::NoStatePrefetchManager* no_state_prefetch_manager)
     : content::WebContentsObserver(web_contents),
       content::WebContentsUserData<PageContentAnnotationsWebContentsObserver>(
           *web_contents),
       page_content_annotations_service_(page_content_annotations_service),
       template_url_service_(template_url_service),
-      optimization_guide_decider_(optimization_guide_decider) {
+      optimization_guide_decider_(optimization_guide_decider),
+      no_state_prefetch_manager_(no_state_prefetch_manager) {
   DCHECK(page_content_annotations_service_);
 
   if (FetchRemoteMetadataEnabled() && optimization_guide_decider_) {
@@ -146,6 +149,15 @@ void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
 
+  // No-state prefetch does not update history, so don't execute any models for
+  // it.
+  if (no_state_prefetch_manager_ &&
+      no_state_prefetch_manager_->IsWebContentsPrefetching(web_contents())) {
+    return;
+  }
+
+  // Conditions above here should match what is in HistoryTabHelper.
+
   PageData* page_data =
       PageData::GetOrCreateForPage(web_contents()->GetPrimaryPage());
   page_data->set_navigation_id(navigation_handle->GetNavigationId());
@@ -163,12 +175,6 @@ void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
 
   bool is_google_search_url =
       google_util::IsGoogleSearchUrl(navigation_handle->GetURL());
-  // Extract related searches.
-  if (is_google_search_url &&
-      optimization_guide::features::ShouldExtractRelatedSearches()) {
-    page_content_annotations_service_->ExtractRelatedSearches(history_visit,
-                                                              web_contents());
-  }
 
   // Persist search metadata, if applicable if it's a Google search URL or if
   // it's a search-y URL as determined by the TemplateURLService if the flag is
@@ -249,6 +255,24 @@ void PageContentAnnotationsWebContentsObserver::TitleWasSet(
     LOG(ERROR) << "Annotating main frame navigation: \n"
                << "URL: " << entry->GetURL() << "\n"
                << "Text: " << *(history_visit.text_to_annotate);
+  }
+}
+
+void PageContentAnnotationsWebContentsObserver::
+    DocumentOnLoadCompletedInPrimaryMainFrame() {
+  PageData* page_data = PageData::GetForPage(web_contents()->GetPrimaryPage());
+  if (!page_data)
+    return;
+
+  optimization_guide::HistoryVisit history_visit = optimization_guide::
+      PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
+          web_contents(), page_data->navigation_id());
+  bool is_google_search_url =
+      google_util::IsGoogleSearchUrl(web_contents()->GetLastCommittedURL());
+  if (is_google_search_url &&
+      optimization_guide::features::ShouldExtractRelatedSearches()) {
+    page_content_annotations_service_->ExtractRelatedSearches(history_visit,
+                                                              web_contents());
   }
 }
 

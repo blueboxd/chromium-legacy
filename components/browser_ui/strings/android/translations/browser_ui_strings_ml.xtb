@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">അനുമതികൾ പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="301521992641321250">സ്വയമേവ ബ്ലോക്കുചെയ്‌തു</translation>
 <translation id="3069226013421428034">നിർദ്ദിഷ്ട സൈറ്റിനായി മൂന്നാം കക്ഷി സൈൻ ഇൻ അനുവദിക്കുക.</translation>
+<translation id="3109724472072898302">ചുരുക്കിയത്</translation>
 <translation id="3114012059975132928">വീഡിയോ പ്ലേയർ</translation>
 <translation id="3115898365077584848">വിവരങ്ങൾ കാണിക്കുക</translation>
 <translation id="3123473560110926937">ചില സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">വീഡിയോ മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="3596414637720633074">അദൃശ്യ മോഡിൽ മൂന്നാം കക്ഷി കുക്കികളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="3600792891314830896">ശബ്‌ദം പ്ലേ ചെയ്യുന്ന സൈറ്റുകളെ മ്യൂട്ട് ചെയ്യുക</translation>
+<translation id="3628308229821498208">നിർദ്ദേശിക്കുന്ന തിരയലുകൾ</translation>
 <translation id="3744111561329211289">പശ്ചാത്തല സമന്വയിപ്പിക്കൽ</translation>
 <translation id="3763247130972274048">10 സെക്കൻഡ് ഒഴിവാക്കാൻ വീഡിയോയിൽ ഇടത്തോ വലത്തോ ഡബിൾ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3797520601150691162">ഒരു പ്രത്യേക സൈറ്റിന് ഡാർക്ക് തീം ബാധകമാക്കരുത്</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">മൂന്നാം കക്ഷി കുക്കികള്‍ ബ്ലോക്കുചെയ്യുക</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ഓപ്‌ഷനുകൾ</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' അൺഇൻസ്റ്റാൾ ചെയ്യണോ?</translation>
+<translation id="6262191102408817757">നിങ്ങളുടെ അവസാന ടാബിനെ അടിസ്ഥാനമാക്കി</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" />,<ph name="PERMISSION_2" /> എന്നിവ ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="6270391203985052864">അറിയിപ്പുകൾ അയയ്ക്കാൻ സൈറ്റുകൾക്ക് അനുവാദം ചോദിക്കേണ്ടി വരും</translation>
 <translation id="6295158916970320988">എല്ലാ സൈറ്റുകളും</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">പോപ്പ് അപ്പുകളും റീഡയറക്‌റ്റുകളും കാണിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക (ശുപാർശ ചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="7203150201908454328">വിപുലീകരിച്ചത്</translation>
 <translation id="723171743924126238">ചിത്രങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7243308994586599757">സ്‌ക്രീനിന്റെ ചുവടെ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="7577900504646297215">താൽപ്പര്യങ്ങൾ മാനേജ് ചെയ്യുക</translation>
 <translation id="7594634374516752650">ഒരു Bluetooth ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്തു</translation>
+<translation id="7641339528570811325">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുക...</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>

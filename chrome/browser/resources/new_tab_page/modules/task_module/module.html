@@ -10,9 +10,9 @@
     box-sizing: border-box;
     display: block;
     flex-grow: 1;
-    padding-bottom: 15px;
-    padding-inline-end: 15px;
-    padding-inline-start: 15px;
+    padding-bottom: 16px;
+    padding-inline-end: 16px;
+    padding-inline-start: 16px;
     width: 100%;
   }
 
@@ -72,11 +72,16 @@
   .tag {
     background: rgba(var(--ntp-background-override-color-rgb), .9);
     border-radius: 4px;
+    box-sizing: border-box;
     color: var(--cr-primary-text-color);
-    font-size: 9px;
+    font-size: 12px;
     margin: 8px;
+    max-width: 149px;
+    overflow: hidden;
     padding:  8px;
     position: absolute;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   :host-context([dir=rtl]) .tag {
@@ -190,13 +195,13 @@
         <img is="cr-auto-img" auto-src="[[item.imageUrl.url]]"
             draggable="false">
         </img>
-        <div class="tag">[[item.info]]</div>
+        <div class="tag" title="[[item.info]]">[[item.info]]</div>
         <div class="name" title="[[item.name]]">[[item.name]]</div>
         <div class="secondary">[[item.siteName]]</div>
       </a>
     </template>
   </div>
-  <div id="relatedSearches">
+  <div hidden$="{{!showRelatedSearches_}}" id="relatedSearches">
     <template is="dom-repeat" id="relatedSearchesRepeat"
         items="[[task.relatedSearches]]" on-dom-change="onDomChange_">
       <a class="pill" href="[[item.targetUrl.url]]" on-click="onPillClick_"
@@ -209,7 +214,7 @@
 </div>
 <cr-lazy-render id="infoDialogRender">
   <template>
-    <ntp-info-dialog inner-h-t-m-l="[[i18nAdvanced('modulesRecipeInfo')]]">
+    <ntp-info-dialog inner-h-t-m-l="[[info_]]">
     </ntp-info-dialog>
   </template>
 </cr-lazy-render>

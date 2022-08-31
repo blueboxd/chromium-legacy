@@ -1703,6 +1703,10 @@ const char kForceMajorVersionToMinorPositionInUserAgent[] =
 const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
 #endif
 
+// Number of minutes of inactivity before closing the profile and showing the
+// Profile Picker. Controlled via the IdleProfileCloseTimeout policy.
+const char kIdleProfileCloseTimeout[] = "idle_profile_close_timeout";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -2121,36 +2125,6 @@ const char kWebAppsIsolationState[] = "web_apps.isolation_state";
 const char kWebAppsUrlHandlerInfo[] = "web_apps.url_handler_info";
 #endif
 
-// A string representing the last version of Chrome that System Web Apps were
-// updated for.
-const char kSystemWebAppLastUpdateVersion[] =
-    "web_apps.system_web_app_last_update";
-
-// A string representing the last locale that System Web Apps were installed in.
-// This is used to refresh System Web Apps i18n when the locale is changed.
-const char kSystemWebAppLastInstalledLocale[] =
-    "web_apps.system_web_app_last_installed_language";
-
-// An int representing the number of failures to install SWAs for a given
-// version & locale pair. After 3 failures, we'll abandon this version to avoid
-// bootlooping, and wait for a new version to come along.
-const char kSystemWebAppInstallFailureCount[] =
-    "web_apps.system_web_app_failure_count";
-
-// A string representing the latest Chrome version where an attempt was made
-// to install. In the case of success, this and LastUpdateVersion will be the
-// same. If there is an installation failure, they will diverge until a
-// successful installation is made.
-extern const char kSystemWebAppLastAttemptedVersion[] =
-    "web_apps.system_web_app_last_attempted_update";
-
-// A string representing the most recent locale that was attempted to be
-// installed. In the case of success, this and LastUpdateVersion will be the
-// same. If there is an installation failure, they will diverge until a
-// successful installation is made.
-extern const char kSystemWebAppLastAttemptedLocale[] =
-    "web_apps.system_web_app_last_attempted_language";
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -2301,6 +2275,9 @@ const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
 
 // If false, disable post-quantum key agreement in TLS connections.
 const char kCECPQ2Enabled[] = "ssl.cecpq2_enabled";
+
+// If false, disable Encrypted ClientHello (ECH) in TLS connections.
+const char kEncryptedClientHelloEnabled[] = "ssl.ech_enabled";
 
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
@@ -2709,6 +2686,17 @@ const char kLastChromadMigrationAttemptTime[] =
 const char kHardwareSecureDecryptionDisabledTimes[] =
     "media.hardware_secure_decryption.disabled_times";
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS)
+// A dictionary containing kiosk metrics latest session related information.
+// For example, kiosk session start times, number of network drops.
+// This setting resides in local state.
+const char kKioskMetrics[] = "kiosk-metrics";
+
+// A boolean pref which determines whether a Web Kiosk can open more than one
+// browser window.
+const char kNewWindowsInKioskAllowed[] = "new_windows_in_kiosk_allowed";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
@@ -3565,12 +3553,5 @@ const char kSCTAuditingHashdanceReportCount[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-// A dictionary containing kiosk metrics latest session related information.
-// For example, kiosk session start times, number of network drops.
-// This setting resides in local state.
-const char kKioskMetrics[] = "kiosk-metrics";
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace prefs

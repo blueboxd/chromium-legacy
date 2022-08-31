@@ -29,6 +29,13 @@ namespace content {
 
 namespace {
 
+const char kFrozenUserAgentTemplate[] =
+    "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 "
+#if BUILDFLAG(IS_ANDROID)
+    "%s"
+#endif
+    "Safari/537.36";
+
 std::string GetUserAgentPlatform() {
 #if BUILDFLAG(IS_WIN)
   return "";
@@ -45,20 +52,28 @@ std::string GetUserAgentPlatform() {
 #endif
 }
 
-}  // namespace
-
 std::string GetUnifiedPlatform() {
 #if BUILDFLAG(IS_ANDROID)
-  return frozen_user_agent_strings::kUnifiedPlatformAndroid;
+  return "Linux; Android 10; K";
 #elif BUILDFLAG(IS_CHROMEOS)
-  return frozen_user_agent_strings::kUnifiedPlatformCrOS;
+  return "X11; CrOS x86_64 14541.0.0";
 #elif BUILDFLAG(IS_MAC)
-  return frozen_user_agent_strings::kUnifiedPlatformMacOS;
+  return "Macintosh; Intel Mac OS X 10_15_7";
 #elif BUILDFLAG(IS_WIN)
-  return frozen_user_agent_strings::kUnifiedPlatformWindows;
+  return "Windows NT 10.0; Win64; x64";
+#elif BUILDFLAG(IS_FUCHSIA)
+  return "Fuchsia";
+#elif BUILDFLAG(IS_LINUX)
+  return "X11; Linux x86_64";
 #else
-  return frozen_user_agent_strings::kUnifiedPlatformLinux;
+#error Unsupported platform
 #endif
+}
+
+}  // namespace
+
+std::string GetUnifiedPlatformForTesting() {
+  return GetUnifiedPlatform();
 }
 
 // Inaccurately named for historical reasons
@@ -272,22 +287,30 @@ std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
 }
 
 std::string GetReducedUserAgent(bool mobile, std::string major_version) {
-  std::string user_agent;
 #if BUILDFLAG(IS_ANDROID)
+  // There is an extra field in the template on Android.
   std::string device_compat;
   // Note: The extra space after Mobile is meaningful here, to avoid
   // "MobileSafari", but unneeded for non-mobile Android devices.
   device_compat = mobile ? "Mobile " : "";
-  user_agent = base::StringPrintf(frozen_user_agent_strings::kAndroid,
-                                  GetUnifiedPlatform().c_str(),
-                                  major_version.c_str(), device_compat.c_str());
-#else
-  user_agent =
-      base::StringPrintf(frozen_user_agent_strings::kDesktop,
-                         GetUnifiedPlatform().c_str(), major_version.c_str());
 #endif
+  std::string user_agent =
+      base::StringPrintf(kFrozenUserAgentTemplate, GetUnifiedPlatform().c_str(),
+                         major_version.c_str()
+#if BUILDFLAG(IS_ANDROID)
+                             ,
+                         device_compat.c_str()
+#endif
+      );
 
   return user_agent;
+}
+
+std::string BuildUnifiedPlatformUserAgentFromProduct(
+    const std::string& product) {
+  std::string os_info;
+  base::StringAppendF(&os_info, "%s", GetUnifiedPlatform().c_str());
+  return BuildUserAgentFromOSAndProduct(os_info, product);
 }
 
 std::string BuildUserAgentFromProduct(const std::string& product) {

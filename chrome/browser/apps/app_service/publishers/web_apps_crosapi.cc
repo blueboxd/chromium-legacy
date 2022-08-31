@@ -94,7 +94,15 @@ void WebAppsCrosapi::Launch(const std::string& app_id,
                             int32_t event_flags,
                             LaunchSource launch_source,
                             WindowInfoPtr window_info) {
-  // TODO(crbug.com/1253250): Add the implementation.
+  if (!LogIfNotConnected(FROM_HERE)) {
+    return;
+  }
+
+  controller_->Launch(
+      CreateCrosapiLaunchParamsWithEventFlags(
+          proxy_, app_id, event_flags, launch_source,
+          window_info ? window_info->display_id : display::kInvalidDisplayId),
+      base::DoNothing());
 }
 
 void WebAppsCrosapi::LaunchAppWithParams(AppLaunchParams&& params,
@@ -137,7 +145,8 @@ void WebAppsCrosapi::Launch(const std::string& app_id,
 
   controller_->Launch(
       CreateCrosapiLaunchParamsWithEventFlags(
-          proxy_, app_id, event_flags, launch_source,
+          proxy_, app_id, event_flags,
+          ConvertMojomLaunchSourceToLaunchSource(launch_source),
           window_info ? window_info->display_id : display::kInvalidDisplayId),
       base::DoNothing());
 }
@@ -155,7 +164,8 @@ void WebAppsCrosapi::LaunchAppWithIntent(
   }
 
   auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      proxy_, app_id, event_flags, launch_source,
+      proxy_, app_id, event_flags,
+      ConvertMojomLaunchSourceToLaunchSource(launch_source),
       window_info ? window_info->display_id : display::kInvalidDisplayId);
 
   params->intent =
@@ -174,7 +184,9 @@ void WebAppsCrosapi::LaunchAppWithFiles(const std::string& app_id,
   }
 
   auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      proxy_, app_id, event_flags, launch_source, display::kInvalidDisplayId);
+      proxy_, app_id, event_flags,
+      ConvertMojomLaunchSourceToLaunchSource(launch_source),
+      display::kInvalidDisplayId);
   params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
   controller_->Launch(std::move(params), base::DoNothing());
 }
@@ -211,8 +223,7 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
 
   if (display_mode != WindowMode::kUnknown && !is_system_web_app) {
-    apps::CreateOpenNewSubmenu(menu_type,
-                               display_mode == WindowMode::kBrowser
+    apps::CreateOpenNewSubmenu(display_mode == WindowMode::kBrowser
                                    ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
                                    : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
                                &menu_items);

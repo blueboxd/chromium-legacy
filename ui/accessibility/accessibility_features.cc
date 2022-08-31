@@ -146,7 +146,7 @@ bool IsEnhancedNetworkVoicesEnabled() {
 }
 
 const base::Feature kAccessibilityOSSettingsVisibility{
-    "AccessibilityOSSettingsVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AccessibilityOSSettingsVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAccessibilityOSSettingsVisibilityEnabled() {
   return base::FeatureList::IsEnabled(
@@ -224,6 +224,13 @@ const base::Feature kPdfOcr{"PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsPdfOcrEnabled() {
   return base::FeatureList::IsEnabled(::features::kPdfOcr);
+}
+
+const base::Feature kTextBasedAudioDescription{
+    "TextBasedAudioDescription", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsTextBasedAudioDescriptionEnabled() {
+  return base::FeatureList::IsEnabled(::features::kTextBasedAudioDescription);
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

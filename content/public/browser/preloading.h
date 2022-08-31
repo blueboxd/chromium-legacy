@@ -48,15 +48,18 @@ enum class PreloadingPredictor {
   // TODO(crbug.com/1309934): Add more predictors as we integrate Preloading
   // logging.
 
-  // > 100 values are reserved for embedder-specific values, such as the
-  // ChromePreloadingPredictor enum.
-};
+  // This constant is used to define the value from which features can add more
+  // enums beyond this value both inside and outside content. We mask it by 50
+  // and 100 to avoid usage of the same numbers for logging.
 
-// This constant is used to define the value from which embedders can add more
-// enums beyond this value. We mask it by 100 to avoid usage of the same numbers
-// for logging. This constant determines the value of enumerations persisted
-// into logs so should not be changed.
-static constexpr int64_t kPreloadingPredictorContentEnd = 100;
+  // >= 50 values are reserved for content-internal values, such as
+  // ContentPreloadingPredictor enum.
+  kPreloadingPredictorContentStart = 50,
+
+  // >= 100 values are reserved for embedder-specific values, such as the
+  // ChromePreloadingPredictor enum.
+  kPreloadingPredictorContentEnd = 100,
+};
 
 // Defines if a preloading operation is eligible for a given preloading
 // trigger.
@@ -72,13 +75,35 @@ enum class PreloadingEligibility {
   // predictor.
   kEligible = 1,
 
+  // Preloading operation could be ineligible if it is not triggered
+  // because some precondition was not satisfied. Preloading here could
+  // be ineligible due to various reasons subjective to the preloading
+  // operation like the following.
+  // These values are used in both //chrome and //content after integration with
+  // various preloading features.
+
   // Preloading operation was ineligible because preloading was disabled.
   kPreloadingDisabled = 2,
-};
 
-// This constant is used to define the value from which embedders can add more
-// enums beyond this value.
-static constexpr int64_t kPreloadingEligibilityContentEnd = 100;
+  // Preloading operation was ineligible because it was triggered from the
+  // background or a hidden page.
+  kHidden = 3,
+
+  // Preloading operation was ineligible because it was invoked for cross origin
+  // navigation while preloading was restricted to same-origin navigations.
+  // (It's plausible that some preloading mechanisms in the future could work
+  // for cross-origin navigations as well.)
+  kCrossOrigin = 4,
+
+  // Preloading was ineligible due to low memory restrictions.
+  kLowMemory = 5,
+
+  // TODO(crbug.com/1309934): Add more specific ineligibility reasons subject to
+  // each preloading operation
+  // This constant is used to define the value from which embedders can add more
+  // enums beyond this value.
+  kPreloadingEligibilityContentEnd = 100,
+};
 
 // The outcome of the holdback check. This is not part of eligibility status to
 // clarify that this check needs to happen after we are done verifying the
@@ -139,20 +164,22 @@ enum class PreloadingTriggeringOutcome {
   kTriggeredButOutcomeUnknown = 7,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PreloadingFailureReason {
   // The failure reason is unspecified if the triggering outcome is not
   // kFailure.
   kUnspecified = 0,
-};
 
-// This constant is used to define the value from which specifying preloading
-// types can add more enums beyond this value. We mask it by 100 to avoid usage
-// of the same numbers for logging. The semantics of values beyond 100 can vary
-// by preloading type (for example 101 might mean "the page was destroyed" for
-// prerender, but "the user already had cookies for a cross-origin prefetch" for
-// prefetch). This constant determines the value of enumerations persisted into
-// logs so should not be changed.
-static constexpr int64_t kPreloadingFailureReasonContentEnd = 100;
+  // This constant is used to define the value from which specifying preloading
+  // types can add more enums beyond this value. We mask it by 100 to avoid
+  // usage of the same numbers for logging. The semantics of values beyond 100
+  // can vary by preloading type (for example 101 might mean "the page was
+  // destroyed" for prerender, but "the user already had cookies for a
+  // cross-origin prefetch"
+  // for prefetch).
+  kPreloadingFailureReasonCommonEnd = 100,
+};
 
 }  // namespace content
 

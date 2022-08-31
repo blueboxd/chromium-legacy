@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1621067168122174824">اجرای آزمایش شارژ</translation>
 <translation id="1631385268983122904">هنوز دستگاه را سرهم نکنید</translation>
-<translation id="1639239467298939599">بارگیری</translation>
+<translation id="1639239467298939599">در حال بارگیری</translation>
 <translation id="1641857168437328880">تغذیه‌کننده سند (یک‌رو)</translation>
 <translation id="1643449475550628585">تغییر روزانه کاغذدیواری</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1645954272419197032">لطفاً اطلاعات دستگاه را تأیید کنید</translation>
 <translation id="1662989795263954667">متوقف شد - جوهر تمام شده است</translation>
+<translation id="1664796644829245314">پیش‌دید کردن <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">‏VPN داخلی</translation>
 <translation id="1672499492233627739">جارزن ویدیویی وب‌بین</translation>
 <translation id="1676557873873341166">فیلم‌برداری</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">کنفرانس ویدیویی</translation>
 <translation id="1852934301711881861">‏نصب ChromeOS Flex</translation>
 <translation id="1856388568474281774">جهت‌نمای پایین</translation>
+<translation id="1858620243986915808">پیوست کردن نماگرفت</translation>
 <translation id="1871569928317311284">خاموش کردن زمینه تیره</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">خاموش کردن حالت تاریک</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">کلید خصوصی</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="7994702968232966508">‏روش EAP</translation>
+<translation id="8018928621986160031">در «<ph name="FILE_LOCATION" />» ذخیره شد</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">فعال کردن حالت رنگ خودکار</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">راه‌اندازی‌نشده</translation>
 <translation id="8620617069779373398">وضعیت فراگردی</translation>
 <translation id="8655295600908251630">کانال</translation>
+<translation id="8655828773034788261">نشانی وب هم‌رسانی:</translation>
 <translation id="8660881923941176839">پوند</translation>
 <translation id="8662671328352114214">پیوستن به شبکه <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">به‌روزرسانی به <ph name="VERSION_NUMBER" /> و بازراه‌اندازی</translation>

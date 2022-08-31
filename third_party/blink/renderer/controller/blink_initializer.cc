@@ -135,7 +135,7 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
     // Try to reserve as much address space as we reasonably can.
     const size_t kMB = 1024 * 1024;
     for (size_t size = 512 * kMB; size >= 32 * kMB; size -= 16 * kMB) {
-      if (base::ReserveAddressSpace(size)) {
+      if (partition_alloc::ReserveAddressSpace(size)) {
         break;
       }
     }
@@ -222,13 +222,13 @@ bool IsCrossOriginIsolated() {
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
-void SetIsDirectSocketEnabled(bool value) {
-  Agent::SetIsDirectSocketEnabled(value);
+void SetIsIsolatedApplication(bool value) {
+  Agent::SetIsIsolatedApplication(value);
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
-bool IsDirectSocketEnabled() {
-  return Agent::IsDirectSocketEnabled();
+bool IsIsolatedApplication() {
+  return Agent::IsIsolatedApplication();
 }
 
 void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
@@ -240,32 +240,38 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
     return;
 
 #if BUILDFLAG(IS_ANDROID)
-  binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::OomIntervention>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver)),
+      main_thread->GetTaskRunner());
 
-  binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-                  &CrashMemoryMetricsReporterImpl::Bind)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::CrashMemoryMetricsReporter>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&CrashMemoryMetricsReporterImpl::Bind)),
+      main_thread->GetTaskRunner());
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::MemoryUsageMonitorLinux>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),
+      main_thread->GetTaskRunner());
 #endif
 
-  binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&BlinkLeakDetector::Bind)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::LeakDetector>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&BlinkLeakDetector::Bind)),
+      main_thread->GetTaskRunner());
 
-  binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&DiskDataAllocator::Bind)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::DiskAllocator>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&DiskDataAllocator::Bind)),
+      main_thread->GetTaskRunner());
 
-  binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-                  &V8DetailedMemoryReporterImpl::Bind)),
-              main_thread->GetTaskRunner());
+  binders.Add<mojom::blink::V8DetailedMemoryReporter>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&V8DetailedMemoryReporterImpl::Bind)),
+      main_thread->GetTaskRunner());
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {

@@ -61,7 +61,7 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
   // Wait until we're done with everything else before creating `controller_`
   // since it can call `Show()` synchronously.
   controller_ = std::make_unique<DownloadDisplayController>(
-      this, browser_->profile(), bubble_controller_.get());
+      this, browser_, bubble_controller_.get());
 }
 
 DownloadToolbarButtonView::~DownloadToolbarButtonView() {
@@ -283,13 +283,14 @@ std::unique_ptr<views::View> DownloadToolbarButtonView::CreateRowListView(
   if (is_primary_partial_view_ && model_list.empty())
     return nullptr;
 
-  auto row_list_view =
-      std::make_unique<DownloadBubbleRowListView>(is_primary_partial_view_);
+  auto row_list_view = std::make_unique<DownloadBubbleRowListView>(
+      is_primary_partial_view_, browser_);
   for (DownloadUIModel::DownloadUIModelPtr& model : model_list) {
     // raw pointer is safe as the toolbar owns the bubble, which owns an
     // individual row view.
     row_list_view->AddChildView(std::make_unique<DownloadBubbleRowView>(
-        std::move(model), row_list_view.get(), bubble_controller_.get(), this));
+        std::move(model), row_list_view.get(), bubble_controller_.get(), this,
+        browser_));
   }
 
   auto scroll_view = std::make_unique<views::ScrollView>();

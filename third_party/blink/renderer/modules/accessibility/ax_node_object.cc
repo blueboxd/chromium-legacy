@@ -1599,6 +1599,10 @@ bool AXNodeObject::IsNativeSpinButton() const {
   return false;
 }
 
+bool AXNodeObject::IsChildTreeOwner() const {
+  return ui::IsChildTreeOwner(native_role_);
+}
+
 bool AXNodeObject::IsClickable() const {
   // Determine whether the element is clickable either because there is a
   // mouse button handler or because it has a native element where click
@@ -1850,7 +1854,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   // kPopup, then set aria-expanded=false when the popup is hidden, and
   // aria-expanded=true when it is showing.
   if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    if (auto popup = form_control->togglePopupElement().element;
+    if (auto popup = form_control->popupTargetElement().element;
         popup && popup->PopupType() == PopupValueType::kAuto) {
       return popup->popupOpen() ? kExpandedExpanded : kExpandedCollapsed;
     }
@@ -3350,7 +3354,7 @@ String AXNodeObject::TextAlternative(
     }
   }
 
-  name_from = ax::mojom::blink::NameFrom::kUninitialized;
+  name_from = ax::mojom::blink::NameFrom::kNone;
 
   if (name_sources && found_text_alternative) {
     for (NameSource& name_source : *name_sources) {
@@ -3387,7 +3391,6 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   // spec and with what is done in other user agents.
   switch (last_used_name_from) {
     case ax::mojom::blink::NameFrom::kNone:
-    case ax::mojom::blink::NameFrom::kUninitialized:
     case ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty:
     case ax::mojom::blink::NameFrom::kContents:
       break;
@@ -3401,7 +3404,6 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   }
   switch (name_from) {
     case ax::mojom::blink::NameFrom::kNone:
-    case ax::mojom::blink::NameFrom::kUninitialized:
     case ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty:
     case ax::mojom::blink::NameFrom::kContents:
       break;
@@ -3462,7 +3464,7 @@ String AXNodeObject::TextFromDescendants(
   StringBuilder accumulated_text;
   AXObject* previous = nullptr;
   ax::mojom::blink::NameFrom last_used_name_from =
-      ax::mojom::blink::NameFrom::kUninitialized;
+      ax::mojom::blink::NameFrom::kNone;
 
   // Ensure that if this node needs to invalidate its children (e.g. due to
   // included in tree status change), that we do it now, rather than while
@@ -3490,7 +3492,7 @@ String AXNodeObject::TextFromDescendants(
     }
 
     ax::mojom::blink::NameFrom child_name_from =
-        ax::mojom::blink::NameFrom::kUninitialized;
+        ax::mojom::blink::NameFrom::kNone;
     String result;
     if (child->IsPresentational()) {
       result = child->TextFromDescendants(visited,
@@ -5631,7 +5633,7 @@ String AXNodeObject::Description(
   // For form controls that act as triggering elements for popups of type kHint,
   // then set aria-describedby to the hint popup.
   if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    auto popup = form_control->togglePopupElement();
+    auto popup = form_control->popupTargetElement();
     if (popup.element && popup.element->PopupType() == PopupValueType::kHint) {
       description_from = ax::mojom::blink::DescriptionFrom::kPopupElement;
       if (description_sources) {

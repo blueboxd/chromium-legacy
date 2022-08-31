@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Sejarah</translation>
 <translation id="1645954272419197032">Sila sahkan maklumat peranti</translation>
 <translation id="1662989795263954667">Dihentikan - Kehabisan dakwat</translation>
+<translation id="1664796644829245314">Pratonton <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN terbina dalam</translation>
 <translation id="1672499492233627739">Suapan video kamera web</translation>
 <translation id="1676557873873341166">Mengambil video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Persidangan Video</translation>
 <translation id="1852934301711881861">Pasang Chrome OS Flex</translation>
 <translation id="1856388568474281774">Anak panah ke bawah</translation>
+<translation id="1858620243986915808">Lampirkan tangkapan skrin</translation>
 <translation id="1871569928317311284">Matikan tema gelap</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Matikan mod gelap</translation>
@@ -797,6 +799,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="7978412674231730200">Kunci persendirian</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="7994702968232966508">Kaedah EAP</translation>
+<translation id="8018928621986160031">Simpan pada "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Dayakan mod warna automatik</translation>
@@ -817,7 +820,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="8179976553408161302">Enter</translation>
 <translation id="819552138404104974">Log RMA</translation>
 <translation id="8206859287963243715">Selular</translation>
-<translation id="8208861521865154048">Manfaat</translation>
+<translation id="8208861521865154048">Kelebihan</translation>
 <translation id="8217675307824400706">Berhubung</translation>
 <translation id="8221728673725659466">Penentukuran selesai</translation>
 <translation id="8226628635270268143">Pilih foto dan album kegemaran anda</translation>
@@ -865,6 +868,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="8576249514688522074">Tidak diasalkan</translation>
 <translation id="8620617069779373398">Status perayauan</translation>
 <translation id="8655295600908251630">Saluran</translation>
+<translation id="8655828773034788261">Kongsi URL:</translation>
 <translation id="8660881923941176839">paun</translation>
 <translation id="8662671328352114214">Sertai rangkaian <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Kemas kini <ph name="VERSION_NUMBER" /> &amp; mulakan semula</translation>

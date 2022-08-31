@@ -12,10 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/raw_ptr.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -59,16 +56,39 @@ class ZeroSuggestProvider : public BaseSearchProvider {
     REMOTE_SEND_URL,
   };
 
+  // Returns the type of results that should be generated for the given context.
+  // If `bypass_request_eligibility_checks` is false, checks whether the
+  // external conditions for REMOTE_NO_URL and REMOTE_SEND_URL variants are met;
+  // Logs eligibility UMA metrics, if applicable. Must be called exactly once
+  // with `bypass_request_eligibility_checks` set to false,
+  // otherwise the meaning of the metrics being logged would change.
+  // This method is static to avoid depending on the provider state.
+  static ResultType TypeOfResultToRun(const AutocompleteProviderClient* client,
+                                      const AutocompleteInput& input,
+                                      bool bypass_request_eligibility_checks);
+
+  // Called on Start(), confirms whether zero-prefix suggestions are allowed in
+  // the given context and logs eligibility UMA metrics. `result_type_to_run`
+  // must not be nullptr. It will be set to the result type that should be
+  // generated for the given context.
+  // Must be called exactly once, on Start(), otherwise the meaning of the
+  // the metrics being logged would change.
+  // This method is static to avoid depending on the provider state.
+  static bool AllowZeroPrefixSuggestions(
+      const AutocompleteProviderClient* client,
+      const AutocompleteInput& input,
+      ResultType* result_type_to_run);
+
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
                                      AutocompleteProviderListener* listener);
 
-  // Registers a preference used to cache zero suggest results.
+  // Registers a preference used to cache the zero suggest response.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // AutocompleteProvider:
-  void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void StartPrefetch(const AutocompleteInput& input) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results,
             bool due_to_user_inactivity) override;
   void DeleteMatch(const AutocompleteMatch& match) override;
@@ -77,21 +97,11 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Sets |field_trial_triggered_| to false.
   void ResetSession() override;
 
-  // Returns the list of experiment stats corresponding to the latest |results_|
-  // to be logged to SearchboxStats as part of a GWS experiment, if any.
-  const SearchSuggestionParser::ExperimentStats& experiment_stats() const {
-    return results_.experiment_stats;
-  }
-
-  // Returns the map of suggestion group IDs to headers corresponding to the
-  // latest |results_|.
-  const SearchSuggestionParser::HeadersMap& headers_map() const {
-    return results_.headers_map;
-  }
-
-  // Returns the hidden group IDs corresponding to the latest |results_|.
-  const std::vector<int> hidden_group_ids() const {
-    return results_.hidden_group_ids;
+  // Returns the list of experiment stats corresponding to |matches_|. Will be
+  // logged to SearchboxStats as part of a GWS experiment, if any.
+  const SearchSuggestionParser::ExperimentStatsV2s& experiment_stats_v2s()
+      const {
+    return experiment_stats_v2s_;
   }
 
   ResultType GetResultTypeRunningForTesting() const {
@@ -99,13 +109,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
-                           AllowZeroSuggestSuggestions);
-  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
-  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
-                           TypeOfResultToRunForContextualWeb);
-  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
-                           TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
                       AutocompleteProviderListener* listener);
 
@@ -114,12 +117,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   ZeroSuggestProvider(const ZeroSuggestProvider&) = delete;
   ZeroSuggestProvider& operator=(const ZeroSuggestProvider&) = delete;
 
-  // Called by Start() or StartPrefetch() with the appropriate arguments.
-  // Contains the implementation to start a request for suggestions.
-  void Start(const AutocompleteInput& input,
-             bool minimal_changes,
-             bool is_prefetch);
-
   // BaseSearchProvider:
   const TemplateURL* GetTemplateURL(bool is_keyword) const override;
   const AutocompleteInput GetInput(bool is_keyword) const override;
@@ -127,81 +124,76 @@ class ZeroSuggestProvider : public BaseSearchProvider {
       const SearchSuggestionParser::SuggestResult& result) const override;
   void RecordDeletionResult(bool success) override;
 
-  // Called when the network request for suggestions has completed.
-  // `is_prefetch` and `request_time` are bound to this callback and indicate if
-  // the request is a prefetch one and the time it was issued respectively.
-  void OnURLLoadComplete(const base::WeakPtr<AutocompleteProviderClient> client,
-                         TemplateURLRef::SearchTermsArgs search_terms_args,
-                         bool is_prefetch,
-                         base::TimeTicks request_time,
+  // Called when the non-prefetch network request has completed.
+  // `result_type` is bound to this callback and indicate the result type being
+  // received in this callback.
+  void OnURLLoadComplete(ResultType result_type,
                          const network::SimpleURLLoader* source,
                          std::unique_ptr<std::string> response_body);
+  // Called when the prefetch network request has completed.
+  // `input` and `result_type` are bound to this callback. The former is the
+  // input the request was made for and the latter indicates the result type
+  // being received in this callback.
+  void OnPrefetchURLLoadComplete(const AutocompleteInput& input,
+                                 ResultType result_type,
+                                 const network::SimpleURLLoader* source,
+                                 std::unique_ptr<std::string> response_body);
 
-  // Called when the remote response is received, populates |results_| with
-  // |json_data|; and converts them to |matches_|.
+  // Called when the remote response is received. Stores the response json in
+  // the user prefs, if successfully parsed and if applicable based on
+  // |result_type|.
   //
-  // * The update is not performed if |json_data| is invalid.
-  // * Updates the zero suggest response stored in user prefs, if applicable.
-  //   In those cases, when |results_| is non-empty, it is updated only if
-  //   |json_data| corresponds to an empty list. This is done to ensure that
-  //   the display is cleared, as it may be showing cached results that should
-  //   not be shown.
-  // * Otherwise, the update is performed.
-  //
-  // Returns whether |results_| changed.
-  bool UpdateResultsWithResponse(const std::string& json_data);
+  // Returns the successfully parsed response if it is eligible to be converted
+  // to |matches_| or nullptr otherwise.
+  std::unique_ptr<base::Value> StoreRemoteResponse(
+      const std::string& response_json,
+      const AutocompleteInput& input,
+      ResultType result_type,
+      bool is_prefetch);
 
-  // Called in Start(), populates |results_| with the zero suggest response
-  // stored in user prefs, if applicable; and converts them to |matches_|.
-  void MaybeUpdateResultsWithStoredResponse();
+  // Called on Start().
+  //
+  // Returns the response stored in the user prefs, if applicable based on
+  // |result_type| or nullptr otherwise.
+  std::unique_ptr<base::Value> ReadStoredResponse(ResultType result_type);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(
       const SearchSuggestionParser::NavigationResult& navigation);
 
-  // Converts the parsed results to a set of AutocompleteMatches and adds them
-  // to |matches_|.  Also update the histograms for how many results were
-  // received.
-  void ConvertResultsToAutocompleteMatches();
-
-  // Whether zero suggest suggestions are allowed in the given context.
-  // Invoked early, confirms all the external conditions for ZeroSuggest are
-  // met.
+  // Called on Start() with the cached response (where |matches_| is empty), or
+  // when the remote response is received and is eligible to be converted to
+  // |matches_| (where |matches_| may not be empty).
   //
-  // TODO(tommycli): Combine this method with `TypeOfResultToRun()`. Currently,
-  // the logic to turn on and off requests by flags is split between these two
-  // functions, so the reader has to look in two places.
-  bool AllowZeroSuggestSuggestions(const AutocompleteInput& input) const;
-
-  // Returns the type of results that should be generated for the current
-  // context.
-  // Logs UMA metrics. Should be called exactly once, on Start(), otherwise the
-  // meaning of the data logged would change.
+  // If the given response can be successfully parsed, converts it to a set of
+  // AutocompleteMatches and populates |matches_| as well as its associated
+  // metadata, if applicable. Also logs how many results were received.
   //
-  // This method is static for testability and to avoid depending on the
-  // provider state.
-  static ResultType TypeOfResultToRun(AutocompleteProviderClient* client,
-                                      const AutocompleteInput& input,
-                                      const GURL& suggest_url);
+  // Returns whether the response was successfully converted to |matches_|.
+  // Note that this does not imply |matches_| were populated with the response.
+  // An empty result set in the response will clear |matches_| and return true.
+  bool ConvertResponseToAutocompleteMatches(
+      std::unique_ptr<base::Value> response);
 
-  // The result type that is currently being processed by provider.
-  // When the provider is not running, the result type is set to NONE.
-  ResultType result_type_running_;
+  // The result type that is currently being retrieved and processed for
+  // non-prefetch requests.
+  // Set in Start() and used in Stop() for logging purposes.
+  ResultType result_type_running_{NONE};
 
-  // The user's input for which a suggestion fetch is pending.
+  // The input for which suggestions are being retrieved and processed for both
+  // prefetch and non-prefetch requests.
+  // Set in Start() and StartPrefetch() and used in GetInput() for parsing the
+  // response.
   AutocompleteInput input_;
 
-  // Loader used to retrieve results.
+  // Loader used to retrieve results for non-prefetch requests.
   std::unique_ptr<network::SimpleURLLoader> loader_;
 
-  // Like `AutocompleteProvider::done_`, but for prefetch requests. Used for
-  // metrics when the provider is stopped. `done_` and `prefetch_done_` should
-  // never both be true, a `Start()` request stops ongoing requests.
-  bool prefetch_done_;
+  // Loader used to retrieve results for prefetch requests.
+  std::unique_ptr<network::SimpleURLLoader> prefetch_loader_;
 
-  // Contains suggest and navigation results as well as relevance parsed from
-  // the response for the most recent zero suggest input URL.
-  SearchSuggestionParser::Results results_;
+  // The list of experiment stats corresponding to |matches_|.
+  SearchSuggestionParser::ExperimentStatsV2s experiment_stats_v2s_;
 
   // For callbacks that may be run after destruction.
   base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_{this};

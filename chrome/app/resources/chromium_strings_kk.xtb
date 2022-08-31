@@ -13,6 +13,7 @@
 <translation id="1185134272377778587">Chromium туралы ақпарат</translation>
 <translation id="1203500561924088507">Орнатқаныңыз үшін рақмет. <ph name="BUNDLE_NAME" /> пайдаланбас бұрын браузерді жауып, қайта ашуыңыз керек.</translation>
 <translation id="1315551408014407711">Жаңа Chromium профилінің параметрлерін реттеу</translation>
+<translation id="1385859895174722837">Chromium-дағы Google Assistant</translation>
 <translation id="1396446129537741364">Chromium құпия сөздерді көрсетпек.</translation>
 <translation id="1414495520565016063">Chromium жүйесіне кірдіңіз!</translation>
 <translation id="1524282610922162960">Chromium қойындысын бөлісу</translation>
@@ -24,6 +25,7 @@
 Веб-сайттар мен қолданбаларға берілген рұқсаттар осы аккаунтқа пайдаланылуы мүмкін. Google аккаунттарын <ph name="SETTINGS_LINK_BEGIN" />Параметрлер<ph name="SETTINGS_LINK_END" /> бөлімінен басқаруға болады.</translation>
 <translation id="1640672724030957280">Жүктеп алынып жатыр…</translation>
 <translation id="1708666629004767631">Chromium жүйесінің жаңа, қауіпсіз нұсқасы қолжетімді.</translation>
+<translation id="17264556997921157">Сайттардың жарнама көрсетуге пайдаланған қызық тақырыптарын көре және өшіре аласыз. Chromium браузерді қолданудың соңғы тарихына сүйене отырып, сізге қызық болар деген тақырыптарды болжайды.</translation>
 <translation id="1774152462503052664">Chromium жүйесін фонда іске қосуға рұқсат беру</translation>
 <translation id="1779356040007214683">Chromium қауіпсіз ету үшін <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ішінде көрсетілмеген және сізге білдірмей қосылған болуы мүмкін кейбір кеңейтімдерді өшірдік.</translation>
 <translation id="1808667845054772817">Chromium қайта орнату</translation>
@@ -42,6 +44,7 @@
 <translation id="2018879682492276940">Орнатылмады. Қайталап көріңіз.</translation>
 <translation id="2020032459870799438">Басқа құпия сөздеріңіздің ұрланудан және басқа да қауіпсіздік мәселелерінен қаншалықты қорғалғанын тексеру үшін <ph name="BEGIN_LINK" />Chromium браузеріне кіріңіз<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Google қызметтерінде жекелендірілген мүмкіндіктерді пайдалану үшін Chromium тарихын қосу-қоспау нұсқасын таңдаңыз.</translation>
+<translation id="2088953378266246249">Chromium-нің түбірлік сертификаттарды қалай басқаратыны туралы ақпарат</translation>
 <translation id="2174178932569897599">Chromium-ді реттеу</translation>
 <translation id="2174917724755363426">Орнату аяқталмады. Шынымен бас тартқыңыз келе ме?</translation>
 <translation id="2185166961232948079">Chromium – Желіге кіру - <ph name="PAGE_TITLE" /></translation>
@@ -103,6 +106,7 @@
 <translation id="3474745554856756813">Құрылғыдан <ph name="ITEMS_COUNT" /> элемент жойылады. Деректерді кейінірек алу үшін Chromium браузеріне <ph name="USER_EMAIL" /> болып кіріңіз.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> арқылы Chromium профильдерін ауыстыруға болады.</translation>
 <translation id="3509308970982693815">Барлық Chromium терезелерін жауып, әрекетті қайталап көріңіз.</translation>
+<translation id="3518180795744733843">Chromium-дағы Google Assistant сіз үшін веб-сайттарда тиісті әрекеттерді орындай алады.</translation>
 <translation id="3533435340678213462">Құпиялылығыңызды сақтау үшін 4 аптадан көп көрсетілген қызығушылықтарды автоматты түрде жойып отырамыз. Интернетті шолу кезінде белгілі бір қызығушылық тізімде қайтадан шығуы мүмкін. Бұл ретте Chromium-ның ескергенін қаламаған қызығушылықтарды өшіруге болады.</translation>
 <translation id="3567254597502212821">Браузерді қолдану тарихы, осы құрылғыда Chromium көмегімен кірген сайттардың жазбасы.</translation>
 <translation id="3575459661164320785">Компьютеріңізде зиянды бағдарламалық құрал бар. Chromium браузері оны өшіріп, параметрлеріңізді қалпына келтіреді де, кеңейтімдерді ажыратады. Соның арқасында браузеріңіз қалыпты жұмысын жалғастырады.</translation>
@@ -363,6 +367,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="9185526690718004400">&amp;Chromium-ді жаңарту үшін қайта іске қосу</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium дұрыс жұмыс істемеуі мүмкін, себебі оған Windows XP не Windows Vista жүйелерінде қолдау көрсетілмейді</translation>
+<translation id="942598560705308788">Chromium басқаратын сертификаттар</translation>
 <translation id="945990405696787151">Chromium-нің жаңа нұсқаларын алып тұру үшін macOS 10.13 не одан кейінгі операциялық жүйе керек болады. Бұл компьютерде OS X 10.11 нұсқасы орнатылған.</translation>
 <translation id="965162752251293939">Chromium-ді кім пайдаланып жатыр?</translation>
 <translation id="967427899662692980">Chromium браузерінің ең күшті қорғанысын қолданыңыз</translation>

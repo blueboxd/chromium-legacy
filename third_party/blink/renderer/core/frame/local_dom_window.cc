@@ -350,6 +350,10 @@ void LocalDOMWindow::DisableEval(const String& error_message) {
   GetScriptController().DisableEval(error_message);
 }
 
+void LocalDOMWindow::SetWasmEvalErrorMessage(const String& error_message) {
+  GetScriptController().SetWasmEvalErrorMessage(error_message);
+}
+
 String LocalDOMWindow::UserAgent() const {
   if (!GetFrame())
     return String();
@@ -772,9 +776,6 @@ void LocalDOMWindow::DocumentWasClosed() {
   // 4.6.4. Fire an event named pageshow at the Document object's relevant
   // global object, ...
   EnqueueNonPersistedPageshowEvent();
-
-  if (pending_state_object_)
-    EnqueuePopstateEvent(std::move(pending_state_object_));
 }
 
 void LocalDOMWindow::EnqueueNonPersistedPageshowEvent() {
@@ -839,27 +840,10 @@ void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                      TaskType::kDOMManipulation);
 }
 
-void LocalDOMWindow::EnqueuePopstateEvent(
+void LocalDOMWindow::DispatchPopstateEvent(
     scoped_refptr<SerializedScriptValue> state_object) {
-  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs
-  // to fire asynchronously
+  DCHECK(GetFrame());
   DispatchEvent(*PopStateEvent::Create(std::move(state_object), history()));
-}
-
-void LocalDOMWindow::StatePopped(
-    scoped_refptr<SerializedScriptValue> state_object) {
-  if (!GetFrame())
-    return;
-
-  // TODO(crbug.com/1254926): Remove pending_state_object_ and the capacity to
-  // delay popstate until after the load event once the behavior is proven
-  // compatible in M103.
-  if (document()->IsLoadCompleted() ||
-      base::FeatureList::IsEnabled(features::kDispatchPopstateSync)) {
-    EnqueuePopstateEvent(std::move(state_object));
-  } else {
-    pending_state_object_ = std::move(state_object);
-  }
 }
 
 LocalDOMWindow::~LocalDOMWindow() = default;
@@ -1987,7 +1971,7 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
   event.SetTrusted(true);
   event.SetTarget(target ? target : this);
   event.SetCurrentTarget(this);
-  event.SetEventPhase(Event::kAtTarget);
+  event.SetEventPhase(Event::PhaseType::kAtTarget);
 
   DEVTOOLS_TIMELINE_TRACE_EVENT("EventDispatch",
                                 inspector_event_dispatch_event::Data, event);
@@ -2259,8 +2243,8 @@ bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
              mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated);
 }
 
-bool LocalDOMWindow::DirectSocketCapability() const {
-  return Agent::IsDirectSocketEnabled();
+bool LocalDOMWindow::IsolatedApplicationCapability() const {
+  return Agent::IsIsolatedApplication();
 }
 
 ukm::UkmRecorder* LocalDOMWindow::UkmRecorder() {

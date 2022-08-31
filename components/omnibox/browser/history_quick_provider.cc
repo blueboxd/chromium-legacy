@@ -42,8 +42,7 @@ bool HistoryQuickProvider::disabled_ = false;
 
 HistoryQuickProvider::HistoryQuickProvider(AutocompleteProviderClient* client)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_QUICK, client),
-      in_memory_url_index_(client->GetInMemoryURLIndex()) {
-}
+      in_memory_url_index_(client->GetInMemoryURLIndex()) {}
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
@@ -77,14 +76,20 @@ size_t HistoryQuickProvider::EstimateMemoryUsage() const {
   return res;
 }
 
-HistoryQuickProvider::~HistoryQuickProvider() {
-}
+HistoryQuickProvider::~HistoryQuickProvider() = default;
 
 void HistoryQuickProvider::DoAutocomplete() {
+  // In keyword mode, it's possible we only provide results from one or two
+  // autocomplete provider(s), so it's sometimes necessary to show more results
+  // than provider_max_matches_.
+  size_t max_matches = InKeywordMode(autocomplete_input_)
+                           ? provider_max_matches_in_keyword_mode_
+                           : provider_max_matches_;
+
   // Get the matching URLs from the DB.
   ScoredHistoryMatches matches = in_memory_url_index_->HistoryItemsForTerms(
       autocomplete_input_.text(), autocomplete_input_.cursor_position(),
-      provider_max_matches_);
+      max_matches);
   if (matches.empty())
     return;
 
@@ -93,9 +98,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // track of the highest score we can assign to any later results we
   // see.
   int max_match_score = FindMaxMatchScore(matches);
-  for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
-       match_iter != matches.end(); ++match_iter) {
-    const ScoredHistoryMatch& history_match(*match_iter);
+  for (const auto& history_match : matches) {
     // Set max_match_score to the score we'll assign this result.
     max_match_score = std::min(max_match_score, history_match.raw_score);
     matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
@@ -138,8 +141,8 @@ int HistoryQuickProvider::FindMaxMatchScore(
       // provider completions compete with the URL-what-you-typed
       // match as normal.
       if (url_db) {
-        const std::string host(base::UTF16ToUTF8(
-            autocomplete_input_.text().substr(
+        const std::string host(
+            base::UTF16ToUTF8(autocomplete_input_.text().substr(
                 autocomplete_input_.parts().host.begin,
                 autocomplete_input_.parts().host.len)));
         // We want to put the URL-what-you-typed match first if either
@@ -199,8 +202,8 @@ int HistoryQuickProvider::FindMaxMatchScore(
   // depends on the likely score for the URL-what-you-typed result.
   int max_match_score = matches.begin()->raw_score;
   if (will_have_url_what_you_typed_match_first) {
-    max_match_score = std::min(max_match_score,
-        url_what_you_typed_match_score - 1);
+    max_match_score =
+        std::min(max_match_score, url_what_you_typed_match_score - 1);
   }
   return max_match_score;
 }
@@ -253,19 +256,28 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // classification though, user input is broken on symbols; e.g. the 1st
   // suggestion will display 'how-to-[yolo] - [yolo].com/#[yolo]'.
 
-  match.contents = url_formatter::FormatUrl(
-      info.url(),
-      AutocompleteMatch::GetFormatTypes(
-          autocomplete_input_.parts().scheme.len > 0 ||
-              history_match.match_in_scheme,
-          history_match.match_in_subdomain),
-      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-  auto contents_terms =
-      FindTermMatches(autocomplete_input_.text(), match.contents);
-  match.contents_class = ClassifyTermMatches(
-      contents_terms, match.contents.size(),
-      ACMatchClassification::MATCH | ACMatchClassification::URL,
-      ACMatchClassification::URL);
+  // If this is a document suggestion, hide its URL for (a) consistency with the
+  // document provider and (b) ease of reading.
+  // TODO(manukh): For doc suggestions, the description will be
+  //  'Doc Title - Google [Docs|Sheets...]'. For additional consistency with
+  //  the document provider, the description could be split to 'Doc Title' and
+  //  'Google [Docs|Sheets...]', moving the latter to contents. But for
+  //  now, do the simpler thing of just clearing the URL.
+  if (!match.IsDocumentSuggestion()) {
+    match.contents = url_formatter::FormatUrl(
+        info.url(),
+        AutocompleteMatch::GetFormatTypes(
+            autocomplete_input_.parts().scheme.len > 0 ||
+                history_match.match_in_scheme,
+            history_match.match_in_subdomain),
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+    auto contents_terms =
+        FindTermMatches(autocomplete_input_.text(), match.contents);
+    match.contents_class = ClassifyTermMatches(
+        contents_terms, match.contents.size(),
+        ACMatchClassification::MATCH | ACMatchClassification::URL,
+        ACMatchClassification::URL);
+  }
 
   match.description = info.title();
   auto description_terms =
@@ -282,6 +294,10 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
     match.SetAllowedToBeDefault(autocomplete_input_);
+  }
+
+  if (InKeywordMode(autocomplete_input_)) {
+    match.from_keyword = true;
   }
 
   match.RecordAdditionalInfo("typed count", info.typed_count());

@@ -7,8 +7,9 @@
  * braille content to the Panel on Chrome OS, or a content script on
  * other platforms.
  */
-import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
-import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
+import {Msgs} from '../../common/msgs.js';
+import {PanelCommand, PanelCommandType} from '../../common/panel_command.js';
+import {ChromeVoxPrefs} from '../prefs.js';
 
 export class BrailleCaptionsBackground {
   /**

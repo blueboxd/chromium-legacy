@@ -73,10 +73,8 @@ source_set("browser_tests") {
     "//chrome/app:command_ids",
     "//chrome/browser:browser_themes",
     "//chrome/browser:theme_properties",
-    "//chrome/browser/ash/system_web_apps/test_support",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
-    "//chrome/browser/ui/ash/system_web_apps",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
@@ -86,6 +84,13 @@ source_set("browser_tests") {
     "//components/site_engagement/content",
     "//components/webapps/browser",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chrome/browser/ash/system_web_apps/test_support",
+      "//chrome/browser/ui/ash/system_web_apps",
+    ]
+  }
 }
 
 # On Lacros, these browser tests require Ash to be running.

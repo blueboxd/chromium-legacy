@@ -69,6 +69,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2139300032719313227">Redémarrer Chrome OS</translation>
 <translation id="2151406531797534936">Veuillez redémarrer Chrome maintenant</translation>
 <translation id="2174917724755363426">L'installation n'est pas terminée. Voulez-vous vraiment annuler?</translation>
+<translation id="223889379102603431">Renseignements sur la façon dont Chrome gère ses certificats racines</translation>
 <translation id="2258103955319320201">Pour accéder à vos données de navigation Chrome sur tous vos appareils, connectez-vous et activez la synchronisation</translation>
 <translation id="2290014774651636340">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Google Chrome seront désactivées.</translation>
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome?</translation>
@@ -81,6 +82,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2401189691232800402">Système Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
+<translation id="2494974097748878569">Assistant Google dans Chrome</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
 <translation id="2559253115192232574">Ultérieurement, un site que vous visitez peut demander à Chrome de voir vos centres d'intérêt afin de personnaliser les annonces que vous voyez. Chrome peut partager jusqu'à trois centres d'intérêt.</translation>
 <translation id="2563121210305478421">Relancer Chrome?</translation>
@@ -159,6 +161,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3865754807470779944">La version <ph name="PRODUCT_VERSION" /> de Chrome est installée</translation>
 <translation id="3873044882194371212">Ouvrir le lien dans une fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
+<translation id="3999683152997576765">Vous pouvez voir et retirer les sujets d'intérêt que les sites utilisent pour vous montrer des annonces. Chrome estime vos centres d'intérêt en fonction de votre historique de navigation récent.</translation>
 <translation id="4035053306113201399">Chrome OS doit être redémarré pour appliquer la mise à jour.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et gérer Google Chrome</translation>
@@ -281,6 +284,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6739177684496155661">Continuer avec un nouveau profil Chrome?</translation>
 <translation id="6750954913813541382">Pour corriger les erreurs d'orthographe, Chrome envoie à Google le texte que vous tapez dans le navigateur</translation>
 <translation id="677276454032249905">Quitter Chrome quand même?</translation>
+<translation id="6785872064505734160">L'Assistant Google dans Chrome peut effectuer des actions dans différents sites Web pour vous</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS.</translation>
 <translation id="6881299373831449287">Mise à jour de Chrome</translation>
 <translation id="6885412569789873916">Applications Chrome bêta</translation>
@@ -353,6 +357,7 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="8129812357326543296">À propos de &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initialisation en cours...</translation>
 <translation id="8255190535488645436">Google Chrome utilise votre caméra et votre microphone.</translation>
+<translation id="8270775718612349140">Certificats gérés par Chrome</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="828798499196665338">Ton parent a désactivé le paramètre « Autorisations pour les sites, les applications et les extensions » dans Chrome. L'activation de ce <ph name="EXTENSION_TYPE_PARAMETER" /> n'est pas autorisée.</translation>
 <translation id="8290100596633877290">Google Chrome a planté. Voulez-vous le relancer maintenant?</translation>

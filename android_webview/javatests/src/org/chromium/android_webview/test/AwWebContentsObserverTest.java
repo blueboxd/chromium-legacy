@@ -203,11 +203,11 @@ public class AwWebContentsObserverTest {
                 isRendererInitiated, null /* initiatorOrigin */, transition, false /* isPost */,
                 false /* hasUserGesture */, false /* isRedirect */, false /* isExternalProtocol */,
                 0 /* navigationId */, false /* isPageActivation */, false /* isReload */);
-        mWebContentsObserver.didStartNavigation(navigation);
+        mWebContentsObserver.didStartNavigationInPrimaryMainFrame(navigation);
 
         navigation.didFinish(gurl, isErrorPage, true /* hasCommitted */, isFragmentNavigation,
                 false /* isDownload */, false /* isValidSearchFormUrl */, transition,
-                0 /* errorCode*/, 200 /* httpStatusCode*/);
+                0 /* errorCode*/, 200 /* httpStatusCode*/, false /* isExternalProtocol */);
         mWebContentsObserver.didFinishNavigation(navigation);
     }
 }

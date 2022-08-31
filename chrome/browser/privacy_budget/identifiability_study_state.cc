@@ -66,7 +66,8 @@ IdentifiabilityStudyState::IdentifiabilityStudyState(PrefService* pref_service)
               // bigger than 0.
               : 1,
           kMesaDistributionRatio),
-      reid_estimator_(PrivacyBudgetReidScoreEstimator(settings_)) {
+      reid_estimator_(
+          PrivacyBudgetReidScoreEstimator(&settings_, pref_service)) {
   InitializeGlobalStudySettings();
   InitFromPrefs();
 }
@@ -87,11 +88,22 @@ bool IdentifiabilityStudyState::ShouldRecordSurface(
   if (surface.GetType() == blink::IdentifiableSurface::Type::kReservedInternal)
     return true;
 
+  if (surface.GetType() ==
+      blink::IdentifiableSurface::Type::kReidScoreEstimator) {
+    return settings_.IsUsingReidScoreEstimator();
+  }
+
+  // All other surfaces should be recorded only when sampling.
+  if (!settings_.IsUsingSamplingOfSurfaces())
+    return false;
+
   if (base::Contains(active_surfaces_, surface))
     return true;
 
-  if (settings_.is_using_assigned_block_sampling())
+  if (settings_.IsUsingAssignedBlockSampling())
     return false;
+
+  DCHECK(settings_.IsUsingRandomSampling());
 
   if ((settings_.allowed_random_types().size() > 0) &&
       (!base::Contains(settings_.allowed_random_types(), surface.GetType()))) {
@@ -125,6 +137,7 @@ void IdentifiabilityStudyState::InitializeGlobalStudySettings() {
 
 bool IdentifiabilityStudyState::DecideInclusionForNewSurface(
     blink::IdentifiableSurface new_surface) {
+  DCHECK(settings_.IsUsingRandomSampling());
   if (UNLIKELY(seen_surfaces_.size() > kMaxSelectedSurfaceOffset + 1))
     return false;
 
@@ -192,6 +205,8 @@ unsigned IdentifiabilityStudyState::GetCountOfOffsetsToSelect() const {
 }
 
 void IdentifiabilityStudyState::MaybeUpdateSelectedOffsets() {
+  DCHECK(settings_.IsUsingRandomSampling());
+
   if (!CanAddOneMoreActiveSurface())
     return;
 
@@ -328,6 +343,8 @@ void IdentifiabilityStudyState::ResetInMemoryState() {
 
 void IdentifiabilityStudyState::ResetPersistedState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  reid_estimator_.ResetPersistedState();
+
   ResetInMemoryState();
 
   pref_service_->ClearPref(prefs::kPrivacyBudgetSeenSurfaces);
@@ -341,15 +358,18 @@ void IdentifiabilityStudyState::ResetPersistedState() {
 
   pref_service_->SetInteger(prefs::kPrivacyBudgetGeneration, generation_);
 
-  if (settings_.is_using_assigned_block_sampling()) {
+  if (settings_.IsUsingAssignedBlockSampling()) {
     InitStateForAssignedBlockSampling();
-  } else {
+  }
+
+  if (settings_.IsUsingRandomSampling()) {
     MaybeUpdateSelectedOffsets();
   }
   CheckInvariants();
 }
 
 void IdentifiabilityStudyState::InitStateForAssignedBlockSampling() {
+  DCHECK(settings_.IsUsingAssignedBlockSampling());
   DCHECK_LT(selected_block_offset_, 0);
 
   IdentifiableSurfaceBlocks blocks = settings_.blocks();
@@ -488,23 +508,29 @@ void IdentifiabilityStudyState::InitFromPrefs() {
     return;
   }
 
-  if (settings_.is_using_assigned_block_sampling()) {
+  reid_estimator_.Init();
+
+  if (settings_.IsUsingAssignedBlockSampling()) {
     InitStateForAssignedBlockSampling();
-  } else {
+  }
+
+  if (settings_.IsUsingRandomSampling()) {
     InitStateForRandomSurfaceSampling();
   }
+
   CheckInvariants();
 }
 
 void IdentifiabilityStudyState::MaybeStoreValueForComputingReidScore(
     blink::IdentifiableSurface surface,
     blink::IdentifiableToken token) {
-  if (!settings_.is_using_reid_score_estimator())
+  if (!settings_.IsUsingReidScoreEstimator())
     return;
   reid_estimator_.ProcessForReidScore(surface, token);
 }
 
 void IdentifiabilityStudyState::InitStateForRandomSurfaceSampling() {
+  DCHECK(settings_.IsUsingRandomSampling());
   ResetInMemoryState();
 
   selected_offsets_ =

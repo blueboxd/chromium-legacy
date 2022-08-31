@@ -15,7 +15,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './all_sites_icons.html.js';
 import './clear_storage_dialog_shared.css.js';
 import './site_entry.js';
@@ -467,7 +467,7 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: siteGroupToUpdate.numCookies,
-      origins: []
+      origins: [],
     };
 
     if (actionScope === 'origin') {
@@ -545,7 +545,7 @@ export class AllSitesElement extends AllSitesElementBase {
    * Checks if a filter is applied.
    * @return True if a filter is applied.
    */
-  private isFiltered_(): Boolean {
+  private isFiltered_(): boolean {
     return this.filter !== '';
   }
 
@@ -903,7 +903,7 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: 0,
-      origins: []
+      origins: [],
     };
 
     this.browserProxy.clearEtldPlus1DataAndCookies(siteGroupToUpdate.etldPlus1);

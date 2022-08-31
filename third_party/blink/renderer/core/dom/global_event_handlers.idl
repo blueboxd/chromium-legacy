@@ -33,6 +33,7 @@
     LegacyTreatAsPartialInterface
 ] interface mixin GlobalEventHandlers {
     attribute EventHandler onabort;
+    attribute EventHandler onbeforeinput;
     [RuntimeEnabled=BeforeMatchEvent] attribute EventHandler onbeforematch;
     attribute EventHandler onblur;
     attribute EventHandler oncancel;
@@ -41,6 +42,7 @@
     attribute EventHandler onchange;
     attribute EventHandler onclick;
     attribute EventHandler onclose;
+    [RuntimeEnabled=ContentVisibilityAutoStateChangedEvent] attribute EventHandler oncontentvisibilityautostatechanged;
     attribute EventHandler oncontextlost;
     attribute EventHandler oncontextmenu;
     attribute EventHandler oncontextrestored;
@@ -116,7 +118,7 @@
     attribute EventHandler onlostpointercapture;
     attribute EventHandler onpointerdown;
     attribute EventHandler onpointermove;
-    [RuntimeEnabled=PointerRawUpdate] attribute EventHandler onpointerrawupdate;
+    attribute EventHandler onpointerrawupdate;
     attribute EventHandler onpointerup;
     attribute EventHandler onpointercancel;
     attribute EventHandler onpointerover;

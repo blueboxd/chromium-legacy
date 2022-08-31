@@ -23,7 +23,6 @@ import android.view.ViewStub;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -133,7 +132,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarTablet;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarInteractabilityManager;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
-import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
@@ -293,8 +291,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private StartSurface mStartSurface;
     private StartSurface.StateObserver mStartSurfaceStateObserver;
     private AppBarLayout.OnOffsetChangedListener mStartSurfaceHeaderOffsetChangeListener;
-    @Nullable
-    private Runnable mUnblockAppLaunchDrawRunnable;
 
     private OneshotSupplier<ToolbarIntentMetadata> mIntentMetadataOneshotSupplier;
     private OneshotSupplier<Boolean> mPromoShownOneshotSupplier;
@@ -384,10 +380,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param ephemeralTabCoordinatorSupplier Supplies the {@link EphemeralTabCoordinator}.
      * @param initializeWithIncognitoColors Whether the toolbar should be initialized with incognito
      * @param backPressManager The {@link BackPressManager} handling back press gesture.
-     * @param unblockDrawForOverviewPageRunnable The runnable for unblocking the {@link
-     *                                           AppLaunchDrawBlocker} which is specifically for
-     *                                           blocking draw on launch when overview page
-     *                                           is showing during startup.
      */
     public ToolbarManager(AppCompatActivity activity, BrowserControlsSizer controlsSizer,
             FullscreenManager fullscreenManager, ToolbarControlContainer controlContainer,
@@ -424,8 +416,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
             @NonNull OmniboxPedalDelegate omniboxPedalDelegate,
             Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            boolean initializeWithIncognitoColors, @Nullable BackPressManager backPressManager,
-            @Nullable Runnable unblockDrawForOverviewPageRunnable) {
+            boolean initializeWithIncognitoColors, @Nullable BackPressManager backPressManager) {
         TraceEvent.begin("ToolbarManager.ToolbarManager");
         mActivity = activity;
         mWindowAndroid = windowAndroid;
@@ -452,7 +443,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mSnackbarManager = snackbarManager;
         mTabReparentingControllerSupplier = tabReparentingControllerSupplier;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
-        mUnblockAppLaunchDrawRunnable = unblockDrawForOverviewPageRunnable;
 
         mIsProgressBarVisibleSupplier.set(!VrModuleProvider.getDelegate().isInVr());
         mVrModeObserver = new VrModeObserver() {
@@ -640,7 +630,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     VoiceToolbarButtonController::isToolbarMicEnabled, jankTracker,
                     merchantTrustSignalsCoordinatorSupplier,
                     omniboxPedalDelegate, mControlsVisibilityDelegate,
-                    ChromePureJavaExceptionReporter::postReportJavaException);
+                    ChromePureJavaExceptionReporter::postReportJavaException, backPressManager);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
@@ -798,8 +788,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
+            public void onDidStartNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
                 // Update URL as soon as it becomes available when it's a new tab.
                 // But we want to update only when it's a new tab. So we check whether the current
                 // navigation entry is initial, meaning whether it has the same target URL as the
@@ -809,6 +799,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                         && tab.getWebContents().getNavigationController().isInitialNavigation()) {
                     mLocationBarModel.notifyUrlChanged();
                 }
+            }
+
+            @Override
+            public void onDidStartNavigationNoop(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
 
             @Override
@@ -1012,10 +1007,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 assert mLocationBar instanceof LocationBarCoordinator;
                 ((LocationBarCoordinator) mLocationBar).startAutocompletePrefetch();
             }
-            if (mUnblockAppLaunchDrawRunnable != null) {
-                mUnblockAppLaunchDrawRunnable.run();
-                mUnblockAppLaunchDrawRunnable = null;
-            }
         }
         mToolbar.setContentAttached(layoutType == LayoutType.BROWSING);
     }
@@ -1075,13 +1066,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             // true/false. Otherwise, it will cause infinite loop of calling recreate().
             if (wasStartSurfaceAsHomepage == null || wasHomepageEnabled == null) return;
 
-            // We need to check
-            // {@link ReturnToChromeUtil#shouldShowStartSurfaceAsTheHomePage(Context)}
-            // which checks both 1) whether homepage URI is customized and 2) whether the homepage
-            // is enabled.
-            if (wasStartSurfaceAsHomepage != isStartSurfaceAsHomepage
-                    || (wasHomepageEnabled != isHomepageEnabled
-                            && ReturnToChromeUtil.shouldOpenNTPInsteadOfStart())) {
+            if (mIsStartSurfaceEnabled != ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)) {
                 // If the state of whether Start surface is enabled is changed due to the homepage
                 // settings change, we need to recreate CTA to adopt this config change.
                 recreateActivityWithTabReparenting();
@@ -1231,23 +1216,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             if (nativePage instanceof NewTabPage) return (NewTabPage) nativePage;
         }
         return null;
-    }
-
-    /**
-     * Called when the contextual action bar's visibility has changed (i.e. the widget shown
-     * when you can copy/paste text after long press).
-     * @param visible Whether the contextual action bar is now visible.
-     */
-    public void onActionBarVisibilityChanged(boolean visible) {
-        ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
-        if (!visible && actionBar != null) actionBar.hide();
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
-            if (visible) {
-                mActionModeController.startShowAnimation();
-            } else {
-                mActionModeController.startHideAnimation();
-            }
-        }
     }
 
     /**

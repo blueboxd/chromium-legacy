@@ -376,7 +376,7 @@ void AmbientBackendControllerImpl::UpdateSettings(
   // race condition with |AmbientPhotoController| possibly being destructed if
   // |kAmbientModeEnabled| pref is toggled off.
   auto* photo_controller = ambient_controller->ambient_photo_controller();
-  DCHECK(photo_controller);
+  CHECK(photo_controller) << "Photo controller is required to update settings";
   photo_controller->ClearCache();
 
   ambient_controller->RequestAccessToken(base::BindOnce(
@@ -407,8 +407,8 @@ void AmbientBackendControllerImpl::FetchWeather(FetchWeatherCallback callback) {
           auto json_handler =
               [](FetchWeatherCallback callback,
                  data_decoder::DataDecoder::ValueOrError result) {
-                if (result.value) {
-                  std::move(callback).Run(ToWeatherInfo(result.value.value()));
+                if (result.has_value()) {
+                  std::move(callback).Run(ToWeatherInfo(*result));
                 } else {
                   DVLOG(1) << "Failed to parse weather json.";
                   std::move(callback).Run(absl::nullopt);

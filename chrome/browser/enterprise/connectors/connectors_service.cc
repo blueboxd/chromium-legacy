@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
+#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -57,7 +58,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #include "components/policy/core/common/policy_loader_lacros.h"
 #endif
 
@@ -118,10 +119,10 @@ bool IsURLExemptFromAnalysis(const GURL& url) {
 #if BUILDFLAG(IS_CHROMEOS)
 absl::optional<std::string> GetDeviceDMToken() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  const crosapi::mojom::BrowserInitParams* init_params =
-      chromeos::BrowserInitParams::Get();
-  if (init_params && init_params->device_properties) {
-    return init_params->device_properties->device_dm_token;
+  const chromeos::BrowserParamsProxy* init_params =
+      chromeos::BrowserParamsProxy::Get();
+  if (init_params->DeviceProperties()) {
+    return init_params->DeviceProperties()->device_dm_token;
   }
   return absl::nullopt;
 #else
@@ -306,18 +307,19 @@ absl::optional<GURL> ConnectorsService::GetLearnMoreUrl(
   return connectors_manager_->GetLearnMoreUrl(connector, tag);
 }
 
-absl::optional<bool> ConnectorsService::GetBypassJustificationRequired(
+bool ConnectorsService::GetBypassJustificationRequired(
     AnalysisConnector connector,
     const std::string& tag) {
   if (!ConnectorsEnabled())
-    return absl::nullopt;
+    return false;
 
   return connectors_manager_->GetBypassJustificationRequired(connector, tag);
 }
 
-bool ConnectorsService::HasCustomInfoToDisplay(AnalysisConnector connector,
-                                               const std::string& tag) {
-  return GetCustomMessage(connector, tag) || GetLearnMoreUrl(connector, tag);
+bool ConnectorsService::HasExtraUiToDisplay(AnalysisConnector connector,
+                                            const std::string& tag) {
+  return GetCustomMessage(connector, tag) || GetLearnMoreUrl(connector, tag) ||
+         GetBypassJustificationRequired(connector, tag);
 }
 
 std::vector<std::string> ConnectorsService::GetAnalysisServiceProviderNames(
@@ -557,6 +559,7 @@ KeyedService* ConnectorsServiceFactory::BuildServiceInstanceFor(
   return new ConnectorsService(
       context,
       std::make_unique<ConnectorsManager>(
+          ExtensionInstallEventRouter(context),
           user_prefs::UserPrefs::Get(context), GetServiceProviderConfig(),
           base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled)));
 }

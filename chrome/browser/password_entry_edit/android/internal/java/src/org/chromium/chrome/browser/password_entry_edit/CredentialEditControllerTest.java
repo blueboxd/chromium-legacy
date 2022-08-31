@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_entry_edit;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -53,20 +54,21 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditCoordinator.CredentialActionDelegate;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditMediator.CredentialEntryAction;
 import org.chromium.chrome.browser.password_manager.ConfirmationDialogHelper;
 import org.chromium.chrome.browser.password_manager.settings.PasswordAccessReauthenticationHelper;
 import org.chromium.chrome.browser.password_manager.settings.PasswordAccessReauthenticationHelper.ReauthReason;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Tests verifying that the credential edit mediator modifies the model correctly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE)
 public class CredentialEditControllerTest {
     private static final String TEST_URL = "https://m.a.xyz/signin";
     private static final String TEST_USERNAME = "TestUsername";
@@ -99,6 +101,8 @@ public class CredentialEditControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        UmaRecorderHolder.resetForTesting();
+        Clipboard.resetForTesting();
         mMediator = new CredentialEditMediator(mReauthenticationHelper, mDeleteDialogHelper,
                 mCredentialActionDelegate, mHelpLauncher, false);
         mModel = new PropertyModel.Builder(ALL_KEYS)
@@ -212,6 +216,7 @@ public class CredentialEditControllerTest {
 
         ClipboardManager clipboard =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        assertNotNull(clipboard.getPrimaryClip());
         assertEquals(TEST_PASSWORD, clipboard.getPrimaryClip().getItemAt(0).getText());
         verifyTheClipdataContainSensitiveExtra(clipboard.getPrimaryClip());
     }

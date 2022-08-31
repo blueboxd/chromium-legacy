@@ -72,7 +72,6 @@ class BluetoothAllowedDevicesMap;
 class BroadcastChannelService;
 class BucketManager;
 class CacheStorageControlWrapper;
-class ComputePressureManager;
 class CookieStoreManager;
 class DevToolsBackgroundServicesContextImpl;
 class FileSystemAccessEntryFactory;
@@ -89,6 +88,7 @@ class MediaLicenseManager;
 class NativeIOContextImpl;
 class PaymentAppContextImpl;
 class PrefetchURLLoaderService;
+class PrivateAggregationManagerImpl;
 class PushMessagingContext;
 class QuotaContext;
 class SharedStorageWorkletHostManager;
@@ -158,8 +158,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
-  void CreateHasTrustTokensAnswerer(
-      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+  void CreateTrustTokenQueryAnswerer(
+      mojo::PendingReceiver<network::mojom::TrustTokenQueryAnswerer> receiver,
       const url::Origin& top_frame_origin) override;
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
   CreateURLLoaderNetworkObserverForFrame(int process_id,
@@ -214,7 +214,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                  base::OnceClosure callback) override;
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
-                 OriginMatcherFunction origin_matcher,
+                 StorageKeyPolicyMatcherFunction storage_key_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,
@@ -254,7 +254,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   AttributionManager* GetAttributionManager();
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManager> font_access_manager);
-  ComputePressureManager* GetComputePressureManager();
   std::string GetPartitionDomain();
   AggregationServiceImpl* GetAggregationService();
   FontAccessManager* GetFontAccessManager();
@@ -265,6 +264,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Gets the SharedStorageManager for the StoragePartition, or nullptr if it
   // doesn't exist because the feature is disabled.
   storage::SharedStorageManager* GetSharedStorageManager();
+  PrivateAggregationManagerImpl* GetPrivateAggregationManager();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -556,13 +556,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   // state.
   void OnStorageServiceDisconnected();
 
-  // Clears the data specified by the `storage_key` or `origin_matcher`.
-  // We will never have both `storage_key` be populated and a `origin_matcher`.
+  // Clears the data specified by the `storage_key` or `storage_key_matcher`.
+  // `storage_key` and `storage_key_matcher` will never both be populated.
   void ClearDataImpl(
       uint32_t remove_mask,
       uint32_t quota_storage_remove_mask,
       const blink::StorageKey& storage_key,
-      OriginMatcherFunction origin_matcher,
+      StorageKeyPolicyMatcherFunction storage_key_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
       bool perform_storage_cleanup,
       const base::Time begin,
@@ -619,8 +619,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   std::unique_ptr<LockManager> lock_manager_;
-  std::unique_ptr<SharedStorageWorkletHostManager>
-      shared_storage_worklet_host_manager_;
   std::unique_ptr<IndexedDBControlWrapper> indexed_db_control_wrapper_;
   std::unique_ptr<CacheStorageControlWrapper> cache_storage_control_wrapper_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -662,9 +660,14 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Owning pointer to the SharedStorageManager for this partition.
   std::unique_ptr<storage::SharedStorageManager> shared_storage_manager_;
 
-  // TODO(crbug.com/1205695): ComputePressureManager should live elsewher. The
-  //                          Compute Pressure API does not store data.
-  std::unique_ptr<ComputePressureManager> compute_pressure_manager_;
+  // This needs to be declared after `shared_storage_manager_` because
+  // `shared_storage_worklet_host` (managed by
+  // `shared_storage_worklet_host_manager_`) ultimately stores a raw pointer on
+  // it.
+  std::unique_ptr<SharedStorageWorkletHostManager>
+      shared_storage_worklet_host_manager_;
+
+  std::unique_ptr<PrivateAggregationManagerImpl> private_aggregation_manager_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

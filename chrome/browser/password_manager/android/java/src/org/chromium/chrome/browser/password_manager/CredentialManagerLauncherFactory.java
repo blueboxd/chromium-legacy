@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.base.ThreadUtils.assertOnUiThread;
 
+import androidx.annotation.VisibleForTesting;
+
 /**
  * This factory returns an implementation for the launcher. The factory itself is also implemented
  * downstream.
@@ -29,18 +31,17 @@ public abstract class CredentialManagerLauncherFactory {
      * Returns the downstream implementation provided by subclasses.
      *
      * @return An implementation of the {@link CredentialManagerLauncher} if one exists.
+     *
+     * TODO(crbug.com/1346239): Check if backend could be instantiated and throw error
      */
-    public CredentialManagerLauncher createLauncher() {
+    public CredentialManagerLauncher createLauncher()
+            throws CredentialManagerLauncher.CredentialManagerBackendException {
         return null;
     }
 
-    /**
-     * Returns whether the downstream implementation has the required versions of the
-     * dependency it relies on.
-     *
-     * @return True if the required dependency version is available, false otherwise.
-     */
-    public boolean isBackendVersionSupported() {
-        return false;
+    @VisibleForTesting
+    public static void setFactoryForTesting(
+            CredentialManagerLauncherFactory credentialManagerLauncherFactory) {
+        sInstance = credentialManagerLauncherFactory;
     }
 }

@@ -1,9 +1,21 @@
 <style include="os-feedback-shared">
+  :host {
+    --iron-icon-height: 40px;
+  }
+
   cr-link-row {
-    border: 1px solid;
+    --cr-link-row-icon-width: 40px;
+    border: 1px solid var(--cros-separator-color);
     border-radius: 4px;
     height: 64px;
     margin: 12px 0 0 0;
+  }
+
+  #buttonDone {
+    display: flex;
+    height: 32px;
+    padding: 6px 16px;
+    width: 63px;
   }
 
   #help-resources {
@@ -76,7 +88,7 @@
         on-click="handleBackButtonClicked_">
       <span>[[i18n('buttonNewReport')]]</span>
     </cr-button>
-    <cr-button id="buttonDone" class="cancel-button"
+    <cr-button id="buttonDone" class="action-button"
       on-click="handleDoneButtonClicked_">[[i18n('buttonDone')]]</cr-button>
   </div>
 </div>

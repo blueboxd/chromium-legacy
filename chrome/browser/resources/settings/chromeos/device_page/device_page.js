@@ -7,6 +7,7 @@
  * peripheral settings.
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import './audio.js';
 import './display.js';
 import './keyboard.js';
 import './pointers.js';
@@ -17,7 +18,7 @@ import './stylus.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -135,7 +136,9 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           if (routes.DISPLAY) {
             map.set(routes.DISPLAY.path, '#displayRow');
           }
-          // TODO(crbug.com/1092970): Create routes.Audio page.
+          if (routes.AUDIO) {
+            map.set(routes.AUDIO.path, '#audioRow');
+          }
           if (routes.STORAGE) {
             map.set(routes.STORAGE.path, '#storageRow');
           }
@@ -249,6 +252,14 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
    */
   onDisplayTap_() {
     Router.getInstance().navigateTo(routes.DISPLAY);
+  }
+
+  /**
+   * Handler for tapping the Audio settings menu item.
+   * @private
+   */
+  onAudioTap_() {
+    Router.getInstance().navigateTo(routes.AUDIO);
   }
 
   /**

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 #include "chromeos/components/quick_answers/utils/spell_checker.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -39,6 +40,8 @@ constexpr int kDefinitionIntentAndSelectionLengthDiffThreshold = 2;
 // model.
 // Set of invalid characters for definition annonations.
 constexpr char kInvalidCharactersSet[] = "()[]{}<>_&|!";
+
+constexpr char kEnglishLanguage[] = "en";
 
 const std::map<std::string, IntentType>& GetIntentTypeMap() {
   static base::NoDestructor<std::map<std::string, IntentType>> kIntentTypeMap(
@@ -92,10 +95,31 @@ IntentType RewriteIntent(const std::string& selected_text,
   return intent;
 }
 
+bool IsPreferredLanguage(const std::string& detected_language) {
+  auto preferred_languages_list =
+      base::SplitString(QuickAnswersState::Get()->preferred_languages(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const std::string& locale : preferred_languages_list) {
+    if (l10n_util::GetLanguage(locale) == detected_language)
+      return true;
+  }
+  return false;
+}
+
 // TODO(b/169370175): There is an issue with text classifier that
 // concatenated words are annotated as definitions. Before we switch to v2
 // model, skip such kind of queries for definition annotation for now.
 bool ShouldSkipDefinition(const std::string& text) {
+  // Skip definition annotations if English is not device language or user
+  // preferred language (Currently the text classifier only works with English
+  // words).
+  auto device_language =
+      l10n_util::GetLanguage(QuickAnswersState::Get()->application_locale());
+  if (device_language != kEnglishLanguage &&
+      !IsPreferredLanguage(kEnglishLanguage))
+    return true;
+
   DCHECK(text.length());
   // Skip the query for definition annotation if the selected text contains
   // capitalized characters in the middle and not all capitalized.
@@ -111,18 +135,6 @@ bool ShouldSkipDefinition(const std::string& text) {
   if (text.find_first_of(kInvalidCharactersSet) != std::string::npos)
     return true;
 
-  return false;
-}
-
-bool IsPreferredLanguage(const std::string& detected_language) {
-  auto preferred_languages_list =
-      base::SplitString(QuickAnswersState::Get()->preferred_languages(), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  for (const std::string& locale : preferred_languages_list) {
-    if (l10n_util::GetLanguage(locale) == detected_language)
-      return true;
-  }
   return false;
 }
 
@@ -200,7 +212,8 @@ void IntentGenerator::MaybeLoadTextClassifier(
 }
 
 void IntentGenerator::CheckSpellingCallback(const QuickAnswersRequest& request,
-                                            bool correctness) {
+                                            bool correctness,
+                                            const std::string& language) {
   // Generate dictionary intent if the selected word passed spell check.
   // The dictionaries treat digits as valid words, while we will not be able to
   // grab any useful information from the Search server for words like that.
@@ -209,7 +222,12 @@ void IntentGenerator::CheckSpellingCallback(const QuickAnswersRequest& request,
   if (correctness && !HasDigits(request.selected_text)) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kDictionary,
-                        QuickAnswersState::Get()->application_locale()));
+                        QuickAnswersState::Get()->application_locale(),
+                        language));
+
+    // Record intent source type and language for dictionary intent.
+    RecordDictionaryIntentSource(DictionaryIntentSource::kHunspell);
+    RecordDictionaryIntentLanguage(language);
     return;
   }
 
@@ -276,6 +294,14 @@ void IntentGenerator::AnnotationCallback(
               entity_str,
               RewriteIntent(request.selected_text, entity_str, it->second),
               QuickAnswersState::Get()->application_locale()));
+
+      // Record intent source type and language for dictionary intent.
+      if (it->second == IntentType::kDictionary) {
+        RecordDictionaryIntentSource(DictionaryIntentSource::kTextClassifier);
+        // Record the English language since currently the text classifier only
+        // works with English words.
+        RecordDictionaryIntentLanguage(kEnglishLanguage);
+      }
       return;
     }
   }

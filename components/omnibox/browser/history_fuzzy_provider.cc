@@ -16,7 +16,8 @@
 
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
@@ -28,13 +29,26 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/bookmark_provider.h"
-#include "components/omnibox/browser/history_quick_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/elide_url.h"
 #include "url/gurl.h"
 
 namespace {
+
+// Histogram names for measuring sub-provider match conversion efficacy.
+// Reminder in case other sub-providers or metrics are added: update
+// the `Omnibox.FuzzyMatchConversion` entry in histograms.xml.
+const char kMetricMatchConversionHistoryQuick[] =
+    "Omnibox.FuzzyMatchConversion.HistoryQuick";
+const char kMetricMatchConversionBookmark[] =
+    "Omnibox.FuzzyMatchConversion.Bookmark";
+
+// This cap ensures the search trie will not grow without bound. Up to half
+// the total capacity may be filled at startup from loaded significant URLs.
+// The enforced limit may be further constrained by
+// `MaxNumHQPUrlsIndexedAtStartup`.
+constexpr int kMaxTerminalCount = 1000;
 
 // This utility function reduces a URL to the most meaningful and likely part
 // of the hostname to be matched against, i.e. the domain, the URL's TLD+1.
@@ -214,26 +228,38 @@ Node::Node(Node&&) = default;
 
 Node::~Node() = default;
 
-void Node::Insert(const std::u16string& text, size_t from) {
-  if (from >= text.length()) {
+void Node::Insert(const std::u16string& text, size_t text_index) {
+  if (text_index >= text.length()) {
+    relevance_total += 1 - relevance;
     relevance = 1;
     return;
   }
-  std::unique_ptr<Node>& node = next[text[from]];
+  std::unique_ptr<Node>& node = next[text[text_index]];
   if (!node) {
     node = std::make_unique<Node>();
   }
-  node->Insert(text, from + 1);
+  relevance_total -= node->relevance_total;
+  node->Insert(text, text_index + 1);
+  relevance_total += node->relevance_total;
 }
 
-bool Node::Delete(const std::u16string& text, size_t from) {
-  if (from < text.length()) {
-    auto it = next.find(text[from]);
-    if (it != next.end() && it->second->Delete(text, from + 1)) {
-      next.erase(it);
+void Node::Delete(const std::u16string& text, size_t text_index) {
+  if (text_index < text.length()) {
+    auto it = next.find(text[text_index]);
+    if (it != next.end()) {
+      Node* const node = it->second.get();
+      relevance_total -= node->relevance_total;
+      node->Delete(text, text_index + 1);
+      if (node->relevance_total == 0) {
+        next.erase(it);
+      } else {
+        relevance_total += node->relevance_total;
+      }
     }
+  } else {
+    relevance_total -= relevance;
+    relevance = 0;
   }
-  return next.empty();
 }
 
 void Node::Clear() {
@@ -397,19 +423,16 @@ bool Node::FindCorrections(const std::u16string& text,
   return false;
 }
 
-void Node::Log(std::u16string built) const {
-  if (relevance > 0) {
-    DVLOG(1) << "  <" << built << ">";
-  }
-  for (const auto& entry : next) {
-    entry.second->Log(built + entry.first);
-  }
-}
-
 size_t Node::EstimateMemoryUsage() const {
   size_t res = 0;
   res += base::trace_event::EstimateMemoryUsage(next);
   return res;
+}
+
+int Node::TerminalCount() const {
+  // This works as long as `relevance` values mark terminals with 1 and
+  // non-terminals with 0; see `Insert()`.
+  return relevance_total;
 }
 
 // This task class loads URLs considered significant according to
@@ -436,7 +459,17 @@ class LoadSignificantUrls : public history::HistoryDBTask {
     if (db && db->InitURLEnumeratorForSignificant(&enumerator)) {
       DVLOG(1) << "Got InMemoryDatabase";
       history::URLRow row;
-      while (enumerator.GetNextURL(&row)) {
+      // The `MaxNumHQPUrlsIndexedAtStartup` dependency here is to ensure
+      // that we keep a lower cap for mobile; it's much higher on desktop.
+      // Note the divide, which ensures at least half the capacity will be kept
+      // for later visited domains. `GetNextUrl` takes the most significant
+      // URLs from the database (enumerator order) and duplicates won't count.
+      const int max_terminal_count =
+          std::min(OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup(),
+                   kMaxTerminalCount) /
+          2;
+      while (enumerator.GetNextURL(&row) &&
+             node_.TerminalCount() < max_terminal_count) {
         DVLOG(1) << "url #" << row.id() << ": " << row.url().host();
         node_.Insert(UrlDomainReduction(row.url()), 0);
       }
@@ -460,8 +493,13 @@ class LoadSignificantUrls : public history::HistoryDBTask {
 
 }  // namespace fuzzy
 
-HistoryFuzzyProvider::HistoryFuzzyProvider(AutocompleteProviderClient* client)
-    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client) {
+HistoryFuzzyProvider::HistoryFuzzyProvider(
+    AutocompleteProviderClient* client,
+    HistoryQuickProvider* history_quick_provider,
+    BookmarkProvider* bookmark_provider)
+    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client),
+      history_quick_provider_(history_quick_provider),
+      bookmark_provider_(bookmark_provider) {
   history_service_observation_.Observe(client->GetHistoryService());
   client->GetHistoryService()->ScheduleDBTask(
       FROM_HERE,
@@ -485,6 +523,11 @@ void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  // When there are no sub-providers, bypass fuzzy search completely.
+  if (history_quick_provider_ == nullptr && bookmark_provider_ == nullptr) {
+    return;
+  }
+
   autocomplete_input_ = input;
 
   // Fuzzy matching intends to correct quick typos, and because it may involve
@@ -494,6 +537,9 @@ void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
   if (autocomplete_input_.cursor_position() ==
       autocomplete_input_.text().length()) {
     DoAutocomplete();
+    for (AutocompleteMatch& match : matches_) {
+      match.provider = this;
+    }
   }
 }
 
@@ -521,88 +567,105 @@ void HistoryFuzzyProvider::DoAutocomplete() {
              << "'";
     return;
   }
-  if (text[text.length() - 1] == u'!') {
-    if (text == u"log!") {
-      DVLOG(1) << "Trie Log: !{";
-      root_.Log(std::u16string());
-      DVLOG(1) << "}!";
-    } else {
-      root_.Insert(text.substr(0, text.length() - 1), 0);
-    }
-  } else {
-    std::vector<fuzzy::Correction> corrections;
-    DVLOG(1) << "FindCorrections: <" << text << "> ---> ?{";
-    if (root_.FindCorrections(text, kToleranceSchedule, corrections)) {
-      DVLOG(1) << "Trie contains input; no fuzzy results needed";
-    }
-    if (!corrections.empty()) {
-      // Use of `scoped_refptr` is required here because destructor is private.
-      scoped_refptr<HistoryQuickProvider> history_quick_provider =
-          new HistoryQuickProvider(client());
-      scoped_refptr<BookmarkProvider> bookmark_provider =
-          new BookmarkProvider(client());
-      for (const auto& correction : corrections) {
-        std::u16string fixed = text;
-        correction.ApplyTo(fixed);
-        DVLOG(1) << ":  " << fixed;
-        AddMatchForText(fixed);
+  std::vector<fuzzy::Correction> corrections;
+  DVLOG(1) << "FindCorrections: <" << text << "> ---> ?{";
+  if (root_.FindCorrections(text, kToleranceSchedule, corrections)) {
+    DVLOG(1) << "Trie contains input; no fuzzy results needed";
+  }
+  if (!corrections.empty()) {
+    int count_history_quick = 0;
+    int count_bookmark = 0;
+    for (const auto& correction : corrections) {
+      std::u16string fixed = text;
+      correction.ApplyTo(fixed);
+      DVLOG(1) << ":  " << fixed;
 
-        // Note the `cursor_position` could be changed by insert or delete
-        // corrections, but this is easy to adapt since we only fuzzy
-        // match when cursor is at end of input; just move to new end.
-        DCHECK_EQ(autocomplete_input_.cursor_position(),
-                  autocomplete_input_.text().length());
-        AutocompleteInput corrected_input(
-            fixed, fixed.length(),
-            autocomplete_input_.current_page_classification(),
-            client()->GetSchemeClassifier());
+      // Note the `cursor_position` could be changed by insert or delete
+      // corrections, but this is easy to adapt since we only fuzzy
+      // match when cursor is at end of input; just move to new end.
+      DCHECK_EQ(autocomplete_input_.cursor_position(),
+                autocomplete_input_.text().length());
+      AutocompleteInput corrected_input(
+          fixed, fixed.length(),
+          autocomplete_input_.current_page_classification(),
+          client()->GetSchemeClassifier());
 
-        history_quick_provider->Start(corrected_input, false);
-        DCHECK(history_quick_provider->done());
-        bookmark_provider->Start(corrected_input, false);
-        DCHECK(bookmark_provider->done());
-
-        AddConvertedMatches(history_quick_provider->matches());
-        AddConvertedMatches(bookmark_provider->matches());
+      if (history_quick_provider_) {
+        history_quick_provider_->Start(corrected_input, false);
+        DCHECK(history_quick_provider_->done());
+        count_history_quick +=
+            AddConvertedMatches(history_quick_provider_->matches());
+      }
+      if (bookmark_provider_) {
+        bookmark_provider_->Start(corrected_input, false);
+        DCHECK(bookmark_provider_->done());
+        count_bookmark += AddConvertedMatches(bookmark_provider_->matches());
       }
     }
+    if (matches_.size() > provider_max_matches_) {
+      // When too many matches are generated, take only the most relevant
+      // matches and correct the counts for accurate metrics.
+      std::partial_sort(matches_.begin(),
+                        matches_.begin() + provider_max_matches_,
+                        matches_.end(), AutocompleteMatch::MoreRelevant);
+      for (size_t i = provider_max_matches_; i < matches_.size(); i++) {
+        DCHECK(matches_[i].provider != nullptr &&
+                   matches_[i].provider == history_quick_provider_ ||
+               matches_[i].provider == bookmark_provider_)
+            << matches_[i].provider->GetName();
+        if (matches_[i].provider == history_quick_provider_) {
+          count_history_quick--;
+        } else {
+          count_bookmark--;
+        }
+      }
+      matches_.resize(provider_max_matches_);
+    }
+    RecordMatchConversion(kMetricMatchConversionHistoryQuick,
+                          count_history_quick);
+    RecordMatchConversion(kMetricMatchConversionBookmark, count_bookmark);
     DVLOG(1) << "}?";
   }
 }
 
-void HistoryFuzzyProvider::AddMatchForText(std::u16string text) {
-  AutocompleteMatch match(this, 10000000, false,
-                          AutocompleteMatchType::HISTORY_URL);
-  match.contents = std::move(text);
+int HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches) {
+  if (matches.empty()) {
+    return 0;
+  }
+
+  // Take only the most relevant match, to give the best chance of keeping
+  // the penalized fuzzy match while reducing risk of possible noise.
+  // Note that min_element is used instead of max_element because
+  // `AutocompleteMatch::MoreRelevant` reverses standard sort order such that
+  // matches with greater relevance are considered less than matches with lesser
+  // relevance. For performance reasons, `CompareWithDemoteByType` is not used,
+  // so ranking of the final result set will be more nuanced than ranking here.
+  ACMatches::const_iterator it = std::min_element(
+      matches.begin(), matches.end(), AutocompleteMatch::MoreRelevant);
+  DCHECK(it != matches.end());
+  DVLOG(1) << "Converted match: " << it->contents;
+  matches_.push_back(*it);
+
+  // Update match in place. Note, `match.provider` will be reassigned after
+  // `DoAutocomplete` because source sub-provider must be kept for metrics.
+  AutocompleteMatch& match = matches_.back();
+  match.inline_autocompletion.clear();
+  match.allowed_to_be_default_match = false;
+
+  // Apply relevance penalty; all corrections are equal and we only apply this
+  // to the most relevant result, so edit distance isn't needed.
+  // Relevance range are nuanced enough that this should be kept simple.
+  // Using 9/10 reasonably took a 1334 relevance match down to 1200,
+  // but was harmful to HQP suggestions: as soon as a '.' was
+  // appended, a bunch of ~800 navsuggest results overtook a better
+  // HQP result that was bumped down to ~770. Using 95/100 lets this
+  // result compete in the navsuggest range.
+  match.relevance = match.relevance * 95 / 100;
+  match.contents_class.clear();
   match.contents_class.push_back(
       {0, AutocompleteMatch::ACMatchClassification::DIM});
-  matches_.push_back(std::move(match));
-}
 
-void HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches) {
-  // TODO(orinj): Optimize with move not copy; requires provider change.
-  //  Consider taking only the most relevant match.
-  for (const auto& original_match : matches) {
-    DVLOG(1) << "Converted match: " << original_match.contents;
-    matches_.push_back(original_match);
-
-    // Update match in place.
-    AutocompleteMatch& match = matches_.back();
-    match.provider = this;
-    match.inline_autocompletion.clear();
-    match.allowed_to_be_default_match = false;
-    // TODO(orinj): Determine suitable relevance penalty; it should
-    //  likely take into account the edit distance or size of correction.
-    //  Using 9/10 reasonably took a 1334 relevance match down to 1200,
-    //  but was harmful to HQP suggestions: as soon as a '.' was
-    //  appended, a bunch of ~800 navsuggest results overtook a better
-    //  HQP result that was bumped down to ~770. Using 95/100 lets this
-    //  result compete in the navsuggest range.
-    match.relevance = match.relevance * 95 / 100;
-    match.contents_class.clear();
-    match.contents_class.push_back(
-        {0, AutocompleteMatch::ACMatchClassification::DIM});
-  }
+  return 1;
 }
 
 void HistoryFuzzyProvider::OnUrlsLoaded(fuzzy::Node node) {
@@ -615,7 +678,11 @@ void HistoryFuzzyProvider::OnURLVisited(
     const history::URLRow& row,
     base::Time visit_time) {
   DVLOG(1) << "URL Visit: " << row.url();
-  root_.Insert(UrlDomainReduction(row.url()), 0);
+  if (root_.TerminalCount() <
+      std::min(OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup(),
+               kMaxTerminalCount)) {
+    root_.Insert(UrlDomainReduction(row.url()), 0);
+  }
 }
 
 void HistoryFuzzyProvider::OnURLsDeleted(
@@ -630,4 +697,9 @@ void HistoryFuzzyProvider::OnURLsDeleted(
       root_.Delete(UrlDomainReduction(row.url()), 0);
     }
   }
+}
+
+void HistoryFuzzyProvider::RecordMatchConversion(const char* name, int count) {
+  base::UmaHistogramExactLinear(
+      name, count, AutocompleteResult::kMaxAutocompletePositionValue);
 }

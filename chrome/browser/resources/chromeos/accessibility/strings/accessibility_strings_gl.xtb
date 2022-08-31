@@ -511,6 +511,7 @@
 <translation id="4300318234632215983">Anuncia o URL asociado a unha ligazón</translation>
 <translation id="4322625298640984693">Siena</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{punto}=3{puntos suspensivos}other{# puntos}}</translation>
+<translation id="4352022650330571548">escribe "<ph name="PHRASE" />"</translation>
 <translation id="4372435075475052704">mín.:<ph name="X" /></translation>
 <translation id="4372705107434148843">Deter voz</translation>
 <translation id="4376316291247992553">Permite ver o gráfico en formato braille</translation>
@@ -759,7 +760,7 @@
 <translation id="6082768461603900813">Navegación básica</translation>
 <translation id="609281021724813947">Non hai ningún control desprazable anterior</translation>
 <translation id="6100239002225743044">Subir unha liña</translation>
-<translation id="6118126368611144850">Aplicacións Android para Chrome. Se tes Play Store no dispositivo, bota unha ollada a ChromeVox coas aplicacións Android. Descarga Google Chrome Canary desde Play Store e proba a compatibilidade experimental.</translation>
+<translation id="6118126368611144850">Aplicacións para Android para Chrome. Se tes Play Store no dispositivo, bota unha ollada a ChromeVox coas aplicacións para Android. Descarga Google Chrome Canary desde Play Store e proba a compatibilidade experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Unha caixa de lista ou unha caixa de combinación</translation>
@@ -802,7 +803,6 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dous puntos}other{# dous puntos}}</translation>
 <translation id="6444046323172968959">Caixa de diálogo de alerta</translation>
 <translation id="6452403590345320472">Índice</translation>
-<translation id="6457542714329819968">escribe</translation>
 <translation id="6468049171101508116">Botón Seguinte</translation>
 <translation id="646954774886932461">Índice</translation>
 <translation id="6475604559827479857">Cor para destacar palabras:</translation>
@@ -860,6 +860,7 @@
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6910969481785184048">Activar, desactivar e deter</translation>
 <translation id="6919104639734799681">Mostra a lista de táboas</translation>
+<translation id="692135145298539227">elimina</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6949846980769640811">Augamariña intermedio</translation>
 <translation id="6951482098621102657">Non hai ningunha cabeceira posterior de nivel 5</translation>
@@ -927,7 +928,6 @@
 <translation id="7356610683936413584">Detalle da lista de descricións</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{signo &amp;}other{# signos &amp;}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7388656272362719103">elimina o carácter anterior</translation>
 <translation id="738899727977260036">Azul lousa</translation>
 <translation id="7393979322571982935">Sons e configuración</translation>
 <translation id="739763518212184081">Liña anterior</translation>

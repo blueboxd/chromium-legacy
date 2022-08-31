@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.graphics.Rect;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -18,6 +19,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.reengagement.ReengagementActivity;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
@@ -27,15 +29,19 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthCoordinatorFactory;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -57,6 +63,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     private final Supplier<CustomTabToolbarCoordinator> mToolbarCoordinator;
     private final Supplier<CustomTabActivityNavigationController> mNavigationController;
     private final Supplier<BrowserServicesIntentDataProvider> mIntentDataProvider;
+    private final Supplier<CustomTabActivityTabController> mTabController;
 
     private CustomTabHeightStrategy mCustomTabHeightStrategy;
 
@@ -94,6 +101,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      * @param customTabToolbarCoordinator Coordinates the custom tab toolbar.
      * @param customTabNavigationController Controls the custom tab navigation.
      * @param intentDataProvider Contains intent information used to start the Activity.
+     * @param tabController Activity tab controller.
      */
     public BaseCustomTabRootUiCoordinator(@NonNull AppCompatActivity activity,
             @NonNull ObservableSupplier<ShareDelegate> shareDelegateSupplier,
@@ -126,13 +134,15 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<CustomTabToolbarCoordinator> customTabToolbarCoordinator,
             @NonNull Supplier<CustomTabActivityNavigationController> customTabNavigationController,
             @NonNull Supplier<BrowserServicesIntentDataProvider> intentDataProvider,
-            @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
+            @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
+            @NonNull BackPressManager backPressManager,
+            @NonNull Supplier<CustomTabActivityTabController> tabController) {
         // clang-format off
         super(activity, null, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, tabBookmarkerSupplier,
                 contextualSearchManagerSupplier, tabModelSelectorSupplier,
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
-                new OneshotSupplierImpl<>(), () -> null,
+                new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(), () -> null,
                 browserControlsManager, windowAndroid, new DummyJankTracker(),
                 activityLifecycleDispatcher, layoutManagerSupplier, menuOrKeyboardActionController,
                 activityThemeColorSupplier, modalDialogManagerSupplier, appMenuBlocker,
@@ -141,12 +151,12 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 snackbarManagerSupplier, activityType,
                 isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
                 statusBarColorProvider, intentRequestTracker, new OneshotSupplierImpl<>(),
-                ephemeralTabCoordinatorSupplier, false, null,
-                /* unblockDrawForOverviewPageRunnable= */ null);
+                ephemeralTabCoordinatorSupplier, false, backPressManager);
         // clang-format on
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
+        mTabController = tabController;
     }
 
     @Override
@@ -161,6 +171,12 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         mCustomTabHeightStrategy.onToolbarInitialized(
                 coordinator, toolbar, mIntentDataProvider.get().getPartialTabToolbarCornerRadius());
         toolbar.setCloseButtonPosition(mIntentDataProvider.get().getCloseButtonPosition());
+        if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
+            Runnable softInputCallback =
+                    ((PartialCustomTabHeightStrategy) mCustomTabHeightStrategy)::onShowSoftInput;
+            mTabController.get().registerTabObserver(
+                    new PartialCustomTabTabObserver(softInputCallback));
+        }
     }
 
     @Override
@@ -175,6 +191,17 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                     mActivity, tracker, ReengagementActivity.class);
             controller.tryToReengageTheUser();
         }));
+    }
+
+    @Override
+    protected IncognitoReauthCoordinatorFactory getIncognitoReauthCoordinatorFactory() {
+        return new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
+                mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
+                new SettingsLauncherImpl(),
+                /*tabSwitcherCustomViewManagerOneshotSupplier= */ null,
+                /*incognitoReauthTopToolbarDelegate= */ null,
+                /*layoutManager=*/null,
+                /*isTabbedActivity= */ false);
     }
 
     @Override
@@ -216,6 +243,26 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         super.setStatusBarScrimFraction(scrimFraction);
         // TODO(jinsukkim): Separate CCT scrim update action from status bar scrim stuff.
         mCustomTabHeightStrategy.setScrimFraction(scrimFraction);
+    }
+
+    @Override
+    protected Rect getAppRectInWindow() {
+        // This is necessary if app handler cannot rely on the popup window that ensures the menu
+        // will not be clipped off the screen, which can happen if Window#FLAGS_LAYOUT_NO_LIMITS
+        // is set to allow the app to be drawn outside the screen in partial CCT.
+        if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
+            View coord = mActivity.findViewById(R.id.coordinator);
+            int[] location = new int[2];
+            coord.getLocationInWindow(location);
+            return new Rect(location[0], location[1], location[0] + coord.getWidth(),
+                    location[1] + coord.getHeight());
+        }
+        return super.getAppRectInWindow();
+    }
+
+    @Override
+    protected boolean canDrawOutsideScreen() {
+        return mCustomTabHeightStrategy.canDrawOutsideScreen();
     }
 
     /**

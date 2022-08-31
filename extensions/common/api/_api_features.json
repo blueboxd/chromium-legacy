@@ -286,6 +286,11 @@
       "chrome://extensions/*",
       "chrome://settings/*"
     ]
+  }, {
+    "channel": "dev",
+    "contexts": ["web_page"],
+    "matches": ["https://webstore.google.com/*"],
+    "feature_flag": "NewWebstoreDomain"
   }],
   "management.getPermissionWarningsByManifest": {
     "dependencies": [],
@@ -395,17 +400,13 @@
     "dependencies": ["manifest:mime_types_handler"],
     "contexts": ["blessed_extension"]
   },
-  "mojoPrivate": [{
-    "contexts": ["blessed_extension"],
-    "channel": "stable",
-    "extension_types": ["platform_app", "extension"]
-  }, {
+  "mojoPrivate": {
     "contexts": ["blessed_extension"],
     "dependencies": ["behavior:imprivata_in_session_extension"],
     "extension_types": ["extension"],
     "location": "policy",
     "platforms": ["chromeos", "lacros"]
-  }],
+  },
   "networking.onc": {
     "dependencies": ["permission:networking.onc"],
     "contexts": ["blessed_extension"],
@@ -568,7 +569,7 @@
     "contexts": ["webui_untrusted"],
     "matches": [
       // Allow only terminal_ssh.html in Terminal System Web App.
-      "chrome-untrusted://terminal/html/terminal_ssh.html"
+      "chrome-untrusted://terminal/html/terminal_ssh.html*"
     ]
   }],
   "runtime.sendNativeMessage": {

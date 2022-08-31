@@ -30,6 +30,11 @@ extern const char kAutofillEnableNewCardUnmaskPromptViewDescription[];
 extern const char kAutofillEnableRankingFormulaName[];
 extern const char kAutofillEnableRankingFormulaDescription[];
 
+// Title and description for the flag that controls whether the remade Autofill
+// Downstream metrics are enabled.
+extern const char kAutofillEnableRemadeDownstreamMetricsName[];
+extern const char kAutofillEnableRemadeDownstreamMetricsDescription[];
+
 // Title and description for the flag enable sending billing customer number in
 // GetUploadDetails preflight call.
 extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
@@ -268,10 +273,6 @@ extern const char kEnableFREUIModuleIOSDescription[];
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
 
-// Title and description for the flag to enable the new download API.
-extern const char kEnableNewDownloadAPIName[];
-extern const char kEnableNewDownloadAPIDescription[];
-
 // Title and description for the flag to enable shorted password auto-fill
 // instructions and button.
 extern const char kEnableShortenedPasswordAutoFillInstructionName[];
@@ -294,6 +295,10 @@ extern const char kEnableWebChannelsDescription[];
 // Title and description for the flag to enable an expanded tab strip.
 extern const char kExpandedTabStripName[];
 extern const char kExpandedTabStripDescription[];
+
+// Title and description for the flag to enable feed background refresh.
+extern const char kFeedBackgroundRefreshName[];
+extern const char kFeedBackgroundRefreshDescription[];
 
 // Title and description for the flag to enable filling across affiliated
 // websites.
@@ -367,10 +372,6 @@ extern const char kIOSSharedHighlightingAmpDescription[];
 extern const char kIOSSharedHighlightingV2Name[];
 extern const char kIOSSharedHighlightingV2Description[];
 
-// Title and description for the flag to enable unrealized WebStates.
-extern const char kLazilyCreateWebStateOnRestorationName[];
-extern const char kLazilyCreateWebStateOnRestorationDescription[];
-
 // Title and description for the flag to enable leak detection for signed out
 // users.
 extern const char kLeakDetectionUnauthenticatedName[];
@@ -434,6 +435,11 @@ extern const char kNewOverflowMenuSimpleDestinationIconsDescription[];
 // TODO(crbug.com/1262536): Remove this when fixed.
 extern const char kNTPViewHierarchyRepairName[];
 extern const char kNTPViewHierarchyRepairDescription[];
+
+// Title and description for the flag to enable Omnibox HTTPS upgrades for
+// schemeless navigations.
+extern const char kOmniboxHttpsUpgradesName[];
+extern const char kOmniboxHttpsUpgradesDescription[];
 
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.
@@ -622,10 +628,6 @@ extern const char kToolbarContainerDescription[];
 // Title and Description for the flag to enable the trending queries module.
 extern const char kTrendingQueriesModuleName[];
 extern const char kTrendingQueriesModuleDescription[];
-
-// Title and description for the flag to enable -[UIView window] observing.
-extern const char kUIViewWindowObservingName[];
-extern const char kUIViewWindowObservingDescription[];
 
 // Title and description for the flag to enable removing any entry points to the
 // history UI from Incognito mode.

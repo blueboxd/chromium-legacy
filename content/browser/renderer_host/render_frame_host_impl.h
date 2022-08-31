@@ -65,7 +65,6 @@
 #include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/common/navigation_client.mojom.h"
-#include "content/common/render_accessibility.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
@@ -107,7 +106,6 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
-#include "third_party/blink/public/mojom/compute_pressure/compute_pressure.mojom-forward.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/font_access/font_access.mojom-forward.h"
@@ -128,6 +126,7 @@
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-forward.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-forward.h"
@@ -202,6 +201,9 @@ namespace features {
 // non-legacy implementation of BrowsingContextState.
 CONTENT_EXPORT extern const base::Feature
     kDisableFrameNameUpdateOnNonCurrentRenderFrameHost;
+
+// Feature to evict when accessibility events occur while in back/forward cache.
+CONTENT_EXPORT extern const base::Feature kEvictOnAXEvents;
 }  // namespace features
 
 namespace content {
@@ -347,7 +349,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PageImpl& GetPage() override;
   bool IsInPrimaryMainFrame() override;
   RenderFrameHostImpl* GetOutermostMainFrame() override;
-  bool IsFencedFrameRoot() override;
+  bool IsFencedFrameRoot() const override;
   bool IsNestedWithinFencedFrame() const override;
   void ForEachRenderFrameHost(FrameIterationCallback on_frame) override;
   void ForEachRenderFrameHost(
@@ -474,6 +476,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteContentAllowedCallback callback);
+
+  // This is called when accessibility events arrive from renderer to browser.
+  // This could cause eviction if the page is in back/forward cache. Returns
+  // true if the eviction happens, and otherwise calls
+  // |RenderFrameHost::IsInactiveAndDisallowActivation()| and returns the value
+  // from there. This is only called when the flag to evict on accessibility
+  // events is on. When the flag is off, we do not evict the entry and keep
+  // processing the events, thus do not call this function.
+  bool IsInactiveAndDisallowActivationForAXEvents(
+      const std::vector<ui::AXEvent>& events);
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
@@ -669,6 +681,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // not.
   bool was_loaded_from_load_data_with_base_url() const {
     return renderer_url_info_.was_loaded_from_load_data_with_base_url;
+  }
+
+  const base::UnguessableToken& anonymous_iframes_nonce() const {
+    DCHECK(is_main_frame() || IsFencedFrameRoot());
+    return anonymous_iframes_nonce_;
   }
 
   // Saves the URLs and other URL-related information used in the renderer.
@@ -1189,6 +1206,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // a renderer.
   void UpdateAXTreeData();
 
+  // Updating focus in the presence of multiple frame trees requires multiple
+  // focus changes. The existence of this class will defer UpdateAXTreeData()
+  // until this process has finished and the focus states are consistent.
+  class UpdateAXFocusDeferScope {
+   public:
+    explicit UpdateAXFocusDeferScope(RenderFrameHostImpl& rfh);
+    ~UpdateAXFocusDeferScope();
+
+   private:
+    const base::SafeRef<RenderFrameHostImpl> rfh_;
+  };
+
   // Access the BrowserAccessibilityManager if it already exists.
   BrowserAccessibilityManager* browser_accessibility_manager() const {
     return browser_accessibility_manager_.get();
@@ -1681,9 +1710,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFontAccessManager(
       mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver);
 
-  void BindComputePressureHost(
-      mojo::PendingReceiver<blink::mojom::ComputePressureHost> receiver);
-
   void GetFileSystemAccessManager(
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver);
 
@@ -1788,8 +1814,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // 2. Trust Tokens must be enabled (network::features::kTrustTokens).
   //
   // 3. This frame's origin must be potentially trustworthy.
-  void BindHasTrustTokensAnswerer(
-      mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver);
+  void BindTrustTokenQueryAnswerer(
+      mojo::PendingReceiver<network::mojom::TrustTokenQueryAnswerer> receiver);
 
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(
@@ -1821,7 +1847,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::FeatureObserver> receiver);
 
   void BindRenderAccessibilityHost(
-      mojo::PendingReceiver<mojom::RenderAccessibilityHost> receiver);
+      mojo::PendingReceiver<blink::mojom::RenderAccessibilityHost> receiver);
 
   // Prerender2:
   // Tells PrerenderHostRegistry to cancel the prerendering of the page this
@@ -1876,8 +1902,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool IsAnonymous() const override;
 
-  bool is_fenced_frame_opaque_url() const {
-    return is_fenced_frame_opaque_url_;
+  bool is_fenced_frame_root_originating_from_opaque_url() const {
+    return is_fenced_frame_root_originating_from_opaque_url_;
   }
 
   PolicyContainerHost* policy_container_host() {
@@ -2013,6 +2039,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   GetWebAuthRequestSecurityChecker();
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
+  base::SafeRef<RenderFrameHostImpl> GetSafeRef() const;
 
   // blink::mojom::LocalFrameHost
   void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options,
@@ -2500,9 +2527,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  JavaScriptResultAndTypeCallback callback);
 
   // Call |HandleAXEvents()| for tests.
-  void HandleAXEventsForTests(const ui::AXTreeID& tree_id,
-                              mojom::AXUpdatesAndEventsPtr updates_and_events,
-                              int32_t reset_token) {
+  void HandleAXEventsForTests(
+      const ui::AXTreeID& tree_id,
+      blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
+      int32_t reset_token) {
     HandleAXEvents(tree_id, std::move(updates_and_events), reset_token);
   }
 
@@ -2720,13 +2748,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreatePortal(
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
+      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
       CreatePortalCallback callback) override;
-  void AdoptPortal(const blink::PortalToken& portal_token,
-                   AdoptPortalCallback callback) override;
+  void AdoptPortal(
+      const blink::PortalToken& portal_token,
+      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
+      AdoptPortalCallback callback) override;
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
       blink::mojom::FencedFrameMode mode,
+      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
       CreateFencedFrameCallback callback) override;
   void GetKeepAliveHandleFactory(
       mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver)
@@ -2763,7 +2795,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>
-          initiator_policy_container_host_keep_alive_handle) override;
+          initiator_policy_container_host_keep_alive_handle,
+      mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
+          renderer_cancellation_listener) override;
   void SubresourceResponseStarted(const url::SchemeHostPort& final_response_url,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
@@ -2786,10 +2820,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   friend class RenderAccessibilityHost;
   void HandleAXEvents(const ui::AXTreeID& tree_id,
-                      mojom::AXUpdatesAndEventsPtr updates_and_events,
+                      blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
                       int32_t reset_token);
-  void HandleAXLocationChanges(const ui::AXTreeID& tree_id,
-                               std::vector<mojom::LocationChangesPtr> changes);
+  void HandleAXLocationChanges(
+      const ui::AXTreeID& tree_id,
+      std::vector<blink::mojom::LocationChangesPtr> changes);
 
   // mojom::DomAutomationControllerHost:
   void DomOperationResponse(const std::string& json_string) override;
@@ -2963,7 +2998,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire,
       base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
                               int hit_node_id)> opt_callback,
-      mojom::HitTestResponsePtr hit_test_response);
+      blink::mojom::HitTestResponsePtr hit_test_response);
 
   // Callback that will be called as a response to the call to the method
   // content::mojom::RenderAccessibility::SnapshotAccessibilityTree(). The
@@ -3850,9 +3885,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this binding is done on-demand (in UpdateAccessibilityMode()) and will only
   // be connected (i.e. bound) to the other endpoint in the renderer while there
   // is an accessibility mode that includes |kWebContents|.
-  mojo::AssociatedRemote<mojom::RenderAccessibility> render_accessibility_;
+  mojo::AssociatedRemote<blink::mojom::RenderAccessibility>
+      render_accessibility_;
 
   base::SequenceBound<RenderAccessibilityHost> render_accessibility_host_;
+  ui::AXTreeID render_accessibility_host_ax_tree_id_;
 
   mojo::AssociatedReceiver<mojom::DomAutomationControllerHost>
       dom_automation_controller_receiver_{this};
@@ -4182,11 +4219,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // stored when the frame commits the navigation.
   network::mojom::ContentSecurityPolicyPtr required_csp_;
 
-  // Indicates whether the fenced frame is navigated to an opaque url. This flag
-  // can only change when the embedder navigates the fenced frame. Any
-  // subsequent navigation from the fenced frame root will keep the same flag.
-  // Note that this flag is only relevant for fenced frames based on MPArch.
-  bool is_fenced_frame_opaque_url_ = false;
+  // Only for fenced frames based on MPArch:
+  // Indicates whether this is the root of a fenced subtree whose last
+  // embedder-initiated navigation was to an opaque url (urn:uuid).
+  // Once this value is initially set, it doesn't change over the lifetime of
+  // the document.
+  bool is_fenced_frame_root_originating_from_opaque_url_ = false;
 
   // The PolicyContainerHost for the current document, containing security
   // policies that apply to it. It should never be null if the RenderFrameHost
@@ -4252,6 +4290,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.
   bool needs_ax_root_id_ = true;
+  // Used with UpdateAXFocusDeferScope to prevent UpdateAXTreeData() while focus
+  // state changes are in progress.
+  int ax_defer_scope_count_ = 0;
+  bool ax_update_deferred_ = false;
 
   // The most recent page scale factor sent by the main frame's renderer.
   // Note that the renderer uses a different mechanism to persist its page
@@ -4264,6 +4306,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // not get another notification.
   // TODO(crbug.com/936696): Revisit after RenderDocument ships.
   float page_scale_factor_ = 1.f;
+
+  // Emit a DumpWithoutCrashing() when |this| is deleted and this flag is reset.
+  bool check_deletion_for_bug_1276535_ = false;
+
+  // Nonce to be used for initializing the storage key and the network isolation
+  // key of anonymous iframes which are children of this page's document.
+  // TODO(https://crbug.com/1287458): Once the ShadowDom implementation of
+  // FencedFrame is gone, move this attribute back to PageImpl. See also:
+  // https://crbug.com/1262022
+  base::UnguessableToken anonymous_iframes_nonce_ =
+      base::UnguessableToken::Create();
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

@@ -129,7 +129,30 @@ void StandaloneBrowserExtensionApps::Launch(const std::string& app_id,
                                             int32_t event_flags,
                                             LaunchSource launch_source,
                                             WindowInfoPtr window_info) {
-  // TODO(crbug.com/1253250): Add the implementation.
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound())
+    return;
+
+  // The following code assumes |app_type_| must be
+  // AppType::kStandaloneBrowserChromeApp. Therefore, the app must be either
+  // platform app or hosted app.
+  // In the future, this class is possible to be instantiated with other
+  // AppType, please make sure to modify the logic if necessary.
+  controller_->Launch(
+      CreateCrosapiLaunchParamsWithEventFlags(
+          proxy(), app_id, event_flags, launch_source,
+          window_info ? window_info->display_id : display::kInvalidDisplayId),
+      /*callback=*/base::DoNothing());
+
+  if (ShouldSaveToFullRestore(proxy(), app_id)) {
+    auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
+        app_id, apps::LaunchContainer::kLaunchContainerNone,
+        WindowOpenDisposition::UNKNOWN, display::kInvalidDisplayId,
+        std::vector<base::FilePath>{}, nullptr);
+    full_restore::SaveAppLaunchInfo(proxy()->profile()->GetPath(),
+                                    std::move(launch_info));
+  }
 }
 
 void StandaloneBrowserExtensionApps::LaunchAppWithParams(
@@ -189,7 +212,8 @@ void StandaloneBrowserExtensionApps::Launch(
   // AppType, please make sure to modify the logic if necessary.
   controller_->Launch(
       CreateCrosapiLaunchParamsWithEventFlags(
-          proxy(), app_id, event_flags, launch_source,
+          proxy(), app_id, event_flags,
+          ConvertMojomLaunchSourceToLaunchSource(launch_source),
           window_info ? window_info->display_id : display::kInvalidDisplayId),
       /*callback=*/base::DoNothing());
 
@@ -219,7 +243,8 @@ void StandaloneBrowserExtensionApps::LaunchAppWithIntent(
 
   auto launch_params = crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
+  launch_params->launch_source =
+      ConvertMojomLaunchSourceToLaunchSource(launch_source);
   launch_params->intent = apps_util::ConvertAppServiceToCrosapiIntent(
       intent, ProfileManager::GetPrimaryUserProfile());
   controller_->Launch(std::move(launch_params),
@@ -249,7 +274,8 @@ void StandaloneBrowserExtensionApps::LaunchAppWithFiles(
 
   auto launch_params = crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
+  launch_params->launch_source =
+      ConvertMojomLaunchSourceToLaunchSource(launch_source);
   launch_params->intent =
       apps_util::CreateCrosapiIntentForViewFiles(file_paths);
   controller_->Launch(std::move(launch_params),
@@ -289,8 +315,7 @@ void StandaloneBrowserExtensionApps::GetMenuModel(
   DCHECK(!is_platform_app);
 
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-  apps::CreateOpenNewSubmenu(menu_type,
-                             display_mode == WindowMode::kWindow
+  apps::CreateOpenNewSubmenu(display_mode == WindowMode::kWindow
                                  ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
                                  : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
                              &menu_items);

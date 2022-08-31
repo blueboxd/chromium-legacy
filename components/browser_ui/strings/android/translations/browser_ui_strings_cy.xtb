@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">Ailosod caniatadau</translation>
 <translation id="301521992641321250">Rhwystrwyd yn awtomatig</translation>
 <translation id="3069226013421428034">Caniatáu mewngofnodi trydydd parti ar gyfer gwefan benodol.</translation>
+<translation id="3109724472072898302">Wedi'i grebachu</translation>
 <translation id="3114012059975132928">Chwaraewr fideo</translation>
 <translation id="3115898365077584848">Dangos Gwybodaeth</translation>
 <translation id="3123473560110926937">Wedi'u rhwystro ar rai gwefannau</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">Mudo'r fideo</translation>
 <translation id="3596414637720633074">Rhwystro cwcis gan drydydd parti yn y Modd Anhysbys</translation>
 <translation id="3600792891314830896">Distewi gwefannau sy'n chwarae sain</translation>
+<translation id="3628308229821498208">Chwiliadau a awgrymir</translation>
 <translation id="3744111561329211289">Cysoni yn y cefndir</translation>
 <translation id="3763247130972274048">Tapiwch ddwywaith ar ochr chwith neu dde'r i neidio 10 eiliad</translation>
 <translation id="3797520601150691162">Peidio â defnyddio'r thema dywyll ar gyfer gwefan benodol</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">Rhwystro cwcis trydydd parti</translation>
 <translation id="6216432067784365534">Dewisiadau <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Dadosod '<ph name="APP_NAME" />'?</translation>
+<translation id="6262191102408817757">Yn seiliedig ar eich tab olaf</translation>
 <translation id="6262279340360821358">Mae <ph name="PERMISSION_1" /> a <ph name="PERMISSION_2" /> wedi'u rhwystro</translation>
 <translation id="6270391203985052864">Gall gwefannau ofyn am anfon hysbysiadau</translation>
 <translation id="6295158916970320988">Pob gwefan</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">Rhwystro gwefannau rhag dangos ffenestri naid ac ailgyfeiriadau (argymhellir)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Ail-lwytho</translation>
+<translation id="7203150201908454328">Wedi'i ehangu</translation>
 <translation id="723171743924126238">Dewis lluniau</translation>
 <translation id="7243308994586599757">Mae opsiynau ar gael yn agos at waelod y sgrîn</translation>
 <translation id="7250468141469952378">Mae <ph name="ITEM_COUNT" /> wedi'u dewis</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">Rhwystro gwefannau rhag chwarae cynnwys gwarchodedig</translation>
 <translation id="7577900504646297215">Rheoli diddordebau</translation>
 <translation id="7594634374516752650">Wedi cysylltu â dyfais Bluetooth</translation>
+<translation id="7641339528570811325">Clirio data pori…</translation>
 <translation id="7649070708921625228">Cymorth</translation>
 <translation id="7658239707568436148">Canslo</translation>
 <translation id="7781829728241885113">Ddoe</translation>

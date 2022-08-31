@@ -276,7 +276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.LinearMemoryInspector.RevealedFrom"
-    enum="DevToolsLinearMemoryInspectorRevealedFrom" expires_after="2022-11-13">
+    enum="DevToolsLinearMemoryInspectorRevealedFrom" expires_after="2023-01-15">
   <owner>yangguo@chromium.org</owner>
   <owner>kimanh@chromium.org</owner>
   <summary>
@@ -285,11 +285,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.LinearMemoryInspector.Target"
-    enum="DevToolsLinearMemoryInspectorTarget" expires_after="2022-11-13">
+    enum="DevToolsLinearMemoryInspectorTarget" expires_after="2023-01-15">
   <owner>yangguo@chromium.org</owner>
   <owner>kimanh@chromium.org</owner>
   <summary>
     Records the inspection target via which the Memory Inspector was opened.
+  </summary>
+</histogram>
+
+<histogram name="DevTools.ManifestSectionSelected"
+    enum="DevToolsManifestSection" expires_after="2022-12-01">
+  <owner>yangguo@chromium.org</owner>
+  <owner>edgedevtools@microsoft.com</owner>
+  <summary>
+    Records when certain items of the Manifest dropdown submenu in the
+    Application Tool are selected.
   </summary>
 </histogram>
 
@@ -385,7 +395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.SidebarPaneShown" enum="DevToolsSidebarPane"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>changhaohan@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>

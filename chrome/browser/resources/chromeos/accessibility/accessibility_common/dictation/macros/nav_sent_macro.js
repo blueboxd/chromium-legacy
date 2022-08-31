@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Macro, MacroError} from '/accessibility_common/dictation/macros/macro.js';
-import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
+import {InputController} from '../input_controller.js';
+
+import {Macro, MacroError} from './macro.js';
+import {MacroName} from './macro_names.js';
 
 /** Implements a macro that moves the text caret to the next sentence. */
 export class NavNextSentMacro extends Macro {
-  /**
-   * @param {!InputController} inputController
-   * @param {boolean} isRTLLocale
-   */
-  constructor(inputController, isRTLLocale) {
+  /** @param {!InputController} inputController */
+  constructor(inputController) {
     super(MacroName.NAV_NEXT_SENT);
     /** @private {!InputController} */
     this.inputController_ = inputController;
-    /** @private {boolean} */
-    this.isRTLLocale_ = isRTLLocale;
   }
 
   /** @override */
@@ -34,20 +31,20 @@ export class NavNextSentMacro extends Macro {
     this.inputController_.navNextSent();
     return this.createRunMacroResult_(/*isSuccess=*/ true);
   }
+
+  /** @override */
+  isSmart() {
+    return true;
+  }
 }
 
 /** Implements a macro that moves the text caret to the previous sentence. */
 export class NavPrevSentMacro extends Macro {
-  /**
-   * @param {!InputController} inputController
-   * @param {boolean} isRTLLocale
-   */
-  constructor(inputController, isRTLLocale) {
+  /** @param {!InputController} inputController */
+  constructor(inputController) {
     super(MacroName.NAV_PREV_SENT);
     /** @private {!InputController} */
     this.inputController_ = inputController;
-    /** @private {boolean} */
-    this.isRTLLocale_ = isRTLLocale;
   }
 
   /** @override */
@@ -64,5 +61,10 @@ export class NavPrevSentMacro extends Macro {
     }
     this.inputController_.navPrevSent();
     return this.createRunMacroResult_(/*isSuccess=*/ true);
+  }
+
+  /** @override */
+  isSmart() {
+    return true;
   }
 }

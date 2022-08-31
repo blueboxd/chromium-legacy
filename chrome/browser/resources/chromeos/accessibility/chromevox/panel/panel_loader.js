@@ -6,33 +6,30 @@
  * @fileoverview Loads the panel script.
  */
 
+goog.require('AncestryRecoveryStrategy');
+goog.require('AutomationPredicate');
 goog.require('AutomationTreeWalker');
 goog.require('AutomationUtil');
 goog.require('BackgroundBridge');
+goog.require('BaseLog');
 goog.require('BridgeHelper');
 goog.require('EarconDescription');
-goog.require('FocusBounds');
+goog.require('EventLog');
 goog.require('KeyCode');
-goog.require('LogStore');
-goog.require('Msgs');
+goog.require('LogType');
 goog.require('NavBraille');
-goog.require('OutputAction');
-goog.require('OutputContextOrder');
-goog.require('OutputEarconAction');
-goog.require('OutputEventType');
-goog.require('OutputNodeSpan');
-goog.require('OutputSelectionSpan');
-goog.require('OutputSpeechProperties');
 goog.require('PanelNodeMenuData');
 goog.require('PanelNodeMenuItemData');
 goog.require('QueueMode');
+goog.require('RecoveryStrategy');
 goog.require('Spannable');
+goog.require('SpeechLog');
 goog.require('TextLog');
+goog.require('TreeDumper');
+goog.require('TreeLog');
 goog.require('TtsCategory');
 
 goog.require('constants');
-goog.require('cursors.Cursor');
-goog.require('cursors.Unit');
 goog.require('goog.i18n.MessageFormat');
 
 goog.require('ALL_NODE_MENU_DATA');

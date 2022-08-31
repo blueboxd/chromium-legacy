@@ -254,20 +254,6 @@ void PrePaintTreeWalk::InvalidatePaintForHitTesting(
       object, PaintInvalidationReason::kHitTest);
 }
 
-void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
-    const LayoutObject& object,
-    PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (!object.HasLayer())
-    return;
-
-  PaintLayer* paint_layer = To<LayoutBoxModelObject>(object).Layer();
-  paint_layer->UpdateAncestorScrollContainerLayer(
-      context.ancestor_scroll_container_paint_layer);
-
-  if (object.IsScrollContainer())
-    context.ancestor_scroll_container_paint_layer = paint_layer;
-}
-
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
@@ -463,8 +449,9 @@ void PrePaintTreeWalk::UpdateContextForOOFContainer(
   // context. If we're not participating in block fragmentation, the containing
   // fragment of an OOF fragment is always simply the parent.
   const LayoutBox* box = DynamicTo<LayoutBox>(&object);
-  if (!context.current_container.IsInFragmentationContext() ||
-      (box && box->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks)) {
+  // TODO(crbug.com/1343746): Review the revert of the following lines.
+  if (context.current_container.fragment && box &&
+      box->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks) {
     context.current_container.fragment = fragment;
   }
 
@@ -499,10 +486,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     if (!pre_paint_info->fragment_data)
       return;
   }
-
-  // This must happen before updatePropertiesForSelf, because the latter reads
-  // some of the state computed here.
-  UpdateAuxiliaryObjectProperties(object, context);
 
   absl::optional<PaintPropertyTreeBuilder> property_tree_builder;
   if (context.tree_builder_context) {

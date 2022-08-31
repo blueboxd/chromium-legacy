@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">કૅમેરા</translation>
 <translation id="1621067168122174824">ચાર્જિંગનું પરીક્ષણ ચાલુ કરો</translation>
 <translation id="1631385268983122904">ડિવાઇસને હમણાં પાછું જોડશો નહીં</translation>
-<translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
+<translation id="1639239467298939599">લોડ થઇ રહી છે</translation>
 <translation id="1641857168437328880">દસ્તાવેજનું ફીડર (એક બાજુથી)</translation>
 <translation id="1643449475550628585">વૉલપેપરની છબી દરરોજ બદલો</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="1645954272419197032">કૃપા કરીને ડિવાઇસની માહિતી કન્ફર્મ કરો</translation>
 <translation id="1662989795263954667">બંધ - શાહી ખલાસ થઈ ગઈ</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />નો પ્રીવ્યૂ કરો</translation>
 <translation id="1668469839109562275">બિલ્ટ-ઇન VPN</translation>
 <translation id="1672499492233627739">વેબકૅમના વીડિયોનું ફીડ</translation>
 <translation id="1676557873873341166">વીડિયો લઈ રહ્યાં છીએ</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">વીડિયો કૉન્ફરન્સિંગ</translation>
 <translation id="1852934301711881861">ChromeOS Flex ઇન્સ્ટૉલ કરો</translation>
 <translation id="1856388568474281774">નીચેની ઍરો કી</translation>
+<translation id="1858620243986915808">સ્ક્રીનશૉટ જોડો</translation>
 <translation id="1871569928317311284">ઘેરી થીમ બંધ કરો</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ઘેરો મોડ બંધ કરો</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">ખાનગી કી</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7994702968232966508">EAP પદ્ધતિ</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"માં સાચવવામાં આવ્યા</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ઑટો કલર મોડ ચાલુ કરો</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">શરૂ કરી નથી</translation>
 <translation id="8620617069779373398">રોમિંગ સ્થિતિ</translation>
 <translation id="8655295600908251630">ચેનલ</translation>
+<translation id="8655828773034788261">URL શેર કરો:</translation>
 <translation id="8660881923941176839">પાઉન્ડ</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> નેટવર્કમાં જોડાઓ</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> પર અપડેટ કરીને ફરી શરૂ કરો</translation>

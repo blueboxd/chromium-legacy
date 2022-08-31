@@ -166,6 +166,13 @@ void ProjectorClientImpl::SetAnnotatorMessageHandler(
   message_handler_ = handler;
 }
 
+void ProjectorClientImpl::ResetAnnotatorMessageHandler(
+    ash::AnnotatorMessageHandler* handler) {
+  if (message_handler_ == handler) {
+    message_handler_ = nullptr;
+  }
+}
+
 void ProjectorClientImpl::OnSpeechResult(
     const std::u16string& text,
     bool is_final,
@@ -198,6 +205,7 @@ void ProjectorClientImpl::OnSpeechRecognitionStopped() {
 }
 
 void ProjectorClientImpl::SetTool(const ash::AnnotatorTool& tool) {
+  DCHECK(message_handler_);
   message_handler_->SetTool(tool);
 }
 
@@ -208,6 +216,7 @@ void ProjectorClientImpl::Undo() {}
 void ProjectorClientImpl::Redo() {}
 
 void ProjectorClientImpl::Clear() {
+  DCHECK(message_handler_);
   message_handler_->Clear();
 }
 
@@ -272,6 +281,11 @@ void ProjectorClientImpl::OnEnablementPolicyChanged() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ash::SystemWebAppManager* swa_manager =
       ash::SystemWebAppManager::Get(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!swa_manager) {
+    return;
+  }
   const bool is_installed =
       swa_manager &&
       swa_manager->IsSystemWebApp(ash::kChromeUITrustedProjectorSwaAppId);
@@ -286,7 +300,29 @@ void ProjectorClientImpl::OnEnablementPolicyChanged() {
   if (!is_enabled)
     CloseProjectorApp();
 
-  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
-  web_app_provider->sync_bridge().SetAppIsDisabled(
-      ash::kChromeUITrustedProjectorSwaAppId, !is_enabled);
+  auto* web_app_provider = ash::SystemWebAppManager::GetWebAppProvider(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!web_app_provider) {
+    return;
+  }
+  web_app_provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&ProjectorClientImpl::SetAppIsDisabled,
+                                weak_ptr_factory_.GetWeakPtr(), !is_enabled));
+}
+
+void ProjectorClientImpl::SetAppIsDisabled(bool disabled) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+
+  auto* web_app_provider = ash::SystemWebAppManager::GetWebAppProvider(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!web_app_provider) {
+    return;
+  }
+  auto* sync_bridge = &web_app_provider->sync_bridge();
+  DCHECK(sync_bridge);
+
+  sync_bridge->SetAppIsDisabled(ash::kChromeUITrustedProjectorSwaAppId,
+                                disabled);
 }

@@ -1196,13 +1196,13 @@
       },
       'chromeos-kevin-chrome': {
         'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231) 
+          # Reducing parallelism due to DUT shortage (b/238271231)
           'shards': 5,
         }
       },
       'chromeos-kevin-rel': {
         'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231) 
+          # Reducing parallelism due to DUT shortage (b/238271231)
           'shards': 5,
         }
       },
@@ -1311,6 +1311,11 @@
           # are n2 machines available in the test pool.
           'shards': 25,
         },
+      },
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
+        ],
       },
       'android-pie-arm64-rel': {
         'args': [
@@ -2179,6 +2184,11 @@
       # which isn't instrumented.
       'Linux ChromiumOS MSan Tests',
       'Linux ChromiumOS MSan Focal',
+    ],
+  },
+  'gold_common_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
     ],
   },
   'gpu_process_launch_tests': {
@@ -3268,6 +3278,11 @@
       },
     },
   },
+  'system_webview_shell_layout_test_apk': {
+    'remove_from': [
+      'android-nougat-x86-rel', # crbug.com/1343548
+    ],
+  },
   'system_webview_wpt': {
     'modifications': {
       'android-webview-pie-x86-wpt-fyi-rel': {
@@ -3285,7 +3300,7 @@
       'Mac Retina Debug (AMD)',
       'Win10 FYI x64 Debug (NVIDIA)',
       # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Release (Intel HD 630)',
+      'Linux FYI Release (Intel UHD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux Release (NVIDIA)',
     ],
@@ -3735,6 +3750,16 @@
       },
     },
   },
+  'webgl_conformance_gl_passthrough_tests 1002:6821': {
+    'modifications': {
+      'mac_optional_gpu_tests_rel': {
+        'args': [
+          # Added to debug crbug.com/1293967.
+          '--extra-browser-args=--disable-background-media-suspend',
+        ],
+      },
+    },
+  },
   'webgl_conformance_metal_passthrough_tests': {
     'remove_from': [
       # crbug.com/1270755
@@ -3782,7 +3807,7 @@
       'chromeos-amd64-generic-rel': {
         'args': [
           # Added to debug crbug.com/1293967.
-          '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization',
+          '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization --disable-background-media-suspend',
         ],
         'swarming': {
           'quickrun_shards': 40,

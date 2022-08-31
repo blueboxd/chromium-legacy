@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">កំណត់​ការអនុញ្ញាត​ឡើងវិញ</translation>
 <translation id="301521992641321250">បាន​ទប់ស្កាត់ដោយ​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="3069226013421428034">អនុញ្ញាត​ការចូល​របស់ភាគីទីបី​សម្រាប់​គេហទំព័រ​ជាក់លាក់។</translation>
+<translation id="3109724472072898302">បានបង្រួមចូល</translation>
 <translation id="3114012059975132928">កម្មវិធី​ចាក់​វីដេអូ</translation>
 <translation id="3115898365077584848">បង្ហាញព័ត៌មាន</translation>
 <translation id="3123473560110926937">បាន​ទប់ស្កាត់នៅលើគេហទំព័រ​មួយចំនួន</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">បិទ​សំឡេង​វីដេអូ</translation>
 <translation id="3596414637720633074">ទប់ស្កាត់​ខូគីភាគីទីបីក្នុងមុខងារឯកជន</translation>
 <translation id="3600792891314830896">បិទសំឡេងទំព័រដែលចាក់សំឡេង</translation>
+<translation id="3628308229821498208">ការស្វែងរក​ដែលបាន​ណែនាំ</translation>
 <translation id="3744111561329211289">សមកាលកម្មផ្ទៃខាងក្រោយ</translation>
 <translation id="3763247130972274048">ចុច​ខាងឆ្វេង ឬ​ខាងស្ដាំពីរដង​​លើវីដេអូ ដើម្បី​រំលង 10 វិ</translation>
 <translation id="3797520601150691162">កុំប្រើរចនាប័ទ្មងងឹតសម្រាប់គេហទំព័រជាក់លាក់</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">រារាំង​ខូគី​ភាគី​ទីបី</translation>
 <translation id="6216432067784365534">ជម្រើស <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">លុប '<ph name="APP_NAME" />' ឬ?</translation>
+<translation id="6262191102408817757">ដោយផ្អែកលើ​ផ្ទាំង​ចុងក្រោយ​របស់អ្នក</translation>
 <translation id="6262279340360821358">បានទប់ស្កាត់ <ph name="PERMISSION_1" /> និង <ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">គេហទំព័រ​អាច​ស្នើសុំ​ការអនុញ្ញាត​ដើម្បី​ផ្ញើ​ការជូន​ដំណឹង</translation>
 <translation id="6295158916970320988">គេហទំព័រទាំងអស់</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">ទប់​ស្កាត់​ទំព័រ​មិន​ឱ្យ​បង្ហាញ​ផ្ទាំង​ផុស និង​ការ​បញ្ជូន​បន្ត (បាន​ណែនាំ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
+<translation id="7203150201908454328">បានពង្រីក</translation>
 <translation id="723171743924126238">ជ្រើសរើសរូបភាព</translation>
 <translation id="7243308994586599757">មានជម្រើសនៅក្បែរផ្នែកខាងក្រោមអេក្រង់</translation>
 <translation id="7250468141469952378">បានជ្រើស​រើស <ph name="ITEM_COUNT" /></translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យ​លេងខ្លឹមសារ​ដែលមានការការពារ</translation>
 <translation id="7577900504646297215">គ្រប់គ្រង​ចំណាប់អារម្មណ៍</translation>
 <translation id="7594634374516752650">បានភ្ជាប់ឧបករណ៍ប៊្លូធូស</translation>
+<translation id="7641339528570811325">សម្អាត​ទិន្នន័យ​រុករក​…</translation>
 <translation id="7649070708921625228">ជំនួយ</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
 <translation id="7781829728241885113">ម្សិលមិញ</translation>

@@ -274,13 +274,14 @@ class NavigationDelayerInterceptor
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
       blink::mojom::FencedFrameMode mode,
+      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
       CreateFencedFrameCallback callback) override {
     mojo::PendingAssociatedRemote<blink::mojom::FencedFrameOwnerHost>
         original_remote;
 
     GetForwardingInterface()->CreateFencedFrame(
         original_remote.InitWithNewEndpointAndPassReceiver(), mode,
-        std::move(callback));
+        std::move(remote_frame_interfaces), std::move(callback));
     std::vector<FencedFrame*> fenced_frames =
         render_frame_host_->GetFencedFrames();
     ASSERT_FALSE(fenced_frames.empty());
@@ -978,6 +979,30 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, FocusedFrameInFencedFrame) {
   EXPECT_TRUE(ExecJs(fenced_frame_rfh.get(), "window.focus()"));
   focus_observer.Wait();
   EXPECT_EQ(web_contents()->GetFocusedFrame(), fenced_frame_rfh.get());
+}
+
+// Test that the initial navigation in a fenced frame, which navigates from the
+// initial empty document, is not classified as a client redirect.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
+                       InitialNavigationIsNotClientRedirect) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL url = https_server()->GetURL("c.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  FrameNavigateParamsCapturer capturer(web_contents());
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                               fenced_frame_url);
+  capturer.Wait();
+  EXPECT_EQ(capturer.urls()[0], fenced_frame_url);
+
+  ASSERT_EQ(1U, capturer.transitions().size());
+  // The transition used for the initial navigation in the fenced frame is not
+  // classified as a client-side redirect.
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      capturer.transitions()[0],
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_SUBFRAME)));
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,

@@ -20,9 +20,9 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/scheduler_task_runner.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_backing.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_video.h"
+#include "gpu/command_buffer/service/shared_image/android_video_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -228,8 +228,8 @@ void StreamTexture::OnFrameAvailable() {
     if (context_state_->GrContextIsVulkan()) {
       vulkan_context_provider = context_state_->vk_context_provider();
     }
-    auto ycbcr_info = SharedImageVideo::GetYcbcrInfo(texture_owner_.get(),
-                                                     vulkan_context_provider);
+    auto ycbcr_info = AndroidVideoImageBacking::GetYcbcrInfo(
+        texture_owner_.get(), vulkan_context_provider);
 
     client_->OnFrameWithInfoAvailable(mailbox, coded_size, visible_rect,
                                       ycbcr_info);
@@ -279,7 +279,7 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
 
   // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
   // colorspace and wire it here.
-  auto shared_image = SharedImageVideo::Create(
+  auto shared_image = AndroidVideoImageBacking::Create(
       mailbox, coded_size, gfx::ColorSpace::CreateSRGB(),
       kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, this, context_state_,
       /*lock=*/nullptr);

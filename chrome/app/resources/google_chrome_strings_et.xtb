@@ -67,6 +67,7 @@
 <translation id="2139300032719313227">Taaskäivitage Chrome OS</translation>
 <translation id="2151406531797534936">Käivitage Chrome kohe uuesti</translation>
 <translation id="2174917724755363426">Installimine ei ole lõpetatud. Kas soovite kindlasti tühistada?</translation>
+<translation id="223889379102603431">Teave selle kohta, kuidas Chrome oma juursertifikaate haldab</translation>
 <translation id="2258103955319320201">Selleks et oma Chrome'i brauseri sisule kõigis oma seadmetes juurde pääseda, logige sisse ja lülitage siis sisse sünkroonimine</translation>
 <translation id="2290014774651636340">Google API võtmed on puudu. Google Chrome'i teatud funktsioonid keelatakse.</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
@@ -79,6 +80,7 @@
 <translation id="2401189691232800402">Chrome OS-i süsteem</translation>
 <translation id="2467438592969358367">Google Chrome soovib teie paroole eksportida. Selle lubamiseks sisestage oma Windowsi parool.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
+<translation id="2494974097748878569">Google'i assistent Chrome'is</translation>
 <translation id="2534507159460261402">Google Pay (kopeeritud Chrome'i)</translation>
 <translation id="2559253115192232574">Hiljem saab teie külastatav sait küsida Chrome'ilt teie huvisid, et isikupärastada teile kuvatavaid reklaame. Chrome võib jagada kuni kolme huvi.</translation>
 <translation id="2563121210305478421">Kas käivitada Chrome uuesti?</translation>
@@ -157,6 +159,7 @@
 <translation id="3865754807470779944">Chrome'i versioon <ph name="PRODUCT_VERSION" /> on installitud</translation>
 <translation id="3873044882194371212">Ava link Chrome'i inko&amp;gnito aknas</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
+<translation id="3999683152997576765">Saate vaadata ja eemaldada huvipakkuvaid teemasid, mida saidid teile reklaamide näitamiseks kasutavad. Chrome prognoosib teie huvisid teie hiljutise sirvimisajaloo põhjal.</translation>
 <translation id="4035053306113201399">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
@@ -277,6 +280,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6739177684496155661">Kas jätkata uuel Chrome'i profiilil?</translation>
 <translation id="6750954913813541382">Õigekirjavigade parandamiseks saadab Chrome brauseris sisestatava teksti Google'ile</translation>
 <translation id="677276454032249905">Kas väljuda Chrome'ist ikkagi?</translation>
+<translation id="6785872064505734160">Google'i assistent Chrome'is saab veebisaitidel teie eest toiminguid teha</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
 <translation id="6881299373831449287">Chrome'i värskendamine</translation>
 <translation id="6885412569789873916">Chrome'i beetaversiooni rakendused</translation>
@@ -349,6 +353,7 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>
+<translation id="8270775718612349140">Chrome'i hallatavad sertifikaadid</translation>
 <translation id="8286862437124483331">Google Chrome proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="828798499196665338">Sinu vanem lülitas valiku „Saitide, rakenduste ja laienduste load” Chrome'i puhul välja. Laienduse <ph name="EXTENSION_TYPE_PARAMETER" /> lubamine on keelatud.</translation>
 <translation id="8290100596633877290">Tohoh! Google Chrome jooksis kokku. Kas soovite kohe taaskäivitada?</translation>

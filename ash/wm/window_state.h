@@ -43,6 +43,11 @@ class WindowStateDelegate;
 class WindowStateObserver;
 class WMEvent;
 
+// TODO(crbug.com/1323394): Consider moving to a WindowState constants file.
+constexpr float kOneThirdPositionRatio = 0.33f;
+constexpr float kDefaultPositionRatio = 0.5f;
+constexpr float kTwoThirdPositionRatio = 0.67f;
+
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
 // window manager behavior) and ash specific window behavior (such as
@@ -412,8 +417,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeHistograms);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
-  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
-  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
 
   // Animation type of updating window bounds. "IMMEDIATE" means update bounds
   // directly without animation. "STEP_END" means update bounds at the end of
@@ -446,8 +449,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   BoundsChangeAnimationType bounds_animation_type() {
     return bounds_animation_type_;
   }
-
-  bool HasMaximumWidthOrHeight() const;
 
   // Returns the window's current z-ordering state.
   ui::ZOrderLevel GetZOrdering() const;
@@ -557,7 +558,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   std::unique_ptr<WindowStateDelegate> delegate_;
 
   bool bounds_changed_by_user_;
-  bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
 
   bool unminimize_to_restore_bounds_;

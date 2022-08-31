@@ -952,6 +952,7 @@
         'DeviceFamilyLinkAccountsAllowed',
         'DeviceLoginScreenPromptOnMultipleMatchingCertificates',
         'DeviceRunAutomaticCleanupOnLogin',
+        'DeviceAutofillSAMLUsername'
       ],
     },
     {
@@ -1069,6 +1070,7 @@
         'DeviceLocalAccountAutoLoginBailoutEnabled',
         'DeviceLocalAccountPromptForNetworkWhenOffline',
         'AllowKioskAppControlChromeVersion',
+        'NewWindowsInKioskAllowed',
       ],
     },
     {
@@ -4408,11 +4410,13 @@
       'id': 190,
       'caption': '''Allow sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
-      'desc': '''This policy is deprecated, consider using BrowserSignin instead.
+      'desc': '''This policy is deprecated, consider using <ph name="BROWSER_SIGNIN_POLICY_NAME">BrowserSignin</ph> instead.
 
       Allows the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you set this policy, you can configure whether a user is allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Setting this policy to 'False' will prevent apps and extensions that use the chrome.identity API from functioning, so you may want to use <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> instead.''',
+      Setting this policy to Enabled will allow the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      Setting this policy to Disabled will prevent sign in. It also blocks apps and extensions that use the chrome.identity API from functioning. To avoid that, use <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> instead.
+      ''',
     },
     {
       'name': 'EnableDeprecatedWebBasedSignin',
@@ -5598,7 +5602,7 @@
 
       Leaving the policy unset means no apps or extensions are autoinstalled, and users can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      This policy superseeds <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If a previously force-installed app or extension is removed from this list, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically uninstalls it.
+      This policy supersedes <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If a previously force-installed app or extension is removed from this list, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically uninstalls it.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> instances, apps and extensions from outside the Chrome Web Store can only be forced installed if the instance is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.
 
@@ -5937,9 +5941,9 @@
       'tags': [],
       'desc': '''Controls external extensions installation.
 
-      Enabling this setting blocks external extensions from being installed.
+      Setting this policy to Enabled blocks external extensions from being installed.
 
-      Disabling this setting or leaving it unset allows external extensions to be installed.
+      Setting this policy to Disabled or leaving it unset allows external extensions to be installed.
 
       External extensions and their installation are documented at https://developer.chrome.com/apps/external_extensions.
       ''',
@@ -9329,6 +9333,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Log the user out as soon as their account becomes unauthenticated',
+        },
+        {
+          'value': False,
+          'caption': 'Allow the user to remain logged in after their account becomes unauthenticated',
+        },
+      ],
       'example_value': False,
       'id': 679,
       'caption': '''Force logout the user when their account becomes unauthenticated''',
@@ -9462,6 +9476,16 @@
         'per_profile': True,
         'dynamic_refresh': True
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show app recommendations in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> launcher',
+        },
+        {
+          'value': False,
+          'caption': 'Do not show app recommendations in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> launcher',
+        },
+      ],
       'example_value': True,
       'id': 563,
       'caption': '''Enable App Recommendations in Zero State of Search Box''',
@@ -9488,6 +9512,21 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Always offer translation',
+        },
+        {
+          'value': False,
+          'caption': 'Never offer translation',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
+      'default': None,
       'example_value': True,
       'id': 80,
       'caption': '''Enable Translate''',
@@ -9506,6 +9545,21 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow outdated <ph name="FLASH_PLUGIN_NAME">Flash</ph> to be used as normal <ph name="FLASH_PLUGIN_NAME">Flash</ph>',
+        },
+        {
+          'value': False,
+          'caption': 'Disallow outdated <ph name="FLASH_PLUGIN_NAME">Flash</ph>',
+        },
+        {
+          'value': None,
+          'caption': 'Ask user for permission to run outdated <ph name="FLASH_PLUGIN_NAME">Flash</ph>',
+        },
+      ],
+      'default': None,
       'example_value': True,
       'id': 81,
       'caption': '''Allow running plugins that are outdated''',
@@ -9525,6 +9579,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Always run plugins that are not outdated',
+        },
+        {
+          'value': False,
+          'caption': 'Ask user for permission to run plugins that require authorization',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 86,
@@ -9545,6 +9609,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Run all <ph name="FLASH_PLUGIN_NAME">Flash</ph> content',
+        },
+        {
+          'value': False,
+          'caption': 'Allow certain <ph name="FLASH_PLUGIN_NAME">Flash</ph> content to be blocked',
+        },
+      ],
       'example_value': True,
       'id': 391,
       'caption': '''Extend Flash content setting to all content (deprecated)''',
@@ -9568,6 +9642,21 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable bookmark bar',
+        },
+        {
+          'value': False,
+          'caption': 'Disable bookmark bar',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
+      'default': None,
       'example_value': True,
       'id': 82,
       'caption': '''Enable Bookmark Bar''',
@@ -9591,6 +9680,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable bookmark editing',
+        },
+        {
+          'value': False,
+          'caption': 'Disable bookmark editing',
+        },
+      ],
       'example_value': False,
       'id': 83,
       'caption': '''Enable or disable bookmark editing''',
@@ -9806,6 +9905,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of bookmarks on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of bookmarks on first run',
+        },
+      ],
       'example_value': True,
       'default': False,
       'id': 97,
@@ -9827,6 +9936,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of browsing history on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of browsing history on first run',
+        },
+      ],
       'example_value': True,
       'default': False,
       'id': 98,
@@ -9847,6 +9966,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of homepage on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of homepage on first run',
+        },
+      ],
       'example_value': True,
       'id': 99,
       'caption': '''Import of homepage from default browser on first run''',
@@ -9867,6 +9996,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of default search engine on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of default search engine on first run',
+        },
+      ],
       'example_value': True,
       'id': 100,
       'caption': '''Import search engines from default browser on first run''',
@@ -9887,6 +10026,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of saved passwords on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of saved passwords on first run',
+        },
+      ],
       'example_value': True,
       'id': 101,
       'caption': '''Import saved passwords from default browser on first run''',
@@ -9907,6 +10056,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable import of autofill form data on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Disable import of autofill form data on first run',
+        },
+      ],
       'example_value': True,
       'id': 277,
       'caption': '''Import autofill form data from default browser on first run''',
@@ -9922,6 +10081,7 @@
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome.*:14-'],
+      'future_on': [ 'chrome_os' ],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -10090,7 +10250,7 @@
       'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:78-', 'chrome_os:78-'],
+      'supported_on': ['chrome.*:78-', 'chrome_os:78-', 'android:105-', 'ios:105-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -10117,6 +10277,7 @@
         'chrome.*:75-',
         'chrome_os:75-',
         'android:97-',
+        'ios:105-'
       ],
       'features': {
         'dynamic_refresh': True,
@@ -10188,7 +10349,7 @@
           'caption': '''Screen lock delays''',
         },
       ],
-      'supported_on': ['chrome.*:76-', 'chrome_os:76-'],
+      'supported_on': ['chrome.*:76-', 'chrome_os:76-', 'android:105-', 'ios:105-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -10533,7 +10694,7 @@
 
       If this policy is enabled and the enrollment ID has already been uploaded to the DMServer, a remote device powerwash will be triggered.
 
-      If this policy is disabled or not set, the remote device powerwash is not trigged, independently of the enrollment ID upload status.
+      If this policy is disabled or not set, the remote device powerwash is not triggered, independently of the enrollment ID upload status.
 
       This check is triggered whenever the login screen is loaded, then retried every hour (if the device stays on the login screen). This prevents the migration from starting in the middle of a user session, causing potential problems to end users.''',
     },
@@ -12673,7 +12834,10 @@
       'id': 916,
       'caption': '''Use only policy-provided update URL when downloading and updating Kiosk Chrome apps''',
       'tags': [],
-      'desc': '''Setting the policy will disable in-session Kiosk Chrome apps update (which uses update URL from the extension manifest) and leaves only CRX pre-fetching as the update mechanism.''',
+      'desc': '''
+        Setting the policy to Disabled will disable in-session Kiosk Chrome apps update (which uses update URL from the extension manifest) and leaves only CRX pre-fetching as the update mechanism.
+        Setting the policy to Enabled or not set will allow in-session Kiosk Chrome apps update.
+        ''',
     },
     {
       'name': 'DeviceLocalAccountAutoLoginId',
@@ -16394,6 +16558,31 @@
       'arc_support': 'Cookies transferred to the user\'s profile are not accessible to Android apps.',
     },
     {
+      'name': 'DeviceAutofillSAMLUsername',
+      'owners': ['andreydav@google.com', 'chromeos-commercial-identity@google.com'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud' ],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'login_hint',
+      'id': 997,
+      'caption': '''Autofill username on SAML IdP page''',
+      'tags': ['website-sharing', 'local-data-access'],
+      'desc': '''<ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> can try to autofill username field on SAML IdP page during online authentication on the sign-in screen and the lock screen.
+
+      It will use user's email assosiated with their <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> profile, so this setting should be disabled if users are expected to use different emails on SAML IdP page.
+
+      The string recieved through this policy will be used as a url parameter name on IdP page with user's email as a value.
+
+      Server side is expected to be responsible for the mapping between Identity providers and url parameters which they support.''',
+      'arc_support': 'This policy has no effect on Android apps.',
+    },
+    {
       'name': 'EasyUnlockAllowed',
       'owners': ['file://chrome/browser/ash/login/easy_unlock/OWNERS', 'hansberry@chromium.org'],
       'type': 'main',
@@ -16507,6 +16696,7 @@
       'deprecated': True,
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:64-', 'chrome.mac:66-', 'android:65-'],
+      'future_on': ['chrome.linux'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -17317,6 +17507,36 @@
 
       Warning: Do not delegate control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version to a kiosk app, because it might prevent the device from getting software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version might leave users at risk.''',
       'arc_support': 'If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version, even if this policy is set to <ph name="TRUE">True</ph>.',
+    },
+    {
+      'name': 'NewWindowsInKioskAllowed',
+      'owners': ['irfedorova@google.com', 'chromeos-kiosk-eng@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow a Kiosk Web App to open another browser window',
+        },
+        {
+          'value': False,
+          'caption': 'Prohibit a Kiosk Web App from opening another browser window',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default': False,
+      'id': 995,
+      'caption': '''Allow Web Kiosk to open more than one browser window on any screen''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled means a Kiosk Web App can open another browser window which can be placed on the same screen or on a different screen. To open a new window, Web App should call <ph name="OPEN_NEW_WINDOW_JS">window.open(url, target, windowFeatures)</ph> JavaScript function.
+
+      Setting the policy to Disabled or leaving it unset means a Kiosk Web App can use only the main browser window and cannot open a new window. Calling any Javascript functions for opening a new window will be ignored.'''
     },
     {
       'name': 'LoginAuthenticationBehavior',
@@ -18168,7 +18388,7 @@
       'owners': ['file://components/update_client/OWNERS', 'sorin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:54-', 'chrome_os:54-'],
+      'supported_on': ['chrome.*:54-', 'chrome_os:54-', 'android:105-', 'ios:105-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -20092,7 +20312,7 @@
       'owners': ['igorruvinov@chromium.org', 'zmin@chromium.org', 'pastarmovj@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:96-', 'android:97-'],
+      'supported_on': ['chrome.*:96-', 'android:97-', 'ios:105-'],
       'items': [
         {
           'value': True,
@@ -20993,7 +21213,9 @@
       'example_value': 86400000,
       'desc': '''Allows you to set the time period, in milliseconds, between the first notification that a <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> device must be restarted to apply a pending update and the end of the time period specified by the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy.
 
-      If not set, the default period of 259200000 milliseconds (three days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> devices.''',
+      If not set, the default period of 259200000 milliseconds (three days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> devices.
+
+      For rollback and other <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> updates that will powerwash the device, the user is always notified immediately when the update is available, independently of the value of this policy.''',
     },
     {
       'id': 854,
@@ -21757,6 +21979,8 @@
       'desc': '''Setting the policy lets users choose one of the input methods for <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> sessions that you specify.
 
        If you leave it unset or set to an empty list, users can select all supported input methods.
+
+       Starting with version M105 allowed input methods are automatically enabled in kiosk session.
 
       Note: If the current input method is unsupported, it switches to the hardware keyboard layout (if allowed) or the first valid entry in this list. Invalid or unsupported methods are ignored.'''
     },
@@ -24670,7 +24894,7 @@
       'id': 558,
       'caption': '''Enable 'Remember password' feature''',
       'tags': ['website-sharing'],
-      'desc': '''Controls whether the 'Remember password' feature is enabled in the Kerberos authentication dialog. Passwords are stored encryped on disk, only accessible to the Kerberos system daemon and during a user session.
+      'desc': '''Controls whether the 'Remember password' feature is enabled in the Kerberos authentication dialog. Passwords are stored encrypted on disk, only accessible to the Kerberos system daemon and during a user session.
 
           If this policy is enabled or not set, users can decide whether Kerberos passwords are remembered, so that they do not have to be entered again. Kerberos tickets are automatically fetched unless additional authentication is required (two-factor authentication).
 
@@ -25034,6 +25258,23 @@
                 'local_test'
               ]
             },
+            'verification': {
+              'type': 'object',
+              'properties': {
+                'linux': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'mac': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'windows': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+              },
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25090,6 +25331,11 @@
       },
       'example_value': [{
         'service_provider': 'google',
+        'verification': {
+          'linux': ['key'],
+          'mac': ['key'],
+          'windows': ['key']
+        },
         'enable': [
           {
             'url_list': ['*'],
@@ -25174,6 +25420,23 @@
                 'local_test'
               ]
             },
+            'verification': {
+              'type': 'object',
+              'properties': {
+                'linux': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'mac': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'windows': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+              },
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25230,6 +25493,11 @@
       },
       'example_value': [{
         'service_provider': 'google',
+        'verification': {
+          'linux': ['key'],
+          'mac': ['key'],
+          'windows': ['key']
+        },
         'enable': [
           {
             'url_list': ['*'],
@@ -25314,6 +25582,23 @@
                 'local_test'
               ]
             },
+            'verification': {
+              'type': 'object',
+              'properties': {
+                'linux': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'mac': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'windows': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+              },
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25369,6 +25654,11 @@
       },
       'example_value': [{
         'service_provider': 'google',
+        'verification': {
+          'linux': ['key'],
+          'mac': ['key'],
+          'windows': ['key']
+        },
         'enable': [
           {
             'url_list': ['*'],
@@ -25450,6 +25740,23 @@
                 'local_test'
               ]
             },
+            'verification': {
+              'type': 'object',
+              'properties': {
+                'linux': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'mac': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+                'windows': {
+                  'type': 'array',
+                  'items': { 'type': 'string' },
+                },
+              },
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25505,6 +25812,11 @@
       },
       'example_value': [{
         'service_provider': 'google',
+        'verification': {
+          'linux': ['key'],
+          'mac': ['key'],
+          'windows': ['key']
+        },
         'enable': [
           {
             'url_list': ['*.them.com', '*.others.com'],
@@ -29199,6 +29511,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:91-'],
+      'future_on': ['chrome_os'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -30593,16 +30906,15 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
         },
       ],
       'example_value': True,
-      'default': False,
+      'default': True,
       'id': 935,
       'caption': '''Enable Projector''',
       'desc': '''This policy gives Projector permission to create and transcribe screen recording and upload to Drive for enterprise users.
       This policy does not affect Family Link users.
       This policy does not affect <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME">ProjectorDogfoodForFamilyLinkEnabled</ph> policy for Family Link users.
 
-      If the policy is enabled, Projector will be enabled.
-      If the policy is disabled, Projector will be disabled.
-      If the policy is not set, Projector will by default disabled.''',
+      If the policy is unset or enabled, Projector will be enabled.
+      If the policy is disabled, Projector will be disabled.''',
     },
     {
       'name': 'DeviceKeylockerForStorageEncryptionEnabled',
@@ -31271,14 +31583,15 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
         },
       ],
       'default': True,
+      'default_for_enterprise_users': False,
       'example_value': False,
       'id': 971,
       'caption': '''Enable adaptive charging model to hold charging process to extend battery life''',
       'tags': [],
       'desc': '''Specifies whether an adaptive charging model is allowed to hold charging process to extend battery life.
 
-      When the device is on AC, the adaptive charging model evaluates if charging process should be hold to extend battery life. If the adaptive charging model holds the charging process, it'll keep the battery at a certain level (i.e. 80%) and then charge the device to 100% when the user need it.
-      If this policy is set to True or left not set, the adaptive charging model will be enabled and allowed to hold the charging process to extend battery life. If this policy is set to False, the adaptive charging model will not influence the charging process.''',
+      When the device is on AC, the adaptive charging model evaluates if charging process should be hold to extend battery life. If the adaptive charging model holds the charging process, it'll keep the battery at a certain level (i.e. 80%) and then charge the device to 100% when the user needs it.
+      If this policy is set to True, the adaptive charging model will be enabled and allowed to hold the charging process to extend battery life. If this policy is set to False or unset, the adaptive charging model will not influence the charging process.''',
     },
     {
       'name': 'WarnBeforeQuittingEnabled',
@@ -31405,7 +31718,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
           },
         },
       },
-      'future_on': ['webview_android'],
+      'supported_on': ['webview_android:105-'],
       'features': { 'dynamic_refresh': True, 'per_profile': False,},
       'example_value': [
         {
@@ -31425,7 +31738,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
 
       If there is no valid app installed to handle authentication url on the device, navigation will continue in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
 
-      Valid authentication url should have the scheme <ph name="HTTP_PROTOCOL">http</ph>/<ph name="HTTPS_PROTOCOL">https</ph> and should not contain wildcards.
+      Authentication URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blocklist-filter-format.
       '''
     },
     {
@@ -31524,6 +31837,8 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
           When the policy is set to Enabled, setTimeouts and setIntervals with an interval smaller than 4ms are not clamped as aggressively.
           This improves short horizon performance, but websites abusing the API will still eventually have their setTimeouts clamped.
 
+          When the policy is set to Disabled, setTimeouts and setIntervals with an interval smaller than 4ms will be clamped.
+
           This may change task ordering on a web page, leading to unexpected behavior on sites that are dependent on a certain ordering in some way.
           It also may affect sites with a lot of setTimeout() with a timeout of 0ms usage, e.g. increasing CPU load.
 
@@ -31531,6 +31846,62 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
 
           This is a temporary policy that is planned be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 107. This deadline may be extended if there is a need for it among enterprises.
           ''',
+    },
+    {
+      'name': 'IdleProfileCloseTimeout',
+      'caption': 'Timeout until idle profile is closed',
+      'owners': ['nicolaso@chromium.org'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 5 },
+      'default': 0,
+      'example_value': 5,
+      'id': 994,
+      'tags': [],
+      'future_on': ['chrome.*'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'desc': '''Triggers an action when the computer is idle.
+
+        If this policy is set to a positive number: it is a number of minutes. After that many minutes without user input, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> closes all browser windows, and shows the Profile Picker.
+
+        If this policy is less than 5, or left unset: nothing happens when the computer is idle.
+
+        "User input" is defined by Operating System APIs, and includes things like moving the mouse or typing on the keyboard.''',
+    },
+    {
+      'name': 'EncryptedClientHelloEnabled',
+      'owners': ['davidben@chromium.org', 'trusty-transport@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:105-', 'chrome_os:105-', 'android:105-'],
+      'features': {
+        'dynamic_refresh' : True,
+        'per_profile' : False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the TLS Encrypted ClientHello experiment',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the TLS Encrypted ClientHello experiment',
+        }
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 996,
+      'caption': '''Enable TLS Encrypted ClientHello''',
+      'tags': ['system-security'],
+      'desc': '''Encrypted ClientHello (ECH) is an extension to TLS to encrypt sensitive fields of the ClientHello and improve privacy.
+
+      If this policy is not configured, or is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will follow the default rollout process for ECH. If it is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not enable ECH.
+
+      When the feature is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may or may not use ECH depending on server support, availability of the HTTPS DNS record, or rollout status.
+
+      ECH is an evolving protocol, so <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s implementation is subject to change. As such, this policy is a temporary measure to control the initial experimental implementation. It will be replaced with final controls as the protocol finalizes.''',
     },
   ],
   'messages': {
@@ -32006,6 +32377,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceKeylockerForStorageEncryptionEnabled': 'keylocker_for_storage_encryption_enabled.enabled',
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
     'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
+    'DeviceAutofillSAMLUsername': 'saml_settings.url_parameter_to_autofill_saml_username'
   },
   'policy_atomic_group_definitions': [
     {
@@ -32538,6 +32910,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 993,
+  'highest_id_currently_used': 997,
   'highest_atomic_group_id_currently_used': 43
 }

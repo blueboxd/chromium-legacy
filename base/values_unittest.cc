@@ -217,6 +217,17 @@ TEST(ValuesTest, ConstructList) {
   EXPECT_EQ(Value::Type::LIST, value.type());
 }
 
+TEST(ValuesTest, UseTestingEachOnValueList) {
+  Value::List list;
+  list.Append(true);
+  list.Append(true);
+
+  // This will only work if `Value::List::value_type` is defined.
+  EXPECT_THAT(list, testing::Each(testing::ResultOf(
+                        [](const Value& value) { return value.GetBool(); },
+                        testing::Eq(true))));
+}
+
 TEST(ValuesTest, ConstructListFromValueList) {
   Value::List list;
   list.Append("foo");
@@ -605,6 +616,39 @@ TEST(ValuesTest, ListErase) {
   EXPECT_EQ(list[1], Value(3));
   EXPECT_EQ(*next_it, Value(3));
   EXPECT_EQ(next_it + 1, list.end());
+}
+
+TEST(ValuesTest, ListEraseRange) {
+  Value::List list;
+  list.Append(1);
+  list.Append(2);
+  list.Append(3);
+  list.Append(4);
+
+  auto next_it = list.erase(list.begin() + 1, list.begin() + 3);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(list[0], Value(1));
+  EXPECT_EQ(list[1], Value(4));
+  EXPECT_EQ(*next_it, Value(4));
+  EXPECT_EQ(next_it + 1, list.end());
+
+  next_it = list.erase(list.begin() + 1, list.begin() + 1);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(list[0], Value(1));
+  EXPECT_EQ(list[1], Value(4));
+  EXPECT_EQ(*next_it, Value(4));
+  EXPECT_EQ(next_it + 1, list.end());
+
+  next_it = list.erase(list.begin() + 1, list.end());
+  ASSERT_EQ(1u, list.size());
+  EXPECT_EQ(list[0], Value(1));
+  EXPECT_EQ(next_it, list.end());
+
+  list.clear();
+  next_it = list.erase(list.begin(), list.begin());
+  ASSERT_EQ(0u, list.size());
+  EXPECT_EQ(next_it, list.begin());
+  EXPECT_EQ(next_it, list.end());
 }
 
 TEST(ValuesTest, EraseListIter) {
@@ -1691,10 +1735,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_value);
   ASSERT_NE(copy_value, list_weak);
   ASSERT_TRUE(copy_value->is_list());
-  ListValue* copy_list = nullptr;
-  ASSERT_TRUE(copy_value->GetAsList(&copy_list));
-  ASSERT_TRUE(copy_list);
-  ASSERT_EQ(2U, copy_list->GetListDeprecated().size());
+  ASSERT_EQ(2U, copy_value->GetList().size());
 
   copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
@@ -2353,15 +2394,6 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("dict", nullptr));
   EXPECT_TRUE(main_dict.GetListWithoutPathExpansion("list", nullptr));
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_FALSE(main_list.GetDictionary(0, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(1, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(2, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(3, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(4, nullptr));
-  EXPECT_TRUE(main_list.GetDictionary(5, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(6, nullptr));
-  EXPECT_FALSE(main_list.GetDictionary(7, nullptr));
 }
 
 TEST(ValuesTest, SelfSwap) {

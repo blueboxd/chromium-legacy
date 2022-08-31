@@ -7,13 +7,13 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/command_buffer/service/test_shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/test_image_backing.h"
 
 namespace gpu {
 namespace gles2 {
 namespace {
-std::unique_ptr<TestSharedImageBacking> AllocateTextureAndCreateSharedImage(
+std::unique_ptr<TestImageBacking> AllocateTextureAndCreateSharedImage(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
@@ -27,9 +27,9 @@ std::unique_ptr<TestSharedImageBacking> AllocateTextureAndCreateSharedImage(
   glTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format), size.width(),
                size.height(), 0, GLDataFormat(format), GLDataType(format),
                nullptr /* data */);
-  return std::make_unique<TestSharedImageBacking>(
-      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      0 /* estimated_size */, service_id);
+  return std::make_unique<TestImageBacking>(mailbox, format, size, color_space,
+                                            surface_origin, alpha_type, usage,
+                                            0 /* estimated_size */, service_id);
 }
 
 }  // namespace

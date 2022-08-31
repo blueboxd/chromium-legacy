@@ -7,10 +7,12 @@
  * extension API.
  */
 
-import {PhoneticData} from '/chromevox/background/phonetic_data.js';
-import {AbstractTts} from '/chromevox/common/abstract_tts.js';
-import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
-import {ChromeTtsBase} from '/chromevox/common/tts_base.js';
+import {AbstractTts} from '../common/abstract_tts.js';
+import {Msgs} from '../common/msgs.js';
+import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {ChromeTtsBase} from '../common/tts_base.js';
+
+import {PhoneticData} from './phonetic_data.js';
 
 const Utterance = class {
   /**
@@ -891,8 +893,17 @@ TtsBackground.hint_delay_ms_ = 1000;
  * @const
  */
 TtsBackground.ALLOWED_PROPERTIES_ = [
-  'desiredEventTypes', 'enqueue', 'extensionId', 'gender', 'lang', 'onEvent',
-  'pitch', 'rate', 'requiredEventTypes', 'voiceName', 'volume'
+  'desiredEventTypes',
+  'enqueue',
+  'extensionId',
+  'gender',
+  'lang',
+  'onEvent',
+  'pitch',
+  'rate',
+  'requiredEventTypes',
+  'voiceName',
+  'volume',
 ];
 
 

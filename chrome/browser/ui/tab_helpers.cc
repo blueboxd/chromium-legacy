@@ -58,9 +58,9 @@
 #include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
@@ -162,7 +162,7 @@
 #else
 #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h"
+#include "chrome/browser/preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
@@ -370,7 +370,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
         CreateForWebContents(
             web_contents, page_content_annotations_service,
             TemplateURLServiceFactory::GetForProfile(profile),
-            OptimizationGuideKeyedServiceFactory::GetForProfile(profile));
+            OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
+            prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
+                profile));
   }
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
@@ -435,6 +437,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
             profile));
   }
   SoundContentSettingObserver::CreateForWebContents(web_contents);
+  SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
@@ -499,7 +502,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     PrivacySandboxPromptHelper::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
-  SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
       base::FeatureList::IsEnabled(features::kWebUITabStrip)) {

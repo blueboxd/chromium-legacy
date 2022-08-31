@@ -260,10 +260,17 @@ function setUpPasswordManagerInternals() {
   setUpMarker();
   setUpDownload('password-manager');
   setUpStopRecording();
+  addWebUIListener(
+      'enable-reset-upm-eviction-button', enableResetUpmEvictionButton);
 }
 
 function enableResetCacheButton() {
   document.getElementById('reset-cache-fake-button').style.display = 'inline';
+}
+
+function enableResetUpmEvictionButton(isEnabled) {
+  document.getElementById('reset-upm-eviction-fake-button').style.display =
+      isEnabled ? 'inline' : 'none';
 }
 
 function notifyAboutIncognito(isIncognito) {
@@ -294,7 +301,7 @@ function setUpMarker() {
           type: 'element',
           value: 'div',
           attributes: {'class': 'marker', 'contenteditable': 'true'},
-          children: [{type: 'text', value: `#${markerCounter} `}]
+          children: [{type: 'text', value: `#${markerCounter} `}],
         },
         /*ignoreRecordLogs=*/ true);
     if (scrollAfterInsert) {
@@ -412,5 +419,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
       document.getElementById('reset-cache-fake-button');
   resetCacheFakeButton.addEventListener('click', () => {
     chrome.send('resetCache');
+  });
+
+  const resetUpmEvictionButton =
+      document.getElementById('reset-upm-eviction-fake-button');
+  resetUpmEvictionButton.addEventListener('click', () => {
+    chrome.send('resetUpmEviction');
+    showModalDialog('UPM re-enabled. Please, restart Chrome.');
   });
 });

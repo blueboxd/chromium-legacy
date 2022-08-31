@@ -112,6 +112,26 @@ AnalysisServiceSettings::AnalysisServiceSettings(
 
   for (const SupportedTag& supported_tag : analysis_config_->supported_tags)
     tags_[supported_tag.name].supported_files = supported_tag.supported_files;
+
+#if BUILDFLAG(IS_WIN)
+  const char* verification_key = kKeyWindowsVerification;
+#elif BUILDFLAG(IS_MAC)
+  const char* verification_key = kKeyMacVerification;
+#elif BUILDFLAG(IS_LINUX)
+  const char* verification_key = kKeyLinuxVerification;
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  const base::Value::Dict& dict = settings_value.GetDict();
+  const base::Value::List* signatures =
+      dict.FindListByDottedPath(verification_key);
+  if (signatures) {
+    for (auto& v : *signatures) {
+      if (v.is_string())
+        verification_signatures_.push_back(v.GetString());
+    }
+  }
+#endif
 }
 
 // static
@@ -166,6 +186,9 @@ absl::optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
     DCHECK(analysis_config_->local_path);
     LocalAnalysisSettings local_settings;
     local_settings.local_path = analysis_config_->local_path;
+    local_settings.user_specific = analysis_config_->user_specific;
+    local_settings.verification_signatures = verification_signatures_;
+
     settings.cloud_or_local_settings =
         CloudOrLocalAnalysisSettings(std::move(local_settings));
   }
@@ -204,7 +227,7 @@ absl::optional<GURL> AnalysisServiceSettings::GetLearnMoreUrl(
   return element->second.custom_message.learn_more_url;
 }
 
-absl::optional<bool> AnalysisServiceSettings::GetBypassJustificationRequired(
+bool AnalysisServiceSettings::GetBypassJustificationRequired(
     const std::string& tag) {
   return tags_.find(tag) != tags_.end() && tags_.at(tag).requires_justification;
 }
@@ -241,7 +264,7 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
     return;
 
   url_matcher::util::AddFilters(matcher_.get(), enabled, id,
-                                &base::Value::AsListValue(*url_list));
+                                url_list->GetList());
 
   if (enabled)
     enabled_patterns_settings_[*id] = std::move(setting);

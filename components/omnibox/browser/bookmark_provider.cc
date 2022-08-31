@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
@@ -76,7 +77,13 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
   if (input.focus_type() != OmniboxFocusType::DEFAULT || input.text().empty())
     return;
 
-  DoAutocomplete(input);
+  // Remove the keyword from input if we're in keyword mode for a starter pack
+  // engine.
+  const AutocompleteInput adjusted_input =
+      KeywordProvider::AdjustInputForStarterPackEngines(
+          input, client_->GetTemplateURLService());
+
+  DoAutocomplete(adjusted_input);
 }
 
 BookmarkProvider::~BookmarkProvider() {}
@@ -132,8 +139,15 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
     }
   }
 
+  // In keyword mode, it's possible we only provide results from one or two
+  // autocomplete provider(s), so it's sometimes necessary to show more results
+  // than provider_max_matches_.
+  size_t max_matches = InKeywordMode(input)
+                           ? provider_max_matches_in_keyword_mode_
+                           : provider_max_matches_;
+
   // Sort and clip the resulting matches.
-  size_t num_matches = std::min(matches_.size(), provider_max_matches_);
+  size_t num_matches = std::min(matches_.size(), max_matches);
   std::partial_sort(matches_.begin(), matches_.begin() + num_matches,
                     matches_.end(), AutocompleteMatch::MoreRelevant);
   matches_.resize(num_matches);
@@ -186,8 +200,15 @@ std::vector<TitledUrlMatch> BookmarkProvider::GetMatchesWithBookmarkPaths(
 
 query_parser::MatchingAlgorithm BookmarkProvider::GetMatchingAlgorithm(
     AutocompleteInput input) {
-  if (OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled())
+  // TODO(yoangela): This might have to check whether we're in @bookmarks mode
+  // specifically, since we might still get bookmarks suggestions in
+  // non-bookmarks keyword mode.  This is enough of an edge case it makes sense
+  // to just stick with simplicity for now.
+  if (OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() ||
+      (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+       InKeywordMode(input))) {
     return query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
+  }
 
   if (OmniboxFieldTrial::
           IsShortBookmarkSuggestionsByTotalInputLengthEnabled() &&

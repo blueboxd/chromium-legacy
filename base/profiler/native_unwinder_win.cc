@@ -8,7 +8,6 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/profiler/native_unwinder.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "build/build_config.h"
 
@@ -59,7 +58,7 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
       return UnwindResult::kAborted;
     }
 
-    if (ContextPC(thread_context) == 0)
+    if (RegisterContextInstructionPointer(thread_context) == 0)
       return UnwindResult::kCompleted;
 
     // Exclusive range of expected stack pointer values after the unwind.
@@ -84,17 +83,13 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
     }
 
     // Record the frame to which we just unwound.
-    stack->emplace_back(
-        ContextPC(thread_context),
-        module_cache()->GetModuleForAddress(ContextPC(thread_context)));
+    stack->emplace_back(RegisterContextInstructionPointer(thread_context),
+                        module_cache()->GetModuleForAddress(
+                            RegisterContextInstructionPointer(thread_context)));
   }
 
   NOTREACHED();
   return UnwindResult::kCompleted;
-}
-
-std::unique_ptr<Unwinder> CreateNativeUnwinder(ModuleCache* module_cache) {
-  return std::make_unique<NativeUnwinderWin>();
 }
 
 }  // namespace base

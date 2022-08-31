@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -35,14 +36,19 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher.FaviconFetchCompleteListener;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionItemViewBuilder;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionViewProperties;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.tile.TileViewProperties;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatch.SuggestTile;
@@ -59,7 +65,9 @@ import java.util.List;
  * Tests for {@link MostVisitedTilesProcessor}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE)
+@EnableFeatures({ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_TITLE_WRAP_AROUND,
+        ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES})
 public final class MostVisitedTilesProcessorUnitTest {
     private static final GURL NAV_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1);
     private static final GURL NAV_URL_2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2);
@@ -68,6 +76,7 @@ public final class MostVisitedTilesProcessorUnitTest {
     private static final int DESIRED_FAVICON_SIZE_PX = 100;
 
     public @Rule MockitoRule mockitoRule = MockitoJUnit.rule();
+    public @Rule TestRule mFeatures = new Features.JUnitProcessor();
 
     private Activity mActivity;
     private PropertyModel mPropertyModel;
@@ -82,6 +91,8 @@ public final class MostVisitedTilesProcessorUnitTest {
 
     @Before
     public void setUp() {
+        UmaRecorderHolder.resetForTesting();
+
         // Enable logs to be printed along with possible test failures.
         ShadowLog.stream = System.out;
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
@@ -101,6 +112,7 @@ public final class MostVisitedTilesProcessorUnitTest {
      */
     private List<ListItem> populateTilePropertiesForTiles(
             int placement, AutocompleteMatch.SuggestTile... tiles) {
+        mProcessor.onNativeInitialized();
         mMatch = new AutocompleteMatchBuilder().setSuggestTiles(Arrays.asList(tiles)).build();
         mProcessor.populateModel(mMatch, mPropertyModel, placement);
 
@@ -172,19 +184,19 @@ public final class MostVisitedTilesProcessorUnitTest {
 
         // Verify histogram increased for delete attempt.
         assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                RecordHistogram.getHistogramValueCountForTesting(
                         "Omnibox.SuggestTiles.SelectedTileType", SuggestTileType.SEARCH));
         assertEquals(2,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                RecordHistogram.getHistogramValueCountForTesting(
                         "Omnibox.SuggestTiles.SelectedTileType", SuggestTileType.URL));
         assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                RecordHistogram.getHistogramValueCountForTesting(
                         "Omnibox.SuggestTiles.SelectedTileIndex", 0));
         assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                RecordHistogram.getHistogramValueCountForTesting(
                         "Omnibox.SuggestTiles.SelectedTileIndex", 1));
         assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                RecordHistogram.getHistogramValueCountForTesting(
                         "Omnibox.SuggestTiles.SelectedTileIndex", 2));
     }
 
@@ -271,5 +283,55 @@ public final class MostVisitedTilesProcessorUnitTest {
                 mActivity.getString(R.string.accessibility_omnibox_most_visited_tile_navigate,
                         "title", NAV_URL.getHost());
         assertEquals(expectedDescription, tileModel.get(TileViewProperties.CONTENT_DESCRIPTION));
+    }
+
+    @DisableFeatures(ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_TITLE_WRAP_AROUND)
+    @Test
+    public void testDescriptionWrapping_singleLine() {
+        mProcessor.onNativeInitialized();
+        List<ListItem> tileList =
+                populateTilePropertiesForTiles(0, new SuggestTile("title", NAV_URL, false));
+
+        assertEquals(1, tileList.size());
+        ListItem tileItem = tileList.get(0);
+        PropertyModel tileModel = tileItem.model;
+        assertEquals(1, tileModel.get(TileViewProperties.TITLE_LINES));
+    }
+
+    @Test
+    public void testDescriptionWrapping_wrappingLine() {
+        mProcessor.onNativeInitialized();
+        List<ListItem> tileList =
+                populateTilePropertiesForTiles(0, new SuggestTile("title", NAV_URL, false));
+
+        assertEquals(1, tileList.size());
+        ListItem tileItem = tileList.get(0);
+        PropertyModel tileModel = tileItem.model;
+        assertEquals(2, tileModel.get(TileViewProperties.TITLE_LINES));
+    }
+
+    // The test below confirm that Repeatable Query appears like URL navigation if the feature is
+    // disabled. This is needed because in some cases a single Search query may be reported as a
+    // most visited site. This is WAI, but may be confusing.
+    // Note that the opposite is already tested by a different test in the suite - see:
+    // testDecorations_searchTile, which tests that decoration used for search tile is a magnifying
+    // glass when the feature is enabled.
+    @Test
+    @DisableFeatures({ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES})
+    public void testRepeatableQuery_featureDisabled() {
+        List<ListItem> tileList =
+                populateTilePropertiesForTiles(0, new SuggestTile("title", SEARCH_URL, true));
+        verify(mFaviconFetcher, times(1))
+                .fetchFaviconWithBackoff(eq(SEARCH_URL), anyBoolean(), any());
+        mIconCallbackCaptor.getValue().onFaviconFetchComplete(mFaviconBitmap, 0);
+        assertEquals(1, tileList.size());
+        ListItem tileItem = tileList.get(0);
+        PropertyModel tileModel = tileItem.model;
+        // Feature is disabled: this should not be shown as a search tile.
+        Drawable drawable = tileModel.get(TileViewProperties.ICON);
+        assertEquals(BaseCarouselSuggestionItemViewBuilder.ViewType.TILE_VIEW, tileItem.type);
+        assertThat(drawable, instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        assertEquals(mFaviconBitmap, bitmap);
     }
 }

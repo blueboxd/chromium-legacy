@@ -354,7 +354,8 @@ blink::mojom::NavigationType GetNavigationType(
     const FrameNavigationEntry& frame_entry,
     bool has_pending_cross_document_commit,
     bool is_currently_error_page,
-    bool is_same_document_history_load) {
+    bool is_same_document_history_load,
+    bool is_unfenced_top_navigation) {
   // Reload navigations
   switch (reload_type) {
     case ReloadType::NORMAL:
@@ -381,7 +382,11 @@ blink::mojom::NavigationType GetNavigationType(
       // If the current document is an error page, we should always treat it as
       // a different-document navigation so that we'll attempt to load the
       // document we're navigating to (and not stay in the current error page).
-      !is_currently_error_page;
+      !is_currently_error_page &&
+      // If the navigation is to _unfencedTop (i.e. escapes a fenced frame),
+      // same-document navigations should be disabled because we want to force
+      // the creation of a new browsing context group.
+      !is_unfenced_top_navigation;
 
   // History navigations.
   if (frame_entry.page_state().IsValid()) {
@@ -2484,7 +2489,7 @@ void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
 
   if (pending_entry_) {
     if (pending_entry_index_ == -1)
-      delete pending_entry_;
+      pending_entry_.ClearAndDelete();
     pending_entry_index_ = -1;
     pending_entry_ = nullptr;
   }
@@ -2633,7 +2638,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     bool is_form_submission,
     const absl::optional<blink::Impression>& impression,
     base::TimeTicks navigation_start_time,
-    absl::optional<bool> is_fenced_frame_opaque_url) {
+    bool is_embedder_initiated_fenced_frame_navigation,
+    bool is_unfenced_top_navigation) {
   if (is_renderer_initiated)
     DCHECK(initiator_origin.has_value());
 
@@ -2769,7 +2775,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
           node, params, override_user_agent, should_replace_current_entry,
           false /* has_user_gesture */, std::move(source_location),
           ReloadType::NONE, entry.get(), frame_entry.get(),
-          navigation_start_time, is_fenced_frame_opaque_url);
+          navigation_start_time, is_embedder_initiated_fenced_frame_navigation,
+          is_unfenced_top_navigation);
 
   if (!request)
     return;
@@ -3659,7 +3666,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     NavigationEntryImpl* entry,
     FrameNavigationEntry* frame_entry,
     base::TimeTicks navigation_start_time,
-    absl::optional<bool> is_fenced_frame_opaque_url) {
+    bool is_embedder_initiated_fenced_frame_navigation,
+    bool is_unfenced_top_navigation) {
   DCHECK_EQ(-1, GetIndexOfEntry(entry));
   DCHECK(frame_entry);
   // All renderer-initiated navigations must have an initiator_origin.
@@ -3735,7 +3743,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       /*old_url=*/node->current_url(),
       /*new_url=*/url_to_load, reload_type, entry, *frame_entry,
       has_pending_cross_document_commit, is_currently_error_page,
-      /*is_same_document_history_load=*/false);
+      /*is_same_document_history_load=*/false, is_unfenced_top_navigation);
 
   // Create the NavigationParams based on |params|.
 
@@ -3806,7 +3814,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
-          false /* should_load_data_url */);
+          false /* should_load_data_url */,
+          /*ancestor_or_self_has_cspee=*/node->AncestorOrSelfHasCSPEE());
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -3828,7 +3837,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.initiator_process_id, extra_headers_crlf, frame_entry, entry,
       params.is_form_submission,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr,
-      params.impression, params.is_pdf, is_fenced_frame_opaque_url);
+      params.impression, params.is_pdf,
+      is_embedder_initiated_fenced_frame_navigation);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
   navigation_request->set_force_new_browsing_instance(
@@ -3910,7 +3920,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
       /*old_url=*/frame_tree_node->current_url(),
       /*new_url=*/dest_url, reload_type, entry, *frame_entry,
       has_pending_cross_document_commit, is_currently_error_page,
-      is_same_document_history_load);
+      is_same_document_history_load,
+      /*is_unfenced_top_navigation=*/false);
 
   // A form submission may happen here if the navigation is a
   // back/forward/reload navigation that does a form resubmission.
@@ -3947,7 +3958,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
           common_params->method, entry->GetSubframeUniqueNames(frame_tree_node),
           GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
           GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount(),
-          frame_tree_node->pending_frame_policy());
+          frame_tree_node->pending_frame_policy(),
+          frame_tree_node->AncestorOrSelfHasCSPEE());
   commit_params->post_content_type = post_content_type;
 
   if (common_params->url.IsAboutSrcdoc())

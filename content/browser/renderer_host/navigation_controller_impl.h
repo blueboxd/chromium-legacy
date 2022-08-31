@@ -220,7 +220,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_form_submission,
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      bool is_unfenced_top_navigation = false);
 
   // Navigates to the history entry associated with the given navigation API
   // |key|. Searches |entries_| for a FrameNavigationEntry associated with
@@ -578,7 +579,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationEntryImpl* entry,
       FrameNavigationEntry* frame_entry,
       base::TimeTicks navigation_start_time,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      bool is_unfenced_top_navigation = false);
 
   // Creates and returns a NavigationRequest for a navigation to |entry|. Will
   // return nullptr if the parameters are invalid and the navigation cannot
@@ -802,7 +804,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  raw_ptr<NavigationEntryImpl, DanglingUntriaged> pending_entry_ = nullptr;
+  raw_ptr<NavigationEntryImpl> pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped

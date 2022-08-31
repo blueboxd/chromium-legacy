@@ -13,6 +13,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1185134272377778587">O Chromiumu</translation>
 <translation id="1203500561924088507">Hvala, ker ste se odločili za namestitev. Preden uporabite <ph name="BUNDLE_NAME" />, morate znova zagnati brskalnik.</translation>
 <translation id="1315551408014407711">Nastavitev novega profila v Chromiumu</translation>
+<translation id="1385859895174722837">Pomočnik Google v Chromiumu</translation>
 <translation id="1396446129537741364">Chromium poskuša prikazati gesla.</translation>
 <translation id="1414495520565016063">Prijavljeni ste v Chromium.</translation>
 <translation id="1524282610922162960">Deljenje zavihka v Chromiumu</translation>
@@ -24,6 +25,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljajo za ta račun. Račune Google lahko upravljate v <ph name="SETTINGS_LINK_BEGIN" />nastavitvah<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Prenos ...</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
+<translation id="17264556997921157">Vidite ali odstranite lahko teme zanimanja, ki jih spletna mesta uporabljajo, da vam prikazujejo oglase. Chromium oceni vaša zanimanja glede na nedavno zgodovino brskanja.</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="1779356040007214683">Zaradi večje varnosti smo v Chromiumu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
 <translation id="1808667845054772817">Vnovična namestitev Chromiuma</translation>
@@ -42,6 +44,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="2018879682492276940">Namestitev ni uspela. Poskusite znova.</translation>
 <translation id="2020032459870799438">Če želite preveriti, ali so druga gesla varna pred podatkovnimi kršitvami in drugimi varnostnimi težavami, <ph name="BEGIN_LINK" />se prijavite v Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Izberite, ali želite, da je zaradi osebno bolj prilagojenih izkušenj v Googlovih storitvah vključena zgodovina v Chromiumu.</translation>
+<translation id="2088953378266246249">Informacije o tem, kako Chromium upravlja korenska potrdila.</translation>
 <translation id="2174178932569897599">Prilagodi Chromium</translation>
 <translation id="2174917724755363426">Namestitev še ni končana. Ali ste prepričani, da jo želite preklicati?</translation>
 <translation id="2185166961232948079">Chromium – Prijava v omrežje – <ph name="PAGE_TITLE" /></translation>
@@ -103,6 +106,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="3474745554856756813">S tem bo iz te naprave izbrisanih več elementov (<ph name="ITEMS_COUNT" />). Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">Bližnjica <ph name="SHORTCUT" /> omogoča preklop med profili v Chromiumu</translation>
 <translation id="3509308970982693815">Zaprite vsa okna Chromiuma in poskusite znova.</translation>
+<translation id="3518180795744733843">Pomočnik Google v Chromiumu lahko dokonča dejanja na spletnih mestih namesto vas.</translation>
 <translation id="3533435340678213462">Zaradi zaščite vaše varnosti samodejno izbrišemo vaša zanimanja, starejša od 4 tednov. Ko brskate naprej, se zanimanje morda znova prikaže na seznamu. Odstranite lahko tudi zanimanja, za katera ne želite, da jih Chromium predlaga.</translation>
 <translation id="3567254597502212821">Zgodovina brskanja, evidenca spletnih mest, ki ste jih obiskali s Chromiumom v tej napravi.</translation>
 <translation id="3575459661164320785">V računalniku je nameščena škodljiva programska oprema. Chromium jo lahko odstrani, obnovi vaše nastavitve in onemogoči razširitve, da bo brskalnik spet normalno deloval.</translation>
@@ -365,6 +369,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="9185526690718004400">Znova zaženite, če želite posodobiti &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium morda ne bo deloval pravilno, ker ni več podprt v sistemu Windows XP ali Windows Vista</translation>
+<translation id="942598560705308788">Potrdila, ki jih upravlja Chromium</translation>
 <translation id="945990405696787151">Če želite prejemati prihodnje posodobitve Chromiuma, potrebujete macOS 10.13 ali novejšega. V tem računalniku je nameščen OS X 10.11.</translation>
 <translation id="965162752251293939">Kdo uporablja Chromium?</translation>
 <translation id="967427899662692980">Prejmite Chromiumovo najmočnejšo varnost</translation>

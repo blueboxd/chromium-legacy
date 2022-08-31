@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/base_jni_headers/NativeUmaRecorder_jni.h"
@@ -155,7 +156,17 @@ class HistogramCache {
   }
 };
 
-LazyInstance<HistogramCache>::Leaky g_histograms;
+LazyInstance<HistogramCache>::Leaky g_histograms = LAZY_INSTANCE_INITIALIZER;
+
+struct ActionCallbackWrapper {
+  base::ActionCallback action_callback;
+};
+
+static void OnActionRecorded(const JavaRef<jobject>& callback,
+                             const std::string& action,
+                             TimeTicks action_time) {
+  RunStringCallbackAndroid(callback, action);
+}
 
 }  // namespace
 
@@ -268,6 +279,40 @@ jint JNI_NativeUmaRecorder_GetHistogramTotalCountForTesting(
       actual_count -= snapshot_data->second->TotalCount();
   }
   return actual_count;
+}
+
+jlong JNI_NativeUmaRecorder_CreateHistogramSnapshotForTesting(JNIEnv* env) {
+  HistogramsSnapshot* snapshot = new HistogramsSnapshot();
+  for (const auto* const histogram : StatisticsRecorder::GetHistograms()) {
+    (*snapshot)[histogram->histogram_name()] = histogram->SnapshotSamples();
+  }
+  return reinterpret_cast<intptr_t>(snapshot);
+}
+
+void JNI_NativeUmaRecorder_DestroyHistogramSnapshotForTesting(
+    JNIEnv* env,
+    jlong snapshot_ptr) {
+  delete reinterpret_cast<HistogramsSnapshot*>(snapshot_ptr);
+}
+
+static jlong JNI_NativeUmaRecorder_AddActionCallbackForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& callback) {
+  // Create a wrapper for the ActionCallback, so it can life on the heap until
+  // RemoveActionCallbackForTesting() is called.
+  auto* wrapper = new ActionCallbackWrapper{base::BindRepeating(
+      &OnActionRecorded, ScopedJavaGlobalRef<jobject>(env, callback))};
+  base::AddActionCallback(wrapper->action_callback);
+  return reinterpret_cast<intptr_t>(wrapper);
+}
+
+static void JNI_NativeUmaRecorder_RemoveActionCallbackForTesting(
+    JNIEnv* env,
+    jlong callback_id) {
+  DCHECK(callback_id);
+  auto* wrapper = reinterpret_cast<ActionCallbackWrapper*>(callback_id);
+  base::RemoveActionCallback(wrapper->action_callback);
+  delete wrapper;
 }
 
 }  // namespace android

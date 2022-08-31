@@ -48,7 +48,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Omnibox.AcceptedKeywordSuggestion"
-    enum="OmniboxEnteredKeywordMode2" expires_after="2022-11-10">
+    enum="OmniboxEnteredKeywordMode2" expires_after="2023-01-15">
   <owner>yoangela@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -62,7 +62,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AnswerParseSuccess" enum="BooleanSuccess"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -266,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -514,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.RequestTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -530,7 +530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.RequestTime.Interrupted" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -549,7 +549,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.RequestTime.NotInterrupted" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -580,7 +580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.TotalTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -595,7 +595,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.TotalTime.Interrupted" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -612,7 +612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.TotalTime.NotInterrupted" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -713,7 +713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.FocusToOpenTimeAnyPopupState3" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -727,6 +727,31 @@ chromium-metrics-reviews@google.com.
     To know how common this last condition is, compare the total count of this
     histogram to the total number of omnibox events.
   </summary>
+</histogram>
+
+<histogram name="Omnibox.FuzzyMatchConversion.{SubProvider}" units="counts"
+    expires_after="M115">
+  <owner>orinj@chromium.org</owner>
+  <owner>jdonnelly-team@google.com</owner>
+  <summary>
+    Fuzzy match conversion produces modified matches from other synchronous
+    autocomplete providers (sub-providers) using alternative inputs: what the
+    user might have typed, the automatic corrections. This metric is logged once
+    per sub-provider per omnibox input if and only if the fuzzy provider runs a
+    search (not all omnibox inputs result in search) and finds any corrections
+    (this includes the zero case where corrections are found but produce no
+    matches). Logs for each fuzzy sub-provider the number of correction matches
+    converted to fuzzy provider matches for a single omnibox input. This
+    measures how many 'best' matches (among all the sub-provider's matches for a
+    specific correction) are converted from this sub-provider, summed for the
+    various corrections of a single user input (will not exceed
+    `provider_max_matches_` even in unlikely extreme cases). This is useful in
+    evaluating the efficacy of various sub-providers for fuzzy matching.
+  </summary>
+  <token key="SubProvider">
+    <variant name="Bookmark" summary="Bookmark conversion count"/>
+    <variant name="HistoryQuick" summary="HistoryQuick conversion count"/>
+  </token>
 </histogram>
 
 <histogram name="Omnibox.HoverTime" units="ms" expires_after="2021-10-31">
@@ -942,7 +967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumEvents" enum="UsedOmnibox"
-    expires_after="2022-06-30">
+    expires_after="2023-07-13">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1046,7 +1071,7 @@ chromium-metrics-reviews@google.com.
   <token key="OmniboxProvider" variants="OmniboxProviders"/>
 </histogram>
 
-<histogram name="Omnibox.QueryTime2" units="ms" expires_after="2022-11-13">
+<histogram name="Omnibox.QueryTime2" units="ms" expires_after="2023-01-15">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1179,8 +1204,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.OffTheRecord" enum="BooleanOffTheRecord"
-    expires_after="2022-08-02">
-  <owner>sideyilmaz@chromium.org</owner>
+    expires_after="2023-02-02">
+  <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
     This histogram records the number of searches done from omnibox using
@@ -1284,7 +1309,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.NavigationURLMatches.NavigationPrefetch"
-    enum="Boolean" expires_after="2022-10-30">
+    enum="Boolean" expires_after="2023-01-15">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1310,7 +1335,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.NavigationPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2022-10-30">
+    enum="SearchPrefetchEligibilityReason" expires_after="2023-01-15">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1358,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.NavigationPrefetch"
-    enum="SearchPrefetchStatus" expires_after="2022-10-30">
+    enum="SearchPrefetchStatus" expires_after="2023-01-15">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1442,6 +1467,42 @@ chromium-metrics-reviews@google.com.
     prerender the page, it has received the response associated with the
     prefetch request (by design), and should serve the prefetched response to
     the prerender request.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.History"
+    units="boolean" expires_after="2022-10-30">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records whether a &quot;search what you type&quot; omnibox navigation was
+    also a search history type. Recorded when the user navigates to a search via
+    typing the full query into the omnibox.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.HistoryOrSuggest"
+    units="boolean" expires_after="2022-10-30">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records whether a &quot;search what you type&quot; omnibox navigation was
+    also a search suggest type or a search history type. Recorded when the user
+    navigates to a search via typing the full query into the omnibox.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.Suggest"
+    units="boolean" expires_after="2022-10-30">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records whether a &quot;search what you type&quot; omnibox navigation was
+    also a search suggest type. Recorded when the user navigates to a search via
+    typing the full query into the omnibox.
   </summary>
 </histogram>
 
@@ -1856,7 +1917,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1973,7 +2034,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -1985,7 +2046,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Success.GoogleResponseTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2011,7 +2072,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2153,7 +2214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ToggleSuggestionGroupId.On" enum="SuggestionGroupId"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mahmadi@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2165,7 +2226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.URLNavigationScheme" enum="NavigationScheme"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -2217,8 +2278,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ZeroSuggestProvider.{ResultType}.{RequestType}"
+    enum="ZeroSuggestProviderEvent" expires_after="2022-12-11">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Enumerates the events in the ZeroSuggestProvider as a result of
+    {RequestType} for {ResultType} (i.e., suggestions shown when the user has
+    focused or cleared the omnibox but has not typed in yet).
+  </summary>
+  <token key="ResultType">
+    <variant name="NoURL"
+        summary="zero-prefix suggestions not based on the current page URL"/>
+    <variant name="URLBased"
+        summary="zero-prefix suggestions based on the current page URL"/>
+  </token>
+  <token key="RequestType">
+    <variant name="NonPrefetch" summary="user-initiated requests"/>
+    <variant name="Prefetch" summary="non-user-initiated proactive requests"/>
+  </token>
+</histogram>
+
 <histogram name="Omnibox.ZeroSuggestRequests.NonPrefetch"
     enum="OmniboxZeroSuggestRequests" expires_after="2022-12-11">
+  <obsolete>
+    Obsolete as of M105.
+  </obsolete>
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2247,6 +2332,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Omnibox.ZeroSuggestRequests.Prefetch"
     enum="OmniboxZeroSuggestRequests" expires_after="2022-12-11">
+  <obsolete>
+    Obsolete as of M105.
+  </obsolete>
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>

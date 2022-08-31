@@ -67,7 +67,7 @@ APIRequestHandler::ArgumentAdapter::GetArguments(
         content::V8ValueConverter::Create();
     v8_arguments_.reserve(base_arguments_->size());
     for (const auto& arg : *base_arguments_)
-      v8_arguments_.push_back(converter->ToV8Value(&arg, context));
+      v8_arguments_.push_back(converter->ToV8Value(arg, context));
   }
 
   return v8_arguments_;
@@ -208,8 +208,13 @@ void APIRequestHandler::AsyncResultHandler::ResolveRequest(
     last_error->SetError(context, error);
   }
 
+  // If there is a result modifier for this async request and the response args
+  // are not empty, run the result modifier and allow it to massage the return
+  // arguments before we send them back.
+  // Note: a request can end up with a result modifier and be returning an empty
+  // set of args if we are responding that an error occurred.
   const std::vector<v8::Local<v8::Value>> args =
-      result_modifier_.is_null()
+      result_modifier_.is_null() || response_args.empty()
           ? response_args
           : std::move(result_modifier_)
                 .Run(response_args, context, async_type_);

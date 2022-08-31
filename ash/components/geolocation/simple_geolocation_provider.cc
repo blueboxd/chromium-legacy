@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace ash {
@@ -40,8 +40,8 @@ void SimpleGeolocationProvider::RequestGeolocation(
     SimpleGeolocationRequest::ResponseCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto cell_vector = std::make_unique<chromeos::CellTowerVector>();
-  auto wifi_vector = std::make_unique<chromeos::WifiAccessPointVector>();
+  auto cell_vector = std::make_unique<CellTowerVector>();
+  auto wifi_vector = std::make_unique<WifiAccessPointVector>();
 
   // Mostly necessary for testing and rare cases where NetworkHandler is not
   // initialized: in that case, calls to Get() will fail.

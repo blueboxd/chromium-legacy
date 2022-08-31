@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Ladetest ausführen</translation>
 <translation id="1631385268983122904">Bitte setze den Akku bzw. die Batterie(n) noch nicht wieder ein</translation>
-<translation id="1639239467298939599">Wird geladen...</translation>
+<translation id="1639239467298939599">Wird geladen</translation>
 <translation id="1641857168437328880">Dokumenteneinzug (einseitig)</translation>
 <translation id="1643449475550628585">Hintergrundbild täglich ändern</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="1645954272419197032">Geräteinformationen bestätigen</translation>
 <translation id="1662989795263954667">Angehalten – Keine Tinte</translation>
+<translation id="1664796644829245314">Vorschau anzeigen für „<ph name="PREVIEW_OBJECT" />“</translation>
 <translation id="1668469839109562275">Integriertes VPN</translation>
 <translation id="1672499492233627739">Webcam-Videofeed</translation>
 <translation id="1676557873873341166">Video wird aufgezeichnet</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferenz</translation>
 <translation id="1852934301711881861">Chrome OS Flex installieren</translation>
 <translation id="1856388568474281774">Abwärtspfeil</translation>
+<translation id="1858620243986915808">Screenshot anhängen</translation>
 <translation id="1871569928317311284">Dunkles Design ausschalten</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Dunklen Modus ausschalten</translation>
@@ -797,6 +799,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="7978412674231730200">Privater Schlüssel</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
 <translation id="7994702968232966508">EAP-Methode</translation>
+<translation id="8018928621986160031">In „<ph name="FILE_LOCATION" />“ gespeichert</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Automatischen Farbmodus aktivieren</translation>
@@ -865,6 +868,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="8576249514688522074">Noch nicht initialisiert</translation>
 <translation id="8620617069779373398">Roaming-Status</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">URL teilen:</translation>
 <translation id="8660881923941176839">Pfund</translation>
 <translation id="8662671328352114214">Mit <ph name="TYPE" /> verbinden</translation>
 <translation id="8671972493856476349">Update auf <ph name="VERSION_NUMBER" /> durchführen und neu starten</translation>

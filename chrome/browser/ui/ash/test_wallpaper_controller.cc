@@ -59,7 +59,8 @@ void TestWallpaperController::SetCustomWallpaper(const AccountId& account_id,
                                                  const std::string& file_name,
                                                  ash::WallpaperLayout layout,
                                                  const gfx::ImageSkia& image,
-                                                 bool preview_mode) {
+                                                 bool preview_mode,
+                                                 const std::string& file_path) {
   ++set_custom_wallpaper_count_;
 }
 
@@ -272,8 +273,9 @@ bool TestWallpaperController::IsWallpaperControlledByPolicy(
   return false;
 }
 
-ash::WallpaperInfo TestWallpaperController::GetActiveUserWallpaperInfo() const {
-  return wallpaper_info_.value_or(ash::WallpaperInfo());
+absl::optional<ash::WallpaperInfo>
+TestWallpaperController::GetActiveUserWallpaperInfo() const {
+  return wallpaper_info_;
 }
 
 bool TestWallpaperController::ShouldShowWallpaperSetting() {

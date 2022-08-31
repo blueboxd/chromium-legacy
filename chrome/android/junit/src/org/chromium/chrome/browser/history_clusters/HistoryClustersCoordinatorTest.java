@@ -18,6 +18,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.core.app.ActivityScenario;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.common.collect.ImmutableMap;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -57,13 +59,17 @@ import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridgeJni;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.url.GURL;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /** Unit tests for HistoryClustersCoordinator. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -103,7 +109,9 @@ public class HistoryClustersCoordinatorTest {
 
         @Nullable
         @Override
-        public Intent getOpenUrlIntent(GURL gurl, boolean inIncognito, boolean createNewTab) {
+        public <SerializableList extends List<String> & Serializable> Intent getOpenUrlIntent(
+                GURL gurl, boolean inIncognito, boolean createNewTab, boolean inTabGroup,
+                @Nullable SerializableList additionalUrls) {
             mOpenUrlIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mOpenUrlIntent.putExtra(INCOGNITO_EXTRA, inIncognito);
             mOpenUrlIntent.putExtra(NEW_TAB_EXTRA, createNewTab);
@@ -171,6 +179,8 @@ public class HistoryClustersCoordinatorTest {
     private GURL mGurl2;
     @Mock
     private HistoryClustersMetricsLogger mMetricsLogger;
+    @Mock
+    private AccessibilityUtil mAccessibilityUtil;
 
     private ActivityScenario<ChromeTabbedActivity> mActivityScenario;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
@@ -201,14 +211,15 @@ public class HistoryClustersCoordinatorTest {
                 new ArrayList<>(), mGurl2, 123L, new ArrayList<>());
         mCluster = new HistoryCluster(Arrays.asList(mVisit1, mVisit2), "\"label\"", "label",
                 Collections.emptyList(), 123L, Arrays.asList("pugs", "terriers"));
-        mClusterResult = new HistoryClustersResult(Arrays.asList(mCluster), "dogs", false, false);
+        mClusterResult = new HistoryClustersResult(Arrays.asList(mCluster),
+                new LinkedHashMap<>(ImmutableMap.of("label", 1)), "dogs", false, false);
 
         mActivityScenario =
                 ActivityScenario.launch(ChromeTabbedActivity.class).onActivity(activity -> {
                     mActivity = activity;
-                    mHistoryClustersCoordinator =
-                            new HistoryClustersCoordinator(mProfile, activity, mTemplateUrlService,
-                                    mHistoryClustersDelegate, mMetricsLogger, mSelectionDelegate);
+                    mHistoryClustersCoordinator = new HistoryClustersCoordinator(mProfile, activity,
+                            mTemplateUrlService, mHistoryClustersDelegate, mMetricsLogger,
+                            mSelectionDelegate, mAccessibilityUtil);
                 });
     }
 
@@ -355,7 +366,7 @@ public class HistoryClustersCoordinatorTest {
     @Test
     public void testSetQueryState() {
         mHistoryClustersCoordinator.inflateActivityView();
-        mHistoryClustersCoordinator.setQueryState(QueryState.forQuery("dogs"));
+        mHistoryClustersCoordinator.setInitialQuery(QueryState.forQuery("dogs", ""));
         fulfillPromise(mPromise, mClusterResult);
 
         RecyclerView recyclerView = mHistoryClustersCoordinator.getRecyclerViewFortesting();
@@ -370,11 +381,60 @@ public class HistoryClustersCoordinatorTest {
     @Test
     public void testDestroy() {
         mHistoryClustersCoordinator.inflateActivityView();
-        mHistoryClustersCoordinator.setQueryState(QueryState.forQuery("dogs"));
+        mHistoryClustersCoordinator.setInitialQuery(QueryState.forQuery("dogs", ""));
         mHistoryClustersCoordinator.destroy();
 
         // Fulfilling the promise post-destroy shouldn't crash or do anything else for that matter.
         fulfillPromise(mPromise, mClusterResult);
+    }
+
+    @Test
+    public void testOpenInGroupMenuitem() {
+        doReturn("http://spec1.com").when(mGurl1).getSpec();
+        doReturn("http://spec2.com").when(mGurl2).getSpec();
+
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+        assertNotNull(toolbar);
+
+        mSelectionDelegate.setSelectedItems(
+                new CopyOnWriteArraySet<>(Arrays.asList(mVisit1, mVisit2)));
+        mHistoryClustersCoordinator.onMenuItemClick(
+                toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group));
+
+        assertTrue(mOpenUrlIntent.hasExtra(NEW_TAB_EXTRA));
+        assertTrue(mOpenUrlIntent.hasExtra(INCOGNITO_EXTRA));
+        assertTrue(mOpenUrlIntent.getBooleanExtra(NEW_TAB_EXTRA, false));
+        assertFalse(mOpenUrlIntent.getBooleanExtra(INCOGNITO_EXTRA, true));
+    }
+
+    @Test
+    public void testEndButtonAccessibility() {
+        mHistoryClustersCoordinator.inflateActivityView();
+        mHistoryClustersCoordinator.setInitialQuery(QueryState.forQuery("dogs", ""));
+        fulfillPromise(mPromise, mClusterResult);
+
+        RecyclerView recyclerView = mHistoryClustersCoordinator.getRecyclerViewFortesting();
+        recyclerView.measure(0, 0);
+        recyclerView.layout(0, 0, 600, 1000);
+
+        RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(0);
+        assertTrue(viewHolder.itemView instanceof HistoryClusterView);
+        View endButton = viewHolder.itemView.findViewById(R.id.end_button);
+        assertEquals(endButton.getImportantForAccessibility(), View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+        viewHolder = recyclerView.findViewHolderForAdapterPosition(1);
+        assertTrue(viewHolder.itemView instanceof HistoryClustersItemView);
+        endButton = viewHolder.itemView.findViewById(R.id.end_button);
+        assertEquals(endButton.getContentDescription(),
+                mActivity.getString(R.string.accessibility_list_remove_button, mVisit1.getTitle()));
+
+        viewHolder = recyclerView.findViewHolderForAdapterPosition(2);
+        assertTrue(viewHolder.itemView instanceof HistoryClustersItemView);
+        endButton = viewHolder.itemView.findViewById(R.id.end_button);
+        assertEquals(endButton.getContentDescription(),
+                mActivity.getString(R.string.accessibility_list_remove_button, mVisit2.getTitle()));
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

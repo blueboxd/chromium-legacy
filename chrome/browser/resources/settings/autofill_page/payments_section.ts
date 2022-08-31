@@ -13,7 +13,7 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
 import './credit_card_edit_dialog.js';
@@ -187,12 +187,14 @@ export class SettingsPaymentsSectionElement extends
 
     // Update |userIsFidoVerifiable_| based on the availability of a platform
     // authenticator.
-    if (window.PublicKeyCredential) {
-      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
-          .then(r => {
-            this.userIsFidoVerifiable_ = this.userIsFidoVerifiable_ && r;
-          });
-    }
+    this.paymentsManager_.isUserVerifyingPlatformAuthenticatorAvailable().then(
+        r => {
+          if (r === null) {
+            return;
+          }
+
+          this.userIsFidoVerifiable_ = this.userIsFidoVerifiable_ && r;
+        });
 
     const setPersonalDataListener: PersonalDataChangedListener =
         (_addressList, cardList) => {

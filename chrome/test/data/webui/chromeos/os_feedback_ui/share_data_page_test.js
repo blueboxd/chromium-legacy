@@ -6,8 +6,10 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 
 import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
+import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
+import {setFeedbackServiceProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
@@ -23,8 +25,14 @@ export function shareDataPageTestSuite() {
   /** @type {?ShareDataPageElement} */
   let page = null;
 
+  /** @type {?FakeFeedbackServiceProvider} */
+  let feedbackServiceProvider;
+
   setup(() => {
     document.body.innerHTML = '';
+
+    feedbackServiceProvider = new FakeFeedbackServiceProvider();
+    setFeedbackServiceProviderForTesting(feedbackServiceProvider);
   });
 
   teardown(() => {
@@ -119,10 +127,17 @@ export function shareDataPageTestSuite() {
         getElementContent('#shareDiagnosticDataLabel'));
 
     // Screenshot elements.
-    assertTrue(!!getElement('#screenshotCheckbox'));
-    assertEquals('Screenshot', getElementContent('#screenshotCheckLabel'));
+    const screenshotCheckbox = getElement('#screenshotCheckbox');
+    assertTrue(!!screenshotCheckbox);
+    assertTrue(page.i18nExists('attachScreenshotCheckboxAriaLabel'));
+    assertEquals('Attach screenshot', screenshotCheckbox.ariaLabel);
+
     assertTrue(page.i18nExists('attachScreenshotLabel'));
+    assertEquals('Screenshot', getElementContent('#screenshotCheckLabel'));
+
     assertTrue(!!getElement('#screenshotImage'));
+    assertEquals('Preview Screenshot', getElement('#imageButton').ariaLabel);
+    assertTrue(page.i18nExists('previewImageAriaLabel'));
 
     // Add file attachment element.
     assertTrue(!!getElement('file-attachment'));
@@ -161,12 +176,13 @@ export function shareDataPageTestSuite() {
     assertEquals(2, emailDropdown.options.length);
 
     const firstOption = emailDropdown.options.item(0);
-    assertEquals('test.user2@test.com', firstOption.textContent);
-    assertEquals('test.user2@test.com', firstOption.value);
+    assertEquals('test.user2@test.com', firstOption.textContent.trim());
+    assertEquals('test.user2@test.com', firstOption.value.trim());
 
     const secondOption = emailDropdown.options.item(1);
-    assertEquals('Don\'t include email address', secondOption.textContent);
-    assertEquals('', secondOption.value);
+    assertEquals(
+        'Don\'t include email address', secondOption.textContent.trim());
+    assertEquals('', secondOption.value.trim());
 
     // The user email section should be visible.
     const userEmailElement = getElement('#userEmail');
@@ -190,6 +206,21 @@ export function shareDataPageTestSuite() {
     page.feedbackContext = fakeFeedbackContext;
 
     assertEquals('chrome://tab/', getElementContent('#pageUrlText'));
+  });
+
+  // Test that the pageUrl section is hidden when the url is empty string.
+  test('pageUrlHidden', async () => {
+    await initializePage();
+    fakeFeedbackContext.pageUrl.url = '';
+    page.feedbackContext = fakeFeedbackContext;
+
+    // The pageUrl section should be hidden
+    const pageUrl = getElement('#pageUrl');
+    assertTrue(!!pageUrl);
+    assertFalse(isVisible(pageUrl));
+
+    // Change it back otherwise it will effect other tests.
+    fakeFeedbackContext.pageUrl.url = 'chrome://tab/';
   });
 
   /**
@@ -406,7 +437,7 @@ export function shareDataPageTestSuite() {
         fileName: stringToMojoString16('fake.zip'),
         fileData: {
           bytes: fakeFileData,
-        }
+        },
       };
     };
 
@@ -535,5 +566,33 @@ export function shareDataPageTestSuite() {
     page.reEnableSendReportButton();
     const reportNoSysInfo = (await clickSendAndWait(page)).report;
     assertFalse(!!reportNoSysInfo.feedbackContext.extraDiagnostics);
+  });
+
+  /**
+   * Test that feedbackServiceProvider.openMetricsDialog is called
+   * when #histogramsLink ("metrics") link is clicked.
+   */
+  test('openMetricsDialog', async () => {
+    await initializePage();
+
+    assertEquals(0, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+
+    getElement('#histogramsLink').click();
+
+    assertEquals(1, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+  });
+
+  /**
+   * Test that feedbackServiceProvider.openSystemInfoDialog is called
+   * when #sysInfoLink ("system and app info") link is clicked.
+   */
+  test('openSystemInfoDialog', async () => {
+    await initializePage();
+
+    assertEquals(0, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
+
+    getElement('#sysInfoLink').click();
+
+    assertEquals(1, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
   });
 }

@@ -144,6 +144,7 @@ public class ShareIntentTest {
                     mockActivity.getShareDelegateSupplier(), mockActivity.getActivityTabProvider(),
                     null, null, null, null, null, new OneshotSupplierImpl<>(),
                     new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
+                    new OneshotSupplierImpl<>(),
                     ()
                             -> null,
                     browserControlsManager, mActivityTestRule.getActivity().getWindowAndroid(),
@@ -162,8 +163,7 @@ public class ShareIntentTest {
                     /* appMenuDelegate= */ mockActivity,
                     /* statusBarColorProvider= */ mockActivity,
                     mockActivity.getIntentRequestTracker(), new OneshotSupplierImpl<>(),
-                    new ObservableSupplierImpl<>(), false, null,
-                    /* unblockDrawForOverviewPageRunnable= */ null);
+                    new ObservableSupplierImpl<>(), false, null);
 
             ShareHelper.setLastShareComponentName(
                     null, new ComponentName("test.package", "test.activity"));

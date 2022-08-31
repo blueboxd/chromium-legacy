@@ -38,14 +38,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
@@ -201,7 +199,7 @@ int CountExtensionItems(const ExtensionContextMenuModel& model) {
   std::u16string expected_label = base::ASCIIToUTF16(kTestExtensionItemLabel);
   int num_items_found = 0;
   int num_custom_found = 0;
-  for (int i = 0; i < model.GetItemCount(); ++i) {
+  for (size_t i = 0; i < model.GetItemCount(); ++i) {
     std::u16string actual_label = model.GetLabelAt(i);
     int command_id = model.GetCommandIdAt(i);
     // If the command id is not visible, it should not be counted.
@@ -228,7 +226,7 @@ int CountExtensionItems(const ExtensionContextMenuModel& model) {
 void VerifyItems(const ExtensionContextMenuModel& model,
                  std::vector<std::string> item_number) {
   size_t j = 0;
-  for (int i = 0; i < model.GetItemCount(); i++) {
+  for (size_t i = 0; i < model.GetItemCount(); i++) {
     int command_id = model.GetCommandIdAt(i);
     if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id) &&
         model.IsCommandIdVisible(command_id)) {
@@ -319,9 +317,7 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
     ManifestLocation location,
     const std::string& host_permission) {
   DictionaryBuilder manifest;
-  manifest.Set("name", name)
-      .Set("version", "1")
-      .Set("manifest_version", 2);
+  manifest.Set("name", name).Set("version", "1").Set("manifest_version", 2);
   if (action_key)
     manifest.Set(action_key, DictionaryBuilder().Build());
   if (!host_permission.empty())
@@ -381,7 +377,7 @@ ExtensionContextMenuModelTest::CommandState
 ExtensionContextMenuModelTest::GetCommandState(
     const ExtensionContextMenuModel& menu,
     int command_id) const {
-  bool is_present = menu.GetIndexOfCommandId(command_id) != -1;
+  bool is_present = menu.GetIndexOfCommandId(command_id).has_value();
   bool is_visible = menu.IsCommandIdVisible(command_id);
 
   // The command is absent if the menu entry is not present, or the entry is
@@ -412,11 +408,12 @@ ExtensionContextMenuModelTest::GetPageAccessCommandState(
     return CommandState::kAbsent;
 
   ui::MenuModel* submenu = menu.GetSubmenuModelAt(
-      menu.GetIndexOfCommandId(ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
+      menu.GetIndexOfCommandId(ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU)
+          .value());
   DCHECK(submenu);
 
   ui::MenuModel** menu_to_search = &submenu;
-  int index_unused = 0;
+  size_t index_unused = 0;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(command, menu_to_search,
                                                    &index_unused)) {
     return CommandState::kAbsent;
@@ -497,8 +494,8 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
   // uninstallation should be disabled.
   EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::UNINSTALL),
             CommandState::kDisabled);
-  int uninstall_index =
-      menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
+  size_t uninstall_index =
+      menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL).value();
   // There should also be an icon to visually indicate why uninstallation is
   // forbidden.
   ui::ImageModel icon = menu.GetIconAt(uninstall_index);
@@ -612,8 +609,9 @@ TEST_F(ExtensionContextMenuModelTest,
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    /* can_show_icon_in_toolbar=*/true,
                                    ContextMenuSource::kMenuItem);
-    EXPECT_EQ(-1, menu.GetIndexOfCommandId(
-                      ExtensionContextMenuModel::TOGGLE_VISIBILITY));
+    EXPECT_FALSE(
+        menu.GetIndexOfCommandId(ExtensionContextMenuModel::TOGGLE_VISIBILITY)
+            .has_value());
     EXPECT_EQ(
         GetCommandState(menu, ExtensionContextMenuModel::TOGGLE_VISIBILITY),
         CommandState::kAbsent);
@@ -754,18 +752,18 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     ExtensionContextMenuModel menu(page_action, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true, ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_EQ(unpin_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_EQ(unpin_string, menu.GetLabelAt(index.value()));
   }
 
   {
     ExtensionContextMenuModel menu(browser_action, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true, ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_EQ(unpin_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_EQ(unpin_string, menu.GetLabelAt(index.value()));
 
     // Pin before unpinning.
     ToolbarActionsModel::Get(profile())->SetActionVisibility(
@@ -778,9 +776,9 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     ExtensionContextMenuModel menu(browser_action, browser,
                                    ExtensionContextMenuModel::UNPINNED, nullptr,
                                    true, ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_EQ(pin_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_EQ(pin_string, menu.GetLabelAt(index.value()));
   }
 
   {
@@ -790,9 +788,9 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
         browser_action, browser,
         ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr, true,
         ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_EQ(pin_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_EQ(pin_string, menu.GetLabelAt(index.value()));
   }
 }
 
@@ -835,10 +833,10 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
     ExtensionContextMenuModel menu(extension, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true, ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_TRUE(menu.IsEnabledAt(index));
-    EXPECT_EQ(unpin_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_TRUE(menu.IsEnabledAt(index.value()));
+    EXPECT_EQ(unpin_string, menu.GetLabelAt(index.value()));
   }
 
   {
@@ -846,10 +844,10 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
     ExtensionContextMenuModel menu(force_pinned_extension, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true, ContextMenuSource::kToolbarAction);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    EXPECT_FALSE(menu.IsEnabledAt(index));
-    EXPECT_EQ(force_pinned_string, menu.GetLabelAt(index));
+    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
+    ASSERT_TRUE(index.has_value());
+    EXPECT_FALSE(menu.IsEnabledAt(index.value()));
+    EXPECT_EQ(force_pinned_string, menu.GetLabelAt(index.value()));
   }
 }
 
@@ -912,7 +910,7 @@ TEST_F(ExtensionContextMenuModelTest,
     auto* manager = extensions::PermissionsManager::Get(profile());
     extensions::PermissionsManagerWaiter manager_waiter(manager);
     manager->AddUserPermittedSite(url::Origin::Create(url));
-    manager_waiter.WaitForPermissionsChange();
+    manager_waiter.WaitForUserPermissionsSettingsChange();
 
     // Verify "grant all extensions" item is visible and disabled, and the
     // "learn more" item is in the context menu.
@@ -935,7 +933,7 @@ TEST_F(ExtensionContextMenuModelTest,
     auto* manager = extensions::PermissionsManager::Get(profile());
     extensions::PermissionsManagerWaiter manager_waiter(manager);
     manager->AddUserRestrictedSite(url::Origin::Create(url));
-    manager_waiter.WaitForPermissionsChange();
+    manager_waiter.WaitForUserPermissionsSettingsChange();
 
     // Verify "block all extensions" item is visible and disabled, and the
     // "learn more" item is in the context menu.
@@ -1095,11 +1093,10 @@ TEST_F(ExtensionContextMenuModelTest, PageAccess_CustomizeByExtension_Submenu) {
   // Change extension to run "on click". Since we are revoking permissions, we
   // need to automatically accept the reload page bubble.
   action_runner->accept_bubble_for_testing(true);
-  content::WindowedNotificationObserver permissions_observer(
-      extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-      content::NotificationService::AllSources());
+  extensions::PermissionsManagerWaiter waiter(
+      extensions::PermissionsManager::Get(profile()));
   menu.ExecuteCommand(kOnClick, 0);
-  permissions_observer.Wait();
+  waiter.WaitForExtensionPermissionsUpdate();
   EXPECT_TRUE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
@@ -1124,8 +1121,10 @@ TEST_F(ExtensionContextMenuModelTest, PageAccess_CustomizeByExtension_Submenu) {
   ExtensionContextMenuModel single_host_menu(
       single_host_extension, GetBrowser(), ExtensionContextMenuModel::PINNED,
       nullptr, true, ContextMenuSource::kToolbarAction);
-  EXPECT_NE(-1, single_host_menu.GetIndexOfCommandId(
-                    ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
+  EXPECT_TRUE(
+      single_host_menu
+          .GetIndexOfCommandId(ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU)
+          .has_value());
 }
 
 // Tests different permission patterns when the site setting is set to
@@ -1497,11 +1496,10 @@ TEST_F(ExtensionContextMenuModelTest,
   // need to automatically accept the reload page bubble.
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->accept_bubble_for_testing(true);
-  content::WindowedNotificationObserver permissions_observer(
-      extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-      content::NotificationService::AllSources());
+  extensions::PermissionsManagerWaiter waiter(
+      extensions::PermissionsManager::Get(profile()));
   menu.ExecuteCommand(kOnClick, 0);
-  permissions_observer.Wait();
+  waiter.WaitForExtensionPermissionsUpdate();
   EXPECT_TRUE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
@@ -1631,11 +1629,10 @@ TEST_F(ExtensionContextMenuModelTest,
     menu.ExecuteCommand(kOnClick, 0);
     ExtensionActionRunner::GetForWebContents(web_contents)
         ->accept_bubble_for_testing(true);
-    content::WindowedNotificationObserver permissions_observer(
-        extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        content::NotificationService::AllSources());
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     menu.ExecuteCommand(kOnClick, 0);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
   }
 
   {
@@ -1688,11 +1685,10 @@ TEST_F(ExtensionContextMenuModelTest,
   // page bubble.
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->accept_bubble_for_testing(true);
-  content::WindowedNotificationObserver permissions_observer(
-      extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-      content::NotificationService::AllSources());
+  extensions::PermissionsManagerWaiter waiter(
+      extensions::PermissionsManager::Get(profile()));
   menu.ExecuteCommand(kOnClick, 0);
-  permissions_observer.Wait();
+  waiter.WaitForExtensionPermissionsUpdate();
 
   // This, sadly, removes access for the extension on b.com as well. :( This
   // is because we revoke all host permissions when transitioning from "don't

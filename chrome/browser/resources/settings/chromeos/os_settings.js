@@ -7,6 +7,7 @@ import './ambient_mode_page/ambient_mode_page.js';
 import './bluetooth_page/bluetooth_device_list_item.js';
 import './bluetooth_page/bluetooth_page.js';
 import './bluetooth_page/bluetooth_subpage.js';
+import './device_page/audio.js';
 import './device_page/device_page.js';
 import './device_page/display.js';
 import './device_page/display_layout.js';
@@ -97,6 +98,9 @@ import './parental_controls_page/parental_controls_page.js';
 import './settings_scheduler_slider/settings_scheduler_slider.js';
 
 import * as PersonalizationSearchMojom from '../mojom-webui/personalization/search.mojom-webui.js';
+import * as SearchMojom from '../mojom-webui/search/search.mojom-webui.js';
+import * as SearchResultIconMojom from '../mojom-webui/search/search_result_icon.mojom-webui.js';
+import * as UserActionRecorderMojom from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
 
 export {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 export {BrowserProxy as AppManagementComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
@@ -163,4 +167,9 @@ export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from
 export {WallpaperBrowserProxyImpl} from './personalization_page/wallpaper_browser_proxy.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './settings_search_handler.js';
-export {PersonalizationSearchMojom};
+export {
+  PersonalizationSearchMojom,
+  SearchMojom,
+  SearchResultIconMojom,
+  UserActionRecorderMojom,
+};

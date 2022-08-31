@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">ଅନୁମତି ରିସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="301521992641321250">ସ୍ୱଚାଳିତ ଭାବେ ବ୍ଲକ୍ କରାଗଲା</translation>
 <translation id="3069226013421428034">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ ପାଇଁ ତୃତୀୟ ପକ୍ଷ ସାଇନ-ଇନକୁ ଅନୁମତି ଦିଅନ୍ତୁ।</translation>
+<translation id="3109724472072898302">ସଙ୍କୁଚିତ କରାଗଲା</translation>
 <translation id="3114012059975132928">ଭିଡିଓ ପ୍ଲେଆର୍</translation>
 <translation id="3115898365077584848">ସୂଚନା ଦେଖାନ୍ତୁ</translation>
 <translation id="3123473560110926937">କିଛି ସାଇଟ୍‍ଗୁଡ଼ିକରେ ଅବରୋଧ କରାଯାଇଛି</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">ଭିଡିଓ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="3596414637720633074">ଇନକଗ୍ନିଟୋ ମୋଡରେ ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3600792891314830896">ଯେଉଁ ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକରେ ସାଉଣ୍ଡ ଚାଲୁଛି ସେଗୁଡ଼ିକୁ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
+<translation id="3628308229821498208">ପ୍ରସ୍ତାବିତ ସନ୍ଧାନଗୁଡ଼ିକ</translation>
 <translation id="3744111561329211289">ପୃଷ୍ଠପଟ ସିଙ୍କ୍‌</translation>
 <translation id="3763247130972274048">10 ସେକେଣ୍ଡ ବାଦ୍ ଦେବାକୁ ଭିଡିଓର ବାମ କିମ୍ବା ଡାହାଣକୁ ଦୁଇ ଥର ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="3797520601150691162">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ ପାଇଁ ଗାଢ଼ା ଥିମ ଲାଗୁ କରନ୍ତୁ ନାହିଁ</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">ତୃତୀୟ ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' କୁ ଅନଇନଷ୍ଟଲ୍ କରିବେ?</translation>
+<translation id="6262191102408817757">ଆପଣଙ୍କ ଶେଷ ଟାବ ଆଧାରରେ</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ଏବଂ <ph name="PERMISSION_2" />କୁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="6270391203985052864">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ ପଚାରିପାରିବେ</translation>
 <translation id="6295158916970320988">ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">ସାଇଟ୍‌ଗୁଡ଼ିକର ପପ୍‌-ଅପ୍‌ ଏବଂ ରିଡାଇରେକ୍ଟ ଦେଖାଇବାକୁ ଅବରୋଧ କରନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">ରିଫ୍ରେଶ୍</translation>
+<translation id="7203150201908454328">ପ୍ରସାରିତ ହୋଇଛି</translation>
 <translation id="723171743924126238">ଛବିଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="7243308994586599757">ସ୍କ୍ରିନ୍‍ର ନିମ୍ନରେ ବିକଳ୍ପଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ଚୟନିତ</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">ସୁରକ୍ଷିତ ଥିବା ବିଷୟବସ୍ତୁ ଚଲାଇବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="7577900504646297215">ରୁଚିଗୁଡ଼ିକୁ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="7594634374516752650">ଏକ ବ୍ଲୁଟୁଥ ଡିଭାଇସ ସହ କନେକ୍ଟ କରାଯାଇଛି</translation>
+<translation id="7641339528570811325">ବ୍ରାଉଜିଂ ଡାଟା ଖାଲି କରନ୍ତୁ…</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>

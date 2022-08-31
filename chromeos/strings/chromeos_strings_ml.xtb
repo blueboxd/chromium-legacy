@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="1645954272419197032">ഉപകരണ വിവരം സ്ഥിരീകരിക്കുക</translation>
 <translation id="1662989795263954667">പ്രിന്റ് ജോലി നിർത്തി - മഷിയില്ല</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> പ്രിവ്യൂ ചെയ്യുക</translation>
 <translation id="1668469839109562275">ബിൽറ്റ് ഇൻ VPN</translation>
 <translation id="1672499492233627739">വെബ്‌ക്യാം വീഡിയോ ഫീഡ്</translation>
 <translation id="1676557873873341166">വീഡിയോ എടുക്കുന്നു</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">വീഡിയോ കോൺഫറൻസിംഗ്</translation>
 <translation id="1852934301711881861">ChromeOS Flex ഇൻസ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="1856388568474281774">താഴേയ്‌ക്കുള്ള അമ്പടയാളം</translation>
+<translation id="1858620243986915808">സ്ക്രീന്‍ഷോട്ട് അറ്റാച്ച് ചെയ്യുക</translation>
 <translation id="1871569928317311284">ഡാർക്ക് തീം ഓഫാക്കുക</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ഡാർക്ക് മോഡ് ഓഫാക്കുക</translation>
@@ -219,7 +221,7 @@
 <translation id="2756652381241102009">ഡയഗ്‌നോസ്‌റ്റിക്‌സ് റൺ ചെയ്യുക</translation>
 <translation id="2783010256799387990">വിജയിച്ചു</translation>
 <translation id="2789486458103222910">ശരി</translation>
-<translation id="2805756323405976993">ആപ്സ്</translation>
+<translation id="2805756323405976993">ആപ്പുകൾ</translation>
 <translation id="28232023175184696">ഇന്റർനെറ്റിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല. വീണ്ടും ശ്രമിക്കാൻ ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="2827359915699915567">RSU കോഡ് നേടാൻ ഈ URL നേരിട്ട് ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="2859243502336719778">നിർണ്ണായക അപ്ഡേറ്റ്</translation>
@@ -796,6 +798,7 @@
 <translation id="7978412674231730200">സ്വകാര്യ കീ</translation>
 <translation id="7982789257301363584">നെറ്റ്‌വർക്ക്</translation>
 <translation id="7994702968232966508">EAP രീതി</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" എന്നതിൽ സംരക്ഷിച്ചു</translation>
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">സ്വയം നിറം ക്രമീകരിക്കൽ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
@@ -864,6 +867,7 @@
 <translation id="8576249514688522074">പ്രവർത്തനമാരംഭിച്ചിട്ടില്ല</translation>
 <translation id="8620617069779373398">റോമിംഗ് നില</translation>
 <translation id="8655295600908251630">ചാനല്‍</translation>
+<translation id="8655828773034788261">URL പങ്കിടുക:</translation>
 <translation id="8660881923941176839">പൗണ്ട്</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> നെറ്റ്‌വർക്കിൽ ചേരുക</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> എന്നതിലേക്ക് അപ്ഡേറ്റ് ചെയ്ത ശേഷം റീസ്റ്റാർട്ട് ചെയ്യുക</translation>

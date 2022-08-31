@@ -362,8 +362,16 @@ class NET_EXPORT NetworkChangeNotifier {
   // must do so before any other threads try to access the API below, and it
   // must outlive all other threads which might try to use it.
   static std::unique_ptr<NetworkChangeNotifier> CreateIfNeeded(
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // TODO(crbug.com/1347382): Remove this section and align the behavior
+      // with other platforms or confirm that Lacros needs to be separated.
+      NetworkChangeNotifier::ConnectionType initial_type = CONNECTION_UNKNOWN,
+      NetworkChangeNotifier::ConnectionSubtype initial_subtype =
+          SUBTYPE_UNKNOWN);
+#else
       NetworkChangeNotifier::ConnectionType initial_type = CONNECTION_NONE,
       NetworkChangeNotifier::ConnectionSubtype initial_subtype = SUBTYPE_NONE);
+#endif
 
   // Returns the most likely cost attribute for the default network connection.
   // The value does not indicate with absolute certainty if using the connection
@@ -533,7 +541,7 @@ class NET_EXPORT NetworkChangeNotifier {
   // Called to signify a non-system DNS config change.
   static void TriggerNonSystemDnsChange();
 
-  // Allow unit tests to trigger notifications.
+  // Allows unit tests to trigger notifications.
   static void NotifyObserversOfIPAddressChangeForTests();
   static void NotifyObserversOfConnectionTypeChangeForTests(
       ConnectionType type);
@@ -546,13 +554,16 @@ class NET_EXPORT NetworkChangeNotifier {
       ConnectionCost cost);
   static void NotifyObserversOfDefaultNetworkActiveForTests();
 
-  // Enable or disable notifications from the host. After setting to true, be
+  // Enables or disables notifications from the host. After setting to true, be
   // sure to pump the RunLoop until idle to finish any preexisting
   // notifications. To use this, it must must be called before a
   // NetworkChangeNotifier is created.
   static void SetTestNotificationsOnly(bool test_only);
 
-  // Return a string equivalent to |type|.
+  // Returns true if `test_notifications_only_` is set to true.
+  static bool IsTestNotificationsOnly() { return test_notifications_only_; }
+
+  // Returns a string equivalent to |type|.
   static const char* ConnectionTypeToString(ConnectionType type);
 
   // Allows a second NetworkChangeNotifier to be created for unit testing, so

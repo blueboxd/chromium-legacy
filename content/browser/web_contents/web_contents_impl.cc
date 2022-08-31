@@ -177,6 +177,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/animation/animation.h"
 
@@ -1028,9 +1029,21 @@ WebContentsImpl::~WebContentsImpl() {
     outermost->SetAsFocusedWebContentsIfNecessary();
   }
 
-  if (mouse_lock_widget_)
+  if (mouse_lock_widget_) {
     mouse_lock_widget_->RejectMouseLockOrUnlockIfNecessary(
         blink::mojom::PointerLockResult::kElementDestroyed);
+
+    // Normally, the call above clears mouse_lock_widget_ pointers on the
+    // entire WebContents chain, since it results in calling LostMouseLock()
+    // when the mouse lock is already active. However, this doesn't work for
+    // <webview> guests if the mouse lock request is still pending while the
+    // <webview> is destroyed. Hence, ensure that all mouse lock widget
+    // pointers are cleared. See https://crbug.com/1346245.
+    for (WebContentsImpl* current = this; current;
+         current = current->GetOuterWebContents()) {
+      current->mouse_lock_widget_ = nullptr;
+    }
+  }
 
   for (RenderWidgetHostImpl* widget : created_widgets_)
     widget->DetachDelegate();
@@ -1241,6 +1254,16 @@ std::string WebContentsImpl::GetTitleForMediaControls() {
   if (!delegate_)
     return std::string();
   return delegate_->GetTitleForMediaControls(this);
+}
+
+bool WebContentsImpl::IsFullscreenOnDisplay(int64_t display_id) const {
+  if (!delegate_)
+    return false;
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
+  int64_t fullscreen_display = display::kInvalidDisplayId;
+  if (!delegate_->IsFullscreenForTabOrPending(this, &fullscreen_display))
+    return false;
+  return fullscreen_display == display_id;
 }
 
 // Returns the NavigationController for the primary FrameTree, i.e. the one
@@ -2418,6 +2441,9 @@ bool WebContentsImpl::IsInnerWebContentsForGuest() {
 void WebContentsImpl::AttachInnerWebContents(
     std::unique_ptr<WebContents> inner_web_contents,
     RenderFrameHost* render_frame_host,
+    mojo::PendingAssociatedRemote<blink::mojom::RemoteFrame> remote_frame,
+    mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>
+        remote_frame_host_receiver,
     bool is_full_page) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::AttachInnerWebContents",
                         "inner_web_contents",
@@ -2489,6 +2515,10 @@ void WebContentsImpl::AttachInnerWebContents(
       inner_main_frame->browsing_context_state()->CreateOuterDelegateProxy(
           render_frame_host_impl->GetSiteInstance(),
           inner_main_frame->frame_tree_node());
+  if (remote_frame && remote_frame_host_receiver) {
+    proxy->BindRemoteFrameInterfaces(std::move(remote_frame),
+                                     std::move(remote_frame_host_receiver));
+  }
 
   // When attaching a GuestView as an inner WebContents, there should already be
   // a live RenderFrame, which has to be swapped. When attaching a portal, there
@@ -2786,6 +2816,8 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
 
   if (is_spatial_navigation_disabled_)
     prefs.spatial_navigation_enabled = false;
+
+  prefs.stylus_handwriting_enabled = stylus_handwriting_enabled_;
 
   prefs.disable_reading_from_canvas =
       command_line.HasSwitch(switches::kDisableReadingFromCanvas);
@@ -4049,7 +4081,16 @@ FrameTree* WebContentsImpl::CreateNewWindow(
       base::WeakPtr<WebContentsImpl> weak_new_contents =
           new_contents_impl->weak_factory_.GetWeakPtr();
 
-      gfx::Rect initial_rect;  // Report an empty initial rect.
+      gfx::Rect initial_rect;
+      if (params.features->has_width)
+        initial_rect.set_width(params.features->width);
+      if (params.features->has_height)
+        initial_rect.set_height(params.features->height);
+      if (params.features->has_x)
+        initial_rect.set_x(params.features->x);
+      if (params.features->has_y)
+        initial_rect.set_y(params.features->y);
+
       delegate_->AddNewContents(this, std::move(new_contents),
                                 params.target_url, params.disposition,
                                 initial_rect, has_user_gesture, &was_blocked);
@@ -5459,9 +5500,6 @@ base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen(
   // fullscreen if it does. This is theoretically quadratic-ish (fullscreen
   // contentses x each one's opener length) but neither of those is expected to
   // ever be a large number.
-
-  auto* screen = display::Screen::GetScreen();
-
   auto fullscreen_set_copy = *FullscreenContentsSet(GetBrowserContext());
   for (auto* fullscreen_contents : fullscreen_set_copy) {
     // Checking IsFullscreen() for tabs in the fullscreen set may seem
@@ -5469,10 +5507,8 @@ base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen(
     // it's possible that the delegate's notion of fullscreen may have changed
     // outside of WebContents's notice.
     if (fullscreen_contents->IsFullscreen() &&
-        (display_id == display::kInvalidDisplayId || !screen ||
-         display_id ==
-             screen->GetDisplayNearestView(fullscreen_contents->GetNativeView())
-                 .id())) {
+        (display_id == display::kInvalidDisplayId ||
+         fullscreen_contents->IsFullscreenOnDisplay(display_id))) {
       auto opener_contentses = GetAllOpeningWebContents(fullscreen_contents);
       if (opener_contentses.count(this))
         fullscreen_contents->ExitFullscreen(true);
@@ -5490,10 +5526,8 @@ base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen(
 
   for (auto* opener : GetAllOpeningWebContents(this)) {
     // Drop fullscreen if the WebContents is in it, and...
-    if (opener->IsFullscreen() &&
-        (display_id == display::kInvalidDisplayId || !screen ||
-         display_id ==
-             screen->GetDisplayNearestView(opener->GetNativeView()).id()))
+    if (opener->IsFullscreen() && (display_id == display::kInvalidDisplayId ||
+                                   opener->IsFullscreenOnDisplay(display_id)))
       opener->ExitFullscreen(true);
 
     // ...block the WebContents from entering fullscreen until further notice.
@@ -7784,6 +7818,10 @@ void WebContentsImpl::SetFocusedFrameTree(FrameTree* frame_tree_to_focus) {
   // Make sure the outer frame trees knows our frame is focused. Otherwise, the
   // outer renderer could have the element before or after the frame element
   // focused which would return early without actually advancing focus.
+  RenderFrameHostImpl::UpdateAXFocusDeferScope focus_defer_scope(
+      *frame_tree_to_focus->root()
+           ->current_frame_host()
+           ->GetOutermostMainFrameOrEmbedder());
   frame_tree_to_focus->FocusOuterFrameTrees();
 
   frame_tree_to_focus->root()
@@ -7797,6 +7835,12 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetFocusedFrame",
                         "frame_tree_node", node, "source_site_instance_group",
                         source);
+
+  // Focus will not be in a consistent state until the focused frame tree is
+  // also updated (if necessary).
+  RenderFrameHostImpl::UpdateAXFocusDeferScope focus_defer_scope(
+      *node->current_frame_host()->GetOutermostMainFrameOrEmbedder());
+
   node->frame_tree()->SetFocusedFrame(node, source);
 
   auto* inner_contents = node_.GetInnerWebContentsInFrame(node);
@@ -7858,25 +7902,6 @@ void WebContentsImpl::DidCallFocus() {
   // The other contents is independent of this contents, so release the
   // fullscreen block.
   fullscreen_block.RunAndReset();
-}
-
-RenderFrameHostImpl*
-WebContentsImpl::GetFocusedFrameIncludingInnerFrameTrees() {
-  OPTIONAL_TRACE_EVENT0(
-      "content", "WebContentsImpl::GetFocusedFrameIncludingInnerFrameTrees");
-  auto* focused_frame = GetFocusedFrame();
-  if (focused_frame) {
-    return focused_frame;
-  }
-
-  // If there is no focused frame in the primary frame tree, we need to return
-  // null. If an inner frame tree has focus, but doesn't have a focused frame,
-  // treat its main frame as having focus.
-  if (GetFocusedFrameTree() != &primary_frame_tree_) {
-    return GetFocusedFrameTree()->root()->current_frame_host();
-  }
-
-  return nullptr;
 }
 
 void WebContentsImpl::OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {
@@ -8723,6 +8748,13 @@ void WebContentsImpl::SetSpatialNavigationDisabled(bool disabled) {
   NotifyPreferencesChanged();
 }
 
+void WebContentsImpl::SetStylusHandwritingEnabled(bool enabled) {
+  if (stylus_handwriting_enabled_ == enabled)
+    return;
+  stylus_handwriting_enabled_ = enabled;
+  NotifyPreferencesChanged();
+}
+
 void WebContentsImpl::BrowserPluginGuestWillDetach() {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::BrowserPluginGuestWillDetach");
@@ -9435,6 +9467,7 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
     PrerenderTriggerType trigger_type,
     const std::string& embedder_histogram_suffix,
     ui::PageTransition page_transition,
+    PreloadingAttempt* preloading_attempt,
     absl::optional<base::RepeatingCallback<bool(const GURL&)>>
         url_match_predicate) {
   PrerenderAttributes attributes(
@@ -9444,8 +9477,8 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
       ukm::kInvalidSourceId, page_transition, url_match_predicate);
-  int frame_tree_node_id =
-      GetPrerenderHostRegistry()->CreateAndStartHost(attributes, *this);
+  int frame_tree_node_id = GetPrerenderHostRegistry()->CreateAndStartHost(
+      attributes, *this, preloading_attempt);
 
   if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
     return std::make_unique<PrerenderHandleImpl>(

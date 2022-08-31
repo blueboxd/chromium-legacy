@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'rules': {
-    'eqeqeq': 'off',
-    'no-var': 'off',
+  'rules' : {
+    'eqeqeq' : 'off',
+    'no-var' : 'off',
   },
 };

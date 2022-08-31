@@ -151,11 +151,16 @@ def deploy(args):
         'typescript/bin/tsc',
         '--outDir',
         js_out_dir,
+        '--noEmit',
+        'false',
         # Makes compilation faster
         '--incremental',
         # For better debugging experience on DUT.
         '--inlineSourceMap',
         '--inlineSources',
+        # Makes devtools show TypeScript source with better path
+        '--sourceRoot',
+        '/js/',
         # For easier developing / test cycle.
         '--noUnusedLocals',
         'false',

@@ -46,14 +46,8 @@ const base::Feature kDisableNonHTMLScreenshotOnIOS15{
 const base::Feature kIOSSharedHighlightingColorChange{
     "IOSSharedHighlightingColorChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnableNewDownloadAPI{"EnableNewDownloadAPI",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSynthesizedRestoreSession{
     "SynthesizedRestoreSession", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableUnrealizedWebStates{
-    "EnableUnrealizedWebStates", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMediaPermissionsControl{"MediaPermissionsControl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -74,13 +68,6 @@ bool ShouldTakeScreenshotOnNonHTMLContent() {
     return !base::FeatureList::IsEnabled(kDisableNonHTMLScreenshotOnIOS15);
   }
   return true;
-}
-
-bool IsNewDownloadAPIEnabled() {
-  if (@available(iOS 15, *)) {
-    return base::FeatureList::IsEnabled(kEnableNewDownloadAPI);
-  }
-  return false;
 }
 
 bool IsMediaPermissionsControlEnabled() {

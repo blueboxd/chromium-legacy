@@ -57,10 +57,11 @@ document.head.appendChild($_documentContainer.content);"""
 
 
 def _parse_style_line(line, metadata):
-  if not metadata['include']:
-    include_match = re.search(_INCLUDE_REGEX, line)
-    if include_match:
-      metadata['include'] = line[include_match.end():]
+  include_match = re.search(_INCLUDE_REGEX, line)
+  if include_match:
+    assert not metadata[
+        'include'], f'Found multiple "{_INCLUDE_REGEX}" lines. Only one should exist.'
+    metadata['include'] = line[include_match.end():]
 
   import_match = re.search(_IMPORT_REGEX, line)
   if import_match:
@@ -217,6 +218,12 @@ def main(argv):
     makedirs(out_folder_for_file, exist_ok=True)
     with io.open(path.join(out_folder, in_file) + extension, mode='wb') as f:
       f.write(wrapper.encode('utf-8'))
+
+  if args.minify:
+    # Delete the temporary folder that was holding minified CSS files, no
+    # longer needed.
+    shutil.rmtree(tmp_out_dir)
+
   return
 
 

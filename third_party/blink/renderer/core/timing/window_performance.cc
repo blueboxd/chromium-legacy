@@ -513,6 +513,8 @@ void WindowPerformance::ReportEventTimings(
     };
 
     // First Input
+    //
+    // See also ./First_input_state_machine.md to understand the logics below.
     if (!first_input_timing_) {
       if (entry->name() == event_type_names::kPointerdown) {
         first_pointer_down_event_timing_ =
@@ -534,10 +536,8 @@ void WindowPerformance::ReportEventTimings(
     }
   }
 
-  if (RuntimeEnabledFeatures::InteractionIdEnabled(GetExecutionContext())) {
-    // Use |end_time| as a proxy for the current time.
-    responsiveness_metrics_->MaybeFlushKeyboardEntries(end_time);
-  }
+  // Use |end_time| as a proxy for the current time.
+  responsiveness_metrics_->MaybeFlushKeyboardEntries(end_time);
 }
 
 void WindowPerformance::NotifyAndAddEventTimingBuffer(
@@ -577,10 +577,6 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
 
 void WindowPerformance::MaybeNotifyInteractionAndAddEventTimingBuffer(
     PerformanceEventTiming* entry) {
-  if (!RuntimeEnabledFeatures::InteractionIdEnabled(GetExecutionContext())) {
-    return;
-  }
-
   NotifyAndAddEventTimingBuffer(entry);
 }
 
@@ -596,12 +592,10 @@ bool WindowPerformance::SetInteractionIdAndRecordLatency(
   // disabled.
   if (pointer_id.has_value()) {
     return responsiveness_metrics_->SetPointerIdAndRecordLatency(
-               entry, *pointer_id, event_timestamps) ||
-           !RuntimeEnabledFeatures::InteractionIdEnabled(GetExecutionContext());
+        entry, *pointer_id, event_timestamps);
   }
   return responsiveness_metrics_->SetKeyIdAndRecordLatency(entry, key_code,
-                                                           event_timestamps) ||
-         !RuntimeEnabledFeatures::InteractionIdEnabled(GetExecutionContext());
+                                                           event_timestamps);
 }
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,

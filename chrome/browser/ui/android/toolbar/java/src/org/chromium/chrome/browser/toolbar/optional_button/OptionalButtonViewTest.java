@@ -16,10 +16,14 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.transition.Transition;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +36,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,12 +47,15 @@ import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
+import org.chromium.base.FeatureList;
+import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
-import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonConstants.TransitionType;
 
@@ -56,7 +64,7 @@ import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonConstan
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class OptionalButtonViewTest {
-    private Activity mActivity;
+    private Context mActivity;
 
     private OptionalButtonView mOptionalButtonView;
     private ImageButton mInnerButton;
@@ -64,12 +72,20 @@ public class OptionalButtonViewTest {
     private ImageView mButtonBackground;
     private ShadowLooper mShadowLooper;
     private BooleanSupplier mMockAnimationChecker;
+    private Callback<Transition> mMockBeginDelayedTransition;
 
     @Before
     public void setUp() {
-        mActivity = Robolectric.setupActivity(Activity.class);
+        mActivity = new ContextThemeWrapper(
+                Robolectric.setupActivity(Activity.class), R.style.Theme_BrowserUI_DayNight);
         mMockAnimationChecker = Mockito.mock(BooleanSupplier.class);
         when(mMockAnimationChecker.getAsBoolean()).thenReturn(true);
+        TestValues testValues = new TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
+                "action_chip_with_different_color", "false");
+
+        FeatureList.setTestValues(testValues);
 
         mOptionalButtonView = (OptionalButtonView) LayoutInflater.from(mActivity).inflate(
                 R.layout.optional_button_layout, null, false);
@@ -77,10 +93,16 @@ public class OptionalButtonViewTest {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mOptionalButtonView.setIsAnimationAllowedPredicate(mMockAnimationChecker);
 
+        mMockBeginDelayedTransition = Mockito.mock(Callback.class);
+
         mShadowLooper = Shadows.shadowOf(Looper.getMainLooper());
         Handler handler = new Handler(Looper.getMainLooper());
         // This handler is used to schedule the action chip collapse.
         mOptionalButtonView.setHandlerForTesting(handler);
+
+        // This function replaces calls to TransitionManager.beginDelayedTransition which is hard to
+        // mock as it's static.
+        mOptionalButtonView.setFakeBeginDelayedTransitionForTesting(mMockBeginDelayedTransition);
 
         mInnerButton = (ImageButton) mOptionalButtonView.getButtonView();
         mActionChipLabel = mOptionalButtonView.findViewById(R.id.action_chip_label);
@@ -106,7 +128,7 @@ public class OptionalButtonViewTest {
         return buttonData;
     }
 
-    private ButtonDataImpl getDataForDynamicPriceTrackingIconButton() {
+    private ButtonDataImpl getDataForPriceTrackingIconButton() {
         Drawable iconDrawable = AppCompatResources.getDrawable(mActivity, R.drawable.btn_mic);
         OnClickListener clickListener = mock(OnClickListener.class);
         OnLongClickListener longClickListener = mock(OnLongClickListener.class);
@@ -125,7 +147,7 @@ public class OptionalButtonViewTest {
         return buttonData;
     }
 
-    private ButtonDataImpl getDataForShareIconActionChip() {
+    private ButtonDataImpl getDataForPriceTrackingActionChip() {
         Drawable iconDrawable = AppCompatResources.getDrawable(mActivity, R.drawable.new_tab_icon);
         OnClickListener clickListener = mock(OnClickListener.class);
         OnLongClickListener longClickListener = mock(OnLongClickListener.class);
@@ -146,7 +168,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetButtonEnabled() {
-        ButtonDataImpl disabledButton = getDataForDynamicPriceTrackingIconButton();
+        ButtonDataImpl disabledButton = getDataForPriceTrackingIconButton();
         disabledButton.setEnabled(false);
         ViewGroup transitionRoot = mock(ViewGroup.class);
 
@@ -180,7 +202,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_fromHiddenToIcon() {
-        ButtonData buttonData = getDataForDynamicPriceTrackingIconButton();
+        ButtonData buttonData = getDataForPriceTrackingIconButton();
         String contentDescriptionString = mActivity.getResources().getString(
                 buttonData.getButtonSpec().getContentDescriptionResId());
         ViewGroup transitionRoot = mock(ViewGroup.class);
@@ -203,7 +225,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_swapIcons() {
-        ButtonData firstButtonData = getDataForDynamicPriceTrackingIconButton();
+        ButtonData firstButtonData = getDataForPriceTrackingIconButton();
         ButtonData secondButtonData = getDataForStaticNewTabIconButton();
 
         ViewGroup transitionRoot = mock(ViewGroup.class);
@@ -244,7 +266,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_expandActionChipFromHidden() {
-        ButtonData actionChipButtonData = getDataForShareIconActionChip();
+        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
         String actionChipLabel = mActivity.getResources().getString(
                 actionChipButtonData.getButtonSpec().getActionChipLabelResId());
 
@@ -273,7 +295,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_expandAndCollapseActionChipFromHidden() {
-        ButtonData actionChipButtonData = getDataForShareIconActionChip();
+        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
 
         ViewGroup transitionRoot = mock(ViewGroup.class);
         mOptionalButtonView.setTransitionRoot(transitionRoot);
@@ -307,7 +329,7 @@ public class OptionalButtonViewTest {
     @Test
     public void testSetIconDrawableWithAnimation_expandActionChipFromAnotherIcon() {
         ButtonData staticButtonData = getDataForStaticNewTabIconButton();
-        ButtonData actionChipButtonData = getDataForShareIconActionChip();
+        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
 
         ViewGroup transitionRoot = mock(ViewGroup.class);
         mOptionalButtonView.setTransitionRoot(transitionRoot);
@@ -337,6 +359,42 @@ public class OptionalButtonViewTest {
         assertEquals(View.VISIBLE, mOptionalButtonView.getVisibility());
         assertEquals(View.VISIBLE, mInnerButton.getVisibility());
         assertEquals(View.VISIBLE, mActionChipLabel.getVisibility());
+    }
+
+    @Test
+    public void testUpdateButtonWithAnimation_actionChipWithAlternativeColor() {
+        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
+
+        // Alternative color is controlled by a field trial param.
+        TestValues testValues = new TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
+                "action_chip_with_different_color", "true");
+        FeatureList.setTestValues(testValues);
+
+        ViewGroup transitionRoot = mock(ViewGroup.class);
+        mOptionalButtonView.setTransitionRoot(transitionRoot);
+
+        // Transition from hidden to action chip
+        mOptionalButtonView.updateButtonWithAnimation(actionChipButtonData);
+
+        // Normally called by TransitionManager.
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        ColorFilter filterAfterExpansion = mButtonBackground.getColorFilter();
+
+        // Advance looper to begin collapse transition.
+        mShadowLooper.runOneTask();
+        // Normally called by TransitionManager.
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        ColorFilter filterAfterCollapse = mButtonBackground.getColorFilter();
+
+        Assert.assertNotNull(filterAfterCollapse);
+        Assert.assertNotNull(filterAfterExpansion);
+        Assert.assertNotEquals(filterAfterCollapse, filterAfterExpansion);
     }
 
     @Test
@@ -372,8 +430,8 @@ public class OptionalButtonViewTest {
     @Test
     public void testTransitionCallbacks() {
         ButtonData firstButton = getDataForStaticNewTabIconButton();
-        ButtonData secondButton = getDataForDynamicPriceTrackingIconButton();
-        ButtonData actionChipButton = getDataForShareIconActionChip();
+        ButtonData secondButton = getDataForPriceTrackingIconButton();
+        ButtonData actionChipButton = getDataForPriceTrackingActionChip();
 
         Runnable beforeHideTransitionCallback = mock(Runnable.class);
         Callback<Integer> transitionStartedCallback = mock(Callback.class);
@@ -399,6 +457,11 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
+        // Transition back to firstButton.
+        mOptionalButtonView.updateButtonWithAnimation(firstButton);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
         // Transition from secondButton to actionChipButton
         mOptionalButtonView.updateButtonWithAnimation(actionChipButton);
         // Run callbacks for expansion transition.
@@ -421,6 +484,8 @@ public class OptionalButtonViewTest {
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SHOWING);
         inOrder.verify(transitionStartedCallback).onResult(TransitionType.SWAPPING);
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SWAPPING);
+        inOrder.verify(transitionStartedCallback).onResult(TransitionType.SWAPPING);
+        inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SWAPPING);
         inOrder.verify(transitionStartedCallback).onResult(TransitionType.EXPANDING_ACTION_CHIP);
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.EXPANDING_ACTION_CHIP);
         inOrder.verify(transitionStartedCallback).onResult(TransitionType.COLLAPSING_ACTION_CHIP);
@@ -433,8 +498,8 @@ public class OptionalButtonViewTest {
     @Test
     public void testTransitionCallbacks_withAnimationDisabled() {
         ButtonData firstButton = getDataForStaticNewTabIconButton();
-        ButtonData secondButton = getDataForDynamicPriceTrackingIconButton();
-        ButtonData actionChipButton = getDataForShareIconActionChip();
+        ButtonData secondButton = getDataForPriceTrackingIconButton();
+        ButtonData actionChipButton = getDataForPriceTrackingActionChip();
         when(mMockAnimationChecker.getAsBoolean()).thenReturn(false);
 
         Runnable beforeHideTransitionCallback = mock(Runnable.class);
@@ -461,6 +526,11 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
+        // Transition back to firstButton.
+        mOptionalButtonView.updateButtonWithAnimation(firstButton);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
         // Transition from secondButton to actionChipButton, when animations are disabled we don't
         // expand the action chip, as the width change would look jarring. Instead we just update
         // its icon.
@@ -482,8 +552,89 @@ public class OptionalButtonViewTest {
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SHOWING);
         inOrder.verify(transitionStartedCallback).onResult(TransitionType.SHOWING);
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SHOWING);
+        inOrder.verify(transitionStartedCallback).onResult(TransitionType.SHOWING);
+        inOrder.verify(transitionFinishedCallback).onResult(TransitionType.SHOWING);
         inOrder.verify(beforeHideTransitionCallback).run();
         inOrder.verify(transitionStartedCallback).onResult(TransitionType.HIDING);
         inOrder.verify(transitionFinishedCallback).onResult(TransitionType.HIDING);
+    }
+
+    @Test
+    public void testUpdateButton_earlyReturnIfNothingChanged() {
+        ButtonData firstButton = getDataForStaticNewTabIconButton();
+
+        ViewGroup transitionRoot = mock(ViewGroup.class);
+        mOptionalButtonView.setTransitionRoot(transitionRoot);
+
+        mOptionalButtonView.updateButtonWithAnimation(firstButton);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        mOptionalButtonView.updateButtonWithAnimation(firstButton);
+
+        // Calling updateButtonWithAnimation with the same button many times shouldn't begin
+        // repeated animations.
+        verify(mMockBeginDelayedTransition).onResult(any());
+    }
+
+    @Test
+    public void testUpdateButton_earlyReturnIfSameVariant() {
+        ButtonData priceTrackingButtonData = getDataForPriceTrackingIconButton();
+        ButtonData priceTrackingActionChipData = getDataForPriceTrackingActionChip();
+
+        ViewGroup transitionRoot = mock(ViewGroup.class);
+        mOptionalButtonView.setTransitionRoot(transitionRoot);
+
+        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        mOptionalButtonView.updateButtonWithAnimation(priceTrackingActionChipData);
+
+        // Calling updateButtonWithAnimation with the same button variant many times shouldn't begin
+        // repeated animations.
+        verify(mMockBeginDelayedTransition).onResult(any());
+    }
+
+    @Test
+    public void testUpdateButton_sameButtonWithDifferentSpecTriggersTransition() {
+        ButtonDataImpl buttonData = getDataForStaticNewTabIconButton();
+
+        ViewGroup transitionRoot = mock(ViewGroup.class);
+        mOptionalButtonView.setTransitionRoot(transitionRoot);
+
+        mOptionalButtonView.updateButtonWithAnimation(buttonData);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        // Keep the same ButtonData instance, but use a different spec.
+        buttonData.setButtonSpec(getDataForPriceTrackingIconButton().getButtonSpec());
+
+        mOptionalButtonView.updateButtonWithAnimation(buttonData);
+
+        // Calling updateButtonWithAnimation with the same ButtonData instance but with a different
+        // variant many times should begin a new animation.
+        verify(mMockBeginDelayedTransition, times(2)).onResult(any());
+    }
+
+    @Test
+    public void testUpdateButton_sameButtonWithDifferentVisibilityTriggersTransition() {
+        ButtonDataImpl buttonData = getDataForStaticNewTabIconButton();
+
+        ViewGroup transitionRoot = mock(ViewGroup.class);
+        mOptionalButtonView.setTransitionRoot(transitionRoot);
+
+        mOptionalButtonView.updateButtonWithAnimation(buttonData);
+        mOptionalButtonView.onTransitionStart(null);
+        mOptionalButtonView.onTransitionEnd(null);
+
+        // Keep the same ButtonData instance, but set it to not show.
+        buttonData.setCanShow(false);
+
+        mOptionalButtonView.updateButtonWithAnimation(buttonData);
+
+        // Calling updateButtonWithAnimation with the same ButtonData instance but with a different
+        // visibility many times should begin a new animation.
+        verify(mMockBeginDelayedTransition, times(2)).onResult(any());
     }
 }

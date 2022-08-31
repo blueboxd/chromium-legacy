@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">Сбросить все разрешения</translation>
 <translation id="301521992641321250">Заблокировано автоматически</translation>
 <translation id="3069226013421428034">Разрешить вход через сторонние сервисы для определенного сайта.</translation>
+<translation id="3109724472072898302">Свернуто</translation>
 <translation id="3114012059975132928">Видеопроигрыватель</translation>
 <translation id="3115898365077584848">Показать информацию</translation>
 <translation id="3123473560110926937">Заблокировано на некоторых сайтах</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">Выключить звук для видео</translation>
 <translation id="3596414637720633074">Блокировать файлы cookie сторонних сайтов в режиме инкогнито</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
+<translation id="3628308229821498208">Варианты поисковых запросов</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3763247130972274048">Чтобы пропустить 10 секунд, дважды нажмите слева или справа.</translation>
 <translation id="3797520601150691162">Не использовать тёмную тему для конкретного сайта</translation>
@@ -203,7 +205,7 @@
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="5690795753582697420">Камера выключена в настройках Android.</translation>
 <translation id="5719847187258001597">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN" /> или его приложением, добавленным на главный экран.</translation>
-<translation id="5771720122942595109">Заблокировано: <ph name="PERMISSION_1" /></translation>
+<translation id="5771720122942595109"><ph name="PERMISSION_1" />: заблокировано</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5876056640971328065">Приостановить видео</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6231752747840485235">Удалить приложение "<ph name="APP_NAME" />"?</translation>
+<translation id="6262191102408817757">На основе данных последней использованной вкладки</translation>
 <translation id="6262279340360821358">Заблокировано: <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">Сайты могут запрашивать разрешения на отправку уведомлений</translation>
 <translation id="6295158916970320988">Все сайты</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Обновить</translation>
+<translation id="7203150201908454328">Развернуто</translation>
 <translation id="723171743924126238">Выберите изображения</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">Запретить сайтам воспроизводить защищенный контент</translation>
 <translation id="7577900504646297215">Управление интересами</translation>
 <translation id="7594634374516752650">Подключено устройство Bluetooth</translation>
+<translation id="7641339528570811325">Очистить историю...</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7781829728241885113">Вчера</translation>
@@ -307,7 +312,7 @@
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8154912474061769055">Функции многих сайтов могут стать недоступными</translation>
-<translation id="8197286292360124385">Разрешено: <ph name="PERMISSION_1" /></translation>
+<translation id="8197286292360124385"><ph name="PERMISSION_1" />: разрешено</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8206354486702514201">Этот параметр включен администратором.</translation>
 <translation id="8211406090763984747">Безопасное подключение</translation>

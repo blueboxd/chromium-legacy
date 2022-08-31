@@ -169,7 +169,6 @@ interface CountQueuingStrategy
     getter size
     method constructor
 interface CropTarget
-    static method fromElement
     attribute @@toStringTag
     method constructor
 interface Crypto
@@ -1198,6 +1197,7 @@ interface ReportingObserver
     method takeRecords
 interface Request
     attribute @@toStringTag
+    getter body
     getter bodyUsed
     getter cache
     getter credentials
@@ -1380,6 +1380,13 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TransformStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method constructor
+    method enqueue
+    method error
+    method terminate
 interface TrustedHTML
     attribute @@toStringTag
     method constructor

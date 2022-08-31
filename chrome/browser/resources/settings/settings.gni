@@ -11,7 +11,6 @@ settings_closure_flags =
     default_closure_args + [
       "js_module_root=../../chrome/browser/resources/settings/",
       "js_module_root=./gen/chrome/browser/resources/settings/",
-      "js_module_root=./gen/chrome/browser/resources/settings/tsc/",
     ]
 
 # -----------------web_component_files start -----------------------------------
@@ -163,7 +162,7 @@ if (!is_chromeos_ash) {
     "relaunch_confirmation_dialog.ts",
     "languages_page/add_languages_dialog.ts",
     "languages_page/languages_page.ts",
-    "languages_page/languages_subpage.ts",
+    "languages_page/spell_check_page.ts",
     "system_page/system_page.ts",
   ]
 }
@@ -224,10 +223,7 @@ non_web_component_files = [
   "appearance_page/appearance_browser_proxy.ts",
   "appearance_page/fonts_browser_proxy.ts",
   "autofill_page/autofill_manager_proxy.ts",
-  "autofill_page/merge_exceptions_store_copies_mixin.ts",
   "autofill_page/merge_passwords_store_copies_mixin.ts",
-  "autofill_page/multi_store_exception_entry.ts",
-  "autofill_page/multi_store_id_handler.ts",
   "autofill_page/multi_store_password_ui_entry.ts",
   "autofill_page/password_check_mixin.ts",
   "autofill_page/password_manager_proxy.ts",
@@ -244,6 +240,7 @@ non_web_component_files = [
   "downloads_page/downloads_browser_proxy.ts",
   "ensure_lazy_loaded.ts",
   "extension_control_browser_proxy.ts",
+  "focus_config.ts",
   "global_scroll_target_mixin.ts",
   "hats_browser_proxy.ts",
   "i18n_setup.ts",
@@ -324,6 +321,7 @@ ts_files = web_component_files + non_web_component_files
 # Files that are passed as input to css_to_wrapper().
 css_files = [
   "settings_page_styles.css",
+  "settings_shared.css",
   "settings_vars.css",
 
   # subfolder files
@@ -340,7 +338,4 @@ foreach(f, css_files) {
 }
 
 # CSS/HTML wrapper files that are not auto-generated yet.
-css_wrapper_files_old = [
-  "settings_shared_css.ts",
-  "privacy_sandbox/icons.ts",
-]
+css_wrapper_files_old = [ "privacy_sandbox/icons.ts" ]

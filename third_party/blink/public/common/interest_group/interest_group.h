@@ -5,13 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INTEREST_GROUP_INTEREST_GROUP_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INTEREST_GROUP_INTEREST_GROUP_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-forward.h"
+#include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -84,9 +85,8 @@ struct BLINK_COMMON_EXPORT InterestGroup {
   base::Time expiry;
   url::Origin owner;
   std::string name;
-  absl::optional<double> priority;  // Needs to be optional for updates.
-  absl::optional<ExecutionMode>
-      execution_mode;  // Needs to be optional for updates.
+  double priority = 0;
+  ExecutionMode execution_mode = ExecutionMode::kCompatibilityMode;
   absl::optional<GURL> bidding_url;
   absl::optional<GURL> bidding_wasm_helper_url;
   absl::optional<GURL> daily_update_url;
@@ -113,6 +113,7 @@ and also add a new database version and migration, and migration test.
 If the new field is to be updatable via dailyUpdateUrl, also update *all* of
 these:
 
+* Add field to content::InterestGroupUpdate.
 * InterestGroupStorage::DoStoreInterestGroupUpdate()
 * ParseUpdateJson in interest_group_update_manager.cc
 * Update AdAuctionServiceImplTest.UpdateAllUpdatableFields
@@ -121,6 +122,26 @@ See crrev.com/c/3517534 for an example (adding the priority field), and also
 remember to update bidder_worklet.cc too.
 )");
 };
+
+// A unique identifier for interest groups.
+struct InterestGroupKey {
+  InterestGroupKey(url::Origin o, std::string n)
+      : owner(std::move(o)), name(std::move(n)) {}
+  inline bool operator<(const InterestGroupKey& other) const {
+    return owner != other.owner ? owner < other.owner : name < other.name;
+  }
+  inline bool operator==(const InterestGroupKey& other) const {
+    return owner == other.owner && name == other.name;
+  }
+  url::Origin owner;
+  std::string name;
+};
+
+// A set of interest groups, identified by owner and name. Used to log which
+// interest groups bid in an auction. A sets is used to avoid double-counting
+// interest groups that bid in multiple components auctions in a component
+// auction.
+using InterestGroupSet = std::set<InterestGroupKey>;
 
 }  // namespace blink
 

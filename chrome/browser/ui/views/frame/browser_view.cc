@@ -72,7 +72,7 @@
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
@@ -95,6 +95,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/color_provider_browser_helper.h"
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -121,15 +122,16 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/permissions/permission_chip.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_device_picker_bubble_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_promo_bubble_view.h"
@@ -575,7 +577,11 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   }
 
   bool BrowserIsSystemWebApp() const override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     return browser_view_->browser()->app_controller()->system_app();
+#else
+    return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   bool BrowserIsWebApp() const override {
@@ -863,6 +869,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   tab_strip_region_view_ = top_container_->AddChildView(
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
+  ColorProviderBrowserHelper::CreateForBrowser(browser_.get());
+
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =
       std::make_unique<views::WebView>(browser_->profile());
@@ -894,11 +902,20 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-  right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
   right_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
+
   if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
+        prefs::kSidePanelHorizontalAlignment);
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(
+        this,
+        is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
+    left_aligned_side_panel_separator_ =
+        AddChildView(std::make_unique<ContentsSeparator>());
     side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
+  } else {
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -911,7 +928,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 #endif
 
-  if (browser_->is_type_normal() && IsSideSearchEnabled(browser_->profile())) {
+  if (side_search::IsEnabledForBrowser(browser_.get())) {
     if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
       side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
       left_aligned_side_panel_separator_ =
@@ -2076,6 +2093,14 @@ void BrowserView::ToggleWindowControlsOverlayEnabled() {
   UpdateWindowControlsOverlayEnabled();
 }
 
+void BrowserView::UpdateSidePanelHorizontalAlignment() {
+  const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kSidePanelHorizontalAlignment);
+  right_aligned_side_panel_->SetHorizontalAlignment(
+      is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft);
+  GetBrowserViewLayout()->Layout(this);
+}
+
 void BrowserView::FocusBookmarksToolbar() {
   DCHECK(!immersive_mode_controller_->IsEnabled());
   if (bookmark_bar_view_ && bookmark_bar_view_->GetVisible() &&
@@ -2442,7 +2467,9 @@ sharing_hub::SharingHubBubbleView* BrowserView::ShowSharingHubBubble(
     share::ShareAttempt attempt) {
   auto* bubble = new sharing_hub::SharingHubBubbleViewImpl(
       toolbar_button_provider()->GetAnchorView(PageActionIconType::kSharingHub),
-      attempt);
+      attempt,
+      sharing_hub::SharingHubBubbleController::CreateOrGetFromWebContents(
+          attempt.web_contents.get()));
   PageActionIconView* icon_view =
       toolbar_button_provider()->GetPageActionIconView(
           PageActionIconType::kSharingHub);

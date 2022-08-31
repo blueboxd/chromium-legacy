@@ -20,9 +20,7 @@ ReadAnythingController::ReadAnythingController(ReadAnythingModel* model,
 }
 
 ReadAnythingController::~ReadAnythingController() {
-  DCHECK(browser_);
-  if (browser_->tab_strip_model())
-    browser_->tab_strip_model()->RemoveObserver(this);
+  TabStripModelObserver::StopObservingAll(this);
   WebContentsObserver::Observe(nullptr);
 }
 
@@ -39,16 +37,28 @@ void ReadAnythingController::OnFontChoiceChanged(int new_choice) {
       model_->GetFontModel()->GetFontNameAt(new_choice));
 }
 
+ui::ComboboxModel* ReadAnythingController::GetFontComboboxModel() {
+  return static_cast<ui::ComboboxModel*>(model_->GetFontModel());
+}
+
 void ReadAnythingController::OnFontSizeChanged(bool increase) {
   if (increase) {
     model_->IncreaseTextSize();
   } else {
     model_->DecreaseTextSize();
   }
+
+  browser_->profile()->GetPrefs()->SetDouble(
+      prefs::kAccessibilityReadAnythingFontScale, model_->GetFontScale());
 }
 
 void ReadAnythingController::OnUIReady() {
+  ui_ready_ = true;
   DistillAXTree();
+}
+
+void ReadAnythingController::OnUIDestroyed() {
+  ui_ready_ = false;
 }
 
 void ReadAnythingController::OnTabStripModelChanged(
@@ -60,24 +70,38 @@ void ReadAnythingController::OnTabStripModelChanged(
   DistillAXTree();
 }
 
+void ReadAnythingController::OnTabStripModelDestroyed(
+    TabStripModel* tab_strip_model) {
+  // If the TabStripModel is destroyed before |this|, remove |this| as an
+  // observer and set |browser_| to nullptr.
+  DCHECK(browser_);
+  tab_strip_model->RemoveObserver(this);
+  browser_ = nullptr;
+}
+
 void ReadAnythingController::DidStopLoading() {
   DistillAXTree();
 }
 
+void ReadAnythingController::WebContentsDestroyed() {
+  active_contents_ = nullptr;
+}
+
 void ReadAnythingController::DistillAXTree() {
   DCHECK(browser_);
-  if (!active_)
+  if (!active_ || !ui_ready_)
     return;
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
+  if (!web_contents || active_contents_ == web_contents)
     return;
-  WebContentsObserver::Observe(web_contents);
+  active_contents_ = web_contents;
+  WebContentsObserver::Observe(active_contents_);
 
   // Read Anything just runs on the main frame and does not run on embedded
   // content.
   content::RenderFrameHost* render_frame_host =
-      web_contents->GetPrimaryMainFrame();
+      active_contents_->GetPrimaryMainFrame();
   if (!render_frame_host)
     return;
 

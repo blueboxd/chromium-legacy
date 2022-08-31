@@ -13,7 +13,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -42,12 +41,13 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -56,6 +56,7 @@ constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
 }
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 // SystemWebAppDelegate provides menu.
@@ -82,6 +83,7 @@ class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
 };
 
 }  // namespace
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
 
@@ -89,11 +91,17 @@ WebAppBrowserController::WebAppBrowserController(
     WebAppProvider& provider,
     Browser* browser,
     AppId app_id,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     const ash::SystemWebAppDelegate* system_app,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     bool has_tab_strip)
     : AppBrowserController(browser, std::move(app_id), has_tab_strip),
-      provider_(provider),
-      system_app_(system_app) {
+      provider_(provider)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      ,
+      system_app_(system_app)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+{
   install_manager_observation_.Observe(&provider.install_manager());
   PerformDigitalAssetLinkVerification(browser);
 }
@@ -115,9 +123,11 @@ bool WebAppBrowserController::IsHostedApp() const {
 
 std::unique_ptr<TabMenuModelFactory>
 WebAppBrowserController::GetTabMenuModelFactory() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (system_app() && system_app()->HasCustomTabMenuModel()) {
     return std::make_unique<SystemAppTabMenuModelFactory>(system_app());
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return nullptr;
 }
 
@@ -139,23 +149,27 @@ void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
 }
 
 gfx::Rect WebAppBrowserController::GetDefaultBounds() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (system_app_) {
     return system_app_->GetDefaultBounds(browser());
   }
-
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return gfx::Rect();
 }
 
 bool WebAppBrowserController::HasReloadButton() const {
-  if (!system_app_)
-    return true;
-
-  return system_app_->ShouldHaveReloadButtonInMinimalUi();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (system_app_)
+    return system_app_->ShouldHaveReloadButtonInMinimalUi();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const ash::SystemWebAppDelegate* WebAppBrowserController::system_app() const {
   return system_app_;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
 bool WebAppBrowserController::ShouldShowCustomTabBar() const {
@@ -251,9 +265,11 @@ ui::ImageModel WebAppBrowserController::GetWindowIcon() const {
 }
 
 absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // System App popups (settings pages) always use default theme.
   if (system_app_ && browser()->is_type_app_popup())
     return absl::nullopt;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   absl::optional<SkColor> web_theme_color =
       AppBrowserController::GetThemeColor();
@@ -275,8 +291,16 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
 absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
   auto web_contents_color = AppBrowserController::GetBackgroundColor();
   auto manifest_color = GetResolvedManifestBackgroundColor();
+
+  bool prefer_manifest_background_color = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (system_app())
+    prefer_manifest_background_color =
+        system_app()->PreferManifestBackgroundColor();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   auto [preferred_color, fallback_color] =
-      (system_app() && system_app()->PreferManifestBackgroundColor())
+      prefer_manifest_background_color
           ? std::tie(manifest_color, web_contents_color)
           : std::tie(web_contents_color, manifest_color);
   return preferred_color ? preferred_color : fallback_color;
@@ -286,9 +310,15 @@ GURL WebAppBrowserController::GetAppStartUrl() const {
   return registrar().GetAppStartUrl(app_id());
 }
 
+GURL WebAppBrowserController::GetAppNewTabUrl() const {
+  return registrar().GetAppNewTabUrl(app_id());
+}
+
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (system_app() && system_app()->IsUrlInSystemAppScope(url))
     return true;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   GURL app_scope = registrar().GetAppScope(app_id());
   if (!app_scope.is_valid())
@@ -463,7 +493,7 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* lacros_service = chromeos::LacrosService::Get();
-  if (chromeos::BrowserInitParams::Get()->web_apps_enabled && lacros_service &&
+  if (chromeos::BrowserParamsProxy::Get()->WebAppsEnabled() && lacros_service &&
       lacros_service->IsAvailable<crosapi::mojom::WebAppService>() &&
       lacros_service->GetInterfaceVersion(
           crosapi::mojom::WebAppService::Uuid_) >=

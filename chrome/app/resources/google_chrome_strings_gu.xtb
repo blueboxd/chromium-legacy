@@ -70,6 +70,7 @@
 <translation id="2139300032719313227">ChromeOS ફરી શરૂ કરો</translation>
 <translation id="2151406531797534936">કૃપા કરીને હવે Chrome ફરી શરૂ કરો</translation>
 <translation id="2174917724755363426">ઇન્સ્ટૉલેશનની પ્રક્રિયા પૂર્ણ થઈ નથી. શું તમે ખરેખર રદ કરવા માગો છો?</translation>
+<translation id="223889379102603431">Chrome તેના રૂટ પ્રમાણપત્રો કેવી રીતે મેનેજ કરે છે તે વિશેની માહિતી</translation>
 <translation id="2258103955319320201">Chrome બ્રાઉઝર પરની તમારી વસ્તુઓને તમારા બધા ડિવાઇસ પર ઍક્સેસ કરવા માટે, સાઇન ઇન કરો અને પછી સિંક કરવાની સુવિધા ચાલુ કરો</translation>
 <translation id="2290014774651636340">Google API કીઝ ખૂટે છે. Google Chrome ની કેટલીક કાર્યક્ષમતા અક્ષમ થશે.</translation>
 <translation id="2290095356545025170">શું તમને ખાતરી છે કે તમારે Google Chromeને અનઇન્સ્ટૉલ કરવું છે?</translation>
@@ -82,6 +83,7 @@
 <translation id="2401189691232800402">ChromeOS સિસ્ટમ</translation>
 <translation id="2467438592969358367">Google Chrome તમારા પાસવર્ડની નિકાસ કરવા માગે છે. આને મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ ટાઇપ કરો.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટૉલ કરો</translation>
+<translation id="2494974097748878569">Chromeમાં Google Assistant</translation>
 <translation id="2534507159460261402">Google Pay (Chrome પર કૉપિ કરેલ છે)</translation>
 <translation id="2559253115192232574">પછી, તમે જેની મુલાકાત લો તે સાઇટ Chromeને તમારી રુચિઓ જોવા માટે કહી શકે છે, જેથી તમને જોવા મળતી જાહેરાતોને મનગમતી બનાવી શકાય. Chrome વધુમાં વધુ 3 રુચિ શેર કરી શકે છે.</translation>
 <translation id="2563121210305478421">Chrome ફરીથી લૉન્ચ કરીએ?</translation>
@@ -160,6 +162,7 @@
 <translation id="3865754807470779944">Chromeનું <ph name="PRODUCT_VERSION" /> વર્ઝન ઇન્સ્ટૉલ કરવામાં આવેલું છે</translation>
 <translation id="3873044882194371212">Chrome છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
 <translation id="3889417619312448367">Google Chromeને અનઇન્સ્ટૉલ કરો</translation>
+<translation id="3999683152997576765">તમે રુચિના એ વિષયોને જોઈ અને કાઢી નાખી શકો છો કે જેનો ઉપયોગ સાઇટ તમને જાહેરાતો બતાવવા માટે કરે છે. Chrome તમારા તાજેતરના બ્રાઉઝિંગ ઇતિહાસના આધારે તમારી રુચિઓનું અનુમાન લગાવે છે.</translation>
 <translation id="4035053306113201399">અપડેટ લાગુ કરવા માટે ChromeOSને ફરી શરૂ કરવાની જરૂર છે.</translation>
 <translation id="4050175100176540509">નવીનતમ વર્ઝનમાં મહત્ત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
 <translation id="4053720452172726777">Google Chrome ને કસ્ટમાઇઝ કરો અને તેનું નિયંત્રણ કરો</translation>
@@ -282,6 +285,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="6739177684496155661">નવી Chrome પ્રોફાઇલમાં બ્રાઉઝિંગ ચાલુ રાખીએ?</translation>
 <translation id="6750954913813541382">જોડણીની ભૂલો સુધારવા માટે, તમે બ્રાઉઝરમાં ટાઇપ કરો છો તે ટેક્સ્ટ Chrome દ્વારા Googleને મોકલવામાં આવે છે</translation>
 <translation id="677276454032249905">છતાં પણ Chromeમાંથી બહાર નિકળવું છે?</translation>
+<translation id="6785872064505734160">Google Assistant Chromeમાં, તમારા માટે ઘણી વેબસાઇટમાં અમુક ઍક્શન પૂર્ણ કરી શકે છે</translation>
 <translation id="683440813066116847">mDNS ટ્રાફિકને મંજૂરી આપવા માટે Google Chrome કૅનેરી માટે ઇનબાઉન્ડ નિયમ.</translation>
 <translation id="6881299373831449287">Chrome અપડેટ કરી રહ્યાં છીએ</translation>
 <translation id="6885412569789873916">Chrome બીટા ઍપ્લિકેશનો</translation>
@@ -354,6 +358,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="8129812357326543296">&amp;Google Chrome વિશે</translation>
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8255190535488645436">Google Chrome તમારા કૅમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
+<translation id="8270775718612349140">Chrome દ્વારા મેનેજ કરાતા પ્રમાણપત્રો</translation>
 <translation id="8286862437124483331">Google Chrome પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
 <translation id="828798499196665338">તમારા માતાપિતાએ Chrome માટે "સાઇટ, ઍપ અને એક્સ્ટેન્શન માટેની પરવાનગીઓ" બંધ કરી છે. આ <ph name="EXTENSION_TYPE_PARAMETER" /> ચાલુ કરવાની મંજૂરી નથી.</translation>
 <translation id="8290100596633877290">ઓહ! Google Chrome ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>

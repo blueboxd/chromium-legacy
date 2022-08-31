@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -71,9 +72,8 @@ class PresenterImageGL : public OutputPresenter::Image {
   }
 
  private:
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay>
-      overlay_representation_;
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+  std::unique_ptr<gpu::OverlayImageRepresentation> overlay_representation_;
+  std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
       scoped_overlay_read_access_;
 
   int present_count_ = 0;
@@ -273,11 +273,11 @@ bool OutputPresenterGL::Reshape(
     const gfx::ColorSpace& color_space,
     float device_scale_factor,
     gfx::OverlayTransform transform) {
-  gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
+  const gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
   image_format_ = SkColorTypeToResourceFormat(characterization.colorType());
-  return gl_surface_->Resize(
-      size, device_scale_factor, color_space,
-      !!AlphaBitsForSkColorType(characterization.colorType()));
+  const bool has_alpha =
+      !SkAlphaTypeIsOpaque(characterization.imageInfo().alphaType());
+  return gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha);
 }
 
 std::vector<std::unique_ptr<OutputPresenter::Image>>
@@ -427,10 +427,18 @@ void OutputPresenterGL::ScheduleOverlayPlane(
     absl::optional<SkColor> overlay_plane_data_color;
     if (overlay_plane_candidate.color)
       overlay_plane_data_color = overlay_plane_candidate.color->toSkColor();
+
+    // Access fence takes priority over composite fence iff it exists.
+    if (access) {
+      auto access_fence = TakeGpuFence(access->TakeAcquireFence());
+      if (access_fence) {
+        DCHECK(!acquire_fence);
+        acquire_fence = std::move(access_fence);
+      }
+    }
+
     gl_surface_->ScheduleOverlayPlane(
-        gl_image,
-        (access ? TakeGpuFence(access->TakeAcquireFence())
-                : std::move(acquire_fence)),
+        gl_image, std::move(acquire_fence),
         gfx::OverlayPlaneData(
             overlay_plane_candidate.plane_z_order,
             overlay_plane_candidate.transform,
@@ -455,7 +463,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
       gfx::ToEnclosingRect(overlay_plane_candidate.bounds_rect),
       overlay_plane_candidate.background_color.toSkColor(),
       overlay_plane_candidate.edge_aa_mask, overlay_plane_candidate.opacity,
-      overlay_plane_candidate.filter,
+      overlay_plane_candidate.filter, overlay_plane_candidate.hdr_metadata,
       overlay_plane_candidate.protected_video_type));
 #endif
 #endif  //  BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE) || defined(USE_OZONE)

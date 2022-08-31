@@ -65,6 +65,7 @@
 <translation id="2139300032719313227">Start ChromeOS på nytt</translation>
 <translation id="2151406531797534936">Start Chrome på nytt nå</translation>
 <translation id="2174917724755363426">Installasjonen er ikke fullført. Er du sikker på at du vil avbryte?</translation>
+<translation id="223889379102603431">Informasjon om hvordan Chrome administrerer rotsertifikatene sine</translation>
 <translation id="2258103955319320201">For å få tilgang til Chrome-nettlesertingene dine på alle enhetene dine, logg på og slå på synkronisering</translation>
 <translation id="2290014774651636340">API-nøkler for Google mangler. Noe funksjonalitet i Google Chrome blir deaktivert.</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
@@ -77,6 +78,7 @@
 <translation id="2401189691232800402">ChromeOS-systemet</translation>
 <translation id="2467438592969358367">Google Chrome forsøker å eksportere passordene dine. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
+<translation id="2494974097748878569">Google-assistenten i Chrome</translation>
 <translation id="2534507159460261402">Google Pay (kopiert til Chrome)</translation>
 <translation id="2559253115192232574">Senere kan nettsteder du besøker, spørre Chrome om interessene dine for å kunne sette personlig preg på annonsene du ser. Chrome kan dele opptil tre interesser.</translation>
 <translation id="2563121210305478421">Vil du starte Chrome på nytt?</translation>
@@ -155,6 +157,7 @@
 <translation id="3865754807470779944">Versjon <ph name="PRODUCT_VERSION" /> av Chrome er installert</translation>
 <translation id="3873044882194371212">Åpne linken i et inko&amp;gnitovindu i Chrome</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
+<translation id="3999683152997576765">Du kan se og fjerne interesseemnene som nettsteder bruker for å vise deg annonser. Chrome anslår interessene dine basert på den nylige nettleserloggen din.</translation>
 <translation id="4035053306113201399">ChromeOS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
@@ -273,6 +276,7 @@
 <translation id="6739177684496155661">Vil du fortsette i en ny Chrome-profil?</translation>
 <translation id="6750954913813541382">For å rette stavefeil sender Chrome teksten du skriver inn i nettleseren, til Google</translation>
 <translation id="677276454032249905">Vil du avslutte Chrome likevel?</translation>
+<translation id="6785872064505734160">Google-assistenten i Chrome kan utføre handlinger for deg på ulike nettsteder</translation>
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>
 <translation id="6881299373831449287">Oppdaterer Chrome</translation>
 <translation id="6885412569789873916">Chrome Beta-apper</translation>
@@ -345,6 +349,7 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>
+<translation id="8270775718612349140">Sertifikater administreres av Chrome</translation>
 <translation id="8286862437124483331">Google Chrome forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="828798499196665338">Forelderen din har slått av «Tillatelser for nettsteder, apper og utvidelser» for Chrome. Du har ikke tillatelse til å slå på denne <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>

@@ -1,9 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js',
 ]);
 
 /**
@@ -100,10 +99,16 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxNextE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
+    await importModule('FocusBounds', '/chromevox/background/focus_bounds.js');
     await importModule('Output', '/chromevox/background/output/output.js');
     await importModule(
         'OutputRoleInfo', '/chromevox/background/output/output_role_info.js');
     await importModule('CursorRange', '/common/cursors/range.js');
+    await importModule('Cursor', '/common/cursors/cursor.js');
+    await importModule(
+        ['OutputEarconAction', 'OutputNodeSpan', 'OutputSelectionSpan'],
+        '/chromevox/background/output/output_types.js');
+    await importModule('Msgs', '/chromevox/common/msgs.js');
 
     window.Dir = AutomationUtil.Dir;
     this.forceContextualLastOutput();
@@ -126,8 +131,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Links', async function() {
           // Link earcon (based on the name).
           {value: {earconId: 'LINK'}, start: 0, end: 10},
 
-          {value: {'delay': true}, start: 25, end: 55}
-        ]
+          {value: {'delay': true}, start: 25, end: 55},
+        ],
       },
       o.speechOutputForTest);
   checkBrailleOutput(
@@ -145,7 +150,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Checkbox', async function() {
       [
         {value: new OutputEarconAction('CHECK_OFF'), start: 0, end: 0},
         {value: 'role', start: 1, end: 10},
-        {value: {'delay': true}, start: 23, end: 51}
+        {value: {'delay': true}, start: 23, end: 51},
       ],
       o);
   checkBrailleOutput(
@@ -165,8 +170,8 @@ AX_TEST_F(
             string_: 'OK',
             'spans_': [
               // Attributes.
-              {value: 'name', start: 0, end: 2}
-            ]
+              {value: 'name', start: 0, end: 2},
+            ],
           },
           o.speechOutputForTest);
       checkBrailleOutput(
@@ -181,8 +186,8 @@ AX_TEST_F(
             string_: 'OK',
             'spans_': [
               // Attributes.
-              {value: 'name', start: 0, end: 2}
-            ]
+              {value: 'name', start: 0, end: 2},
+            ],
           },
           o.speechOutputForTest);
       checkBrailleOutput(
@@ -203,8 +208,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Headings', async function() {
           string_: letter + '|Heading ' + i,
           'spans_': [
             // Attributes.
-            {value: 'nameOrDescendants', start: 0, end: 1}
-          ]
+            {value: 'nameOrDescendants', start: 0, end: 1},
+          ],
         },
         o.speechOutputForTest);
     checkBrailleOutput(
@@ -221,8 +226,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Headings', async function() {
         'spans_': [
           {value: 'name', start: 0, end: 1},
           {value: new OutputEarconAction('LINK'), start: 0, end: 1},
-          {value: 'role', start: 2, end: 6}
-        ]
+          {value: 'role', start: 2, end: 6},
+        ],
       },
       o.speechOutputForTest);
   checkBrailleOutput(
@@ -230,7 +235,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Headings', async function() {
       [
         {value: new OutputNodeSpan(el.firstChild.firstChild), start: 0, end: 1},
         {value: new OutputNodeSpan(el), start: 0, end: 8},
-        {value: new OutputNodeSpan(el.firstChild), start: 2, end: 5}
+        {value: new OutputNodeSpan(el.firstChild), start: 2, end: 5},
       ],
       o);
 });
@@ -248,7 +253,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', async function() {
       'play|Disabled|Button|audio|Tool bar',
       [
         {value: new OutputEarconAction('BUTTON'), start: 0, end: 4},
-        {value: 'name', start: 21, end: 26}, {value: 'role', start: 27, end: 35}
+        {value: 'name', start: 21, end: 26},
+        {value: 'role', start: 27, end: 35},
       ],
       o);
 
@@ -256,7 +262,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', async function() {
       'play xx btn audio tlbar',
       [
         {value: new OutputNodeSpan(el), start: 0, end: 11},
-        {value: new OutputNodeSpan(el.parent), start: 12, end: 23}
+        {value: new OutputNodeSpan(el.parent), start: 12, end: 23},
       ],
       o);
 
@@ -273,7 +279,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', async function() {
         {value: new OutputEarconAction('SLIDER'), start: 0, end: 0},
         {value: 'description', start: 1, end: 20},
         {value: 'role', start: 21, end: 27},
-        {value: 'value', start: 28, end: 32}
+        {value: 'value', start: 28, end: 32},
       ],
       o);
   checkBrailleOutput(
@@ -297,25 +303,29 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
     {value: 'name', start: 0, end: 0},
     {value: new OutputEarconAction('EDITABLE_TEXT'), start: 0, end: 0},
     {value: new OutputSelectionSpan(0, 0, 0), start: 1, end: 1},
-    {value: 'value', start: 1, end: 1}, {value: 'inputType', start: 2}
+    {value: 'value', start: 1, end: 1},
+    {value: 'inputType', start: 2},
   ];
   const expectedSpansForSearchBox = [
     {value: 'name', start: 0, end: 0},
     {value: new OutputEarconAction('EDITABLE_TEXT'), start: 0, end: 0},
     {value: new OutputSelectionSpan(0, 0, 0), start: 1, end: 1},
-    {value: 'value', start: 1, end: 1}, {value: 'role', start: 2, end: 8}
+    {value: 'value', start: 1, end: 1},
+    {value: 'role', start: 2, end: 8},
   ];
 
   const expectedSpeechValues = [
-    '||Edit text', '||Edit text, email entry', '||Password edit text',
+    '||Edit text',
+    '||Edit text, email entry',
+    '||Password edit text',
     '||Edit text numeric only',
     [
       '|Spin button',
       [
         {value: 'name', start: 0, end: 0},
         {value: new OutputEarconAction('LISTBOX'), start: 0, end: 0},
-        {value: 'role', start: 1, end: 12}
-      ]
+        {value: 'role', start: 1, end: 12},
+      ],
     ],
     ['Time control', [{value: 'role', start: 0, end: 12}]],
     ['Date control', [{value: 'role', start: 0, end: 12}]],
@@ -324,17 +334,25 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
       [
         {value: 'name', start: 0, end: 27},
         {value: new OutputEarconAction('BUTTON'), start: 0, end: 27},
-        {value: 'role', start: 28, end: 34}
-      ]
+        {value: 'role', start: 28, end: 34},
+      ],
     ],
-    '||Search', '||Edit text'
+    '||Search',
+    '||Edit text',
   ];
   // TODO(plundblad): Some of these are wrong, there should be an initial
   // space for the cursor in edit fields.
   const expectedBrailleValues = [
-    ' ed', ' @ed 8dot', ' pwded', ' #ed', {string_: 'spnbtn', spans_: []},
-    {string_: 'time'}, {string_: 'date'},
-    {string_: 'No file chosen, Choose File btn'}, ' search', ' ed'
+    ' ed',
+    ' @ed 8dot',
+    ' pwded',
+    ' #ed',
+    {string_: 'spnbtn', spans_: []},
+    {string_: 'time'},
+    {string_: 'date'},
+    {string_: 'No file chosen, Choose File btn'},
+    ' search',
+    ' ed',
   ];
   assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
@@ -365,14 +383,18 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
           expectedValue,
           [
             {value: {startIndex: 0, endIndex: 0}, start: 0, end: 0},
-            {value: new OutputNodeSpan(el), start: 0, end: expectedValue.length}
+            {
+              value: new OutputNodeSpan(el),
+              start: 0,
+              end: expectedValue.length,
+            },
           ],
           o);
     } else {
       let spans = [{
         value: new OutputNodeSpan(el),
         start: 0,
-        end: expectedValue.string_.length
+        end: expectedValue.string_.length,
       }];
       if (expectedValue.spans_) {
         spans = spans.concat(expectedValue.spans_);
@@ -394,7 +416,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'List', async function() {
       'a|List item|first|List|with 3 items',
       [
         {value: {earconId: 'LIST_ITEM'}, start: 0, end: 1},
-        {value: 'name', start: 12, end: 17}, {value: 'role', start: 18, end: 22}
+        {value: 'name', start: 12, end: 17},
+        {value: 'role', start: 18, end: 22},
       ],
       o);
   // TODO(plundblad): This output is wrong.  Add special handling for
@@ -403,7 +426,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'List', async function() {
       'a lstitm first lst +3',
       [
         {value: new OutputNodeSpan(el), start: 0, end: 8},
-        {value: new OutputNodeSpan(el.parent), start: 9, end: 21}
+        {value: new OutputNodeSpan(el.parent), start: 9, end: 21},
       ],
       o);
 });
@@ -432,7 +455,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Tree', async function() {
       [
         {value: new OutputNodeSpan(el), start: 0, end: 1},
         {value: new OutputNodeSpan(el.parent), start: 2, end: 22},
-        {value: new OutputNodeSpan(el.parent.parent), start: 22, end: 29}
+        {value: new OutputNodeSpan(el.parent.parent), start: 22, end: 29},
       ],
       o);
 
@@ -442,7 +465,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Tree', async function() {
   checkSpeechOutput(
       'b|Tree item| 2 of 3 | level 1 |Tree|with 3 items',
       [
-        {value: 'name', start: 0, end: 1}, {value: 'role', 'start': 31, end: 35}
+        {value: 'name', start: 0, end: 1},
+        {value: 'role', 'start': 31, end: 35},
       ],
       o);
   checkBrailleOutput(
@@ -450,7 +474,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Tree', async function() {
       [
         {value: new OutputNodeSpan(el), start: 0, end: 1},
         {value: new OutputNodeSpan(el.parent), start: 2, end: 20},
-        {value: new OutputNodeSpan(el.parent.parent), start: 20, end: 27}
+        {value: new OutputNodeSpan(el.parent.parent), start: 20, end: 27},
       ],
       o);
 
@@ -470,7 +494,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Tree', async function() {
       [
         {value: new OutputNodeSpan(el), start: 0, end: 1},
         {value: new OutputNodeSpan(el.parent), start: 2, end: 22},
-        {value: new OutputNodeSpan(el.parent.parent), start: 22, end: 29}
+        {value: new OutputNodeSpan(el.parent.parent), start: 22, end: 29},
       ],
       o);
 });
@@ -496,7 +520,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Menu', async function() {
       'a mnuitm 1/3 mnu',
       [
         {value: new OutputNodeSpan(el), start: 0, end: 12},
-        {value: new OutputNodeSpan(el.parent), start: 13, end: 16}
+        {value: new OutputNodeSpan(el.parent), start: 13, end: 16},
       ],
       o);
 
@@ -509,7 +533,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Menu', async function() {
           'Press up or down arrow to navigate; enter to activate',
       [
         {value: 'role', start: 0, end: 4},
-        {value: {delay: true}, start: 18, end: 71}
+        {value: {delay: true}, start: 18, end: 71},
       ],
       o);
 
@@ -520,7 +544,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Menu', async function() {
       'Menu bar|Press left or right arrow to navigate; enter to activate',
       [
         {value: 'role', start: 0, end: 8},
-        {value: {delay: true}, start: 9, end: 65}
+        {value: {delay: true}, start: 9, end: 65},
       ],
       o);
 });
@@ -540,14 +564,14 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ListBox', async function() {
       [
         {value: 'name', start: 0, end: 1},
         {value: new OutputEarconAction('LIST_ITEM'), start: 0, end: 1},
-        {value: 'role', start: 34, end: 42}
+        {value: 'role', start: 34, end: 42},
       ],
       o);
   checkBrailleOutput(
       '1 lstitm 1/2 ( ) lstbx +2',
       [
         {value: new OutputNodeSpan(el), start: 0, end: 16},
-        {value: new OutputNodeSpan(el.parent), start: 17, end: 25}
+        {value: new OutputNodeSpan(el.parent), start: 17, end: 25},
       ],
       o);
 });
@@ -717,8 +741,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'AuralStyledHeadings', async function() {
             // Attributes.
             {value: 'nameOrDescendants', start: 0, end: 1},
 
-            {value: {'relativePitch': -0.2}, start: 2, end: 2}
-          ]
+            {value: {'relativePitch': -0.2}, start: 2, end: 2},
+          ],
         },
         o.speechOutputForTest);
     el = el.nextSibling;
@@ -738,8 +762,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', async function() {
           {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
           {value: 'name', start: 1, end: 10},
           {value: 'role', start: 11, end: 24},
-          {value: {'delay': true}, start: 33, end: 61}
-        ]
+          {value: {'delay': true}, start: 33, end: 61},
+        ],
       },
       o.speechOutputForTest);
   assertEquals('Subscribe tgl btn =', o.brailleOutputForTest.string_);
@@ -791,15 +815,14 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'BraileWhitespace', async function() {
   `);
   const start = root.firstChild.firstChild;
   const end = root.firstChild.lastChild;
-  const range = new CursorRange(
-      cursors.Cursor.fromNode(start), cursors.Cursor.fromNode(end));
+  const range = new CursorRange(Cursor.fromNode(start), Cursor.fromNode(end));
   const o = new Output().withBraille(range, null, 'navigate');
   checkBrailleOutput(
       'this is a test of emphasized text',
       [
         {value: new OutputNodeSpan(start), start: 0, end: 10},
         {value: new OutputNodeSpan(start.nextSibling), start: 10, end: 14},
-        {value: new OutputNodeSpan(end), start: 15, end: 33}
+        {value: new OutputNodeSpan(end), start: 15, end: 33},
       ],
       o);
 });
@@ -822,7 +845,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'BrailleAncestry', async function() {
         {value: new OutputNodeSpan(text), start: 0, end: 4},
         {value: new OutputNodeSpan(link), start: 5, end: 8},
         {value: new OutputNodeSpan(listItem), start: 9, end: 15},
-        {value: new OutputNodeSpan(list), start: 16, end: 23}
+        {value: new OutputNodeSpan(list), start: 16, end: 23},
       ],
       o);
 
@@ -835,7 +858,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'BrailleAncestry', async function() {
       [
         {value: new OutputNodeSpan(bullet), start: 0, end: 2},
         {value: new OutputNodeSpan(listItem), start: 2, end: 8},
-        {value: new OutputNodeSpan(list), start: 9, end: 15}
+        {value: new OutputNodeSpan(list), start: 9, end: 15},
       ],
       o);
 });
@@ -858,7 +881,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
       [
         {value: 'name', start: 0, end: 6},
         {value: new OutputEarconAction('SLIDER'), start: 0, end: 6},
-        {value: 'role', start: 7, end: 13}, {value: 'value', start: 14, end: 15}
+        {value: 'role', start: 7, end: 13},
+        {value: 'value', start: 14, end: 15},
       ],
       o);
 
@@ -867,8 +891,9 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
   checkSpeechOutput(
       'volume|Progress indicator|2|Min 1|Max 10',
       [
-        {value: 'name', start: 0, end: 6}, {value: 'role', start: 7, end: 25},
-        {value: 'value', start: 26, end: 27}
+        {value: 'name', start: 0, end: 6},
+        {value: 'role', start: 7, end: 25},
+        {value: 'value', start: 26, end: 27},
       ],
       o);
 
@@ -877,8 +902,9 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
   checkSpeechOutput(
       'volume|Meter|2|Min 1|Max 10',
       [
-        {value: 'name', start: 0, end: 6}, {value: 'role', start: 7, end: 12},
-        {value: 'value', start: 13, end: 14}
+        {value: 'name', start: 0, end: 6},
+        {value: 'role', start: 7, end: 12},
+        {value: 'value', start: 13, end: 14},
       ],
       o);
 
@@ -889,7 +915,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
       [
         {value: 'name', start: 0, end: 6},
         {value: new OutputEarconAction('LISTBOX'), start: 0, end: 6},
-        {value: 'role', start: 7, end: 18}, {value: 'value', start: 19, end: 20}
+        {value: 'role', start: 7, end: 18},
+        {value: 'value', start: 19, end: 20},
       ],
       o);
 });
@@ -905,7 +932,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RoleDescription', async function() {
       [
         {value: 'name', start: 0, end: 2},
         {value: new OutputEarconAction('BUTTON'), start: 0, end: 2},
-        {value: 'role', start: 3, end: 6}
+        {value: 'role', start: 3, end: 6},
       ],
       o);
 });
@@ -950,10 +977,17 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
 
   // This filters out known roles that don't have states or descriptions.
   const notStated = [
-    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.IME_CANDIDATE,
-    RoleType.INLINE_TEXT_BOX, RoleType.LINE_BREAK, RoleType.LIST_MARKER,
-    RoleType.PARAGRAPH, RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT,
-    RoleType.PLUGIN_OBJECT, RoleType.WINDOW
+    RoleType.CLIENT,
+    RoleType.EMBEDDED_OBJECT,
+    RoleType.IME_CANDIDATE,
+    RoleType.INLINE_TEXT_BOX,
+    RoleType.LINE_BREAK,
+    RoleType.LIST_MARKER,
+    RoleType.PARAGRAPH,
+    RoleType.ROOT_WEB_AREA,
+    RoleType.STATIC_TEXT,
+    RoleType.PLUGIN_OBJECT,
+    RoleType.WINDOW,
   ];
   const notRestricted = [
     RoleType.ALERT,
@@ -976,13 +1010,20 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.STATIC_TEXT,
     RoleType.TABLE_HEADER_CONTAINER,
     RoleType.TIMER,
-    RoleType.WINDOW
+    RoleType.WINDOW,
   ];
   const notDescribed = [
-    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.IME_CANDIDATE,
-    RoleType.INLINE_TEXT_BOX, RoleType.LINE_BREAK, RoleType.LIST_MARKER,
-    RoleType.PARAGRAPH, RoleType.PLUGIN_OBJECT, RoleType.ROOT_WEB_AREA,
-    RoleType.STATIC_TEXT, RoleType.WINDOW
+    RoleType.CLIENT,
+    RoleType.EMBEDDED_OBJECT,
+    RoleType.IME_CANDIDATE,
+    RoleType.INLINE_TEXT_BOX,
+    RoleType.LINE_BREAK,
+    RoleType.LIST_MARKER,
+    RoleType.PARAGRAPH,
+    RoleType.PLUGIN_OBJECT,
+    RoleType.ROOT_WEB_AREA,
+    RoleType.STATIC_TEXT,
+    RoleType.WINDOW,
   ];
   missingState = missingState.filter(function(state) {
     return notStated.indexOf(state) === -1;
@@ -1024,10 +1065,16 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateRoles', function() {
   const roleOrRoleDescStr = '$role';
   const missingRole = [];
   const allowedMissingRoles = [
-    RoleType.CLIENT, RoleType.GENERIC_CONTAINER, RoleType.EMBEDDED_OBJECT,
-    RoleType.IME_CANDIDATE, RoleType.INLINE_TEXT_BOX, RoleType.LINE_BREAK,
-    RoleType.LIST_MARKER, RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT,
-    RoleType.WINDOW
+    RoleType.CLIENT,
+    RoleType.GENERIC_CONTAINER,
+    RoleType.EMBEDDED_OBJECT,
+    RoleType.IME_CANDIDATE,
+    RoleType.INLINE_TEXT_BOX,
+    RoleType.LINE_BREAK,
+    RoleType.LIST_MARKER,
+    RoleType.ROOT_WEB_AREA,
+    RoleType.STATIC_TEXT,
+    RoleType.WINDOW,
   ];
   for (const key in Output.RULES.navigate) {
     if (allowedMissingRoles.indexOf(key) !== -1) {
@@ -1180,8 +1227,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
         string_: 'label|title',
         spans_: [
           {value: 'name', start: 0, end: 5},
-          {value: 'description', start: 6, end: 11}
-        ]
+          {value: 'description', start: 6, end: 11},
+        ],
       },
       o.speechOutputForTest);
 
@@ -1193,8 +1240,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
         string_: 'title|describedby',
         spans_: [
           {value: 'name', start: 0, end: 5},
-          {value: 'description', start: 6, end: 17}
-        ]
+          {value: 'description', start: 6, end: 17},
+        ],
       },
       o.speechOutputForTest);
 
@@ -1206,8 +1253,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
         string_: 'label|describedby',
         spans_: [
           {value: 'name', start: 0, end: 5},
-          {value: 'description', start: 6, end: 17}
-        ]
+          {value: 'description', start: 6, end: 17},
+        ],
       },
       o.speechOutputForTest);
 
@@ -1221,7 +1268,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
   assertEqualsJSON(
       {
         string_: 'tooltip',
-        spans_: [{value: {'delay': true}, start: 0, end: 7}]
+        spans_: [{value: {'delay': true}, start: 0, end: 7}],
       },
       o.speechOutputForTest);
 });
@@ -1244,7 +1291,7 @@ AX_TEST_F(
       o.withInitialSpeechProperties({
         phoneticCharacters: true,
         // This should not override existing value.
-        category: TtsCategory.LIVE
+        category: TtsCategory.LIVE,
       });
       o.go();
       assertEqualsJSON(
@@ -1303,8 +1350,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DelayHintVariants', async function() {
         string_: 'OK|error|Press Search+Space to activate',
         spans_: [
           {value: 'name', start: 3, end: 8},
-          {value: {delay: true}, start: 9, end: 39}
-        ]
+          {value: {delay: true}, start: 9, end: 39},
+        ],
       },
       o.speechOutputForTest);
 
@@ -1315,8 +1362,9 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DelayHintVariants', async function() {
         string_: 'OK|error|placeholder|Press Search+Space to activate',
         spans_: [
           {value: 'name', start: 3, end: 8},
-          {value: {delay: true}, start: 9, end: 20}, {start: 21, end: 51}
-        ]
+          {value: {delay: true}, start: 9, end: 20},
+          {start: 21, end: 51},
+        ],
       },
       o.speechOutputForTest);
 });
@@ -1356,7 +1404,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ARCCheckbox', async function() {
       [
         {value: new OutputEarconAction('CHECK_OFF'), start: 0, end: 0},
         {value: 'role', start: 1, end: 10},
-        {value: 'checkedStateDescription', start: 11, end: 36}
+        {value: 'checkedStateDescription', start: 11, end: 36},
       ],
       o);
 });
@@ -1373,7 +1421,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ARCCustomAction', async function() {
       'test|Actions available. Press Search+Ctrl+A to view',
       [
         {value: 'name', start: 0, end: 4},
-        {value: {delay: true}, start: 5, end: 51}
+        {value: {delay: true}, start: 5, end: 51},
       ],
       o);
 });

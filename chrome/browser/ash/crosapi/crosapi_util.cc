@@ -14,6 +14,7 @@
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/speech/tts_crosapi_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
@@ -78,6 +80,7 @@
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/network_change.mojom.h"
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
@@ -98,6 +101,7 @@
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
+#include "chromeos/crosapi/mojom/virtual_keyboard.mojom.h"
 #include "chromeos/crosapi/mojom/vpn_extension_observer.mojom.h"
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
@@ -230,7 +234,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 86,
+static_assert(crosapi::mojom::Crosapi::Version_ == 88,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -289,6 +293,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::MessageCenter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MetricsReporting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NativeThemeService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::NetworkChange>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkSettingsService>(),
@@ -312,6 +317,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::VirtualKeyboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VpnExtensionObserver>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VpnService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Wallpaper>(),
@@ -360,6 +366,19 @@ crosapi::mojom::BrowserInitParams::DeviceType ConvertDeviceType(
   }
 }
 
+crosapi::mojom::BrowserInitParams::LacrosSelection GetLacrosSelection(
+    absl::optional<browser_util::LacrosSelection> selection) {
+  if (!selection.has_value())
+    return crosapi::mojom::BrowserInitParams::LacrosSelection::kUnspecified;
+
+  switch (selection.value()) {
+    case browser_util::LacrosSelection::kRootfs:
+      return crosapi::mojom::BrowserInitParams::LacrosSelection::kRootfs;
+    case browser_util::LacrosSelection::kStateful:
+      return crosapi::mojom::BrowserInitParams::LacrosSelection::kStateful;
+  }
+}
+
 }  // namespace
 
 base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
@@ -395,7 +414,8 @@ InitialBrowserAction::~InitialBrowserAction() = default;
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action,
-    bool is_keep_alive_enabled) {
+    bool is_keep_alive_enabled,
+    absl::optional<browser_util::LacrosSelection> lacros_selection) {
   auto params = mojom::BrowserInitParams::New();
   params->crosapi_version = crosapi::mojom::Crosapi::Version_;
   params->deprecated_ash_metrics_enabled_has_value = true;
@@ -523,6 +543,8 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
                                kSharedStoragePrefsCapability,
                                kExtensionControlledPrefObserversCapability}};
 
+  params->lacros_selection = GetLacrosSelection(lacros_selection);
+
   params->is_device_enterprised_managed =
       ash::InstallAttributes::Get()->IsEnterpriseManaged();
 
@@ -537,16 +559,21 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->use_cups_for_printing = GetUseCupsForPrinting();
   params->use_floss_bluetooth = floss::features::IsFlossEnabled();
   params->is_current_user_device_owner = GetIsCurrentUserOwner();
+  params->do_not_mux_extension_app_ids = !apps::ShouldMuxExtensionIds();
+  params->enable_lacros_tts_support =
+      tts_crosapi_util::ShouldEnableLacrosTtsSupport();
 
   return params;
 }
 
-base::ScopedFD CreateStartupData(EnvironmentProvider* environment_provider,
-                                 InitialBrowserAction initial_browser_action,
-                                 bool is_keep_alive_enabled) {
-  const auto& data = GetBrowserInitParams(environment_provider,
-                                          std::move(initial_browser_action),
-                                          is_keep_alive_enabled);
+base::ScopedFD CreateStartupData(
+    EnvironmentProvider* environment_provider,
+    InitialBrowserAction initial_browser_action,
+    bool is_keep_alive_enabled,
+    absl::optional<LacrosSelection> lacros_selection) {
+  const auto& data = GetBrowserInitParams(
+      environment_provider, std::move(initial_browser_action),
+      is_keep_alive_enabled, lacros_selection);
 
   return chromeos::CreateMemFDFromBrowserInitParams(data);
 }

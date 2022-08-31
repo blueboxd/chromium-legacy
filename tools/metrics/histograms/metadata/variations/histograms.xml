@@ -273,6 +273,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Variations.PolicyRestriction"
     enum="VariationsRestrictionPolicyValues" expires_after="2022-04-30">
+  <obsolete>
+    This histogram is not interesting anymore but it is still used by test code
+    to verify that the respective log is properly applied so it will be kept in
+    the code even if not collected by the server anymore. TODO(crbug/1345624):
+    Clean this dependency up and remove the histogram.
+  </obsolete>
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -462,8 +468,21 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Variations.SeedFetchTimeOnFirstRun" units="ms"
+    expires_after="2023-02-09">
+  <owner>ginnyhuang@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    The latency of fetching an initial variations seed during first run on
+    non-Android platforms. Only considers cases where an HTTP 200 result was
+    received.
+
+    The respective metric for Android's is Variations.FirstRun.SeedFetchTime.
+  </summary>
+</histogram>
+
 <histogram name="Variations.SeedFreshness" units="minutes"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -508,7 +527,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.SeedLoadResult" enum="VariationsSeedLoadResult"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -654,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.UserChannel" enum="UserChannels"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>

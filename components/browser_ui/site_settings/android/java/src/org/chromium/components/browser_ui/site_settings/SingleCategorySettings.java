@@ -7,6 +7,8 @@ package org.chromium.components.browser_ui.site_settings;
 import static org.chromium.components.browser_ui.settings.SearchUtils.handleSearchNavigation;
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_DISPLAY_SETTING_ENABLED;
+import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
 import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI;
 import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
@@ -58,6 +60,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -120,9 +123,12 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     private boolean mRequiresTriStateSetting;
     // Whether four-state ContentSetting is required.
     private boolean mRequiresFourStateSetting;
-    // Locally-saved reference to the "notifications_quiet_ui" preference to allow hiding/showing
-    // it.
+    // The "notifications_quiet_ui" preference to allow hiding/showing it.
     private ChromeBaseCheckBoxPreference mNotificationsQuietUiPref;
+    // The "desktop_site_peripheral" preference to allow hiding/showing it.
+    private ChromeBaseCheckBoxPreference mDesktopSitePeripheralPref;
+    // The "desktop_site_display" preference to allow hiding/showing it.
+    private ChromeBaseCheckBoxPreference mDesktopSiteDisplayPref;
 
     @Nullable
     private Set<String> mSelectedDomains;
@@ -145,6 +151,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
     public static final String NOTIFICATIONS_VIBRATE_TOGGLE_KEY = "notifications_vibrate";
     public static final String NOTIFICATIONS_QUIET_UI_TOGGLE_KEY = "notifications_quiet_ui";
+    public static final String DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY = "desktop_site_peripheral";
+    public static final String DESKTOP_SITE_DISPLAY_TOGGLE_KEY = "desktop_site_display";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     public static final String ADD_EXCEPTION_KEY = "add_exception";
     public static final String COOKIE_INFO_TEXT_KEY = "cookie_info_text";
@@ -481,6 +489,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                             AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL, (boolean) newValue);
                 } else if (type == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
                     recordSiteLayoutChanged((boolean) newValue);
+                    updateDesktopSiteSecondaryControls();
                 }
                 break;
             }
@@ -504,6 +513,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 // Clear the pref so if the default changes later the user will get the new default.
                 prefService.clearPref(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);
             }
+        } else if (DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY.equals(preference.getKey())) {
+            prefService.setBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED, (boolean) newValue);
+        } else if (DESKTOP_SITE_DISPLAY_TOGGLE_KEY.equals(preference.getKey())) {
+            prefService.setBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED, (boolean) newValue);
         }
         return true;
     }
@@ -893,7 +906,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         FOUR_STATE_COOKIE_TOGGLE_KEY);
         // TODO(crbug.com/1104836): Remove the old third-party cookie blocking UI
         Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
-        Preference notificationsQuietUi = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
+        mNotificationsQuietUiPref = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
+        mDesktopSitePeripheralPref = screen.findPreference(DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY);
+        mDesktopSiteDisplayPref = screen.findPreference(DESKTOP_SITE_DISPLAY_TOGGLE_KEY);
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
         PreferenceGroup allowedGroup = (PreferenceGroup) screen.findPreference(ALLOWED_GROUP);
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
@@ -922,7 +937,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             maybeShowOsWarning(screen);
 
             screen.removePreference(notificationsVibrate);
-            screen.removePreference(notificationsQuietUi);
+            screen.removePreference(mNotificationsQuietUiPref);
+            screen.removePreference(mDesktopSitePeripheralPref);
+            screen.removePreference(mDesktopSiteDisplayPref);
             screen.removePreference(explainProtectedMediaKey);
             screen.removePreference(allowedGroup);
             screen.removePreference(blockedGroup);
@@ -941,15 +958,27 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             }
 
             if (getSiteSettingsDelegate().isQuietNotificationPromptsFeatureEnabled()) {
-                notificationsQuietUi.setOnPreferenceChangeListener(this);
+                mNotificationsQuietUiPref.setOnPreferenceChangeListener(this);
             } else {
-                screen.removePreference(notificationsQuietUi);
+                screen.removePreference(mNotificationsQuietUiPref);
             }
 
             updateNotificationsSecondaryControls();
         } else {
             screen.removePreference(notificationsVibrate);
-            screen.removePreference(notificationsQuietUi);
+            screen.removePreference(mNotificationsQuietUiPref);
+        }
+
+        // Configure/hide the desktop site secondary controls, as needed.
+        if (mCategory.showSites(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE)
+                && ContentFeatureList.isEnabled(
+                        ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)) {
+            mDesktopSitePeripheralPref.setOnPreferenceChangeListener(this);
+            mDesktopSiteDisplayPref.setOnPreferenceChangeListener(this);
+            updateDesktopSiteSecondaryControls();
+        } else {
+            screen.removePreference(mDesktopSitePeripheralPref);
+            screen.removePreference(mDesktopSiteDisplayPref);
         }
 
         // Only show the link that explains protected content settings when needed.
@@ -1062,31 +1091,49 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 browserContextHandle, ContentSettingsType.NOTIFICATIONS);
 
         // The notifications vibrate checkbox.
-        ChromeBaseCheckBoxPreference vibrate_pref =
+        ChromeBaseCheckBoxPreference vibratePref =
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
-        if (vibrate_pref != null) vibrate_pref.setEnabled(categoryEnabled);
+        if (vibratePref != null) vibratePref.setEnabled(categoryEnabled);
 
         if (!getSiteSettingsDelegate().isQuietNotificationPromptsFeatureEnabled()) return;
 
-        // The notifications quiet ui checkbox.
-        ChromeBaseCheckBoxPreference quiet_ui_pref =
-                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
-                        NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
+        if (categoryEnabled) {
+            getPreferenceScreen().addPreference(mNotificationsQuietUiPref);
+            PrefService prefService = UserPrefs.get(browserContextHandle);
+            mNotificationsQuietUiPref.setChecked(
+                    prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
+        } else {
+            getPreferenceScreen().removePreference(mNotificationsQuietUiPref);
+        }
+    }
+
+    // TODO(crbug.com/1343640): Looking at a different class setup for SingleCategorySettings that
+    // allows category specific logic to live in separate files.
+    private void updateDesktopSiteSecondaryControls() {
+        if (!ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)) {
+            return;
+        }
+
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsDelegate().getBrowserContextHandle();
+        Boolean categoryEnabled = WebsitePreferenceBridge.isCategoryEnabled(
+                browserContextHandle, ContentSettingsType.REQUEST_DESKTOP_SITE);
 
         if (categoryEnabled) {
-            if (quiet_ui_pref == null) {
-                getPreferenceScreen().addPreference(mNotificationsQuietUiPref);
-                quiet_ui_pref = (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
-                        NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
-            }
+            // When the global setting for RDS is on, secondary settings for peripherals and
+            // external display should be hidden.
+            getPreferenceScreen().removePreference(mDesktopSitePeripheralPref);
+            getPreferenceScreen().removePreference(mDesktopSiteDisplayPref);
+        } else {
+            // Otherwise, ensure secondary settings are displayed.
+            getPreferenceScreen().addPreference(mDesktopSitePeripheralPref);
+            getPreferenceScreen().addPreference(mDesktopSiteDisplayPref);
             PrefService prefService = UserPrefs.get(browserContextHandle);
-            quiet_ui_pref.setChecked(
-                    prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
-        } else if (quiet_ui_pref != null) {
-            // Save a reference to allow re-adding it to the screen.
-            mNotificationsQuietUiPref = quiet_ui_pref;
-            getPreferenceScreen().removePreference(quiet_ui_pref);
+            mDesktopSitePeripheralPref.setChecked(
+                    prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
+            mDesktopSiteDisplayPref.setChecked(
+                    prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
         }
     }
 

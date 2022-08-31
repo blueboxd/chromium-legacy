@@ -374,7 +374,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case NAME_FULL_WITH_HONORIFIC_PREFIX:
         case BIRTHDATE_DAY:
         case BIRTHDATE_MONTH:
-        case BIRTHDATE_YEAR_4_DIGITS:
+        case BIRTHDATE_4_DIGIT_YEAR:
         case IBAN_VALUE:
         case MAX_VALID_FIELD_TYPE:
           NOTREACHED() << field_type << " type is not in that group.";
@@ -1308,13 +1308,42 @@ void AutofillMetrics::LogOfferNotificationInfoBarShown() {
       "Autofill.OfferNotificationInfoBarOffer.CardLinkedOffer", true);
 }
 
-void AutofillMetrics::LogProgressDialogResultMetric(bool is_canceled_by_user) {
-  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Result",
-                            is_canceled_by_user);
+void AutofillMetrics::LogProgressDialogResultMetric(
+    bool is_canceled_by_user,
+    AutofillProgressDialogType autofill_progress_dialog_type) {
+  std::string dialog_type;
+  switch (autofill_progress_dialog_type) {
+    case AutofillProgressDialogType::kAndroidFIDOProgressDialog:
+      dialog_type = "AndroidFIDO";
+      break;
+    case AutofillProgressDialogType::kVirtualCardUnmaskProgressDialog:
+      dialog_type = "CardUnmask";
+      break;
+    case AutofillProgressDialogType::kUnspecified:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramBoolean(
+      "Autofill.ProgressDialog." + dialog_type + ".Result",
+      is_canceled_by_user);
 }
 
-void AutofillMetrics::LogProgressDialogShown() {
-  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Shown", true);
+void AutofillMetrics::LogProgressDialogShown(
+    AutofillProgressDialogType autofill_progress_dialog_type) {
+  std::string dialog_type;
+  switch (autofill_progress_dialog_type) {
+    case AutofillProgressDialogType::kAndroidFIDOProgressDialog:
+      dialog_type = "AndroidFIDO";
+      break;
+    case AutofillProgressDialogType::kVirtualCardUnmaskProgressDialog:
+      dialog_type = "CardUnmask";
+      break;
+    case AutofillProgressDialogType::kUnspecified:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramBoolean("Autofill.ProgressDialog." + dialog_type + ".Shown",
+                            true);
 }
 
 // static
@@ -3569,7 +3598,7 @@ void AutofillMetrics::LogOtpInputDialogNewOtpRequested() {
 void AutofillMetrics::
     LogIsValueNotAutofilledOverExistingValueSameAsSubmittedValue(bool is_same) {
   base::UmaHistogramBoolean(
-      "Autofill.IsValueNotAutofilledOverExistingValueSameAsSubmittedValue",
+      "Autofill.IsValueNotAutofilledOverExistingValueSameAsSubmittedValue2",
       is_same);
 }
 

@@ -105,11 +105,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -2055,15 +2056,13 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
                                 "testuser", "/home/testuser",
                                 "PLACEHOLDER_IP"));
-    chromeos::DBusThreadManager* dbus_thread_manager =
-        chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(
-        dbus_thread_manager->GetCrosDisksClient())
+        chromeos::CrosDisksClient::Get())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
     static_cast<chromeos::FakeCrosDisksClient*>(
-        dbus_thread_manager->GetCrosDisksClient())
+        chromeos::CrosDisksClient::Get())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountGuestOs,
                                 base::Unretained(this)));
@@ -2335,7 +2334,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     GURL fileAppURL(base::StrCat({baseURL, search}));
     ash::SystemAppLaunchParams params;
     params.url = fileAppURL;
-    params.launch_source = apps::mojom::LaunchSource::kFromTest;
+    params.launch_source = apps::LaunchSource::kFromTest;
 
     WebContentCapturingObserver observer(fileAppURL);
     observer.StartWatchingNewWebContents();
@@ -3164,10 +3163,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "blockMounts") {
-    chromeos::DBusThreadManager* dbus_thread_manager =
-        chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(
-        dbus_thread_manager->GetCrosDisksClient())
+        chromeos::CrosDisksClient::Get())
         ->BlockMount();
     return;
   }
@@ -3203,6 +3200,10 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (HandleGuestOsCommands(name, value, output)) {
+    return;
+  }
+
+  if (HandleDlpCommands(name, value, output)) {
     return;
   }
 
@@ -3259,6 +3260,14 @@ bool FileManagerBrowserTestBase::HandleGuestOsCommands(
     registry->Get(id)->Unmount();
     return true;
   }
+  return false;
+}
+
+bool FileManagerBrowserTestBase::HandleDlpCommands(
+    const std::string& name,
+    const base::Value::Dict& value,
+    std::string* output) {
+  // DLP commands are only handled by the DlpFilesAppBrowserTest.
   return false;
 }
 

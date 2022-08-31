@@ -76,8 +76,10 @@ class TestScrollTimeline : public ScrollTimeline {
       : ScrollTimeline(document,
                        ScrollTimeline::ReferenceType::kSource,
                        source,
-                       ScrollTimeline::kVertical),
-        next_service_scheduled_(false) {}
+                       ScrollDirection::kVertical),
+        next_service_scheduled_(false) {
+    SnapshotState();
+  }
 
   void ScheduleServiceOnNextFrame() override {
     ScrollTimeline::ScheduleServiceOnNextFrame();
@@ -171,10 +173,8 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullSource) {
   // source. The alternative approach would require us to remove the
   // documentElement from the document.
   Element* scroll_source = nullptr;
-  Persistent<ScrollTimeline> scroll_timeline =
-      MakeGarbageCollected<ScrollTimeline>(
-          &GetDocument(), ScrollTimeline::ReferenceType::kSource, scroll_source,
-          ScrollTimeline::kBlock);
+  Persistent<ScrollTimeline> scroll_timeline = ScrollTimeline::Create(
+      &GetDocument(), scroll_source, ScrollTimeline::ScrollDirection::kBlock);
 
   // Sanity checks.
   ASSERT_EQ(scroll_timeline->source(), nullptr);

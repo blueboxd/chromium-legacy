@@ -94,6 +94,8 @@ std::string UntrustedSource::GetContentSecurityPolicy(
       return std::string();
     case network::mojom::CSPDirectiveName::TrustedTypes:
       return std::string();
+    case network::mojom::CSPDirectiveName::FormAction:
+      return "form-action https://ogs.google.com https://*.corp.google.com;";
     default:
       return content::URLDataSource::GetContentSecurityPolicy(directive);
   }
@@ -192,8 +194,8 @@ void UntrustedSource::StartDataRequest(
   std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
-std::string UntrustedSource::GetMimeType(const std::string& path) {
-  const std::string stripped_path = path.substr(0, path.find("?"));
+std::string UntrustedSource::GetMimeType(const GURL& url) {
+  const base::StringPiece stripped_path = url.path_piece();
   if (base::EndsWith(stripped_path, ".js",
                      base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/javascript";

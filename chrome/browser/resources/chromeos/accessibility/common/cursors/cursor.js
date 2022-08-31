@@ -7,35 +7,24 @@
  * the automation tree.
  */
 
-goog.provide('cursors.Cursor');
-goog.provide('cursors.Movement');
-goog.provide('cursors.Unit');
-
-goog.require('AncestryRecoveryStrategy');
-goog.require('AutomationPredicate');
-goog.require('AutomationUtil');
-goog.require('RecoveryStrategy');
-goog.require('StringUtil');
-goog.require('constants');
-
-goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
+import {StringUtil} from '../string_util.js';
 
 /**
  * The special index that represents a cursor pointing to a node without
  * pointing to any part of its accessible text.
  */
-cursors.NODE_INDEX = -1;
+export const CURSOR_NODE_INDEX = -1;
 
 /**
- * Represents units of cursors.Movement.
+ * Represents units of CursorMovement.
  * @enum {string}
  */
-cursors.Unit = {
+export const CursorUnit = {
   /** A single character within accessible name or value. */
   CHARACTER: 'character',
 
@@ -55,14 +44,14 @@ cursors.Unit = {
    * A node or in line textbox that immediately precedes or follows a visual
    *     line break.
    */
-  LINE: 'line'
+  LINE: 'line',
 };
 
 /**
  * Represents the ways in which cursors can move given a cursor unit.
  * @enum {string}
  */
-cursors.Movement = {
+export const CursorMovement = {
   /** Move to the beginning or end of the current unit. */
   BOUND: 'bound',
 
@@ -73,17 +62,17 @@ cursors.Movement = {
    * Move to the beginning or end of the current cursor. Only supports
    * Unit.CHARACTER and Unit.WORD
    */
-  SYNC: 'sync'
+  SYNC: 'sync',
 };
 
 /**
  * Represents a position within the automation tree.
  */
-cursors.Cursor = class {
+export class Cursor {
   /**
    * @param {!AutomationNode} node
    * @param {number} index A 0-based index into this cursor node's primary
-   * accessible name. An index of |cursors.NODE_INDEX| means the node as a
+   * accessible name. An index of |CURSOR_NODE_INDEX| means the node as a
    * whole is pointed to and covers the case where the accessible text is
    * empty.
    * @param {{wrapped: (boolean|undefined),
@@ -122,22 +111,22 @@ cursors.Cursor = class {
   /**
    * Convenience method to construct a Cursor from a node.
    * @param {!AutomationNode} node
-   * @return {!cursors.Cursor}
+   * @return {!Cursor}
    */
   static fromNode(node) {
-    return new cursors.Cursor(node, cursors.NODE_INDEX);
+    return new Cursor(node, CURSOR_NODE_INDEX);
   }
 
   /**
    * Gives a function that returns true for leaf types for |unit| navigations.
-   * @param {!cursor.Unit} unit
-   * @return {function}
+   * @param {!CursorUnit} unit
+   * @return {AutomationPredicate.Unary}
    */
   static getLeafPredForUnit(unit) {
     switch (unit) {
-      case cursors.Unit.TEXT:
+      case CursorUnit.TEXT:
         return AutomationPredicate.leaf;
-      case cursors.Unit.GESTURE_NODE:
+      case CursorUnit.GESTURE_NODE:
         return AutomationPredicate.gestureObject;
       default:
         return AutomationPredicate.object;
@@ -147,7 +136,7 @@ cursors.Cursor = class {
   /**
    * Returns true if |rhs| is equal to this cursor.
    * Use this for strict equality between cursors.
-   * @param {!cursors.Cursor} rhs
+   * @param {!Cursor} rhs
    * @return {boolean}
    */
   equals(rhs) {
@@ -163,7 +152,7 @@ cursors.Cursor = class {
    * Use this for loose equality between cursors where specific
    * character-based indicies do not matter such as when processing
    * node-targeted events.
-   * @param {!cursors.Cursor} rhs
+   * @param {!Cursor} rhs
    * @return {boolean}
    */
   contentEquals(rhs) {
@@ -189,7 +178,7 @@ cursors.Cursor = class {
 
   /**
    * Compares this cursor with |rhs|.
-   * @param {cursors.Cursor} rhs
+   * @param {Cursor} rhs
    * @return Dir.BACKWARD if |rhs| comes before this cursor in
    * document order. Forward otherwise.
    */
@@ -212,7 +201,7 @@ cursors.Cursor = class {
   get node() {
     if (this.requiresRecovery()) {
       // If we need to recover, the index is no longer valid.
-      this.index_ = cursors.NODE_INDEX;
+      this.index_ = CURSOR_NODE_INDEX;
     }
     return this.recovery_.node;
   }
@@ -235,12 +224,12 @@ cursors.Cursor = class {
 
   /**
    * An index appropriate for making selections.  If this cursor has a
-   * cursors.NODE_INDEX index, the selection index is a node offset e.g. the
+   * CURSOR_NODE_INDEX index, the selection index is a node offset e.g. the
    * index in parent. If not, the index is a character offset.
    * @return {number}
    */
   get selectionIndex() {
-    return this.index_ === cursors.NODE_INDEX ? 0 : this.index_;
+    return this.index_ === CURSOR_NODE_INDEX ? 0 : this.index_;
   }
 
   /**
@@ -254,10 +243,10 @@ cursors.Cursor = class {
   /**
    * Makes a Cursor which has been moved from this cursor by the unit in the
    * given direction using the given movement type.
-   * @param {cursors.Unit} unit
-   * @param {cursors.Movement} movement
-   * @param {Dir} dir
-   * @return {!cursors.Cursor} The moved cursor.
+   * @param {CursorUnit} unit
+   * @param {CursorMovement} movement
+   * @param {constants.Dir} dir
+   * @return {!Cursor} The moved cursor.
    */
   move(unit, movement, dir) {
     const originalNode = this.node;
@@ -269,13 +258,13 @@ cursors.Cursor = class {
     let newIndex = this.index_;
 
     switch (unit) {
-      case cursors.Unit.CHARACTER:
+      case CursorUnit.CHARACTER:
         const text = this.getText();
 
         switch (movement) {
-          case cursors.Movement.BOUND:
-          case cursors.Movement.DIRECTIONAL:
-            if (newIndex === cursors.NODE_INDEX) {
+          case CursorMovement.BOUND:
+          case CursorMovement.DIRECTIONAL:
+            if (newIndex === CURSOR_NODE_INDEX) {
               newIndex = 0;
             }
 
@@ -296,8 +285,8 @@ cursors.Cursor = class {
               }
             }
             break;
-          case cursors.Movement.SYNC:
-            if (newIndex === cursors.NODE_INDEX) {
+          case CursorMovement.SYNC:
+            if (newIndex === CURSOR_NODE_INDEX) {
               newIndex = dir === Dir.FORWARD ?
                   0 :
                   StringUtil.previousCodePointOffset(text, text.length);
@@ -313,7 +302,7 @@ cursors.Cursor = class {
             break;
         }
         break;
-      case cursors.Unit.WORD:
+      case CursorUnit.WORD:
         // If we're not already on a node with word stops, find the next one.
         if (!AutomationPredicate.leafWithWordStop(newNode)) {
           newNode =
@@ -328,14 +317,15 @@ cursors.Cursor = class {
             (newNode.wordStarts && newNode.wordStarts.length) ?
             newNode.wordStarts[0] :
             0;
-        if (newIndex < firstWordStart && movement !== cursors.Movement.SYNC) {
-          // Also catches cursors.NODE_INDEX case.
+        if (newIndex < firstWordStart && movement !== CursorMovement.SYNC) {
+          // Also catches CURSOR_NODE_INDEX case.
           newIndex = firstWordStart;
         }
 
         switch (movement) {
-          case cursors.Movement.BOUND: {
-            let wordStarts, wordEnds;
+          case CursorMovement.BOUND: {
+            let wordStarts;
+            let wordEnds;
             if (newNode.role === RoleType.INLINE_TEXT_BOX) {
               wordStarts = newNode.wordStarts;
               wordEnds = newNode.wordEnds;
@@ -343,7 +333,8 @@ cursors.Cursor = class {
               wordStarts = newNode.nonInlineTextWordStarts;
               wordEnds = newNode.nonInlineTextWordEnds;
             }
-            let start, end;
+            let start;
+            let end;
             for (let i = 0; i < wordStarts.length; i++) {
               if (newIndex >= wordStarts[i] && newIndex < wordEnds[i]) {
                 start = wordStarts[i];
@@ -355,14 +346,15 @@ cursors.Cursor = class {
               newIndex = dir === Dir.FORWARD ? end : start;
             }
           } break;
-          case cursors.Movement.SYNC:
-            if (newIndex === cursors.NODE_INDEX) {
+          case CursorMovement.SYNC:
+            if (newIndex === CURSOR_NODE_INDEX) {
               newIndex = dir === Dir.FORWARD ? firstWordStart - 1 :
                                                this.getText().length;
             }
           // fallthrough
-          case cursors.Movement.DIRECTIONAL: {
-            let wordStarts, wordEnds;
+          case CursorMovement.DIRECTIONAL: {
+            let wordStarts;
+            let wordEnds;
             let start;
             if (newNode.role === RoleType.INLINE_TEXT_BOX) {
               wordStarts = newNode.wordStarts;
@@ -385,7 +377,7 @@ cursors.Cursor = class {
               // Successfully found the next word stop within the same text
               // node.
               newIndex = start;
-            } else if (movement === cursors.Movement.DIRECTIONAL) {
+            } else if (movement === CursorMovement.DIRECTIONAL) {
               // Use adjacent word in adjacent next node in direction |dir|.
               if (dir === Dir.BACKWARD && newIndex > firstWordStart) {
                 // The backward case is special at the beginning of nodes.
@@ -412,24 +404,24 @@ cursors.Cursor = class {
           }
         }
         break;
-      case cursors.Unit.TEXT:
-      case cursors.Unit.NODE:
-      case cursors.Unit.GESTURE_NODE:
+      case CursorUnit.TEXT:
+      case CursorUnit.NODE:
+      case CursorUnit.GESTURE_NODE:
         switch (movement) {
-          case cursors.Movement.BOUND:
+          case CursorMovement.BOUND:
             newIndex = dir === Dir.FORWARD ? this.getText().length - 1 : 0;
             break;
-          case cursors.Movement.DIRECTIONAL:
-            const pred = cursors.Cursor.getLeafPredForUnit(unit);
+          case CursorMovement.DIRECTIONAL:
+            const pred = Cursor.getLeafPredForUnit(unit);
             newNode =
                 AutomationUtil.findNextNode(newNode, dir, pred) || originalNode;
-            newIndex = cursors.NODE_INDEX;
+            newIndex = CURSOR_NODE_INDEX;
             break;
         }
         break;
-      case cursors.Unit.LINE:
+      case CursorUnit.LINE:
         switch (movement) {
-          case cursors.Movement.BOUND:
+          case CursorMovement.BOUND:
             newNode = AutomationUtil.findNodeUntil(
                 newNode, dir, AutomationPredicate.linebreak, true);
             newNode = newNode || originalNode;
@@ -437,7 +429,7 @@ cursors.Cursor = class {
                 AutomationUtil.getText(newNode).length :
                 0;
             break;
-          case cursors.Movement.DIRECTIONAL:
+          case CursorMovement.DIRECTIONAL:
             newNode = AutomationUtil.findNodeUntil(
                 newNode, dir, AutomationPredicate.linebreak);
             if (newNode) {
@@ -451,12 +443,12 @@ cursors.Cursor = class {
     }
     newNode = newNode || originalNode;
     newIndex = (newIndex !== undefined) ? newIndex : this.index_;
-    return new cursors.Cursor(newNode, newIndex);
+    return new Cursor(newNode, newIndex);
   }
 
   /**
    * Returns the deepest equivalent cursor.
-   * @return {!cursors.Cursor}
+   * @return {!Cursor}
    */
   get deepEquivalent() {
     let newNode = this.node;
@@ -531,14 +523,15 @@ cursors.Cursor = class {
           break;
         }
 
-        let targetLine, targetIndex = 0;
+        let targetLine;
+        let targetIndex = 0;
         for (let i = 0, line, cur = 0; line = lines[i]; i++) {
           const lineLength = line.name ? line.name.length : 1;
           cur += lineLength;
           if (cur > newIndex) {
             targetLine = line;
             if (!line.name) {
-              targetIndex = cursors.NODE_INDEX;
+              targetIndex = CURSOR_NODE_INDEX;
             } else {
               targetIndex = newIndex - (cur - lineLength);
             }
@@ -549,8 +542,7 @@ cursors.Cursor = class {
           // If we got here, that means the index is actually beyond the total
           // length of text. Just get the last line.
           targetLine = lines[lines.length - 1];
-          targetIndex =
-              targetLine ? targetLine.name.length : cursors.NODE_INDEX;
+          targetIndex = targetLine ? targetLine.name.length : CURSOR_NODE_INDEX;
         }
         newNode = targetLine;
         newIndex = targetIndex;
@@ -558,7 +550,7 @@ cursors.Cursor = class {
       }
     }
     if (!isTextIndex) {
-      newIndex = cursors.NODE_INDEX;
+      newIndex = CURSOR_NODE_INDEX;
     }
 
     return new this.constructor(newNode, newIndex);
@@ -608,18 +600,18 @@ cursors.Cursor = class {
   get wrapped() {
     return this.wrapped_;
   }
-};
+}
 
 
 /**
- * A cursors.Cursor that wraps from beginning to end and vice versa when
+ * A Cursor that wraps from beginning to end and vice versa when
  * moved.
  */
-cursors.WrappingCursor = class extends cursors.Cursor {
+export class WrappingCursor extends Cursor {
   /**
    * @param {!AutomationNode} node
    * @param {number} index A 0-based index into this cursor node's primary
-   * accessible name. An index of |cursors.NODE_INDEX| means the node as a
+   * accessible name. An index of |CURSOR_NODE_INDEX| means the node as a
    * whole is pointed to and covers the case where the accessible text is
    * empty.
    * @param {{wrapped: (boolean|undefined)}} args
@@ -631,10 +623,10 @@ cursors.WrappingCursor = class extends cursors.Cursor {
   /**
    * Convenience method to construct a Cursor from a node.
    * @param {!AutomationNode} node
-   * @return {!cursors.WrappingCursor}
+   * @return {!WrappingCursor}
    */
   static fromNode(node) {
-    return new cursors.WrappingCursor(node, cursors.NODE_INDEX);
+    return new WrappingCursor(node, CURSOR_NODE_INDEX);
   }
 
   /** @override */
@@ -646,14 +638,13 @@ cursors.WrappingCursor = class extends cursors.Cursor {
 
     // Regular movement.
     if (!AutomationPredicate.root(this.node) || dir === Dir.FORWARD ||
-        movement === cursors.Movement.BOUND) {
-      result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+        movement === CursorMovement.BOUND) {
+      result = Cursor.prototype.move.call(this, unit, movement, dir);
     }
 
     // Moving to the bounds of a unit never wraps.
-    if (movement === cursors.Movement.BOUND ||
-        movement === cursors.Movement.SYNC) {
-      return new cursors.WrappingCursor(result.node, result.index);
+    if (movement === CursorMovement.BOUND || movement === CursorMovement.SYNC) {
+      return new WrappingCursor(result.node, result.index);
     }
 
     // There are two cases for wrapping:
@@ -663,8 +654,8 @@ cursors.WrappingCursor = class extends cursors.Cursor {
     // For 1, simply place the new cursor on the document node.
     // For 2, place range on the root (if not already there). If at root,
     // try to descend to the first leaf-like object.
-    if (movement === cursors.Movement.DIRECTIONAL && result.equals(this)) {
-      const pred = cursors.Cursor.getLeafPredForUnit(unit);
+    if (movement === CursorMovement.DIRECTIONAL && result.equals(this)) {
+      const pred = Cursor.getLeafPredForUnit(unit);
       let endpoint = this.node;
       if (!endpoint) {
         return this;
@@ -694,7 +685,7 @@ cursors.WrappingCursor = class extends cursors.Cursor {
                      directedFocus, dir, AutomationPredicate.object) :
                  AutomationUtil.findLastNode(directedFocus, pred)) ||
             directedFocus;
-        return new cursors.WrappingCursor(directedFocus, cursors.NODE_INDEX);
+        return new WrappingCursor(directedFocus, CURSOR_NODE_INDEX);
       }
 
       // Always consider this cursor wrapped when moving forward.
@@ -706,10 +697,8 @@ cursors.WrappingCursor = class extends cursors.Cursor {
         endpoint = AutomationUtil.findLastNode(endpoint, pred) || endpoint;
       }
 
-      return new cursors.WrappingCursor(
-          endpoint, cursors.NODE_INDEX, {wrapped});
+      return new WrappingCursor(endpoint, CURSOR_NODE_INDEX, {wrapped});
     }
-    return new cursors.WrappingCursor(result.node, result.index);
+    return new WrappingCursor(result.node, result.index);
   }
-};
-});  // goog.scope
+}

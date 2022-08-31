@@ -12,7 +12,6 @@
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/background_script_executor.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/permissions_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_features.h"
@@ -61,19 +60,11 @@ class UserHostRestrictionsBrowserTest
   void WithholdExtensionPermissions(const Extension& extension) {
     // Withhold extension host permissions. Wait for the notification to be
     // fired to ensure all renderers and services have been properly updated.
-    auto is_update_for_extension =
-        [&extension](const content::NotificationSource& source,
-                     const content::NotificationDetails& details) {
-          UpdatedExtensionPermissionsInfo* info =
-              content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
-          return info->extension->id() == extension.id();
-        };
-    content::WindowedNotificationObserver permissions_observer(
-        NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        base::BindLambdaForTesting(is_update_for_extension));
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     ScriptingPermissionsModifier(profile(), &extension)
         .SetWithholdHostPermissions(true);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
   }
 
   // Adds `url` as a new user-permitted site and waits for the change to take
@@ -83,8 +74,8 @@ class UserHostRestrictionsBrowserTest
         PermissionsManager::Get(profile());
     PermissionsManagerWaiter waiter(permissions_manager);
     permissions_manager->AddUserPermittedSite(url::Origin::Create(url));
-    waiter.WaitForPermissionsChange();
-  };
+    waiter.WaitForUserPermissionsSettingsChange();
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -274,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(
     PermissionsManagerWaiter waiter(permissions_manager);
     permissions_manager->AddUserRestrictedSite(
         url::Origin::Create(restricted_url));
-    waiter.WaitForPermissionsChange();
+    waiter.WaitForUserPermissionsSettingsChange();
   }
 
   EXPECT_EQ("fetch1 - cat\n", try_fetch_url(allowed_url));
@@ -389,7 +380,7 @@ IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest, UserPermittedSites) {
     PermissionsManagerWaiter waiter(permissions_manager);
     permissions_manager->RemoveUserPermittedSite(
         url::Origin::Create(allowed_url));
-    waiter.WaitForPermissionsChange();
+    waiter.WaitForUserPermissionsSettingsChange();
   }
 
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
@@ -467,6 +458,89 @@ IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
               found_extension->permissions_data()->GetPageAccess(
                   example_com, extension_misc::kUnknownTabId, nullptr));
   }
+}
+
+// Tests that sites the user indicated all extensions may run on are still
+// available to extensions after a permissions withholding change.
+IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
+                       UserPermittedSitesAreAppliedOnWithholdingChange) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "version": "0.1",
+           "manifest_version": 3,
+           "host_permissions": ["<all_urls>"]
+         })";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL user_permitted_site("https://allowed.example");
+  const GURL non_user_permitted_site("https://not-allowed.example");
+
+  AddUserPermittedSite(user_permitted_site);
+
+  // Without withholding permissions, the extension may run on both sites.
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            extension->permissions_data()->GetPageAccess(
+                user_permitted_site, extension_misc::kUnknownTabId, nullptr));
+  EXPECT_EQ(
+      PermissionsData::PageAccess::kAllowed,
+      extension->permissions_data()->GetPageAccess(
+          non_user_permitted_site, extension_misc::kUnknownTabId, nullptr));
+
+  WithholdExtensionPermissions(*extension);
+
+  // Once permissions are withheld, with the feature enabled, the extension may
+  // still run on the user-permitted site (without the feature enabled, the
+  // site is withheld).
+  if (GetParam()) {
+    EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+              extension->permissions_data()->GetPageAccess(
+                  user_permitted_site, extension_misc::kUnknownTabId, nullptr));
+  } else {
+    EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+              extension->permissions_data()->GetPageAccess(
+                  user_permitted_site, extension_misc::kUnknownTabId, nullptr));
+  }
+
+  // Non-permitted sites remain withheld with and without the feature enabled.
+  EXPECT_EQ(
+      PermissionsData::PageAccess::kWithheld,
+      extension->permissions_data()->GetPageAccess(
+          non_user_permitted_site, extension_misc::kUnknownTabId, nullptr));
+}
+
+IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
+                       UserPermittedSitesAndChromeFavicon) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Note: MV2 extension because chrome://favicon is removed in MV3 (yay!).
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "version": "0.1",
+           "manifest_version": 2,
+           "permissions": ["<all_urls>"]
+         })";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL favicon_url("chrome://favicon/http://example.com");
+  EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
+
+  WithholdExtensionPermissions(*extension);
+  EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
+
+  AddUserPermittedSite(GURL("https://allowed.example"));
+  EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
 }
 
 }  // namespace extensions

@@ -39,7 +39,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/check.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 namespace ui {
@@ -75,10 +75,10 @@ bool IsImeEnabled() {
   // Lacros-chrome side, which helps us on releasing.
   // TODO(crbug.com/1159237): In the future, we may want to unify the behavior
   // of ozone/wayland across platforms.
-  const crosapi::mojom::BrowserInitParams* init_params =
-      chromeos::BrowserInitParams::Get();
-  if (init_params && init_params->exo_ime_support !=
-                         crosapi::mojom::ExoImeSupport::kUnsupported) {
+  const chromeos::BrowserParamsProxy* init_params =
+      chromeos::BrowserParamsProxy::Get();
+  if (init_params->ExoImeSupport() !=
+      crosapi::mojom::ExoImeSupport::kUnsupported) {
     return true;
   }
 #endif
@@ -340,6 +340,14 @@ void WaylandInputMethodContext::SetGrammarFragmentAtCursor(
   text_input_->SetGrammarFragmentAtCursor(fragment);
 }
 
+void WaylandInputMethodContext::SetAutocorrectInfo(
+    const gfx::Range& autocorrect_range,
+    const gfx::Rect& autocorrect_bounds) {
+  if (!text_input_)
+    return;
+  text_input_->SetAutocorrectInfo(autocorrect_range, autocorrect_bounds);
+}
+
 VirtualKeyboardController*
 WaylandInputMethodContext::GetVirtualKeyboardController() {
   if (!text_input_)
@@ -585,6 +593,10 @@ void WaylandInputMethodContext::OnAddGrammarFragment(
       {GrammarFragment(gfx::Range(static_cast<uint32_t>(offsets[0]),
                                   static_cast<uint32_t>(offsets[1])),
                        fragment.suggestion)});
+}
+
+void WaylandInputMethodContext::OnSetAutocorrectRange(const gfx::Range& range) {
+  ime_delegate_->OnSetAutocorrectRange(range);
 }
 
 void WaylandInputMethodContext::OnInputPanelState(uint32_t state) {

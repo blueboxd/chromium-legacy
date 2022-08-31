@@ -61,7 +61,7 @@ class ThemeSelectionScreen extends ThemeSelectionScreenElementBase {
       isInTabletMode_: {
         type: Boolean,
         value: false,
-      }
+      },
     };
   }
 
@@ -86,6 +86,10 @@ class ThemeSelectionScreen extends ThemeSelectionScreenElementBase {
     super.ready();
     this.initializeLoginScreen('ThemeSelectionScreen');
     this.selectedTheme = 'auto';
+  }
+
+  onBeforeShow(data) {
+    this.selectedTheme = 'selectedTheme' in data && data.selectedTheme;
   }
 
   getOobeUIInitialState() {

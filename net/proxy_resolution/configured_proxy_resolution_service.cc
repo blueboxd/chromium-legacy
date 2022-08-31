@@ -826,7 +826,7 @@ ConfiguredProxyResolutionService::CreateWithoutProxyResolver(
 
 // static
 std::unique_ptr<ConfiguredProxyResolutionService>
-ConfiguredProxyResolutionService::CreateFixed(
+ConfiguredProxyResolutionService::CreateFixedForTest(
     const ProxyConfigWithAnnotation& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
@@ -837,13 +837,13 @@ ConfiguredProxyResolutionService::CreateFixed(
 
 // static
 std::unique_ptr<ConfiguredProxyResolutionService>
-ConfiguredProxyResolutionService::CreateFixed(
+ConfiguredProxyResolutionService::CreateFixedForTest(
     const std::string& proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(proxy);
   ProxyConfigWithAnnotation annotated_config(proxy_config, traffic_annotation);
-  return ConfiguredProxyResolutionService::CreateFixed(annotated_config);
+  return ConfiguredProxyResolutionService::CreateFixedForTest(annotated_config);
 }
 
 // static
@@ -858,7 +858,7 @@ ConfiguredProxyResolutionService::CreateDirect() {
 
 // static
 std::unique_ptr<ConfiguredProxyResolutionService>
-ConfiguredProxyResolutionService::CreateFixedFromPacResult(
+ConfiguredProxyResolutionService::CreateFixedFromPacResultForTest(
     const std::string& pac_string,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   // We need the settings to contain an "automatic" setting, otherwise the
@@ -876,7 +876,7 @@ ConfiguredProxyResolutionService::CreateFixedFromPacResult(
 
 // static
 std::unique_ptr<ConfiguredProxyResolutionService>
-ConfiguredProxyResolutionService::CreateFixedFromAutoDetectedPacResult(
+ConfiguredProxyResolutionService::CreateFixedFromAutoDetectedPacResultForTest(
     const std::string& pac_string,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   auto proxy_config_service =

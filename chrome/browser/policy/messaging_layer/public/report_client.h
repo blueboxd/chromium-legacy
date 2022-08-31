@@ -13,14 +13,11 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
-#include "chrome/browser/policy/messaging_layer/util/get_cloud_policy_client.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/client/report_queue_provider.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
-#include "components/reporting/storage_selector/storage_selector.h"
-#include "components/reporting/util/shared_queue.h"
 #include "components/reporting/util/statusor.h"
 
 namespace reporting {
@@ -48,7 +45,6 @@ class ReportingClient : public ReportQueueProvider {
   class Uploader;
 
   friend class ReportQueueProvider;
-  friend class TestEnvironment;
   friend struct base::DefaultSingletonTraits<ReportingClient>;
 
   // Constructor to be used by singleton only.
@@ -82,8 +78,7 @@ class ReportingClient : public ReportQueueProvider {
   // Returns default upload provider for the client.
   std::unique_ptr<EncryptedReportingUploadProvider> GetDefaultUploadProvider(
       UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
-      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
-      GetCloudPolicyClientCallback build_cloud_policy_client_cb);
+      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb);
 
   // Configures the report queue config with an appropriate DM token after its
   // retrieval for downstream processing, and triggers the corresponding
@@ -92,9 +87,6 @@ class ReportingClient : public ReportQueueProvider {
       std::unique_ptr<reporting::ReportQueueConfiguration> report_queue_config,
       ReportQueueProvider::ReportQueueConfiguredCallback completion_cb)
       override;
-
-  // Cloud policy client (set by constructor, may only be changed for tests).
-  GetCloudPolicyClientCallback build_cloud_policy_client_cb_;
 
   // Upload provider (if enabled).
   std::unique_ptr<EncryptedReportingUploadProvider> upload_provider_;

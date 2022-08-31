@@ -16,28 +16,28 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/network/cellular_esim_profile_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_device_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_metadata_store.h"
+#include "chromeos/ash/components/network/network_name_util.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/onc_translation_tables.h"
+#include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
-#include "chromeos/dbus/hermes/hermes_euicc_client.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_metadata_store.h"
-#include "chromeos/network/network_name_util.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -65,9 +65,6 @@ const char kErrorNotReady[] = "Error.NotReady";
 
 // IKEv2 string from Shill SupportedVPNType property.
 const char kIKEv2VPNType[] = "ikev2";
-
-// WireGuard string from Shill SupportedVPNType property.
-const char kWireGuardVPNType[] = "wireguard";
 
 // Default traffic counter reset day.
 const int kDefaultResetDay = 1;
@@ -1985,8 +1982,7 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                 open_vpn.user_authentication_type, &open_vpn_dict);
       type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
     }
-    if (vpn.wireguard &&
-        base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
+    if (vpn.wireguard) {
       const mojom::WireGuardConfigProperties& wireguard = *vpn.wireguard;
       base::Value wireguard_dict(base::Value::Type::DICTIONARY);
       SetString(::onc::wireguard::kPrivateKey, wireguard.private_key,
@@ -3190,12 +3186,6 @@ void CrosNetworkConfig::OnGetSupportedVpnTypes(
   }
   if (!base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
     auto iter = std::find(result.begin(), result.end(), kIKEv2VPNType);
-    if (iter != result.end()) {
-      result.erase(iter);
-    }
-  }
-  if (!base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
-    auto iter = std::find(result.begin(), result.end(), kWireGuardVPNType);
     if (iter != result.end()) {
       result.erase(iter);
     }

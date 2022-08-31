@@ -455,22 +455,6 @@ void ShelfView::Init() {
   // We'll layout when our bounds change.
 }
 
-gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
-  int index = model_->ItemIndexByID(id);
-  if (index < 0 ||
-      !base::Contains(visible_views_indices_, static_cast<size_t>(index)))
-    return gfx::Rect();
-
-  const gfx::Rect& ideal_bounds(
-      view_model_->ideal_bounds(static_cast<size_t>(index)));
-  ShelfAppButton* button = GetShelfAppButton(id);
-  gfx::Rect icon_bounds = button->GetIconBounds();
-  return gfx::Rect(GetMirroredXWithWidthInView(
-                       ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
-                   ideal_bounds.y() + icon_bounds.y(), icon_bounds.width(),
-                   icon_bounds.height());
-}
-
 bool ShelfView::IsShowingMenu() const {
   return shelf_menu_model_adapter_ &&
          shelf_menu_model_adapter_->IsShowingMenu();
@@ -621,6 +605,12 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
     return gfx::Size(last_button_bounds.right(), hotseat_size);
 
   return gfx::Size(hotseat_size, last_button_bounds.bottom());
+}
+
+void ShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
+  if (separator_)
+    separator_->SchedulePaint();
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -1671,6 +1661,10 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       // Re-insert the item and return simply false since the caller will handle
       // the move as in any normal case.
       dragged_off_shelf_ = false;
+
+      // After re-insertion, trigger an animation to ideal bounds to show the
+      // ghost view.
+      AnimateToIdealBounds();
 
       return;
     }

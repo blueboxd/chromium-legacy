@@ -106,6 +106,8 @@ class RenderProcessHostUserData : public base::SupportsUserData::Data {
   void RemoveFrame(content::RenderFrameHost* frame) { frames_.erase(frame); }
   const std::set<content::RenderFrameHost*>& frames() const { return frames_; }
 
+  const ExtensionIdSet& content_scripts() const { return content_scripts_; }
+
  private:
   explicit RenderProcessHostUserData(content::RenderProcessHost& process)
       : process_(process) {
@@ -462,6 +464,18 @@ void StoreExtensionsInjectingContentScripts(
 }  // namespace
 
 // static
+ExtensionIdSet ContentScriptTracker::GetExtensionsThatRanScriptsInProcess(
+    const content::RenderProcessHost& process) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const auto* process_data = RenderProcessHostUserData::Get(process);
+  if (!process_data)
+    return {};
+
+  return process_data->content_scripts();
+}
+
+// static
 bool ContentScriptTracker::DidProcessRunContentScriptFromExtension(
     const content::RenderProcessHost& process,
     const ExtensionId& extension_id) {
@@ -518,8 +532,11 @@ void ContentScriptTracker::DidFinishNavigation(
   // processed by an earlier DidFinishNavigation.  Navigations that don't
   // commit/load won't inject content scripts.  Content script injections are
   // primarily driven by URL matching and therefore failed navigations may still
-  // end up injecting content scripts into the error page.)
-  if (!navigation->HasCommitted() || navigation->IsSameDocument()) {
+  // end up injecting content scripts into the error page. Pre-rendered pages
+  // already ran content scripts at the initial navigation and don't need to
+  // run them again on activation.)
+  if (!navigation->HasCommitted() || navigation->IsSameDocument() ||
+      navigation->IsPrerenderedPageActivation()) {
     return;
   }
 

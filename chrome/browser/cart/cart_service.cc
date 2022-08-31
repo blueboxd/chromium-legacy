@@ -490,10 +490,11 @@ void CartService::GetDiscountURL(
     const GURL& cart_url,
     base::OnceCallback<void(const ::GURL&)> callback) {
   auto url = AppendUTM(cart_url);
-  if (!commerce::IsRuleDiscountPartnerMerchant(cart_url) ||
-      !IsCartDiscountEnabled()) {
+  if (commerce::IsFakeDataEnabled() || !IsCartDiscountEnabled()) {
     std::move(callback).Run(url);
-    CartDiscountMetricCollector::RecordClickedOnDiscount(false);
+    if (!commerce::IsFakeDataEnabled()) {
+      CartDiscountMetricCollector::RecordClickedOnDiscount(false);
+    }
     return;
   }
   LoadCart(eTLDPlusOne(cart_url), base::BindOnce(&CartService::OnGetDiscountURL,
@@ -515,8 +516,12 @@ void CartService::OnGetDiscountURL(
   auto& cart_proto = proto_pairs[0].second;
   if (!IsCartDiscountEnabled() ||
       cart_proto.discount_info().rule_discount_info().empty()) {
+    if (cart_proto.discount_info().has_coupons()) {
+      CartDiscountMetricCollector::RecordClickedOnDiscount(true);
+    } else {
+      CartDiscountMetricCollector::RecordClickedOnDiscount(false);
+    }
     std::move(callback).Run(default_cart_url);
-    CartDiscountMetricCollector::RecordClickedOnDiscount(false);
     return;
   }
   auto pending_factory = profile_->GetDefaultStoragePartition()
@@ -1048,7 +1053,7 @@ void CartService::StartGettingDiscount() {
 
   base::Time last_fetched_time =
       profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime);
-  base::TimeDelta fetch_delay = commerce::kDiscountFetchDelayParam.Get() -
+  base::TimeDelta fetch_delay = commerce::GetDiscountFetchDelay() -
                                 (base::Time::Now() - last_fetched_time);
   if (last_fetched_time == base::Time() || fetch_delay.is_negative() ||
       kBypassDisocuntFetchingThreshold.Get()) {

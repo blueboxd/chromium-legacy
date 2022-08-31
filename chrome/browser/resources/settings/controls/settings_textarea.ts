@@ -54,7 +54,7 @@ export class SettingsTextareaElement extends PolymerElement {
         type: Boolean,
         value: false,
         reflectToAttribute: true,
-        observer: 'onDisabledChanged_'
+        observer: 'onDisabledChanged_',
       },
 
       /** Maximum length (in characters) of the text area. */
@@ -134,8 +134,8 @@ export class SettingsTextareaElement extends PolymerElement {
   value: string;
   autogrow: boolean;
   invalid: boolean;
-  firstFooter: String;
-  secondFooter: String;
+  firstFooter: string;
+  secondFooter: string;
 
   focusInput() {
     this.$.input.focus();

@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1645954272419197032">请确认设备信息</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
+<translation id="1664796644829245314">预览“<ph name="PREVIEW_OBJECT" />”</translation>
 <translation id="1668469839109562275">内置 VPN</translation>
 <translation id="1672499492233627739">摄像头视频画面</translation>
 <translation id="1676557873873341166">正在录制视频</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">视频会议</translation>
 <translation id="1852934301711881861">安装 ChromeOS Flex</translation>
 <translation id="1856388568474281774">向下</translation>
+<translation id="1858620243986915808">附加屏幕截图</translation>
 <translation id="1871569928317311284">关闭深色主题</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">关闭深色模式</translation>
@@ -518,7 +520,7 @@
 <translation id="5372659122375744710">Wi-Fi 网络不安全</translation>
 <translation id="5376354385557966694">自动浅色模式</translation>
 <translation id="537872351913703572">设备将由另一用户或组织使用</translation>
-<translation id="5389159777326897627">壁纸与样式</translation>
+<translation id="5389159777326897627">壁纸和样式</translation>
 <translation id="5389224261615877010">彩虹色</translation>
 <translation id="5395600419410242651">清除所有数据</translation>
 <translation id="5400907029458559844">设备正在连接。</translation>
@@ -797,6 +799,7 @@
 <translation id="7978412674231730200">私有密钥</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
+<translation id="8018928621986160031">已保存到“<ph name="FILE_LOCATION" />”</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">启用自动颜色模式</translation>
@@ -865,6 +868,7 @@
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8620617069779373398">漫游状态</translation>
 <translation id="8655295600908251630">版本</translation>
+<translation id="8655828773034788261">分享网址：</translation>
 <translation id="8660881923941176839">磅</translation>
 <translation id="8662671328352114214">加入<ph name="TYPE" />网络</translation>
 <translation id="8671972493856476349">更新至 <ph name="VERSION_NUMBER" /> 并重启</translation>

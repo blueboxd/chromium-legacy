@@ -7,7 +7,7 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -39,11 +39,17 @@
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/sync/protocol/app_list_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -195,6 +201,7 @@ class RemoteAppsManagerBrowsertest
     manager_->SetImageDownloaderForTesting(std::move(image_downloader));
   }
 
+  // TODO(b/239145899): Refactor to not use MGS setup any more.
   void SetUpDeviceLocalAccountPolicy() {
     enterprise_management::DeviceLocalAccountsProto* const
         device_local_accounts =
@@ -304,22 +311,51 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
 
   // App has id kId1.
   AddAppAndWaitForIconChange(kExtensionId1, kId1, name, std::string(), icon_url,
-                             icon,
-                             /*add_to_front=*/false);
-
+                             icon, /*add_to_front=*/false);
   ash::AppListItem* item = GetAppListItem(kId1);
   EXPECT_FALSE(item->is_folder());
   EXPECT_EQ(name, item->name());
-  // kShared uses size hint 64 dip.
-  apps::IconEffects icon_effects = apps::IconEffects::kCrOsStandardIcon;
+  EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
 
   base::test::TestFuture<apps::IconValuePtr> future;
-  auto output_data = std::make_unique<apps::IconValue>();
   auto iv = std::make_unique<apps::IconValue>();
   iv->icon_type = apps::IconType::kStandard;
   iv->uncompressed = icon;
+  apps::ApplyIconEffects(apps::IconEffects::kCrOsStandardIcon,
+                         /*size_hint_in_dip=*/64, std::move(iv),
+                         future.GetCallback());
+
+  // App's icon is the downloaded icon.
+  CheckIconsEqual(future.Get()->uncompressed, item->GetDefaultIcon());
+}
+
+// Adds an app with an empty icon URL and checks if the app gets assigned the
+// default placeholder icon.
+IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppPlaceholderIcon) {
+  // Show launcher UI so that app icons are loaded.
+  ShowLauncherAppsGrid();
+
+  const std::string name = "name";
+
+  // App has id kId1. The downloader returns an empty image that is replaced by
+  // a placeholder icon.
+  AddAppAndWaitForIconChange(kExtensionId1, kId1, name, std::string(), GURL(),
+                             gfx::ImageSkia(), /*add_to_front=*/false);
+  ash::AppListItem* item = GetAppListItem(kId1);
+  EXPECT_FALSE(item->is_folder());
+  EXPECT_EQ(name, item->name());
+
+  base::test::TestFuture<apps::IconValuePtr> future;
+  auto iv = std::make_unique<apps::IconValue>();
+  iv->icon_type = apps::IconType::kStandard;
+  iv->uncompressed =
+      manager_->GetPlaceholderIcon(kId1, /*size_hint_in_dip=*/64);
   iv->is_placeholder_icon = true;
-  apps::ApplyIconEffects(icon_effects, 64, std::move(iv), future.GetCallback());
+  apps::ApplyIconEffects(apps::IconEffects::kCrOsStandardIcon,
+                         /*size_hint_in_dip=*/64, std::move(iv),
+                         future.GetCallback());
+
+  // App's icon is placeholder.
   CheckIconsEqual(future.Get()->uncompressed, item->GetDefaultIcon());
 }
 
@@ -386,12 +422,14 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddFolderAndApp) {
   // Folder item was created.
   ash::AppListItem* folder_item = GetAppListItem(kId1);
   EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_TRUE(folder_item->GetMetadata()->is_ephemeral);
   EXPECT_EQ(folder_name, folder_item->name());
   EXPECT_EQ(1u, folder_item->ChildItemCount());
   EXPECT_TRUE(folder_item->FindChildItem(kId2));
 
   ash::AppListItem* item = GetAppListItem(kId2);
   EXPECT_EQ(kId1, item->folder_id());
+  EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest,
@@ -598,4 +636,87 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, OnAppLaunched) {
   ASSERT_EQ(kId2, on_remote_app_launched_with_app_id2_to_proxy_future.Get());
 }
 
+// Remote app list items are not supposed to be synced. This test verifies that
+// the added remote app items are marked as ephemeral and are not synced to
+// local storage or uploaded to sync data.
+IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteAppsNotSynced) {
+  app_list::AppListSyncableService* app_list_syncable_service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
+  std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor =
+      std::make_unique<syncer::FakeSyncChangeProcessor>();
+  app_list_syncable_service->MergeDataAndStartSyncing(
+      syncer::APP_LIST, {},
+      std::unique_ptr<syncer::SyncChangeProcessor>(
+          new syncer::SyncChangeProcessorWrapperForTest(sync_processor.get())),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // App has id kId1.
+  AddAppAndWaitForIconChange(kExtensionId1, kId1, "name", std::string(),
+                             GURL("icon_url"), CreateTestIcon(32, SK_ColorRED),
+                             /*add_to_front=*/false);
+
+  ash::AppListItem* item = GetAppListItem(kId1);
+  EXPECT_FALSE(item->is_folder());
+  EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
+
+  // Remote app sync item not added to local storage.
+  const base::Value* local_items =
+      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
+  const base::Value* dict_item =
+      local_items->FindKeyOfType(kId1, base::Value::Type::DICTIONARY);
+  EXPECT_FALSE(dict_item);
+
+  // Remote app sync item not uploaded to sync data.
+  for (auto sync_change : sync_processor->changes()) {
+    const std::string item_id =
+        sync_change.sync_data().GetSpecifics().app_list().item_id();
+    EXPECT_NE(item_id, kId1);
+  }
+}
+
+// Remote folder list items are not supposed to be synced. This test verifies
+// that the added remote folder items are marked as ephemeral and are not synced
+// to local storage or uploaded to sync data.
+IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteFoldersNotSynced) {
+  app_list::AppListSyncableService* app_list_syncable_service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
+  std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor =
+      std::make_unique<syncer::FakeSyncChangeProcessor>();
+  AppListModelUpdater* app_list_model_updater =
+      app_list_syncable_service->GetModelUpdater();
+  app_list_model_updater->SetActive(true);
+  app_list_syncable_service->MergeDataAndStartSyncing(
+      syncer::APP_LIST, {},
+      std::unique_ptr<syncer::SyncChangeProcessor>(
+          new syncer::SyncChangeProcessorWrapperForTest(sync_processor.get())),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Folder has id kId1.
+  manager_->AddFolder("folder_name", /*add_to_front=*/false);
+
+  // App has id kId2. Parent is kId1.
+  AddAppAndWaitForIconChange(kExtensionId1, kId2, "name", kId1,
+                             GURL("icon_url"), CreateTestIcon(32, SK_ColorRED),
+                             /*add_to_front=*/false);
+
+  ash::AppListItem* item = GetAppListItem(kId1);
+  EXPECT_TRUE(item->is_folder());
+  EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
+
+  // Remote folder sync item not added to local storage.
+  const base::Value* local_items =
+      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
+  const base::Value* dict_item =
+      local_items->FindKeyOfType(kId1, base::Value::Type::DICTIONARY);
+  EXPECT_FALSE(dict_item);
+
+  // Remote folder sync item not uploaded to sync data.
+  for (auto sync_change : sync_processor->changes()) {
+    const std::string item_id =
+        sync_change.sync_data().GetSpecifics().app_list().item_id();
+    EXPECT_NE(item_id, kId1);
+  }
+}
 }  // namespace ash

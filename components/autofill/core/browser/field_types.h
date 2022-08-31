@@ -222,7 +222,7 @@ enum ServerFieldType {
   // Types to represent a birthdate.
   BIRTHDATE_DAY = 118,
   BIRTHDATE_MONTH = 119,
-  BIRTHDATE_YEAR_4_DIGITS = 120,
+  BIRTHDATE_4_DIGIT_YEAR = 120,
 
   // Types for better trunk prefix support for phone numbers.
   // Like PHONE_HOME_CITY_CODE, but with a trunk prefix, if applicable in the
@@ -296,6 +296,11 @@ enum HtmlFieldType {
 
   // Email.
   HTML_TYPE_EMAIL,
+
+  // Birthdate.
+  HTML_TYPE_BIRTHDATE_DAY,
+  HTML_TYPE_BIRTHDATE_MONTH,
+  HTML_TYPE_BIRTHDATE_YEAR,
 
   // Transaction details.
   HTML_TYPE_TRANSACTION_AMOUNT,

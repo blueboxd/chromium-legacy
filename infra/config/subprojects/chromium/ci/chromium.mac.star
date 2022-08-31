@@ -6,8 +6,8 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
-load("//lib/ci.star", "ci", "rbe_instance")
+load("//lib/builders.star", "cpu", "goma", "os", "reclient", "sheriff_rotations", "xcode")
+load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/structs.star", "structs")
 
@@ -158,6 +158,22 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.MAC_DEFAULT,
+)
+
+ci.builder(
+    name = "mac-arm64-rel (reclient shadow)",
+    builder_spec = builder_config.copy_from(
+        "ci/mac-arm64-rel",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "release|arm64",
+        short_name = "rec",
+    ),
+    os = os.MAC_DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 40,
 )
 
 ci.thin_tester(
@@ -468,7 +484,7 @@ ios_builder(
     tree_closing = False,
     sheriff_rotations = args.ignore_default(None),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 40,
 )
 

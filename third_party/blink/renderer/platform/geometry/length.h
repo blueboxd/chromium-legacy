@@ -274,6 +274,7 @@ class PLATFORM_EXPORT Length {
   bool IsExtendToZoom() const { return GetType() == kExtendToZoom; }
   bool IsDeviceWidth() const { return GetType() == kDeviceWidth; }
   bool IsDeviceHeight() const { return GetType() == kDeviceHeight; }
+  bool HasAnchorQueries() const;
 
   Length Blend(const Length& from, double progress, ValueRange range) const {
     DCHECK(IsSpecified());
@@ -302,13 +303,16 @@ class PLATFORM_EXPORT Length {
     return is_float_ ? float_value_ : int_value_;
   }
 
-  class AnchorEvaluator {
+  class PLATFORM_EXPORT AnchorEvaluator {
    public:
     // Evaluate the |anchor_name| for the |anchor_value|. Returns |nullopt| if
     // the query is invalid (e.g., no targets or wrong axis.)
-    virtual absl::optional<LayoutUnit> Evaluate(
+    virtual absl::optional<LayoutUnit> EvaluateAnchor(
         const AtomicString& anchor_name,
-        AnchorValue anchor_value) const = 0;
+        AnchorValue anchor_value) const;
+    virtual absl::optional<LayoutUnit> EvaluateAnchorSize(
+        const AtomicString& anchor_name,
+        AnchorSizeValue anchor_size_value) const;
   };
   float NonNanCalculatedValue(LayoutUnit max_value,
                               const AnchorEvaluator* = nullptr) const;

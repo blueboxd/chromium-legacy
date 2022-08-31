@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
@@ -34,6 +33,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/test_virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -44,12 +44,11 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
@@ -57,6 +56,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::UTF8ToUTF16;
+using testing::_;
 
 namespace autofill {
 namespace {
@@ -72,6 +72,7 @@ constexpr char kDefaultZip[] = "94102";
 constexpr char kDefaultCity[] = "Los Angeles";
 constexpr char kDefaultDependentLocality[] = "Nob Hill";
 constexpr char kDefaultState[] = "California";
+constexpr char kDefaultCountry[] = "US";
 constexpr char kDefaultPhone[] = "+1 650-555-0000";
 constexpr char kDefaultPhoneAlternativeFormatting[] = "650-555-0000";
 constexpr char kDefaultPhoneDomesticFormatting[] = "(650) 555-0000";
@@ -104,7 +105,10 @@ constexpr char kThirdDependentLocality[] = "Down Town";
 constexpr char kThirdState[] = "Oregon";
 constexpr char kThirdPhone[] = "+1 851-777-2222";
 
+constexpr char kDefaultCreditCardName[] = "Biggie Smalls";
 constexpr char kDefaultCreditCardNumber[] = "4111 1111 1111 1111";
+constexpr char kDefaultCreditCardExpMonth[] = "01";
+constexpr char kDefaultCreditCardExpYear[] = "2999";
 
 // For a given ServerFieldType |type| returns a pair of field name and label
 // that should be parsed into this type by our field type parsers.
@@ -125,7 +129,10 @@ std::pair<std::string, std::string> GetLabelAndNameForType(
           {ADDRESS_HOME_DEPENDENT_LOCALITY, {"Neighborhood:", "neighborhood"}},
           {ADDRESS_HOME_COUNTRY, {"Country:", "country"}},
           {PHONE_HOME_WHOLE_NUMBER, {"Phone:", "phone"}},
+          {CREDIT_CARD_NAME_FULL, {"Name on card:", "name_on_card"}},
           {CREDIT_CARD_NUMBER, {"Credit Card Number:", "card_number"}},
+          {CREDIT_CARD_EXP_MONTH, {"Exp Month:", "exp_month"}},
+          {CREDIT_CARD_EXP_4_DIGIT_YEAR, {"Exp Year:", "exp_year"}},
       };
   auto it = name_type_map.find(type);
   if (it == name_type_map.end()) {
@@ -213,7 +220,23 @@ GetDefaultProfileTypeValuePairs() {
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
   };
+}
+
+// Wraps `GetDefaultProfileTypeValuePairs()` but replaces `kDefaultCountry` with
+// `country`. If `country` is empty, ADDRESS_HOME_COUNTRY is removed entirely.
+std::vector<std::pair<ServerFieldType, std::string>>
+GetDefaultProfileTypeValuePairsWithOverriddenCountry(
+    const std::string& country) {
+  constexpr int kCountryIndex = 9;
+  auto pairs = GetDefaultProfileTypeValuePairs();
+  DCHECK_EQ(pairs[kCountryIndex].first, ADDRESS_HOME_COUNTRY);
+  if (country.empty())
+    pairs.erase(pairs.begin() + kCountryIndex);
+  else
+    pairs[kCountryIndex].second = country;
+  return pairs;
 }
 
 // Same as |GetDefaultProfileTypeValuePairs()|, but split into two parts to test
@@ -224,9 +247,12 @@ GetSplitDefaultProfileTypeValuePairs(int part) {
   DCHECK(part == 1 || part == 2);
   if (part == 1) {
     return {
-        {NAME_FIRST, kDefaultFirstName},     {NAME_LAST, kDefaultLastName},
-        {EMAIL_ADDRESS, kDefaultMail},       {ADDRESS_HOME_CITY, kDefaultCity},
+        {NAME_FIRST, kDefaultFirstName},
+        {NAME_LAST, kDefaultLastName},
+        {EMAIL_ADDRESS, kDefaultMail},
+        {ADDRESS_HOME_CITY, kDefaultCity},
         {ADDRESS_HOME_STATE, kDefaultState},
+        {ADDRESS_HOME_COUNTRY, kDefaultCountry},
     };
   } else {
     return {
@@ -236,15 +262,6 @@ GetSplitDefaultProfileTypeValuePairs(int part) {
         {ADDRESS_HOME_ZIP, kDefaultZip},
     };
   }
-}
-
-// Same as |GetDefaultProfileTypeValuePairs()| but with ADDRESS_HOME_COUNTRY
-// set to |country|.
-std::vector<std::pair<ServerFieldType, std::string>>
-GetDefaultProfileTypeValuePairsWithCountry(const std::string& country) {
-  auto profile_typed_value_pairs = GetDefaultProfileTypeValuePairs();
-  profile_typed_value_pairs.emplace_back(ADDRESS_HOME_COUNTRY, country);
-  return profile_typed_value_pairs;
 }
 
 // Same as |GetDefaultProfileTypeValuePairs()| but with the second profile
@@ -261,6 +278,7 @@ GetSecondProfileTypeValuePairs() {
       {ADDRESS_HOME_CITY, kSecondCity},
       {ADDRESS_HOME_STATE, kSecondState},
       {ADDRESS_HOME_ZIP, kSecondZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
   };
 }
 
@@ -278,6 +296,18 @@ GetThirdProfileTypeValuePairs() {
       {ADDRESS_HOME_CITY, kThirdCity},
       {ADDRESS_HOME_STATE, kThirdState},
       {ADDRESS_HOME_ZIP, kThirdZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
+  };
+}
+
+// Same as `GetDefaultProfileTypeValuePairs()`, but for credit cards.
+std::vector<std::pair<ServerFieldType, std::string>>
+GetDefaultCreditCardTypeValuePairs() {
+  return {
+      {CREDIT_CARD_NAME_FULL, kDefaultCreditCardName},
+      {CREDIT_CARD_NUMBER, kDefaultCreditCardNumber},
+      {CREDIT_CARD_EXP_MONTH, kDefaultCreditCardExpMonth},
+      {CREDIT_CARD_EXP_4_DIGIT_YEAR, kDefaultCreditCardExpYear},
   };
 }
 
@@ -286,10 +316,12 @@ AutofillProfile ConstructDefaultProfile() {
   return ConstructProfileFromTypeValuePairs(GetDefaultProfileTypeValuePairs());
 }
 
-// Same as |ConstructDefaultProfile()| but with |country|.
-AutofillProfile ConstructDefaultProfileWithCountry(const std::string& country) {
+// Wraps `ConstructDefaultProfile()`, but overrides ADDRESS_HOME_COUNTRY with
+// `country`.
+AutofillProfile ConstructDefaultProfileWithOverriddenCountry(
+    const std::string& country) {
   return ConstructProfileFromTypeValuePairs(
-      GetDefaultProfileTypeValuePairsWithCountry(country));
+      GetDefaultProfileTypeValuePairsWithOverriddenCountry(country));
 }
 
 // Returns the second AutofillProfile used in this test file.
@@ -318,13 +350,6 @@ std::unique_ptr<FormStructure> ConstructSplitDefaultProfileFormStructure(
       GetSplitDefaultProfileTypeValuePairs(part));
 }
 
-// Same as |ConstructDefaultFormStructure()| but with |country|.
-std::unique_ptr<FormStructure> ConstructDefaultProfileFormStructureWithCountry(
-    const std::string& country) {
-  return ConstructFormStructureFromTypeValuePairs(
-      GetDefaultProfileTypeValuePairsWithCountry(country));
-}
-
 // Same as |ConstructDefaultFormStructure()| but for the second profile.
 std::unique_ptr<FormStructure> ConstructSecondProfileFormStructure() {
   return ConstructFormStructureFromTypeValuePairs(
@@ -335,6 +360,12 @@ std::unique_ptr<FormStructure> ConstructSecondProfileFormStructure() {
 std::unique_ptr<FormStructure> ConstructThirdProfileFormStructure() {
   return ConstructFormStructureFromTypeValuePairs(
       GetThirdProfileTypeValuePairs());
+}
+
+// Same as `ConstructDefaultFormStructure()` but for credit cards.
+std::unique_ptr<FormStructure> ConstructDefaultCreditCardFormStructure() {
+  return ConstructFormStructureFromTypeValuePairs(
+      GetDefaultCreditCardTypeValuePairs());
 }
 
 // Constructs a |FormData| instance that carries the information of the default
@@ -394,6 +425,32 @@ auto UnorderedElementsCompareEqual(Matchers... matchers) {
 
 }  // anonymous namespace
 
+class MockVirtualCardEnrollmentManager
+    : public TestVirtualCardEnrollmentManager {
+ public:
+  MockVirtualCardEnrollmentManager(
+      TestPersonalDataManager* personal_data_manager,
+      payments::TestPaymentsClient* payments_client,
+      TestAutofillClient* autofill_client)
+      : TestVirtualCardEnrollmentManager(personal_data_manager,
+                                         payments_client,
+                                         autofill_client){};
+  MOCK_METHOD(
+      void,
+      InitVirtualCardEnroll,
+      (const CreditCard& credit_card,
+       VirtualCardEnrollmentSource virtual_card_enrollment_source,
+       absl::optional<
+           payments::PaymentsClient::GetDetailsForEnrollmentResponseDetails>
+           get_details_for_enrollment_response_details,
+       const raw_ptr<PrefService> user_prefs,
+       VirtualCardEnrollmentManager::RiskAssessmentFunction
+           risk_assessment_function,
+       VirtualCardEnrollmentManager::VirtualCardEnrollmentFieldsLoadedCallback
+           virtual_card_enrollment_fields_loaded_callback),
+      (override));
+};
+
 class FormDataImporterTestBase {
  protected:
   FormDataImporterTestBase() : autofill_table_(nullptr) {}
@@ -404,6 +461,9 @@ class FormDataImporterTestBase {
     // reference to `personal_data_manager_` that otherwise points to garbage.
     form_data_importer_.reset();
 
+    if (personal_data_manager_) {
+      personal_data_manager_->Shutdown();
+    }
     personal_data_manager_ = std::make_unique<PersonalDataManager>("en", "US");
     personal_data_manager_->set_auto_accept_address_imports_for_testing(true);
     personal_data_manager_->Init(
@@ -411,7 +471,7 @@ class FormDataImporterTestBase {
         /*account_database=*/nullptr,
         /*pref_service=*/prefs_.get(),
         /*local_state=*/prefs_.get(),
-        /*identity_manager=*/nullptr,
+        /*identity_manager=*/identity_test_env_.identity_manager(),
         /*history_service=*/nullptr,
         /*strike_database=*/nullptr,
         /*image_fetcher=*/nullptr,
@@ -427,6 +487,12 @@ class FormDataImporterTestBase {
         std::make_unique<FormDataImporter>(autofill_client_.get(),
                                            /*payments::PaymentsClient=*/nullptr,
                                            personal_data_manager_.get(), "en");
+    auto virtual_card_enrollment_manager =
+        std::make_unique<MockVirtualCardEnrollmentManager>(
+            nullptr, nullptr, autofill_client_.get());
+    virtual_card_enrollment_manager_ = virtual_card_enrollment_manager.get();
+    form_data_importer_->virtual_card_enrollment_manager_ =
+        std::move(virtual_card_enrollment_manager);
   }
 
   void SetUpHelper() {
@@ -454,6 +520,12 @@ class FormDataImporterTestBase {
     // Reset the deduping pref to its default value.
     personal_data_manager_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
+  }
+
+  void TearDownHelper() {
+    if (personal_data_manager_) {
+      personal_data_manager_->Shutdown();
+    }
   }
 
   // Helper method that will add credit card fields in |form|, according to the
@@ -621,6 +693,7 @@ class FormDataImporterTestBase {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
+  signin::IdentityTestEnvironment identity_test_env_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
   raw_ptr<AutofillTable> autofill_table_;  // weak ref
@@ -628,6 +701,7 @@ class FormDataImporterTestBase {
   std::unique_ptr<TestAutofillClient> autofill_client_;
   std::unique_ptr<PersonalDataManager> personal_data_manager_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
+  MockVirtualCardEnrollmentManager* virtual_card_enrollment_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -652,6 +726,8 @@ class FormDataImporterTest
     InitializeFeatures();
     SetUpHelper();
   }
+
+  void TearDown() override { TearDownHelper(); }
 
   void InitializeFeatures() {
     support_for_apartment_numbers_ = std::get<0>(GetParam());
@@ -709,32 +785,33 @@ TEST_P(FormDataImporterTest, ComplementCountry) {
   complement_country_feature.InitAndEnableFeature(
       features::kAutofillComplementCountryCodeOnImport);
 
-  auto import_with_country =
+  auto ImportWithCountry =
       [this](const std::string& form_country,
              const std::vector<AutofillProfile>& expected_profiles) {
         // Remove existing profiles, to prevent an update instead of an import.
         personal_data_manager_->ClearAllLocalData();
 
         std::unique_ptr<FormStructure> form_structure =
-            form_country.empty()
-                ? ConstructDefaultProfileFormStructure()
-                : ConstructDefaultProfileFormStructureWithCountry(form_country);
+            ConstructFormStructureFromTypeValuePairs(
+                GetDefaultProfileTypeValuePairsWithOverriddenCountry(
+                    form_country));
         ImportAddressProfilesAndVerifyExpectation(*form_structure,
                                                   expected_profiles);
       };
 
   // Country part of the form:
   // If a valid country was entered, use that.
-  import_with_country("Germany", {ConstructDefaultProfileWithCountry("DE")});
+  ImportWithCountry("Germany",
+                    {ConstructDefaultProfileWithOverriddenCountry("DE")});
   // Reject the profile if an invalid country was entered.
-  import_with_country("Somewhere", {});
+  ImportWithCountry("Somewhere", {});
   // Country not part of the form: Complement using
   // FormDataImporter::GetPredictedCountryCode
   // If no variation config country code is available, default to locale (US)
-  import_with_country("", {ConstructDefaultProfileWithCountry("US")});
+  ImportWithCountry("", {ConstructDefaultProfileWithOverriddenCountry("US")});
   // Prefer variation config country code over locale
   autofill_client_->SetVariationConfigCountryCode("DE");
-  import_with_country("", {ConstructDefaultProfileWithCountry("DE")});
+  ImportWithCountry("", {ConstructDefaultProfileWithOverriddenCountry("DE")});
 }
 
 TEST_P(FormDataImporterTest, InvalidPhoneNumber) {
@@ -784,9 +861,12 @@ TEST_P(FormDataImporterTest, PhoneNumberRegionMetrics) {
         // Remove existing profiles, to prevent an update instead of an import.
         personal_data_manager_->ClearAllLocalData();
 
+        // In order to test the phone number region deduction via the variation
+        // country code and app local, the form cannot contain a country field.
+        // Passing an empty country archives that.
         std::vector<std::pair<ServerFieldType, std::string>>
             profile_with_invalid_phone_number =
-                GetDefaultProfileTypeValuePairs();
+                GetDefaultProfileTypeValuePairsWithOverriddenCountry("");
         ASSERT_EQ(profile_with_invalid_phone_number[3].first,
                   PHONE_HOME_WHOLE_NUMBER);
         profile_with_invalid_phone_number[3].second = number;
@@ -1236,7 +1316,8 @@ TEST_P(FormDataImporterTest,
        {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
        {ADDRESS_HOME_CITY, kDefaultCity},
        {ADDRESS_HOME_STATE, kDefaultState},
-       {ADDRESS_HOME_ZIP, kDefaultZip}});
+       {ADDRESS_HOME_ZIP, kDefaultZip},
+       {ADDRESS_HOME_COUNTRY, kDefaultCountry}});
 
   form_data.fields[3].max_length = 3;
   form_data.fields[4].max_length = 3;
@@ -1260,7 +1341,8 @@ TEST_P(FormDataImporterTest,
            {ADDRESS_HOME_LINE1, kDefaultAddressLine1},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
-           {ADDRESS_HOME_ZIP, kDefaultZip}})});
+           {ADDRESS_HOME_ZIP, kDefaultZip},
+           {ADDRESS_HOME_COUNTRY, kDefaultCountry}})});
 }
 
 // Tests that not enough filled fields will result in not importing an address.
@@ -1340,7 +1422,8 @@ TEST_P(FormDataImporterTest,
        {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
        {ADDRESS_HOME_CITY, kDefaultCity},
        {ADDRESS_HOME_STATE, kDefaultState},
-       {ADDRESS_HOME_ZIP, kDefaultZip}});
+       {ADDRESS_HOME_ZIP, kDefaultZip},
+       {ADDRESS_HOME_COUNTRY, kDefaultCountry}});
 
   // Define the length of the phone number fields to allow the parser to
   // identify them as area code, prefix and suffix.
@@ -1361,7 +1444,8 @@ TEST_P(FormDataImporterTest,
            {ADDRESS_HOME_DEPENDENT_LOCALITY, kDefaultDependentLocality},
            {ADDRESS_HOME_CITY, kDefaultCity},
            {ADDRESS_HOME_STATE, kDefaultState},
-           {ADDRESS_HOME_ZIP, kDefaultZip}})});
+           {ADDRESS_HOME_ZIP, kDefaultZip},
+           {ADDRESS_HOME_COUNTRY, kDefaultCountry}})});
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfiles_UnFocussableFields) {
@@ -1505,6 +1589,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
       {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneDomesticFormatting},
   };
   AutofillProfile initial_profile =
@@ -1563,6 +1648,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
       {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
   };
   AutofillProfile initial_profile =
@@ -1600,6 +1686,7 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
       {ADDRESS_HOME_CITY, kDefaultCity},
       {ADDRESS_HOME_STATE, kDefaultState},
       {ADDRESS_HOME_ZIP, kDefaultZip},
+      {ADDRESS_HOME_COUNTRY, kDefaultCountry},
       {PHONE_HOME_WHOLE_NUMBER, kDefaultPhone},
   });
   // Create a superset that includes a new email address.
@@ -2082,18 +2169,11 @@ TEST_P(FormDataImporterTest,
 
 // Tests that a valid credit card is extracted.
 TEST_P(FormDataImporterTest, ImportCreditCard_Valid) {
-  // Add a single valid credit card form.
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2999");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultCreditCardFormStructure();
   std::unique_ptr<CreditCard> imported_credit_card;
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
+  EXPECT_TRUE(ImportCreditCard(*form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   histogram_tester.ExpectUniqueSample(
       "Autofill.SubmittedCardState",
@@ -2213,16 +2293,10 @@ TEST_P(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
 
 TEST_P(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
   // Start with a single valid credit card form.
-  FormData form1;
-  form1.url = GURL("https://wwww.foo.com");
-
-  AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2999");
-
-  FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(nullptr, nullptr);
+  std::unique_ptr<FormStructure> form_structure1 =
+      ConstructDefaultCreditCardFormStructure();
   std::unique_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
+  EXPECT_TRUE(ImportCreditCard(*form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
@@ -3165,6 +3239,8 @@ TEST_P(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country", "US", "text", &field);
+  form.fields.push_back(field);
 
   // Credit card section.
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
@@ -3189,7 +3265,7 @@ TEST_P(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
   AutofillProfile expected_address(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
-                       "San Francisco", "California", "94102", "", nullptr);
+                       "San Francisco", "California", "94102", "US", nullptr);
   const std::vector<AutofillProfile*>& results_addr =
       personal_data_manager_->GetProfiles();
   ASSERT_EQ(1U, results_addr.size());
@@ -3427,6 +3503,8 @@ TEST_P(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country", "US", "text", &field);
+  form.fields.push_back(field);
 
   // Credit card section.
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
@@ -3450,7 +3528,7 @@ TEST_P(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
   AutofillProfile expected_address(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
-                       "San Francisco", "California", "94102", "", nullptr);
+                       "San Francisco", "California", "94102", "US", nullptr);
   const std::vector<AutofillProfile*>& results_addr =
       personal_data_manager_->GetProfiles();
   ASSERT_EQ(1U, results_addr.size());
@@ -3618,19 +3696,12 @@ TEST_P(FormDataImporterTest, ImportFormData_HiddenCreditCardFormAfterEntered) {
 // UPI ID.
 TEST_P(FormDataImporterTest,
        ImportFormData_DontSetUpiIdWhenOnlyCreditCardExists) {
-  // Simulate a form submission with a new credit card.
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
-                        "2999");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultCreditCardFormStructure();
   std::unique_ptr<CreditCard> imported_credit_card;
   absl::optional<std::string> imported_upi_id;
   EXPECT_TRUE(ImportFormDataAndProcessAddressCandidates(
-      form_structure, /*profile_autofill_enabled=*/true,
+      *form_structure, /*profile_autofill_enabled=*/true,
       /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/true, &imported_credit_card,
       &imported_upi_id));
@@ -4448,13 +4519,14 @@ class FormDataImporterNonParameterizedTest : public FormDataImporterTestBase,
                                              public testing::Test {
  private:
   void SetUp() override { SetUpHelper(); }
+  void TearDown() override { TearDownHelper(); }
 };
 
 TEST_F(FormDataImporterNonParameterizedTest,
        ProcessCreditCardImportCandidate_EmptyCreditCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
-  FormData form;
-  AddFullCreditCardForm(&form, "Clyde Barrow", "378282246310005", "04", "2999");
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultCreditCardFormStructure();
 
   // |form_data_importer_|'s |imported_credit_card_record_type_| is set to
   // LOCAL_CARD because we need to make sure we do not return early in the
@@ -4469,12 +4541,58 @@ TEST_F(FormDataImporterNonParameterizedTest,
   personal_data_manager_->OnSyncServiceInitialized(&sync_service);
 
   EXPECT_FALSE(form_data_importer_->ProcessCreditCardImportCandidate(
-      FormStructure(form), std::move(imported_credit_card),
+      *form_structure, std::move(imported_credit_card),
       /*detected_upi_id=*/"",
       /*credit_card_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
   personal_data_manager_->OnSyncServiceInitialized(nullptr);
 }
+
+#if !BUILDFLAG(IS_IOS)
+TEST_F(FormDataImporterNonParameterizedTest,
+       ProcessCreditCardImportCandidate_VirtualCardEligible) {
+  CreditCard imported_credit_card = test::GetMaskedServerCard();
+  imported_credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
+  imported_credit_card.set_instrument_id(1111);
+  imported_credit_card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE);
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultCreditCardFormStructure();
+
+  form_data_importer_->imported_credit_card_record_type_ =
+      FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD;
+  form_data_importer_->SetFetchedCardInstrumentId(2222);
+
+  // We need a sync service so that
+  // LocalCardMigrationManager::ShouldOfferLocalCardMigration() does not
+  // crash.
+  syncer::TestSyncService sync_service;
+  personal_data_manager_->OnSyncServiceInitialized(&sync_service);
+
+  EXPECT_CALL(*virtual_card_enrollment_manager_,
+              InitVirtualCardEnroll(_, VirtualCardEnrollmentSource::kDownstream,
+                                    _, _, _, _))
+      .Times(0);
+  EXPECT_FALSE(form_data_importer_->ProcessCreditCardImportCandidate(
+      *form_structure, std::make_unique<CreditCard>(imported_credit_card),
+      /*detected_upi_id=*/"",
+      /*credit_card_autofill_enabled=*/true,
+      /*is_credit_card_upstream_enabled=*/true));
+
+  form_data_importer_->SetFetchedCardInstrumentId(1111);
+  EXPECT_CALL(*virtual_card_enrollment_manager_,
+              InitVirtualCardEnroll(_, VirtualCardEnrollmentSource::kDownstream,
+                                    _, _, _, _))
+      .Times(1);
+  EXPECT_TRUE(form_data_importer_->ProcessCreditCardImportCandidate(
+      *form_structure, std::make_unique<CreditCard>(imported_credit_card),
+      /*detected_upi_id=*/"",
+      /*credit_card_autofill_enabled=*/true,
+      /*is_credit_card_upstream_enabled=*/true));
+
+  personal_data_manager_->OnSyncServiceInitialized(nullptr);
+}
+#endif
 
 TEST_F(FormDataImporterNonParameterizedTest,
        ShouldOfferUploadCardOrLocalCardSave) {

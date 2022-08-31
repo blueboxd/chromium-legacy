@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar.optional_button;
 
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +16,15 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.ButtonData;
+import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.widget.highlight.PulseDrawable.Bounds;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightParams;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightShape;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -35,6 +40,7 @@ public class OptionalButtonCoordinator {
     private final OptionalButtonMediator mMediator;
     private final OptionalButtonView mView;
     private final UserEducationHelper mUserEducationHelper;
+    private final Tracker mFeatureEngagementTracker;
     private Callback<Integer> mTransitionFinishedCallback;
     private IPHCommandBuilder mIphCommandBuilder;
 
@@ -49,48 +55,44 @@ public class OptionalButtonCoordinator {
         int COLLAPSING_ACTION_CHIP = 4;
     }
 
-    public OptionalButtonCoordinator(View view, UserEducationHelper userEducationHelper) {
+    /**
+     * Creates a new instance of OptionalButtonCoordinator
+     * @param view An instance of OptionalButtonView to bind to.
+     * @param userEducationHelper Used to display highlight the button with IPH if needed.
+     * @param transitionRoot ViewGroup that contains all the views that will be affected by our
+     *         transitions.
+     * @param isAnimationAllowedPredicate A BooleanProvider that is called before all transitions to
+     *         determine if said transition should be animated or not.
+     */
+    public OptionalButtonCoordinator(View view, UserEducationHelper userEducationHelper,
+            ViewGroup transitionRoot, BooleanSupplier isAnimationAllowedPredicate,
+            Tracker featureEngagementTracker) {
         mUserEducationHelper = userEducationHelper;
-        PropertyModel model = new PropertyModel.Builder(OptionalButtonProperties.ALL_KEYS)
-                                      .with(OptionalButtonProperties.TRANSITION_FINISHED_CALLBACK,
-                                              this::onTransitionFinishedCallback)
-                                      .build();
+        PropertyModel model =
+                new PropertyModel.Builder(OptionalButtonProperties.ALL_KEYS)
+                        .with(OptionalButtonProperties.TRANSITION_FINISHED_CALLBACK,
+                                this::onTransitionFinishedCallback)
+                        .with(OptionalButtonProperties.TRANSITION_ROOT, transitionRoot)
+                        .with(OptionalButtonProperties.IS_ANIMATION_ALLOWED_PREDICATE,
+                                isAnimationAllowedPredicate)
+                        .build();
 
         assert view instanceof OptionalButtonView;
 
-        this.mView = (OptionalButtonView) view;
+        mView = (OptionalButtonView) view;
 
         PropertyModelChangeProcessor.create(model, mView, OptionalButtonViewBinder::bind);
 
         mMediator = new OptionalButtonMediator(model);
+        mFeatureEngagementTracker = featureEngagementTracker;
     }
 
     public void setPaddingStart(int paddingStart) {
         mMediator.setPaddingStart(paddingStart);
     }
 
-    /**
-     * Sets the ViewGroup that contains all the views that will be affected by our transitions. It
-     * has to be the parent view because the action chip width changes affect our sibling views.
-     * @param transitionRoot
-     */
-    public void setTransitionRoot(ViewGroup transitionRoot) {
-        mMediator.setTransitionRoot(transitionRoot);
-    }
-
     public void setOnBeforeHideTransitionCallback(Runnable onBeforeHideTransitionCallback) {
         mMediator.setOnBeforeHideTransitionCallback(onBeforeHideTransitionCallback);
-    }
-
-    /**
-     * Sets a callable that returns a boolean, this is called before any icon updates to ensure that
-     * the containing view is in a state that allows animations. If animations aren't allowed then
-     * the icon update is done instantly without any animation. Even if animations are not allowed
-     * all callbacks are called instantly in order.
-     * @param isAnimationAllowedPredicate
-     */
-    public void setIsAnimationAllowedPredicate(BooleanSupplier isAnimationAllowedPredicate) {
-        mMediator.setIsAnimationAllowedPredicate(isAnimationAllowedPredicate);
     }
 
     /**
@@ -126,6 +128,17 @@ public class OptionalButtonCoordinator {
             mIphCommandBuilder = null;
         }
 
+        if (buttonData != null
+                && buttonData.getButtonSpec().getButtonVariant()
+                        == AdaptiveToolbarButtonVariant.PRICE_TRACKING
+                && buttonData.getButtonSpec().getActionChipLabelResId() != Resources.ID_NULL) {
+            if (!mFeatureEngagementTracker.isInitialized()
+                    || !mFeatureEngagementTracker.shouldTriggerHelpUI(
+                            FeatureConstants.CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING_ACTION_CHIP)) {
+                ((ButtonDataImpl) buttonData).updateActionChipResourceId(Resources.ID_NULL);
+            }
+        }
+
         mMediator.updateButton(buttonData);
     }
 
@@ -157,7 +170,11 @@ public class OptionalButtonCoordinator {
     }
 
     /**
-     * Updates the color filter of the background to match the current theme/website color.
+     * Updates the color filter of the background to match the current address bar background color.
+     * This color is only used when showing a contextual action button (when {@link
+     * #updateButton(ButtonData)} is called with a {@link
+     * org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec} where {@code isDynamicAction()} is
+     * true).
      * @param backgroundColor
      */
     public void setBackgroundColorFilter(int backgroundColor) {
@@ -193,6 +210,16 @@ public class OptionalButtonCoordinator {
     private void onTransitionFinishedCallback(@TransitionType int transitionType) {
         if (mTransitionFinishedCallback != null) {
             mTransitionFinishedCallback.onResult(transitionType);
+        }
+
+        if (transitionType == TransitionType.EXPANDING_ACTION_CHIP) {
+            // Record an event in feature engagement to limit the amount of times we show the action
+            // chip.
+            mFeatureEngagementTracker.addOnInitializedCallback(isReady -> {
+                if (!isReady) return;
+                mFeatureEngagementTracker.dismissed(
+                        FeatureConstants.CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING_ACTION_CHIP);
+            });
         }
 
         if (mIphCommandBuilder != null) {

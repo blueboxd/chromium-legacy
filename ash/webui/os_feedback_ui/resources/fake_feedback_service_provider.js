@@ -40,6 +40,10 @@ export class FakeFeedbackServiceProvider {
       openDiagnosticsApp: 0,
       /** @type {number} */
       openExploreApp: 0,
+      /** @type {number} */
+      openMetricsDialog: 0,
+      /** @type {number} */
+      openSystemInfoDialog: 0,
     };
   }
 
@@ -146,5 +150,33 @@ export class FakeFeedbackServiceProvider {
    */
   openExploreApp() {
     this.callCounts_.openExploreApp++;
+  }
+
+  /**
+   * @return {number}
+   */
+  getOpenMetricsDialogCallCount() {
+    return this.callCounts_.openMetricsDialog;
+  }
+
+  /**
+   * @return {void}
+   */
+  openMetricsDialog() {
+    this.callCounts_.openMetricsDialog++;
+  }
+
+  /**
+   * @return {number}
+   */
+  getOpenSystemInfoDialogCallCount() {
+    return this.callCounts_.openSystemInfoDialog;
+  }
+
+  /**
+   * @return {void}
+   */
+  openSystemInfoDialog() {
+    this.callCounts_.openSystemInfoDialog++;
   }
 }

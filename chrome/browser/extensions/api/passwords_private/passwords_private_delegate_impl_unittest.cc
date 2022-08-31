@@ -198,8 +198,9 @@ MATCHER_P(PasswordUiEntryDataEquals, expected, "") {
   return testing::Value(expected.get().urls.link, arg.urls.link) &&
          testing::Value(expected.get().username, arg.username) &&
          testing::Value(expected.get().password_note, arg.password_note) &&
-         testing::Value(expected.get().from_account_store,
-                        arg.from_account_store);
+         testing::Value(expected.get().stored_in, arg.stored_in) &&
+         testing::Value(expected.get().is_android_credential,
+                        arg.is_android_credential);
 }
 
 }  // namespace
@@ -286,7 +287,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest,
-       PasswordsDuplicatedInStoresHaveSameFrontendId) {
+       PasswordsDuplicatedInStoresAreRepresentedAsSingleEntity) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
   password_manager::PasswordForm account_password =
@@ -297,16 +298,13 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   SetUpPasswordStores({account_password, profile_password});
 
   base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback> callback;
-  int first_frontend_id, second_frontend_id;
-  EXPECT_CALL(callback, Run(SizeIs(2)))
+  EXPECT_CALL(callback, Run(SizeIs(1)))
       .WillOnce([&](const PasswordsPrivateDelegate::UiEntries& passwords) {
-        first_frontend_id = passwords[0].frontend_id;
-        second_frontend_id = passwords[1].frontend_id;
+        EXPECT_EQ(api::passwords_private::PASSWORD_STORE_SET_DEVICE_AND_ACCOUNT,
+                  passwords[0].stored_in);
       });
 
   delegate.GetSavedPasswordsList(callback.Get());
-
-  EXPECT_EQ(first_frontend_id, second_frontend_id);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
@@ -325,9 +323,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest,
-       ExceptionsDuplicatedInStoresHaveSameFrontendId) {
+       ExceptionsDuplicatedInStoresAreRepresentedAsSingleEntity) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
-
   password_manager::PasswordForm account_exception;
   account_exception.blocked_by_user = true;
   account_exception.url = GURL("https://test.com");
@@ -343,17 +340,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
 
   base::MockCallback<PasswordsPrivateDelegate::ExceptionEntriesCallback>
       callback;
-  int first_frontend_id, second_frontend_id;
-  EXPECT_CALL(callback, Run(SizeIs(2)))
-      .WillOnce(
-          [&](const PasswordsPrivateDelegate::ExceptionEntries& exceptions) {
-            first_frontend_id = exceptions[0].frontend_id;
-            second_frontend_id = exceptions[1].frontend_id;
-          });
 
+  EXPECT_CALL(callback, Run(SizeIs(1)));
   delegate.GetPasswordExceptionsList(callback.Get());
-
-  EXPECT_EQ(first_frontend_id, second_frontend_id);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, AddPassword) {
@@ -393,12 +382,13 @@ TEST_F(PasswordsPrivateDelegateImplTest, AddPassword) {
   expected_entry1.urls.link = "https://example1.com/";
   expected_entry1.username = "username1";
   expected_entry1.password_note = "";
-  expected_entry1.from_account_store = true;
+  expected_entry1.stored_in =
+      api::passwords_private::PASSWORD_STORE_SET_ACCOUNT;
   api::passwords_private::PasswordUiEntry expected_entry2;
   expected_entry2.urls.link = "http://example2.com/login";
   expected_entry2.username = "";
   expected_entry2.password_note = "note";
-  expected_entry2.from_account_store = false;
+  expected_entry2.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
   EXPECT_CALL(callback,
               Run(testing::UnorderedElementsAre(
                   PasswordUiEntryDataEquals(testing::ByRef(expected_entry1)),
@@ -960,6 +950,29 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestMovePasswordsToAccountStore) {
       password_manager::metrics_util::MoveToAccountStoreTrigger::
           kExplicitlyTriggeredInSettings,
       2);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, AndroidCredential) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  password_manager::PasswordForm android_form;
+  android_form.signon_realm = "android://hash@example.com";
+  android_form.username_value = u"test@gmail.com";
+  android_form.in_store = password_manager::PasswordForm::Store::kProfileStore;
+  SetUpPasswordStores({android_form});
+
+  base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback> callback;
+
+  api::passwords_private::PasswordUiEntry expected_entry;
+  expected_entry.urls.link =
+      "https://play.google.com/store/apps/details?id=example.com";
+  expected_entry.username = "test@gmail.com";
+  expected_entry.password_note = "";
+  expected_entry.is_android_credential = true;
+  expected_entry.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
+  EXPECT_CALL(callback, Run(testing::ElementsAre(PasswordUiEntryDataEquals(
+                            testing::ByRef(expected_entry)))));
+  delegate.GetSavedPasswordsList(callback.Get());
 }
 
 }  // namespace extensions

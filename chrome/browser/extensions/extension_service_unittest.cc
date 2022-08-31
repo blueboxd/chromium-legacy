@@ -1861,7 +1861,7 @@ TEST_F(ExtensionServiceTest,
   };
 
   auto get_active_permissions = [prefs, id]() {
-    return prefs->GetActivePermissions(id);
+    return prefs->GetDesiredActivePermissions(id);
   };
 
   APIPermissionSet tabs_permission_set;
@@ -4376,7 +4376,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   GrantAllOptionalPermissions(ext2_forced);
 
   std::unique_ptr<const PermissionSet> active_permissions =
-      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1);
+      ExtensionPrefs::Get(profile())->GetDesiredActivePermissions(ext1);
   EXPECT_TRUE(
       active_permissions->HasAPIPermission(APIPermissionID::kDownloads));
 
@@ -4391,7 +4391,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   // 'ext1' should still be enabled, but with 'downloads' permission revoked.
   EXPECT_TRUE(registry->enabled_extensions().GetByID(ext1));
   active_permissions =
-      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1);
+      ExtensionPrefs::Get(profile())->GetDesiredActivePermissions(ext1);
   EXPECT_FALSE(
       active_permissions->HasAPIPermission(APIPermissionID::kDownloads));
 
@@ -4933,6 +4933,29 @@ TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
   TerminateExtension(good_crx);
   UninstallExtension(good_crx);
   EXPECT_EQ(UnloadedExtensionReason::TERMINATE, unloaded_reason());
+}
+
+TEST_F(ExtensionServiceTest, UninstallBlockedExtension) {
+  InitializeEmptyExtensionService();
+
+  MockExtensionRegistryObserver observer;
+  registry()->AddObserver(&observer);
+
+  ASSERT_TRUE(observer.last_extension_installed.empty());
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  ASSERT_EQ(good_crx, observer.last_extension_installed);
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+
+  BlockAllExtensions();
+  EXPECT_EQ(UnloadedExtensionReason::LOCK_ALL, unloaded_reason());
+  EXPECT_EQ(1u, registry()->blocked_extensions().size());
+
+  ASSERT_TRUE(observer.last_extension_uninstalled.empty());
+  UninstallExtension(good_crx);
+  ASSERT_EQ(good_crx, observer.last_extension_uninstalled);
+  EXPECT_EQ(0u, registry()->blocked_extensions().size());
+
+  registry()->RemoveObserver(&observer);
 }
 
 // An extension disabled because of unsupported requirements should re-enabled

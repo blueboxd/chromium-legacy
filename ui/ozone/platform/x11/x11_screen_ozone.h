@@ -51,13 +51,14 @@ class X11ScreenOzone : public PlatformScreen,
       const gfx::Point& point) const override;
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
-  bool SetScreenSaverSuspended(bool suspend) override;
+  std::unique_ptr<PlatformScreen::PlatformScreenSaverSuspender>
+  SuspendScreenSaver() override;
   bool IsScreenSaverActive() const override;
   base::TimeDelta CalculateIdleTime() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
   std::string GetCurrentWorkspace() override;
-  std::vector<base::Value> GetGpuExtraInfo(
+  base::Value::List GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info) override;
   void SetDeviceScaleFactor(float scale) override;
 
@@ -66,6 +67,22 @@ class X11ScreenOzone : public PlatformScreen,
 
  private:
   friend class X11ScreenOzoneTest;
+
+  class X11ScreenSaverSuspender
+      : public PlatformScreen::PlatformScreenSaverSuspender {
+   public:
+    X11ScreenSaverSuspender(const X11ScreenSaverSuspender&) = delete;
+    X11ScreenSaverSuspender& operator=(const X11ScreenSaverSuspender&) = delete;
+
+    ~X11ScreenSaverSuspender() override;
+
+    static std::unique_ptr<X11ScreenSaverSuspender> Create();
+
+   private:
+    X11ScreenSaverSuspender();
+
+    bool is_suspending_ = false;
+  };
 
   // Overridden from ui::XDisplayManager::Delegate:
   void OnXDisplayListUpdated() override;

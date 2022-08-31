@@ -123,7 +123,6 @@
 #define IDC_VIRTUAL_CARD_ENROLL         35032
 #define IDC_FOLLOW                      35033
 #define IDC_UNFOLLOW                    35034
-#define IDC_BASIC_PRINT_DEPRECATED      35035
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -344,6 +343,8 @@
 #define IDC_CONTENT_CONTEXT_RELOADFRAME 50170
 #define IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE 50171
 #define IDC_CONTENT_CONTEXT_VIEWFRAMEINFO 50172
+// User Notes.
+#define IDC_CONTENT_CONTEXT_ADD_A_NOTE 50175
 // Search items.
 #define IDC_CONTENT_CONTEXT_GOTOURL 50180
 #define IDC_CONTENT_CONTEXT_SEARCHWEBFOR 50181

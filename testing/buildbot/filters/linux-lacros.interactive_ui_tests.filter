@@ -1,9 +1,16 @@
-# TODO(crbug.com/1111979) Enable all tests on lacros.
+# Always on top is a feature of platform apps (aka packaged apps v2, aka chrome
+# apps). It allows a window to usually, but not always, stay on top of other
+# windows. It's implemented via window z-ordering, which vanilla Wayland does
+# not support. Platform apps are deprecated. It's unknown how often this feature
+# is used in the wild. It's unknown how much impact failing to implement this
+# for Lacros will cause. See https://crbug.com/1343973.
 -AppWindowTest.InitAlwaysOnTopToFullscreen
 -AppWindowTest.InitFullscreenAndAlwaysOnTop
 -AppWindowTest.InitFullscreenToAlwaysOnTop
 -AppWindowTest.RuntimeAlwaysOnTopToFullscreen
 -AppWindowTest.RuntimeFullscreenToAlwaysOnTop
+
+# TODO(crbug.com/1111979) Enable all tests on lacros.
 -BookmarkBarViewTest*
 -ChromeVisibilityObserverInteractiveTest.VisibilityTest
 -CrossSiteSubframe/DragAndDropBrowserTest.CrossSiteDrag/*
@@ -11,10 +18,6 @@
 -CrossSiteSubframe/DragAndDropBrowserTest.DragCorsSameOriginImageBetweenFrames/*
 -CrossSiteSubframe/DragAndDropBrowserTest.DragCrossOriginImageBetweenFrames/*
 -CrossSiteSubframe/DragAndDropBrowserTest.DragSameOriginImageBetweenFrames/*
--CrossSiteSubframe/DragAndDropBrowserTest.DragStartInFrame/1
--CrossSiteSubframe/DragAndDropBrowserTest.DragStartInFrame/2
--CrossSiteSubframe/DragAndDropBrowserTest.DropUrlIntoOmnibox/1
--CrossSiteSubframe/DragAndDropBrowserTest.DropUrlIntoOmnibox/2
 -DesktopWidgetTestInteractive.DesktopNativeWidgetWithModalTransientChild
 -DesktopWindowTreeHostPlatformImplTest.CaptureEventForwarding
 -DesktopWindowTreeHostPlatformImplTest.Deactivate
@@ -28,10 +31,6 @@
 -SameSiteSubframe/DragAndDropBrowserTest.DragCorsSameOriginImageBetweenFrames/*
 -SameSiteSubframe/DragAndDropBrowserTest.DragCrossOriginImageBetweenFrames/*
 -SameSiteSubframe/DragAndDropBrowserTest.DragSameOriginImageBetweenFrames/*
--SameSiteSubframe/DragAndDropBrowserTest.DragStartInFrame/1
--SameSiteSubframe/DragAndDropBrowserTest.DragStartInFrame/2
--SameSiteSubframe/DragAndDropBrowserTest.DropUrlIntoOmnibox/1
--SameSiteSubframe/DragAndDropBrowserTest.DropUrlIntoOmnibox/2
 -SitePerProcessInteractiveBrowserTest.TabAndMouseFocusNavigation
 -TabMetricsLoggerTest.CreateWindowFeaturesTestWindowActivation
 -WidgetInputMethodInteractiveTest.Activation
@@ -92,3 +91,6 @@
 -TabDragging/DetachToBrowserTabDragControllerTest.OffsetForDraggingTab/*
 -TabDragging/DetachToBrowserTabDragControllerTest.Revert*
 -TabDragging/DetachToBrowserTabDragControllerTest.SelectTabDuringDrag/*
+
+# TODO(crbug.com/1342797): Flaking on linux-lacros-rel
+-TabDragging/DetachToBrowserTabDragControllerTest.DragPinnedTabDoesNotGroup/1

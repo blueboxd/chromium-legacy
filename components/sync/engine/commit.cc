@@ -135,7 +135,12 @@ std::unique_ptr<Commit> Commit::Init(
       enabled_types, proxy_tabs_datatype_enabled, cookie_jar_mismatch,
       active_devices_invalidation_info.IsSingleClientForTypes(
           contributed_data_types),
-      active_devices_invalidation_info.fcm_registration_tokens(),
+      active_devices_invalidation_info
+          .IsSingleClientWithStandaloneInvalidationsForTypes(
+              contributed_data_types),
+      active_devices_invalidation_info.all_fcm_registration_tokens(),
+      active_devices_invalidation_info
+          .GetFcmRegistrationTokensForInterestedClients(contributed_data_types),
       commit_message);
 
   // Finally, serialize all our contributions.

@@ -60,6 +60,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -116,6 +117,15 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+try_.builder(
+    name = "lacros-arm64-generic-rel",
+    mirrors = [
+        "ci/lacros-arm64-generic-rel",
+    ],
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -197,6 +207,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(

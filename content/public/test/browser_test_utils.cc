@@ -1561,12 +1561,13 @@ base::Value EvalJsResult::ExtractList() const {
   return value.Clone();
 }
 
-void PrintTo(const EvalJsResult& bar, ::std::ostream* os) {
+std::ostream& operator<<(std::ostream& os, const EvalJsResult& bar) {
   if (!bar.error.empty()) {
-    *os << bar.error;
+    os << bar.error;
   } else {
-    *os << bar.value;
+    os << bar.value;
   }
+  return os;
 }
 
 namespace {
@@ -2375,6 +2376,11 @@ RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetKeyboardLockWidget();
 }
 
+RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->mouse_lock_widget_for_testing();
+}
+
 bool RequestKeyboardLock(WebContents* web_contents,
                          absl::optional<base::flat_set<ui::DomCode>> codes) {
   DCHECK(!codes.has_value() || !codes.value().empty());
@@ -3021,13 +3027,21 @@ class FrameFocusedObserver::FrameTreeNodeObserverImpl
   explicit FrameTreeNodeObserverImpl(FrameTreeNode* owner) : owner_(owner) {
     owner->AddObserver(this);
   }
-  ~FrameTreeNodeObserverImpl() override { owner_->RemoveObserver(this); }
+  ~FrameTreeNodeObserverImpl() override {
+    if (owner_)
+      owner_->RemoveObserver(this);
+  }
 
   void Run() { run_loop_.Run(); }
 
   void OnFrameTreeNodeFocused(FrameTreeNode* node) override {
     if (node == owner_)
       run_loop_.Quit();
+  }
+
+  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
+    if (node == owner_)
+      owner_ = nullptr;
   }
 
  private:

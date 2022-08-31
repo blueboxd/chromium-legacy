@@ -17,6 +17,7 @@ from telemetry.internal.platform import gpu_info as tgi
 #   mesa_ge_20.1
 EXPECTATIONS_DRIVER_TAGS = frozenset([
     'mesa_lt_19.1',
+    'mesa_ge_21.0',
 ])
 
 # Driver tag format: VENDOR_OPERATION_VERSION
@@ -146,6 +147,8 @@ def GetCommandDecoder(gpu_info: tgi.GPUInfo) -> str:
 
 def GetSkiaRenderer(gpu_feature_status: typing.Dict[str, str],
                     extra_browser_args: typing.List[str]) -> str:
+  # TODO(crbug.com/1343379): Remove skia-renderer-disabled tag once unittests
+  # are updated to not produce it.
   retval = 'skia-renderer-disabled'
   skia_renderer_enabled = (
       gpu_feature_status

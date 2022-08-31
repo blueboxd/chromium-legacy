@@ -6,6 +6,8 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_UTIL_H_
 
 #include <string>
+#include <utility>
+
 #include "base/values.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
@@ -30,9 +32,11 @@ ClientStatus UnexpectedDevtoolsErrorStatus(
     const std::string& file,
     int line);
 
-// Map from devtools source url to js line offset. See js_flow_util for details
-// on devtools source urls.
-using JsLineOffsets = base::flat_map<std::string, int>;
+// Map from devtools source url to js line offset pair. The js line offset pair
+// consists of the begin and end. The begin/end is the first/last line for which
+// we want to generate a stack entry. See js_flow_util for details on devtools
+// source urls.
+using JsLineOffsets = base::flat_map<std::string, std::pair<int, int>>;
 
 // Builds a ClientStatus appropriate for a JavaScript error.
 ClientStatus JavaScriptErrorStatus(
@@ -40,8 +44,7 @@ ClientStatus JavaScriptErrorStatus(
     const std::string& file,
     int line,
     const runtime::ExceptionDetails* exception,
-    const JsLineOffsets& js_line_offsets = {},
-    const int num_stack_entries_to_drop = 0);
+    const JsLineOffsets& js_line_offsets = {});
 
 // Makes sure that the given EvaluateResult exists, is successful and contains a
 // result.
@@ -51,18 +54,17 @@ ClientStatus CheckJavaScriptResult(
     T* result,
     const char* file,
     int line,
-    const JsLineOffsets& js_line_offsets = {},
-    int num_stack_entries_to_drop = 0) {
+    const JsLineOffsets& js_line_offsets = {}) {
   if (!result)
     return JavaScriptErrorStatus(reply_status, file, line, nullptr,
-                                 js_line_offsets, num_stack_entries_to_drop);
+                                 js_line_offsets);
   if (result->HasExceptionDetails())
     return JavaScriptErrorStatus(reply_status, file, line,
-                                 result->GetExceptionDetails(), js_line_offsets,
-                                 num_stack_entries_to_drop);
+                                 result->GetExceptionDetails(),
+                                 js_line_offsets);
   if (!result->GetResult())
     return JavaScriptErrorStatus(reply_status, file, line, nullptr,
-                                 js_line_offsets, num_stack_entries_to_drop);
+                                 js_line_offsets);
   return OkClientStatus();
 }
 
@@ -86,12 +88,12 @@ bool SafeGetBool(const runtime::RemoteObject* result, bool* out);
 // Add a new runtime::CallArgument to the list.
 template <typename T>
 void AddRuntimeCallArgument(
-    const T& value,
+    T&& value,
     std::vector<std::unique_ptr<runtime::CallArgument>>* arguments) {
-  arguments->emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
-          .Build());
+  arguments->emplace_back(runtime::CallArgument::Builder()
+                              .SetValue(base::Value::ToUniquePtrValue(
+                                  base::Value(std::forward<T>(value))))
+                              .Build());
 }
 
 // Add a new runtime::CallArgument from the object_id.

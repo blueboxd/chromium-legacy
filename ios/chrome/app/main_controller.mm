@@ -42,6 +42,7 @@
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/enterprise_app_agent.h"
+#import "ios/chrome/app/feed_app_agent.h"
 #import "ios/chrome/app/first_run_app_state_agent.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/safe_mode_app_state_agent.h"
@@ -87,6 +88,7 @@
 #import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
 #import "ios/chrome/browser/metrics/window_configuration_recorder.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
+#import "ios/chrome/browser/passwords/password_manager_util_ios.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
@@ -695,6 +697,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Create app state agents.
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
+  [appState addAgent:[[FeedAppAgent alloc] init]];
 
   // Create the window accessibility agent only when multiple windows are
   // possible.
@@ -1332,10 +1335,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browserState);
-  if (syncService) {
+  // Only use the fallback to the Google server when fetching favicons for
+  // normal encryption synced users because they are the only users who
+  // consented to share data to Google. The other types of synced users did not.
+  BOOL isPasswordSyncEnabled =
+      password_manager_util::IsPasswordSyncNormalEncryptionEnabled(syncService);
+  if (isPasswordSyncEnabled) {
     UpdateFaviconsStorage(
         IOSChromeFaviconLoaderFactory::GetForBrowserState(browserState),
-        syncService->IsSyncFeatureEnabled());
+        /*sync_enabled=*/isPasswordSyncEnabled);
   }
 }
 #endif

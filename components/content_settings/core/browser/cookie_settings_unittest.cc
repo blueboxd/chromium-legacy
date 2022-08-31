@@ -22,6 +22,7 @@
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,10 +115,8 @@ class CookieSettingsTest : public testing::Test {
 
  protected:
   bool ShouldDeleteCookieOnExit(const std::string& domain, bool is_https) {
-    ContentSettingsForOneType settings;
-    cookie_settings_->GetCookieSettings(&settings);
-    return cookie_settings_->ShouldDeleteCookieOnExit(settings, domain,
-                                                      is_https);
+    return cookie_settings_->ShouldDeleteCookieOnExit(
+        cookie_settings_->GetCookieSettings(), domain, is_https);
   }
 
   // There must be a valid ThreadTaskRunnerHandle in HostContentSettingsMap's
@@ -471,7 +470,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingAllowedTelemetry) {
 // should behave like normal.
 TEST_F(CookieSettingsTest, GetCookieSettingDisabledSAA) {
   base::test::ScopedFeatureList scoped_disable;
-  scoped_disable.InitAndDisableFeature(blink::features::kStorageAccessAPI);
+  scoped_disable.InitAndDisableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);
@@ -518,7 +517,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingDefaultSAA) {
 // otherwise be blocked.
 TEST_F(CookieSettingsTest, GetCookieSettingEnabledSAA) {
   base::test::ScopedFeatureList scoped_enable;
-  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+  scoped_enable.InitAndEnableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);
@@ -564,7 +563,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingEnabledSAA) {
 // grant exists.
 TEST_F(CookieSettingsTest, GetCookieSettingSAAResourceWildcards) {
   base::test::ScopedFeatureList scoped_enable;
-  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+  scoped_enable.InitAndEnableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kHttpSite);
@@ -588,7 +587,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAResourceWildcards) {
 // grant exists.
 TEST_F(CookieSettingsTest, GetCookieSettingSAATopLevelWildcards) {
   base::test::ScopedFeatureList scoped_enable;
-  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+  scoped_enable.InitAndEnableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kHttpSite);
   const GURL url = GURL(kFirstPartySite);
@@ -612,7 +611,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAATopLevelWildcards) {
 // cookie access.
 TEST_F(CookieSettingsTest, GetCookieSettingSAARespectsSettings) {
   base::test::ScopedFeatureList scoped_enable;
-  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+  scoped_enable.InitAndEnableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);
@@ -631,7 +630,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAARespectsSettings) {
 // Once a grant expires access should no longer be given.
 TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
   base::test::ScopedFeatureList scoped_enable;
-  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+  scoped_enable.InitAndEnableFeature(net::features::kStorageAccessAPI);
 
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);

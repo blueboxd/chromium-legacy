@@ -9,7 +9,7 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -72,7 +72,7 @@ class SettingsGuestOsSharedPathsElement extends
 
   static get observers() {
     return [
-      'onGuestOsSharedPathsChanged_(prefs.guest_os.paths_shared_to_vms.value)'
+      'onGuestOsSharedPathsChanged_(prefs.guest_os.paths_shared_to_vms.value)',
     ];
   }
 

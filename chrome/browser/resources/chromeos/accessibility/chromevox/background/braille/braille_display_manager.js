@@ -5,11 +5,11 @@
 /**
  * @fileoverview Puts text on a braille display.
  */
-import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
-import {BrailleTranslatorManager} from '/chromevox/background/braille/braille_translator_manager.js';
-import {ExpandingBrailleTranslator} from '/chromevox/background/braille/expanding_braille_translator.js';
-import {PanStrategy} from '/chromevox/background/braille/pan_strategy.js';
-import {ValueSpan} from '/chromevox/background/braille/spans.js';
+import {BrailleCaptionsBackground} from './braille_captions_background.js';
+import {BrailleTranslatorManager} from './braille_translator_manager.js';
+import {ExpandingBrailleTranslator} from './expanding_braille_translator.js';
+import {PanStrategy} from './pan_strategy.js';
+import {ValueSpan} from './spans.js';
 
 export class BrailleDisplayManager {
   /**
@@ -36,7 +36,7 @@ export class BrailleDisplayManager {
     this.displayState_ = {
       available: false,
       textRowCount: 0,
-      textColumnCount: 0
+      textColumnCount: 0,
     };
 
     /** @private {!ExpandingBrailleTranslator.ExpansionType} valueExpansion */
@@ -232,7 +232,7 @@ export class BrailleDisplayManager {
     this.realDisplayState_ = {
       available: newState.available,
       textRowCount: newState.textRowCount || 0,
-      textColumnCount: newState.textColumnCount || 0
+      textColumnCount: newState.textColumnCount || 0,
     };
     if (newState.available) {
       // Update the dimensions of the virtual braille captions display to those

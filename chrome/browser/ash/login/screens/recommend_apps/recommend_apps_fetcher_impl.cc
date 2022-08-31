@@ -221,6 +221,10 @@ gfx::ExtensionSet GetGLExtensions(const gpu::GPUInfo& gpu_info) {
   return extensionSet;
 }
 
+const std::string& GetDeviceFingerprint(const arc::ArcFeatures& arc_features) {
+  return arc_features.build_props.at("ro.build.fingerprint");
+}
+
 const std::string& GetAndroidSdkVersion(const arc::ArcFeatures& arc_features) {
   return arc_features.build_props.at("ro.build.version.sdk");
 }
@@ -404,6 +408,10 @@ void RecommendAppsFetcherImpl::OnArcFeaturesRead(
     play_store_version_ = read_result.value().play_store_version;
 
     android_sdk_version_ = GetAndroidSdkVersion(read_result.value());
+
+    if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
+      device_fingerprint_ = GetDeviceFingerprint(read_result.value());
+    }
   }
 
   MaybeStartCompressAndEncodeProtoMessage();
@@ -436,6 +444,8 @@ void RecommendAppsFetcherImpl::StartDownload() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
     resource_request->url = GURL(kGetRevisedAppListUrl);
+    resource_request->headers.SetHeader("X-DFE-Device-Fingerprint",
+                                        device_fingerprint_);
   } else {
     resource_request->url = GURL(kGetAppListUrl);
   }
@@ -629,21 +639,21 @@ absl::optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
 void RecommendAppsFetcherImpl::OnJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
-    if (!result.value) {
+    if (!result.has_value()) {
       delegate_->OnParseResponseError();
       return;
     }
-    delegate_->OnLoadSuccess(std::move(*result.value));
+    delegate_->OnLoadSuccess(std::move(*result));
     return;
   }
 
-  if (!result.value || (!result.value->is_list() && !result.value->is_dict())) {
+  if (!result.has_value() || (!result->is_list() && !result->is_dict())) {
     RecordUmaResponseParseResult(
         RECOMMEND_APPS_RESPONSE_PARSE_RESULT_INVALID_JSON);
     delegate_->OnParseResponseError();
     return;
   }
-  absl::optional<base::Value> output = ParseResponse(*result.value);
+  absl::optional<base::Value> output = ParseResponse(*result);
   if (!output.has_value()) {
     RecordUmaResponseAppCount(0);
     delegate_->OnParseResponseError();

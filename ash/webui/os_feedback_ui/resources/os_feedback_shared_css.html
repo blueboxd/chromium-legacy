@@ -1,5 +1,5 @@
 <template>
-  <style include="cr-shared-style">
+  <style include="cr-shared-style md-select">
     :host {
       --feedback-google-sans-font-family: "Google Sans", Roboto, sans-serif;
       --feedback-regular-font-weight: 400;
@@ -45,6 +45,22 @@
     .overflow-text {
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .image-preview {
+      display: block;
+      height: auto;
+      margin: auto;
+      max-height: 600px;
+      width: 580px;
+    }
+
+    cr-dialog::part(dialog) {
+      --cr-dialog-body-padding-horizontal: 0px;
+      --cr-dialog-title-slot-padding-start: 0px;
+      --cr-icon-button-margin-end: 20px;
+      width: 590px;
     }
 
     h2 {

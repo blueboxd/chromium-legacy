@@ -102,10 +102,10 @@ void AutofillProviderAndroid::DetachFromJavaAutofillProvider(JNIEnv* env) {
 
 void AutofillProviderAndroid::OnAskForValuesToFill(
     AndroidAutofillManager* manager,
-    int32_t query_id,
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
+    int32_t query_id,
     bool /*unused_autoselect_first_suggestion*/,
     TouchToFillEligible /*unused_touch_to_fill_eligible*/) {
   // The id isn't passed to Java side because Android API guarantees the
@@ -176,7 +176,7 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
   gfx::RectF transformed_bounding = ToClientAreaBound(bounding_box);
 
   ScopedJavaLocalRef<jobject> form_obj = form_->GetJavaPeer(form_structure);
-  manager_ = manager->GetWeakPtr();
+  manager_ = manager->GetWeakPtrToLeafClass();
   Java_AutofillProvider_startAutofillSession(
       env, obj, form_obj, index, transformed_bounding.x(),
       transformed_bounding.y(), transformed_bounding.width(),

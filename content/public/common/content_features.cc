@@ -405,6 +405,16 @@ const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the getDisplayMediaSet API for capturing multiple screens at once.
+const base::Feature kGetDisplayMediaSet{"GetDisplayMediaSet",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables auto selection of all screens in combination with the
+// getDisplayMediaSet API.
+const base::Feature kGetDisplayMediaSetAutoSelectAllScreens{
+    "GetDisplayMediaSetAutoSelectAllScreens",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Determines if an extra brand version pair containing possibly escaped double
 // quotes and escaped backslashed should be added to the Sec-CH-UA header
 // (activated by kUserAgentClientHint)
@@ -420,6 +430,10 @@ const base::Feature kIdentityInCanMakePaymentEventFeature{
 // or the site should obtain an Origin Trial token.
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// A feature flag for the memory-backed code cache.
+const base::Feature kInMemoryCodeCache{"InMemoryCodeCache",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Historically most navigations required IPC from browser to renderer and
 // from renderer back to browser. This was done to check for before-unload
@@ -1087,12 +1101,6 @@ const base::Feature kWebAssemblyTrapHandler {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Controls whether CTAP2 devices can communicate via the WebAuthentication API
-// using pairingless BLE protocol.
-// https://w3c.github.io/webauthn
-const base::Feature kWebAuthCable{"WebAuthenticationCable",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether WebAuthn conditional UI requests are supported.
 const base::Feature kWebAuthConditionalUI{"WebAuthenticationConditionalUI",

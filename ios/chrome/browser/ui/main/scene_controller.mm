@@ -7,7 +7,6 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -27,6 +26,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
+#import "components/url_param_filter/core/url_param_filterer.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -52,8 +52,6 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #include "ios/chrome/browser/default_browser/promo_source.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -122,10 +120,8 @@
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/features.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -729,12 +725,6 @@ bool IsSigninForcedByPolicy() {
     if (!IsStartSurfaceSplashStartupEnabled()) {
       [self handleShowStartSurfaceIfNecessary];
     }
-
-    if (IsWebChannelsEnabled()) {
-      // Creating the DiscoverFeedService.
-      DiscoverFeedServiceFactory::GetForBrowserState(
-          self.mainInterface.browser->GetBrowserState());
-    }
   }
 
   [self recordWindowCreationForSceneState:self.sceneState];
@@ -830,14 +820,6 @@ bool IsSigninForcedByPolicy() {
   DCHECK(!self.browserViewWrangler);
   DCHECK(self.sceneURLLoadingService);
   DCHECK(self.sceneState.appState.mainBrowserState);
-
-  // Turn on KVO support on UIView window if enabled.
-  // TODO(crbug.com/1318016): Remove this call once it can be unconditionally
-  // enabled.
-  UIView.cr_supportsWindowObserving =
-      base::FeatureList::IsEnabled(kUIViewWindowObserving);
-  DCHECK_EQ(UIView.cr_supportsWindowObserving,
-            base::FeatureList::IsEnabled(kUIViewWindowObserving));
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.sceneState.appState.mainBrowserState
@@ -1581,7 +1563,9 @@ bool IsSigninForcedByPolicy() {
       self.signinCoordinator = [SigninCoordinator
           consistencyPromoSigninCoordinatorWithBaseViewController:
               baseViewController
-                                                          browser:mainBrowser];
+                                                          browser:mainBrowser
+                                                      accessPoint:
+                                                          command.accessPoint];
       break;
     case AuthenticationOperationAddAccount:
       self.signinCoordinator = [SigninCoordinator
@@ -1646,9 +1630,9 @@ bool IsSigninForcedByPolicy() {
                                        trigger:trigger];
 }
 
-- (void)showConsistencyPromoFromViewController:
+- (void)showWebSigninPromoFromViewController:
             (UIViewController*)baseViewController
-                                           URL:(const GURL&)url {
+                                         URL:(const GURL&)url {
   // Do not display the web sign-in promo if there is any UI on the screen.
   if (self.signinCoordinator || self.settingsNavigationController)
     return;
@@ -1661,7 +1645,10 @@ bool IsSigninForcedByPolicy() {
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:self.mainInterface
-                                                                  .browser];
+                                                                  .browser
+                                                  accessPoint:
+                                                      signin_metrics::AccessPoint::
+                                                          ACCESS_POINT_WEB_SIGNIN];
   if (!self.signinCoordinator)
     return;
   __weak SceneController* weakSelf = self;
@@ -3162,7 +3149,7 @@ bool IsSigninForcedByPolicy() {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
       /*in_background=*/false, /*inherit_opener=*/false,
-      /*should_show_start_surface=*/false, /*filtered_param_count=*/0);
+      /*should_show_start_surface=*/false, url_param_filter::FilterResult());
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

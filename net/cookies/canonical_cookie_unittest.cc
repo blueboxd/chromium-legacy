@@ -366,10 +366,6 @@ TEST(CanonicalCookieTest, Create) {
 // Test that a cookie string with an empty domain attribute generates a
 // canonical host cookie.
 TEST(CanonicalCookieTest, CreateHostCookieFromString) {
-  // Enable the feature flag for this test.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kCookieDomainAttributeEmptyString);
   // Create a new canonical host cookie via empty string domain in the
   // cookie_line.
   GURL url("http://www.example.com/test/foo.html");
@@ -471,7 +467,10 @@ TEST(CanonicalCookieTest, CreateWithNonASCIIDomain) {
         absl::nullopt /* cookie_partition_key */, &status);
     EXPECT_EQ(nullptr, cookie.get());
     EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
-        {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
+        {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN,
+         CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII}));
+    EXPECT_FALSE(
+        status.HasWarningReason(CookieInclusionStatus::WARN_DOMAIN_NON_ASCII));
   }
 
   // Test with feature flag disabled.
@@ -486,6 +485,8 @@ TEST(CanonicalCookieTest, CreateWithNonASCIIDomain) {
 
     EXPECT_TRUE(cookie2.get());
     EXPECT_TRUE(status2.IsInclude());
+    EXPECT_TRUE(
+        status2.HasWarningReason(CookieInclusionStatus::WARN_DOMAIN_NON_ASCII));
   }
 
   // Test that regular ascii punycode still works.
@@ -495,6 +496,8 @@ TEST(CanonicalCookieTest, CreateWithNonASCIIDomain) {
       absl::nullopt /* cookie_partition_key */, &status3);
   EXPECT_TRUE(cookie3.get());
   EXPECT_TRUE(status3.IsInclude());
+  EXPECT_FALSE(
+      status3.HasWarningReason(CookieInclusionStatus::WARN_DOMAIN_NON_ASCII));
 }
 
 TEST(CanonicalCookieTest, CreateWithDomainAsIP) {
@@ -2480,6 +2483,18 @@ TEST(CanonicalCookieTest, SecureCookiePrefix) {
       absl::nullopt /* cookie_partition_key */, &status));
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_INVALID_PREFIX}));
+
+  // Hidden __Secure- prefixes should be rejected.
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "=__Secure-A=B; Secure", creation_time, server_time,
+      absl::nullopt /* cookie_partition_key */, &status));
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CookieInclusionStatus::EXCLUDE_INVALID_PREFIX}));
+
+  // While tricky, this isn't considered hidden and is fine.
+  EXPECT_TRUE(CanonicalCookie::Create(
+      https_url, "A=__Secure-A=B; Secure", creation_time, server_time,
+      absl::nullopt /* cookie_partition_key */));
 }
 
 TEST(CanonicalCookieTest, HostCookiePrefix) {
@@ -2564,6 +2579,18 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
   EXPECT_TRUE(CanonicalCookie::Create(
       https_url, "__HostA=B; Domain=" + domain + "; Secure;", creation_time,
       server_time, absl::nullopt /* cookie_partition_key */));
+
+  // Hidden __Host- prefixes should be rejected.
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "=__Host-A=B; Path=/; Secure;", creation_time, server_time,
+      absl::nullopt /* cookie_partition_key */, &status));
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CookieInclusionStatus::EXCLUDE_INVALID_PREFIX}));
+
+  // While tricky, this isn't considered hidden and is fine.
+  EXPECT_TRUE(CanonicalCookie::Create(
+      https_url, "A=__Host-A=B; Path=/; Secure;", creation_time, server_time,
+      absl::nullopt /* cookie_partition_key */));
 }
 
 TEST(CanonicalCookieTest, CanCreateSecureCookiesFromAnyScheme) {
@@ -3028,6 +3055,31 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    CookiePartitionKey::FromURLForTesting(
                        GURL("https://toplevelsite.com")))
                    ->IsCanonical());
+
+  // Hidden cookie prefixes.
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "", "__Secure-a=b", "x.y", "/", base::Time(), base::Time(),
+                   base::Time(), base::Time(), true, false,
+                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "", "__Host-a=b", "x.y", "/", base::Time(), base::Time(),
+                   base::Time(), base::Time(), true, false,
+                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
+  EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "a", "__Secure-a=b", "x.y", "/", base::Time(), base::Time(),
+                  base::Time(), base::Time(), true, false,
+                  CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                  ->IsCanonical());
+
+  EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "a", "__Host-a=b", "x.y", "/", base::Time(), base::Time(),
+                  base::Time(), base::Time(), true, false,
+                  CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                  ->IsCanonical());
 }
 
 TEST(CanonicalCookieTest, TestSetCreationDate) {
@@ -3676,6 +3728,39 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
   EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
       GURL("https://127.0.0.1"), "__Host-A", "B", "127.0.0.1", "/",
       two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      false /*same_party*/, absl::nullopt /*partition_key*/, &status));
+  EXPECT_TRUE(status.IsInclude());
+
+  // Cookies with hidden prefixes should be rejected.
+
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "", "__Host-A=B", "", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      false /*same_party*/, absl::nullopt /*partition_key*/, &status));
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CookieInclusionStatus::EXCLUDE_INVALID_PREFIX}));
+
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "", "__Secure-A=B", "", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      false /*same_party*/, absl::nullopt /*partition_key*/, &status));
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CookieInclusionStatus::EXCLUDE_INVALID_PREFIX}));
+
+  // While tricky, this aren't considered hidden prefixes and should succeed.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "A", "__Host-A=B", "", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      false /*same_party*/, absl::nullopt /*partition_key*/, &status));
+  EXPECT_TRUE(status.IsInclude());
+
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "A", "__Secure-A=B", "", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
       CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
       false /*same_party*/, absl::nullopt /*partition_key*/, &status));
   EXPECT_TRUE(status.IsInclude());
@@ -5268,6 +5353,49 @@ TEST(CanonicalCookieTest, TestIsCanonicalWithInvalidSizeHistograms) {
   histograms.ExpectBucketCount(kFromStorageWithValidLengthHistogram, kInValid,
                                2);
   histograms.ExpectBucketCount(kFromStorageWithValidLengthHistogram, kValid, 1);
+}
+
+TEST(CanonicalCookieTest, TestHasHiddenPrefixName) {
+  const struct {
+    const char* value;
+    bool result;
+  } kTestCases[] = {
+      {"", false},
+      {"  ", false},
+      {"foobar=", false},
+      {"foo=bar", false},
+      {" \t ", false},
+      {"\t", false},
+      {"__Secure-abc", false},
+      {"__Secur=e-abc", false},
+      {"__Secureabc", false},
+      {"__Host-abc", false},
+      {"__Hos=t-abc", false},
+      {"_Host", false},
+      {"   __Secure-abc", false},
+      {"\t__Host-", false},
+      {"a__Host-abc=123", false},
+      {"a__Secure-abc=123", false},
+      {"__Host-abc=", true},
+      {"__Host-abc=123", true},
+      {" __Host-abc=123", true},
+      {"    __Host-abc=", true},
+      {"\t\t\t\t\t__Host-abc=123", true},
+      {"\t __Host-abc=", true},
+      {"__Secure-abc=", true},
+      {"__Secure-abc=123", true},
+      {" __Secure-abc=123", true},
+      {"    __Secure-abc=", true},
+      {"\t\t\t\t\t__Secure-abc=123", true},
+      {"\t __Secure-abc=", true},
+      {"__Secure-abc=123=d=4=fg=", true},
+  };
+
+  for (auto test_case : kTestCases) {
+    EXPECT_EQ(CanonicalCookie::HasHiddenPrefixName(test_case.value),
+              test_case.result)
+        << test_case.value << " failed check";
+  }
 }
 
 }  // namespace net

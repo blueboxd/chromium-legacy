@@ -142,6 +142,10 @@ sync_pb::BookmarkMetadata CreateNodeMetadata(
           .value());
   *bookmark_metadata.mutable_metadata()->mutable_unique_position() =
       unique_position.ToProto();
+  // Required by SyncedBookmarkTracker during validation of local metadata.
+  if (!node->is_folder()) {
+    bookmark_metadata.mutable_metadata()->set_bookmark_favicon_hash(123);
+  }
   return bookmark_metadata;
 }
 
@@ -414,7 +418,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   const std::string kNewUrl = "http://www.new-url.com";
   syncer::UpdateResponseDataList updates;
   updates.push_back(CreateUpdateResponseData(
-      {entity->metadata()->server_id(), kNewTitle, kNewUrl, kBookmarkBarId,
+      {entity->metadata().server_id(), kNewTitle, kNewUrl, kBookmarkBarId,
        /*server_tag=*/std::string()},
       kRandomPosition, /*response_version=*/1, bookmark_node->guid()));
 
@@ -456,7 +460,7 @@ TEST_F(
   // Process an update for the same bookmark with the same data.
   syncer::UpdateResponseDataList updates;
   updates.push_back(CreateUpdateResponseData(
-      {entity->metadata()->server_id(), kTitle, kUrl.spec(), kBookmarkBarId,
+      {entity->metadata().server_id(), kTitle, kUrl.spec(), kBookmarkBarId,
        /*server_tag=*/std::string()},
       kRandomPosition, /*response_version=*/1, bookmark_node->guid()));
   updates[0].response_version++;
@@ -812,7 +816,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldReuploadLegacyBookmarksOnStart) {
                                     ->GetTrackerForTest()
                                     ->GetEntityForBookmarkNode(node)
                                     ->metadata()
-                                    ->server_id();
+                                    .server_id();
 
   sync_pb::BookmarkModelMetadata model_metadata =
       processor()->GetTrackerForTest()->BuildBookmarkModelMetadata();

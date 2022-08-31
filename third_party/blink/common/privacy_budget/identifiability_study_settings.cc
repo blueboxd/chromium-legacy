@@ -145,4 +145,15 @@ bool IdentifiabilityStudySettings::ShouldSampleType(
   return provider_->IsTypeAllowed(type);
 }
 
+bool IdentifiabilityStudySettings::ShouldActivelySample() const {
+  if (LIKELY(!is_enabled_))
+    return false;
+  return provider_->ShouldActivelySample();
+}
+
+std::vector<std::string>
+IdentifiabilityStudySettings::FontFamiliesToActivelySample() const {
+  return provider_->FontFamiliesToActivelySample();
+}
+
 }  // namespace blink

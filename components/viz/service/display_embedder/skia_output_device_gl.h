@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 
 namespace gl {
 class GLImage;
@@ -107,7 +107,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   uint64_t backbuffer_estimated_size_ = 0;
 
-  int alpha_bits_ = 0;
   gfx::Size size_;
   SkColorType color_type_;
   gfx::ColorSpace color_space_;

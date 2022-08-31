@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
@@ -254,7 +255,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   }
 
   if (self.webState && self.followAction) {
-    FollowTabHelper::FromWebState(self.webState)->remove_follow_menu_updater();
+    FollowTabHelper::FromWebState(self.webState)->RemoveFollowMenuUpdater();
   }
 
   self.destinationUsageHistory = nil;
@@ -312,7 +313,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   self.webState = (_webStateList) ? _webStateList->GetActiveWebState() : nil;
 
   if (self.webState && !self.isIncognito && IsWebChannelsEnabled()) {
-    FollowTabHelper::FromWebState(self.webState)->set_follow_menu_updater(self);
+    FollowTabHelper::FromWebState(self.webState)->SetFollowMenuUpdater(self);
   }
 
   if (_webStateList) {
@@ -1166,7 +1167,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                      reason:(ActiveWebStateChangeReason)reason {
   self.webState = newWebState;
   if (self.webState && self.followAction) {
-    FollowTabHelper::FromWebState(self.webState)->set_follow_menu_updater(self);
+    FollowTabHelper::FromWebState(self.webState)->SetFollowMenuUpdater(self);
   }
 }
 
@@ -1330,9 +1331,18 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // bookmark edit screen if the current page is bookmarked.
 - (void)addOrEditBookmark {
   RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
+  // Dismissing the menu disconnects the mediator, so save anything cleaned up
+  // there.
+  web::WebState* currentWebState = self.webState;
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-  [self.dispatcher bookmarkCurrentPage];
+  if (!currentWebState) {
+    return;
+  }
+  BookmarkAddCommand* command =
+      [[BookmarkAddCommand alloc] initWithWebState:currentWebState
+                              presentFolderChooser:NO];
+  [self.bookmarksCommandsHandler bookmark:command];
 }
 
 // Dismisses the menu and adds the current page to the reading list.

@@ -64,7 +64,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
-      'win7'  # https://crbug.com/1084931
+      'win7',  # https://crbug.com/1084931
   )
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
@@ -109,7 +109,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
-      'win7'  # https://crbug.com/1084931
+      'win7',  # https://crbug.com/1084931
   )
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
@@ -201,7 +201,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
-      'win7'  # https://crbug.com/1084931
+      'win7',  # https://crbug.com/1084931
   )
   def testMinidumpFromRendererHang(self):
     """Tests that renderer hangs result in minidumps.

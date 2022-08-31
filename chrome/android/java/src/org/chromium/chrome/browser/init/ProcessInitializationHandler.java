@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationGuideService;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationGuideServiceFactory;
 import org.chromium.chrome.browser.firstrun.TosDialogBehaviorSharedPrefInvalidator;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryDeletionBridge;
 import org.chromium.chrome.browser.homepage.HomepageManager;
@@ -83,7 +82,6 @@ import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
-import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.signin.SigninCheckerProvider;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
@@ -185,8 +183,7 @@ public class ProcessInitializationHandler {
         // This function controls whether BrowserTaskExecutor posts pre-native bootstrap tasks at
         // the front or back of the Looper's queue.
         BrowserTaskExecutor.setShouldPrioritizePreNativeBootstrapTasks(
-                !CachedFeatureFlags.isEnabled(
-                        ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS));
+                !ChromeFeatureList.sElidePrioritizationOfPreNativeBootstrapTasks.isEnabled());
 
         Context application = ContextUtils.getApplicationContext();
 
@@ -437,9 +434,6 @@ public class ProcessInitializationHandler {
 
         deferredStartupHandler.addDeferredTask(
                 () -> IncognitoTabLauncher.updateComponentEnabledState());
-
-        deferredStartupHandler.addDeferredTask(
-                () -> SharedClipboardShareActivity.updateComponentEnabledState());
         deferredStartupHandler.addDeferredTask(
                 () -> OfflineContentAvailabilityStatusProvider.getInstance());
         deferredStartupHandler.addDeferredTask(

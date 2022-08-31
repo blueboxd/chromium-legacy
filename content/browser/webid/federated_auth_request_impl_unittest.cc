@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -48,13 +49,14 @@ using blink::mojom::RequestTokenStatus;
 using AccountList = content::IdpNetworkRequestManager::AccountList;
 using ApiPermissionStatus =
     content::FederatedIdentityApiPermissionContextDelegate::PermissionStatus;
+using DismissReason = content::IdentityRequestDialogController::DismissReason;
 using FedCmEntry = ukm::builders::Blink_FedCm;
 using FedCmIdpEntry = ukm::builders::Blink_FedCmIdp;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
 using TokenStatus = content::FedCmRequestIdTokenStatus;
 using LoginState = content::IdentityRequestAccount::LoginState;
 using SignInMode = content::IdentityRequestAccount::SignInMode;
-using UserApproval = content::IdentityRequestDialogController::UserApproval;
+using SignInStateMatchStatus = content::FedCmSignInStateMatchStatus;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -688,7 +690,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
         // e.g. for sign up flow, multiple accounts, user opt-out etc. In this
         // case, it's up to the test to expect this mock function call.
         EXPECT_CALL(*mock_dialog_controller_,
-                    ShowAccountsDialog(_, _, _, _, _, _, _))
+                    ShowAccountsDialog(_, _, _, _, _, _, _, _))
             .WillOnce(Invoke(
                 [&](content::WebContents* rp_web_contents,
                     const GURL& idp_signin_url,
@@ -696,18 +698,19 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
                     const IdentityProviderMetadata& idp_metadata,
                     const ClientIdData& client_id_data, SignInMode sign_in_mode,
                     IdentityRequestDialogController::AccountSelectionCallback
-                        on_selected) {
+                        on_selected,
+                    IdentityRequestDialogController::DismissCallback
+                        dismiss_callback) {
                   displayed_accounts_ =
                       AccountList(accounts.begin(), accounts.end());
                   std::move(on_selected)
                       .Run(accounts[0].id,
-                           accounts[0].login_state == LoginState::kSignIn,
-                           /*should_embargo=*/false);
+                           accounts[0].login_state == LoginState::kSignIn);
                 }));
       }
     } else {
       EXPECT_CALL(*mock_dialog_controller_,
-                  ShowAccountsDialog(_, _, _, _, _, _, _))
+                  ShowAccountsDialog(_, _, _, _, _, _, _, _))
           .Times(0);
     }
   }
@@ -785,6 +788,46 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
         FAIL() << "Unexpected UKM was recorded";
     }
     SUCCEED();
+  }
+
+  void ExpectSignInStateMatchStatusUKM(SignInStateMatchStatus status) {
+    auto entries = ukm_recorder()->GetEntriesByName(FedCmIdpEntry::kEntryName);
+
+    if (entries.empty())
+      FAIL() << "No SignInStateMatchStatus was recorded";
+
+    // There are multiple types of metrics under the same FedCM UKM. We need to
+    // make sure that the metric only includes the expected one.
+    for (const auto* const entry : entries) {
+      const int64_t* metric =
+          ukm_recorder()->GetEntryMetric(entry, "Status_SignInStateMatch");
+      if (metric && *metric != static_cast<int>(status))
+        FAIL() << "Unexpected status was recorded";
+    }
+
+    SUCCEED();
+  }
+
+  void CheckAllFedCmSessionIDs() {
+    absl::optional<int> session_id;
+    auto CheckUKMSessionID = [&](const auto& ukm_entries) {
+      ASSERT_FALSE(ukm_entries.empty());
+      for (const auto* const entry : ukm_entries) {
+        const auto* const metric =
+            ukm_recorder()->GetEntryMetric(entry, "FedCmSessionID");
+        EXPECT_TRUE(metric)
+            << "All UKM events should have the SessionID metric";
+        if (!session_id.has_value()) {
+          session_id = *metric;
+        } else {
+          ASSERT_EQ(*metric, *session_id)
+              << "All UKM events should have the same SessionID";
+        }
+      }
+    };
+    CheckUKMSessionID(ukm_recorder()->GetEntriesByName(FedCmEntry::kEntryName));
+    CheckUKMSessionID(
+        ukm_recorder()->GetEntriesByName(FedCmIdpEntry::kEntryName));
   }
 
  protected:
@@ -1090,12 +1133,9 @@ TEST_F(BasicFederatedAuthRequestImplTest,
 TEST_F(BasicFederatedAuthRequestImplTest,
        LoginStateShouldBeSignInForReturningUser) {
   // Pretend the sharing permission has been granted for this account.
-  //
-  // TODO(crbug.com/1334361): Ideally we would use the kRpTestOrigin for the
-  // relying_party argument of HasSharingPermission but web contents has not
-  // navigated to that URL so origin() is null in tests.
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              HasSharingPermission(_, url::Origin::Create(GURL(kIdpTestOrigin)),
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
                                    kAccountId))
       .WillOnce(Return(true));
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
@@ -1107,12 +1147,10 @@ TEST_F(BasicFederatedAuthRequestImplTest,
        LoginStateSuccessfulSignUpGrantsSharingPermission) {
   EXPECT_CALL(*mock_sharing_permission_delegate_, HasSharingPermission(_, _, _))
       .WillOnce(Return(false));
-  // TODO(crbug.com/1334361): Ideally we would use the kRpTestOrigin for the
-  // relying_party argument of HasSharingPermission but web contents has not
-  // navigated to that URL so origin() is null in tests.
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              GrantSharingPermission(
-                  _, url::Origin::Create(GURL(kIdpTestOrigin)), kAccountId))
+              GrantSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                     url::Origin::Create(GURL(kIdpTestOrigin)),
+                                     kAccountId))
       .Times(1);
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
               kConfigurationValid);
@@ -1144,29 +1182,26 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInForReturningUser) {
   AccountList displayed_accounts;
 
   // Pretend the sharing permission has been granted for this account.
-  //
-  // TODO(crbug.com/1334361): Ideally we would use the kRpTestOrigin for the
-  // relying_party argument of HasSharingPermission but web contents has not
-  // navigated to that URL so origin() is null in tests.
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              HasSharingPermission(_, url::Origin::Create(GURL(kIdpTestOrigin)),
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
                                    kAccountId))
       .WillOnce(Return(true));
 
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             EXPECT_EQ(sign_in_mode, SignInMode::kAuto);
             displayed_accounts = AccountList(accounts.begin(), accounts.end());
-            std::move(on_selected)
-                .Run(accounts[0].id, /*is_sign_in=*/true,
-                     /*should_embargo=*/false);
+            std::move(on_selected).Run(accounts[0].id, /*is_sign_in=*/true);
           }));
 
   ASSERT_EQ(kConfigurationValid.accounts.size(), 1u);
@@ -1186,19 +1221,19 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInForFirstTimeUser) {
 
   AccountList displayed_accounts;
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             EXPECT_EQ(sign_in_mode, SignInMode::kExplicit);
             displayed_accounts = AccountList(accounts.begin(), accounts.end());
-            std::move(on_selected)
-                .Run(accounts[0].id, /*is_sign_in=*/true,
-                     /*should_embargo=*/false);
+            std::move(on_selected).Run(accounts[0].id, /*is_sign_in=*/true);
           }));
 
   RequestParameters request_parameters = kDefaultRequestParameters;
@@ -1221,30 +1256,27 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
   AccountList displayed_accounts;
 
   // Pretend the sharing permission has been granted for this account.
-  //
-  // TODO(crbug.com/1334361): Ideally we would use the kRpTestOrigin for the
-  // relying_party argument of HasSharingPermission but web contents has not
-  // navigated to that URL so origin() is null in tests.
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              HasSharingPermission(_, url::Origin::Create(GURL(kIdpTestOrigin)),
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
                                    kAccountId))
       .WillOnce(Return(true));
 
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             // Auto sign in replaced by explicit sign in if screen reader is on.
             EXPECT_EQ(sign_in_mode, SignInMode::kExplicit);
             displayed_accounts = AccountList(accounts.begin(), accounts.end());
-            std::move(on_selected)
-                .Run(accounts[0].id, /*is_sign_in=*/true,
-                     /*should_embargo=*/false);
+            std::move(on_selected).Run(accounts[0].id, /*is_sign_in=*/true);
           }));
 
   EXPECT_EQ(kConfigurationValid.accounts.size(), 1u);
@@ -1292,26 +1324,28 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
   ExpectNoTimingUKM("Timing.CancelOnDialog");
 
   ExpectRequestTokenStatusUKM(TokenStatus::kSuccess);
+  CheckAllFedCmSessionIDs();
 }
 
-// Test that request fails if user does not select an account.
-TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
+// Test that request fails if account picker is explicitly dismissed.
+TEST_F(BasicFederatedAuthRequestImplTest, MetricsForUIExplicitlyDismissed) {
   base::HistogramTester histogram_tester_;
 
   AccountList displayed_accounts;
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             displayed_accounts = AccountList(accounts.begin(), accounts.end());
             // Pretends that the user did not select any account.
-            std::move(on_selected)
-                .Run("", /*is_sign_in=*/false, /*should_embargo=*/false);
+            std::move(dismiss_callback).Run(DismissReason::CLOSE_BUTTON);
           }));
 
   base::RunLoop ukm_loop;
@@ -1320,6 +1354,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
 
   EXPECT_EQ(kConfigurationValid.accounts.size(), 1u);
   MockConfiguration configuration = kConfigurationValid;
+  configuration.wait_for_callback = false;
   configuration.customized_dialog = true;
   RequestExpectations expectations = {
       RequestTokenStatus::kError, FederatedAuthRequestResult::kError,
@@ -1348,6 +1383,57 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
   ExpectNoTimingUKM("Timing.TurnaroundTime");
 
   ExpectRequestTokenStatusUKM(TokenStatus::kNotSelectAccount);
+  CheckAllFedCmSessionIDs();
+}
+
+// Test that request is not completed if user ignores the UI.
+TEST_F(BasicFederatedAuthRequestImplTest, UIIsIgnored) {
+  base::HistogramTester histogram_tester_;
+
+  // The UI will not be destroyed during the test.
+  EXPECT_CALL(*mock_dialog_controller(), DestructorCalled()).Times(0);
+
+  AccountList displayed_accounts;
+  EXPECT_CALL(*mock_dialog_controller(),
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
+      .WillOnce(Invoke(
+          [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
+              base::span<const content::IdentityRequestAccount> accounts,
+              const IdentityProviderMetadata& idp_metadata,
+              const ClientIdData& client_id_data, SignInMode sign_in_mode,
+              IdentityRequestDialogController::AccountSelectionCallback
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
+            displayed_accounts = AccountList(accounts.begin(), accounts.end());
+            // Pretends that the user ignored the UI by not selecting an
+            // account.
+          }));
+
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.wait_for_callback = false;
+  configuration.customized_dialog = true;
+  RequestExpectations expectations = {
+      /*return_status=*/absl::nullopt,
+      /*devtools_issue_status=*/absl::nullopt,
+      FETCH_ENDPOINT_ALL_REQUEST_TOKEN & ~FetchedEndpoint::TOKEN};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+  task_environment()->FastForwardBy(base::Minutes(10));
+
+  EXPECT_FALSE(auth_helper_.was_callback_called());
+  ASSERT_FALSE(displayed_accounts.empty());
+
+  // Only the time to show the account dialog gets recorded.
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog",
+                                     1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 0);
+
+  // The UI will be destroyed after the test is done.
+  EXPECT_CALL(*mock_dialog_controller(), DestructorCalled()).Times(1);
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsVisible) {
@@ -1408,6 +1494,7 @@ TEST_F(BasicFederatedAuthRequestImplTest,
                                        TokenStatus::kThirdPartyCookiesBlocked,
                                        1);
   ExpectRequestTokenStatusUKM(TokenStatus::kThirdPartyCookiesBlocked);
+  CheckAllFedCmSessionIDs();
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForFeatureIsDisabled) {
@@ -1423,6 +1510,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForFeatureIsDisabled) {
   histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
                                        TokenStatus::kDisabledInFlags, 1);
   ExpectRequestTokenStatusUKM(TokenStatus::kDisabledInFlags);
+  CheckAllFedCmSessionIDs();
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest,
@@ -1441,11 +1529,153 @@ TEST_F(BasicFederatedAuthRequestImplTest,
   // Delete the request before DelayTimer kicks in.
   federated_auth_request_impl_->ResetAndDeleteThis();
 
-  // If double counted, the the samples would not be unique so the following
+  // If double counted, these samples would not be unique so the following
   // checks will fail.
   histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
                                        TokenStatus::kDisabledInFlags, 1);
   ExpectRequestTokenStatusUKM(TokenStatus::kDisabledInFlags);
+  CheckAllFedCmSessionIDs();
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest,
+       MetricsForFeatureIsDisabledNotDoubleCountedWithAbortedRequest) {
+  test_api_permission_delegate_->permission_override_ =
+      std::make_pair(main_test_rfh()->GetLastCommittedOrigin(),
+                     ApiPermissionStatus::BLOCKED_VARIATIONS);
+
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.wait_for_callback = false;
+  RequestExpectations expectations = {/*return_status=*/absl::nullopt,
+                                      /*devtools_issue_status*/ absl::nullopt,
+                                      /*fetched_endpoints=*/0};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  // Abort the request before DelayTimer kicks in.
+  federated_auth_request_impl_->CancelTokenRequest();
+
+  // If double counted, these samples would not be unique so the following
+  // checks will fail.
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
+                                       TokenStatus::kDisabledInFlags, 1);
+  ExpectRequestTokenStatusUKM(TokenStatus::kDisabledInFlags);
+  CheckAllFedCmSessionIDs();
+}
+
+// Test that sign-in states match if IDP claims that user is signed in and
+// browser also observes that user is signed in.
+TEST_F(BasicFederatedAuthRequestImplTest,
+       MetricsForSignedInOnBothIdpAndBrowser) {
+  // Set browser observes user is signed in.
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
+                                   kAccountId))
+      .WillOnce(Return(true));
+
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(FedCmEntry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  // Set IDP claims user is signed in.
+  MockConfiguration configuration = kConfigurationValid;
+  AccountList displayed_accounts =
+      AccountList(kAccounts.begin(), kAccounts.end());
+  displayed_accounts[0].login_state = LoginState::kSignIn;
+  configuration.accounts = displayed_accounts;
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+
+  ukm_loop.Run();
+
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.SignInStateMatch",
+                                       SignInStateMatchStatus::kMatch, 1);
+  ExpectSignInStateMatchStatusUKM(SignInStateMatchStatus::kMatch);
+  CheckAllFedCmSessionIDs();
+}
+
+// Test that sign-in states match if IDP claims that user is not signed in and
+// browser also observes that user is not signed in.
+TEST_F(BasicFederatedAuthRequestImplTest,
+       MetricsForNotSignedInOnBothIdpAndBrowser) {
+  // Set browser observes user is not signed in.
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
+                                   kAccountId))
+      .WillOnce(Return(false));
+
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(FedCmEntry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  // By default, IDP claims user is not signed in.
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+
+  ukm_loop.Run();
+
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.SignInStateMatch",
+                                       SignInStateMatchStatus::kMatch, 1);
+  ExpectSignInStateMatchStatusUKM(SignInStateMatchStatus::kMatch);
+  CheckAllFedCmSessionIDs();
+}
+
+// Test that sign-in states mismatch if IDP claims that user is signed in but
+// browser observes that user is not signed in.
+TEST_F(BasicFederatedAuthRequestImplTest, MetricsForOnlyIdpClaimedSignIn) {
+  // Set browser observes user is not signed in.
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
+                                   kAccountId))
+      .WillOnce(Return(false));
+
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(FedCmEntry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  // Set IDP claims user is signed in.
+  MockConfiguration configuration = kConfigurationValid;
+  AccountList displayed_accounts =
+      AccountList(kAccounts.begin(), kAccounts.end());
+  displayed_accounts[0].login_state = LoginState::kSignIn;
+  configuration.accounts = displayed_accounts;
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+
+  ukm_loop.Run();
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.Status.SignInStateMatch",
+      SignInStateMatchStatus::kIdpClaimedSignIn, 1);
+  ExpectSignInStateMatchStatusUKM(SignInStateMatchStatus::kIdpClaimedSignIn);
+  CheckAllFedCmSessionIDs();
+}
+
+// Test that sign-in states mismatch if IDP claims that user is not signed in
+// but browser observes that user is signed in.
+TEST_F(BasicFederatedAuthRequestImplTest, MetricsForOnlyBrowserObservedSignIn) {
+  // Set browser observes user is signed in.
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
+                                   kAccountId))
+      .WillOnce(Return(true));
+
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(FedCmEntry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  // By default, IDP claims user is not signed in.
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+
+  ukm_loop.Run();
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.Status.SignInStateMatch",
+      SignInStateMatchStatus::kBrowserObservedSignIn, 1);
+  ExpectSignInStateMatchStatusUKM(
+      SignInStateMatchStatus::kBrowserObservedSignIn);
+  CheckAllFedCmSessionIDs();
 }
 
 // Test that embargo is requested if the
@@ -1459,18 +1689,18 @@ TEST_F(BasicFederatedAuthRequestImplTest, RequestEmbargo) {
   configuration.customized_dialog = true;
 
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             displayed_accounts_ = AccountList(accounts.begin(), accounts.end());
-            std::move(on_selected)
-                .Run("", /*is_sign_in=*/false,
-                     /*should_embargo=*/true);
+            std::move(dismiss_callback).Run(DismissReason::CLOSE_BUTTON);
           }));
 
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
@@ -1510,28 +1740,6 @@ TEST_F(BasicFederatedAuthRequestImplTest, ApiBlockedForUnrelatedOrigin) {
   ASSERT_NE(main_test_rfh()->GetLastCommittedOrigin(), kUnrelatedOrigin);
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
               kConfigurationValid);
-}
-
-// Test that the request completes eventually in the case that the token request
-// times out.
-TEST_F(BasicFederatedAuthRequestImplTest, TokenRequestTimesOut) {
-  MockConfiguration configuration = kConfigurationValid;
-  configuration.delay_token_response = true;
-  RequestExpectations expectations = {RequestTokenStatus::kError,
-                                      FederatedAuthRequestResult::kError,
-                                      FETCH_ENDPOINT_ALL_REQUEST_TOKEN};
-  // RunAuthTest() fast forwards time by a sufficient amount to cause the
-  // request to timeout. `MockConfiguration::delay_token_response` disables
-  // the auto-run logic for the token request response and enables emulating
-  // the server being very slow to return a token request response.
-  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
-
-  // Resolve token request. The callback should not be called.
-  test_network_request_manager_->RunDelayedCallbacks();
-
-  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
-                                       TokenStatus::kUserInterfaceTimedOut, 1);
-  ExpectRequestTokenStatusUKM(TokenStatus::kUserInterfaceTimedOut);
 }
 
 class FederatedAuthRequestImplTestCancelConsistency
@@ -1579,22 +1787,22 @@ TEST_F(BasicFederatedAuthRequestImplTest, ApiDisabledAfterAccountsDialogShown) {
   base::HistogramTester histogram_tester_;
 
   EXPECT_CALL(*mock_dialog_controller(),
-              ShowAccountsDialog(_, _, _, _, _, _, _))
+              ShowAccountsDialog(_, _, _, _, _, _, _, _))
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents, const GURL& idp_signin_url,
               base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
-                  on_selected) {
+                  on_selected,
+              IdentityRequestDialogController::DismissCallback
+                  dismiss_callback) {
             // Disable FedCM API
             test_api_permission_delegate_->permission_override_ =
                 std::make_pair(main_test_rfh()->GetLastCommittedOrigin(),
                                ApiPermissionStatus::BLOCKED_SETTINGS);
 
-            std::move(on_selected)
-                .Run(/*account_id=*/"", /*is_sign_in=*/false,
-                     /*should_embargo=*/false);
+            std::move(on_selected).Run(accounts[0].id, /*is_sign_in=*/false);
           }));
 
   base::RunLoop ukm_loop;
@@ -1627,6 +1835,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, ApiDisabledAfterAccountsDialogShown) {
   ExpectNoTimingUKM("Timing.TurnaroundTime");
 
   ExpectRequestTokenStatusUKM(TokenStatus::kDisabledInSettings);
+  CheckAllFedCmSessionIDs();
 }
 
 // Test that disclosure text is shown for first time user.
@@ -1644,12 +1853,9 @@ TEST_F(BasicFederatedAuthRequestImplTest, DisclosureTextShownForFirstTimeUser) {
 TEST_F(BasicFederatedAuthRequestImplTest,
        DisclosureTextNotShownForReturningUser) {
   // Pretend the sharing permission has been granted for this account.
-  //
-  // TODO(crbug.com/1334361): Ideally we would use the kRpTestOrigin for the
-  // relying_party argument of HasSharingPermission but web contents has not
-  // navigated to that URL so origin() is null in tests.
   EXPECT_CALL(*mock_sharing_permission_delegate_,
-              HasSharingPermission(_, url::Origin::Create(GURL(kIdpTestOrigin)),
+              HasSharingPermission(url::Origin::Create(GURL(kRpUrl)),
+                                   url::Origin::Create(GURL(kIdpTestOrigin)),
                                    kAccountId))
       .WillOnce(Return(true));
 

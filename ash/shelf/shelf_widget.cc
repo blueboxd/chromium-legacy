@@ -23,7 +23,6 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
-#include "ash/shelf/login_shelf_gesture_controller.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
@@ -161,7 +160,9 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
       layer()->SchedulePaint(gfx::Rect(layer()->size()));
   }
 
-  void SetLoginShelfView(LoginShelfView* view) { login_shelf_view_ = view; }
+  void SetLoginShelfFromShelfWidget(LoginShelfView* view) {
+    login_shelf_from_shelf_widget_ = view;
+  }
 
   SkColor background_color() const { return background_color_; }
 
@@ -179,8 +180,10 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
     canvas->DrawRoundRect(gfx::Rect(layer()->size()), corner_radius_, flags);
 
     // Don't draw highlight border in login screen.
-    if (login_shelf_view_ && login_shelf_view_->GetVisible())
+    if (login_shelf_from_shelf_widget_ &&
+        login_shelf_from_shelf_widget_->GetVisible()) {
       return;
+    }
 
     if (corner_radius_ > 0) {
       views::HighlightBorder::PaintBorderToCanvas(
@@ -273,7 +276,12 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
   views::View* const owner_view_;
   const bool draw_highlight_border_;
 
-  LoginShelfView* login_shelf_view_ = nullptr;
+  // The pointer to the login shelf view that resides in the shelf widget. Set
+  // only when the login shelf widget is not in use.
+  // TODO(https://crbug.com/1343114): remove this data member and its related
+  // code after the login shelf widget is ready.
+  LoginShelfView* login_shelf_from_shelf_widget_ = nullptr;
+
   SkColor background_color_;
   float corner_radius_ = 0.0f;
   views::HighlightBorder::Type highlight_border_type_ =
@@ -309,8 +317,10 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // Returns a pointer to the login shelf view passed in as an argument.
   LoginShelfView* AddLoginShelfView(
       std::unique_ptr<LoginShelfView> login_shelf_view) {
+    DCHECK(!features::IsUseLoginShelfWidgetEnabled());
+
     login_shelf_view_ = AddChildView(std::move(login_shelf_view));
-    opaque_background_.SetLoginShelfView(login_shelf_view_);
+    opaque_background_.SetLoginShelfFromShelfWidget(login_shelf_view_);
     return login_shelf_view_;
   }
 
@@ -379,6 +389,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // Pointer to the login shelf view - visible only when the session is
   // inactive. The view is owned by this view's hierarchy.
+  // Set only when the login shelf widget is not in use.
+  // TODO(https://crbug.com/1343114): remove this data member when the login
+  // shelf widget is in use.
   LoginShelfView* login_shelf_view_ = nullptr;
 
   // A background layer that may be visible depending on a
@@ -543,11 +556,16 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0),
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin)));
 
+  const bool is_vertical_alignment_in_overview =
+      !shelf->IsHorizontalAlignment() && ShelfConfig::Get()->in_overview_mode();
+
   // Show rounded corners except in maximized (which includes split view) mode,
-  // or whenever we are "in app".
+  // or whenever we are "in app", or the shelf is on the vertical alignment in
+  // overview mode.
   if (background_type == ShelfBackgroundType::kMaximized ||
       background_type == ShelfBackgroundType::kInApp ||
-      (tablet_mode && (in_app || split_view))) {
+      (tablet_mode && (in_app || split_view)) ||
+      is_vertical_alignment_in_overview) {
     opaque_background_.SetRoundedCornerRadius(0);
   } else {
     opaque_background_.SetRoundedCornerRadius(radius);
@@ -560,12 +578,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 }
 
 void ShelfWidget::DelegateView::UpdateDragHandle() {
-  if (shelf_widget_->login_shelf_view_->GetVisible()) {
-    drag_handle_->SetVisible(
-        shelf_widget_->login_shelf_gesture_controller_.get());
-    return;
-  }
-
   if (!Shell::Get()->IsInTabletMode()) {
     drag_handle_->SetVisible(false);
     return;
@@ -599,6 +611,8 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 }
 
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
+  DCHECK(!features::IsUseLoginShelfWidgetEnabled());
+
   if (login_shelf_view_->GetVisible()) {
     return FindFirstOrLastFocusableChild(login_shelf_view_,
                                          default_last_focusable_child_);
@@ -609,7 +623,8 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
 }
 
 void ShelfWidget::DelegateView::Layout() {
-  login_shelf_view_->SetBoundsRect(GetLocalBounds());
+  if (!features::IsUseLoginShelfWidgetEnabled())
+    login_shelf_view_->SetBoundsRect(GetLocalBounds());
 
   // Center drag handle within the expected in-app shelf bounds - it's safe to
   // assume bottom shelf, given that the drag handle is only shown within the
@@ -661,6 +676,10 @@ SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
 bool ShelfWidget::GetHitTestRects(aura::Window* target,
                                   gfx::Rect* hit_test_rect_mouse,
                                   gfx::Rect* hit_test_rect_touch) {
+  // TODO(https://crbug.com/1343114): refactor the code below after the login
+  // shelf widget is ready.
+  DCHECK(!features::IsUseLoginShelfWidgetEnabled());
+
   // This should only get called when the login shelf is visible, i.e. not
   // during an active session. In an active session, hit test rects should be
   // calculated higher up in the class hierarchy by |EasyResizeWindowTargeter|.
@@ -674,17 +693,7 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   aura::Window::ConvertRectToTarget(source, target->parent(),
                                     &login_view_button_bounds);
   *hit_test_rect_mouse = login_view_button_bounds;
-
-  // If login shelf gesture detection is active, consume touch events on the
-  // whole shelf, so |login_shelf_gesture_controller_| can receive them.
-  if (login_shelf_gesture_controller_) {
-    gfx::Rect shelf_view_bounds = login_shelf_view_->GetLocalBounds();
-    aura::Window::ConvertRectToTarget(source, target->parent(),
-                                      &shelf_view_bounds);
-    *hit_test_rect_touch = shelf_view_bounds;
-  } else {
-    *hit_test_rect_touch = login_view_button_bounds;
-  }
+  *hit_test_rect_touch = login_view_button_bounds;
   return true;
 }
 
@@ -700,29 +709,6 @@ base::ScopedClosureRunner ShelfWidget::ForceShowHotseatInTabletMode() {
 
 bool ShelfWidget::IsHotseatForcedShowInTabletMode() const {
   return force_show_hotseat_count_ > 0;
-}
-
-bool ShelfWidget::SetLoginShelfSwipeHandler(
-    const std::u16string& nudge_text,
-    const base::RepeatingClosure& fling_callback,
-    base::OnceClosure exit_callback) {
-  if (!login_shelf_view_->GetVisible())
-    return false;
-
-  if (!Shell::Get()->IsInTabletMode())
-    return false;
-
-  login_shelf_gesture_controller_ =
-      std::make_unique<LoginShelfGestureController>(
-          shelf_, delegate_view_->drag_handle(), nudge_text, fling_callback,
-          std::move(exit_callback));
-  delegate_view_->UpdateDragHandle();
-  return true;
-}
-
-void ShelfWidget::ClearLoginShelfSwipeHandler() {
-  login_shelf_gesture_controller_.reset();
-  delegate_view_->UpdateDragHandle();
 }
 
 ui::Layer* ShelfWidget::GetOpaqueBackground() {
@@ -751,6 +737,9 @@ void ShelfWidget::HideDragHandleNudge(
 }
 
 void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {
+  // TODO(https://crbug.com/1343114): remove this function after the login shelf
+  // widget is ready.
+  DCHECK(!features::IsUseLoginShelfWidgetEnabled());
   if (login_shelf_view_->GetVisible())
     login_shelf_view_->SetButtonOpacity(target_opacity);
 }
@@ -772,10 +761,14 @@ ShelfWidget::~ShelfWidget() {
 void ShelfWidget::Initialize(aura::Window* shelf_container) {
   DCHECK(shelf_container);
 
-  login_shelf_view_ =
-      delegate_view_->AddLoginShelfView(std::make_unique<LoginShelfView>(
-          RootWindowController::ForWindow(shelf_container)
-              ->lock_screen_action_background_controller()));
+  // TODO(https://crbug.com/1343114): remove it after the login shelf view is
+  // moved to its own widget.
+  if (!features::IsUseLoginShelfWidgetEnabled()) {
+    login_shelf_view_ =
+        delegate_view_->AddLoginShelfView(std::make_unique<LoginShelfView>(
+            RootWindowController::ForWindow(shelf_container)
+                ->lock_screen_action_background_controller()));
+  }
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -848,14 +841,6 @@ void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
       hotseat_transition_animator());
 }
 
-void ShelfWidget::OnTabletModeChanged() {
-  if (!Shell::Get()->IsInTabletMode()) {
-    // Disable login shelf gesture controller, if one is set when leacing tablet
-    // mode.
-    ClearLoginShelfSwipeHandler();
-  }
-}
-
 void ShelfWidget::PostCreateShelf() {
   ash::FocusCycler* focus_cycler = Shell::Get()->focus_cycler();
   SetFocusCycler(focus_cycler);
@@ -914,7 +899,14 @@ void ShelfWidget::set_default_last_focusable_child(
       default_last_focusable_child);
 }
 
+LoginShelfView* ShelfWidget::GetLoginShelfView() {
+  return login_shelf_view_;
+}
+
 bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
+  // TODO(https://crbug.com/1343114): remove this function after the login shelf
+  // widget is ready.
+
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;
   if (active) {
@@ -1072,6 +1064,9 @@ void ShelfWidget::UpdateTargetBoundsForGesture(int shelf_position) {
 }
 
 void ShelfWidget::HandleLocaleChange() {
+  // TODO(https://crbug.com/1343114): remove this function when the login shelf
+  // widget is ready.
+  DCHECK(!features::IsUseLoginShelfWidgetEnabled());
   login_shelf_view_->HandleLocaleChange();
 }
 
@@ -1098,10 +1093,12 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     aura::Window* const shelf_window = GetNativeWindow();
     if (show_hotseat && IsActive())
       wm::DeactivateWindow(shelf_window);
-    login_shelf_view()->SetVisible(!show_hotseat);
 
-    if (show_hotseat)
-      login_shelf_gesture_controller_.reset();
+    // TODO(https://crbug.com/1343114): remove it when the login shelf widget is
+    // used as default.
+    if (!features::IsUseLoginShelfWidgetEnabled())
+      GetLoginShelfView()->SetVisible(!show_hotseat);
+
     ShowIfHidden();
 
     // The shelf widget can get activated when login shelf view is shown, which
@@ -1122,12 +1119,20 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   // Update drag handle's color on session state changes since the color mode
   // might change on session state changes.
   delegate_view_->drag_handle()->UpdateColor();
-  login_shelf_view_->UpdateAfterSessionChange();
+
+  // TODO(https://crbug.com/1343114): remove it when the login shelf widget is
+  // ready.
+  if (!features::IsUseLoginShelfWidgetEnabled())
+    login_shelf_view_->UpdateAfterSessionChange();
 }
 
 void ShelfWidget::OnUserSessionAdded(const AccountId& account_id) {
   shelf_layout_manager_->SetDimmed(false);
-  login_shelf_view_->UpdateAfterSessionChange();
+
+  // TODO(https://crbug.com/1343114): remove it when the login shelf widget is
+  // ready.
+  if (!features::IsUseLoginShelfWidgetEnabled())
+    login_shelf_view_->UpdateAfterSessionChange();
 }
 
 SkColor ShelfWidget::GetShelfBackgroundColor() const {
@@ -1144,12 +1149,8 @@ void ShelfWidget::ShowIfHidden() {
     Show();
 }
 
-bool ShelfWidget::HandleLoginShelfGestureEvent(
-    const ui::GestureEvent& event_in_screen) {
-  if (!login_shelf_gesture_controller_)
-    return false;
-
-  return login_shelf_gesture_controller_->HandleGestureEvent(event_in_screen);
+ui::Layer* ShelfWidget::GetDelegateViewOpaqueBackgroundLayerForTesting() {
+  return delegate_view_->opaque_background_layer();
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {

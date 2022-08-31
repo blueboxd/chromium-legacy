@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Hanes</translation>
 <translation id="1645954272419197032">Cadarnhewch wybodaeth dyfais</translation>
 <translation id="1662989795263954667">Wedi stopio - Allan o inc</translation>
+<translation id="1664796644829245314">Rhagolwg <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integredig</translation>
 <translation id="1672499492233627739">Ffrwd fideo'r gwe-gamera</translation>
 <translation id="1676557873873341166">Cymryd fideo</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Fideo-gynadledda</translation>
 <translation id="1852934301711881861">Gosod ChromeOS Flex</translation>
 <translation id="1856388568474281774">Saeth i lawr</translation>
+<translation id="1858620243986915808">Atodi sgrinlun</translation>
 <translation id="1871569928317311284">Diffodd y thema dywyll</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Diffodd y modd tywyll</translation>
@@ -797,6 +799,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="7978412674231730200">Allwedd breifat</translation>
 <translation id="7982789257301363584">Rhwydwaith</translation>
 <translation id="7994702968232966508">Dull EAP</translation>
+<translation id="8018928621986160031">Cadwyd i "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Wedi methu â lawrlwytho</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Galluogi'r modd lliw awtomatig</translation>
@@ -865,6 +868,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="8576249514688522074">Heb ei gychwyn</translation>
 <translation id="8620617069779373398">Statws crwydro</translation>
 <translation id="8655295600908251630">Sianel</translation>
+<translation id="8655828773034788261">Rhannu URL:</translation>
 <translation id="8660881923941176839">pwysau</translation>
 <translation id="8662671328352114214">Ymuno â rhwydwaith <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Diweddaru i <ph name="VERSION_NUMBER" /> ac ailgychwyn</translation>

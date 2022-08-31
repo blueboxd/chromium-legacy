@@ -535,12 +535,14 @@ chromium-metrics-reviews@google.com.
     <variant name="LinksOpened" summary="links opened"/>
     <variant name="RelatedSearchesClicked"
         summary="related search links opened"/>
+    <variant name="TogglesToBasicHistory"
+        summary="Tggles to from basic history UI"/>
     <variant name="VisibilityToggles" summary="Journeys UI toggles on/off"/>
   </token>
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState.WasSuccessful"
-    enum="BooleanSuccess" expires_after="2022-09-18">
+    enum="BooleanSuccess" expires_after="2023-01-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -637,6 +639,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.Backend.ClusterContainsSearch"
+    enum="BooleanContained" expires_after="2022-11-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Logs whether each cluster contains a search after it has been finalized.
+    Logged for each cluster that is generated when clusters are created for the
+    purposes of keyword generation to show in the Omnibox, roughly once at the
+    start of each session and every two hours after that.
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.Backend.ClusterSize.{ClusterStatistic}"
     units="number visits" expires_after="M106">
   <owner>mcrouse@chromium.org</owner>
@@ -719,7 +734,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordsCount"
-    units="count" expires_after="2022-11-13">
+    units="count" expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -754,7 +769,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordsCount"
-    units="count" expires_after="2022-11-13">
+    units="count" expires_after="2023-01-15">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -799,9 +814,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.Backend.NumKeywordsPerCluster"
+    units="number keywords" expires_after="2022-11-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Logs the number of keywords associated with each cluster after it has been
+    finalized. Logged for each cluster that is generated when clusters are
+    created for the purposes of keyword generation to show in the Omnibox,
+    roughly once at the start of each session and every two hours after that.
+  </summary>
+</histogram>
+
 <histogram
     name="History.Clusters.Backend.NumKeywordsPerCluster.{KeywordStatistic}"
-    units="number keywords" expires_after="M106">
+    units="number keywords" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -815,6 +843,19 @@ chromium-metrics-reviews@google.com.
     <variant name="Max" summary="maximum keywords"/>
     <variant name="Min" summary="minimum keywords"/>
   </token>
+</histogram>
+
+<histogram name="History.Clusters.Backend.NumVisitsPerCluster"
+    units="number visits" expires_after="2022-11-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Logs the number of visits contained in each cluster after it has been
+    finalized. Logged for each cluster that is generated when clusters are
+    created for the purposes of keyword generation to show in the Omnibox,
+    roughly once at the start of each session and every two hours after that.
+  </summary>
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
@@ -1348,7 +1389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.HistoryPageView" enum="HistoryPageView"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>calamity@chromium.org</owner>
   <owner>src/chrome/browser/resources/history/OWNERS</owner>
   <component>UI&gt;Browser&gt;History</component>

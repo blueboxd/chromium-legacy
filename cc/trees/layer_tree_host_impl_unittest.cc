@@ -28,11 +28,11 @@
 #include "cc/base/histograms.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/browser_controls_offset_manager.h"
+#include "cc/input/input_handler.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar_controller.h"
-#include "cc/input/threaded_input_handler.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
@@ -831,9 +831,7 @@ class LayerTreeHostImplTest : public testing::Test,
     }
   }
 
-  ThreadedInputHandler& GetInputHandler() {
-    return host_impl_->GetInputHandler();
-  }
+  InputHandler& GetInputHandler() { return host_impl_->GetInputHandler(); }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
@@ -14821,7 +14819,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // Verify no jump.
   float y = CurrentScrollOffset(scrolling_layer).y();
-  EXPECT_TRUE(y > 1 && y < 49);
+  if (features::IsImpulseScrollAnimationEnabled()) {
+    // Impulse scroll animation is faster than non-impulse, which results in a
+    // traveled distance larger than the original 50px.
+    EXPECT_TRUE(y > 50 && y < 100);
+  } else {
+    EXPECT_TRUE(y > 1 && y < 49);
+  }
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimatedWithDelay) {

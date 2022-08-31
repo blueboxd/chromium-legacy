@@ -4,7 +4,7 @@
 
 #include "components/user_notes/browser/frame_user_note_changes.h"
 
-#include "base/barrier_closure.h"
+#include "base/barrier_callback.h"
 #include "components/user_notes/browser/user_note_manager.h"
 #include "components/user_notes/model/user_note.h"
 #include "components/user_notes/model/user_note_target.h"
@@ -62,6 +62,11 @@ void FrameUserNoteChanges::Apply(base::OnceClosure callback) {
     manager->RemoveNote(note_id);
   }
 
+  if (notes_added_.empty()) {
+    std::move(callback).Run();
+    return;
+  }
+
   // For added notes, the async highlight creation on the renderer side must be
   // awaited, because the order in which notes are shown in the Notes UI depends
   // on the order of the corresponding highlights in the page. Use a barrier
@@ -81,7 +86,7 @@ void FrameUserNoteChanges::Apply(base::OnceClosure callback) {
 std::unique_ptr<UserNoteInstance> FrameUserNoteChanges::MakeNoteInstance(
     const UserNote* note_model,
     UserNoteManager* manager) const {
-  return std::make_unique<UserNoteInstance>(note_model->GetSafeRef(), manager);
+  return UserNoteInstance::Create(note_model->GetSafeRef(), manager);
 }
 
 }  // namespace user_notes

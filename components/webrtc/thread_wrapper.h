@@ -86,6 +86,8 @@ class ThreadWrapper : public base::CurrentThread::DestructionObserver,
   // need to call Send() for other threads.
   void set_send_allowed(bool allowed) { send_allowed_ = allowed; }
 
+  rtc::SocketServer* SocketServer();
+
   // CurrentThread::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
@@ -147,15 +149,15 @@ class ThreadWrapper : public base::CurrentThread::DestructionObserver,
   void ProcessPendingSends();
 
   // TaskQueueBase overrides.
-  void PostTask(std::unique_ptr<webrtc::QueuedTask> task) override;
-  void PostDelayedTask(std::unique_ptr<webrtc::QueuedTask> task,
-                       uint32_t milliseconds) override;
-  void PostDelayedHighPrecisionTask(std::unique_ptr<webrtc::QueuedTask> task,
-                                    uint32_t milliseconds) override;
+  void PostTask(absl::AnyInvocable<void() &&> task) override;
+  void PostDelayedTask(absl::AnyInvocable<void() &&> task,
+                       webrtc::TimeDelta delay) override;
+  void PostDelayedHighPrecisionTask(absl::AnyInvocable<void() &&> task,
+                                    webrtc::TimeDelta delay) override;
 
   // Executes WebRTC queued tasks from TaskQueueBase overrides on
   // |task_runner_|.
-  void RunTaskQueueTask(std::unique_ptr<webrtc::QueuedTask> task);
+  void RunTaskQueueTask(absl::AnyInvocable<void() &&> task);
   void RunCoalescedTaskQueueTasks(base::TimeTicks scheduled_time);
 
   // Called before a task runs, returns an opaque optional timestamp which

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/utility/transformer_util.h"
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/task/thread_pool.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/controls/label.h"
@@ -166,6 +169,7 @@ void TouchInjector::RegisterEventRewriter() {
   if (observation_.IsObserving())
     return;
   observation_.Observe(target_window_->GetHost()->GetEventSource());
+  Update();
 }
 
 void TouchInjector::UnRegisterEventRewriter() {
@@ -173,6 +177,25 @@ void TouchInjector::UnRegisterEventRewriter() {
     return;
   DispatchTouchCancelEvent();
   observation_.Reset();
+  // Need reset pending input bind if it is unregistered in edit mode.
+  for (auto& action : actions_)
+    action->ResetPendingBind();
+}
+
+void TouchInjector::Update() {
+  if (rotation_transform_)
+    rotation_transform_.reset();
+
+  auto display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(target_window_);
+  // No need to transform if there is no rotation.
+  if (display.panel_rotation() == display::Display::ROTATE_0)
+    return;
+
+  rotation_transform_ =
+      std::make_unique<gfx::Transform>(ash::CreateRotationTransform(
+          display::Display::ROTATE_0, display.panel_rotation(),
+          gfx::SizeF(display.GetSizeInPixel())));
 }
 
 void TouchInjector::OnBindingChange(
@@ -255,6 +278,11 @@ void TouchInjector::OnInputMenuViewRemoved() {
     input_mapping_visible_uma_ = input_mapping_visible_;
     RecordInputOverlayMappingHintState(input_mapping_visible_uma_);
   }
+}
+
+void TouchInjector::NotifyFirstTimeLaunch() {
+  first_launch_ = true;
+  show_nudge_ = true;
 }
 
 void TouchInjector::CleanupTouchEvents() {
@@ -437,7 +465,7 @@ ui::EventDispatchDetails TouchInjector::RewriteEvent(
       CleanupTouchEvents();
       display_overlay_controller_->SetDisplayMode(DisplayMode::kPreMenu);
     }
-    return DiscardEvent(continuation);
+    return SendEvent(continuation, &event);
   } else if (display_mode_ == DisplayMode::kPreMenu) {
     if (event.IsKeyEvent()) {
       auto* key_event = event.AsKeyEvent();
@@ -508,6 +536,7 @@ ui::EventDispatchDetails TouchInjector::RewriteEvent(
   for (auto& action : actions_) {
     bool keep_original_event = false;
     bool rewritten = action->RewriteEvent(event, bounds, is_mouse_locked_,
+                                          rotation_transform_.get(),
                                           touch_events, keep_original_event);
     if (!rewritten)
       continue;

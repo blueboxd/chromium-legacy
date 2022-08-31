@@ -116,6 +116,18 @@ export const BASIC_ZIP_ENTRY_SET = [
 ];
 
 /**
+ * More complex entry set for the local volume with multiple ZIP archives.
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+export const COMPLEX_ZIP_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.zipArchive,
+  ENTRIES.zipSJISArchive,
+];
+
+/**
  * More complex entry set for Drive that includes entries with varying
  * permissions (such as read-only entries).
  *
@@ -123,8 +135,12 @@ export const BASIC_ZIP_ENTRY_SET = [
  * @const
  */
 export const COMPLEX_DRIVE_ENTRY_SET = [
-  ENTRIES.hello, ENTRIES.photos, ENTRIES.readOnlyFolder,
-  ENTRIES.readOnlyDocument, ENTRIES.readOnlyStrictDocument, ENTRIES.readOnlyFile
+  ENTRIES.hello,
+  ENTRIES.photos,
+  ENTRIES.readOnlyFolder,
+  ENTRIES.readOnlyDocument,
+  ENTRIES.readOnlyStrictDocument,
+  ENTRIES.readOnlyFile,
 ];
 
 /**
@@ -135,8 +151,12 @@ export const COMPLEX_DRIVE_ENTRY_SET = [
  * @const
  */
 export const COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET = [
-  ENTRIES.hello, ENTRIES.photos, ENTRIES.readOnlyFolder, ENTRIES.readOnlyFile,
-  ENTRIES.deletableFile, ENTRIES.renamableFile
+  ENTRIES.hello,
+  ENTRIES.photos,
+  ENTRIES.readOnlyFolder,
+  ENTRIES.readOnlyFile,
+  ENTRIES.deletableFile,
+  ENTRIES.renamableFile,
 ];
 
 /**

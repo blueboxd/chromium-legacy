@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
-    enum="BooleanSuccess" expires_after="2022-11-13">
+    enum="BooleanSuccess" expires_after="2023-01-15">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -736,7 +736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.LabeledInTaskManager"
-    enum="BooleanLabeledRendererTask" expires_after="2022-11-06">
+    enum="BooleanLabeledRendererTask" expires_after="2023-01-15">
   <owner>creis@chromium.org</owner>
   <owner>avi@chromium.org</owner>
   <summary>
@@ -766,7 +766,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.SpareProcessMaybeTakeAction"
-    enum="SpareProcessMaybeTakeAction" expires_after="2022-11-13">
+    enum="SpareProcessMaybeTakeAction" expires_after="2023-01-15">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -777,7 +777,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BrowserRenderProcessHost.SuspendedChild.KernelExecutionRecorded"
-    enum="BooleanRecorded" expires_after="2022-11-20">
+    enum="BooleanRecorded" expires_after="never">
+<!-- expires-never: For monitoring stability regressions. -->
+
   <owner>wfh@chromium.org</owner>
   <owner>chrome-stability-core@google.com</owner>
   <summary>
@@ -788,21 +790,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="BrowserRenderProcessHost.SuspendedChild.NtStatus"
-    enum="NTSTATUS" expires_after="2022-09-01">
-  <owner>wfh@chromium.org</owner>
-  <owner>chrome-stability-core@google.com</owner>
-  <summary>
-    The result of calling base::win::GetLastNtStatus() when a failure was
-    obtained when trying to obtain the user and kernel execution times for a
-    suspended child renderer process. This is recorded after process creation
-    but before process resumption. It is only recorded for failures to obtain
-    the user and kernel execution times. This is only recorded on Windows.
-  </summary>
-</histogram>
-
 <histogram name="BrowserRenderProcessHost.SuspendedChild.UserExecutionRecorded"
-    enum="BooleanRecorded" expires_after="2022-09-01">
+    enum="BooleanRecorded" expires_after="never">
+<!-- expires-never: For monitoring stability regressions. -->
+
   <owner>wfh@chromium.org</owner>
   <owner>chrome-stability-core@google.com</owner>
   <summary>
@@ -810,19 +801,6 @@ chromium-metrics-reviews@google.com.
     process. This is recorded after process creation but before process
     resumption. This is recorded for every sandboxed Renderer process launched
     on Windows only.
-  </summary>
-</histogram>
-
-<histogram name="BrowserRenderProcessHost.SuspendedChild.Win32Error"
-    enum="WinGetLastError" expires_after="2022-09-01">
-  <owner>wfh@chromium.org</owner>
-  <owner>chrome-stability-core@google.com</owner>
-  <summary>
-    The result of calling GetLastError when a failure was obtained when trying
-    to obtain the user and kernel execution times for a suspended child renderer
-    process. This is recorded after process creation but before process
-    resumption. It is only recorded for failures to obtain the user and kernel
-    execution times. This is only recorded on Windows.
   </summary>
 </histogram>
 
@@ -1131,6 +1109,51 @@ chromium-metrics-reviews@google.com.
     Logs the UI location from which the side panel is triggered to be opened.
     Recorded when the side panel is shown and a trigger is provided.
   </summary>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntries}.ShownDuration" units="ms"
+    expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records how long the {SidePanelEntries} side panel entry was open for
+    (capped at 1 hour). This is recorded in SidePanelEntry::OnEntryHidden when
+    the entry is hidden (ie. switching entries or the side panel closing).
+  </summary>
+  <token key="SidePanelEntries">
+    <variant name="Assistant"/>
+    <variant name="Bookmarks"/>
+    <variant name="Feed"/>
+    <variant name="HistoryClusters"/>
+    <variant name="Lens"/>
+    <variant name="ReadAnything"/>
+    <variant name="ReadingList"/>
+    <variant name="SideSearch"/>
+    <variant name="UserNotes"/>
+  </token>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntries}.ShowTriggered"
+    enum="SidePanelOpenTrigger" expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records how a side panel entry is triggered to be shown. (i.e. by toolbar
+    button, by commbobox selection). This is recorded when a new side panel
+    entry is triggered to be shown regardless any side panel entry is currently
+    open.
+  </summary>
+  <token key="SidePanelEntries">
+    <variant name="Assistant"/>
+    <variant name="Bookmarks"/>
+    <variant name="Feed"/>
+    <variant name="HistoryClusters"/>
+    <variant name="Lens"/>
+    <variant name="ReadAnything"/>
+    <variant name="ReadingList"/>
+    <variant name="SideSearch"/>
+    <variant name="UserNotes"/>
+  </token>
 </histogram>
 
 </histograms>

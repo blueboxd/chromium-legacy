@@ -1746,8 +1746,11 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
       fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
 }
 
+// Currently, Shared Storage is not allowed in Fenced Frames as Fenced Frames
+// disallow all permissions policies. This may change in the future.
+// https://github.com/WICG/fenced-frame/issues/44
 IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
-                       SelectURLNotAllowedInFencedFrame) {
+                       SharedStorageNotAllowedInFencedFrame) {
   GURL main_frame_url = https_server()->GetURL("a.test", kSimplePagePath);
 
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
@@ -1757,21 +1760,17 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
 
   FrameTreeNode* fenced_frame_node = CreateFencedFrame(fenced_frame_url);
 
-  EXPECT_TRUE(ExecJs(fenced_frame_node, R"(
-      sharedStorage.worklet.addModule('/shared_storage/simple_module.js');
-    )"));
-
-  EXPECT_EQ(1u, test_worklet_host_manager().GetAttachedWorkletHostsCount());
-  EXPECT_EQ(0u, test_worklet_host_manager().GetKeepAliveWorkletHostsCount());
-
   EvalJsResult result = EvalJs(fenced_frame_node, R"(
-      sharedStorage.selectURL(
-          'test-url-selection-operation',
-          [{url: "title0.html"}], {data: {'mockResult': 0}});
+      sharedStorage.worklet.addModule('/shared_storage/simple_module.js');
     )");
 
-  EXPECT_TRUE(result.error.find("sharedStorage.selectURL() is not allowed in "
-                                "fenced frame") != std::string::npos);
+  EXPECT_THAT(
+      result.error,
+      testing::HasSubstr("The \"shared-storage\" Permissions Policy denied the "
+                         "method on window.sharedStorage."));
+
+  EXPECT_EQ(0u, test_worklet_host_manager().GetAttachedWorkletHostsCount());
+  EXPECT_EQ(0u, test_worklet_host_manager().GetKeepAliveWorkletHostsCount());
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
@@ -2296,50 +2295,6 @@ IN_PROC_BROWSER_TEST_P(
   // After the top navigation, log(8)=3 bits should have been withdrawn from the
   // original shared storage origin.
   EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin),
-                   kBudgetAllowed - 3);
-}
-
-IN_PROC_BROWSER_TEST_P(
-    SharedStorageFencedFrameInteractionBrowserTest,
-    FencedFrameNavigateSelfToNewURNAndThenNavigateTop_BudgetWithdrawal) {
-  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  url::Origin shared_storage_origin1 =
-      url::Origin::Create(https_server()->GetURL("b.test", kSimplePagePath));
-  url::Origin shared_storage_origin2 =
-      url::Origin::Create(https_server()->GetURL("c.test", kSimplePagePath));
-
-  GURL urn_uuid1 = SelectFrom8URLsInContext(shared_storage_origin1);
-  GURL urn_uuid2 = SelectFrom8URLsInContext(shared_storage_origin2);
-
-  FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(urn_uuid1);
-
-  {
-    TestFrameNavigationObserver observer(
-        fenced_frame_root_node->current_frame_host());
-    EXPECT_TRUE(ExecJs(fenced_frame_root_node,
-                       JsReplace("window.location.href=$1", urn_uuid2.spec())));
-    observer.Wait();
-  }
-
-  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin1), kBudgetAllowed);
-  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin2), kBudgetAllowed);
-
-  {
-    GURL new_page_url = https_server()->GetURL("d.test", kSimplePagePath);
-
-    TestNavigationObserver top_navigation_observer(shell()->web_contents());
-    EXPECT_TRUE(ExecJs(
-        fenced_frame_root_node,
-        JsReplace("window.open($1, '_unfencedTop')", new_page_url.spec())));
-    top_navigation_observer.Wait();
-  }
-
-  // After the top navigation, log(8)=3 bits should have been withdrawn from the
-  // new shared storage origin. The original origin is unaffected.
-  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin1), kBudgetAllowed);
-  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin2),
                    kBudgetAllowed - 3);
 }
 

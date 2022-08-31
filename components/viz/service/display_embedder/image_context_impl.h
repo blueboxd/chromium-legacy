@@ -15,7 +15,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -113,14 +113,14 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
 
   // Only one of the follow should be non-null at the same time.
   scoped_refptr<gpu::gles2::TexturePassthrough> texture_passthrough_;
-  std::unique_ptr<gpu::SharedImageRepresentationSkia> representation_;
-  std::unique_ptr<gpu::SharedImageRepresentationRaster> raster_representation_;
+  std::unique_ptr<gpu::SkiaImageRepresentation> representation_;
+  std::unique_ptr<gpu::RasterImageRepresentation> raster_representation_;
 
   // For scoped read accessing |representation|. It is only accessed on GPU
   // thread.
-  std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<gpu::SkiaImageRepresentation::ScopedReadAccess>
       representation_scoped_read_access_;
-  std::unique_ptr<gpu::SharedImageRepresentationRaster::ScopedReadAccess>
+  std::unique_ptr<gpu::RasterImageRepresentation::ScopedReadAccess>
       representation_raster_scoped_access_;
 
   // For holding SkPromiseImageTexture create from |fallback_texture| or legacy

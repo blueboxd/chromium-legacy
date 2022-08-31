@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_UTILS_H_
 
 #include <stddef.h>
+
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -14,9 +16,13 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_sources.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
 class GURL;
 class Profile;
@@ -54,8 +60,6 @@ const char kDarkModeThemeColor[] = "dark_mode_theme_color";
 bool AreWebAppsEnabled(const Profile* profile);
 // Is user allowed to install web apps from UI:
 bool AreWebAppsUserInstallable(Profile* profile);
-// Can system web apps be installed:
-bool AreSystemWebAppsSupported();
 
 // Get BrowserContext to use for a WebApp KeyedService creation.
 content::BrowserContext* GetBrowserContextForWebApps(
@@ -173,10 +177,6 @@ bool IsWebAppsCrosapiEnabled();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// Enables System Web Apps so we can test SWA features in Lacros, even we don't
-// have actual SWAs in Lacros.
-void EnableSystemWebAppsInLacrosForTesting();
-
 // Allow user web apps on profiles other than the main profile.
 void SkipMainProfileCheckForTesting();
 #endif
@@ -193,6 +193,32 @@ enum class AppSettingsPageEntryPoint {
   kChromeAppsPage = 1,
   kMaxValue = kChromeAppsPage,
 };
+
+// When user_display_mode indicates a user preference for opening in
+// a browser tab, we open in a browser tab. If the developer has specified
+// the app should utilize more advanced display modes and/or fallback chain,
+// attempt honor those preferences. Otherwise, we open in a standalone
+// window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
+// window (for app_display_mode 'browser' or 'minimal-ui').
+//
+// |is_isolated| overrides browser display mode for isolated apps because they
+// can't be open as a tab.
+DisplayMode ResolveEffectiveDisplayMode(
+    DisplayMode app_display_mode,
+    const std::vector<DisplayMode>& app_display_mode_overrides,
+    UserDisplayMode user_display_mode,
+    bool is_isolated);
+
+apps::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
+    DisplayMode display_mode);
+
+std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode);
+
+// Converts RunOnOsLoginMode from RunOnOsLoginMode to
+// apps::RunOnOsLoginMode.
+apps::RunOnOsLoginMode ConvertOsLoginMode(RunOnOsLoginMode login_mode);
+
+const char* IconsDownloadedResultToString(IconsDownloadedResult result);
 
 }  // namespace web_app
 

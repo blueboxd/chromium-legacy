@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/policy_constants.h"
 
 namespace remoting {
@@ -71,6 +72,7 @@ bool ThirdPartyAuthConfig::ParseStrings(
 
 namespace {
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_IOS)
 void ExtractHelper(const base::DictionaryValue& policy_dict,
                    const std::string& policy_name,
                    bool* policy_present,
@@ -83,6 +85,7 @@ void ExtractHelper(const base::DictionaryValue& policy_dict,
     policy_value->clear();
   }
 }
+#endif
 
 }  // namespace
 
@@ -92,6 +95,7 @@ bool ThirdPartyAuthConfig::ExtractStrings(
     std::string* token_validation_url,
     std::string* token_validation_cert_issuer) {
   bool policies_present = false;
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_IOS)
   ExtractHelper(policy_dict, policy::key::kRemoteAccessHostTokenUrl,
                 &policies_present, token_url);
   ExtractHelper(policy_dict, policy::key::kRemoteAccessHostTokenValidationUrl,
@@ -99,6 +103,7 @@ bool ThirdPartyAuthConfig::ExtractStrings(
   ExtractHelper(policy_dict,
                 policy::key::kRemoteAccessHostTokenValidationCertificateIssuer,
                 &policies_present, token_validation_cert_issuer);
+#endif
   return policies_present;
 }
 

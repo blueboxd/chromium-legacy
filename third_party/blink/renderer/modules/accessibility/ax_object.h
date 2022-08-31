@@ -63,6 +63,7 @@ class Transform;
 namespace ui {
 struct AXActionData;
 struct AXNodeData;
+struct AXRelativeBounds;
 }
 
 namespace blink {
@@ -122,7 +123,7 @@ class NameSource {
   String text;
   bool superseded = false;
   bool invalid = false;
-  ax::mojom::blink::NameFrom type = ax::mojom::blink::NameFrom::kUninitialized;
+  ax::mojom::blink::NameFrom type = ax::mojom::blink::NameFrom::kNone;
   const QualifiedName& attribute;
   AtomicString attribute_value;
   AXTextSource native_source = kAXTextFromNativeSourceUninitialized;
@@ -1282,6 +1283,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   static bool IsARIAInput(ax::mojom::blink::Role);
   static bool IsFrame(const Node*);
   static bool HasARIAOwns(Element* element);
+  // Should this own a child tree (e.g. an iframe).
+  virtual bool IsChildTreeOwner() const { return false; }
   // Is this a widget that requires container widget.
   bool IsSubWidget() const;
   static ax::mojom::blink::Role AriaRoleStringToRoleEnum(const String&);
@@ -1327,6 +1330,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // |cached_values_only| avoids recomputing cached values, and thus can be
   // used during UpdateCachedValuesIfNecessary() without causing recursion.
   String ToString(bool verbose = false, bool cached_values_only = false) const;
+
+  void PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
+                                bool* clips_children) const;
 
  protected:
   AXID id_;
@@ -1394,6 +1400,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   const AXObject* TableParent() const;
 
   // Helpers for serialization.
+  void SerializeBoundingBoxAttributes(ui::AXNodeData& dst) const;
   void SerializeActionAttributes(ui::AXNodeData* node_data);
   void SerializeChildTreeID(ui::AXNodeData* node_data);
   void SerializeChooserPopupAttributes(ui::AXNodeData* node_data);
@@ -1409,6 +1416,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void SerializeNameAndDescriptionAttributes(ui::AXMode accessibility_mode,
                                              ui::AXNodeData* node_data) const;
   void SerializeOtherScreenReaderAttributes(ui::AXNodeData* node_data) const;
+  void SerializeScreenReaderAttributes(ui::AXNodeData* node_data);
   void SerializeScrollAttributes(ui::AXNodeData* node_data);
   void SerializeSparseAttributes(ui::AXNodeData* node_data);
   void SerializeStyleAttributes(ui::AXNodeData* node_data);
@@ -1421,6 +1429,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
  private:
   bool ComputeCanSetFocusAttribute() const;
+  String KeyboardShortcut() const;
 
   mutable int last_modification_count_;
 

@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
 
-namespace chromeos {
+namespace ash {
 
 NetworkPortalDetectorStub::NetworkPortalDetectorStub() = default;
 
@@ -29,11 +29,11 @@ bool NetworkPortalDetectorStub::IsEnabled() {
   return false;
 }
 
-void NetworkPortalDetectorStub::Enable(bool start_detection) {}
+void NetworkPortalDetectorStub::Enable() {}
 
 void NetworkPortalDetectorStub::StartPortalDetection() {}
 
 void NetworkPortalDetectorStub::SetStrategy(
     PortalDetectorStrategy::StrategyId id) {}
 
-}  // namespace chromeos
+}  // namespace ash

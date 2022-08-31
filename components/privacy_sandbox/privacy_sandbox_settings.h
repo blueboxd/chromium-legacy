@@ -9,7 +9,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/privacy_sandbox/canonical_topic.h"
@@ -17,6 +16,7 @@
 
 class HostContentSettingsMap;
 class PrefService;
+class GURL;
 
 namespace content_settings {
 class CookieSettings;
@@ -59,12 +59,6 @@ class PrivacySandboxSettings : public KeyedService {
     // consulted on every access check, and it is acceptable for this to change
     // return value over the life of the service.
     virtual bool IsPrivacySandboxRestricted() = 0;
-
-    // Allows the delegate to express the concept of confirmation, e.g. a notice
-    // or consent, required before Privacy Sandbox operation can occur. This is
-    // checked on every access check, and must return true for Privacy Sandbox
-    // APIs to run.
-    virtual bool IsPrivacySandboxConfirmed() = 0;
   };
 
   PrivacySandboxSettings(
@@ -163,10 +157,9 @@ class PrivacySandboxSettings : public KeyedService {
 
   // Returns whether the profile has the Privacy Sandbox enabled. This consults
   // the main preference, as well as the delegate to check whether the sandbox
-  // is restricted, or has not been confirmed.  It does not consider any cookie
-  // settings. A return value of false means that no Privacy Sandbox operations
-  // can occur. A return value of true must be followed up with the appropriate
-  // IsXAllowed() call.
+  // is restricted. It does not consider any cookie settings. A return value of
+  // false means that no Privacy Sandbox operations can occur. A return value of
+  // true must be followed up with the appropriate IsXAllowed() call.
   bool IsPrivacySandboxEnabled() const;
 
   // Disables the Privacy Sandbox completely if |enabled| is false, if |enabled|
@@ -210,8 +203,7 @@ class PrivacySandboxSettings : public KeyedService {
   // provided as a parameter to allow callers to cache it between calls.
   bool IsPrivacySandboxEnabledForContext(
       const GURL& url,
-      const absl::optional<url::Origin>& top_frame_origin,
-      const ContentSettingsForOneType& cookie_settings) const;
+      const absl::optional<url::Origin>& top_frame_origin) const;
 
   void SetTopicsDataAccessibleFromNow() const;
 

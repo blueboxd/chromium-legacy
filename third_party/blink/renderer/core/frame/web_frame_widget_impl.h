@@ -45,6 +45,7 @@
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/drag/drag.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/stylus_writing_gesture.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
@@ -211,6 +212,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // FrameWidget overrides.
   cc::AnimationHost* AnimationHost() const final;
+  cc::AnimationTimeline* ScrollAnimationTimeline() const final;
   void SetOverscrollBehavior(
       const cc::OverscrollBehavior& overscroll_behavior) final;
   void RequestAnimationAfterDelay(const base::TimeDelta&) final;
@@ -423,6 +425,10 @@ class CORE_EXPORT WebFrameWidgetImpl
                          ui::mojom::blink::DragOperation,
                          base::OnceClosure callback) override;
 
+  // mojom::blink::FrameWidgetInputHandler overrides:
+  void HandleStylusWritingGestureAction(
+      mojom::blink::StylusWritingGestureDataPtr gesture_data) override;
+
   // Sets the display mode, which comes from the top-level browsing context and
   // is applied to all widgets.
   void SetDisplayMode(mojom::blink::DisplayMode);
@@ -538,6 +544,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
+  void SetPanAction(mojom::blink::PanAction pan_action);
 
   // Called to update whether low latency input mode is enabled or not.
   void SetNeedsLowLatencyInput(bool);
@@ -723,7 +730,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                       uint32_t key_modifiers,
                       base::OnceClosure callback) override;
   void DragSourceSystemDragEnded() override;
-  void OnStartStylusWriting() override;
+  void OnStartStylusWriting(OnStartStylusWritingCallback callback) override;
   void SetBackgroundOpaque(bool opaque) override;
   void SetActive(bool active) override;
   // For both mainframe and childframe change the text direction of the
@@ -887,6 +894,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Returns the currently focused `Element` in any `LocalFrame` owned by the
   // associated `WebView`.
   Element* FocusedElement() const;
+
+  gfx::Rect GetAbsoluteCaretBounds();
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(

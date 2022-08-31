@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">অনুমতি রিসেট করুন</translation>
 <translation id="301521992641321250">স্বয়ংক্রিয়ভাবে ব্লক করা হয়েছে</translation>
 <translation id="3069226013421428034">কোনও নির্দিষ্ট সাইটের জন্য থার্ড-পার্টি সাইন-ইনের অনুমতি দিন।</translation>
+<translation id="3109724472072898302">সঙ্কুচিত</translation>
 <translation id="3114012059975132928">ভিডিও প্লেয়ার</translation>
 <translation id="3115898365077584848">তথ্য দেখুন</translation>
 <translation id="3123473560110926937">কিছু সাইটে ব্লক করা হয়েছে</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">ভিডিওটি মিউট করুন</translation>
 <translation id="3596414637720633074">ছদ্মবেশী মোডে থার্ড-পার্টি কুকি ব্লক করুন</translation>
 <translation id="3600792891314830896">সাউন্ড প্লে করা হয় যে সাইটগুলিতে সেগুলি মিউট করুন</translation>
+<translation id="3628308229821498208">সাজেস্ট করা সার্চ</translation>
 <translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
 <translation id="3763247130972274048">১০ সেকেন্ড আগে পরে স্কিপ করতে বাঁদিকে অথবা ডানদিকে ডবল ট্যাপ করুন</translation>
 <translation id="3797520601150691162">কোনও নির্দিষ্ট সাইটের জন্য ডার্ক থিম প্রয়োগ করবেন না</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> এর বিকল্পগুলি</translation>
 <translation id="6231752747840485235"><ph name="APP_NAME" /> আনইনস্টল করবেন?</translation>
+<translation id="6262191102408817757">আপনার শেষ ট্যাবের উপর ভিত্তি করে</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ও <ph name="PERMISSION_2" /> ব্লক করা হয়েছে</translation>
 <translation id="6270391203985052864">সাইট আপনাকে বিজ্ঞপ্তি পাঠানোর আগে অনুমতি চাইতে পারে</translation>
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
@@ -267,6 +270,7 @@
 <translation id="7141896414559753902">সাইটগুলিকে পপ-আপ দেখাতে এবং রিডাইরেক্ট করা থেকে বাধা দিন (প্রস্তাবিত)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কেবি</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
+<translation id="7203150201908454328">প্রসারিত</translation>
 <translation id="723171743924126238">ছবি বেছে নিন</translation>
 <translation id="7243308994586599757">স্ক্রীনের প্রায় নীচের দিকে বিকল্পগুলি উপলব্ধ</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">সুরক্ষিত কন্টেন্ট চালানো থেকে সাইটকে ব্লক করুন</translation>
 <translation id="7577900504646297215">আপনার পছন্দ ম্যানেজ করুন</translation>
 <translation id="7594634374516752650">ব্লুটুথ ডিভাইসের সাথে কানেক্ট করা হয়েছে</translation>
+<translation id="7641339528570811325">ব্রাউজিং ডেটা সাফ করুন...</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>

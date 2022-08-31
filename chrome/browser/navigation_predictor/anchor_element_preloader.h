@@ -28,7 +28,8 @@ enum class AnchorPreloadingFailureReason {
   // element.
 
   // The number of allowed anchor element preloading attempts has been exceeded.
-  kLimitExceeded = content::kPreloadingFailureReasonContentEnd,
+  kLimitExceeded = static_cast<int>(
+      content::PreloadingFailureReason::kPreloadingFailureReasonCommonEnd),
 };
 
 // Helper function to convert AnchorPreloadingFailureReason to

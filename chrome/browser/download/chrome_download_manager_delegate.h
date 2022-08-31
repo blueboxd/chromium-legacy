@@ -27,6 +27,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #include "components/safe_browsing/buildflags.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -53,7 +54,8 @@ class CrxInstaller;
 class ChromeDownloadManagerDelegate
     : public content::DownloadManagerDelegate,
       public content::NotificationObserver,
-      public DownloadTargetDeterminerDelegate {
+      public DownloadTargetDeterminerDelegate,
+      public content::DownloadManager::Observer {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
@@ -181,8 +183,16 @@ class ChromeDownloadManagerDelegate
       mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver);
 
   // Return true if the downloaded file should be blocked based on the current
-  // download restriction pref and |danger_type|.
-  bool ShouldBlockFile(download::DownloadDangerType danger_type) const;
+  // download restriction pref, the file type, and |danger_type|.
+  bool ShouldBlockFile(download::DownloadItem* item,
+                       download::DownloadDangerType danger_type) const;
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Schedules the ephemeral warning download to be canceled. It will only be
+  // canceled if it continues to be an ephemeral warning that hasn't been acted
+  // on when the scheduled time arrives.
+  void ScheduleCancelForEphemeralWarning(const std::string& guid);
+#endif
 
  protected:
   virtual safe_browsing::DownloadProtectionService*
@@ -238,12 +248,14 @@ class ChromeDownloadManagerDelegate
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
-  raw_ptr<content::DownloadManager> download_manager_;
+  raw_ptr<content::DownloadManager> download_manager_ = nullptr;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
   FRIEND_TEST_ALL_PREFIXES(ChromeDownloadManagerDelegateTest,
                            RequestConfirmation_Android);
+  FRIEND_TEST_ALL_PREFIXES(ChromeDownloadManagerDelegateTest,
+                           CancelAllEphemeralWarnings);
   FRIEND_TEST_ALL_PREFIXES(DownloadLaterTriggerTest, DownloadLaterTrigger);
 
   using IdCallbackVector = std::vector<content::DownloadIdCallback>;
@@ -292,6 +304,19 @@ class ChromeDownloadManagerDelegate
   // Returns whether this is the most recent download in the rare event where
   // multiple downloads are associated with the same file path.
   bool IsMostRecentDownloadItemAtFilePath(download::DownloadItem* download);
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Cancels a download if it's still an ephemeral warning (and has not been
+  // acted on by the user).
+  void CancelForEphemeralWarning(const std::string& guid);
+  // If the browser doesn't shut down cleanly, there can be ephemeral warnings
+  // that were not cleaned up. This function cleans them up on startup, when the
+  // download manager is initialized.
+  void CancelAllEphemeralWarnings();
+#endif
+
+  // content::DownloadManager::Observer
+  void OnManagerInitialized() override;
 
 #if BUILDFLAG(IS_ANDROID)
   // Called after a unique file name is generated in the case that there is a

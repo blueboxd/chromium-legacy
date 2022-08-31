@@ -7,44 +7,16 @@
  * are duplicated across stores as a single item in the UI.
  */
 
-import {MultiStoreIdHandler} from './multi_store_id_handler.js';
-
 /**
- * A version of chrome.passwordsPrivate.PasswordUiEntry used for deduplicating
- * entries from the device and the account.
+ * A version of chrome.passwordsPrivate.PasswordUiEntry which contains a
+ * password and some helper methods.
  */
-export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
-  private contents_: MultiStorePasswordUiEntryContents;
+export class MultiStorePasswordUiEntry {
+  private contents_: chrome.passwordsPrivate.PasswordUiEntry;
   private password_: string = '';
 
   constructor(entry: chrome.passwordsPrivate.PasswordUiEntry) {
-    super();
-
-    this.contents_ = MultiStorePasswordUiEntry.getContents_(entry);
-
-    this.setId(entry.id, entry.fromAccountStore);
-  }
-
-  /**
-   * Incorporates the id of |otherEntry|, as long as |otherEntry| matches
-   * |contents_| and the id corresponding to its store is not set. If these
-   * preconditions are not satisfied, results in a no-op.
-   * @return Whether the merge succeeded.
-   */
-  // TODO(crbug.com/1102294) Consider asserting frontendId as well.
-  mergeInPlace(otherEntry: chrome.passwordsPrivate.PasswordUiEntry): boolean {
-    const alreadyHasCopyFromStore =
-        (this.isPresentInAccount() && otherEntry.fromAccountStore) ||
-        (this.isPresentOnDevice() && !otherEntry.fromAccountStore);
-    if (alreadyHasCopyFromStore) {
-      return false;
-    }
-    if (JSON.stringify(this.contents_) !==
-        JSON.stringify(MultiStorePasswordUiEntry.getContents_(otherEntry))) {
-      return false;
-    }
-    this.setId(otherEntry.id, otherEntry.fromAccountStore);
-    return true;
+    this.contents_ = entry;
   }
 
   get urls(): chrome.passwordsPrivate.UrlCollection {
@@ -68,26 +40,18 @@ export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
   }
 
   get note(): string {
-    return this.contents_.note;
+    return this.contents_.passwordNote;
   }
 
-  /**
-   * Extract all the information except for the id and fromPasswordStore.
-   */
-  private static getContents_(entry: chrome.passwordsPrivate.PasswordUiEntry):
-      MultiStorePasswordUiEntryContents {
-    return {
-      urls: entry.urls,
-      username: entry.username,
-      federationText: entry.federationText,
-      note: entry.passwordNote,
-    };
+  get id(): number {
+    return this.contents_.id;
+  }
+
+  get storedIn(): chrome.passwordsPrivate.PasswordStoreSet {
+    return this.contents_.storedIn;
+  }
+
+  get isAndroidCredential(): boolean {
+    return this.contents_.isAndroidCredential;
   }
 }
-
-type MultiStorePasswordUiEntryContents = {
-  urls: chrome.passwordsPrivate.UrlCollection,
-  username: string,
-  note: string,
-  federationText?: string,
-};

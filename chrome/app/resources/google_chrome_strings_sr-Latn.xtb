@@ -70,6 +70,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="2139300032719313227">Restartujte Chrome OS</translation>
 <translation id="2151406531797534936">Ponovo pokrenite Chrome</translation>
 <translation id="2174917724755363426">Instalacija nije dovršena. Želite stvarno da je otkažete?</translation>
+<translation id="223889379102603431">Informacije o tome kako Chrome upravlja sertifikatima osnovnog nivoa</translation>
 <translation id="2258103955319320201">Da biste pristupali Chrome pregledaču na svim uređajima, prijavite se, pa uključite sinhronizaciju</translation>
 <translation id="2290014774651636340">Nedostaju šifre za Google API. Neke funkcije Google Chrome-a će biti onemogućene.</translation>
 <translation id="2290095356545025170">Da li stvarno želite da deinstalirate Google Chrome?</translation>
@@ -82,6 +83,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="2401189691232800402">Sistem Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome želi da izveze lozinke. Unesite lozinku za Windows da biste to omogućili.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
+<translation id="2494974097748878569">Google pomoćnik u Chrome-u</translation>
 <translation id="2534507159460261402">Google Pay (kopirano u Chrome)</translation>
 <translation id="2559253115192232574">Sajt koji kasnije posetite može da zatraži od Chrome-a pristup vašim interesovanjima da bi personalizovao oglase koji vam se prikazuju. Chrome može da deli najviše 3 interesovanja.</translation>
 <translation id="2563121210305478421">Želite ponovo da pokrenete Chrome?</translation>
@@ -160,6 +162,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="3865754807470779944">Instalirana je verzija Chrome-a <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Otvori link u Chrome prozoru bez arhi&amp;viranja</translation>
 <translation id="3889417619312448367">Deinstaliraj Google Chrome</translation>
+<translation id="3999683152997576765">Možete da vidite i uklonite teme interesovanja koje sajtovi koriste da bi vam prikazivali oglase. Chrome procenjuje vaša interesovanja na osnovu nedavne istorije pregledanja.</translation>
 <translation id="4035053306113201399">Treba da restartujete Chrome OS da biste primenili ažuriranje.</translation>
 <translation id="4050175100176540509">Važna bezbednosna poboljšanja i nove funkcije su dostupni u najnovijoj verziji.</translation>
 <translation id="4053720452172726777">Prilagodite i kontrolišite Google Chrome</translation>
@@ -282,6 +285,7 @@ Google Chrome ne može da vrati podešavanja.</translation>
 <translation id="6739177684496155661">Želite da nastavite na novom Chrome profilu?</translation>
 <translation id="6750954913813541382">Da bi ispravio pravopisne greške, Chrome Google-u šalje tekst koji unosite u pregledač</translation>
 <translation id="677276454032249905">Želite li ipak da zatvorite Chrome?</translation>
+<translation id="6785872064505734160">Google pomoćnik u Chrome-u može da dovršava radnje za vas na veb-sajtovima</translation>
 <translation id="683440813066116847">Pravilo za dolazni saobraćaj za Google Chrome Canary da biste omogućili mDNS saobraćaj.</translation>
 <translation id="6881299373831449287">Ažuriramo Chrome</translation>
 <translation id="6885412569789873916">Chrome aplikacije za beta kanal</translation>
@@ -354,6 +358,7 @@ Dozvole koje ste već dali veb-sajtovima i aplikacijama mogu da važe za ovaj n
 <translation id="8129812357326543296">O &amp;Google Chrome-u</translation>
 <translation id="813913629614996137">Pokreće se…</translation>
 <translation id="8255190535488645436">Google Chrome koristi kameru i mikrofon.</translation>
+<translation id="8270775718612349140">Sertifikati kojima upravlja Chrome</translation>
 <translation id="8286862437124483331">Google Chrome pokušava da prikaže lozinke. Unesite lozinku za Windows da biste to omogućili.</translation>
 <translation id="828798499196665338">Roditelj je isključio „Dozvole za sajtove, aplikacije i dodatke“ za Chrome. Omogućavanje ove stavke (<ph name="EXTENSION_TYPE_PARAMETER" />) nije dozvoljeno.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome je otkazao. Želite li da ga odmah ponovo pokrenete?</translation>

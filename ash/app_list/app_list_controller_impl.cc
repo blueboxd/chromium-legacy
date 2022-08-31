@@ -340,6 +340,9 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kLauncherContinueSectionHidden, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterTimePref(prefs::kLauncherLastContinueRequestTime,
+                             base::Time());
+  registry->RegisterBooleanPref(prefs::kLauncherUseLongContinueDelay, false);
   AppListNudgeController::RegisterProfilePrefs(registry);
 }
 
@@ -1517,17 +1520,6 @@ void AppListControllerImpl::OnSearchResultVisibilityChanged(
     bool visibility) {
   if (client_)
     client_->OnSearchResultVisibilityChanged(id, visibility);
-}
-
-void AppListControllerImpl::NotifySearchResultsForLogging(
-    const std::u16string& raw_query,
-    const SearchResultIdWithPositionIndices& results,
-    int position_index) {
-  if (client_) {
-    std::u16string query;
-    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
-    client_->NotifySearchResultsForLogging(query, results, position_index);
-  }
 }
 
 void AppListControllerImpl::MaybeIncreaseSuggestedContentInfoShownCount() {

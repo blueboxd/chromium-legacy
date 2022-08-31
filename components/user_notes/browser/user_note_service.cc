@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/user_notes/browser/frame_user_note_changes.h"
 #include "components/user_notes/browser/user_note_manager.h"
 #include "components/user_notes/browser/user_note_utils.h"
@@ -43,6 +44,13 @@ bool UserNoteService::IsNoteInProgress(const base::UnguessableToken& id) const {
 }
 
 void UserNoteService::OnFrameNavigated(content::RenderFrameHost* rfh) {
+  // TODO(crbug.com/1313967): On browser startup, this method will be called
+  // once for each tab that's being restored, potentially slowing down the
+  // startup process and delaying browser responsiveness. This method should
+  // probably be disabled during browser startup and re-enabled after all tabs
+  // have been restored, so that note fetching for all restored tabs can be
+  // batched into a single operation.
+
   DCHECK(IsUserNotesEnabled());
 
   // For now, Notes are only supported in the main frame.
@@ -59,7 +67,12 @@ void UserNoteService::OnFrameNavigated(content::RenderFrameHost* rfh) {
   }
 
   DCHECK(UserNoteManager::GetForPage(rfh->GetPage()));
-  NOTIMPLEMENTED();
+
+  std::vector<content::RenderFrameHost*> frames = {rfh};
+  std::vector<GURL> urls = {rfh->GetLastCommittedURL()};
+  storage_->GetNoteMetadataForUrls(
+      urls, base::BindOnce(&UserNoteService::OnNoteMetadataFetchedForNavigation,
+                           weak_ptr_factory_.GetWeakPtr(), frames, rfh));
 }
 
 void UserNoteService::OnNoteInstanceAddedToPage(
@@ -113,53 +126,63 @@ void UserNoteService::OnNoteInstanceRemovedFromPage(
 }
 
 void UserNoteService::OnAddNoteRequested(content::RenderFrameHost* frame,
-                                         std::string original_text,
-                                         std::string selector,
-                                         gfx::Rect rect) {
+                                         bool has_selected_text) {
   DCHECK(IsUserNotesEnabled());
   DCHECK(frame);
   UserNoteManager* manager = UserNoteManager::GetForPage(frame->GetPage());
   DCHECK(manager);
 
-  // TODO(gujen): This partial note creation logic will be moved to an API
-  // exposed by the storage layer in order to keep the creation of UserNote
-  // models centralized. However, until the storage layer is finished, manually
-  // create a partial note here.
-  base::Time now = base::Time::Now();
-  int note_version = 1;
-  auto metadata = std::make_unique<UserNoteMetadata>(now, now, note_version);
-  auto body = std::make_unique<UserNoteBody>(/*plain_text_value=*/"");
-  auto target = std::make_unique<UserNoteTarget>(
-      UserNoteTarget::TargetType::kPageText, original_text,
-      GURL(frame->GetLastCommittedURL()), selector);
-  auto partial_note = std::make_unique<UserNote>(
-      base::UnguessableToken::Create(), std::move(metadata), std::move(body),
-      std::move(target));
-  UserNote* partial_note_raw = partial_note.get();
+  // TODO(crbug.com/1313967): `has_selected_text` is used to determine whether
+  // or not to create a page-level note. This will need to be reassessed when
+  // page-level UX is finalized.
+  if (has_selected_text) {
+    auto create_agent_callback = base::BindOnce(
+        [](base::SafeRef<UserNoteService> service,
+           content::WeakDocumentPtr document,
+           mojo::PendingReceiver<blink::mojom::AnnotationAgentHost>
+               host_receiver,
+           mojo::PendingRemote<blink::mojom::AnnotationAgent> agent_remote,
+           const std::string& serialized_selector,
+           const std::u16string& selected_text) {
+          if (agent_remote.is_valid() != host_receiver.is_valid()) {
+            mojo::ReportBadMessage(
+                "User note creation received only one invalid remote/receiver");
+            return;
+          }
 
-  // Store the partial note model into the creation map (not the model map)
-  // until it is finalized.
-  UserNoteService::ModelMapEntry entry(std::move(partial_note));
-  entry.managers.emplace(manager);
-  DCHECK(creation_map_.find(entry.model->id()) == creation_map_.end())
-      << "Attempted to create a partial note that already exists";
-  creation_map_.emplace(entry.model->id(), std::move(entry));
+          if (agent_remote.is_valid() == serialized_selector.empty()) {
+            mojo::ReportBadMessage(
+                "User note creation received unexpected selector for mojo "
+                "binding result");
+            return;
+          }
 
-  // Create an instance for this note so the highlight can be shown in the page,
-  // and add it to the page's note manager. The instance's initialization does
-  // not need to be awaited, since the highlight's rect is already known.
-  auto instance = std::make_unique<UserNoteInstance>(
-      partial_note_raw->GetSafeRef(), manager, rect);
-  UserNoteInstance* instance_raw = instance.get();
-  manager->AddNoteInstance(std::move(instance), base::DoNothing());
+          if (agent_remote.is_valid() == selected_text.empty()) {
+            mojo::ReportBadMessage(
+                "User note creation received unexpected text for mojo binding "
+                "result");
+            return;
+          }
 
-  // Finally, notify the UI layer that it should start the note creation UX for
-  // this note. The UI layer will eventually call either `OnNoteCreationDone` or
-  // `OnNoteCreationCancelled`, in which the partial note will be finalized or
-  // deleted, respectively.
-  UserNotesUI* ui = delegate_->GetUICoordinatorForFrame(frame);
-  DCHECK(ui);
-  ui->StartNoteCreation(instance_raw);
+          service->InitializeNewNoteForCreation(
+              document, /*is_page_level=*/false, std::move(host_receiver),
+              std::move(agent_remote), serialized_selector, selected_text);
+        },
+        // SafeRef is safe since the service owns the UserNoteManager which
+        // owns the mojo binding so if we receive this callback both manager
+        // and service must still be live.
+        weak_ptr_factory_.GetSafeRef(), frame->GetWeakDocumentPtr());
+
+    manager->note_agent_container()->CreateAgentFromSelection(
+        blink::mojom::AnnotationType::kUserNote,
+        std::move(create_agent_callback));
+  } else {
+    InitializeNewNoteForCreation(frame->GetWeakDocumentPtr(),
+                                 /*is_page_level=*/true, mojo::NullReceiver(),
+                                 mojo::NullRemote(),
+                                 /*serialized_selector=*/"",
+                                 /*selected_text=*/std::u16string());
+  }
 }
 
 void UserNoteService::OnWebHighlightFocused(const base::UnguessableToken& id,
@@ -188,7 +211,7 @@ void UserNoteService::OnNoteDeleted(const base::UnguessableToken& id) {
 }
 
 void UserNoteService::OnNoteCreationDone(const base::UnguessableToken& id,
-                                         const std::string& note_content) {
+                                         const std::u16string& note_content) {
   DCHECK(IsUserNotesEnabled());
 
   // Retrieve the partial note from the creation map and send it to the storage
@@ -223,7 +246,7 @@ void UserNoteService::OnNoteCreationCancelled(
 }
 
 void UserNoteService::OnNoteEdited(const base::UnguessableToken& id,
-                                   const std::string& note_content) {
+                                   const std::u16string& note_content) {
   DCHECK(IsUserNotesEnabled());
   const UserNote* note = GetNoteModel(id);
   if (!note)
@@ -243,6 +266,150 @@ void UserNoteService::OnNotesChanged() {
   storage_->GetNoteMetadataForUrls(
       urls, base::BindOnce(&UserNoteService::OnNoteMetadataFetched,
                            weak_ptr_factory_.GetWeakPtr(), all_frames));
+}
+
+void UserNoteService::InitializeNewNoteForCreation(
+    content::WeakDocumentPtr document,
+    bool is_page_level,
+    mojo::PendingReceiver<blink::mojom::AnnotationAgentHost> host_receiver,
+    mojo::PendingRemote<blink::mojom::AnnotationAgent> agent_remote,
+    const std::string& serialized_selector,
+    const std::u16string& selected_text) {
+  content::RenderFrameHost* frame = document.AsRenderFrameHostIfValid();
+  if (!frame)
+    return;
+
+  UserNoteManager* manager = UserNoteManager::GetForPage(frame->GetPage());
+  DCHECK(manager);
+
+  // If attachment succeeded, the returned mojo endpoints must all be valid and
+  // the selector/text must be non empty. If attachment failed (or wasn't
+  // attempted since the note is a kPage type) these will all be invalid/empty.
+  bool has_renderer_agent = agent_remote.is_valid();
+
+  DCHECK_EQ(has_renderer_agent, host_receiver.is_valid());
+  DCHECK_NE(has_renderer_agent, serialized_selector.empty());
+  DCHECK_NE(has_renderer_agent, selected_text.empty());
+
+  // If this is a page-level note, we must not have a renderer agent. If we
+  // received a renderer agent, it must be a text-level note.
+  DCHECK(!is_page_level || !has_renderer_agent);
+  DCHECK(!has_renderer_agent || !is_page_level);
+
+  // If this is a text-targeted note and we didn't receive back an agent,
+  // selector generation must have failed. For now, simply abort.
+  // TODO(crbug.com/1313967): Decide how to handle the case where a selector
+  // for the selected text couldn't be generated. (
+  if (!is_page_level && !has_renderer_agent)
+    return;
+
+  auto target = std::make_unique<UserNoteTarget>(
+      is_page_level ? UserNoteTarget::TargetType::kPage
+                    : UserNoteTarget::TargetType::kPageText,
+      selected_text, GURL(frame->GetLastCommittedURL()), serialized_selector);
+
+  // TODO(gujen): This partial note creation logic will be moved to an API
+  // exposed by the storage layer in order to keep the creation of UserNote
+  // models centralized. However, until the storage layer is finished, manually
+  // create a partial note here.
+  base::Time now = base::Time::Now();
+  int note_version = 1;
+  auto metadata = std::make_unique<UserNoteMetadata>(now, now, note_version);
+  auto body = std::make_unique<UserNoteBody>(/*plain_text_value=*/u"");
+
+  auto partial_note = std::make_unique<UserNote>(
+      base::UnguessableToken::Create(), std::move(metadata), std::move(body),
+      std::move(target));
+
+  std::unique_ptr<UserNoteInstance> instance =
+      UserNoteInstance::Create(partial_note->GetSafeRef(), manager);
+
+  // When attachment completes the instance will have received its rect on the
+  // page so the UI note creation flow can begin at that point. Note, this
+  // callback is guaranteed to be invoked after the current method returns (so
+  // after the creation map is updated and instance added to its manager).
+  auto attachment_finished_callback = base::BindOnce(
+      [](base::SafeRef<UserNoteService> service,
+         content::WeakDocumentPtr document, UserNoteInstance& instance) {
+        content::RenderFrameHost* frame = document.AsRenderFrameHostIfValid();
+
+        // TODO(bokan): delegate_ can be nullptr in unit tests - should we mock
+        // it?
+        if (!service->delegate_ || !frame)
+          return;
+
+        // Finally, notify the UI layer that it should start the note creation
+        // UX for this note. The UI layer will eventually call either
+        // `OnNoteCreationDone` or `OnNoteCreationCancelled`, in which the
+        // partial note will be finalized or deleted, respectively.
+        if (UserNotesUI* ui =
+                service->delegate_->GetUICoordinatorForFrame(frame)) {
+          ui->StartNoteCreation(&instance);
+        }
+      },
+      // SafeRef is safe for the service since it owns the manager which owns
+      // the instance.
+      weak_ptr_factory_.GetSafeRef(), frame->GetWeakDocumentPtr(),
+      // std::ref is safe since it owns the mojo endpoint which will cause this
+      // invocation (so if it's deleted this callback won't be invoked).
+      std::ref(*instance));
+
+  if (!is_page_level) {
+    DCHECK(has_renderer_agent);
+    instance->BindToHighlight(std::move(host_receiver), std::move(agent_remote),
+                              std::move(attachment_finished_callback));
+    // Silence use-after-move warning; if this path is taken, we want to pass a
+    // null callback in AddNoteInstance.
+    attachment_finished_callback = base::NullCallback();
+  }
+
+  // Store the partial note model into the creation map (not the model map)
+  // until it is finalized.
+  UserNoteService::ModelMapEntry entry(std::move(partial_note));
+  entry.managers.emplace(manager);
+  DCHECK(creation_map_.find(entry.model->id()) == creation_map_.end())
+      << "Attempted to create a partial note that already exists";
+  creation_map_.emplace(entry.model->id(), std::move(entry));
+
+  manager->AddNoteInstance(std::move(instance),
+                           std::move(attachment_finished_callback));
+}
+
+void UserNoteService::OnNoteMetadataFetchedForNavigation(
+    const std::vector<content::RenderFrameHost*>& all_frames,
+    const content::RenderFrameHost* navigated_frame,
+    UserNoteMetadataSnapshot metadata_snapshot) {
+  DCHECK(all_frames.size() == 1u);
+
+  if (delegate_->IsFrameInActiveTab(all_frames[0])) {
+    UserNotesUI* ui = delegate_->GetUICoordinatorForFrame(all_frames[0]);
+    DCHECK(ui);
+
+    // TODO(crbug.com/1313967): For now, always invalidate the UI if the tab is
+    // in the foreground. This is to fix edge cases around back/forward
+    // navigations, where the Page (and attached UserNoteManager) is kept alive
+    // in the BFCache. If the notes didn't change on disk by the time the user
+    // does a back/forward navigation, Invalidate() will never get called
+    // because there won't be any diff between the instances in the Page and the
+    // notes on disk. Ideally, Invalidate() should only be called if this is a
+    // back/forward navigation and the notes didn't change, but there's no way
+    // to know whether the notes changed until further down the callback stack.
+    // Since Invalidate() is cheap enough, always calling it here is considered
+    // an acceptable fix for now.
+    ui->Invalidate();
+
+    if (!metadata_snapshot.IsEmpty()) {
+      // TODO(crbug.com/1313967): For now, automatically activate User Notes UI
+      // when the user navigates to a page with notes. Before launch though,
+      // this should be changed to a popup / notification that the user must
+      // interact with to launch the notes UI.
+      ui->Show();
+    }
+  }
+
+  if (!metadata_snapshot.IsEmpty()) {
+    OnNoteMetadataFetched(all_frames, std::move(metadata_snapshot));
+  }
 }
 
 void UserNoteService::OnNoteMetadataFetched(
@@ -285,9 +452,10 @@ void UserNoteService::OnNoteModelsFetched(
     const auto& creation_entry_it = creation_map_.find(id);
     const auto& model_entry_it = model_map_.find(id);
 
-    if (new_note_it == new_notes.end()) {
-      // This note was modified; simply update the existing model in the model
-      // map.
+    if (new_note_it == new_notes.end() || model_entry_it != model_map_.end()) {
+      // Either this note was updated or the URL it is attached to was already
+      // loaded in another tab. Either way, its model already exists in the
+      // model map, so simply update it with the latest model.
       DCHECK(creation_entry_it == creation_map_.end());
       DCHECK(model_entry_it != model_map_.end());
       model_entry_it->second.model->Update(std::move(note));
@@ -316,9 +484,11 @@ void UserNoteService::OnNoteModelsFetched(
   // Now that the creation and model maps have been updated, apply all the diffs
   // to propagate the changes to the webpages and UI.
   for (std::unique_ptr<FrameUserNoteChanges>& diff : note_changes) {
-    diff->Apply(base::BindOnce(&UserNoteService::OnFrameChangesApplied,
-                               weak_ptr_factory_.GetWeakPtr(), diff->id()));
+    FrameUserNoteChanges* diff_raw = diff.get();
     note_changes_in_progress_.emplace(diff->id(), std::move(diff));
+    diff_raw->Apply(base::BindOnce(&UserNoteService::OnFrameChangesApplied,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   diff_raw->id()));
   }
 }
 

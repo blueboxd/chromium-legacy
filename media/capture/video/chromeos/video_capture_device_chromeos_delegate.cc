@@ -9,19 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/platform_thread.h"
-#include "base/trace_event/typed_macros.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "ui/display/display.h"
-#include "ui/display/display_observer.h"
-#include "ui/display/screen.h"
 
 namespace media {
 
@@ -131,7 +125,8 @@ VideoCaptureDeviceChromeOSDelegate::VideoCaptureDeviceChromeOSDelegate(
                                     std::move(ui_task_runner));
 }
 
-VideoCaptureDeviceChromeOSDelegate::~VideoCaptureDeviceChromeOSDelegate() {}
+VideoCaptureDeviceChromeOSDelegate::~VideoCaptureDeviceChromeOSDelegate() =
+    default;
 
 void VideoCaptureDeviceChromeOSDelegate::Shutdown() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
@@ -288,8 +283,9 @@ void VideoCaptureDeviceChromeOSDelegate::CloseDevice(
                                       device_closed->Signal();
                                     },
                                     base::Unretained(&device_closed_))));
-  base::TimeDelta kWaitTimeoutSecs = base::Seconds(3);
+  const base::TimeDelta kWaitTimeoutSecs = base::Seconds(1);
   device_closed_.TimedWait(kWaitTimeoutSecs);
+
   if (!unblock_suspend_token.is_empty())
     power_manager_client_proxy_->UnblockSuspend(unblock_suspend_token);
 }

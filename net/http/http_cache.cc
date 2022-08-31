@@ -350,6 +350,9 @@ void HttpCache::OnExternalCacheHit(
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
+  if (IsSplitCacheEnabled() && network_isolation_key.IsTransient())
+    return;
+
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
@@ -376,8 +379,8 @@ int HttpCache::CreateTransaction(
     CreateBackend(CompletionOnceCallback());
   }
 
-  HttpCache::Transaction* new_transaction =
-      new HttpCache::Transaction(priority, this);
+  auto new_transaction =
+      std::make_unique<HttpCache::Transaction>(priority, this);
   if (bypass_lock_for_test_)
     new_transaction->BypassLockForTest();
   if (bypass_lock_after_headers_for_test_)
@@ -385,7 +388,7 @@ int HttpCache::CreateTransaction(
   if (fail_conditionalization_for_test_)
     new_transaction->FailConditionalizationForTest();
 
-  transaction->reset(new_transaction);
+  *transaction = std::move(new_transaction);
   return OK;
 }
 
@@ -453,6 +456,9 @@ Error HttpCache::CheckResourceExistence(
   if (!disk_cache_)
     return ERR_CACHE_MISS;
 
+  if (IsSplitCacheEnabled() && network_isolation_key.IsTransient())
+    return ERR_CACHE_MISS;
+
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = std::string(method);
@@ -511,7 +517,7 @@ std::string HttpCache::GenerateCacheKey(
     // double-keyed (and makes it an invalid url so that it doesn't get
     // confused with a single-keyed entry). Separate the origin and url
     // with invalid whitespace character |kDoubleKeySeparator|.
-    DCHECK(network_isolation_key.IsFullyPopulated());
+    DCHECK(!network_isolation_key.IsTransient());
     std::string subframe_document_resource_prefix =
         is_subframe_document_resource ? kSubframeDocumentResourcePrefix : "";
     isolation_key =
@@ -708,6 +714,9 @@ void HttpCache::DoomMainEntryForUrl(const GURL& url,
   if (!disk_cache_)
     return;
 
+  if (IsSplitCacheEnabled() && isolation_key.IsTransient())
+    return;
+
   HttpRequestInfo temp_info;
   temp_info.url = url;
   temp_info.method = "GET";
@@ -744,9 +753,10 @@ HttpCache::ActiveEntry* HttpCache::FindActiveEntry(const std::string& key) {
 HttpCache::ActiveEntry* HttpCache::ActivateEntry(disk_cache::Entry* disk_entry,
                                                  bool opened) {
   DCHECK(!FindActiveEntry(disk_entry->GetKey()));
-  ActiveEntry* entry = new ActiveEntry(disk_entry, opened);
-  active_entries_[disk_entry->GetKey()] = base::WrapUnique(entry);
-  return entry;
+  auto entry = std::make_unique<ActiveEntry>(disk_entry, opened);
+  ActiveEntry* entry_ptr = entry.get();
+  active_entries_[disk_entry->GetKey()] = std::move(entry);
+  return entry_ptr;
 }
 
 void HttpCache::DeactivateEntry(ActiveEntry* entry) {

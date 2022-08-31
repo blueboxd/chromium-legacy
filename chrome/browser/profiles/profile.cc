@@ -60,7 +60,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/common/chrome_constants.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 #if DCHECK_IS_ON()
@@ -379,7 +379,7 @@ bool Profile::IsGuestSession() const {
   return is_guest_session;
 #else
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::BrowserInitParams::Get()->session_type ==
+  if (chromeos::BrowserParamsProxy::Get()->SessionType() ==
       crosapi::mojom::SessionType::kGuestSession) {
     return true;
   }
@@ -394,11 +394,11 @@ PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
 }
 
 bool Profile::IsSystemProfile() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
   DCHECK_NE(profile_metrics::GetBrowserProfileType(this),
             profile_metrics::BrowserProfileType::kSystem);
   return false;
-#else
+#else  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
   return profile_metrics::GetBrowserProfileType(this) ==
          profile_metrics::BrowserProfileType::kSystem;
 #endif

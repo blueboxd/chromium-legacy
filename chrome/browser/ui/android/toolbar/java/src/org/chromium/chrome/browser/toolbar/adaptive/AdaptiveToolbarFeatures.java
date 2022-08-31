@@ -50,6 +50,11 @@ public class AdaptiveToolbarFeatures {
      */
     public static final int DEFAULT_MIN_WIDTH_DP = 360;
 
+    /**
+     * Default delay between action chip expansion and collapse.
+     */
+    public static final int DEFAULT_CONTEXTUAL_PAGE_ACTION_CHIP_DELAY_MS = 3000;
+
     @AdaptiveToolbarButtonVariant
     private static Integer sButtonVariant;
 
@@ -116,11 +121,42 @@ public class AdaptiveToolbarFeatures {
     /** @return Whether the contextual page actions should show the action chip version. */
     public static boolean shouldShowActionChip() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", true);
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING, "action_chip", false);
+    }
+
+    /**
+     * @return The amount of time the action chip should remain expanded in milliseconds. Default is
+     *         3 seconds.
+     */
+    public static int getContextualPageActionDelayMs() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING, "action_chip_time_ms",
+                DEFAULT_CONTEXTUAL_PAGE_ACTION_CHIP_DELAY_MS);
+    }
+
+    /**
+     * @return Whether the CPA action chip should use a different background color when expanded.
+     */
+    public static boolean shouldUseAlternativeActionChipColor() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
+                "action_chip_with_different_color", false);
     }
 
     /**
      * @return Whether contextual page actions are enabled.
+     */
+    public static boolean isContextualPageActionsEnabled() {
+        // TODO(shaktisahu): These checks must match the ones when creating config. Maybe introduce
+        // a something common for android clients.
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHOPPING_LIST);
+    }
+
+    /**
+     * @return Whether contextual page actions UI is enabled.
      */
     public static boolean isContextualPageActionUiEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)

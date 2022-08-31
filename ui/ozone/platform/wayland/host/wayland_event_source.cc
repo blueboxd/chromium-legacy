@@ -209,6 +209,12 @@ uint32_t WaylandEventSource::OnKeyboardKeyEvent(
                  timestamp);
   event.set_source_device_id(device_id);
 
+  auto* focus = window_manager_->GetCurrentKeyboardFocusedWindow();
+  if (!focus)
+    return POST_DISPATCH_STOP_PROPAGATION;
+
+  Event::DispatcherApi(&event).set_target(focus);
+
   Event::Properties properties;
 #if BUILDFLAG(USE_GTK)
   // GTK uses XKB keycodes.
@@ -493,7 +499,9 @@ void WaylandEventSource::SetTouchTargetAndDispatchTouchEvent(
     TouchEvent* event) {
   auto iter = touch_points_.find(event->pointer_details().id);
   auto target = iter != touch_points_.end() ? iter->second->window : nullptr;
-
+  // Skip if the touch target has alrady been removed.
+  if (!target.get())
+    return;
   SetTargetAndDispatchEvent(event, target.get());
 }
 

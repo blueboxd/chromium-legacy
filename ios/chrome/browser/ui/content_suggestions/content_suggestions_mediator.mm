@@ -6,27 +6,34 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#include "base/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/favicon/ios/web_favicon_driver.h"
-#include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_info.h"
-#include "components/ntp_tiles/metrics.h"
-#include "components/ntp_tiles/most_visited_sites.h"
-#include "components/ntp_tiles/ntp_tile.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/favicon/ios/web_favicon_driver.h"
+#import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/ntp_snippets/category.h"
+#import "components/ntp_snippets/category_info.h"
+#import "components/ntp_tiles/metrics.h"
+#import "components/ntp_tiles/most_visited_sites.h"
+#import "components/ntp_tiles/ntp_tile.h"
 #import "components/pref_registry/pref_registry_syncable.h"
-#include "components/reading_list/core/reading_list_model.h"
+#import "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "components/search_engines/template_url.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
+#import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -37,30 +44,36 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
+#import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
-#include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
+#import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "third_party/abseil-cpp/absl/types/optional.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -81,6 +94,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
+  std::unique_ptr<StartSuggestServiceResponseBridge>
+      _startSuggestServiceResponseBridge;
+  StartSuggestService* _startSuggestService;
 }
 
 // Whether the contents section should be hidden completely.
@@ -154,6 +170,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // Browser reference.
 @property(nonatomic, assign) Browser* browser;
 
+@property(nonatomic, strong)
+    NSMutableArray<QuerySuggestionConfig*>* trendingQueries;
+
 @end
 
 @implementation ContentSuggestionsMediator
@@ -206,6 +225,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     _browser = browser;
     _NTPMetrics = [[NTPHomeMetrics alloc]
         initWithBrowserState:_browser->GetBrowserState()];
+
+    if (IsTrendingQueriesModuleEnabled()) {
+      _startSuggestService = StartSuggestServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState(), true);
+      _startSuggestServiceResponseBridge =
+          std::make_unique<StartSuggestServiceResponseBridge>(self);
+    }
   }
   return self;
 }
@@ -245,8 +271,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     if ([self.mostVisitedItems count]) {
       [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
     }
-    if (!ShouldHideShortcutsForStartSurface()) {
+    if (!ShouldHideShortcutsForTrendingQueries()) {
       [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
+    }
+    if (IsTrendingQueriesModuleEnabled()) {
+      [self fetchTrendingQueriesIfApplicable];
     }
     return;
   }
@@ -325,10 +354,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   self.returnToRecentTabItem.title =
       l10n_util::GetNSString(IDS_IOS_RETURN_TO_RECENT_TAB_TITLE);
-  NSString* subtitle = [NSString
-      stringWithFormat:@"%@%@", base::SysUTF16ToNSString(webState->GetTitle()),
-                       timeLabel];
-  self.returnToRecentTabItem.subtitle = subtitle;
+  self.returnToRecentTabItem.subtitle = [self
+      constructReturnToRecentTabSubtitleWithPageTitle:base::SysUTF16ToNSString(
+                                                          webState->GetTitle())
+                                           timeString:timeLabel];
   self.showMostRecentTabStartSurfaceTile = YES;
   NSArray<CSCollectionViewItem*>* items =
       [self itemsForSectionInfo:self.returnToRecentTabSectionInfo];
@@ -461,6 +490,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   NOTREACHED() << "Promo type is neither URL or command.";
 }
 
+- (void)loadSuggestedQuery:(QuerySuggestionConfig*)config {
+  UMA_HISTOGRAM_ENUMERATION("IOS.TrendingQueries", config.index,
+                            kMaxTrendingQueries);
+  [self.NTPMetrics recordContentSuggestionsActionForType:
+                       IOSContentSuggestionsActionType::kTrendingQuery];
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(config.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
+}
+
 - (void)openMostRecentTab {
   [self.NTPMetrics recordContentSuggestionsActionForType:
                        IOSContentSuggestionsActionType::kReturnToRecentTab];
@@ -520,6 +559,25 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   [self showMostVisitedUndoForURL:item.URL];
 }
 
+#pragma mark - StartSuggestServiceDelegateBridge
+
+- (void)suggestionsReceived:(std::vector<QuerySuggestion>)suggestions {
+  self.trendingQueries = [NSMutableArray array];
+  int index = 0;
+  for (QuerySuggestion query : suggestions) {
+    if (index == kMaxTrendingQueries) {
+      break;
+    }
+    QuerySuggestionConfig* suggestion = [[QuerySuggestionConfig alloc] init];
+    suggestion.URL = query.destination_url;
+    suggestion.query = base::SysUTF16ToNSString(query.query);
+    suggestion.index = index;
+    index++;
+    [self.trendingQueries addObject:suggestion];
+  }
+  [self.consumer setTrendingQueriesWithConfigs:self.trendingQueries];
+}
+
 #pragma mark - StartSurfaceRecentTabObserving
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)web_state {
@@ -541,6 +599,19 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
         [self.collectionConsumer itemHasChanged:self.returnToRecentTabItem];
       }
     }
+  }
+}
+
+- (void)mostRecentTabTitleWasUpdated:(NSString*)title {
+  if (self.returnToRecentTabItem) {
+    SceneState* scene =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+    NSString* time_label = GetRecentTabTileTimeLabelForSceneState(scene);
+    self.returnToRecentTabItem.subtitle =
+        [self constructReturnToRecentTabSubtitleWithPageTitle:title
+                                                   timeString:time_label];
+    [self.consumer
+        updateReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
 }
 
@@ -754,6 +825,47 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   message.action = action;
   message.category = @"MostVisitedUndo";
   [self.dispatcher showSnackbarMessage:message];
+}
+
+- (void)fetchTrendingQueriesIfApplicable {
+  PrefService* pref_service =
+      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
+          ->GetPrefs();
+  BOOL isFeedVisible =
+      (pref_service->GetBoolean(prefs::kArticlesForYouEnabled) &&
+       pref_service->GetBoolean(prefs::kNTPContentSuggestionsEnabled) &&
+       !IsFeedAblationEnabled()) &&
+      pref_service->GetBoolean(feed::prefs::kArticlesListVisible);
+  if (ShouldOnlyShowTrendingQueriesForDisabledFeed() && isFeedVisible) {
+    // Notify consumer with empty array so it knows to remove the module.
+    [self.consumer setTrendingQueriesWithConfigs:@[]];
+    return;
+  }
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  BOOL isSignedIn =
+      authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
+  if (ShouldOnlyShowTrendingQueriesForSignedOut() && isSignedIn) {
+    // Notify consumer with empty array so it knows to remove the module.
+    [self.consumer setTrendingQueriesWithConfigs:@[]];
+    return;
+  }
+
+  // Fetch Trending Queries
+  TemplateURLRef::SearchTermsArgs args;
+  args.request_source = TemplateURLRef::NON_SEARCHBOX_NTP;
+  _startSuggestService->FetchSuggestions(
+      args,
+      base::BindOnce(&StartSuggestServiceResponseBridge::OnSuggestionsReceived,
+                     _startSuggestServiceResponseBridge->AsWeakPtr()),
+      self.showingStartSurface);
+}
+
+- (NSString*)constructReturnToRecentTabSubtitleWithPageTitle:
+                 (NSString*)pageTitle
+                                                  timeString:(NSString*)time {
+  return [NSString stringWithFormat:@"%@%@", pageTitle, time];
 }
 
 #pragma mark - Properties

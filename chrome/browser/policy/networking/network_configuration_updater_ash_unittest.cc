@@ -24,11 +24,11 @@
 #include "chromeos/ash/components/network/fake_network_device_handler.h"
 #include "chromeos/ash/components/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/onc/onc_certificate_importer.h"
+#include "chromeos/ash/components/network/policy_certificate_provider.h"
 #include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/components/onc/onc_parsed_certificates.h"
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
@@ -119,7 +119,7 @@ class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
   bool mac_addr_randomization_ = false;
 };
 
-class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
+class FakeCertificateImporter : public ash::onc::CertificateImporter {
  public:
   using OncParsedCertificates = chromeos::onc::OncParsedCertificates;
 
@@ -433,7 +433,7 @@ class NetworkConfigurationUpdaterAshTest : public testing::Test {
   // continues to point to that instance but
   // |client_certificate_importer_owned_| is released.
   FakeCertificateImporter* certificate_importer_;
-  std::unique_ptr<chromeos::onc::CertificateImporter>
+  std::unique_ptr<ash::onc::CertificateImporter>
       client_certificate_importer_owned_;
 
   StrictMock<MockConfigurationPolicyProvider> provider_;

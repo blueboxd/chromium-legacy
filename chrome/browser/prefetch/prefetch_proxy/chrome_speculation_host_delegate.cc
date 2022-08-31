@@ -6,10 +6,10 @@
 
 #include "chrome/browser/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
 
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_container.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,7 +31,8 @@ ChromeSpeculationHostDelegate::~ChromeSpeculationHostDelegate() {
 }
 
 void ChromeSpeculationHostDelegate::ProcessCandidates(
-    std::vector<blink::mojom::SpeculationCandidatePtr>& candidates) {
+    std::vector<blink::mojom::SpeculationCandidatePtr>& candidates,
+    base::WeakPtr<content::SpeculationHostDevToolsObserver> devtools_observer) {
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(&render_frame_host_);
   auto* prefetch_proxy_tab_helper =
@@ -117,10 +118,10 @@ void ChromeSpeculationHostDelegate::ProcessCandidates(
                                 should_process_entry);
   candidates.erase(new_end, candidates.end());
 
-  if (const auto& bypass_for_host = PrefetchProxyBypassProxyForHost()) {
+  if (const auto& host_to_bypass = PrefetchProxyBypassProxyForHost()) {
     for (auto& [prefetch_url, prefetch_type] : prefetches) {
       if (prefetch_type.IsProxyRequired() &&
-          prefetch_url.host() == *bypass_for_host)
+          prefetch_url.host() == *host_to_bypass)
         prefetch_type.SetProxyBypassedForTest();
     }
   }
@@ -128,7 +129,8 @@ void ChromeSpeculationHostDelegate::ProcessCandidates(
   // TODO(ryansturm): Handle CSP prefetch-src. https://crbug.com/1192857
   if (prefetches.size()) {
     prefetch_proxy_tab_helper->PrefetchSpeculationCandidates(
-        prefetches, render_frame_host_.GetLastCommittedURL());
+        prefetches, render_frame_host_.GetLastCommittedURL(),
+        std::move(devtools_observer));
   }
 
   if (same_origin_prefetches_with_subresources.size() > 0) {

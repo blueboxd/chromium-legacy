@@ -11,7 +11,7 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './internet_shared_css.js';
 
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.m.js';
@@ -40,8 +40,11 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
  */
 const SettingsInternetKnownNetworksPageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, NetworkListenerBehavior, CrPolicyNetworkBehaviorMojo,
-      RouteObserverBehavior, I18nBehavior
+      DeepLinkingBehavior,
+      NetworkListenerBehavior,
+      CrPolicyNetworkBehaviorMojo,
+      RouteObserverBehavior,
+      I18nBehavior,
     ],
     PolymerElement);
 
@@ -75,7 +78,7 @@ class SettingsInternetKnownNetworksPageElement extends
         type: Array,
         value() {
           return [];
-        }
+        },
       },
 
       /** @private */
@@ -336,7 +339,7 @@ class SettingsInternetKnownNetworksPageElement extends
     });
 
     if (this.networkType === chromeos.networkConfig.mojom.NetworkType.kWiFi) {
-      recordSettingChange(chromeos.settings.mojom.Setting.kForgetWifiNetwork);
+      recordSettingChange(Setting.kForgetWifiNetwork);
     } else {
       recordSettingChange();
     }

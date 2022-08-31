@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/contains.h"
 #include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -21,9 +20,8 @@
 #include "chrome/browser/prefetch/search_prefetch/cache_alias_search_prefetch_url_loader.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
-#include "chrome/browser/prefetch/search_prefetch/streaming_search_prefetch_request.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_utils.h"
+#include "chrome/browser/preloading/prerender/prerender_manager.h"
+#include "chrome/browser/preloading/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -35,7 +33,6 @@
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
-#include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -43,6 +40,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
 namespace {
@@ -85,22 +83,6 @@ struct SearchPrefetchEligibilityReasonRecorder {
   bool navigation_prefetch_;
 };
 
-struct SearchPrefetchServingReasonRecorder {
- public:
-  explicit SearchPrefetchServingReasonRecorder(bool for_prerender)
-      : for_prerender_(for_prerender) {}
-  ~SearchPrefetchServingReasonRecorder() {
-    base::UmaHistogramEnumeration(
-        for_prerender_
-            ? "Omnibox.SearchPrefetch.PrefetchServingReason.Prerender"
-            : "Omnibox.SearchPrefetch.PrefetchServingReason",
-        reason_);
-  }
-
-  SearchPrefetchServingReason reason_ = SearchPrefetchServingReason::kServed;
-  const bool for_prerender_ = false;
-};
-
 void RecordFinalStatus(SearchPrefetchStatus status, bool navigation_prefetch) {
   if (navigation_prefetch) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -121,6 +103,22 @@ bool ShouldPrefetch(const AutocompleteMatch& match) {
 }
 
 }  // namespace
+
+struct SearchPrefetchService::SearchPrefetchServingReasonRecorder {
+ public:
+  explicit SearchPrefetchServingReasonRecorder(bool for_prerender)
+      : for_prerender_(for_prerender) {}
+  ~SearchPrefetchServingReasonRecorder() {
+    base::UmaHistogramEnumeration(
+        for_prerender_
+            ? "Omnibox.SearchPrefetch.PrefetchServingReason.Prerender"
+            : "Omnibox.SearchPrefetch.PrefetchServingReason",
+        reason_);
+  }
+
+  SearchPrefetchServingReason reason_ = SearchPrefetchServingReason::kServed;
+  const bool for_prerender_ = false;
+};
 
 // static
 void SearchPrefetchService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -230,8 +228,8 @@ bool SearchPrefetchService::MaybePrefetchURL(const GURL& url,
     return false;
   }
 
-  std::unique_ptr<BaseSearchPrefetchRequest> prefetch_request =
-      std::make_unique<StreamingSearchPrefetchRequest>(
+  std::unique_ptr<SearchPrefetchRequest> prefetch_request =
+      std::make_unique<SearchPrefetchRequest>(
           search_terms, url, navigation_prefetch,
           base::BindOnce(&SearchPrefetchService::ReportFetchResult,
                          base::Unretained(this)));
@@ -257,6 +255,32 @@ void SearchPrefetchService::OnURLOpenedFromOmnibox(OmniboxLog* log) {
     return;
   const GURL& opened_url = log->final_destination_url;
 
+  auto& match = log->result.match_at(log->selected_index);
+  if (match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED) {
+    bool has_search_suggest = false;
+    bool has_history_search = false;
+    for (auto& duplicate_match : match.duplicate_matches) {
+      if (duplicate_match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
+          AutocompleteMatch::IsSpecializedSearchType(duplicate_match.type)) {
+        has_search_suggest = true;
+      }
+      if (duplicate_match.type == AutocompleteMatchType::SEARCH_HISTORY) {
+        has_history_search = true;
+      }
+    }
+
+    base::UmaHistogramBoolean(
+        "Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.Suggest",
+        has_search_suggest);
+    base::UmaHistogramBoolean(
+        "Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.History",
+        has_history_search);
+    base::UmaHistogramBoolean(
+        "Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested."
+        "HistoryOrSuggest",
+        has_history_search || has_search_suggest);
+  }
+
   auto* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   DCHECK(template_url_service);
@@ -276,7 +300,7 @@ void SearchPrefetchService::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   if (prefetches_.find(match_search_terms) == prefetches_.end()) {
     return;
   }
-  BaseSearchPrefetchRequest& prefetch = *prefetches_[match_search_terms];
+  SearchPrefetchRequest& prefetch = *prefetches_[match_search_terms];
   prefetch.RecordClickTime();
 
   if (prefetch.current_status() != SearchPrefetchStatus::kCanBeServed &&
@@ -293,14 +317,14 @@ void SearchPrefetchService::AddCacheEntryForPrerender(
 
   // We do not need this method while running the search prefetch/prerender
   // unification experiment.
-  DCHECK(!SearchPrefetchUpgradeToPrerenderIsEnabled());
+  DCHECK(!prerender_utils::SearchPrefetchUpgradeToPrerenderIsEnabled());
   AddCacheEntry(updated_prerendered_url, prerendering_url);
 }
 
 void SearchPrefetchService::OnPrerenderedRequestUsed(
     const std::u16string& search_terms,
     const GURL& navigation_url) {
-  DCHECK(SearchPrefetchUpgradeToPrerenderIsEnabled());
+  DCHECK(prerender_utils::SearchPrefetchUpgradeToPrerenderIsEnabled());
 
   auto request_it = prefetches_.find(search_terms);
   DCHECK(request_it != prefetches_.end());
@@ -312,7 +336,7 @@ void SearchPrefetchService::OnPrerenderedRequestUsed(
   }
   AddCacheEntry(navigation_url, request_it->second->prefetch_url());
   request_it->second->MarkPrefetchAsPrerenderActivated();
-  prefetches_.erase(request_it);
+  DeletePrefetch(search_terms);
 }
 
 std::unique_ptr<SearchPrefetchURLLoader>
@@ -391,7 +415,7 @@ SearchPrefetchService::TakePrefetchResponseFromDiskCache(
   }
 
   return std::make_unique<CacheAliasSearchPrefetchURLLoader>(
-      profile_, BaseSearchPrefetchRequest::NetworkAnnotationForPrefetch(),
+      profile_, SearchPrefetchRequest::NetworkAnnotationForPrefetch(),
       prefetch_cache_[navigation_url_without_ref].first);
 }
 
@@ -478,10 +502,11 @@ void SearchPrefetchService::OnResultChanged(content::WebContents* web_contents,
   if (!web_contents)
     return;
   for (const auto& match : result) {
-    if (SearchPrefetchUpgradeToPrerenderIsEnabled()) {
+    if (prerender_utils::IsSearchSuggestionPrerenderEnabled() &&
+        prerender_utils::SearchPrefetchUpgradeToPrerenderIsEnabled()) {
       if (!ShouldPrefetch(match))
         continue;
-      CoordinatePrefetchWithPrerender(match, *web_contents,
+      CoordinatePrefetchWithPrerender(match, web_contents,
                                       template_url_service);
       continue;
     }
@@ -715,8 +740,9 @@ void SearchPrefetchService::ObserveTemplateURLService(
 
 void SearchPrefetchService::CoordinatePrefetchWithPrerender(
     const AutocompleteMatch& match,
-    content::WebContents& web_contents,
+    content::WebContents* web_contents,
     TemplateURLService* template_url_service) {
+  DCHECK(web_contents);
   GURL prefetch_url = GetPreloadURLFromMatch(
       match, template_url_service, /*attach_prefetch_information=*/true);
   MaybePrefetchURL(prefetch_url);
@@ -726,8 +752,8 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   if (auto prefetch_request_iter =
           prefetches_.find(match.search_terms_args->search_terms);
       prefetch_request_iter != prefetches_.end()) {
-    PrerenderManager::CreateForWebContents(&web_contents);
-    auto* prerender_manager = PrerenderManager::FromWebContents(&web_contents);
+    PrerenderManager::CreateForWebContents(web_contents);
+    auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
     DCHECK(prerender_manager);
 
     // Prerender URL needs not to contain the prefetch information to help
@@ -740,7 +766,7 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   }
 }
 
-std::map<std::u16string, std::unique_ptr<BaseSearchPrefetchRequest>>::iterator
+std::map<std::u16string, std::unique_ptr<SearchPrefetchRequest>>::iterator
 SearchPrefetchService::RetrieveSearchTermsInMemoryCache(
     const network::ResourceRequest& tentative_resource_request,
     SearchPrefetchServingReasonRecorder& recorder) {
@@ -818,7 +844,7 @@ SearchPrefetchService::RetrieveSearchTermsInMemoryCache(
   // GET.
   if (tentative_resource_request.method !=
       net::HttpRequestHeaders::kGetMethod) {
-    recorder.reason_ = SearchPrefetchServingReason::kPostReloadOrLink;
+    recorder.reason_ = SearchPrefetchServingReason::kPostReloadFormOrLink;
     return prefetches_.end();
   }
 
@@ -828,19 +854,30 @@ SearchPrefetchService::RetrieveSearchTermsInMemoryCache(
   if (tentative_resource_request.load_flags & net::LOAD_BYPASS_CACHE ||
       tentative_resource_request.load_flags & net::LOAD_DISABLE_CACHE ||
       tentative_resource_request.load_flags & net::LOAD_VALIDATE_CACHE) {
-    recorder.reason_ = SearchPrefetchServingReason::kPostReloadOrLink;
+    recorder.reason_ = SearchPrefetchServingReason::kPostReloadFormOrLink;
     return prefetches_.end();
   }
 
-  // Link clicks should not be served with a prefetch due to results page nth
-  // page matching the URL pattern of the DSE.
+  // Link clicks and form subbmit should not be served with a prefetch due to
+  // results page nth page matching the URL pattern of the DSE.
   if (ui::PageTransitionCoreTypeIs(
           static_cast<ui::PageTransition>(
               tentative_resource_request.transition_type),
-          ui::PAGE_TRANSITION_LINK)) {
-    recorder.reason_ = SearchPrefetchServingReason::kPostReloadOrLink;
+          ui::PAGE_TRANSITION_LINK) ||
+      ui::PageTransitionCoreTypeIs(
+          static_cast<ui::PageTransition>(
+              tentative_resource_request.transition_type),
+          ui::PAGE_TRANSITION_FORM_SUBMIT)) {
+    recorder.reason_ = SearchPrefetchServingReason::kPostReloadFormOrLink;
     return prefetches_.end();
   }
 
   return iter;
+}
+
+void SearchPrefetchService::FireAllExpiryTimerForTesting() {
+  while (!prefetch_expiry_timers_.empty()) {
+    auto prefetch_expiry_timer_it = prefetch_expiry_timers_.begin();
+    prefetch_expiry_timer_it->second->FireNow();
+  }
 }

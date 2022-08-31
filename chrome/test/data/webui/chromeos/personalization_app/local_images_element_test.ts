@@ -59,7 +59,7 @@ suite('LocalImagesTest', function() {
     };
     personalizationStore.data.wallpaper.loading.local = {
       images: false,
-      data: {}
+      data: {},
     };
 
     localImagesElement = initElement(LocalImages, {hidden: false});
@@ -104,7 +104,7 @@ suite('LocalImagesTest', function() {
         };
         personalizationStore.data.wallpaper.loading.local = {
           images: false,
-          data: {}
+          data: {},
         };
 
         localImagesElement = initElement(LocalImages, {hidden: false});
@@ -120,7 +120,7 @@ suite('LocalImagesTest', function() {
 
         // Set loading finished for first thumbnail.
         personalizationStore.data.wallpaper.loading.local.data = {
-          'LocalImage0.png': false
+          'LocalImage0.png': false,
         };
         personalizationStore.notifyObservers();
         await waitAfterNextRender(localImagesElement);
@@ -132,11 +132,11 @@ suite('LocalImagesTest', function() {
         // Set loading failed for second thumbnail.
         personalizationStore.data.wallpaper.loading.local.data = {
           'LocalImage0.png': false,
-          'LocalImage1.png': false
+          'LocalImage1.png': false,
         };
         personalizationStore.data.wallpaper.local.data = {
           'LocalImage0.png': 'data://localimage0data',
-          'LocalImage1.png': null
+          'LocalImage1.png': null,
         };
         personalizationStore.notifyObservers();
         await waitAfterNextRender(localImagesElement);
@@ -150,13 +150,20 @@ suite('LocalImagesTest', function() {
       'sets aria-selected attribute if image name matches currently selected',
       async () => {
         personalizationStore.data.wallpaper.local = {
-          images: wallpaperProvider.localImages,
-          data: wallpaperProvider.localImageData,
+          images: [
+            {path: '/test/LocalImage0.png'},
+            {path: '/test/LocalImage1.png'},
+          ],
+          data: {
+            '/test/LocalImage0.png': 'data://localimage0data',
+            '/test/LocalImage1.png': 'data://localimage1data',
+          },
         };
         // Done loading.
         personalizationStore.data.wallpaper.loading.local = {
           images: false,
-          data: {'LocalImage0.png': false, 'LocalImage1.png': false},
+          data:
+              {'/test/LocalImage0.png': false, '/test/LocalImage1.png': false},
         };
 
         localImagesElement = initElement(LocalImages, {hidden: false});
@@ -173,7 +180,7 @@ suite('LocalImagesTest', function() {
             image => image.getAttribute('aria-selected') === 'false'));
 
         personalizationStore.data.wallpaper.currentSelected = {
-          key: 'LocalImage1.png'
+          key: '/test/LocalImage1.png',
         };
         personalizationStore.notifyObservers();
 
@@ -219,7 +226,7 @@ suite('LocalImagesTest', function() {
       images: [kDefaultImageSymbol, ...wallpaperProvider.localImages!],
       data: {
         [kDefaultImageSymbol]: wallpaperProvider.defaultImageThumbnail,
-        ...wallpaperProvider.localImageData
+        ...wallpaperProvider.localImageData,
       },
     };
 

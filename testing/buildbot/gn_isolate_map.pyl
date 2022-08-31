@@ -870,10 +870,6 @@
     "script": "//testing/scripts/run_flatbuffers_unittests.py",
     "type": "script",
   },
-  "fuchsia_mojo_unittests": {
-    "label": "//mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests",
-    "type": "console_test_launcher",
-  },
   "fuchsia_pytype": {
     "label": "//testing:fuchsia_pytype",
     "script": "//build/fuchsia/test/run_pytype.py",
@@ -925,6 +921,11 @@
   "gn_all": {
     "label": "//:gn_all",
     "type": "additional_compile_target",
+  },
+  "gold_common_pytype": {
+    "label": "//build:gold_common_pytype",
+    "script": "//build/skia_gold_common/run_pytype.py",
+    "type": "script",
   },
   "google_apis_unittests": {
     "label": "//google_apis:google_apis_unittests",
@@ -1176,10 +1177,6 @@
     "args": [
       "--logs-dir=${ISOLATED_OUTDIR}",
     ],
-  },
-  "lacros_version_metadata": {
-    "label": "//build/lacros:lacros_version_metadata",
-    "type": "additional_compile_target",
   },
   "lacros_variations_tast_tests" : {
     "label": "//chromeos/lacros:lacros_variations_tast_tests",

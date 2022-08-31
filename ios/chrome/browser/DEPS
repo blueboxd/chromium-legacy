@@ -89,6 +89,7 @@ include_rules = [
   "+components/search_provider_logos",
   "+components/security_interstitials",
   "+components/security_state",
+  "+components/segmentation_platform/public",
   "+components/send_tab_to_self",
   "+components/services/patch",
   "+components/services/unzip",
@@ -190,6 +191,7 @@ specific_include_rules = {
   ],
   "^ios_chrome_field_trials.mm": [
     "+ios/chrome/browser/ui/first_run/fre_field_trial.h",
+    "+ios/chrome/browser/ui/first_run/trending_queries_field_trial.h",
   ],
   "^system_flags.mm": [
     "+ios/chrome/browser/ui/ui_feature_flags.h",

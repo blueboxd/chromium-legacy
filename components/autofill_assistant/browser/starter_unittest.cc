@@ -21,8 +21,8 @@
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_assistant_field_trial_util.h"
-#include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/public/mock_runtime_manager.h"
+#include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/service/mock_service_request_sender.h"
 #include "components/autofill_assistant/browser/switches.h"
@@ -2013,7 +2013,7 @@ TEST_F(StarterTest, CommandLineScriptParametersAreAddedToImplicitTriggers) {
   task_environment()->RunUntilIdle();
 }
 
-TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsAllMatchingIntents) {
+TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsFirstLegacyIntent) {
   content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   content::RenderViewHostTestEnabler rvh_test_enabler;
@@ -2079,8 +2079,7 @@ TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsAllMatchingIntents) {
         auto actual_intents =
             base::SplitString(actual_intent_param->value(), ",",
                               base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-        EXPECT_THAT(actual_intents,
-                    UnorderedElementsAre("FAKE_INTENT_A", "FAKE_INTENT_B"));
+        EXPECT_THAT(actual_intents, UnorderedElementsAre("FAKE_INTENT_A"));
       }));
 
   content::WebContentsTester::For(web_contents.get())

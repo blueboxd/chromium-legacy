@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1621067168122174824">充電テストを実行</translation>
 <translation id="1631385268983122904">まだデバイスを組み立てないでください</translation>
-<translation id="1639239467298939599">読み込み中</translation>
+<translation id="1639239467298939599">読み込んでいます</translation>
 <translation id="1641857168437328880">ドキュメント フィーダー（片面）</translation>
 <translation id="1643449475550628585">壁紙画像を毎日変更する</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1645954272419197032">デバイス情報を確認してください</translation>
 <translation id="1662989795263954667">停止 - インク切れ</translation>
+<translation id="1664796644829245314">「<ph name="PREVIEW_OBJECT" />」をプレビュー</translation>
 <translation id="1668469839109562275">組み込みの VPN</translation>
 <translation id="1672499492233627739">ウェブカメラの動画フィード</translation>
 <translation id="1676557873873341166">動画を撮影しています</translation>
@@ -118,11 +119,13 @@
 <translation id="1851218745569890714">ビデオ会議</translation>
 <translation id="1852934301711881861">ChromeOS Flex をインストール</translation>
 <translation id="1856388568474281774">下矢印</translation>
+<translation id="1858620243986915808">スクリーンショットを添付する</translation>
 <translation id="1871569928317311284">ダークモードをオフにする</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ダークモードをオフにする</translation>
 <translation id="1881188606372070653">法的理由によりコンテンツの変更をリクエストするには、<ph name="BEGIN_LINK1" />法的な問題に関するヘルプページ<ph name="END_LINK1" />をご覧ください。アカウント情報とシステム情報の一部が Google に送信されます。ご提供いただいた情報は、Google で技術的な問題の解決やサービスの改善を図るため、<ph name="BEGIN_LINK2" />プライバシー ポリシー<ph name="END_LINK2" />と<ph name="BEGIN_LINK3" />利用規約<ph name="END_LINK3" />に沿って使用されます。</translation>
 <translation id="1887850431809612466">ハードウェア リビジョン</translation>
+<translation id="1904932688895783618">関連リソース:</translation>
 <translation id="1905710495812624430">最大試行回数を超えました。</translation>
 <translation id="1908234395526491708">UDP リクエストに失敗しました</translation>
 <translation id="1932611479324127242">バッテリー カットオフ</translation>
@@ -137,6 +140,7 @@
 <translation id="2016697457005847575">トラブルシューティングの手順を試す</translation>
 <translation id="2016848882344942759">--ホワイトラベルなし--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">スクリーンセーバーを表示するには、ネットワークに接続してページを再読み込みしてください。</translation>
 <translation id="2080070583977670716">詳細設定</translation>
 <translation id="2085089206770112532">ディスプレイの明るさを下げる</translation>
 <translation id="2105810540595158374">デバイスの種類はゲーム コントローラです。</translation>
@@ -469,7 +473,7 @@
 <translation id="500920857929044050">テストを停止</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">画面がアイドル状態のときに、写真、時刻、天気、メディア情報を表示します。</translation>
-<translation id="5039804452771397117">許可</translation>
+<translation id="5039804452771397117">許可する</translation>
 <translation id="5044978354634658544">USB を差し込む</translation>
 <translation id="5049856988445523908">SIM はロックされています（<ph name="LOCK_TYPE" />）</translation>
 <translation id="5050042263972837708">グループ名</translation>
@@ -773,6 +777,7 @@
 <translation id="7763470514545477072">ドメイン サフィックス マッチ</translation>
 <translation id="7769672763586021400">モデル ID</translation>
 <translation id="7784116172884276937">DNS サーバーが設定されていません</translation>
+<translation id="779591286616261875">新しい報告を送信</translation>
 <translation id="7799817062559422778">ライトモード</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7805768142964895445">ステータス</translation>
@@ -794,6 +799,7 @@
 <translation id="7978412674231730200">秘密鍵</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="7994702968232966508">EAP 方式</translation>
+<translation id="8018928621986160031">「<ph name="FILE_LOCATION" />」に保存しました</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">自動カラー モードを有効にする</translation>
@@ -862,6 +868,7 @@
 <translation id="8576249514688522074">初期化が未完了</translation>
 <translation id="8620617069779373398">ローミング状態</translation>
 <translation id="8655295600908251630">チャンネル</translation>
+<translation id="8655828773034788261">URL を共有:</translation>
 <translation id="8660881923941176839">ポンド</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> ネットワークへの接続</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> に更新して再起動</translation>
@@ -925,6 +932,7 @@
 <translation id="9082718469794970195">この動画を使う</translation>
 <translation id="9087578468327036362">このクエリを報告</translation>
 <translation id="9088306295921699330">現在の使用状況</translation>
+<translation id="9092255287806472980">お寄せいただいたフィードバックは担当チームが内容を確認したうえで、Chrome OS の改善に役立てられます。寄せられる報告の数が多いため、個別に返信できないことをご了承ください。</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">デバイスを分解する必要があります</translation>
 <translation id="9098156406873149060">ユーザーデータを保持する</translation>

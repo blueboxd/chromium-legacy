@@ -35,6 +35,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/display_resource_provider.h"
@@ -44,6 +45,7 @@
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
@@ -288,6 +290,7 @@ struct SurfaceAggregator::PrewalkResult {
   bool video_capture_enabled = false;
   bool may_contain_video = false;
   bool frame_sinks_changed = false;
+  bool page_fullscreen_mode = false;
   gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 };
 
@@ -391,7 +394,7 @@ void SurfaceAggregator::AddSurfaceDamageToDamageList(
     if (RenderPassNeedsFullDamage(resolved_frame->GetRootRenderPassData())) {
       damage_rect = resolved_frame->GetOutputRect();
     } else {
-      damage_rect = resolved_frame->GetSurfaceDamage(false);
+      damage_rect = resolved_frame->GetSurfaceDamage();
     }
   }
 
@@ -649,11 +652,11 @@ void SurfaceAggregator::HandleSurfaceQuad(
         gfx::IntersectRects(fallback_rect, surface_quad->visible_rect);
 
     // TODO(crbug.com/1308932): CompositorFrameMetadata to SkColor4f
-    EmitGutterQuadsIfNecessary(
-        surface_quad->visible_rect, fallback_rect,
-        surface_quad->shared_quad_state, target_transform, surface_clip_rect,
-        SkColor4f::FromColor(fallback_frame.metadata.root_background_color),
-        dest_pass, mask_filter_info);
+    EmitGutterQuadsIfNecessary(surface_quad->visible_rect, fallback_rect,
+                               surface_quad->shared_quad_state,
+                               target_transform, surface_clip_rect,
+                               fallback_frame.metadata.root_background_color,
+                               dest_pass, mask_filter_info);
   }
 
   EmitSurfaceContent(*resolved_frame, parent_device_scale_factor, surface_quad,
@@ -1514,7 +1517,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
   // accumulated from all quads in the surface, and needs to be expanded by any
   // pixel-moving backdrop filter in the render pass if intersecting. Transform
   // this damage into the local space of the render pass for this purpose.
-  gfx::Rect surface_root_rp_damage = resolved_frame.GetSurfaceDamage(true);
+  gfx::Rect surface_root_rp_damage = resolved_frame.GetSurfaceDamage();
   if (!surface_root_rp_damage.IsEmpty()) {
     gfx::Transform root_to_target_transform(
         gfx::Transform::kSkipInitialization);
@@ -1532,6 +1535,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
   // with the current quad when needed.
   for (const DrawQuad* quad : base::Reversed(resolved_pass.prewalk_quads())) {
     gfx::Rect quad_damage_rect;
+    gfx::Rect quad_target_space_damage_rect;
     if (quad->material == DrawQuad::Material::kSurfaceContent) {
       const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       ResolvedFrameData* child_resolved_frame =
@@ -1603,6 +1607,19 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
 
       if (!quad_damage_rect.IsEmpty()) {
         resolved_pass.aggregation().has_damage_from_contributing_content = true;
+      }
+
+      // Only check for root render pass on the root surface.
+      if (parent_pass == nullptr && resolved_pass.is_root() &&
+          !result.page_fullscreen_mode) {
+        gfx::Rect surface_quad_on_target_space = ClippedQuadRectangle(quad);
+        // Often time the surface_quad_on_target_space is not exactly the same
+        // as the output_rect after the math operations, although they are meant
+        // to be the same. Set the delta tolerance to 8 pixels.
+        if (surface_quad_on_target_space.ApproximatelyEqual(
+                render_pass.output_rect, /*tolerance=*/8)) {
+          result.page_fullscreen_mode = true;
+        }
       }
     } else if (quad->material == DrawQuad::Material::kCompositorRenderPass) {
       auto* render_pass_quad = CompositorRenderPassDrawQuad::MaterialCast(quad);
@@ -1692,6 +1709,18 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
               .has_damage_from_contributing_content) {
         resolved_pass.aggregation().has_damage_from_contributing_content = true;
       }
+    } else {
+      // If this the next frame in sequence from last aggregation then per quad
+      // damage_rects are valid so add them here. If not, either this is the
+      // same frame as last aggregation and there is no damage OR there is
+      // already full damage for the surface.
+      if (resolved_frame.IsNextFrameSinceLastAggregation()) {
+        auto& damage_rect = GetOptionalDamageRectFromQuad(quad);
+        DCHECK(damage_rect.has_value());
+        // The DrawQuad `damage_rect` is already in the render pass coordinate
+        // space instead of quad rect coordinate space.
+        quad_target_space_damage_rect = damage_rect.value();
+      }
     }
 
     // Clip the quad damage to the quad visible before converting back to
@@ -1705,14 +1734,18 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // needed. Ignore tiny errors to avoid artificially inflating the
       // damage due to floating point math.
       constexpr float kEpsilon = 0.001f;
-      gfx::Rect rect_in_target_space =
+      quad_target_space_damage_rect =
           cc::MathUtil::MapEnclosingClippedRectIgnoringError(
               quad->shared_quad_state->quad_to_target_transform,
               quad_damage_rect, kEpsilon);
+    }
+
+    if (!quad_target_space_damage_rect.IsEmpty()) {
       if (quad->shared_quad_state->clip_rect) {
-        rect_in_target_space.Intersect(*quad->shared_quad_state->clip_rect);
+        quad_target_space_damage_rect.Intersect(
+            *quad->shared_quad_state->clip_rect);
       }
-      damage_rect.Union(rect_in_target_space);
+      damage_rect.Union(quad_target_space_damage_rect);
     }
   }
 
@@ -1786,7 +1819,7 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(ResolvedFrameData& resolved_frame,
     parent_pass->aggregation().embedded_passes.insert(&root_resolved_pass);
   }
 
-  gfx::Rect damage_rect = resolved_frame.GetSurfaceDamage(true);
+  gfx::Rect damage_rect = resolved_frame.GetSurfaceDamage();
 
   // Avoid infinite recursion by adding current surface to
   // |referenced_surfaces_|.
@@ -2023,6 +2056,7 @@ AggregatedFrame SurfaceAggregator::Aggregate(
   frame.video_capture_enabled = prewalk_result.video_capture_enabled;
   frame.may_contain_video = prewalk_result.may_contain_video;
   frame.content_color_usage = prewalk_result.content_color_usage;
+  frame.page_fullscreen_mode = prewalk_result.page_fullscreen_mode;
 
   base::ElapsedTimer copy_timer;
   CopyUndrawnSurfaces(&prewalk_result);

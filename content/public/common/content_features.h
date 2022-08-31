@@ -104,9 +104,13 @@ CONTENT_EXPORT extern const base::Feature kFledgeLimitNumAuctions;
 CONTENT_EXPORT extern const base::FeatureParam<int>
     kFledgeLimitNumAuctionsParam;
 CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
+CONTENT_EXPORT extern const base::Feature kGetDisplayMediaSet;
+CONTENT_EXPORT extern const base::Feature
+    kGetDisplayMediaSetAutoSelectAllScreens;
 CONTENT_EXPORT extern const base::Feature kGreaseUACH;
 CONTENT_EXPORT extern const base::Feature kIdentityInCanMakePaymentEventFeature;
 CONTENT_EXPORT extern const base::Feature kIdleDetection;
+CONTENT_EXPORT extern const base::Feature kInMemoryCodeCache;
 CONTENT_EXPORT extern const base::Feature kIncludeIpcOverheadInNavigationStart;
 CONTENT_EXPORT extern const base::Feature kInstalledApp;
 CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
@@ -282,7 +286,6 @@ CONTENT_EXPORT extern const base::Feature kWebAssemblyLazyCompilation;
 CONTENT_EXPORT extern const base::Feature kWebAssemblySimd;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTiering;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
-CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebAuthConditionalUI;
 CONTENT_EXPORT extern const base::Feature kWebBluetooth;
 CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;

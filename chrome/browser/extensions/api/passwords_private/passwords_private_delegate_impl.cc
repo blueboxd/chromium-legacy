@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -146,6 +147,23 @@ ConvertToPasswordFormStores(
   }
   NOTREACHED();
   return {};
+}
+
+extensions::api::passwords_private::PasswordStoreSet ConvertToAPIStore(
+    const base::flat_set<password_manager::PasswordForm::Store>& stores) {
+  if (stores.contains(password_manager::PasswordForm::Store::kAccountStore) &&
+      stores.contains(password_manager::PasswordForm::Store::kProfileStore)) {
+    return extensions::api::passwords_private::
+        PASSWORD_STORE_SET_DEVICE_AND_ACCOUNT;
+  }
+  if (stores.contains(password_manager::PasswordForm::Store::kAccountStore)) {
+    return extensions::api::passwords_private::PASSWORD_STORE_SET_ACCOUNT;
+  }
+  if (stores.contains(password_manager::PasswordForm::Store::kProfileStore)) {
+    return extensions::api::passwords_private::PASSWORD_STORE_SET_DEVICE;
+  }
+  NOTREACHED();
+  return extensions::api::passwords_private::PASSWORD_STORE_SET_DEVICE;
 }
 
 }  // namespace
@@ -265,22 +283,24 @@ PasswordsPrivateDelegateImpl::ChangeSavedPassword(
   // It may have 2 elements but only if it's the same password in two stores. In
   // this case updating only one of them is enough as
   // |saved_passwords_presenter_| will update both of them anyway.
-  const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(ids[0]);
-  if (!entry)
+  const CredentialUIEntry* original_credential =
+      credential_id_generator_.TryGetKey(ids[0]);
+  if (!original_credential)
     return absl::nullopt;
 
-  CredentialUIEntry to_edit = *entry;
-  to_edit.username = base::UTF8ToUTF16(params.username);
-  to_edit.password = base::UTF8ToUTF16(params.password);
+  CredentialUIEntry updated_credential = *original_credential;
+  updated_credential.username = base::UTF8ToUTF16(params.username);
+  updated_credential.password = base::UTF8ToUTF16(params.password);
   if (params.note) {
-    to_edit.note = password_manager::PasswordNote(
+    updated_credential.note = password_manager::PasswordNote(
         base::UTF8ToUTF16(*params.note), base::Time::Now());
   }
   // Collect the credentials that will be edited before executing the edit
   // process.
-  auto forms_to_edit =
-      saved_passwords_presenter_.GetCorrespondingPasswordForms(entry->key());
-  switch (saved_passwords_presenter_.EditSavedCredentials(to_edit)) {
+  auto forms_to_edit = saved_passwords_presenter_.GetCorrespondingPasswordForms(
+      *original_credential);
+  switch (saved_passwords_presenter_.EditSavedCredentials(*original_credential,
+                                                          updated_credential)) {
     case password_manager::SavedPasswordsPresenter::EditResult::kSuccess:
     case password_manager::SavedPasswordsPresenter::EditResult::kNothingChanged:
       break;
@@ -292,8 +312,8 @@ PasswordsPrivateDelegateImpl::ChangeSavedPassword(
   api::passwords_private::CredentialIds new_ids;
   for (auto& form : forms_to_edit) {
     // Calculate the new IDs using the new username and password.
-    form.username_value = to_edit.username;
-    form.password_value = to_edit.password;
+    form.username_value = updated_credential.username;
+    form.password_value = updated_credential.password;
 
     auto new_id = std::make_unique<int>(
         credential_id_generator_.GenerateId(CredentialUIEntry(form)));
@@ -405,47 +425,34 @@ void PasswordsPrivateDelegateImpl::SetCredentials(
   current_exceptions_.clear();
 
   for (const CredentialUIEntry& credential : credentials) {
-    // TODO(crbug.com/1201643): A separate entity should be created for every
-    // store where the credential is stored. This can be removed when the UI
-    // will support the new model.
-
     int id = credential_id_generator_.GenerateId(credential);
-    for (const password_manager::PasswordForm::Store& store :
-         credential.stored_in) {
-      if (credential.blocked_by_user) {
-        api::passwords_private::ExceptionEntry current_exception_entry;
-        current_exception_entry.urls =
-            CreateUrlCollectionFromCredential(credential);
-        current_exception_entry.id = id;
-        current_exception_entry.frontend_id = id;
+    if (credential.blocked_by_user) {
+      api::passwords_private::ExceptionEntry current_exception_entry;
+      current_exception_entry.urls =
+          CreateUrlCollectionFromCredential(credential);
+      current_exception_entry.id = id;
+      current_exceptions_.push_back(std::move(current_exception_entry));
+    } else {
+      api::passwords_private::PasswordUiEntry entry;
+      entry.urls = CreateUrlCollectionFromCredential(credential);
+      entry.username = base::UTF16ToUTF8(credential.username);
+      entry.password_note = base::UTF16ToUTF8(credential.note.value);
+      entry.id = id;
+      entry.stored_in = ConvertToAPIStore(credential.stored_in);
+      entry.is_android_credential =
+          password_manager::IsValidAndroidFacetURI(credential.signon_realm);
+      if (!credential.federation_origin.opaque()) {
+        std::u16string formatted_origin =
+            url_formatter::FormatOriginForSecurityDisplay(
+                credential.federation_origin,
+                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
-        current_exception_entry.from_account_store =
-            store == password_manager::PasswordForm::Store::kAccountStore;
-        current_exceptions_.push_back(std::move(current_exception_entry));
-      } else {
-        api::passwords_private::PasswordUiEntry entry;
-        entry.urls = CreateUrlCollectionFromCredential(credential);
-        entry.username = base::UTF16ToUTF8(credential.username);
-        entry.password_note = base::UTF16ToUTF8(credential.note.value);
-        entry.id = id;
-        entry.frontend_id = id;
-
-        if (!credential.federation_origin.opaque()) {
-          std::u16string formatted_origin =
-              url_formatter::FormatOriginForSecurityDisplay(
-                  credential.federation_origin,
-                  url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-
-          entry.federation_text =
-              std::make_unique<std::string>(l10n_util::GetStringFUTF8(
-                  IDS_PASSWORDS_VIA_FEDERATION, formatted_origin));
-        }
-
-        entry.from_account_store =
-            store == password_manager::PasswordForm::Store::kAccountStore;
-
-        current_entries_.push_back(std::move(entry));
+        entry.federation_text =
+            std::make_unique<std::string>(l10n_util::GetStringFUTF8(
+                IDS_PASSWORDS_VIA_FEDERATION, formatted_origin));
       }
+
+      current_entries_.push_back(std::move(entry));
     }
   }
 
@@ -491,7 +498,7 @@ void PasswordsPrivateDelegateImpl::MovePasswordsToAccount(
     }
 
     std::vector<password_manager::PasswordForm> corresponding_forms =
-        saved_passwords_presenter_.GetCorrespondingPasswordForms(entry->key());
+        saved_passwords_presenter_.GetCorrespondingPasswordForms(*entry);
     if (corresponding_forms.empty()) {
       continue;
     }

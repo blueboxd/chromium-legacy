@@ -198,7 +198,7 @@ void SharedStorageManager::Clear(
 }
 
 void SharedStorageManager::PurgeMatchingOrigins(
-    OriginMatcherFunction origin_matcher,
+    StorageKeyPolicyMatcherFunction storage_key_matcher,
     base::Time begin,
     base::Time end,
     base::OnceCallback<void(OperationResult)> callback,
@@ -206,15 +206,15 @@ void SharedStorageManager::PurgeMatchingOrigins(
   DCHECK(callback);
   DCHECK(database_);
   database_->PurgeMatchingOrigins(
-      std::move(origin_matcher), begin, end,
+      std::move(storage_key_matcher), begin, end,
       GetOperationResultCallback(std::move(callback)), perform_storage_cleanup);
 }
 
 void SharedStorageManager::FetchOrigins(
-    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
-        callback) {
+    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
+    bool exclude_empty_origins) {
   DCHECK(database_);
-  database_->FetchOrigins(std::move(callback));
+  database_->FetchOrigins(std::move(callback), exclude_empty_origins);
 }
 
 void SharedStorageManager::MakeBudgetWithdrawal(
@@ -246,21 +246,39 @@ void SharedStorageManager::GetRemainingBudget(
                                 std::move(new_callback));
 }
 
+void SharedStorageManager::GetCreationTime(
+    url::Origin context_origin,
+    base::OnceCallback<void(TimeResult)> callback) {
+  DCHECK(callback);
+  DCHECK(database_);
+  auto new_callback = base::BindOnce(
+      [](base::WeakPtr<SharedStorageManager> manager,
+         base::OnceCallback<void(TimeResult)> callback, TimeResult result) {
+        if (manager)
+          manager->OnOperationResult(result.result);
+        std::move(callback).Run(std::move(result));
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  database_->GetCreationTime(std::move(context_origin),
+                             std::move(new_callback));
+}
+
 void SharedStorageManager::SetOnDBDestroyedCallbackForTesting(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(callback);
   on_db_destroyed_callback_for_testing_ = std::move(callback);
 }
 
-void SharedStorageManager::OverrideLastUsedTimeForTesting(
+void SharedStorageManager::OverrideCreationTimeForTesting(
     url::Origin context_origin,
-    base::Time new_last_used_time,
+    base::Time new_creation_time,
     base::OnceCallback<void(bool)> callback) {
   DCHECK(callback);
   DCHECK(database_);
   static_cast<AsyncSharedStorageDatabaseImpl*>(database_.get())
-      ->OverrideLastUsedTimeForTesting(  // IN-TEST
-          std::move(context_origin), new_last_used_time, std::move(callback));
+      ->OverrideCreationTimeForTesting(  // IN-TEST
+          std::move(context_origin), new_creation_time, std::move(callback));
 }
 
 void SharedStorageManager::OverrideSpecialStoragePolicyForTesting(
@@ -383,7 +401,6 @@ void SharedStorageManager::PurgeStaleOrigins() {
   DCHECK(database_);
 
   database_->PurgeStaleOrigins(
-      options_->origin_staleness_threshold,
       base::BindOnce(&SharedStorageManager::OnStaleOriginsPurged,
                      weak_ptr_factory_.GetWeakPtr()));
 }

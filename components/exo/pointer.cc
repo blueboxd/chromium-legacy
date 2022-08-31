@@ -28,7 +28,6 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/cursor/cursor_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_factory.h"
@@ -45,6 +44,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/cursor_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -486,13 +486,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return;
 
-  Surface* target = GetEffectiveTargetForEvent(event);
-  gfx::PointF location_in_target = event->location_f();
-  if (target) {
-    aura::Window::ConvertPointToTarget(
-        static_cast<aura::Window*>(event->target()), target->window(),
-        &location_in_target);
-  }
+  gfx::PointF location_in_target;
+  Surface* target = GetEffectiveTargetForEvent(event, &location_in_target);
 
   // Update focus if target is different than the current pointer focus.
   if (target != focus_surface_)
@@ -733,6 +728,8 @@ void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
 
   // DragDropController::PerformDrop() can result in the DropTargetEvent::target
   // being destroyed. Verify whether this is the case, and adapt the event.
+  // This must be tested before `GetEffectiveTargetForEvent` which may pick the
+  // capture window.
   //
   // TODO(https://crbug.com/1160925): Avoid nested RunLoop in exo
   // DataDevice::GetDropCallback() - remove the block below when it is fixed.
@@ -742,10 +739,10 @@ void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
     return;
   }
 
-  auto* target_window = ash::window_util::GetEventHandlerForEvent(event);
-  auto* surface = Surface::AsSurface(target_window);
-  if (surface)
-    SetFocus(surface, event.location_f(), /*button_flags=*/0);
+  gfx::PointF location_in_target;
+  auto* target = GetEffectiveTargetForEvent(&event, &location_in_target);
+  if (target)
+    SetFocus(target, location_in_target, /*button_flags=*/0);
 #endif
 }
 
@@ -800,21 +797,32 @@ void Pointer::OnWindowFocused(aura::Window* gained_focus,
 // Pointer, private:
 
 Surface* Pointer::GetEffectiveTargetForEvent(
-    const ui::LocatedEvent* event) const {
-  if (capture_window_)
-    return Surface::AsSurface(capture_window_);
+    const ui::LocatedEvent* event,
+    gfx::PointF* location_in_target) const {
+  DCHECK(location_in_target);
+  Surface* target = nullptr;
+  if (capture_window_) {
+    target = Surface::AsSurface(capture_window_);
+  } else {
+    target = GetTargetSurfaceForLocatedEvent(event);
 
-  Surface* target = GetTargetSurfaceForLocatedEvent(event);
+    if (!target || !delegate_->CanAcceptPointerEventsForSurface(target))
+      return nullptr;
+  }
 
-  if (!target)
-    return nullptr;
-
-  return delegate_->CanAcceptPointerEventsForSurface(target) ? target : nullptr;
+  if (target) {
+    *location_in_target = event->location_f();
+    aura::Window::ConvertPointToTarget(
+        static_cast<aura::Window*>(event->target()), target->window(),
+        location_in_target);
+  }
+  return target;
 }
 
 void Pointer::SetFocus(Surface* surface,
                        const gfx::PointF& location,
                        int button_flags) {
+  DCHECK(!surface || delegate_->CanAcceptPointerEventsForSurface(surface));
   // First generate a leave event if we currently have a target in focus.
   if (focus_surface_) {
     delegate_->OnPointerLeave(focus_surface_);
@@ -934,8 +942,8 @@ void Pointer::UpdateCursor() {
 
     // Use panel_rotation() rather than "natural" rotation, as it actually
     // relates to the hardware you're about to draw the cursor bitmap on.
-    aura::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
-                                                &bitmap, &hotspot);
+    wm::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
+                                              &bitmap, &hotspot);
 
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.

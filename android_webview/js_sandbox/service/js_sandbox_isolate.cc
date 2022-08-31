@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -45,6 +46,24 @@ namespace {
 // TODO(crbug.com/1297672): This is what shows up as filename in errors. Revisit
 // this once error handling is in place.
 constexpr base::StringPiece resource_name = "<expression>";
+
+// AdjustToValidHeapSize will either round the provided heap size up to a valid
+// allocation page size or clip the value to the maximum supported heap size.
+size_t AdjustToValidHeapSize(const uint64_t heap_size_bytes) {
+  // The value of 64K should just work on all platforms. Smaller page sizes
+  // might work in practice, although we currently don't have long-term
+  // guarantees. This value is not necessarily the same as the system's memory
+  // page size. https://bugs.chromium.org/p/v8/issues/detail?id=13172#c6
+  constexpr size_t page_size = 65536;
+  constexpr size_t max_supported_heap_size =
+      (size_t)UINT_MAX / page_size * page_size;
+
+  if (heap_size_bytes < (uint64_t)max_supported_heap_size) {
+    return ((size_t)heap_size_bytes + (page_size - 1)) / page_size * page_size;
+  } else {
+    return max_supported_heap_size;
+  }
+}
 
 v8::Local<v8::String> GetSourceLine(v8::Isolate* isolate,
                                     v8::Local<v8::Message> message) {
@@ -115,10 +134,11 @@ FdWithLength::FdWithLength(int fd_input, ssize_t len) {
   length = len;
 }
 
-JsSandboxIsolate::JsSandboxIsolate() {
+JsSandboxIsolate::JsSandboxIsolate(jlong max_heap_size_bytes) {
+  isolate_max_heap_size_bytes_ = max_heap_size_bytes;
   control_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
   isolate_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
-      {base::TaskPriority::USER_VISIBLE,
+      {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   control_task_runner_->PostTask(
@@ -304,9 +324,16 @@ void JsSandboxIsolate::DeleteSelf() {
 
 // Called from isolate thread.
 void JsSandboxIsolate::InitializeIsolateOnThread() {
+  std::unique_ptr<v8::Isolate::CreateParams> params =
+      gin::IsolateHolder::getDefaultIsolateParams();
+  if (isolate_max_heap_size_bytes_ > 0) {
+    params->constraints.ConfigureDefaultsFromHeapSize(
+        0, AdjustToValidHeapSize(isolate_max_heap_size_bytes_));
+  }
   isolate_holder_ = std::make_unique<gin::IsolateHolder>(
       base::ThreadTaskRunnerHandle::Get(),
-      gin::IsolateHolder::IsolateType::kUtility);
+      gin::IsolateHolder::AccessMode::kSingleThread,
+      gin::IsolateHolder::IsolateType::kUtility, std::move(params));
   v8::Isolate* isolate = isolate_holder_->isolate();
   v8::Isolate::Scope isolate_scope(isolate);
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kAuto);
@@ -513,8 +540,9 @@ static void JNI_JsSandboxIsolate_InitializeEnvironment(JNIEnv* env) {
 }
 
 static jlong JNI_JsSandboxIsolate_CreateNativeJsSandboxIsolateWrapper(
-    JNIEnv* env) {
-  JsSandboxIsolate* processor = new JsSandboxIsolate();
+    JNIEnv* env,
+    jlong max_heap_size_bytes) {
+  JsSandboxIsolate* processor = new JsSandboxIsolate(max_heap_size_bytes);
   return reinterpret_cast<intptr_t>(processor);
 }
 

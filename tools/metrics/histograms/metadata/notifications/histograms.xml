@@ -971,7 +971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.WebPlatformV2.{Action}.TimeToActivity"
-    units="ms" expires_after="M106">
+    units="ms" expires_after="M112">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -986,7 +986,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.WebPlatformV2.{Action}.TimeToClose" units="ms"
-    expires_after="M106">
+    expires_after="M112">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1034,7 +1034,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Windows.DisplayFailure" enum="Hresult"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../icons.html.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 import './passwords_shared.css.js';
 
@@ -32,6 +32,7 @@ import {getTemplate} from './password_edit_dialog.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 
+// TODO(derinel@google.com): Use a single id instead of CredentialIds.
 export type SavedPasswordEditedEvent =
     CustomEvent<chrome.passwordsPrivate.CredentialIds>;
 
@@ -255,7 +256,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enablePasswordNotes');
-        }
+        },
       },
 
       /* If true, change event will be dispatched. */
@@ -263,7 +264,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enablePasswordViewPage');
-        }
+        },
       },
     };
   }
@@ -430,8 +431,12 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Gets the initial text to show in the website input.
    */
   private getWebsite_(): string {
-    return this.dialogMode === PasswordDialogMode.ADD ?
-        '' :
+    if (this.dialogMode === PasswordDialogMode.ADD) {
+      return '';
+    }
+
+    return this.existingEntry!.isAndroidCredential ?
+        this.existingEntry!.urls.shown :
         this.existingEntry!.urls.link;
   }
 
@@ -499,7 +504,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
           username: this.username_,
           password: this.password_,
           note: this.note_,
-          useAccountStore: useAccountStore
+          useAccountStore: useAccountStore,
         })
         .finally(() => {
           this.close();
@@ -507,15 +512,6 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private changePassword_() {
-    const idsToChange = [];
-    const accountId = this.existingEntry!.accountId;
-    const deviceId = this.existingEntry!.deviceId;
-    if (accountId !== null) {
-      idsToChange.push(accountId);
-    }
-    if (deviceId !== null) {
-      idsToChange.push(deviceId);
-    }
     const params: chrome.passwordsPrivate.ChangeSavedPasswordParams = {
       username: this.username_,
       password: this.password_,
@@ -525,7 +521,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     }
 
     PasswordManagerImpl.getInstance()
-        .changeSavedPassword(idsToChange, params)
+        .changeSavedPassword([this.existingEntry!.id], params)
         .then(newIds => {
           if (this.isPasswordViewPageEnabled_) {
             this.dispatchChangePasswordEvent_(newIds);
@@ -571,13 +567,14 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       // Storage message is not shown in the ADD mode.
       return '';
     }
-    if (this.existingEntry!.isPresentInAccount() &&
-        this.existingEntry!.isPresentOnDevice()) {
-      return this.i18n('passwordStoredInAccountAndOnDevice');
+    switch (this.existingEntry!.storedIn) {
+      case chrome.passwordsPrivate.PasswordStoreSet.DEVICE:
+        return this.i18n('passwordStoredOnDevice');
+      case chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT:
+        return this.i18n('passwordStoredInAccount');
+      case chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT:
+        return this.i18n('passwordStoredInAccountAndOnDevice');
     }
-    return this.existingEntry!.isPresentInAccount() ?
-        this.i18n('passwordStoredInAccount') :
-        this.i18n('passwordStoredOnDevice');
   }
 
   private getStoreOptionAccountText_(): string {
@@ -637,6 +634,15 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     }
   }
 
+  private getLabelForWebsiteInput_(): string {
+    if (this.dialogMode === PasswordDialogMode.ADD) {
+      return this.i18n('editPasswordWebsiteLabel');
+    }
+    return this.i18n(
+        this.existingEntry!.isAndroidCredential ? 'editPasswordAppLabel' :
+                                                  'editPasswordWebsiteLabel');
+  }
+
   private getClassForWebsiteInput_(): string {
     // If website input is empty, it is invalid, but has no error message.
     // To handle this, the error is shown only if 'has-error-message' is set.
@@ -692,8 +698,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
           entry.username === this.username_;
     })!;
     this.requestPlaintextPassword(
-            existingEntry.getAnyId(),
-            chrome.passwordsPrivate.PlaintextReason.EDIT)
+            existingEntry.id, chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(password => {
           existingEntry.password = password;
           this.switchToEditMode_(existingEntry);
@@ -743,10 +748,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     const relevantPasswords = this.dialogMode === PasswordDialogMode.EDIT ?
         // In EDIT mode entries considered duplicates only if in the same store.
         this.savedPasswords.filter(item => {
-          return item.isPresentOnDevice() ===
-              this.existingEntry!.isPresentOnDevice() ||
-              item.isPresentInAccount() ===
-              this.existingEntry!.isPresentInAccount();
+          return item.storedIn === this.existingEntry!.storedIn;
         }) :
         // In ADD mode entries considered duplicates irrespective of the store.
         this.savedPasswords;

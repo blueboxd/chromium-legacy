@@ -62,7 +62,7 @@ export class SearchPageElement extends SearchPageElementBase {
       descriptionTemplate: {
         type: String,
         readonly: true,
-        observer: SearchPageElement.prototype.descriptionTemplateChanged_
+        observer: SearchPageElement.prototype.descriptionTemplateChanged_,
       },
     };
   }
@@ -182,7 +182,7 @@ export class SearchPageElement extends SearchPageElementBase {
           isPopularContent ? this.popularHelpContentList_ :
                              response.response.results),
       isQueryEmpty: isQueryEmpty,
-      isPopularContent: isPopularContent
+      isPopularContent: isPopularContent,
     };
 
     // Wait for the iframe to complete loading before postMessage.
@@ -219,6 +219,15 @@ export class SearchPageElement extends SearchPageElementBase {
    * @return {!HTMLElement}
    * @private
    */
+  getDescriptionTextElement_() {
+    return /** @type {!HTMLElement} */ (
+        this.shadowRoot.querySelector('#descriptionText'));
+  }
+
+  /**
+   * @return {!HTMLElement}
+   * @private
+   */
   getErrorElement_() {
     return /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#descriptionEmptyError'));
@@ -235,6 +244,9 @@ export class SearchPageElement extends SearchPageElementBase {
     const errorElement = this.getErrorElement_();
     errorElement.hidden = false;
     errorElement.setAttribute('aria-hidden', false);
+
+    const descriptionTextElement = this.getDescriptionTextElement_();
+    descriptionTextElement.classList.add('has-error');
   }
 
   /**
@@ -244,6 +256,9 @@ export class SearchPageElement extends SearchPageElementBase {
     const errorElement = this.getErrorElement_();
     errorElement.hidden = true;
     errorElement.setAttribute('aria-hidden', true);
+
+    const descriptionTextElement = this.getDescriptionTextElement_();
+    descriptionTextElement.classList.remove('has-error');
   }
 
   /**
@@ -270,7 +285,8 @@ export class SearchPageElement extends SearchPageElementBase {
       this.dispatchEvent(new CustomEvent('continue-click', {
         composed: true,
         bubbles: true,
-        detail: {currentState: FeedbackFlowState.SEARCH, description: textInput}
+        detail:
+            {currentState: FeedbackFlowState.SEARCH, description: textInput},
       }));
     }
   }

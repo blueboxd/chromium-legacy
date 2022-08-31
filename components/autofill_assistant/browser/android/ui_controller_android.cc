@@ -29,6 +29,8 @@
 #include "components/autofill_assistant/android/jni_headers/AssistantModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantOverlayModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantPlaceholdersConfiguration_jni.h"
+#include "components/autofill_assistant/android/jni_headers/AssistantQrCodeCameraScanModelWrapper_jni.h"
+#include "components/autofill_assistant/android/jni_headers/AssistantQrCodeUtil_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AutofillAssistantUiController_jni.h"
 #include "components/autofill_assistant/browser/android/client_android.h"
 #include "components/autofill_assistant/browser/android/dependencies_android.h"
@@ -69,6 +71,7 @@ using ::base::android::ToJavaByteArray;
 namespace autofill_assistant {
 
 namespace {
+
 std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   std::vector<float> flattened;
   for (const auto& rect : areas) {
@@ -382,6 +385,10 @@ void UiControllerAndroid::SetupForState() {
 
   UpdateActions(ui_delegate_->GetUserActions());
   AutofillAssistantState state = execution_delegate_->GetState();
+  Java_AssistantModel_setHandleBackPress(
+      AttachCurrentThread(), GetModel(),
+      state != AutofillAssistantState::BROWSE);
+
   bool should_prompt_action_expand_sheet =
       ui_delegate_->ShouldPromptActionExpandSheet();
   switch (state) {
@@ -534,6 +541,12 @@ void UiControllerAndroid::OnHeaderFeedbackButtonClicked() {
       /* screenshotMode */ 0);
 }
 
+void UiControllerAndroid::OnQrCodeScanFinished(
+    const ClientStatus& status,
+    const absl::optional<ValueProto>& value) {
+  ui_delegate_->OnQrCodeScanFinished(status, value);
+}
+
 void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
   ui_delegate_->DispatchEvent(key);
 }
@@ -651,6 +664,7 @@ void UiControllerAndroid::RestoreUi() {
   OnPersistentGenericUserInterfaceChanged(
       ui_delegate_->GetPersistentGenericUiProto());
   OnGenericUserInterfaceChanged(ui_delegate_->GetGenericUiProto());
+  OnQrCodeScanUiChanged(ui_delegate_->GetPromptQrCodeScanProto());
 
   std::vector<RectF> area;
   execution_delegate_->GetTouchableArea(&area);
@@ -1841,6 +1855,58 @@ void UiControllerAndroid::OnClientSettingsChanged(
   OnClientSettingsDisplayStringsChanged(settings);
 }
 
+void UiControllerAndroid::OnQrCodeScanUiChanged(
+    const PromptQrCodeScanProto* qr_code_scan) {
+  if (!qr_code_scan) {
+    qr_code_native_delegate_ = nullptr;
+    return;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  qr_code_native_delegate_ =
+      std::make_unique<AssistantQrCodeNativeDelegate>(this);
+
+  const auto java_assistant_camera_scan_model_wrapper =
+      Java_AssistantQrCodeCameraScanModelWrapper_Constructor(env);
+
+  // Register qr_code_native_delegate_ as delegate for the QR Code Camera Scan
+  // UI
+  Java_AssistantQrCodeCameraScanModelWrapper_setDelegate(
+      env, java_assistant_camera_scan_model_wrapper,
+      qr_code_native_delegate_->GetJavaObject());
+
+  // Set UI strings in model
+  const PromptQrCodeScanProto_CameraScanUiStrings* camera_scan_ui_strings =
+      &qr_code_scan->camera_scan_ui_strings();
+  Java_AssistantQrCodeCameraScanModelWrapper_setToolbarTitle(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(env, camera_scan_ui_strings->title_text()));
+  Java_AssistantQrCodeCameraScanModelWrapper_setPermissionText(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(env, camera_scan_ui_strings->permission_text()));
+  Java_AssistantQrCodeCameraScanModelWrapper_setPermissionButtonText(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(
+          env, camera_scan_ui_strings->permission_button_text()));
+  Java_AssistantQrCodeCameraScanModelWrapper_setOpenSettingsText(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(env,
+                              camera_scan_ui_strings->open_settings_text()));
+  Java_AssistantQrCodeCameraScanModelWrapper_setOpenSettingsButtonText(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(
+          env, camera_scan_ui_strings->open_settings_button_text()));
+  Java_AssistantQrCodeCameraScanModelWrapper_setOverlayTitle(
+      env, java_assistant_camera_scan_model_wrapper,
+      ConvertUTF8ToJavaString(
+          env, camera_scan_ui_strings->camera_preview_instruction_text()));
+
+  Java_AssistantQrCodeUtil_promptQrCodeCameraScan(
+      env,
+      Java_AutofillAssistantUiController_getDependencies(env, java_object_),
+      java_assistant_camera_scan_model_wrapper);
+}
+
 void UiControllerAndroid::OnGenericUserInterfaceChanged(
     const GenericUserInterfaceProto* generic_ui) {
   // Try to inflate user interface from proto.
@@ -1972,9 +2038,38 @@ void UiControllerAndroid::OnInfoBoxChanged(const InfoBox* info_box) {
   }
 
   const InfoBoxProto& proto = info_box->proto().info_box();
+  auto jcontext =
+      Java_AutofillAssistantUiController_getContext(env, java_object_);
+  absl::optional<DrawableProto> drawable_proto;
+  bool use_instrinsic_dimensions = false;
+  switch (proto.image_case()) {
+    case InfoBoxProto::ImageCase::kImagePath: {
+      if (!proto.image_path().empty()) {
+        drawable_proto.emplace();
+        auto* bitmap_proto = drawable_proto->mutable_bitmap();
+        bitmap_proto->set_url(proto.image_path());
+        bitmap_proto->set_use_instrinsic_dimensions(true);
+        use_instrinsic_dimensions = true;
+      }
+      break;
+    }
+    case InfoBoxProto::ImageCase::kDrawable: {
+      drawable_proto = proto.drawable();
+      break;
+    }
+    case InfoBoxProto::ImageCase::IMAGE_NOT_SET: {
+      break;
+    }
+  }
+  base::android::ScopedJavaLocalRef<jobject> jdrawable = nullptr;
+  if (drawable_proto.has_value()) {
+    jdrawable = ui_controller_android_utils::CreateJavaDrawable(
+        env, jcontext, *dependencies_, *drawable_proto,
+        execution_delegate_->GetUserModel());
+  }
   auto jinfo_box = Java_AssistantInfoBox_create(
-      env, ConvertUTF8ToJavaString(env, proto.image_path()),
-      ConvertUTF8ToJavaString(env, proto.explanation()));
+      env, jdrawable, ConvertUTF8ToJavaString(env, proto.explanation()),
+      use_instrinsic_dimensions);
   Java_AssistantInfoBoxModel_setInfoBox(env, jmodel, jinfo_box);
 }
 

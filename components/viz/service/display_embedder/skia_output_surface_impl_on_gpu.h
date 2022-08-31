@@ -32,7 +32,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
@@ -264,8 +264,8 @@ class SkiaOutputSurfaceImplOnGpu
 
     SkISize size;
     gpu::Mailbox mailbox;
-    std::unique_ptr<gpu::SharedImageRepresentationSkia> representation;
-    std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+    std::unique_ptr<gpu::SkiaImageRepresentation> representation;
+    std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>
         scoped_write;
 
     std::vector<GrBackendSemaphore> begin_semaphores;
@@ -330,7 +330,7 @@ class SkiaOutputSurfaceImplOnGpu
                       std::unique_ptr<CopyOutputRequest> request);
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods:
-  std::unique_ptr<gpu::SharedImageRepresentationSkia>
+  std::unique_ptr<gpu::SkiaImageRepresentation>
   CreateSharedImageRepresentationSkia(ResourceFormat resource_format,
                                       const gfx::Size& size,
                                       const gfx::ColorSpace& color_space);
@@ -443,12 +443,12 @@ class SkiaOutputSurfaceImplOnGpu
   // ImplOnGpu is already destroyed, however, there is no way of running the
   // release callback from the client, so this vector holds all pending images
   // so resources can still be cleaned up in the dtor.
-  std::vector<std::unique_ptr<gpu::SharedImageRepresentationSkia>>
+  std::vector<std::unique_ptr<gpu::SkiaImageRepresentation>>
       copy_output_images_;
 
   // Helper, creates a release callback for the passed in |representation|.
   ReleaseCallback CreateDestroyCopyOutputResourcesOnGpuThreadCallback(
-      std::unique_ptr<gpu::SharedImageRepresentationSkia> representation);
+      std::unique_ptr<gpu::SkiaImageRepresentation> representation);
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.
@@ -493,6 +493,9 @@ class SkiaOutputSurfaceImplOnGpu
 
   absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
       output_surface_plane_;
+  // Overlays are saved when ScheduleOverlays() is called, then passed to
+  // |output_device_| in PostSubmit().
+  SkiaOutputSurface::OverlayList overlays_;
 
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
   std::vector<sk_sp<SkDeferredDisplayList>> destroy_after_swap_;

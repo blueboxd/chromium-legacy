@@ -172,7 +172,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
       token_(thread->WorkerObjectProxy().token()),
       parent_token_(parsed_creation_params.parent_context_token),
       cross_origin_isolated_capability_(Agent::IsCrossOriginIsolated()),
-      direct_socket_capability_(Agent::IsDirectSocketEnabled()),
+      direct_socket_capability_(Agent::IsIsolatedApplication()),
       animation_frame_provider_(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
@@ -277,11 +277,15 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   DCHECK(!IsContextPaused());
+
+  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
+  // container from DedicatedWorkerHost
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
@@ -317,10 +321,14 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
+  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
+  // container from DedicatedWorkerHost
+
   reject_coep_unsafe_none_ = reject_coep_unsafe_none;
 
   if (worker_main_script_load_params) {

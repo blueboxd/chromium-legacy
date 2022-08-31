@@ -54,7 +54,6 @@
 <translation id="1435838927755162558">Абагульванне папкі з Parallels Desktop</translation>
 <translation id="1439919885608649279">Чалавек з кветкамі</translation>
 <translation id="1471718551822868769">Славацкая</translation>
-<translation id="1474339897586437869">Файл "<ph name="FILENAME" />" не запампаваны: на Google Дыску недастаткова месца.</translation>
 <translation id="1482884275703521657">Фінская</translation>
 <translation id="148466539719134488">Швейцарская</translation>
 <translation id="1497522201463361063">Не ўдалося перайменаваць файл "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
@@ -139,6 +138,7 @@
 <translation id="2148716181193084225">Сёння</translation>
 <translation id="2163152940313951844">Недапушчальны сімвал: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Партугальская з міжнароднай клавіятурай ЗША для ПК</translation>
+<translation id="2193661397560634290">Выкарыстоўваецца <ph name="SPACE_USED" /></translation>
 <translation id="2198315389084035571">Кітайская (спрошчаная)</translation>
 <translation id="22085916256174561">Карэйская</translation>
 <translation id="2208919847696382164">Усталюйце пакет Linux</translation>
@@ -185,8 +185,10 @@
 <translation id="2544853746127077729">Сертыфікат аўтэнтыфікацыі адхілены сеткай</translation>
 <translation id="255937426064304553">ЗША, міжнародная</translation>
 <translation id="2563185590376525700">Жаба</translation>
+<translation id="2570012981255377263">Вашы нядаўнія файлы будуць з'яўляцца тут</translation>
 <translation id="2578394532502990878">Тамільская (фанетычная раскладка)</translation>
 <translation id="2579959351793446050">Орыя</translation>
+<translation id="2593644851255584939">Ваш адміністратар патрабуе, каб вы адключылі блакіроўку SIM-карты.</translation>
 <translation id="2602810353103180630">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, заблакіравана адміністратарам, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падрабязныя звесткі</translation>
 <translation id="2614589611416690597">Відэа <ph name="VIDEO_TYPE" /></translation>
 <translation id="2617342710774726426">SIM-карта заблакіравана</translation>
@@ -194,6 +196,7 @@
 <translation id="2621713457727696555">Абаронена</translation>
 <translation id="2638942478653899953">Не ўдалося атрымаць доступ да Google Дыска. <ph name="BEGIN_LINK" />Выйдзіце<ph name="END_LINK" /> і зноў увайдзіце ва ўліковы запіс.</translation>
 <translation id="2649120831653069427">Радужная рыбка</translation>
+<translation id="2653059201992392941">Засталося спроб: <ph name="RETRIES" />.</translation>
 <translation id="2663066752008346276">Бірманская (М'янма) з раскладкай Myansan</translation>
 <translation id="2664412712123763093">Месцазнаходжанне файла</translation>
 <translation id="2718540689505416944">Усталяваць праграму з дапамогай Linux</translation>
@@ -201,6 +204,7 @@
 <translation id="2724954091494693138">Турэцкая (раскладка Turkish F)</translation>
 <translation id="2732839045120506979">В'етнамская (раскладка VNI)</translation>
 <translation id="2735623501230989521">Даць Parallels Desktop доступ да файлаў у папцы "<ph name="FOLDER_NAME" />"</translation>
+<translation id="2764206540577097904">Вы выкарысталі ўвесь даступны вам аб'ём індывідуальнага сховішча Google Workspace.</translation>
 <translation id="2771816809568414714">Сыр</translation>
 <translation id="2781645665747935084">Бельгійская</translation>
 <translation id="2782104745158847185">Памылка ўсталявання Linux-праграмы</translation>
@@ -221,6 +225,7 @@
 <translation id="2943503720238418293">Выкарыстайце карацейшую назву</translation>
 <translation id="2949781154072577687">Фармаціруецца дыск "<ph name="DRIVE_NAME" />"...</translation>
 <translation id="2951236788251446349">Медуза</translation>
+<translation id="2958458230122209142">У вашым індывідуальным сховішчы мала месца. Застаецца <ph name="REMAINING_PERCENTAGE" />% з <ph name="TOTAL_SPACE" />.</translation>
 <translation id="2977940621473452797">Гэты файл прызначаны для камп'ютара з праграмным забеспячэннем Macintosh. Ён несумяшчальны з вашай прыладай Chrome OS. Пашукайце ў Вэб-краме Chrome адпаведную праграму на замену.</translation>
 <translation id="2984337792991268709">Сёння <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">Ідзе аднаўленне элементаў (<ph name="COUNT" />)…</translation>
@@ -342,7 +347,6 @@
 <translation id="3971140002794351170">Спампаваць мабільны профіль, сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, "<ph name="NETWORK_NAME" />", <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Англійская (Вялікабрытанія)</translation>
 <translation id="3975895378829046965">Бенгальская (фанетычная раскладка)</translation>
-<translation id="3991446849494482687">Гэта дзеянне адключыць блакіроўку SIM-карты на прыладзе.</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4017788180641807848">Англійская (ЗША) з раскладкай Workman</translation>
 <translation id="4040753847560036377">Няправільны PUK-код</translation>
@@ -488,7 +492,6 @@
 <translation id="5159560892333415631">Ачысціць сметніцу</translation>
 <translation id="5163869187418756376">Збой абагульвання. Праверце падключэнне і паўтарыце спробу пазней.</translation>
 <translation id="516592729076796170">Праграмісцкая Дворака для ЗША</translation>
-<translation id="5170477580121653719">Вольнага месца на Google Дыску засталося: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Рэжым мініяцюр</translation>
 <translation id="5194713942430106590">Каб адсартаваць слупок па ўзрастанні, націсніце тут.</translation>
 <translation id="5211614973734216083">Фарэрская</translation>
@@ -529,6 +532,7 @@
 <translation id="5489067830765222292">Латышская</translation>
 <translation id="5489965683297092283">Выключаны фільтр "<ph name="FILTER_NAME" />".</translation>
 <translation id="5494920125229734069">Выбраць усё</translation>
+<translation id="5500104704744051184">Вы не зможаце выкарыстоўваць гэту сетку, пакуль не ўведзяце PUK-код</translation>
 <translation id="5500122897333236901">Ісландская</translation>
 <translation id="5508696409934741614">Кропкі</translation>
 <translation id="5522908512596376669">Спіс файлаў перайшоў у рэжым спіса.</translation>
@@ -544,6 +548,7 @@
 <translation id="5625294776298156701">Тамільская (раскладка Tamil99)</translation>
 <translation id="5633226425545095130">Пры перамяшчэнні гэтага элемента ён будзе абагулены з усімі карыстальнікамі, якія могуць бачыць абагуленую папку "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Праслухаць</translation>
+<translation id="5665074015635552640">Вашы нядаўнія відэа будуць з'яўляцца тут</translation>
 <translation id="5669691691057771421">Увядзіце новы PIN-код</translation>
 <translation id="5678784840044122290">Linux-праграма будзе даступна ў тэрмінале, а таксама на панэлі запуску можа паказвацца яе значок.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Не ўдаецца адключыцца ад архіва або віртуальнага дыска<ph name="END_BOLD" />
@@ -634,6 +639,7 @@
 <translation id="6395575651121294044">Элементаў: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="642282551015776456">Гэту назву нельга выкарыстоўваць як назву файла або папкі</translation>
 <translation id="6423031066725912715">В'етнамская (раскладка TCVN)</translation>
+<translation id="6430271654280079150">У вас засталася 1 спроба.</translation>
 <translation id="6485131920355264772">Не ўдалося атрымаць звесткі пра вольнае месца</translation>
 <translation id="6495925982925244349">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
 <translation id="649877868557234318">Выманне файла "<ph name="FILE_NAME" />" ажыццяўляецца ў папку "<ph name="FOLDER_NAME" />"</translation>
@@ -668,6 +674,7 @@
 <translation id="6823166707458800069">Для ўсіх файлаў, захаваных у гэтай папцы, аўтаматычна ствараюцца рэзервовыя копіі ў інтэрнэце.</translation>
 <translation id="6825883775269213504">Руская</translation>
 <translation id="6847101934483209767">Выдалена з выбранага: <ph name="ENTRY_NAME" />.</translation>
+<translation id="6848194403851638089">Месца ў сховішчы Google Workspace, якое належыць арганізацыі "<ph name="ORGANIZATION_NAME" />", скончылася.</translation>
 <translation id="6856459657722366306">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падрабязныя звесткі</translation>
 <translation id="6861394552169064235">Персідская</translation>
 <translation id="6862635236584086457">Для ўсіх файлаў, захаваных у гэтай папцы, аўтаматычна ствараюцца рэзервовыя копіі ў інтэрнэце</translation>
@@ -686,6 +693,7 @@
     Знойдзена: <ph name="FILE_COUNT" />.</translation>
 <translation id="6935521024859866267">Дагары нагамі</translation>
 <translation id="6943836128787782965">Памылка метаду HTTP GET</translation>
+<translation id="6945604978460872381">Вашы нядаўнія дакументы будуць з'яўляцца тут</translation>
 <translation id="6949408524333579394">Сербская (транслітарацыя)</translation>
 <translation id="6954309393500027528">Магчымасць устаўляць гэты файл заблакіравана адміністратарам</translation>
 <translation id="6960565108681981554">Сетка не актывавана. Звярніцеся да аператара.</translation>
@@ -699,6 +707,7 @@
 <translation id="6989942356279143254">Шведская</translation>
 <translation id="6990081529015358884">У вас скончылася месца</translation>
 <translation id="6998711733709403587">Выбрана папак: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
+<translation id="7008426324576352165">Не ўдалося завяршыць запампоўванне: у вашай арганізацыі недастаткова месца ў сховішчы.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Памылка ўсталявання.</translation>
 <translation id="7031639531908619281">Турэцкая</translation>
@@ -732,6 +741,7 @@
 <translation id="7295662345261934369">Абагуліць з іншымі</translation>
 <translation id="7297443947353982503">Няправільнае імя карыстальніка або пароль ці збой аўтэнтыфікацыі EAP</translation>
 <translation id="7309413087278791451">Нямецкая (Бельгія)</translation>
+<translation id="7313374447885864533">Вашы нядаўнія аўдыяфайлы будуць з'яўляцца тут</translation>
 <translation id="7339898014177206373">Новае акно</translation>
 <translation id="7343393116438664539">В'етнамская (раскладка Telex)</translation>
 <translation id="7357762654218998920">Гэты тып файла не падтрымліваецца. <ph name="BEGIN_LINK_HELP" />Даведайцеся больш<ph name="END_LINK_HELP" /> пра адкрыццё файлаў на Chrome OS.</translation>
@@ -865,6 +875,7 @@
 <translation id="8342318071240498787">Файл або каталог з такой назвай ужо існуе.</translation>
 <translation id="8372369524088641025">Няправільны ключ WEP</translation>
 <translation id="8372852072747894550">Грэчаская</translation>
+<translation id="8384716930968677505">Вашы нядаўнія відарысы будуць з'яўляцца тут</translation>
 <translation id="8386903983509584791">Пошук завершаны</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" />: выманне завершана.</translation>
 <translation id="8395901698320285466">Памеры</translation>
@@ -900,6 +911,7 @@
 <translation id="8579285237314169903">Ідзе сінхранізацыя элементаў (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="8600173386174225982">Спіс файлаў перайшоў у рэжым мініяцюр.</translation>
 <translation id="8601932370724196034">Файл вобраза Crostini</translation>
+<translation id="8608515571837163082">Занадта шмат разоў быў уведзены няправільны PIN-код. Увядзіце 8-значны PUK-код, атрыманы ад аператара.</translation>
 <translation id="8609695766746872526">Ісландская</translation>
 <translation id="863903787380594467">Няправільны PIN-код. Засталося спроб: <ph name="RETRIES" />.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – порт</translation>
@@ -931,11 +943,13 @@
 <translation id="8919081441417203123">Дацкая</translation>
 <translation id="8965697826696209160">Недастаткова месца.</translation>
 <translation id="8997962250644902079">Кітайская (традыцыйная, піньінь)</translation>
+<translation id="8998871447376656508">Не ўдалося завяршыць запампоўванне: на Google Дыску недастаткова свабоднага месца.</translation>
 <translation id="9003940392834790328">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
 <translation id="9017798300203431059">Руская фанетычная</translation>
 <translation id="9034924485347205037">Файлы Linux</translation>
 <translation id="9035012421917565900">Немагчыма перамясціць элементы назад у "<ph name="DESTINATION_NAME" />", таму вы не зможаце адрабіць гэта дзеянне.</translation>
 <translation id="9035689366572880647">Увядзіце бягучы PIN-код</translation>
+<translation id="9037777873893411148">* Сховішча арганізацыі запоўнена</translation>
 <translation id="9038620279323455325">Файл пад назвай "<ph name="FILE_NAME" />" ужо існуе. Выберыце іншую назву.</translation>
 <translation id="9046895021617826162">Збой падключэння</translation>
 <translation id="9065512565307033593">Калі вы ўведзяце няправільны PUK-код, доступ да сеткі будзе адключаны.</translation>

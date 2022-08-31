@@ -120,7 +120,6 @@ ChromeVoxEditableTextUnitTest = class extends AccessibilityTestBase {
 ChromeVoxEditableTextUnitTest.prototype.extraLibraries = [
   '../../../common/testing/assert_additions.js',
   '../../../common/closure_shim.js',
-  '../../common/msgs.js',
   '../../common/tts_interface.js',
   '../chromevox.js',
 ];
@@ -162,8 +161,19 @@ TEST_F('ChromeVoxEditableTextUnitTest', 'TypingWords', function() {
   obj.changed(new TextChangeEvent('Hello, World.', 13, 13));
   assertEqualStringArrays(
       [
-        'H', 'e', 'l', 'l', 'o', 'Hello,', ' ', 'W', 'o', 'r', 'l', 'd',
-        'World.'
+        'H',
+        'e',
+        'l',
+        'l',
+        'o',
+        'Hello,',
+        ' ',
+        'W',
+        'o',
+        'r',
+        'l',
+        'd',
+        'World.',
       ],
       tts.get());
 
@@ -216,9 +226,18 @@ TEST_F('ChromeVoxEditableTextUnitTest', 'Selection', function() {
   obj.changed(new TextChangeEvent('Hello, world.', 0, 6));
   assertEqualStringArrays(
       [
-        'H', 'selected', 'e', 'added_to_selection', 'l', 'added_to_selection',
-        'l', 'added_to_selection', 'o', 'added_to_selection', ',',
-        'added_to_selection'
+        'H',
+        'selected',
+        'e',
+        'added_to_selection',
+        'l',
+        'added_to_selection',
+        'l',
+        'added_to_selection',
+        'o',
+        'added_to_selection',
+        ',',
+        'added_to_selection',
       ],
       tts.get());
   obj.changed(new TextChangeEvent('Hello, world.', 0, 12));
@@ -387,9 +406,12 @@ TEST_F('ChromeVoxEditableTextUnitTest', 'CharEchoInAutoComplete', function() {
   // clearer to read.
   assertEqualStringArrays(
       [
-        'h', url.slice(2),
-        /* 'r', */ url.slice(3), 'o', url.slice(4),
-        /* 'm', */ url.slice(5)
+        'h',
+        url.slice(2),
+        /* 'r', */ url.slice(3),
+        'o',
+        url.slice(4),
+        /* 'm', */ url.slice(5),
       ],
       tts.get());
 });

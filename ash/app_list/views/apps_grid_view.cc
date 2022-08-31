@@ -23,19 +23,15 @@
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/app_list/views/app_list_folder_controller.h"
-#include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view_util.h"
 #include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/app_list/views/apps_grid_view_focus_delegate.h"
+#include "ash/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ash/app_list/views/ghost_image_view.h"
 #include "ash/app_list/views/pulsing_block_view.h"
-#include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -43,34 +39,22 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
-#include "base/guid.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -347,6 +331,7 @@ AppsGridView::~AppsGridView() {
   MaybeAbortWholeGridAnimation();
 
   view_model_.Clear();
+  pulsing_blocks_model_.Clear();
   RemoveAllChildViews();
 
   // `OnBoundsAnimatorDone`, which uses `bounds_animator_`, is called on
@@ -2127,8 +2112,22 @@ views::AnimationBuilder AppsGridView::FadeInVisibleItemsForReorder(
   const absl::optional<VisibleItemIndexRange> range =
       GetVisibleItemIndexRange();
 
-  // TODO(https://crbug.com/1289411): handle the case that `range` is null.
-  DCHECK(range);
+  views::AnimationBuilder animation_builder;
+
+  // No items to be sorted are visible - return an empty animation builder that
+  // ends immediately.
+  if (!range) {
+    animation_builder
+        .OnEnded(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
+                                weak_factory_.GetWeakPtr(), done_callback,
+                                /*abort=*/true))
+        .OnAborted(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
+                                  weak_factory_.GetWeakPtr(), done_callback,
+                                  /*abort=*/true))
+        .Once()
+        .SetDuration(base::TimeDelta());
+    return animation_builder;
+  }
 
   // Only show the visible items during animation to reduce the cost of painting
   // that is triggered by view bounds changes due to reorder.
@@ -2137,7 +2136,6 @@ views::AnimationBuilder AppsGridView::FadeInVisibleItemsForReorder(
     view_model_.view_at(visible_view_index)->SetVisible(true);
   }
 
-  views::AnimationBuilder animation_builder;
   grid_animation_abort_handle_ = animation_builder.GetAbortHandle();
   animation_builder
       .OnEnded(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
@@ -2247,18 +2245,7 @@ void AppsGridView::OnHideContinueSectionAnimationEnded() {
 
 bool AppsGridView::IsAnimationRunningForTest() {
   return bounds_animator_->IsAnimating() ||
-         bounds_animation_for_cardified_state_in_progress_ > 0;
-}
-
-void AppsGridView::CancelAnimationsForTest() {
-  bounds_animator_->Cancel();
-  drag_icon_proxy_.reset();
-
-  const size_t total_views = view_model_.view_size();
-  for (size_t i = 0; i < total_views; ++i) {
-    if (view_model_.view_at(i)->layer())
-      view_model_.view_at(i)->layer()->CompleteAllAnimations();
-  }
+         bounds_animation_for_cardified_state_in_progress_;
 }
 
 bool AppsGridView::FireFolderItemReparentTimerForTest() {

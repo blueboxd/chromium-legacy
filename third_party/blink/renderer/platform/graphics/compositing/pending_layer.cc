@@ -221,8 +221,7 @@ bool PendingLayer::MergeInternal(const PendingLayer& guest,
                                  const PropertyTreeState& guest_state,
                                  bool prefers_lcd_text,
                                  bool dry_run) {
-  if (&Chunks().GetPaintArtifact() != &guest.Chunks().GetPaintArtifact())
-    return false;
+  DCHECK_EQ(&Chunks().GetPaintArtifact(), &guest.Chunks().GetPaintArtifact());
   if (ChunkRequiresOwnLayer() || guest.ChunkRequiresOwnLayer())
     return false;
   if (&GetPropertyTreeState().Effect() != &guest_state.Effect())
@@ -425,14 +424,14 @@ void PendingLayer::DecompositeTransforms(Vector<PendingLayer>& pending_layers) {
          !node->IsRoot() && !can_be_decomposited.Contains(node);
          node = &node->Parent()->Unalias()) {
       if (!node->IsIdentityOr2DTranslation() || node->ScrollNode() ||
-          node->GetStickyConstraint() ||
-          node->IsAffectedByOuterViewportBoundsDelta() ||
           node->HasDirectCompositingReasonsOtherThan3dTransform() ||
           !node->FlattensInheritedTransformSameAsParent() ||
           !node->BackfaceVisibilitySameAsParent()) {
         mark_not_decompositable(*node);
         break;
       }
+      DCHECK(!node->GetStickyConstraint());
+      DCHECK(!node->IsAffectedByOuterViewportBoundsDelta());
       can_be_decomposited.insert(node, true);
     }
 

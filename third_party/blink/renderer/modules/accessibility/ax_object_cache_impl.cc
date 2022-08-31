@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/accessibility/scoped_blink_ax_event_intent.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -105,6 +107,7 @@
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/mojom/ax_relative_bounds.mojom-blink.h"
 
 // Prevent code that runs during the lifetime of the stack from altering the
 // document lifecycle. Usually doc is the same as document_, but it can be
@@ -276,6 +279,13 @@ bool IsTextRelevantForAccessibility(const LayoutText& layout_text) {
 
   const Node* node = layout_text.GetNode();
   DCHECK(node);  // Anonymous text is processed earlier, doesn't reach here.
+
+#if DCHECK_IS_ON()
+  DCHECK(node->GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kAfterPerformLayout)
+      << "Unclean document at lifecycle "
+      << node->GetDocument().Lifecycle().ToString();
+#endif
 
   // Ignore empty text.
   if (layout_text.HasEmptyText())
@@ -806,7 +816,9 @@ AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
   return result;
 }
 
-AXObject* AXObjectCacheImpl::GetWithoutInvalidation(const Node* node) {
+AXObject* AXObjectCacheImpl::GetWithoutInvalidation(
+    const Node* node,
+    bool allow_display_locking_invalidation) {
   if (!node)
     return nullptr;
 
@@ -821,8 +833,15 @@ AXObject* AXObjectCacheImpl::GetWithoutInvalidation(const Node* node) {
   DCHECK(!HashTraits<AXID>::IsDeletedValue(layout_id));
   if (layout_id) {
     auto it = objects_.find(layout_id);
-    if (it != objects_.end())
+    if (it != objects_.end()) {
+      if (allow_display_locking_invalidation && IsDisplayLocked(node)) {
+        // Change from AXLayoutObject -> AXNodeObject.
+        // The node is in a display locked subtree, but we've previously put it
+        // in the cache with its layout object.
+        Invalidate(layout_object->GetDocument(), layout_id);
+      }
       return it->value;
+    }
     return nullptr;
   }
 
@@ -831,15 +850,31 @@ AXObject* AXObjectCacheImpl::GetWithoutInvalidation(const Node* node) {
   DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
   if (node_id) {
     auto it = objects_.find(node_id);
-    if (it != objects_.end())
+    if (it != objects_.end()) {
+      if (allow_display_locking_invalidation && layout_object &&
+          !IsDisplayLocked(node)) {
+        // Change from AXNodeObject -> AXLayoutObject.
+        // Has a layout object but no layout_id, meaning that when the AXObject
+        // was originally created only for Node*, the LayoutObject* didn't exist
+        // yet. This can happen if an AXNodeObject is created for a node that's
+        // not laid out, but later something changes and it gets a layoutObject
+        // (like if it's reparented). It's also possible the layout object
+        // changed.
+        Invalidate(layout_object->GetDocument(), node_id);
+      }
       return it->value;
+    }
   }
+
   return nullptr;
 }
 
 AXObject* AXObjectCacheImpl::Get(const Node* node) {
   if (!node)
     return nullptr;
+
+  if (has_been_disposed_)
+    return GetWithoutInvalidation(node);
 
   LayoutObject* layout_object = node->GetLayoutObject();
 
@@ -3671,16 +3706,43 @@ AXObject* AXObjectCacheImpl::GetActiveAriaModalDialog() const {
   return active_aria_modal_dialog_;
 }
 
-HeapVector<Member<AXObject>>
-AXObjectCacheImpl::GetAllObjectsWithChangedBounds() {
-  VectorOf<AXObject> changed_bounds_objects;
-  changed_bounds_objects.ReserveCapacity(changed_bounds_ids_.size());
+void AXObjectCacheImpl::SerializeLocationChanges() {
+  if (changed_bounds_ids_.IsEmpty())
+    return;
+  Vector<mojom::blink::LocationChangesPtr> changes;
+  changes.ReserveCapacity(changed_bounds_ids_.size());
   for (AXID changed_bounds_id : changed_bounds_ids_) {
-    if (AXObject* obj = ObjectFromAXID(changed_bounds_id))
-      changed_bounds_objects.push_back(obj);
+    if (AXObject* obj = ObjectFromAXID(changed_bounds_id)) {
+      // Only update locations that are already known.
+      auto bounds = cached_bounding_boxes_.find(changed_bounds_id);
+      if (bounds == cached_bounding_boxes_.end())
+        continue;
+
+      ui::AXRelativeBounds new_location;
+      bool clips_children;
+      obj->PopulateAXRelativeBounds(new_location, &clips_children);
+      if (bounds->value == new_location)
+        continue;
+
+      cached_bounding_boxes_.Set(changed_bounds_id, new_location);
+      changes.push_back(
+          mojom::blink::LocationChanges::New(changed_bounds_id, new_location));
+    }
   }
   changed_bounds_ids_.clear();
-  return changed_bounds_objects;
+  if (!changes.IsEmpty()) {
+    GetOrCreateRemoteRenderAccessibilityHost()->HandleAXLocationChanges(
+        std::move(changes));
+  }
+}
+
+mojo::Remote<blink::mojom::blink::RenderAccessibilityHost>&
+AXObjectCacheImpl::GetOrCreateRemoteRenderAccessibilityHost() {
+  if (!render_accessibility_host_) {
+    GetDocument().GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+        render_accessibility_host_.BindNewPipeAndPassReceiver());
+  }
+  return render_accessibility_host_;
 }
 
 void AXObjectCacheImpl::HandleInitialFocus() {
@@ -3905,8 +3967,19 @@ void AXObjectCacheImpl::HandleFrameRectsChanged(Document& document) {
 
 void AXObjectCacheImpl::InvalidateBoundingBox(
     const LayoutObject* layout_object) {
-  if (AXObject* obj = Get(const_cast<LayoutObject*>(layout_object)))
+  if (AXObject* obj = Get(const_cast<LayoutObject*>(layout_object))) {
     changed_bounds_ids_.insert(obj->AXObjectID());
+  }
+}
+
+void AXObjectCacheImpl::SetCachedBoundingBox(
+    AXID id,
+    const ui::AXRelativeBounds& bounds) {
+  cached_bounding_boxes_.Set(id, bounds);
+}
+
+void AXObjectCacheImpl::SerializerClearedNode(AXID id) {
+  cached_bounding_boxes_.erase(id);
 }
 
 void AXObjectCacheImpl::HandleScrollPositionChanged(

@@ -20,7 +20,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
-#include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
@@ -53,14 +52,25 @@ PrivateAggregationBudgeter::PrivateAggregationBudgeter(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
     bool exclusively_run_in_memory,
     const base::FilePath& path_to_db_dir) {
-  PrivateAggregationBudgetStorage::CreateAsync(
+  DCHECK(db_task_runner);
+  shutdown_initializing_storage_ = PrivateAggregationBudgetStorage::CreateAsync(
       std::move(db_task_runner), exclusively_run_in_memory, path_to_db_dir,
       /*on_done_initializing=*/
       base::BindOnce(&PrivateAggregationBudgeter::OnStorageDoneInitializing,
                      weak_factory_.GetWeakPtr()));
 }
 
-PrivateAggregationBudgeter::~PrivateAggregationBudgeter() = default;
+PrivateAggregationBudgeter::PrivateAggregationBudgeter() = default;
+
+PrivateAggregationBudgeter::~PrivateAggregationBudgeter() {
+  if (shutdown_initializing_storage_) {
+    // As the budget storage's lifetime is extended until initialization is
+    // complete, its destructor could run after browser shutdown has begun (when
+    // tasks can no longer be posted). We post the database deletion task now
+    // instead.
+    std::move(shutdown_initializing_storage_).Run();
+  }
+}
 
 void PrivateAggregationBudgeter::ConsumeBudget(
     int budget,
@@ -84,6 +94,7 @@ void PrivateAggregationBudgeter::ConsumeBudget(
 
 void PrivateAggregationBudgeter::OnStorageDoneInitializing(
     std::unique_ptr<PrivateAggregationBudgetStorage> storage) {
+  DCHECK(shutdown_initializing_storage_);
   DCHECK(!storage_);
   DCHECK_EQ(storage_status_, StorageStatus::kInitializing);
 
@@ -93,6 +104,7 @@ void PrivateAggregationBudgeter::OnStorageDoneInitializing(
   } else {
     storage_status_ = StorageStatus::kInitializationFailed;
   }
+  shutdown_initializing_storage_.Reset();
 
   ProcessAllPendingCalls();
 }

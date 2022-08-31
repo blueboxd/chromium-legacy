@@ -66,6 +66,7 @@
 <translation id="2139300032719313227">‏הפעלה מחדש של ChromeOS</translation>
 <translation id="2151406531797534936">‏יש להפעיל מחדש את Chrome עכשיו</translation>
 <translation id="2174917724755363426">ההתקנה לא הושלמה. להמשיך בביטול?</translation>
+<translation id="223889379102603431">‏מידע על האופן שבו Chrome מנהל את אישורי הבסיס שלו</translation>
 <translation id="2258103955319320201">‏כדי לקבל גישה אל הפריטים שלך בדפדפן Chrome בכל המכשירים, צריך להיכנס לחשבון ולהפעיל את הסנכרון</translation>
 <translation id="2290014774651636340">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Google Chrome תהיה מושבתת.</translation>
 <translation id="2290095356545025170">‏ברצונך באמת להסיר את Google Chrome?</translation>
@@ -78,6 +79,7 @@
 <translation id="2401189691232800402">‏מערכת ChromeOS</translation>
 <translation id="2467438592969358367">‏Google Chrome רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="2485422356828889247">הסרת התקנה</translation>
+<translation id="2494974097748878569">‏Google Assistant ב-Chrome</translation>
 <translation id="2534507159460261402">‏Google Pay (‏הועתק ל-Chrome)</translation>
 <translation id="2559253115192232574">‏לאחר מכן, אתר שבו ביקרת יכול לשלוח בקשה ל-Chrome כדי לגלות מהם תחומי העניין שלך ולהתאים אישית את המודעות שמוצגות לך. Chrome יכול לשתף עד 3 תחומי עניין.</translation>
 <translation id="2563121210305478421">‏להפעיל את Chrome מחדש?</translation>
@@ -156,6 +158,7 @@
 <translation id="3865754807470779944">‏מותקנת גרסה <ph name="PRODUCT_VERSION" /> של Chrome</translation>
 <translation id="3873044882194371212">‏פתיחת הקישור בחלון &amp;אנונימי של Chrome</translation>
 <translation id="3889417619312448367">‏הסרת Google Chrome</translation>
+<translation id="3999683152997576765">‏יש לך אפשרות לראות ולהסיר את תחומי העניין שלפיהם האתרים מציגים לך את המודעות. ההערכה של תחומי העניין ב-Chrome מתבססת על היסטוריית הגלישה שלך מהזמן האחרון.</translation>
 <translation id="4035053306113201399">‏יש להפעיל מחדש את ChromeOS כדי להחיל את העדכון.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
@@ -274,6 +277,7 @@
 <translation id="6739177684496155661">‏להמשיך בפרופיל Chrome חדש?</translation>
 <translation id="6750954913813541382">‏כדי לתקן שגיאות כתיב, הטקסט שהוקלד על ידך בדפדפן נשלח אל Google על ידי Chrome</translation>
 <translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
+<translation id="6785872064505734160">‏Google Assistant ב-Chrome יכולה להשלים עבורך פעולות באתרים</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6881299373831449287">‏מתבצע עדכון של Chrome</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הבטא של Chrome</translation>
@@ -346,6 +350,7 @@
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="813913629614996137">מתבצע אתחול...</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>
+<translation id="8270775718612349140">‏אישורים שמנוהלים על ידי Chrome</translation>
 <translation id="8286862437124483331">‏Google Chrome מנסה להציג סיסמאות. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="828798499196665338">‏אחד מההורים השבית ב-Chrome את ההגדרה "הרשאות לאתרים, אפליקציות ותוספים". לא ניתן להפעיל את <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">‏אופס! Google Chrome קרס. להפעיל מחדש עכשיו?</translation>

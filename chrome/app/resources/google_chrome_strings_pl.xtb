@@ -64,6 +64,7 @@
 <translation id="2139300032719313227">Uruchom ponownie Chrome OS</translation>
 <translation id="2151406531797534936">Uruchom Chrome ponownie</translation>
 <translation id="2174917724755363426">Instalacja nie została ukończona. Czy na pewno chcesz ją anulować?</translation>
+<translation id="223889379102603431">Informacje o tym, jak Chrome zarządza certyfikatami głównymi</translation>
 <translation id="2258103955319320201">Aby mieć dostęp do danych z Chrome na wszystkich swoich urządzeniach, zaloguj się i włącz synchronizację</translation>
 <translation id="2290014774651636340">Brakuje kluczy interfejsu Google API. Niektóre funkcje Google Chrome będą wyłączone.</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
@@ -76,6 +77,7 @@
 <translation id="2401189691232800402">System operacyjny Chrome</translation>
 <translation id="2467438592969358367">Google Chrome chce wyeksportować Twoje hasła. Wpisz swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
+<translation id="2494974097748878569">Asystent Google w Chrome</translation>
 <translation id="2534507159460261402">Google Pay (skopiowana do Chrome)</translation>
 <translation id="2559253115192232574">Witryna, którą później odwiedzisz, może zapytać o Twoje zainteresowania i na tej podstawie spersonalizować wyświetlane reklamy. Chrome może udostępnić do 3 zainteresowań.</translation>
 <translation id="2563121210305478421">Uruchomić ponownie Chrome?</translation>
@@ -154,6 +156,7 @@
 <translation id="3865754807470779944">Zainstalowana jest wersja Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Otwórz link w oknie inco&amp;gnito Chrome</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
+<translation id="3999683152997576765">Możesz przeglądać i usuwać interesujące Cię tematy, których witryny używają do dobierania wyświetlanych reklam. Chrome ocenia, jakie są Twoje zainteresowania, na podstawie ostatniej historii przeglądania.</translation>
 <translation id="4035053306113201399">Aby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
@@ -271,6 +274,7 @@
 <translation id="6739177684496155661">Kontynuować w nowym profilu Chrome?</translation>
 <translation id="6750954913813541382">Aby poprawić błędy pisowni, Chrome wysyła do Google to, co wpisujesz w przeglądarce</translation>
 <translation id="677276454032249905">Zamknąć Chrome mimo to?</translation>
+<translation id="6785872064505734160">Asystent Google w Chrome może wykonywać za Ciebie działania na różnych stronach internetowych</translation>
 <translation id="683440813066116847">Reguła dla ruchu przychodzącego w Google Chrome Canary zezwalająca na ruch mDNS.</translation>
 <translation id="6881299373831449287">Aktualizuję Chrome</translation>
 <translation id="6885412569789873916">Aplikacje do Chrome Beta</translation>
@@ -343,6 +347,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="8129812357326543296">&amp;Google Chrome – informacje</translation>
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8255190535488645436">Google Chrome używa Twojej kamery i mikrofonu.</translation>
+<translation id="8270775718612349140">Certyfikaty zarządzane przez Chrome</translation>
 <translation id="8286862437124483331">Google Chrome próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="828798499196665338">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. Włączenie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>

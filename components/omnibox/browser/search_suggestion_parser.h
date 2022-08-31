@@ -15,7 +15,9 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/omnibox/browser/suggestion_group.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/metrics_proto/chrome_searchbox_stats.pb.h"
 #include "url/gurl.h"
 
 class AutocompleteInput;
@@ -35,9 +37,6 @@ class SearchSuggestionParser {
   SearchSuggestionParser() = delete;
   SearchSuggestionParser(const SearchSuggestionParser&) = delete;
   SearchSuggestionParser& operator=(const SearchSuggestionParser&) = delete;
-
-  // Indicates a missing suggestion group Id.
-  static const int kInvalidSuggestionGroupId;
 
   // The Result classes are intermediate representations of AutocompleteMatches,
   // simply containing relevance-ranked search and navigation suggestions.
@@ -164,10 +163,10 @@ class SearchSuggestionParser {
       return additional_query_params_;
     }
 
-    void set_suggestion_group_id(int suggestion_group_id) {
+    void set_suggestion_group_id(SuggestionGroupId suggestion_group_id) {
       suggestion_group_id_ = suggestion_group_id;
     }
-    absl::optional<int> suggestion_group_id() const {
+    absl::optional<SuggestionGroupId> suggestion_group_id() const {
       return suggestion_group_id_;
     }
 
@@ -211,13 +210,13 @@ class SearchSuggestionParser {
     // Optional additional parameters to be added to the search URL.
     std::string additional_query_params_;
 
-    // The suggestion group Id based on the SuggestionGroupIds enum in
-    // suggestion_config.proto
-    // Used to look up the header this suggestion must appear under from the
-    // server supplied map of suggestion group Ids to headers.
-    // Note: Use kInvalidSuggestionGroupId in place of a missing suggestion
+    // The suggestion group ID based on the SuggestionGroupIds enum in
+    // suggestion_config.proto. Used to look up the suggestion group info this
+    // suggestion belong to such as the header text this suggestion must appear
+    // under.
+    // Note: Use SuggestionGroupId::kInvalid in place of a missing suggestion
     // group Id when this is to be converted to a primitive type.
-    absl::optional<int> suggestion_group_id_;
+    absl::optional<SuggestionGroupId> suggestion_group_id_;
 
     // Optional short answer to the input that produced this suggestion.
     absl::optional<SuggestionAnswer> answer_;
@@ -232,7 +231,7 @@ class SearchSuggestionParser {
     bool should_prefetch_;
 
     // Should this result trigger Prerender2? See
-    // content/browser/prerender/README.md for more information.
+    // content/browser/preloading/prerender/README.md for more information.
     bool should_prerender_;
   };
 
@@ -284,10 +283,10 @@ class SearchSuggestionParser {
     ACMatchClassifications description_class_;
   };
 
-  typedef std::map<int, std::u16string> HeadersMap;
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
-  typedef std::vector<base::Value> ExperimentStats;
+  typedef std::vector<metrics::ChromeSearchboxStats::ExperimentStatsV2>
+      ExperimentStatsV2s;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
@@ -330,18 +329,15 @@ class SearchSuggestionParser {
     // If the active suggest field trial (if any) has triggered.
     bool field_trial_triggered;
 
-    // The list of experiment stats which needs to be logged to SearchboxStats
-    // as part of a GWS experiment, if any.
-    ExperimentStats experiment_stats;
+    // The ExperimentStatsV2 containing GWS experiment details, if any. To be
+    // logged to SearchboxStats.
+    ExperimentStatsV2s experiment_stats_v2s;
 
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
 
-    // The server supplied map of suggestion group IDs to header labels.
-    HeadersMap headers_map;
-
-    // The server supplied list of group IDs that should be hidden-by-default.
-    std::vector<int> hidden_group_ids;
+    // The server supplied map of suggestion group IDs to suggestion group info.
+    SuggestionGroupsMap suggestion_groups_map;
   };
 
   // Converts JSON loaded by a SimpleURLLoader into UTF-8 and returns the

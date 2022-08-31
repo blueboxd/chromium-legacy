@@ -7,8 +7,9 @@
  * auditory cues.
  */
 
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {EarconEngine} from '/chromevox/background/earcon_engine.js';
+import {ChromeVoxState} from './chromevox_state.js';
+import {EarconEngine} from './earcon_engine.js';
+import {LogStore} from './logging/log_store.js';
 
 export class Earcons extends AbstractEarcons {
   constructor() {
@@ -44,8 +45,8 @@ export class Earcons extends AbstractEarcons {
   /**
    * Plays the specified earcon sound.
    * @param {Earcon} earcon An earcon identifier.
-   * @param {Object=} opt_location A location associated with the earcon such as
-   *     a control's bounding rectangle.
+   * @param {chrome.automation.Rect=} opt_location A location associated with
+   *     the earcon such as a control's bounding rectangle.
    * @override
    */
   playEarcon(earcon, opt_location) {

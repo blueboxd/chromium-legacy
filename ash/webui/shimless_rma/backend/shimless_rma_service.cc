@@ -23,10 +23,10 @@
 #include "base/logging.h"
 #include "chromeos/ash/components/dbus/rmad/rmad.pb.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/qr_code_generator/qr_code_generator.h"
@@ -168,10 +168,9 @@ void ShimlessRmaService::TransitionPreviousState(
 void ShimlessRmaService::AbortRma(AbortRmaCallback callback) {
   RmadClient::Get()->AbortRma(base::BindOnce(
       &ShimlessRmaService::OnAbortRmaResponse, weak_ptr_factory_.GetWeakPtr(),
-      std::move(callback), /*reboot=*/false));
+      std::move(callback), /*reboot=*/true));
 }
 
-// TODO(gavindodd): Work out how to catch the restart in tests and add unit test
 void ShimlessRmaService::CriticalErrorExitToLogin(
     CriticalErrorExitToLoginCallback callback) {
   if (!critical_error_occurred_) {
@@ -183,7 +182,6 @@ void ShimlessRmaService::CriticalErrorExitToLogin(
       std::move(callback), /*reboot=*/false));
 }
 
-// TODO(gavindodd): Work out how to catch the reboot in tests and add unit test
 void ShimlessRmaService::CriticalErrorReboot(
     CriticalErrorRebootCallback callback) {
   if (!critical_error_occurred_) {
@@ -1397,6 +1395,11 @@ void ShimlessRmaService::OsUpdateOrNextRmadStateCallback(
                           /*can_exit=*/true, /*can_go_back=*/true,
                           rmad::RmadErrorCode::RMAD_ERROR_OK));
   }
+}
+
+void ShimlessRmaService::SetCriticalErrorOccurredForTest(
+    bool critical_error_occurred) {
+  critical_error_occurred_ = critical_error_occurred;
 }
 
 }  // namespace shimless_rma

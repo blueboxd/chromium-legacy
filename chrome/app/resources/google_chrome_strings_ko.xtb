@@ -70,6 +70,7 @@
 <translation id="2139300032719313227">ChromeOS 다시 시작</translation>
 <translation id="2151406531797534936">지금 Chrome을 다시 시작하세요</translation>
 <translation id="2174917724755363426">설치가 완료되지 않았습니다. 취소하시겠습니까?</translation>
+<translation id="223889379102603431">Chrome의 루트 인증서 관리 방식에 관한 정보</translation>
 <translation id="2258103955319320201">모든 기기에서 Chrome 브라우저 데이터에 액세스하려면 로그인한 후 동기화를 사용 설정하세요</translation>
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
@@ -82,6 +83,7 @@
 <translation id="2401189691232800402">ChromeOS 시스템</translation>
 <translation id="2467438592969358367">Chrome에서 비밀번호를 내보내려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="2485422356828889247">제거</translation>
+<translation id="2494974097748878569">Chrome의 Google 어시스턴트</translation>
 <translation id="2534507159460261402">Google Pay(Chrome에 복사됨)</translation>
 <translation id="2559253115192232574">이후 방문한 사이트에서 광고 개인 최적화를 위해 내 관심분야를 알려달라고 Chrome에 요청할 수 있습니다. Chrome은 최대 3개의 관심분야를 공유할 수 있습니다.</translation>
 <translation id="2563121210305478421">Chrome을 다시 시작하시겠습니까?</translation>
@@ -160,6 +162,7 @@
 <translation id="3865754807470779944">Chrome <ph name="PRODUCT_VERSION" /> 버전이 설치됩니다.</translation>
 <translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
+<translation id="3999683152997576765">사이트에서 광고 표시를 위해 사용하는 관심분야의 주제를 내가 확인하고 삭제할 수 있습니다. Chrome에서는 사용자의 최근 방문 기록을 기반으로 관심분야를 추정합니다.</translation>
 <translation id="4035053306113201399">업데이트를 적용하려면 ChromeOS를 다시 시작해야 합니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
@@ -282,6 +285,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6739177684496155661">새 Chrome 프로필에서 계속하시겠습니까?</translation>
 <translation id="6750954913813541382">맞춤법 오류를 바로잡기 위해 Chrome에서 브라우저에 입력된 텍스트를 Google로 전송합니다.</translation>
 <translation id="677276454032249905">Chrome을 종료하시겠습니까?</translation>
+<translation id="6785872064505734160">Chrome의 Google 어시스턴트가 사용자를 위해 여러 웹사이트에서 작업을 완료할 수 있습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6881299373831449287">Chrome 업데이트 중</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>
@@ -354,6 +358,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
 <translation id="813913629614996137">초기화 중...</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>
+<translation id="8270775718612349140">Chrome이 관리하는 인증서</translation>
 <translation id="8286862437124483331">Chrome에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="828798499196665338">부모님이 Chrome의 ‘사이트, 앱, 확장 프로그램에 대한 권한’을 사용 중지하셨습니다. 이 <ph name="EXTENSION_TYPE_PARAMETER" /> 사용은 허용되지 않습니다.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>

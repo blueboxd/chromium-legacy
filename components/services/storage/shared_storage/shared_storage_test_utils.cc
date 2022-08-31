@@ -29,8 +29,7 @@ TestDatabaseOperationReceiver::DBOperation::DBOperation(Type type)
     : type(type) {
   DCHECK(type == Type::DB_IS_OPEN || type == Type::DB_STATUS ||
          type == Type::DB_DESTROY || type == Type::DB_TRIM_MEMORY ||
-         type == Type::DB_FETCH_ORIGINS ||
-         type == Type::DB_GET_TOTAL_NUM_BUDGET);
+         type == Type::DB_GET_TOTAL_NUM_BUDGET || type == Type::DB_PURGE_STALE);
 }
 
 TestDatabaseOperationReceiver::DBOperation::DBOperation(Type type,
@@ -38,7 +37,7 @@ TestDatabaseOperationReceiver::DBOperation::DBOperation(Type type,
     : type(type), origin(std::move(origin)) {
   DCHECK(type == Type::DB_LENGTH || type == Type::DB_CLEAR ||
          type == Type::DB_GET_REMAINING_BUDGET ||
-         type == Type::DB_GET_NUM_BUDGET);
+         type == Type::DB_GET_NUM_BUDGET || type == Type::DB_GET_CREATION_TIME);
 }
 
 TestDatabaseOperationReceiver::DBOperation::DBOperation(
@@ -58,7 +57,7 @@ TestDatabaseOperationReceiver::DBOperation::DBOperation(
     std::vector<std::u16string> params)
     : type(type), params(std::move(params)) {
   DCHECK(type == Type::DB_ON_MEMORY_PRESSURE ||
-         type == Type::DB_PURGE_MATCHING || type == Type::DB_PURGE_STALE);
+         type == Type::DB_PURGE_MATCHING || type == Type::DB_FETCH_ORIGINS);
 }
 
 TestDatabaseOperationReceiver::DBOperation::~DBOperation() = default;
@@ -180,6 +179,25 @@ TestDatabaseOperationReceiver::MakeBudgetResultCallback(
   return base::BindOnce(
       &TestDatabaseOperationReceiver::BudgetResultCallbackBase,
       base::Unretained(this), current_operation, out_result);
+}
+
+void TestDatabaseOperationReceiver::TimeResultCallbackBase(
+    const DBOperation& current_operation,
+    TimeResult* out_result,
+    TimeResult result) {
+  DCHECK(out_result);
+  *out_result = std::move(result);
+
+  if (ExpectationsMet(current_operation) && loop_.running())
+    Finish();
+}
+
+base::OnceCallback<void(TimeResult)>
+TestDatabaseOperationReceiver::MakeTimeResultCallback(
+    const DBOperation& current_operation,
+    TimeResult* out_result) {
+  return base::BindOnce(&TestDatabaseOperationReceiver::TimeResultCallbackBase,
+                        base::Unretained(this), current_operation, out_result);
 }
 
 void TestDatabaseOperationReceiver::OperationResultCallbackBase(
@@ -330,20 +348,24 @@ void TestDatabaseOperationReceiver::Finish() {
   loop_.Quit();
 }
 
-OriginMatcherFunctionUtility::OriginMatcherFunctionUtility() = default;
-OriginMatcherFunctionUtility::~OriginMatcherFunctionUtility() = default;
+StorageKeyPolicyMatcherFunctionUtility::
+    StorageKeyPolicyMatcherFunctionUtility() = default;
+StorageKeyPolicyMatcherFunctionUtility::
+    ~StorageKeyPolicyMatcherFunctionUtility() = default;
 
-OriginMatcherFunction OriginMatcherFunctionUtility::MakeMatcherFunction(
+StorageKeyPolicyMatcherFunction
+StorageKeyPolicyMatcherFunctionUtility::MakeMatcherFunction(
     std::vector<url::Origin> origins_to_match) {
   return base::BindRepeating(
-      [](std::vector<url::Origin> origins_to_match, const url::Origin& origin,
-         SpecialStoragePolicy* policy) {
-        return base::Contains(origins_to_match, origin);
+      [](std::vector<url::Origin> origins_to_match,
+         const blink::StorageKey& storage_key, SpecialStoragePolicy* policy) {
+        return base::Contains(origins_to_match, storage_key.origin());
       },
       origins_to_match);
 }
 
-OriginMatcherFunction OriginMatcherFunctionUtility::MakeMatcherFunction(
+StorageKeyPolicyMatcherFunction
+StorageKeyPolicyMatcherFunctionUtility::MakeMatcherFunction(
     std::vector<std::string> origin_strs_to_match) {
   std::vector<url::Origin> origins_to_match;
   for (const auto& str : origin_strs_to_match)
@@ -351,14 +373,14 @@ OriginMatcherFunction OriginMatcherFunctionUtility::MakeMatcherFunction(
   return MakeMatcherFunction(origins_to_match);
 }
 
-size_t OriginMatcherFunctionUtility::RegisterMatcherFunction(
+size_t StorageKeyPolicyMatcherFunctionUtility::RegisterMatcherFunction(
     std::vector<url::Origin> origins_to_match) {
   matcher_table_.emplace_back(MakeMatcherFunction(origins_to_match));
   return matcher_table_.size() - 1;
 }
 
-OriginMatcherFunction OriginMatcherFunctionUtility::TakeMatcherFunctionForId(
-    size_t id) {
+StorageKeyPolicyMatcherFunction
+StorageKeyPolicyMatcherFunctionUtility::TakeMatcherFunctionForId(size_t id) {
   DCHECK_LT(id, matcher_table_.size());
   return std::move(matcher_table_[id]);
 }

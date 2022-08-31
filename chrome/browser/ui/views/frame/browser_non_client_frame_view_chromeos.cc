@@ -15,14 +15,12 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/highlight_border_overlay_chromeos.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/tab_search_frame_caption_button.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
@@ -77,6 +75,7 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -88,6 +87,7 @@ namespace {
 // The indicator for teleported windows has 8 DIPs before and below it.
 constexpr int kProfileIndicatorPadding = 8;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Returns the layer for the specified `web_view`'s native view.
 ui::Layer* GetNativeViewLayer(views::WebView* web_view) {
   if (web_view) {
@@ -109,6 +109,7 @@ content::RenderWidgetHost* GetRenderWidgetHost(views::WebView* web_view) {
   }
   return nullptr;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Returns true if the header should be painted so that it looks the same as
 // the header used for packaged apps.
@@ -471,6 +472,7 @@ void BrowserNonClientFrameViewChromeOS::GetAccessibleNodeData(
 }
 
 gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // System web apps (e.g. Settings) may have a fixed minimum size.
   Browser* browser = browser_view()->browser();
   if (ash::IsSystemWebApp(browser)) {
@@ -478,6 +480,7 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     if (!minimum_size.IsEmpty())
       return minimum_size;
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
   const int min_frame_width =
@@ -659,6 +662,12 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
     // when exiting fullscreen.
     if (enter_fullscreen || exit_fullscreen)
       ResetWindowControls();
+
+    // The client view (in particular the tab strip) has different layout in
+    // restored vs. maximized/fullscreen. Invalidate the layout because the
+    // window bounds may not have changed. https://crbug.com/1342414
+    if (frame()->client_view())
+      frame()->client_view()->InvalidateLayout();
   }
 
   if (key == chromeos::kWindowStateTypeKey) {
@@ -772,10 +781,8 @@ void BrowserNonClientFrameViewChromeOS::AddedToWidget() {
   if (!chromeos::features::IsDarkLightModeEnabled())
     return;
 
-  highlight_border_overlay_ = std::make_unique<HighlightBorderOverlay>(
-      GetWidget(),
-      gfx::RoundedCornersF(chromeos::kTopCornerRadiusWhenRestored,
-                           chromeos::kTopCornerRadiusWhenRestored, 0, 0));
+  highlight_border_overlay_ =
+      std::make_unique<HighlightBorderOverlay>(GetWidget());
 }
 
 bool BrowserNonClientFrameViewChromeOS::GetShowCaptionButtons() const {
@@ -975,16 +982,21 @@ void BrowserNonClientFrameViewChromeOS::OnUpdateFrameColor() {
 }
 
 void BrowserNonClientFrameViewChromeOS::MaybeAnimateThemeChanged() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!browser_view())
+    return;
+
+  Browser* browser = browser_view()->browser();
+  if (!browser)
     return;
 
   // Theme change events are only animated for system web apps which explicitly
   // request the behavior.
-  Browser* browser = browser_view()->browser();
-  if (!browser || !ash::IsSystemWebApp(browser) ||
-      !browser->app_controller()->system_app()->ShouldAnimateThemeChanges()) {
+  bool animate_theme_change_for_swa =
+      ash::IsSystemWebApp(browser) &&
+      browser->app_controller()->system_app()->ShouldAnimateThemeChanges();
+  if (!animate_theme_change_for_swa)
     return;
-  }
 
   views::WebView* web_view = browser_view()->contents_web_view();
   ui::Layer* layer = GetNativeViewLayer(web_view);
@@ -1035,6 +1047,7 @@ void BrowserNonClientFrameViewChromeOS::MaybeAnimateThemeChanged() {
   // repainting theme changes.
   render_widget_host->InsertVisualStateCallback(
       theme_changed_animation_callback_.callback());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 bool BrowserNonClientFrameViewChromeOS::IsFloated() const {

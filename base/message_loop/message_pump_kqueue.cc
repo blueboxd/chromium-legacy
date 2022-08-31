@@ -263,7 +263,7 @@ bool MessagePumpKqueue::WatchFileDescriptor(int fd,
   std::vector<kevent64_s> events;
 
   kevent64_s base_event{};
-  base_event.ident = fd;
+  base_event.ident = static_cast<uint64_t>(fd);
   base_event.flags = EV_ADD | (!persistent ? EV_ONESHOT : 0);
 
   if (mode & Mode::WATCH_READ) {
@@ -277,8 +277,9 @@ bool MessagePumpKqueue::WatchFileDescriptor(int fd,
     events.push_back(base_event);
   }
 
-  int rv = HANDLE_EINTR(kevent64(kqueue_.get(), events.data(), events.size(),
-                                 nullptr, 0, 0, nullptr));
+  int rv = HANDLE_EINTR(kevent64(kqueue_.get(), events.data(),
+                                 checked_cast<int>(events.size()), nullptr, 0,
+                                 0, nullptr));
   if (rv < 0) {
     DPLOG(ERROR) << "WatchFileDescriptor kevent64";
     return false;
@@ -351,13 +352,13 @@ bool MessagePumpKqueue::StopWatchingFileDescriptor(
   int mode = controller->mode();
   controller->Reset();
 
-  if (fd == -1)
+  if (fd < 0)
     return true;
 
   std::vector<kevent64_s> events;
 
   kevent64_s base_event{};
-  base_event.ident = fd;
+  base_event.ident = static_cast<uint64_t>(fd);
   base_event.flags = EV_DELETE;
 
   if (mode & Mode::WATCH_READ) {
@@ -369,13 +370,14 @@ bool MessagePumpKqueue::StopWatchingFileDescriptor(
     events.push_back(base_event);
   }
 
-  int rv = HANDLE_EINTR(kevent64(kqueue_.get(), events.data(), events.size(),
-                                 nullptr, 0, 0, nullptr));
+  int rv = HANDLE_EINTR(kevent64(kqueue_.get(), events.data(),
+                                 checked_cast<int>(events.size()), nullptr, 0,
+                                 0, nullptr));
   DPLOG_IF(ERROR, rv < 0) << "StopWatchingFileDescriptor kevent64";
 
   // The keys for the IDMap aren't recorded anywhere (they're attached to the
   // kevent object in the kernel), so locate the entries by controller pointer.
-  for (auto it = IDMap<FdWatchController*>::iterator(&fd_controllers_);
+  for (IDMap<FdWatchController*, uint64_t>::iterator it(&fd_controllers_);
        !it.IsAtEnd(); it.Advance()) {
     if (it.GetCurrentValue() == controller) {
       fd_controllers_.Remove(it.GetCurrentKey());
@@ -421,13 +423,14 @@ bool MessagePumpKqueue::DoInternalWork(Delegate* delegate,
     return false;
   }
 
-  return ProcessEvents(delegate, rv);
+  PCHECK(rv > 0) << "kevent64";
+  return ProcessEvents(delegate, static_cast<size_t>(rv));
 }
 
-bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, int count) {
+bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, size_t count) {
   bool did_work = false;
 
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     auto* event = &events_[i];
     if (event->filter == EVFILT_READ || event->filter == EVFILT_WRITE) {
       did_work = true;
@@ -450,13 +453,16 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, int count) {
       }
 
       auto scoped_do_work_item = delegate->BeginWorkItem();
+      // WatchFileDescriptor() originally upcasts event->ident from an int.
       if (event->filter == EVFILT_READ) {
-        fd_watcher->OnFileCanReadWithoutBlocking(event->ident);
+        fd_watcher->OnFileCanReadWithoutBlocking(
+            static_cast<int>(event->ident));
       } else if (event->filter == EVFILT_WRITE) {
-        fd_watcher->OnFileCanWriteWithoutBlocking(event->ident);
+        fd_watcher->OnFileCanWriteWithoutBlocking(
+            static_cast<int>(event->ident));
       }
     } else if (event->filter == EVFILT_MACHPORT) {
-      mach_port_t port = KqueueNeedsPortSet() ? event->data : event->ident;
+      mach_port_t port = KqueueNeedsPortSet() ? static_cast<mach_port_t>(event->data) : static_cast<mach_port_t>(event->ident);
 
       if (port == wakeup_.get()) {
         // The wakeup event has been received, do not treat this as "doing

@@ -42,7 +42,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -820,5 +820,40 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpMetadata) {
       .RetiresOnSaturation();
 
   EXPECT_TRUE(RunExtensionTest("file_browser/dlp_metadata", {},
+                               {.load_as_component = true}));
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpMetadata_Disabled) {
+  policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
+      browser()->profile(),
+      base::BindRepeating(&FileManagerPrivateApiDlpTest::SetDlpRulesManager,
+                          base::Unretained(this)));
+  ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
+  EXPECT_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
+      .WillOnce(testing::Return(false))
+      .RetiresOnSaturation();
+  // We should not get to the point of checking DLP.
+  EXPECT_CALL(*mock_rules_manager_, IsRestrictedByAnyRule).Times(0);
+
+  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
+
+  const base::FilePath blocked_file_path =
+      temp_dir_.GetPath().Append("blocked_file.txt");
+
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    base::File blocked_test_file(
+        blocked_file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(blocked_test_file.IsValid());
+  }
+
+  base::MockCallback<chromeos::DlpClient::AddFileCallback> add_file_cb;
+  EXPECT_CALL(add_file_cb, Run).Times(1);
+  dlp::AddFileRequest request;
+  request.set_file_path(blocked_file_path.value());
+  request.set_source_url("https://example1.com");
+  chromeos::DlpClient::Get()->AddFile(request, add_file_cb.Get());
+
+  EXPECT_TRUE(RunExtensionTest("file_browser/dlp_metadata_disabled", {},
                                {.load_as_component = true}));
 }

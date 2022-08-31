@@ -71,6 +71,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& script_url,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override;
@@ -78,6 +79,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& module_url_record,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -95,7 +97,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   const SharedWorkerToken& GetSharedWorkerToken() const { return token_; }
   WorkerToken GetWorkerToken() const final { return token_; }
   bool CrossOriginIsolatedCapability() const final;
-  bool DirectSocketCapability() const final;
+  bool IsolatedApplicationCapability() const final;
   ExecutionContextToken GetExecutionContextToken() const final {
     return token_;
   }

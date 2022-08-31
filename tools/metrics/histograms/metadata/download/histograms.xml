@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.BandwidthOverallBytesPerSecond2" units="bytes/second"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>qinmin@chromium.org</owner>
   <summary>
     Overall bandwidth seen for a completed download. This includes all file
@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Download.Bubble.Subpage.{DownloadDangerTypeString}.{ButtonNum}ButtonActionTime"
+    name="Download.Bubble.Subpage.{DownloadDangerTypeString}.{ButtonType}ButtonActionTime"
     units="ms" expires_after="2022-10-18">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -124,11 +124,13 @@ chromium-metrics-reviews@google.com.
     shown, and one of the buttons being acted upon. The warning subpage is shown
     when the user sees a download warning on the full or the partial view, and
     navigates to the subpage for more actions. Recorded only for Desktop
-    platforms, where Download Bubble is enabled.
+    platforms, where Download Bubble is enabled. In M105, FirstButtonActionTime
+    is replaced with SecondaryButtonActionTime, SecondButtonActionTime is
+    replaced with PrimaryButtonActionTime.
   </summary>
-  <token key="ButtonNum">
-    <variant name="First"/>
-    <variant name="Second"/>
+  <token key="ButtonType">
+    <variant name="Primary"/>
+    <variant name="Secondary"/>
   </token>
   <token key="DownloadDangerTypeString" variants="DownloadDangerTypeString"/>
 </histogram>
@@ -246,7 +248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.DangerousFile.DownloadValidatedByType"
-    enum="SBClientDownloadExtensions" expires_after="2022-11-13">
+    enum="SBClientDownloadExtensions" expires_after="2023-01-15">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1277,7 +1279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.ShowedDownloadWarning" enum="DownloadItem.DangerType"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1329,7 +1331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.UserValidatedDangerousDownload"
-    enum="DownloadItem.DangerType" expires_after="2022-11-13">
+    enum="DownloadItem.DangerType" expires_after="2023-01-15">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-team@chromium.org</owner>
   <summary>

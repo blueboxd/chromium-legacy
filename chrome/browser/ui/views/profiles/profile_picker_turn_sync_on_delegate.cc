@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -134,6 +135,10 @@ void ProfilePickerTurnSyncOnDelegate::ShowSyncConfirmation(
   absl::optional<EnterpriseProfileWelcomeUI::ScreenType> welcome_screen_type;
   if (IsLacrosPrimaryProfileFirstRun(profile_)) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Show the enterprise version of the screen even if management consent was
+    // already given. See http://crbug.com/1322067.
+    enterprise_account_ = profile_->GetProfilePolicyConnector()->IsManaged();
+
     welcome_screen_type =
         enterprise_account_
             ? EnterpriseProfileWelcomeUI::ScreenType::kLacrosEnterpriseWelcome
@@ -159,6 +164,8 @@ void ProfilePickerTurnSyncOnDelegate::ShowSyncDisabledConfirmation(
     base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
         callback) {
   DCHECK(callback);
+  sync_disabled_ = true;
+
   if (IsLacrosPrimaryProfileFirstRun(profile_)) {
     // The primary profile first run experience is silently skipped if sync is
     // disabled (there's no point to promo a feature that cannot get enabled).
@@ -169,7 +176,6 @@ void ProfilePickerTurnSyncOnDelegate::ShowSyncDisabledConfirmation(
     return;
   }
   sync_confirmation_callback_ = std::move(callback);
-  sync_disabled_ = true;
   ShowEnterpriseWelcome(is_managed_account
                             ? EnterpriseProfileWelcomeUI::ScreenType::
                                   kEntepriseAccountSyncDisabled

@@ -56,6 +56,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/features.h"
@@ -75,17 +76,20 @@ using base::Time;
 namespace net {
 
 static constexpr int kMinutesInTwelveHours = 12 * 60;
+static constexpr int kMinutesInTwentyFourHours = 24 * 60;
 
 namespace {
 
 // Determine the cookie domain to use for setting the specified cookie.
 bool GetCookieDomain(const GURL& url,
                      const ParsedCookie& pc,
+                     CookieInclusionStatus& status,
                      std::string* result) {
   std::string domain_string;
   if (pc.HasDomain())
     domain_string = pc.Domain();
-  return cookie_util::GetCookieDomainWithString(url, domain_string, result);
+  return cookie_util::GetCookieDomainWithString(url, domain_string, status,
+                                                result);
 }
 
 // Compares cookies using name, domain and path, so that "equivalent" cookies
@@ -491,18 +495,32 @@ Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
       base::TimeDelta clock_skew = (current - server_time);
       // Record the magnitude (absolute value) of the skew in minutes.
       int clock_skew_magnitude = clock_skew.magnitude().InMinutes();
+      // Determine the new expiry with clock skew factored in.
+      Time adjusted_expiry = parsed_expiry + (current - server_time);
       if (clock_skew.is_positive() || clock_skew.is_zero()) {
         UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.AddMinutes",
                                     clock_skew_magnitude, 1,
                                     kMinutesInTwelveHours, 100);
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.AddMinutes12To24Hours",
+                                    clock_skew_magnitude, kMinutesInTwelveHours,
+                                    kMinutesInTwentyFourHours, 100);
+        // Also record the range of minutes added that allowed the cookie to
+        // avoid expiring immediately.
+        if (parsed_expiry <= Time::Now() && adjusted_expiry > Time::Now()) {
+          UMA_HISTOGRAM_CUSTOM_COUNTS(
+              "Cookie.ClockSkew.WithoutAddMinutesExpires", clock_skew_magnitude,
+              1, kMinutesInTwentyFourHours, 100);
+        }
       } else if (clock_skew.is_negative()) {
         // These histograms only support positive numbers, so negative skews
         // will be converted to positive (via magnitude) before recording.
         UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.SubtractMinutes",
                                     clock_skew_magnitude, 1,
                                     kMinutesInTwelveHours, 100);
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Cookie.ClockSkew.SubtractMinutes12To24Hours", clock_skew_magnitude,
+            kMinutesInTwelveHours, kMinutesInTwentyFourHours, 100);
       }
-      Time adjusted_expiry = parsed_expiry + (current - server_time);
       // Record if we were going to expire the cookie before we added the clock
       // skew.
       UMA_HISTOGRAM_BOOLEAN(
@@ -577,7 +595,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
                             !base::IsStringASCII(parsed_cookie.Domain()));
 
   std::string cookie_domain;
-  if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
+  if (!GetCookieDomain(url, parsed_cookie, *status, &cookie_domain)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a valid cookie domain";
     status->AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
@@ -598,6 +616,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   CookiePrefix prefix = GetCookiePrefix(parsed_cookie.Name());
   bool is_cookie_prefix_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);
   RecordCookiePrefixMetrics(prefix, is_cookie_prefix_valid);
+
+  if (parsed_cookie.Name() == "") {
+    is_cookie_prefix_valid = !HasHiddenPrefixName(parsed_cookie.Value());
+  }
+
   if (!is_cookie_prefix_valid) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
@@ -755,7 +778,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
   } else if (!cookie_util::GetCookieDomainWithString(url, domain_attribute,
-                                                     &cookie_domain)) {
+                                                     *status, &cookie_domain)) {
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
   }
@@ -805,6 +828,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   CookiePrefix prefix = GetCookiePrefix(name);
   if (!IsCookiePrefixValid(prefix, url, secure, domain_attribute,
                            cookie_path)) {
+    status->AddExclusionReason(
+        net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
+  }
+
+  if (name == "" && HasHiddenPrefixName(value)) {
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
   }
@@ -1527,6 +1555,9 @@ bool CanonicalCookie::IsCanonicalForFromStorage() const {
       break;
   }
 
+  if (name_ == "" && HasHiddenPrefixName(value_))
+    return false;
+
   if (!IsCookieSamePartyValid(same_party_, secure_, same_site_))
     return false;
 
@@ -1650,6 +1681,40 @@ CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite(
   }
 }
 
+// static
+bool CanonicalCookie::HasHiddenPrefixName(
+    const base::StringPiece cookie_value) {
+  // Skip BWS as defined by HTTPSEM as SP or HTAB (0x20 or 0x9).
+  base::StringPiece value_without_BWS =
+      base::TrimString(cookie_value, " \t", base::TRIM_LEADING);
+
+  const base::StringPiece host_prefix = "__Host-";
+
+  // Compare the value to the host_prefix.
+  if (base::StartsWith(value_without_BWS, host_prefix)) {
+    // The prefix matches, now check if the value string contains a subsequent
+    // '='.
+    if (value_without_BWS.find_first_of('=', host_prefix.size()) !=
+        base::StringPiece::npos) {
+      // This value contains a hidden prefix name.
+      return true;
+    }
+    return false;
+  }
+
+  // Do a similar check for the secure prefix
+  const base::StringPiece secure_prefix = "__Secure-";
+
+  if (base::StartsWith(value_without_BWS, secure_prefix)) {
+    if (value_without_BWS.find_first_of('=', secure_prefix.size()) !=
+        base::StringPiece::npos) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
   return (base::Time::Now() - creation_date_) <= age_threshold;
 }
@@ -1697,7 +1762,7 @@ bool CanonicalCookie::IsCookiePartitionedValid(const GURL& url,
   bool result =
       HasValidAttributesForPartitioned(url, secure, path, is_same_party);
   DLOG_IF(WARNING, !result)
-      << "CanonicalCookie has invalid Partitioned attribute ";
+      << "CanonicalCookie has invalid Partitioned attribute";
   return result;
 }
 

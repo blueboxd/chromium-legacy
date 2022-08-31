@@ -9,14 +9,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/feature_usage/feature_usage_metrics.h"
 #include "chromeos/ash/components/network/cellular_esim_profile.h"
 #include "chromeos/ash/components/network/cellular_esim_profile_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/components/feature_usage/feature_usage_metrics.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -87,6 +87,10 @@ const char CellularMetricsLogger::kSimPinChangeSuccessHistogram[] =
     "Network.Cellular.Pin.ChangeSuccess";
 
 // static
+const char CellularMetricsLogger::kSimLockNotificationEventHistogram[] =
+    "Network.Ash.Cellular.SimLock.Policy.Notification.Event";
+
+// static
 const base::TimeDelta CellularMetricsLogger::kInitializationTimeout =
     base::Seconds(15);
 
@@ -113,6 +117,13 @@ CellularMetricsLogger::GetSimPinOperationResultForShillError(
   if (shill_error_name == shill::kErrorResultNotFound)
     return SimPinOperationResult::kErrorDeviceMissing;
   return SimPinOperationResult::kErrorUnknown;
+}
+
+// static
+void CellularMetricsLogger::RecordSimLockNotificationEvent(
+    const SimLockNotificationEvent notification_event) {
+  base::UmaHistogramEnumeration(kSimLockNotificationEventHistogram,
+                                notification_event);
 }
 
 // static

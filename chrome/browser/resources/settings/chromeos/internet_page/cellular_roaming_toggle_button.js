@@ -10,7 +10,7 @@
  */
 
 import '../../prefs/prefs.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
@@ -111,7 +111,7 @@ class CellularRoamingToggleButtonElement extends
     const config =
         OncMojo.getDefaultConfigProperties(this.managedProperties.type);
     config.typeConfig.cellular = {
-      roaming: {allowRoaming: this.isRoamingAllowedForNetwork_}
+      roaming: {allowRoaming: this.isRoamingAllowedForNetwork_},
     };
     this.networkConfig_.setProperties(this.managedProperties.guid, config)
         .then(response => {

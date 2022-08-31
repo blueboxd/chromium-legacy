@@ -19,12 +19,12 @@
 #include "chrome/common/extensions/api/vpn_provider.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_observer.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -257,6 +257,10 @@ class VpnServiceAsh : public crosapi::mojom::VpnService,
   void OnGetShillProperties(
       const std::string& service_path,
       absl::optional<base::Value> configuration_properties);
+
+  // Always returns a valid pointer.
+  VpnServiceForExtensionAsh* GetVpnServiceForExtension(
+      const std::string& extension_id);
 
   // Ids of enabled vpn extensions.
   base::flat_set<std::string> vpn_extensions_;

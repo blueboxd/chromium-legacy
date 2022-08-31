@@ -32,13 +32,13 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/preloading/prefetch/prefetch_url_loader_interceptor.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
-#include "content/browser/speculation_rules/prefetch/prefetch_url_loader_interceptor.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -1162,8 +1162,8 @@ bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
           if (container_host) {
             container_host->SetControllerRegistration(
                 nullptr, /*notify_controllerchange=*/false);
-            container_host->UpdateUrls(GURL(), net::SiteForCookies(),
-                                       absl::nullopt, blink::StorageKey());
+            container_host->UpdateUrls(GURL(), absl::nullopt,
+                                       blink::StorageKey());
           }
         }
       }

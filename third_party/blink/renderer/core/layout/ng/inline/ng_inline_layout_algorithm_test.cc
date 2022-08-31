@@ -65,6 +65,31 @@ TEST_F(NGInlineLayoutAlgorithmTest, Types) {
   EXPECT_TRUE(empty.Current()->LineBoxFragment()->IsEmptyLineBox());
 }
 
+TEST_F(NGInlineLayoutAlgorithmTest, TypesForFirstLine) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div::first-line { font-size: 2em; }
+    </style>
+    <div id="normal">normal</div>
+    <div id="empty"><span></span></div>
+  )HTML");
+  NGInlineCursor normal(
+      *To<LayoutBlockFlow>(GetLayoutObjectByElementId("normal")));
+  normal.MoveToFirstLine();
+  EXPECT_FALSE(normal.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_EQ(normal.Current().StyleVariant(), NGStyleVariant::kFirstLine);
+  EXPECT_EQ(normal.Current()->LineBoxFragment()->StyleVariant(),
+            NGStyleVariant::kFirstLine);
+
+  NGInlineCursor empty(
+      *To<LayoutBlockFlow>(GetLayoutObjectByElementId("empty")));
+  empty.MoveToFirstLine();
+  EXPECT_TRUE(empty.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_EQ(empty.Current().StyleVariant(), NGStyleVariant::kFirstLine);
+  EXPECT_EQ(empty.Current()->LineBoxFragment()->StyleVariant(),
+            NGStyleVariant::kFirstLine);
+}
+
 TEST_F(NGInlineLayoutAlgorithmTest, TypesForBlockInInline) {
   ScopedLayoutNGBlockInInlineForTest block_in_inline_scope(true);
   SetBodyInnerHTML(R"HTML(
@@ -149,14 +174,10 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   builder.SetAvailableSize(size);
   NGConstraintSpace constraint_space = builder.ToConstraintSpace();
 
-  NGInlineChildLayoutContext context;
   NGBoxFragmentBuilder container_builder(
       block_flow, block_flow->Style(), constraint_space,
       block_flow->Style()->GetWritingDirection());
-  NGFragmentItemsBuilder items_builder(inline_node,
-                                       container_builder.GetWritingDirection());
-  container_builder.SetItemsBuilder(&items_builder);
-  context.SetItemsBuilder(&items_builder);
+  NGInlineChildLayoutContext context(inline_node, &container_builder);
   const NGLayoutResult* layout_result =
       inline_node.Layout(constraint_space, nullptr, nullptr, &context);
   const auto& line1 = layout_result->PhysicalFragment();

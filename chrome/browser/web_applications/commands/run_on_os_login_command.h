@@ -20,31 +20,10 @@ class WebAppRegistrar;
 class OsIntegrationManager;
 class WebAppSyncBridge;
 
-// Sets the callback for the test to wait until the OS integration state is set.
-void SetRunOnOsLoginOsHooksChangedCallbackForTesting(
-    base::OnceClosure callback);
-
-// Updates the Run On OS state for the given app. If necessary, it also updates
-// the registration with the OS. This will take into account the enterprise
-// policy for the given app.
-void PersistRunOnOsLoginUserChoice(WebAppRegistrar* registrar,
-                                   OsIntegrationManager* os_integration_manager,
-                                   WebAppSyncBridge* sync_bridge,
-                                   const AppId& app_id,
-                                   RunOnOsLoginMode new_user_mode);
-
-// Refreshes the Run On OS Login OS integration state for the specified app.
-// Note that this tries to avoid extra work by no-oping if the current
-// OS state matches what is calculated to be the desired stated.
-void SyncRunOnOsLoginOsIntegrationState(
-    WebAppRegistrar* registrar,
-    OsIntegrationManager* os_integration_manager,
-    const AppId& app_id);
-
 enum class RunOnOsLoginAction {
-  kPersistMode = 0,
-  kSyncModeToSystem = 1,
-  kMaxValue = kSyncModeToSystem
+  kSetModeInDBAndOS = 0,
+  kSyncModeFromDBToOS = 1,
+  kMaxValue = kSyncModeFromDBToOS
 };
 
 enum class RunOnOsLoginCommandCompletionState {
@@ -62,14 +41,14 @@ enum class RunOnOsLoginCommandCompletionState {
 // asynchronously.
 class RunOnOsLoginCommand : public WebAppCommand {
  public:
-  static std::unique_ptr<RunOnOsLoginCommand> CreateForPersistMode(
+  static std::unique_ptr<RunOnOsLoginCommand> CreateForSetLoginMode(
       WebAppRegistrar* registrar,
       OsIntegrationManager* os_integration_manager,
       WebAppSyncBridge* sync_bridge,
       const AppId& app_id,
       RunOnOsLoginMode login_mode,
       base::OnceClosure callback);
-  static std::unique_ptr<RunOnOsLoginCommand> CreateForSyncMode(
+  static std::unique_ptr<RunOnOsLoginCommand> CreateForSyncLoginMode(
       WebAppRegistrar* registrar,
       OsIntegrationManager* os_integration_manager,
       const AppId& app_id,
@@ -86,13 +65,13 @@ class RunOnOsLoginCommand : public WebAppCommand {
                       OsIntegrationManager* os_integration_manager,
                       WebAppSyncBridge* sync_bridge,
                       absl::optional<RunOnOsLoginMode> login_mode,
-                      RunOnOsLoginAction persist_or_sync_mode,
+                      RunOnOsLoginAction set_or_sync_mode,
                       base::OnceClosure callback_);
   void Abort(RunOnOsLoginCommandCompletionState aborted_state);
   // Updates the Run On OS login state for the given app. If necessary, it also
   // updates the registration with the OS. This will take into account the
   // enterprise policy for the given app.
-  void PersistRunOnOsLoginMode();
+  void SetRunOnOsLoginMode();
   // Reads the expected Run On OS login state for a given app from the DB and
   // deploys that to the OS.
   // Note that this tries to avoid extra work by no-oping if the current
@@ -108,7 +87,7 @@ class RunOnOsLoginCommand : public WebAppCommand {
   base::raw_ptr<OsIntegrationManager> os_integration_manager_;
   base::raw_ptr<WebAppSyncBridge> sync_bridge_;
   absl::optional<RunOnOsLoginMode> login_mode_;
-  RunOnOsLoginAction persist_or_sync_mode_;
+  RunOnOsLoginAction set_or_sync_mode_;
   std::string stop_reason_;
   base::OnceClosure callback_ = base::DoNothing();
 

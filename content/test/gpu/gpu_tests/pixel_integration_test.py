@@ -77,7 +77,9 @@ class PixelIntegrationTest(
     pages += namespace.ExperimentalCanvasFeaturesPages(cls.test_base_name)
     pages += namespace.LowLatencyPages(cls.test_base_name)
     pages += namespace.WebGPUPages(cls.test_base_name)
+    pages += namespace.WebGPUCanvasCapturePages(cls.test_base_name)
     pages += namespace.PaintWorkletPages(cls.test_base_name)
+    pages += namespace.VideoFromCanvasPages(cls.test_base_name)
     # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
     # enabled. They are skipped on other platforms through test expectations.

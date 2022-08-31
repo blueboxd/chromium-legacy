@@ -103,7 +103,9 @@ gfx::Rect GetBoundsInTabletMode(WindowState* state_object) {
 
   if (chromeos::wm::features::IsFloatWindowEnabled() &&
       state_object->IsFloated()) {
-    return FloatController::GetPreferredFloatWindowTabletBounds(window);
+    return Shell::Get()
+        ->float_controller()
+        ->GetPreferredFloatWindowTabletBounds(window);
   }
 
   gfx::Rect bounds_in_parent;
@@ -218,8 +220,12 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   current_state_type_ = state->GetStateType();
   DCHECK(!snap || SplitViewController::Get(Shell::GetPrimaryRootWindow())
                       ->CanSnapWindow(window));
-  state_type_on_attach_ =
-      snap ? current_state_type_ : state->GetMaximizedOrCenteredWindowType();
+
+  // Snapped and floated windows maintain their state; other windows become
+  // maximized if possible, centered with a backdrop if not possible.
+  state_type_on_attach_ = snap || state->IsFloated()
+                              ? current_state_type_
+                              : state->GetMaximizedOrCenteredWindowType();
   // TODO(oshima|sammiequon): consider SplitView scenario.
   WindowState::ScopedBoundsChangeAnimation bounds_animation(
       window, entering_tablet_mode && !IsTopWindow(window)
@@ -423,6 +429,7 @@ void TabletModeWindowState::AttachState(WindowState* window_state,
       current_state_type_ != WindowStateType::kMinimized &&
       current_state_type_ != WindowStateType::kFullscreen &&
       current_state_type_ != WindowStateType::kPinned &&
+      current_state_type_ != WindowStateType::kFloated &&
       current_state_type_ != WindowStateType::kTrustedPinned) {
     UpdateWindow(window_state, state_type_on_attach_,
                  animate_bounds_on_attach_);

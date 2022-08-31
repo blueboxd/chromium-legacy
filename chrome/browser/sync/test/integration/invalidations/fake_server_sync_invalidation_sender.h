@@ -41,6 +41,7 @@ class FakeServerSyncInvalidationSender
   void RemoveFCMHandler(syncer::FCMHandler* fcm_handler);
 
   // FakeServer::Observer implementation.
+  void OnWillCommit() override;
   void OnCommit(const std::string& committer_invalidator_client_id,
                 syncer::ModelTypeSet committed_model_types) override;
 
@@ -48,9 +49,6 @@ class FakeServerSyncInvalidationSender
   void OnFCMRegistrationTokenChanged() override;
 
  private:
-  std::map<std::string, syncer::ModelTypeSet>
-  GetTokenToInterestedDataTypesMap();
-
   // Returns a corresponding FCM handler having the same
   // |fcm_registration_token| if exists. Otherwise, returns nullptr.
   syncer::FCMHandler* GetFCMHandlerByToken(
@@ -59,6 +57,10 @@ class FakeServerSyncInvalidationSender
   // Delivers all the incoming messages to the corresponding FCM handlers.
   // Messages for FCM tokens which are not registered will be kept.
   void DeliverInvalidationsToHandlers();
+
+  // Updates |token_to_interested_data_types_map_before_commit_| from DeviceInfo
+  // data type.
+  void UpdateTokenToInterestedDataTypesMap();
 
   raw_ptr<FakeServer> fake_server_;
   std::vector<syncer::FCMHandler*> fcm_handlers_;
@@ -69,6 +71,10 @@ class FakeServerSyncInvalidationSender
   // will remain here until a handler is added.
   std::map<std::string, std::vector<sync_pb::SyncInvalidationsPayload>>
       invalidations_to_deliver_;
+
+  // List of tokens with a list of interested data types. Used to send
+  // invalidations to a corresponding FCMHandler.
+  std::map<std::string, syncer::ModelTypeSet> token_to_interested_data_types_;
 };
 
 }  // namespace fake_server

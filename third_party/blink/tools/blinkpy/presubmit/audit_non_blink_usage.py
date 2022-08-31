@@ -653,6 +653,7 @@ _CONFIG = [
             'ui::AXEventIntent',
             'ui::AXMode',
             'ui::AXNodeData',
+            'ui::AXRelativeBounds',
             'ui::AXTreeID',
             'ui::kAXModeBasic',
             'ui::kAXModeComplete',
@@ -756,6 +757,14 @@ _CONFIG = [
         ],
         'allowed': [
             'viz::BeginFrameArgs',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/annotation'],
+        'allowed': [
+            # AnnotationAgentContainerImpl reuses TextFragmentSelectorGenerator
+            # and the callback must accept this type as the result code.
+            'shared_highlighting::LinkGenerationError',
         ],
     },
     {
@@ -1627,6 +1636,15 @@ _CONFIG = [
             'storage::ComputeRandomResponsePadding',
             'storage::ComputeStableResponsePadding',
             'storage::ShouldPadResponseType'
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/filesystem/dom_file_system.cc',
+            'third_party/blink/renderer/modules/webdatabase/database_tracker.cc',
+        ],
+        'allowed': [
+            'storage::GetIdentifierFromOrigin',
         ],
     },
     {

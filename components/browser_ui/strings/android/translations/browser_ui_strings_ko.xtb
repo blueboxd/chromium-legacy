@@ -93,6 +93,7 @@
 <translation id="3008272652534848354">권한 재설정</translation>
 <translation id="301521992641321250">자동으로 차단됨</translation>
 <translation id="3069226013421428034">특정 사이트에 대해 서드 파티 로그인을 허용합니다.</translation>
+<translation id="3109724472072898302">접힘</translation>
 <translation id="3114012059975132928">동영상 플레이어</translation>
 <translation id="3115898365077584848">정보 표시</translation>
 <translation id="3123473560110926937">일부 사이트에서 차단됨</translation>
@@ -114,6 +115,7 @@
 <translation id="3594780231884063836">동영상 음소거</translation>
 <translation id="3596414637720633074">시크릿 모드에서 타사 쿠키 차단</translation>
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
+<translation id="3628308229821498208">추천 검색어</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3763247130972274048">10초를 건너뛰려면 동영상 왼쪽이나 오른쪽을 두 번 탭하세요.</translation>
 <translation id="3797520601150691162">특정 사이트에 어두운 테마를 적용하지 마세요.</translation>
@@ -225,6 +227,7 @@
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' 앱을 제거하시겠습니까?</translation>
+<translation id="6262191102408817757">마지막 탭 기준</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> 및 <ph name="PERMISSION_2" /> 차단됨</translation>
 <translation id="6270391203985052864">사이트에서 알림 전송 허용을 요청할 수 있음</translation>
 <translation id="6295158916970320988">모든 사이트</translation>
@@ -238,7 +241,7 @@
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> 외 <ph name="NUM_MORE" />개 차단됨}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> 외 <ph name="NUM_MORE" />개 차단됨}}</translation>
 <translation id="6554732001434021288">최근 방문: <ph name="NUM_DAYS" />일 전</translation>
-<translation id="6561560012278703671">눈에 띄지 않는 메시지 사용(방해가 되지 않도록 알림 메시지 차단)</translation>
+<translation id="6561560012278703671">조용한 메시지 사용(방해가 되지 않도록 알림 메시지 차단)</translation>
 <translation id="6593061639179217415">데스크톱 사이트</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" />GB</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
@@ -260,13 +263,14 @@
 <translation id="6992289844737586249">사이트에서 마이크를 사용하기 전에 확인(권장)</translation>
 <translation id="7000754031042624318">Android 설정에서 사용 중지됨</translation>
 <translation id="7016516562562142042">현재 검색엔진에 허용됨</translation>
-<translation id="702463548815491781">음성 안내 지원 또는 스위치 제어를 사용 중일 때 권장됩니다.</translation>
+<translation id="702463548815491781">TalkBack 또는 스위치 제어를 사용 중일 때 권장됩니다.</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />개 선택됨. 화면 상단에서 옵션 선택 가능</translation>
 <translation id="7141896414559753902">사이트에서 팝업 및 리디렉션을 표시하지 못하도록 차단(권장)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" />KB</translation>
 <translation id="7180611975245234373">새로고침</translation>
+<translation id="7203150201908454328">펼쳐짐</translation>
 <translation id="723171743924126238">이미지 선택</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />개 선택됨</translation>
@@ -281,6 +285,7 @@
 <translation id="757524316907819857">사이트에서 보호된 콘텐츠를 재생하지 못하도록 차단</translation>
 <translation id="7577900504646297215">관심분야 관리</translation>
 <translation id="7594634374516752650">블루투스 기기에 연결됨</translation>
+<translation id="7641339528570811325">인터넷 사용 기록 삭제...</translation>
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7781829728241885113">어제</translation>

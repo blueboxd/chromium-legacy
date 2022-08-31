@@ -648,9 +648,14 @@ class BASE_EXPORT LogMessage {
 
   LogSeverity severity() const { return severity_; }
   std::string str() const { return stream_.str(); }
+  const char* file() const { return file_; }
+  int line() const { return line_; }
 
-  // Gets the log message (w/o prefix).
-  std::string GetMessageWithoutPrefix() const;
+  // Gets file:line: message in a format suitable for crash reporting.
+  std::string BuildCrashString() const;
+  static std::string BuildCrashString(const char* file,
+                                      int line,
+                                      const char* message_without_prefix);
 
  private:
   void Init(const char* file, int line);

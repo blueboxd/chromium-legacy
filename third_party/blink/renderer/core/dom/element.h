@@ -467,6 +467,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const AtomicString& prefix() const { return tag_name_.Prefix(); }
   const AtomicString& namespaceURI() const { return tag_name_.NamespaceURI(); }
 
+  bool IsHTMLWithTagName(const String& tag_name) const;
+
   const AtomicString& LocateNamespacePrefix(
       const AtomicString& namespace_uri) const;
 
@@ -594,6 +596,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  HidePopupFocusBehavior,
                                  HidePopupForcingLevel,
                                  HidePopupIndependence);
+  void MaybeTriggerHoverPopup(Element* popup_element);
+  void HandlePopupHovered(bool hovered);
 
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.
@@ -969,6 +973,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsClearButtonElement() const { return false; }
   virtual bool IsScriptElement() const { return false; }
   virtual bool IsVTTCueBackgroundBox() const { return false; }
+  virtual bool IsVTTCueBox() const { return false; }
   virtual bool IsSliderThumbElement() const { return false; }
   virtual bool IsOutputElement() const { return false; }
 

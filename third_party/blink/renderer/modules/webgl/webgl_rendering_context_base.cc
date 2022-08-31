@@ -1506,10 +1506,8 @@ WebGLRenderingContextBase::ClearIfComposited(
   if (isContextLost())
     return kSkipped;
 
-  GLbitfield buffers_needing_clearing =
-      GetDrawingBuffer()->GetBuffersToAutoClear();
-
-  if (buffers_needing_clearing == 0 || (mask && framebuffer_binding_) ||
+  if (!GetDrawingBuffer()->BufferClearNeeded() ||
+      (mask && framebuffer_binding_) ||
       (rasterizer_discard_enabled_ && caller == kClearCallerDrawOrClear))
     return kSkipped;
 
@@ -1567,11 +1565,7 @@ WebGLRenderingContextBase::ClearIfComposited(
   {
     ScopedDisableRasterizerDiscard scoped_disable(this,
                                                   rasterizer_discard_enabled_);
-    // If the WebGL 2.0 clearBuffer APIs already have been used to
-    // selectively clear some of the buffers, don't destroy those
-    // results.
-    GetDrawingBuffer()->ClearFramebuffers(clear_mask &
-                                          buffers_needing_clearing);
+    GetDrawingBuffer()->ClearFramebuffers(clear_mask);
   }
 
   // Call the DrawingBufferClient method to restore scissor test, mask, and
@@ -1579,7 +1573,7 @@ WebGLRenderingContextBase::ClearIfComposited(
   DrawingBufferClientRestoreScissorTest();
   DrawingBufferClientRestoreMaskAndClearValues();
 
-  GetDrawingBuffer()->SetBuffersToAutoClear(0);
+  GetDrawingBuffer()->SetBufferClearNeeded(false);
 
   return combined_clear ? kCombinedClear : kJustClear;
 }
@@ -1621,7 +1615,7 @@ void WebGLRenderingContextBase::RestoreColorMask() {
 
 void WebGLRenderingContextBase::MarkLayerComposited() {
   if (!isContextLost())
-    GetDrawingBuffer()->ResetBuffersToAutoClear();
+    GetDrawingBuffer()->SetBufferClearNeeded(true);
 }
 
 bool WebGLRenderingContextBase::UsingSwapChain() const {
@@ -4809,13 +4803,27 @@ void WebGLRenderingContextBase::RenderbufferStorageImpl(
     case GL_RGB5_A1:
     case GL_RGB565:
     case GL_STENCIL_INDEX8:
-      ContextGL()->RenderbufferStorage(target, internalformat, width, height);
-      renderbuffer_binding_->SetInternalFormat(internalformat);
-      renderbuffer_binding_->SetSize(width, height);
-      break;
     case GL_SRGB8_ALPHA8_EXT:
-      if (!ExtensionEnabled(kEXTsRGBName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name, "sRGB not enabled");
+    case GL_RGB16F_EXT:
+    case GL_RGBA16F_EXT:
+    case GL_RGBA32F_EXT:
+      if (internalformat == GL_SRGB8_ALPHA8_EXT &&
+          !ExtensionEnabled(kEXTsRGBName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "EXT_sRGB not enabled");
+        break;
+      }
+      if ((internalformat == GL_RGB16F_EXT ||
+           internalformat == GL_RGBA16F_EXT) &&
+          !ExtensionEnabled(kEXTColorBufferHalfFloatName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "EXT_color_buffer_half_float not enabled");
+        break;
+      }
+      if (internalformat == GL_RGBA32F_EXT &&
+          !ExtensionEnabled(kWebGLColorBufferFloatName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "WEBGL_color_buffer_float not enabled");
         break;
       }
       ContextGL()->RenderbufferStorage(target, internalformat, width, height);
@@ -5330,7 +5338,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBufferForTexImage(
   }
 
   if (!image->CurrentFrameKnownToBeOpaque())
-    resource_provider->Canvas()->clear(SK_ColorTRANSPARENT);
+    resource_provider->Canvas()->clear(SkColors::kTransparent);
 
   gfx::Rect src_rect(image->Size());
   gfx::Rect dest_rect(0, 0, width, height);

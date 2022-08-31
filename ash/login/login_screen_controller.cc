@@ -116,6 +116,7 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
     case ForceFailAuth::kDelayed:
       // Set a dummy authentication stage so that |IsAuthenticating| returns
       // true.
+      LOG(WARNING) << "crbug.com/1339004 : Dummy auth state";
       authentication_stage_ = AuthenticationStage::kDoAuthenticate;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
@@ -126,6 +127,7 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
       return;
   }
 
+  LOG(WARNING) << "crbug.com/1339004 : started authentication";
   authentication_stage_ = AuthenticationStage::kDoAuthenticate;
 
   // Checking if the password is only formed of numbers with base::StringToInt
@@ -308,7 +310,7 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
   // Tell the focus direction to the status area or the shelf so they can focus
   // the correct child view.
   if (Shell::GetPrimaryRootWindowController()->IsSystemTrayVisible() &&
-      (reverse || !shelf->shelf_widget()->login_shelf_view()->IsFocusable())) {
+      (reverse || !shelf->shelf_widget()->GetLoginShelfView()->IsFocusable())) {
     // Focus goes to system tray (status area) if one of the following is true:
     //  - system tray is visible and tab is in reverse order;
     //  - system tray is visible and there is no visible shelf buttons before.
@@ -316,7 +318,7 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
         ->status_area_widget_delegate()
         ->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
-  } else if (shelf->shelf_widget()->login_shelf_view()->IsFocusable()) {
+  } else if (shelf->shelf_widget()->GetLoginShelfView()->IsFocusable()) {
     // Otherwise focus goes to shelf buttons when there is any.
     shelf->shelf_widget()->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
@@ -333,42 +335,42 @@ bool LoginScreenController::IsReadyForPassword() {
 void LoginScreenController::EnableAddUserButton(bool enable) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetAddUserButtonEnabled(enable);
 }
 
 void LoginScreenController::EnableShutdownButton(bool enable) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetShutdownButtonEnabled(enable);
 }
 
 void LoginScreenController::EnableShelfButtons(bool enable) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetButtonEnabled(enable);
 }
 
 void LoginScreenController::SetIsFirstSigninStep(bool is_first) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetIsFirstSigninStep(is_first);
 }
 
 void LoginScreenController::ShowParentAccessButton(bool show) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->ShowParentAccessButton(show);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetAllowLoginAsGuest(allow_guest);
 }
 
@@ -376,7 +378,7 @@ std::unique_ptr<ScopedGuestButtonBlocker>
 LoginScreenController::GetScopedGuestButtonBlocker() {
   return Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->GetScopedGuestButtonBlocker();
 }
 
@@ -387,21 +389,6 @@ void LoginScreenController::RequestSecurityTokenPin(
 
 void LoginScreenController::ClearSecurityTokenPinRequest() {
   security_token_request_controller_.ClosePinUi();
-}
-bool LoginScreenController::SetLoginShelfGestureHandler(
-    const std::u16string& nudge_text,
-    const base::RepeatingClosure& fling_callback,
-    base::OnceClosure exit_callback) {
-  return Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->SetLoginShelfSwipeHandler(nudge_text, fling_callback,
-                                  std::move(exit_callback));
-}
-
-void LoginScreenController::ClearLoginShelfGestureHandler() {
-  return Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->ClearLoginShelfSwipeHandler();
 }
 
 views::Widget* LoginScreenController::GetLoginWindowWidget() {
@@ -433,7 +420,7 @@ void LoginScreenController::SetKioskApps(
     const std::vector<KioskAppMenuEntry>& kiosk_apps) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->SetKioskApps(kiosk_apps);
 }
 
@@ -442,7 +429,7 @@ void LoginScreenController::ConfigureKioskCallbacks(
     const base::RepeatingClosure& on_show_menu) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view()
+      ->GetLoginShelfView()
       ->ConfigureKioskCallbacks(launch_app, on_show_menu);
 }
 
@@ -481,8 +468,10 @@ void LoginScreenController::NotifyUserActivity() {
 void LoginScreenController::OnAuthenticateComplete(
     OnAuthenticateCallback callback,
     bool success) {
+  LOG(WARNING) << "crbug.com/1339004 : authentication complete";
   authentication_stage_ = AuthenticationStage::kUserCallback;
   std::move(callback).Run(absl::make_optional<bool>(success));
+  LOG(WARNING) << "crbug.com/1339004 : triggered callback";
   authentication_stage_ = AuthenticationStage::kIdle;
 
   // During smart card login flow, multiple security token requests can be made.

@@ -20,11 +20,11 @@ ChromeVoxIntentHandlerTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'IntentHandler', '/chromevox/background/editing/intent_handler.js');
     await importModule('Output', '/chromevox/background/output/output.js');
+    await importModule(
+        'OutputEventType', '/chromevox/background/output/output_types.js');
 
     window.Dir = constants.Dir;
     window.IntentTextBoundaryType = chrome.automation.IntentTextBoundaryType;
-    window.Movement = cursors.Movement;
-    window.Unit = cursors.Unit;
   }
 };
 

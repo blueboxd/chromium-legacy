@@ -19,6 +19,7 @@ source_set("discover_feed") {
   ]
   deps = [
     "//components/keyed_service/core",
+    "//ios/chrome/browser:utils",
     "//ios/public/provider/chrome/browser/signin:signin_sso_api",
   ]
   public_deps = [
@@ -54,5 +55,8 @@ source_set("discover_feed_factory") {
 
 source_set("constants") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "feed_constants.h" ]
+  sources = [
+    "feed_constants.h",
+    "feed_constants.mm",
+  ]
 }

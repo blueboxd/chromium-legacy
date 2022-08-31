@@ -5,8 +5,8 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "builders", "cpu", "goma", "os", "xcode")
-load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
+load("//lib/builders.star", "builders", "cpu", "goma", "os", "reclient", "xcode")
+load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/structs.star", "structs")
 
@@ -92,8 +92,8 @@ ci.builder(
     ),
     goma_backend = None,
     os = os.LINUX_DEFAULT,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -104,8 +104,8 @@ ci.builder(
     notifies = ["Site Isolation Android"],
     goma_backend = None,
     os = os.LINUX_DEFAULT,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -137,8 +137,8 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -151,8 +151,8 @@ ci.builder(
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -165,8 +165,8 @@ ci.builder(
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -254,6 +254,38 @@ ci.builder(
 )
 
 ci.builder(
+    name = "fuchsia-fyi-arm64-cfv2-script",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "fuchsia_arm64",
+                "fuchsia_arm64_host",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 64,
+            target_platform = "fuchsia",
+        ),
+        build_gs_bucket = "chromium-fuchsia-archive",
+        run_tests_serially = True,
+    ),
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|a64",
+            short_name = "cfv2",
+        ),
+    ],
+    os = os.LINUX_DEFAULT,
+)
+
+ci.builder(
     name = "fuchsia-fyi-x64-rel",
     console_view_entry = [
         consoles.console_view_entry(
@@ -329,8 +361,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -351,8 +383,8 @@ ci.builder(
     notifies = ["annotator-rel"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -366,8 +398,8 @@ ci.builder(
     execution_timeout = 3 * time.hour,
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -418,8 +450,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -440,8 +472,8 @@ ci.builder(
     notifies = ["linux-blink-fyi-bots"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -453,8 +485,8 @@ ci.builder(
     notifies = ["v8-sandbox-fyi-bots"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -477,8 +509,8 @@ ci.builder(
     schedule = "with 12h interval",
     triggered_by = [],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -539,8 +571,8 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_ios_builder(
@@ -573,8 +605,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.thin_tester(
@@ -592,8 +624,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.thin_tester(
@@ -614,8 +646,8 @@ ci.builder(
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -625,8 +657,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -637,8 +669,8 @@ ci.builder(
     experimental = True,
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -649,8 +681,8 @@ ci.builder(
     experimental = True,
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -661,8 +693,8 @@ ci.builder(
     experimental = True,
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 # This is launching & collecting entirely isolated tests.
@@ -706,8 +738,8 @@ ci.builder(
     notifies = ["headless-owners"],
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -744,8 +776,8 @@ ci.builder(
     notifies = ["chrome-memory-safety"],
     os = os.WINDOWS_ANY,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -758,8 +790,8 @@ ci.builder(
     notifies = ["chrome-memory-safety"],
     os = os.WINDOWS_ANY,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -770,8 +802,8 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -798,8 +830,8 @@ ci.builder(
     schedule = "with 3h interval",
     triggered_by = [],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -808,13 +840,20 @@ ci.builder(
         category = "android",
         short_name = "cmp",
     ),
+    description_html = """\
+This builder measures Android build performance with goma vs reclient.<br/>\
+The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/ci/Deterministic%20Android%20(dbg)">Deterministic Android (dbg)</a>.\
+""",
     goma_jobs = 250,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 15 * time.hour,
     reclient_cache_silo = "Comparison Android - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.LINUX_DEFAULT,
+    # Target luci-chromium-ci-bionic-us-central1-b-ssd-16-*.
+    ssd = True,
+    cores = 16,
 )
 
 ci.builder(
@@ -827,7 +866,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Linux - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.LINUX_DEFAULT,
 )
@@ -843,7 +882,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Mac - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
@@ -860,7 +899,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Mac - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
@@ -877,7 +916,7 @@ ci.builder(
     goma_jobs = 80,
     executable = "recipe:reclient_goma_comparison",
     reclient_cache_silo = "Comparison Windows 8 cores - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 80,
     os = os.WINDOWS_DEFAULT,
     free_space = builders.free_space.high,
@@ -895,7 +934,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Windows - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.WINDOWS_DEFAULT,
     free_space = builders.free_space.high,
@@ -912,7 +951,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Simple Chrome - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.LINUX_DEFAULT,
 )
@@ -928,7 +967,7 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison ios - cache siloed",
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
@@ -945,8 +984,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 15 * time.hour,
     reclient_cache_silo = "Comparison Android CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 300,
     os = os.LINUX_DEFAULT,
 )
 
@@ -960,8 +999,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Linux CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 150,
     os = os.LINUX_DEFAULT,
 )
 
@@ -976,8 +1015,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Mac CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 150,
     os = os.MAC_DEFAULT,
     cores = None,
 )
@@ -993,7 +1032,7 @@ ci.builder(
     goma_jobs = 80,
     executable = "recipe:reclient_goma_comparison",
     reclient_cache_silo = "Comparison Windows 8 cores CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 80,
     os = os.WINDOWS_DEFAULT,
     free_space = builders.free_space.high,
@@ -1011,8 +1050,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Windows CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 300,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1027,8 +1066,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Simple Chrome CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 300,
     os = os.LINUX_DEFAULT,
 )
 
@@ -1043,8 +1082,8 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison ios CQ - cache siloed",
-    reclient_instance = rbe_instance.TEST_CQ,
-    reclient_jobs = 250,
+    reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    reclient_jobs = 150,
     os = os.MAC_DEFAULT,
     cores = None,
     xcode = xcode.x13main,
@@ -1053,63 +1092,124 @@ ci.builder(
 # Build Perf builders use CQ reclient instance and high reclient jobs/cores and
 # SSD to represent CQ build performance.
 
-# Sync specs with android-pie-arm64-rel-compilator
-# in chromium/try/tryserver.chromium.android.star
 ci.builder(
-    name = "Build Perf Android",
+    name = "build-perf-android",
+    description_html = """\
+This builder measures Android build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-rel-compilator">android-pie-arm64-rel-compilator</a>.\
+""",
     builderless = True,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "buildperf",
         short_name = "and",
     ),
     executable = "recipe:build_perf",
     execution_timeout = 10 * time.hour,
-    # TODO(b/234807316): Use CQ's RBE instance with a dedicated service account.
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CQ,
+    service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    # Target luci-chromium-ci-bionic-us-central1-c-1000-ssd-hm32-*.
     os = os.LINUX_DEFAULT,
     cores = 32,
     ssd = True,
 )
 
-# Sync specs with linux-rel-compilator
-# in chromium/try/tryserver.chromium.linux.star
 ci.builder(
-    name = "Build Perf Linux",
+    name = "build-perf-linux",
+    description_html = """\
+This builder measures Linux build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-rel-compilator">linux-rel-compilator</a>.\
+""",
     builderless = True,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "buildperf",
         short_name = "lnx",
     ),
     executable = "recipe:build_perf",
     execution_timeout = 6 * time.hour,
-    # TODO(b/234807316): Use CQ's RBE instance with a dedicated service account.
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CQ,
+    service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    use_clang_coverage = True,
+    # Target luci-chromium-ci-bionic-us-central1-b-ssd-16-*.
     os = os.LINUX_DEFAULT,
     cores = 16,
     ssd = True,
-    use_clang_coverage = True,
 )
 
-# Sync specs with win10_chromium_x64_rel_ng-compilator
-# in chromium/try/tryserver.chromium.win.star
 ci.builder(
-    name = "Build Perf Windows",
+    name = "build-perf-windows",
+    description_html = """\
+This builder measures Windows build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-compilator">win10_chromium_x64_rel_ng-compilator</a>.\
+""",
     builderless = True,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "buildperf",
         short_name = "win",
     ),
     executable = "recipe:build_perf",
     execution_timeout = 6 * time.hour,
-    # TODO(b/234807316): Use CQ's RBE instance with a dedicated service account.
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CQ,
+    service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    use_clang_coverage = True,
+    # Target luci-chromium-ci-win10-ssd-32-*.
     os = os.WINDOWS_DEFAULT,
     cores = 32,
     ssd = True,
-    use_clang_coverage = True,
 )
 
 ci.builder(
@@ -1122,7 +1222,7 @@ ci.builder(
     reclient_rewrapper_env = {
         "RBE_platform": "container-image=docker://gcr.io/cloud-marketplace/google/rbe-ubuntu16-04@sha256:b4dad0bfc4951d619229ab15343a311f2415a16ef83bcaa55b44f4e2bf1cf635,pool=linux-e2-custom_0",
     },
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 500,
     os = os.LINUX_DEFAULT,
     schedule = "triggered",
@@ -1150,7 +1250,7 @@ ci.builder(
     reclient_rewrapper_env = {
         "RBE_compare": "true",
     },
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_ensure_verified = True,
     os = os.LINUX_DEFAULT,
     execution_timeout = 14 * time.hour,
@@ -1169,7 +1269,7 @@ ci.builder(
     goma_backend = None,
     os = os.LINUX_DEFAULT,
     reclient_jobs = 400,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
 
@@ -1182,7 +1282,7 @@ ci.builder(
     ),
     cores = 32,
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1207,7 +1307,7 @@ ci.builder(
     ),
     cores = 32,
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_rewrapper_env = {"RBE_compare": "true"},
     reclient_ensure_verified = True,
     description_html = "verify artifacts. should be removed after the migration. crbug.com/1260232",
@@ -1223,7 +1323,7 @@ ci.builder(
     ),
     cores = 32,
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_profiler_service = "reclient-win",
     reclient_publish_trace = True,
     os = os.WINDOWS_DEFAULT,
@@ -1234,12 +1334,6 @@ ci.builder(
     description_html = "This is mirror of <a href=\"https://ci.chromium.org/p/chromium/builders/ci/Win%20x64%20Builder\">Win x64 Builder</a>, but runs on bots not having python2.",
     builder_spec = builder_config.copy_from("ci/Win x64 Builder", lambda spec: structs.evolve(
         spec,
-        gclient_config = structs.extend(
-            spec.gclient_config,
-            apply_configs = [
-                "disable_vpython_common_crbug_1329052",
-            ],
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     )),
     builderless = True,
@@ -1249,7 +1343,7 @@ ci.builder(
     ),
     cores = 8,
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.WINDOWS_DEFAULT,
     experiments = {
         "luci.buildbucket.omit_python2": 100,
@@ -1265,7 +1359,7 @@ fyi_mac_builder(
         short_name = "re",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     description_html = "experiment reclient on mac. should be removed after the migration. crbug.com/1244441",
 )
 
@@ -1278,7 +1372,7 @@ fyi_mac_builder(
         short_name = "cmp",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_rewrapper_env = {"RBE_compare": "true"},
     reclient_ensure_verified = True,
     description_html = "verify artifacts. should be removed after the migration. crbug.com/1260232",
@@ -1289,12 +1383,6 @@ fyi_mac_builder(
     name = "Mac Builder (py2 less)",
     builder_spec = builder_config.copy_from("ci/Mac Builder", lambda spec: structs.evolve(
         spec,
-        gclient_config = structs.extend(
-            spec.gclient_config,
-            apply_configs = [
-                "disable_vpython_common_crbug_1329052",
-            ],
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     )),
     console_view_entry = consoles.console_view_entry(
@@ -1319,7 +1407,7 @@ fyi_mac_builder(
         short_name = "re",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     description_html = "experiment reclient on mac-arm. should be removed after the migration. crbug.com/1252626",
 )
 
@@ -1338,7 +1426,7 @@ ci.builder(
         category = "cros x64",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "chromeos-amd64-generic-rel (reclient)"},
 )
@@ -1351,7 +1439,7 @@ ci.builder(
         short_name = "cmp",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_DEFAULT,
     reclient_rewrapper_env = {"RBE_compare": "true"},
     reclient_ensure_verified = True,
@@ -1374,7 +1462,7 @@ ci.builder(
         category = "lacros x64",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "lacros-amd64-generic-rel (reclient)"},
 )
@@ -1394,7 +1482,7 @@ ci.builder(
         category = "lacros rel",
     ),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "linux-lacros-builder-rel (reclient)"},
 )
@@ -1407,8 +1495,8 @@ fyi_celab_builder(
     schedule = "0 0,6,12,18 * * *",
     triggered_by = [],
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
 fyi_celab_builder(
@@ -1431,8 +1519,8 @@ fyi_coverage_builder(
     triggered_by = [],
     use_java_coverage = True,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -1445,8 +1533,8 @@ fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -1496,8 +1584,8 @@ fyi_coverage_builder(
     schedule = "triggered",
     triggered_by = [],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -1511,8 +1599,8 @@ fyi_coverage_builder(
     schedule = "triggered",
     triggered_by = [],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -1538,8 +1626,8 @@ fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -1566,8 +1654,8 @@ fyi_coverage_builder(
     coverage_test_types = ["overall", "unit"],
     use_clang_coverage = True,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_ios_builder(
@@ -1588,7 +1676,7 @@ fyi_ios_builder(
         category = "iOS|iOSM1",
         short_name = "iosM1",
     ),
-    os = os.MAC_11,
+    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
     schedule = "0 1,5,9,13,17,21 * * *",
     triggered_by = [],
@@ -1605,7 +1693,7 @@ fyi_ios_builder(
     # GN args to use goma isn't set, so commenting this out to avoid modifying
     # the generated config during the freeze.
     # goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     description_html = "experiment reclient for ios. remove after the migration. crbug.com/1254986",
     builderless = True,
     os = os.MAC_DEFAULT,
@@ -1636,6 +1724,23 @@ fyi_ios_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     notifies = ["cronet"],
+)
+
+fyi_ios_builder(
+    name = "ios-simulator-cronet (reclient shadow)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.copy_from(
+        "ci/ios-simulator-cronet",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet",
+        short_name = "rec",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    builderless = True,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 40,
 )
 
 fyi_ios_builder(
@@ -1792,8 +1897,8 @@ ci.builder(
         short_name = "lin",
     ),
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_FOCAL,
     execution_timeout = 16 * time.hour,
 )
@@ -1859,6 +1964,20 @@ fyi_mac_builder(
 )
 
 fyi_mac_builder(
+    name = "Mac deterministic (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "deterministic|mac",
+        short_name = "rec",
+    ),
+    cores = None,
+    executable = "recipe:swarming/deterministic_build",
+    execution_timeout = 6 * time.hour,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 40,
+)
+
+fyi_mac_builder(
     name = "mac-hermetic-upgrade-rel",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -1875,8 +1994,8 @@ ci.builder(
     os = os.WINDOWS_10,
     notifies = ["Win 10 Fast Ring"],
     goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -1888,7 +2007,7 @@ ci.builder(
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
     reclient_jobs = 150,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -1912,8 +2031,8 @@ ci.builder(
         category = "win",
     ),
     os = os.WINDOWS_DEFAULT,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -1927,6 +2046,6 @@ ci.builder(
     notifies = ["annotator-rel"],
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )

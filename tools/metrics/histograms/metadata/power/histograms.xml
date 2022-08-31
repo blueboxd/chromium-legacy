@@ -496,6 +496,36 @@ chromium-metrics-reviews@google.com.
   <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
+<histogram name="PerformanceMonitor.UsageScenario.LongInterval"
+    enum="PerformanceMonitor.UsageScenario.LongInterval"
+    expires_after="2023-06-18">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Record the usage scenario that applies to the last 2 mins of Chrome use.
+    Recorded every two minutes on a timer. For more information on user
+    scenarios see go/chrome_power_use_per_scenario.
+
+    Values in the enum match the variants present in the
+    &quot;UsageScenario&quot; variants.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.UsageScenario.ShortInterval"
+    enum="PerformanceMonitor.UsageScenario.ShortInterval"
+    expires_after="2023-06-18">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Record the usage scenario that applies to the last 10 seconds of Chrome use.
+    Recorded every two minutes on a timer. For more information on user
+    scenarios see go/chrome_power_use_per_scenario.
+
+    Values in the enum match the variants present in the
+    &quot;UsageScenario10Sec&quot; variants.
+  </summary>
+</histogram>
+
 <histogram name="Power.AdaptiveChargingBatteryPercentageOnUnplug" units="%"
     expires_after="2023-03-19">
   <owner>dbasehore@chromium.org</owner>
@@ -1568,7 +1598,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IOPMPowerSource.SamplingEventDelta" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1579,7 +1609,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IOPMPowerSource.SamplingEventDelta.MediumTimes"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1677,7 +1707,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-11-13">
+<histogram base="true" name="Power.Mac" units="mW" expires_after="2023-01-15">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -2062,7 +2092,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PowerML.SmartDimComponent.LoadComponentEvent"
     enum="PowerMLSmartDimComponentLoadComponentEvent"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2073,7 +2103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.VersionType"
-    enum="PowerMLSmartDimComponentVersionType" expires_after="2022-11-01">
+    enum="PowerMLSmartDimComponentVersionType" expires_after="2023-01-15">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2084,7 +2114,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.WorkerType"
-    enum="PowerMLSmartDimComponentWorkerType" expires_after="2022-11-01">
+    enum="PowerMLSmartDimComponentWorkerType" expires_after="2023-01-15">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>

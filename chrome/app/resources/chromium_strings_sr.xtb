@@ -13,6 +13,7 @@
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1203500561924088507">Хвала вам на инсталацији. Потребно је да рестартујете прегледач пре него што почнете да користите <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1315551408014407711">Подесите нов Chromium профил</translation>
+<translation id="1385859895174722837">Google помоћник у Chromium-у</translation>
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
 <translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
 <translation id="1524282610922162960">Делите Chromium картицу</translation>
@@ -24,6 +25,7 @@
 Дозволе које сте већ дали веб-сајтовима и апликацијама могу да важе за овај налог. Google налозима можете да управљате у <ph name="SETTINGS_LINK_BEGIN" />Подешавањима<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Преузимање...</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
+<translation id="17264556997921157">Можете да видите и уклоните теме интересовања које сајтови користе да би вам приказивали огласе. Chromium процењује ваша интересовања на основу недавне историје прегледања.</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="1808667845054772817">Поново инсталирај Chromium</translation>
@@ -42,6 +44,7 @@
 <translation id="2018879682492276940">Инсталација није успела. Пробајте поново.</translation>
 <translation id="2020032459870799438">Да бисте проверили да ли су остале лозинке безбедне од упада у податке и других безбедносних проблема, <ph name="BEGIN_LINK" />пријавите се у Chromium<ph name="END_LINK" />.</translation>
 <translation id="2049376729098081731">Одаберите да ли ћете уврстити историју Chromium-а ради персонализованијих доживљаја у Google услугама</translation>
+<translation id="2088953378266246249">Информације о томе како Chromium управља сертификатима основног нивоа</translation>
 <translation id="2174178932569897599">Прилагодите Chromium</translation>
 <translation id="2174917724755363426">Инсталација није довршена. Желите стварно да је откажете?</translation>
 <translation id="2185166961232948079">Chromium – пријављивање на мрежу – <ph name="PAGE_TITLE" /></translation>
@@ -103,6 +106,7 @@
 <translation id="3474745554856756813">Овим ћете избрисати <ph name="ITEMS_COUNT" /> ставке(и) са овог уређаја. Да бисте касније вратили податке, пријавите се у Chromium као <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">Помоћу пречице <ph name="SHORTCUT" /> можете да прелазите са једног Chromium профила на други</translation>
 <translation id="3509308970982693815">Затворите све Chromium прозоре и покушајте поново.</translation>
+<translation id="3518180795744733843">Google помоћник у Chromium-у може да довршава радње за вас на веб-сајтовима</translation>
 <translation id="3533435340678213462">Ради заштите приватности аутоматски бришемо интересовања старија од 4 недеље. Када наставите да прегледате, интересовање ће се можда поново појавити на листи. Можете и да уклањате интересовања за која не желите да их Chromium узима у обзир.</translation>
 <translation id="3567254597502212821">Историја прегледања, евиденција сајтова које сте посетили помоћу Chromium-а на овом уређају.</translation>
 <translation id="3575459661164320785">На рачунару постоји штетан софтвер. Chromium може да га уклони, врати подешавања и онемогући додатке да би прегледач могао поново да ради уобичајено.</translation>
@@ -365,6 +369,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="9185526690718004400">Поново покрени да би се &amp;Chromium ажурирао</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium можда неће исправно функционисати зато што више није подржан на Windows XP-у или Windows Vista-и</translation>
+<translation id="942598560705308788">Сертификати којима управља Chromium</translation>
 <translation id="945990405696787151">Да бисте добијали будућа Chromium ажурирања, треба вам macOS 10.13 или новија верзија. Овај рачунар користи ОС X 10.11.</translation>
 <translation id="965162752251293939">Ко користи Chromium?</translation>
 <translation id="967427899662692980">Набавите најјачу Chromium заштиту</translation>

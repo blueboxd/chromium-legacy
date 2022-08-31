@@ -10,7 +10,7 @@
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import '../../controls/settings_slider.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './switch_access_action_assignment_dialog.js';
 import './switch_access_setup_guide_dialog.js';
 import './switch_access_setup_guide_warning_dialog.js';
@@ -68,8 +68,11 @@ function ticksWithCountingLabels(ticks) {
  */
 const SettingsSwitchAccessSubpageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, PrefsBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -144,7 +147,7 @@ class SettingsSwitchAccessSubpageElement extends
       maxScanSpeedMs_: {
         readOnly: true,
         type: Number,
-        value: AUTO_SCAN_SPEED_RANGE_MS[AUTO_SCAN_SPEED_RANGE_MS.length - 1]
+        value: AUTO_SCAN_SPEED_RANGE_MS[AUTO_SCAN_SPEED_RANGE_MS.length - 1],
       },
 
       /** @private {string} */
@@ -173,7 +176,7 @@ class SettingsSwitchAccessSubpageElement extends
       maxPointScanSpeed_: {
         readOnly: true,
         type: Number,
-        value: POINT_SCAN_SPEED_RANGE_DIPS_PER_SECOND.length
+        value: POINT_SCAN_SPEED_RANGE_DIPS_PER_SECOND.length,
       },
 
       /** @private {number} */

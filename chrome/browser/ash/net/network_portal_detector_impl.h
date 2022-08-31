@@ -21,9 +21,9 @@
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/captive_portal/core/captive_portal_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -102,7 +102,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   void RemoveObserver(Observer* observer) override;
   CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
-  void Enable(bool start_detection) override;
+  void Enable() override;
   void StartPortalDetection() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 

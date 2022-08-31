@@ -31,8 +31,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/vm_launch/launch.pb.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
-#include "chromeos/dbus/vm_launch/launch.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace borealis {
@@ -134,6 +134,11 @@ void CreateDiskImage::RunInternal(BorealisContext* context) {
   request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
   request.set_disk_size(0);
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kBorealisStorageBallooning)) {
+    request.set_filesystem_type(vm_tools::concierge::EXT4);
+    request.set_storage_ballooning(true);
+  }
 
   ash::ConciergeClient::Get()->CreateDiskImage(
       std::move(request), base::BindOnce(&CreateDiskImage::OnCreateDiskImage,

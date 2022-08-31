@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <crt_externs.h>
 
 #include "base/check.h"
 #include "base/check_op.h"

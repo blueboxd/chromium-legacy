@@ -15,12 +15,10 @@ namespace chromecast {
 
 CoreBrowserCastService::CoreBrowserCastService(
     CastWebService* web_service,
-    NetworkContextGetter network_context_getter,
-    media::VideoPlaneController* video_plane_controller)
-    : app_dispatcher_(web_service,
-                      this,
-                      std::move(network_context_getter),
-                      video_plane_controller) {}
+    cast_receiver::ApplicationClient& application_client)
+    : app_dispatcher_(web_service, this, application_client) {}
+
+CoreBrowserCastService::~CoreBrowserCastService() = default;
 
 void CoreBrowserCastService::InitializeInternal() {}
 
@@ -43,10 +41,6 @@ void CoreBrowserCastService::StopInternal() {
 
 std::unique_ptr<CastEventBuilder> CoreBrowserCastService::CreateEventBuilder() {
   return std::make_unique<CastEventBuilderSimple>();
-}
-
-const std::string& CoreBrowserCastService::GetAudioChannelEndpoint() {
-  return app_dispatcher_.GetCastMediaServiceEndpoint();
 }
 
 WebCryptoServer* CoreBrowserCastService::GetWebCryptoServer() {

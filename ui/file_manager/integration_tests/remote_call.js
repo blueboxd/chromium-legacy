@@ -510,8 +510,7 @@ export class RemoteCallFilesApp extends RemoteCall {
       return this.callRemoteTestUtil('getWindows', null, []);
     }
 
-    return JSON.parse(
-        await sendTestMessage({name: 'getWindowsSWA', isSWA: true}));
+    return JSON.parse(await sendTestMessage({name: 'getWindowsSWA'}));
   }
 
   /**
@@ -865,38 +864,6 @@ export class RemoteCallFilesApp extends RemoteCall {
   expandVolumeInDirectoryTree(appId, volumeType) {
     return this.expandTreeItemInDirectoryTree(
         appId, `[volume-type-for-testing="${volumeType}"]`);
-  }
-
-  /**
-   * Navigates to specified directory on the specified volume by using directory
-   * tree.
-   * DEPRECATED: Use background.js:navigateWithDirectoryTree instead
-   * crbug.com/996626.
-   */
-  async navigateWithDirectoryTree(
-      appId, path, rootLabel, volumeType = 'downloads') {
-    await this.expandDirectoryTreeFor(appId, path, volumeType);
-
-    // Select target path.
-    await this.callRemoteTestUtil(
-        'fakeMouseClick', appId, [`[full-path-for-testing="${path}"]`]);
-
-    // Entries within Drive starts with /root/ but it isn't displayed in the
-    // breadcrubms used by waitUntilCurrentDirectoryIsChanged.
-    path = path.replace(/^\/root/, '')
-               .replace(/^\/team_drives/, '')
-               .replace(/^\/Computers/, '');
-
-    // TODO(lucmult): Remove this once MyFilesVolume is rolled out.
-    // Remove /Downloads duplication when MyFilesVolume is enabled.
-    if (volumeType == 'downloads' && path.startsWith('/Downloads') &&
-        rootLabel.endsWith('/Downloads')) {
-      rootLabel = rootLabel.replace('/Downloads', '');
-    }
-
-    // Wait until the Files app is navigated to the path.
-    return this.waitUntilCurrentDirectoryIsChanged(
-        appId, `/${rootLabel}${path}`);
   }
 
   /**

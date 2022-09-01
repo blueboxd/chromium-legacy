@@ -466,7 +466,7 @@ void SecurityKeysCredentialHandler::HandleUpdateUserInformation(
 
   device::PublicKeyCredentialUserEntity updated_user(
       std::move(user_handle), std::move(new_username),
-      std::move(new_displayname), absl::nullopt);
+      std::move(new_displayname));
 
   credential_management_->UpdateUserInformation(
       std::move(credential_id), std::move(updated_user),
@@ -1136,13 +1136,11 @@ void PasskeysHandler::HandleHasPasskeys(const base::Value::List& args) {
 
   AllowJavascript();
   std::unique_ptr<LocalCredentialManagement> local_cred_man =
-      LocalCredentialManagement::Create();
-  local_cred_man->HasCredentials(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
-      base::BindOnce(&PasskeysHandler::OnHasPasskeysComplete,
-                     weak_factory_.GetWeakPtr(), args[0].GetString(),
-                     std::move(local_cred_man)));
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
+  local_cred_man->HasCredentials(base::BindOnce(
+      &PasskeysHandler::OnHasPasskeysComplete, weak_factory_.GetWeakPtr(),
+      args[0].GetString(), std::move(local_cred_man)));
 }
 
 void PasskeysHandler::OnHasPasskeysComplete(
@@ -1163,13 +1161,11 @@ void PasskeysHandler::HandleEnumerate(const base::Value::List& args) {
 
 void PasskeysHandler::DoEnumerate(std::string callback_id) {
   std::unique_ptr<LocalCredentialManagement> local_cred_man =
-      LocalCredentialManagement::Create();
-  local_cred_man->Enumerate(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
-      base::BindOnce(&PasskeysHandler::OnEnumerateComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback_id),
-                     std::move(local_cred_man)));
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
+  local_cred_man->Enumerate(base::BindOnce(
+      &PasskeysHandler::OnEnumerateComplete, weak_factory_.GetWeakPtr(),
+      std::move(callback_id), std::move(local_cred_man)));
 }
 
 void PasskeysHandler::OnEnumerateComplete(
@@ -1212,10 +1208,9 @@ void PasskeysHandler::HandleDelete(const base::Value::List& args) {
   DCHECK(ok);
 
   std::unique_ptr<LocalCredentialManagement> local_cred_man =
-      LocalCredentialManagement::Create();
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
   local_cred_man->Delete(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
       credential_id,
       base::BindOnce(&PasskeysHandler::OnDeleteComplete,
                      weak_factory_.GetWeakPtr(), args[0].GetString(),

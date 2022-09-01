@@ -352,8 +352,8 @@
       status: "stable",
     },
     {
-      name: "ClickPointerEvent",
-      status: "stable",
+      name: "ClickToCapturedPointer",
+      status: "experimental",
     },
     {
       name: "ClientHintsMetaEquivDelegateCH",
@@ -549,6 +549,10 @@
       status: "test",
     },
     {
+      name: "CSSFontFaceSrcTechParsing",
+      status: "experimental"
+    },
+    {
       name: "CSSFontFamilyMath",
       status: "experimental",
       implied_by: ["MathMLCore"],
@@ -689,12 +693,12 @@
       name: "CSSScrollbars",
       status: "test",
     },
-    // Support for declarative parts of scroll-animations-1.
+    // Support for scroll-timeline.
     //
-    // https://drafts.csswg.org/scroll-animations-1/
+    // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-shorthand
     {
       name: "CSSScrollTimeline",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSSelectorFragmentAnchor",
@@ -713,7 +717,7 @@
       // https://drafts.csswg.org/css-text-decor-4/#valdef-text-decoration-line-spelling-error
       // https://drafts.csswg.org/css-text-decor-4/#valdef-text-decoration-line-grammar-error
       name: "CSSSpellingGrammarErrors",
-      status: "test",
+      status: "experimental",
     },
     {
       // https://drafts.csswg.org/css-contain-3/#style-container
@@ -2190,6 +2194,15 @@
     {
       name: "SubresourceWebBundles",
       status: "experimental"
+    },
+    {
+      // When a Web application calls getDisplayMedia() and asks for video,
+      // allow a hint to be provided to offer the user an option to
+      // dynamically switch the source display surface during the capture.
+      //
+      // https://github.com/w3c/mediacapture-screen-share/pull/225/files
+      name: "SurfaceSwitchingConstraint",
+      status: "stable",
     },
     {
       name: "SVGTextNG",

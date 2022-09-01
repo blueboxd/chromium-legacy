@@ -1512,8 +1512,6 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
 
-  DCHECK(_owner->node()->IsDataValid());
-
   if (ui::IsNameExposedInAXValueForRole([self internalRole])) {
     std::u16string name = _owner->GetTextContentUTF16();
     // Leaf node with aria-label will have empty text content.
@@ -2189,7 +2187,8 @@ bool content::IsNSRange(id value) {
     if (index < 0)
       return nil;
 
-    const BrowserAccessibility* root = _owner->manager()->GetRoot();
+    const BrowserAccessibility* root =
+        _owner->manager()->GetBrowserAccessibilityRoot();
     if (!root)
       return nil;
 

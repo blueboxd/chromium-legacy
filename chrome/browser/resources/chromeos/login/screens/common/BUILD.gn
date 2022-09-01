@@ -24,10 +24,8 @@ group("polymer3_elements") {
     ":family_link_notice_module",
     ":fingerprint_setup_module",
     ":gaia_signin_module",
-    ":gesture_navigation_module",
     ":guest_tos_module",
     ":hw_data_collection_module",
-    ":marketing_opt_in_module",
     ":multidevice_setup_module",
     ":offline_ad_login_module",
     ":oobe_eula_module",
@@ -37,7 +35,6 @@ group("polymer3_elements") {
     ":signin_fatal_error_module",
     ":smart_privacy_protection_module",
     ":sync_consent_module",
-    ":theme_selection_module",
     ":tpm_error_module",
     ":user_creation_module",
     ":wrong_hwid_module",
@@ -69,11 +66,11 @@ js_type_check("closure_compile_local") {
     ":family_link_notice.m",
     ":fingerprint_setup.m",
     ":gaia_signin.m",
-    ":gesture_navigation.m",
+    ":gesture_navigation",
     ":guest_tos.m",
     ":hw_data_collection.m",
     ":managed_terms_of_service",
-    ":marketing_opt_in.m",
+    ":marketing_opt_in",
     ":offline_ad_login.m",
     ":oobe_eula.m",
     ":oobe_reset",
@@ -86,7 +83,7 @@ js_type_check("closure_compile_local") {
     ":signin_fatal_error.m",
     ":smart_privacy_protection.m",
     ":sync_consent.m",
-    ":theme_selection.m",
+    ":theme_selection",
     ":tpm_error.m",
     ":user_creation.m",
     ":wrong_hwid.m",
@@ -262,8 +259,8 @@ js_library("fingerprint_setup.m") {
   extra_deps = [ ":fingerprint_setup_module" ]
 }
 
-js_library("gesture_navigation.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gesture_navigation.m.js" ]
+js_library("gesture_navigation") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gesture_navigation.js" ]
   deps = [
     "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -275,7 +272,7 @@ js_library("gesture_navigation.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":gesture_navigation_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("gaia_signin.m") {
@@ -353,8 +350,8 @@ js_library("managed_terms_of_service") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("marketing_opt_in.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/marketing_opt_in.m.js" ]
+js_library("marketing_opt_in") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/marketing_opt_in.js" ]
   deps = [
     "../../components:display_manager_types.m",
     "../../components:oobe_a11y_option.m",
@@ -367,7 +364,7 @@ js_library("marketing_opt_in.m") {
   ]
   externs_list =
       [ "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js" ]
-  extra_deps = [ ":marketing_opt_in_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("multidevice_setup.m") {
@@ -590,8 +587,8 @@ js_library("sync_consent.m") {
   extra_deps = [ ":sync_consent_module" ]
 }
 
-js_library("theme_selection.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/theme_selection.m.js" ]
+js_library("theme_selection") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/theme_selection.js" ]
   deps = [
     "../../components:display_manager_types.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -601,7 +598,7 @@ js_library("theme_selection.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":theme_selection_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("tpm_error.m") {
@@ -745,15 +742,6 @@ polymer_modulizer("gaia_signin") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
-polymer_modulizer("gesture_navigation") {
-  js_file = "gesture_navigation.js"
-  html_file = "gesture_navigation.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("guest_tos") {
   js_file = "guest_tos.js"
   html_file = "guest_tos.html"
@@ -770,15 +758,6 @@ polymer_modulizer("hw_data_collection") {
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
   migrated_imports = oobe_migrated_imports
-}
-
-polymer_modulizer("marketing_opt_in") {
-  js_file = "marketing_opt_in.js"
-  html_file = "marketing_opt_in.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
 }
 
 polymer_modulizer("multidevice_setup") {
@@ -866,14 +845,6 @@ polymer_modulizer("sync_consent") {
   migrated_imports = oobe_migrated_imports
 }
 
-polymer_modulizer("theme_selection") {
-  js_file = "theme_selection.js"
-  html_file = "theme_selection.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("tpm_error") {
   js_file = "tpm_error.js"
   html_file = "tpm_error.html"
@@ -902,10 +873,13 @@ html_to_js("web_components") {
   js_files = [
     "adb_sideloading.js",
     "arc_terms_of_service.js",
+    "gesture_navigation.js",
     "managed_terms_of_service.js",
+    "marketing_opt_in.js",
     "oobe_reset.js",
     "parental_handoff.js",
     "pin_setup.js",
     "saml_confirm_password.js",
+    "theme_selection.js",
   ]
 }

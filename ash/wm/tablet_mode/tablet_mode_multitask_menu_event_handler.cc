@@ -49,7 +49,7 @@ void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
   aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window ||
       !active_window->Contains(static_cast<aura::Window*>(event->target())) ||
-      !WindowState::Get(active_window)->CanResize()) {
+      !WindowState::Get(active_window)->CanMaximize()) {
     return;
   }
 
@@ -110,12 +110,6 @@ void TabletModeMultitaskMenuEventHandler::ShowMultitaskMenu(
 
 void TabletModeMultitaskMenuEventHandler::CloseMultitaskMenu() {
   multitask_menu_.reset();
-}
-
-void TabletModeMultitaskMenuEventHandler::HideMultitaskMenu() {
-  // TODO(sophiewen): Replace with CloseMultitaskMenu.
-  if (multitask_menu_)
-    multitask_menu_->Hide();
 }
 
 }  // namespace ash

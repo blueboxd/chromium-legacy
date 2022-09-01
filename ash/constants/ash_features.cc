@@ -331,15 +331,6 @@ const base::Feature kCellularBypassESimInstallationConnectivityCheck{
 const base::Feature kCellularCustomAPNProfiles{
     "CellularCustomAPNProfiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the value of |kCellularUseAttachApn| should have no effect and
-// and the LTE attach APN configuration will not be sent to the modem. This
-// flag exists because the |kCellularUseAttachApn| flag can be enabled
-// by command-line arguments via board overlays which takes precedence over
-// server-side field trial config, which may be needed to turn off the Attach
-// APN feature.
-const base::Feature kCellularForbidAttachApn{"CellularForbidAttachApn",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, send the LTE attach APN configuration to the modem.
 const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -671,11 +662,6 @@ const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess{
     "EnableSamlNotificationOnPasswordChangeSuccess",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables SAML re-authentication on the lock screen once the sign-in time
-// limit expires.
-const base::Feature kEnableSamlReauthenticationOnLockscreen{
-    "EnableSamlReauthenticationOnLockScreen", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableSavedDesks{"EnableSavedDesks",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -828,7 +814,7 @@ const base::Feature kGlanceables{"Glanceables",
 
 // Enable GuestOS integration with the files app.
 const base::Feature kGuestOsFiles{"GuestOsFiles",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Gaia reauth endpoint with deleted user customization page.
 const base::Feature kGaiaReauthEndpoint{"GaiaReauthEndpoint",
@@ -1359,7 +1345,7 @@ const base::Feature kProjectorUseOAuthForGetVideoInfo(
 // Controls whether to allow viewing screencast with local playback URL when
 // screencast is being transcoded.
 const base::Feature kProjectorLocalPlayback("ProjectorLocalPlayback",
-                                            base::FEATURE_DISABLED_BY_DEFAULT);
+                                            base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable features that are not ready to enable by
 // default but ready for internal testing.
@@ -2465,10 +2451,6 @@ bool IsSamlNotificationOnPasswordChangeSuccessEnabled() {
       kEnableSamlNotificationOnPasswordChangeSuccess);
 }
 
-bool IsSamlReauthenticationOnLockscreenEnabled() {
-  return base::FeatureList::IsEnabled(kEnableSamlReauthenticationOnLockscreen);
-}
-
 bool IsSavedDesksEnabled() {
   return base::FeatureList::IsEnabled(kEnableSavedDesks);
 }
@@ -2603,9 +2585,7 @@ bool ShouldShowPlayStoreInDemoMode() {
 }
 
 bool ShouldUseAttachApn() {
-  // See comment on |kCellularForbidAttachApn| for details.
-  return !base::FeatureList::IsEnabled(kCellularForbidAttachApn) &&
-         base::FeatureList::IsEnabled(kCellularUseAttachApn);
+  return base::FeatureList::IsEnabled(kCellularUseAttachApn);
 }
 
 bool ShouldUseV1DeviceSync() {

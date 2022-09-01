@@ -1,4 +1,4 @@
-file://ash/webui/PLATFORM_OWNERS
+file://chrome/browser/ui/webui/ash/OWNERS
 
 per-file *bluetooth*=file://ui/webui/resources/cr_components/chromeos/bluetooth/OWNERS
 per-file *net*=file://ui/webui/resources/cr_components/chromeos/network/OWNERS

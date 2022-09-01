@@ -203,9 +203,6 @@ const base::Feature kClearCrossSiteCrossBrowsingContextGroupWindowName{
     "ClearCrossSiteCrossBrowsingContextGroupWindowName",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClickPointerEvent{"ClickPointerEvent",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCompositeBGColorAnimation{
     "CompositeBGColorAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -473,6 +470,13 @@ const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
 // general overview.
 const base::Feature kIsolatedWebApps{"IsolatedWebApps",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables process isolation of fenced content (content inside fenced frames)
+// from non-fenced content. See
+// https://github.com/WICG/fenced-frame/blob/master/explainer/process_isolation.md
+// for rationale and more details.
+const base::Feature kIsolateFencedFrames{"IsolateFencedFrames",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via

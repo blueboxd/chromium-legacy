@@ -554,6 +554,8 @@ std::string SetAllowedPref(Profile* profile,
       return "Invalid value type.";
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     DCHECK(value.is_bool());
+  } else if (pref_name == ash::prefs::kEnableAutoScreenLock) {
+    DCHECK(value.is_bool());
   } else if (pref_name == prefs::kLanguagePreloadEngines) {
     DCHECK(value.is_string());
   } else if (pref_name == plugin_vm::prefs::kPluginVmCameraAllowed) {
@@ -4567,8 +4569,17 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
             expected_state));
   }
 
-  const ash::WMEvent event(ToWMEventType(params->change.event_type));
-  ash::WindowState::Get(window)->OnWMEvent(&event);
+  if (params->change.event_type ==
+          api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT ||
+      params->change.event_type ==
+          api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT) {
+    const ash::WindowSnapWMEvent event(
+        ToWMEventType(params->change.event_type));
+    ash::WindowState::Get(window)->OnWMEvent(&event);
+  } else {
+    const ash::WMEvent event(ToWMEventType(params->change.event_type));
+    ash::WindowState::Get(window)->OnWMEvent(&event);
+  }
 
   if (!wait) {
     return RespondNow(WithArguments(
@@ -5015,7 +5026,26 @@ AutotestPrivateGetDeskCountFunction::~AutotestPrivateGetDeskCountFunction() =
     default;
 
 ExtensionFunction::ResponseAction AutotestPrivateGetDeskCountFunction::Run() {
-  return RespondNow(WithArguments(ash::AutotestDesksApi().GetDeskCount()));
+  return RespondNow(
+      WithArguments(ash::AutotestDesksApi().GetDesksInfo().num_desks));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetDesksInfoFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetDesksInfoFunction::AutotestPrivateGetDesksInfoFunction() =
+    default;
+AutotestPrivateGetDesksInfoFunction::~AutotestPrivateGetDesksInfoFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetDesksInfoFunction::Run() {
+  ash::AutotestDesksApi::DesksInfo desks_info =
+      ash::AutotestDesksApi().GetDesksInfo();
+  base::Value::Dict result;
+  result.Set("activeDeskIndex", desks_info.active_desk_index);
+  result.Set("numDesks", desks_info.num_desks);
+  return RespondNow(WithArguments(std::move(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

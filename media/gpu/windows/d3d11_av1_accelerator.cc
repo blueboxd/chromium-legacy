@@ -493,14 +493,20 @@ void D3D11AV1Accelerator::FillPicParams(
   pp->cdef.damping = frame_header.cdef.damping - coeff_shift - 3u;
   pp->cdef.bits = frame_header.cdef.bits;
   for (size_t i = 0; i < libgav1::kMaxCdefStrengths; ++i) {
+    // libgav1's computation will give values of |4| for secondary strengths
+    // despite it being a two-bit entry with range 0-3, so check for this, and
+    // subtract.
+    // See https://aomediacodec.github.io/av1-spec/#cdef-params-syntax
+    uint8_t y_str = frame_header.cdef.y_secondary_strength[i] >> coeff_shift;
+    uint8_t uv_str = frame_header.cdef.uv_secondary_strength[i] >> coeff_shift;
+    y_str = y_str == 4 ? 3 : y_str;
+    uv_str = uv_str == 4 ? 3 : uv_str;
     pp->cdef.y_strengths[i].primary =
         frame_header.cdef.y_primary_strength[i] >> coeff_shift;
-    pp->cdef.y_strengths[i].secondary =
-        frame_header.cdef.y_secondary_strength[i] >> coeff_shift;
+    pp->cdef.y_strengths[i].secondary = y_str;
     pp->cdef.uv_strengths[i].primary =
         frame_header.cdef.uv_primary_strength[i] >> coeff_shift;
-    pp->cdef.uv_strengths[i].secondary =
-        frame_header.cdef.uv_secondary_strength[i] >> coeff_shift;
+    pp->cdef.uv_strengths[i].secondary = uv_str;
   }
 
   pp->interp_filter = frame_header.interpolation_filter;
@@ -554,12 +560,19 @@ void D3D11AV1Accelerator::FillPicParams(
       pp->film_grain.ar_coeffs_cb[i] = fg.auto_regression_coeff_u[i] + 128;
       pp->film_grain.ar_coeffs_cr[i] = fg.auto_regression_coeff_v[i] + 128;
     }
-    pp->film_grain.cb_mult = fg.u_multiplier;
-    pp->film_grain.cb_luma_mult = fg.u_luma_multiplier;
-    pp->film_grain.cb_offset = fg.u_offset;
-    pp->film_grain.cr_mult = fg.v_multiplier;
-    pp->film_grain.cr_luma_mult = fg.v_luma_multiplier;
-    pp->film_grain.cr_offset = fg.v_offset;
+    // libgav1 will provide the multipliers by subtracting 128 and the offsets
+    // by subtracting 256. Restore values as DXVA spec requires values without
+    // subtraction.
+    if (fg.num_u_points > 0) {
+      pp->film_grain.cb_mult = fg.u_multiplier + 128;
+      pp->film_grain.cb_luma_mult = fg.u_luma_multiplier + 128;
+      pp->film_grain.cb_offset = fg.u_offset + 256;
+    }
+    if (fg.num_v_points > 0) {
+      pp->film_grain.cr_mult = fg.v_multiplier + 128;
+      pp->film_grain.cr_luma_mult = fg.v_luma_multiplier + 128;
+      pp->film_grain.cr_offset = fg.v_offset + 256;
+    }
   }
 
   // StatusReportFeedbackNumber "should not be equal to 0"... but it crashes :|

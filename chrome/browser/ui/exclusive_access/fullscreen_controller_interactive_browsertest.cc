@@ -958,14 +958,14 @@ IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
 
 // TODO(crbug.com/1034772): Disabled on Windows, where views::FullscreenHandler
 // implements fullscreen by directly obtaining MONITORINFO, ignoring the mocked
-// display::Screen configuration used in this test. Disabled on Mac and Linux,
-// where the window server's async handling of the fullscreen window state may
-// transition the window into fullscreen on the actual (non-mocked) display
-// bounds before or after the window bounds checks, yielding flaky results.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_SameDisplayAndSwap DISABLED_SameDisplayAndSwap
-#else
+// display::Screen configuration used in this test. Disabled on Linux, where the
+// window server's async handling of the fullscreen window state may transition
+// the window into fullscreen on the actual (non-mocked) display bounds before
+// or after the window bounds checks, yielding flaky results.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
 #define MAYBE_SameDisplayAndSwap SameDisplayAndSwap
+#else
+#define MAYBE_SameDisplayAndSwap DISABLED_SameDisplayAndSwap
 #endif
 // Test requesting fullscreen on the current display and then swapping displays.
 IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
@@ -975,11 +975,14 @@ IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
 
   // Execute JS to request fullscreen on the current display (on the left).
   RequestContentFullscreen();
-  EXPECT_EQ(gfx::Rect(0, 0, 800, 800), browser()->window()->GetBounds());
+  const display::Screen* screen = display::Screen::GetScreen();
+  const auto first_display = screen->GetAllDisplays()[0];
+  EXPECT_EQ(first_display.bounds(), browser()->window()->GetBounds());
 
   // Execute JS to request fullscreen on the other display (on the right).
   RequestContentFullscreenOnScreen(1);
-  EXPECT_EQ(gfx::Rect(800, 0, 800, 800), browser()->window()->GetBounds());
+  const auto second_display = screen->GetAllDisplays()[1];
+  EXPECT_EQ(second_display.bounds(), browser()->window()->GetBounds());
 
   ExitContentFullscreen();
   EXPECT_EQ(original_bounds, browser()->window()->GetBounds());
@@ -1128,7 +1131,7 @@ IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
       ->UpdateExclusiveAccessExitBubbleContent(
           browser()->exclusive_access_manager()->GetExclusiveAccessBubbleURL(),
           EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, std::move(callback),
-          /*force_update=*/false);
+          /*notify_download=*/false, /*force_update=*/false);
   run_loop.Run();
   EXPECT_FALSE(IsExclusiveAccessBubbleDisplayed());
 
@@ -1173,6 +1176,60 @@ IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
   )";
   EXPECT_EQ(true, RequestContentFullscreenFromScript(
                       script, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+}
+
+// TODO(crbug.com/1034772): Disabled on Windows, where views::FullscreenHandler
+// implements fullscreen by directly obtaining MONITORINFO, ignoring the mocked
+// display::Screen configuration used in this test. Disabled on Mac and Linux,
+// where the window server's async handling of the fullscreen window state may
+// transition the window into fullscreen on the actual (non-mocked) display
+// bounds before or after the window bounds checks, yielding flaky results.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_OpenPopupWhileFullscreen DISABLED_OpenPopupWhileFullscreen
+#else
+#define MAYBE_OpenPopupWhileFullscreen OpenPopupWhileFullscreen
+#endif
+// Test opening a popup on a separate display while fullscreen.
+IN_PROC_BROWSER_TEST_F(MultiScreenFullscreenControllerInteractiveTest,
+                       MAYBE_OpenPopupWhileFullscreen) {
+  content::WebContents* tab = SetUpWindowPlacementTab();
+
+  BrowserList* browser_list = BrowserList::GetInstance();
+  EXPECT_EQ(1u, browser_list->size());
+  blocked_content::PopupBlockerTabHelper* popup_blocker =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(tab);
+  EXPECT_EQ(0u, popup_blocker->GetBlockedPopupsCount());
+
+  // Execute JS to request fullscreen on the first display (on the left).
+  RequestContentFullscreenOnScreen(0);
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 800), browser()->window()->GetBounds());
+
+  // Execute JS to open a popup on the other display (on the right).
+  const std::string script = R"(
+    (async () => {
+      const s = window.screenDetails.screens[1];
+      const l = s.availLeft + 100;
+      const t = s.availTop + 100;
+      const w = window.open('', '', `left=${l},top=${t},width=300,height=300`);
+      // Return true iff the opener is fullscreen and the popup is open.
+      return !!document.fullscreenElement && !!w && !w.closed;
+    })();
+  )";
+  content::ExecuteScriptAsync(tab, script);
+  Browser* popup = ui_test_utils::WaitForBrowserToOpen();
+  EXPECT_NE(popup, browser());
+  auto* popup_contents = popup->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetPrimaryMainFrame()));
+  EXPECT_EQ(0u, popup_blocker->GetBlockedPopupsCount());
+  EXPECT_EQ(2u, browser_list->size());
+
+  // The opener should still be fullscreen.
+  EXPECT_TRUE(IsWindowFullscreenForTabOrPending());
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 800), browser()->window()->GetBounds());
+  // Popup window activation is delayed until its opener exits fullscreen.
+  EXPECT_EQ(browser(), browser_list->GetLastActive());
+  ToggleTabFullscreen(/*enter_fullscreen=*/false);
+  EXPECT_EQ(popup, browser_list->GetLastActive());
 }
 
 // Tests FullscreenController support for fullscreen companion windows.

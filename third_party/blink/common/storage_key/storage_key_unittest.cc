@@ -221,25 +221,27 @@ TEST(StorageKeyTest, SerializePartitioned) {
   net::SchemefulSite SiteTest(GURL("https://test.example"));
 
   struct {
-    const std::pair<const char*, const net::SchemefulSite&>
-        origin_and_top_level_site;
+    const char* origin;
+    const net::SchemefulSite& top_level_site;
+    const mojom::AncestorChainBit ancestor_chain_bit;
     const char* expected_serialization;
   } kTestCases[] = {
-      // 3p context case
-      // TODO(https://crbug.com/1287130): Correctly infer the actual ancestor
-      // chain bit value - will currently be serialized as same-site.
-      {{"https://example.com/", SiteTest},
-       "https://example.com/^0https://test.example^30"},
-      {{"https://sub.test.example/", SiteExample},
-       "https://sub.test.example/^0https://example.com^30"},
+      // 3p context cases
+      {"https://example.com/", SiteTest, mojom::AncestorChainBit::kCrossSite,
+       "https://example.com/^0https://test.example^31"},
+      {"https://sub.test.example/", SiteExample,
+       mojom::AncestorChainBit::kCrossSite,
+       "https://sub.test.example/^0https://example.com^31"},
+      {"https://example.com/", SiteExample, mojom::AncestorChainBit::kCrossSite,
+       "https://example.com/^0https://example.com^31"},
   };
 
   for (const auto& test : kTestCases) {
-    SCOPED_TRACE(test.origin_and_top_level_site.first);
-    const url::Origin origin =
-        url::Origin::Create(GURL(test.origin_and_top_level_site.first));
-    const net::SchemefulSite& site = test.origin_and_top_level_site.second;
-    StorageKey key = StorageKey::CreateForTesting(origin, site);
+    SCOPED_TRACE(test.origin);
+    const url::Origin origin = url::Origin::Create(GURL(test.origin));
+    const net::SchemefulSite& site = test.top_level_site;
+    StorageKey key = StorageKey::CreateWithOptionalNonce(
+        origin, site, nullptr, test.ancestor_chain_bit);
     EXPECT_EQ(test.expected_serialization, key.Serialize());
     EXPECT_EQ(test.expected_serialization, key.SerializeForLocalStorage());
   }
@@ -694,6 +696,88 @@ TEST(StorageKeyTest, CopyWithForceEnabledThirdPartyStoragePartitioning) {
               net::SchemefulSite(kOtherOrigin));
     EXPECT_EQ(storage_key_with_3psp.ancestor_chain_bit(),
               mojom::AncestorChainBit::kCrossSite);
+  }
+}
+
+TEST(StorageKeyTest, ToCookiePartitionKey) {
+  struct TestCase {
+    const StorageKey storage_key;
+    const absl::optional<net::CookiePartitionKey> expected;
+  };
+
+  auto nonce = base::UnguessableToken::Create();
+
+  {  // Cookie partitioning disabled.
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitWithFeatures(
+        {net::features::kThirdPartyStoragePartitioning},
+        {net::features::kPartitionedCookies,
+         net::features::kNoncedPartitionedCookies});
+
+    TestCase test_cases[] = {
+        {StorageKey(url::Origin::Create(GURL("https://www.example.com"))),
+         absl::nullopt},
+        {StorageKey::CreateForTesting(
+             url::Origin::Create(GURL("https://www.foo.com")),
+             url::Origin::Create(GURL("https://www.bar.com"))),
+         absl::nullopt},
+        {StorageKey::CreateWithNonce(
+             url::Origin::Create(GURL("https://www.example.com")), nonce),
+         absl::nullopt},
+    };
+    for (const auto& test_case : test_cases) {
+      EXPECT_EQ(test_case.expected,
+                test_case.storage_key.ToCookiePartitionKey());
+    }
+  }
+
+  {
+    // Nonced partitioned cookies enabled only.
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitWithFeatures(
+        {net::features::kThirdPartyStoragePartitioning,
+         net::features::kNoncedPartitionedCookies},
+        {net::features::kPartitionedCookies});
+
+    TestCase test_cases[] = {
+        {StorageKey(url::Origin::Create(GURL("https://www.example.com"))),
+         absl::nullopt},
+        {StorageKey::CreateWithNonce(
+             url::Origin::Create(GURL("https://www.example.com")), nonce),
+         net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com"),
+                                                    nonce)},
+    };
+    for (const auto& test_case : test_cases) {
+      EXPECT_EQ(test_case.expected,
+                test_case.storage_key.ToCookiePartitionKey());
+    }
+  }
+
+  {  // Cookie partitioning enabled.
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitWithFeatures(
+        {net::features::kThirdPartyStoragePartitioning,
+         net::features::kPartitionedCookies},
+        {});
+
+    TestCase test_cases[] = {
+        {StorageKey(url::Origin::Create(GURL("https://www.example.com"))),
+         net::CookiePartitionKey::FromURLForTesting(
+             GURL("https://www.example.com"))},
+        {StorageKey::CreateForTesting(
+             url::Origin::Create(GURL("https://www.foo.com")),
+             url::Origin::Create(GURL("https://www.bar.com"))),
+         net::CookiePartitionKey::FromURLForTesting(
+             GURL("https://subdomain.bar.com"))},
+        {StorageKey::CreateWithNonce(
+             url::Origin::Create(GURL("https://www.example.com")), nonce),
+         net::CookiePartitionKey::FromURLForTesting(
+             GURL("https://www.example.com"), nonce)},
+    };
+    for (const auto& test_case : test_cases) {
+      EXPECT_EQ(test_case.expected,
+                test_case.storage_key.ToCookiePartitionKey());
+    }
   }
 }
 

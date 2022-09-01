@@ -355,9 +355,10 @@ void BrowserAccessibilityManager::FireGeneratedEvent(
   }
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetRoot() const {
+BrowserAccessibility* BrowserAccessibilityManager::GetBrowserAccessibilityRoot()
+    const {
   ui::AXNode* root = GetRootAsAXNode();
-  return root ? GetFromID(root->id()) : nullptr;
+  return root ? GetFromAXNode(root) : nullptr;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
@@ -366,9 +367,6 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
   // `AXPlatformTreeManager`.
   if (!node)
     return nullptr;
-  // TODO(aleventhal) Why would node->GetManager() return null?
-  // TODO(aleventhal) Should we just use |this| as the manager in most cases? It
-  // looks like node->GetManager() may be slow because of AXTreeID usage.
   if (AXTreeManager* manager = node->GetManager()) {
     return static_cast<BrowserAccessibilityManager*>(manager)->GetFromID(
         node->id());
@@ -377,16 +375,11 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32_t id) const {
-  if (id == ui::kInvalidAXNodeID)
-    return nullptr;
   const auto iter = id_wrapper_map_.find(id);
   if (iter != id_wrapper_map_.end()) {
     DCHECK(iter->second);
     return iter->second.get();
   }
-  DCHECK(!ax_tree()->GetFromId(id))
-      << "BAM's map was missing id " << id
-      << ", but AXTree's map had it: " << *ax_tree()->GetFromId(id);
 
   return nullptr;
 }
@@ -548,12 +541,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     // but it should still be investigated and could be the sign of a
     // performance issue.
     DCHECK_LE(static_cast<int>(tree_update.nodes.size()), ax_tree()->size());
-    // Every node in the AXTree must also be in BAM's map. However, the BAM map
-    // can have extra nodes, specifically extra mac nodes from AXTableInfo.
-    DCHECK_GE(static_cast<int>(id_wrapper_map_.size()), ax_tree()->size());
   }
-
-  DCHECK(ax_tree()->root());
 
   EnsureParentConnectionIfNotRootManager();
 
@@ -605,7 +593,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   if (defer_load_complete_event_) {
     received_load_complete_event = true;
     defer_load_complete_event_ = false;
-    FireBlinkEvent(ax::mojom::Event::kLoadComplete, GetRoot(), -1);
+    FireBlinkEvent(ax::mojom::Event::kLoadComplete,
+                   GetBrowserAccessibilityRoot(), -1);
   }
 
   // Fire any events related to changes to the tree that come from ancestors of
@@ -681,7 +670,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       root_manager->CacheHitTestResult(event_target);
 
     if (event.event_type == ax::mojom::Event::kLoadComplete) {
-      DCHECK_EQ(event_target, GetRoot());
+      DCHECK_EQ(event_target, GetBrowserAccessibilityRoot());
       DCHECK(event_target->IsPlatformDocument());
 
       // Don't fire multiple load-complete events. One may have been added by
@@ -695,7 +684,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     }
 
     if (event.event_type == ax::mojom::Event::kLoadStart) {
-      DCHECK_EQ(event_target, GetRoot());
+      DCHECK_EQ(event_target, GetBrowserAccessibilityRoot());
       DCHECK(event_target->IsPlatformDocument());
       // If we already have a load-complete event, the load-start event is no
       // longer relevant. In addition, some code checks for the presence of
@@ -738,15 +727,17 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // as for some clusterfuzz runs.
   static int g_max_ax_tree_exercise_iterations = 3;  // Avoid timeouts.
   static int count = 0;
-  if (GetRoot()->GetChildCount() > 0 &&
-      !GetRoot()->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
+  if (GetBrowserAccessibilityRoot()->GetChildCount() > 0 &&
+      !GetBrowserAccessibilityRoot()->GetBoolAttribute(
+          ax::mojom::BoolAttribute::kBusy) &&
       ++count <= g_max_ax_tree_exercise_iterations) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(::switches::kForceRendererAccessibility)) {
       std::unique_ptr<ui::AXTreeFormatter> formatter(
           AXInspectFactory::CreatePlatformFormatter());
       formatter->SetPropertyFilters({{"*", ui::AXPropertyFilter::ALLOW}});
-      std::string formatted_tree = formatter->Format(GetRoot());
+      std::string formatted_tree =
+          formatter->Format(GetBrowserAccessibilityRoot());
       VLOG(1) << "\n\n******** Formatted tree ********\n\n"
               << formatted_tree << "\n*********************************\n\n";
     }
@@ -912,7 +903,7 @@ BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() const {
   BrowserAccessibility* obj = GetFromID(focus_id);
   // If nothing is focused, then the top document has the focus.
   if (!obj)
-    return GetRoot();
+    return GetBrowserAccessibilityRoot();
 
   if (obj->HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
     ui::AXTreeID child_tree_id = ui::AXTreeID::FromString(
@@ -1277,7 +1268,8 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
 
   // For android, this needs to be handled carefully. If not, there is a chance
   // of getting into infinite loop.
-  if (can_wrap_to_last_element && object->manager()->GetRoot() == object &&
+  if (can_wrap_to_last_element &&
+      object->manager()->GetBrowserAccessibilityRoot() == object &&
       object->PlatformChildCount() != 0) {
     return object->PlatformDeepestLastChild();
   }
@@ -1624,10 +1616,6 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   DCHECK(node);
-  DCHECK(node->IsDataValid());
-  DCHECK(tree->GetFromId(node->id()) || node->IsGenerated())
-      << "Node must be in AXTree's map, unless it's an ExtraMacNode.";
-
   id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
 
   if (tree->root() != node &&
@@ -1649,9 +1637,13 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
   auto iter = id_wrapper_map_.find(node->id());
   // TODO(crbug.com/1315661): This if statement ideally should never be entered.
   // Identify why we are entering this code path and fix the root cause.
-  SANITIZER_CHECK(iter != id_wrapper_map_.end())
-      << "Missing BrowserAccessibility* for node: " << *node
-      << "\nTree: " << tree->ToString();
+  if (iter == id_wrapper_map_.end()) {
+    bool success;
+    std::tie(iter, success) = id_wrapper_map_.insert(
+        {node->id(), BrowserAccessibility::Create(this, node)});
+    DCHECK(success);
+  }
+  DCHECK(iter != id_wrapper_map_.end());
   BrowserAccessibility* wrapper = iter->second.get();
   wrapper->SetNode(*node);
 }
@@ -1693,14 +1685,6 @@ ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(
   auto* manager = BrowserAccessibilityManager::FromID(tree_id);
   CHECK(manager);
   return manager->GetNode(node_id);
-}
-
-ui::AXNode* BrowserAccessibilityManager::GetNode(
-    const ui::AXNodeID node_id) const {
-  // This does not use ax_tree()->FromID(), because that uses a different map
-  // that does not contain extra mac nodes from AXTableInfo.
-  BrowserAccessibility* browser_accessibility = GetFromID(node_id);
-  return browser_accessibility ? browser_accessibility->node() : nullptr;
 }
 
 ui::AXPlatformNode* BrowserAccessibilityManager::GetPlatformNodeFromTree(
@@ -1914,7 +1898,7 @@ BrowserAccessibility* BrowserAccessibilityManager::ApproximateHitTest(
   if (cached_node_rtree_)
     return AXTreeHitTest(blink_screen_point);
 
-  return GetRoot()->ApproximateHitTest(blink_screen_point);
+  return GetBrowserAccessibilityRoot()->ApproximateHitTest(blink_screen_point);
 }
 
 void BrowserAccessibilityManager::DetachFromParentManager() {
@@ -1923,7 +1907,7 @@ void BrowserAccessibilityManager::DetachFromParentManager() {
 }
 
 void BrowserAccessibilityManager::BuildAXTreeHitTestCache() {
-  auto* root = GetRoot();
+  auto* root = GetBrowserAccessibilityRoot();
   if (!root)
     return;
 
@@ -2002,7 +1986,7 @@ void BrowserAccessibilityManager::DidActivatePortal(
     base::TimeTicks activation_time) {
   if (GetTreeData().loaded) {
     FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
-                       GetRoot());
+                       GetBrowserAccessibilityRoot());
   }
 }
 

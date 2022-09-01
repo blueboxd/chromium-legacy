@@ -25,6 +25,9 @@ class PromosManager {
   explicit PromosManager(PrefService* local_state);
   ~PromosManager();
 
+  // Returns the next promo for display, if any.
+  absl::optional<promos_manager::Promo> NextPromoForDisplay() const;
+
   // Initialize the Promos Manager by restoring state from Prefs. Must be called
   // after creation and before any other operation.
   void Init();
@@ -45,16 +48,24 @@ class PromosManager {
   NSArray<ImpressionLimit*>* PromoImpressionLimits(
       promos_manager::Promo promo) const;
 
-  // Returns the least recently shown promo given the set of currently active
-  // promo campaigns, `active_promos`. Assumes that `sorted_impressions` is
-  // sorted by day (most recent -> least recent).
+  // Returns a std::vector<promos_manager::Promo> that only includes promos in
+  // `active_promos`, sorted by day (least recent -> most recent).
   //
-  // When `active_promos` is empty, returns absl::nullopt.
+  // Assumes that `sorted_impressions` is sorted by day (most recent -> least
+  // recent).
   //
-  // When `sorted_impressions` is empty, no "least recently shown" promo
-  // exists—because no promo has ever been shown. In this case,
-  // return the first promo in `active_promos`.
-  absl::optional<promos_manager::Promo> LeastRecentlyShown(
+  // When `active_promos` or `sorted_impressions` is empty, returns an empty
+  // array.
+  //
+  // Promos that have never been shown before are considered less recently shown
+  // than promos that have been shown.
+  //
+  // Promos shown on the same day will be sorted by relative position. More
+  // concretely, even if two promos are shown on the same day, the promos with
+  // the lower index in the impressions history list will be considered more
+  // recently seen, as `sorted_impressions` is sorted by day (most recent ->
+  // least recent).
+  std::vector<promos_manager::Promo> LeastRecentlyShown(
       const std::set<promos_manager::Promo>& active_promos,
       const std::vector<promos_manager::Impression>& sorted_impressions) const;
 
@@ -93,13 +104,9 @@ class PromosManager {
       int window_days,
       NSArray<ImpressionLimit*>* impression_limits) const;
 
-  // Algorithm loops over pre-pruned & pre-sorted impressions history list.
-  // The algorithm assumes:
-  //
-  // (1) `valid_impressions` only contains impressions that occurred in the
-  // last `kNumDaysForStoringImpressionHistory` days. (2)
-  // `valid_impressions` is sorted by impression day (most recent -> least
-  // recent).
+  // Algorithm loops over pre-sorted impressions history list. The algorithm
+  // assumes `valid_impressions` is sorted by impression day (most recent ->
+  // least recent).
   //
   // At each impression, the algorithm asks if either a time-based or
   // time-agnostic impression limit has been met. If so, the algorithm exits
@@ -110,7 +117,7 @@ class PromosManager {
   // `promo`.
   bool CanShowPromo(
       promos_manager::Promo promo,
-      const std::vector<promos_manager::Impression>& valid_impressions) const;
+      const std::vector<promos_manager::Impression>& sorted_impressions) const;
 
   // Returns a list of impression counts (std::vector<int>) from a promo
   // impression counts map.
@@ -155,9 +162,13 @@ class PromosManager {
                            ReturnsLeastRecentlyShownWithoutImpressionHistory);
   FRIEND_TEST_ALL_PREFIXES(
       PromosManagerTest,
-      ReturnsNulloptWhenLeastRecentlyShownHasNoActivePromoCampaigns);
-  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
-                           ReturnsFirstUnshownPromoForLeastRecentlyShown);
+      ReturnsEmptyListWhenLeastRecentlyShownHasNoActivePromoCampaigns);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromosManagerTest,
+      ReturnsEmptyListWhenLeastRecentlyShownHasNoImpressionHistory);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromosManagerTest,
+      SortsUnshownPromosBeforeShownPromosForLeastRecentlyShown);
   FRIEND_TEST_ALL_PREFIXES(PromosManagerTest, ReturnsImpressionHistory);
   FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
                            ReturnsBlankImpressionHistoryForBlankPrefs);

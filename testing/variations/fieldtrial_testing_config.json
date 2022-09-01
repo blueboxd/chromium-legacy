@@ -165,6 +165,21 @@
             ]
         }
     ],
+    "AndroidBindingManagerUseNotPerceptibleBinding": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220830",
+                    "enable_features": [
+                        "BindingManagerUseNotPerceptibleBinding"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidBulkTabRestore": [
         {
             "platforms": [
@@ -1675,27 +1690,6 @@
             ]
         }
     ],
-    "AutofillUpstreamAllowAdditionalEmailDomains": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamAllowAdditionalEmailDomains"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutomaticLazyFrameLoading": [
         {
             "platforms": [
@@ -3175,6 +3169,28 @@
             ]
         }
     ],
+    "ContextualPageActions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "action_chip": "false",
+                        "action_chip_time_ms": "3000",
+                        "action_chip_with_different_color": "false",
+                        "enable_ui": "true"
+                    },
+                    "enable_features": [
+                        "ContextualPageActionPriceTracking",
+                        "ContextualPageActions"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContextualTriggers": [
         {
             "platforms": [
@@ -4553,6 +4569,23 @@
                     },
                     "enable_features": [
                         "LensSearchOptimizations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GoogleLensDesktopRegionSearchPdf": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220819",
+                    "enable_features": [
+                        "LensEnableRegionSearchOnPdfViewer"
                     ]
                 }
             ]
@@ -6561,6 +6594,21 @@
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxMaxZeroSuggestMatches",
                         "ZeroSuggestPrefetching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxDefaultTypedNavigationsToHttps": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxDefaultTypedNavigationsToHttps"
                     ]
                 }
             ]
@@ -10605,21 +10653,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_SkipAllServiceWorkerChecks_20220513",
-                    "enable_features": [
-                        "SkipServiceWorkerCheckAll"
-                    ],
-                    "disable_features": [
-                        "SkipServiceWorkerCheckInstallOnly"
-                    ]
-                },
-                {
-                    "name": "Enabled_SkipServiceWorkerChecksInstallOnly",
+                    "name": "Enabled",
                     "enable_features": [
                         "SkipServiceWorkerCheckInstallOnly"
-                    ],
-                    "disable_features": [
-                        "SkipServiceWorkerCheckAll"
                     ]
                 }
             ]

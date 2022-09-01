@@ -126,6 +126,34 @@ public class StripLayoutTab implements VirtualView {
                 }
             };
 
+    /** A property for animations to use for changing the trailingMargin of the tab. */
+    public static final FloatProperty<StripLayoutTab> TRAILING_MARGIN =
+            new FloatProperty<StripLayoutTab>("trailingMargin") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setTrailingMargin(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getTrailingMargin();
+                }
+            };
+
+    /** A property for animations to use for changing the trailingMargin of the tab. */
+    public static final FloatProperty<StripLayoutTab> BRIGHTNESS =
+            new FloatProperty<StripLayoutTab>("brightness") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setBrightness(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getBrightness();
+                }
+            };
+
     // Behavior Constants
     private static final float VISIBILITY_FADE_CLOSE_BUTTON_PERCENTAGE = 0.99f;
 

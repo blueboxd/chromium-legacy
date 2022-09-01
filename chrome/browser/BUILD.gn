@@ -2168,6 +2168,7 @@ static_library("browser") {
     "//components/offline_pages/core/prefetch",
     "//components/offline_pages/core/request_header",
     "//components/omnibox/browser",
+    "//components/omnibox/common",
     "//components/onc",
     "//components/open_from_clipboard",
     "//components/optimization_guide/content/browser",
@@ -4408,6 +4409,7 @@ static_library("browser") {
       "webauthn/cablev2_devices.h",
       "webauthn/chrome_authenticator_request_delegate.cc",
       "webauthn/chrome_authenticator_request_delegate.h",
+      "webauthn/local_credential_management.cc",
       "webauthn/local_credential_management.h",
       "webauthn/observable_authenticator_list.cc",
       "webauthn/observable_authenticator_list.h",
@@ -4870,6 +4872,8 @@ static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "metrics/profile_pref_names.cc",
       "metrics/profile_pref_names.h",
+      "metrics/update_engine_metrics_provider.cc",
+      "metrics/update_engine_metrics_provider.h",
       "metrics/usertype_by_devicetype_metrics_provider.cc",
       "metrics/usertype_by_devicetype_metrics_provider.h",
       "nearby_sharing/attachment_info.cc",
@@ -5181,7 +5185,7 @@ static_library("browser") {
       "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
       "//chrome/browser/ui/ash/system_web_apps",
       "//chrome/browser/ui/quick_answers",
-      "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
+      "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/audio:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/cloud_upload:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
@@ -7933,18 +7937,7 @@ grit("resources") {
 
   # TODO(crbug.com/1064647): Remove PluginFinder completely.
   if (enable_plugins) {
-    if (is_win) {
-      inputs = [ "resources/plugin_metadata/plugins_win.json" ]
-    }
-    if (is_mac) {
-      inputs = [ "resources/plugin_metadata/plugins_mac.json" ]
-    }
-    if (is_chromeos_ash) {
-      inputs = [ "resources/plugin_metadata/plugins_chromeos.json" ]
-    }
-    if (is_linux || is_chromeos_lacros || is_fuchsia) {
-      inputs = [ "resources/plugin_metadata/plugins_linux.json" ]
-    }
+    inputs = [ "resources/plugin_metadata.json" ]
   }
 
   if (enable_webui_certificate_viewer) {
@@ -7992,13 +7985,13 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/smb_shares:web_components",
       "//chrome/browser/resources/chromeos/vm:web_components",
       "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
-      "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
+      "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings_webui_js",
+      "//chrome/browser/ui/webui/settings/ash:mojom_js",
       "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_js",
-      "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
       "//ui/webui/resources/cr_components/app_management:mojo_bindings_js",
     ]
   }

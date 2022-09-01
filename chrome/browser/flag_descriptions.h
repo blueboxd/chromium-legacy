@@ -92,9 +92,6 @@ extern const char kCOLRV1FontsDescription[];
 extern const char kClipboardUnsanitizedContentName[];
 extern const char kClipboardUnsanitizedContentDescription[];
 
-extern const char kCSSContainerQueriesName[];
-extern const char kCSSContainerQueriesDescription[];
-
 extern const char kContentLanguagesInLanguagePickerName[];
 extern const char kContentLanguagesInLanguagePickerDescription[];
 
@@ -716,6 +713,9 @@ extern const char kEnableLensFullscreenSearchDescription[];
 extern const char kEnableLensStandaloneFlagId[];
 extern const char kEnableLensStandaloneName[];
 extern const char kEnableLensStandaloneDescription[];
+
+extern const char kEnableLensInstructionChipImprovementsName[];
+extern const char kEnableLensInstructionChipImprovementsDescription[];
 
 extern const char kEnableRegionSearchOnPdfViewerName[];
 extern const char kEnableRegionSearchOnPdfViewerDescription[];
@@ -1992,6 +1992,9 @@ extern const char kFeedCloseRefreshDescription[];
 extern const char kFeedVideoInlinePlaybackName[];
 extern const char kFeedVideoInlinePlaybackDescription[];
 
+extern const char kFeedDiscoFeedEndpointName[];
+extern const char kFeedDiscoFeedEndpointDescription[];
+
 extern const char kGridTabSwitcherForTabletsName[];
 extern const char kGridTabSwitcherForTabletsDescription[];
 
@@ -2758,9 +2761,6 @@ extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
 
 extern const char kCellularCustomAPNProfilesName[];
 extern const char kCellularCustomAPNProfilesDescription[];
-
-extern const char kCellularForbidAttachApnName[];
-extern const char kCellularForbidAttachApnDescription[];
 
 extern const char kCellularUseAttachApnName[];
 extern const char kCellularUseAttachApnDescription[];

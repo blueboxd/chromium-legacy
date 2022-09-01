@@ -671,6 +671,13 @@ bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
 bool NavigateToURLFromRendererWithoutUserGesture(
     const ToRenderFrameHost& adapter,
     const GURL& url) {
+  return NavigateToURLFromRendererWithoutUserGesture(adapter, url, url);
+}
+
+bool NavigateToURLFromRendererWithoutUserGesture(
+    const ToRenderFrameHost& adapter,
+    const GURL& url,
+    const GURL& expected_commit_url) {
   RenderFrameHost* rfh = adapter.render_frame_host();
   TestFrameNavigationObserver nav_observer(rfh);
   if (!ExecJs(rfh, JsReplace("location = $1", url),
@@ -678,7 +685,7 @@ bool NavigateToURLFromRendererWithoutUserGesture(
     return false;
   }
   nav_observer.Wait();
-  return nav_observer.last_committed_url() == url;
+  return nav_observer.last_committed_url() == expected_commit_url;
 }
 
 bool BeginNavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
@@ -2248,8 +2255,9 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
       web_contents_impl->GetPrimaryMainFrame());
   BrowserAccessibilityManager* main_frame_manager =
       main_frame->browser_accessibility_manager();
-  while (!main_frame_manager || !AccessibilityTreeContainsNodeWithName(
-             main_frame_manager->GetRoot(), name)) {
+  while (!main_frame_manager ||
+         !AccessibilityTreeContainsNodeWithName(
+             main_frame_manager->GetBrowserAccessibilityRoot(), name)) {
     WaitForAccessibilityTreeToChange(web_contents);
     main_frame_manager = main_frame->browser_accessibility_manager();
   }
@@ -2278,7 +2286,7 @@ ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(
       static_cast<WebContentsImpl*>(web_contents);
   BrowserAccessibilityManager* manager =
       web_contents_impl->GetRootBrowserAccessibilityManager();
-  return manager ? manager->GetRoot() : nullptr;
+  return manager ? manager->GetBrowserAccessibilityRoot() : nullptr;
 }
 
 FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;

@@ -119,11 +119,6 @@ const char kClipboardUnsanitizedContentDescription[] =
     "Allows reading/writing unsanitized content from/to the clipboard. "
     "Currently, it is only applicable to HTML format. See crbug.com/1268679.";
 
-const char kCSSContainerQueriesName[] = "Enable CSS Container Queries";
-const char kCSSContainerQueriesDescription[] =
-    "Enables support for @container, inline-size and block-size values for the "
-    "contain property, and the LayoutNG Grid implementation.";
-
 const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
@@ -1322,6 +1317,12 @@ const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
 const char kEnableLensStandaloneDescription[] =
     "Enables Lens image and region search to learn about the visual content "
     "you see while you browse and shop on the web.";
+
+const char kEnableLensInstructionChipImprovementsName[] =
+    "Enable improvements to the Lens instruction chip.";
+const char kEnableLensInstructionChipImprovementsDescription[] =
+    "Enables improvements to the Lens instruction chip when using the region "
+    "search feature.";
 
 const char kEnableRegionSearchOnPdfViewerName[] =
     "Enable Region Search on PDF viewer.";
@@ -3529,6 +3530,11 @@ const char kFeedVideoInlinePlaybackName[] = "Feed video inline playback";
 const char kFeedVideoInlinePlaybackDescription[] =
     "Enable playing feed video in inline playback mode.";
 
+const char kFeedDiscoFeedEndpointName[] =
+    "Feed using the DiscoFeed backend endpoint";
+const char kFeedDiscoFeedEndpointDescription[] =
+    "Uses the DiscoFeed endpoint for serving the feed instead of GWS.";
+
 const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
 const char kGridTabSwitcherForTabletsDescription[] =
     "Enable grid tab switcher for tablets, replacing the tab strip.";
@@ -4824,14 +4830,6 @@ const char kCellularCustomAPNProfilesName[] = "Register Custom APN Profiles";
 const char kCellularCustomAPNProfilesDescription[] =
     "If enabled, the Settings UI will allow the user to create, edit, and "
     "delete custom APN profiles for a Cellular network.";
-
-const char kCellularForbidAttachApnName[] = "Forbid Use Attach APN";
-const char kCellularForbidAttachApnDescription[] =
-    "If enabled, the value of |kCellularUseAttachApn| should have no effect "
-    "and the LTE attach APN configuration will not be sent to the modem. This "
-    "flag exists because the |kCellularUseAttachApn| flag can be enabled "
-    "by command-line arguments via board overlays which takes precedence over "
-    "finch configs, which may be needed to turn off the Attach APN feature.";
 
 const char kCellularUseAttachApnName[] = "Cellular use Attach APN";
 const char kCellularUseAttachApnDescription[] =

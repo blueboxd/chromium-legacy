@@ -123,7 +123,6 @@ class IntegrationTest : public ::testing::Test {
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
-    WaitForUpdaterExit();
   }
 
   void ExpectCandidateUninstalled() {
@@ -349,7 +348,9 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Uninstall();
 }
 
-TEST_F(IntegrationTest, OverinstallWorking) {
+// TODO(crbug.com/1345407): this test is disabled temporarily. Reenable after
+// the build that adds `IUpdater::FetchPolicies` is published to CIPD.
+TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
   SetupRealUpdaterLowerVersion();
   WaitForUpdaterExit();
   ExpectVersionNotActive(kUpdaterVersion);

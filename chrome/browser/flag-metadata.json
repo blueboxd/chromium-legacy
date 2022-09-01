@@ -896,11 +896,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "cellular-forbid-attach-apn",
-    "owners": [ "hsuregan", "cros-connectivity@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
     "name": "cellular-use-attach-apn",
     "owners": [ "andrewlassalle", "ejcaruso", "chromeos-cellular-platform@google.com" ],
     "expiry_milestone": 105
@@ -1813,12 +1808,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-container-queries",
-    "owners": [ "andruud", "futhark" ],
-    // This flag is used to get developer feedback on the API.
-    "expiry_milestone": 105
-  },
-  {
     "name": "enable-cooperative-scheduling",
     "owners": [ "keishi" ],
     "expiry_milestone": 85
@@ -2482,6 +2471,11 @@
     "name": "enable-lens-in-ntp",
     "owners": [ "schechter", "hujasonx" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "enable-lens-instruction-chip-improvements",
+    "owners": [ "schechter@google.com", "juanmojica@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-lens-standalone",
@@ -3443,6 +3437,11 @@
     "name": "feed-close-refresh",
     "owners": ["//chrome/android/feed/OWNERS", "iwells@chromium.org"],
     "expiry_milestone": 110
+  },
+  {
+    "name": "feed-discofeed-endpoint",
+    "owners": [ "//chrome/android/feed/OWNERS", "freedjm@chromium.org" ],
+    "expiry_milestone": 115
   },
   {
     "name": "feed-interactive-refresh",
@@ -6309,7 +6308,7 @@
   {
     "name": "traffic-counters",
     "owners": ["khorimoto", "cros-connectivity@google.com"],
-    "expiry_milestone": 106
+    "expiry_milestone": 120
   },
   {
     "name": "translate-assist-content",

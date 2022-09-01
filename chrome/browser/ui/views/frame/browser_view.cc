@@ -1784,7 +1784,9 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
     ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool notify_download,
     bool force_update) {
+  DCHECK(!notify_download || exclusive_access_bubble_);
   // Trusted pinned mode does not allow to escape. So do not show the bubble.
   bool is_trusted_pinned =
       platform_util::IsBrowserLockedFullscreen(browser_.get());
@@ -1793,7 +1795,8 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   // top that gives the user a hover target. In a public session we show the
   // bubble.
   // TODO(jamescook): Figure out what to do with mouse-lock.
-  if (is_trusted_pinned || bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
+  if (is_trusted_pinned ||
+      (!notify_download && bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) ||
       (ShouldUseImmersiveFullscreenForUrl(url) &&
        !profiles::IsPublicSession())) {
     // |exclusive_access_bubble_.reset()| will trigger callback for current
@@ -1808,10 +1811,13 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
 
   if (exclusive_access_bubble_) {
     exclusive_access_bubble_->UpdateContent(
-        url, bubble_type, std::move(bubble_first_hide_callback), force_update);
+        url, bubble_type, std::move(bubble_first_hide_callback),
+        notify_download, force_update);
     return;
   }
 
+  // Notification about download should only be considered for a bubble that
+  // exists already.
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
       this, url, bubble_type, std::move(bubble_first_hide_callback));
 }
@@ -4186,10 +4192,11 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     }
   }
 
-  bool swapping_screens_during_fullscreen = false;
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // Request target display fullscreen from lower layers on supported platforms.
   frame_->SetFullscreen(fullscreen, display_id);
-#else
+#else  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1034783): Reimplement this at lower layers on all platforms.
   if (fullscreen && display_id != display::kInvalidDisplayId) {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display;
@@ -4199,16 +4206,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         current_display.id() != display_id) {
       // Fullscreen windows must exit fullscreen to move to another display.
       if (IsFullscreen()) {
-        swapping_screens_during_fullscreen = true;
         frame_->SetFullscreen(false);
 
         // Activate the window to give it input focus and bring it to the front
         // of the z-order. This prevents an inactive fullscreen window from
-        // occluding the active window receiving key events on Mac and Linux,
-        // and also prevents an inactive fullscreen window and its exit bubble
-        // from being occluded by the active window on Windows and Chrome OS.
-        // Content fullscreen requests require user activation (so the window
-        // should already be active), but it is safer to ensure activation here.
+        // occluding the active window receiving key events on Linux, and also
+        // prevents an inactive fullscreen window and its exit bubble from being
+        // occluded by the active window on Chrome OS.
         Activate();
       }
 
@@ -4251,7 +4255,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   frame_->SetFullscreen(fullscreen);
   if (!fullscreen && restore_pre_fullscreen_bounds_callback_)
     std::move(restore_pre_fullscreen_bounds_callback_).Run();
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   const bool should_stay_in_immersive =
@@ -4277,7 +4281,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (fullscreen && !chrome::IsRunningInAppMode()) {
     UpdateExclusiveAccessExitBubbleContent(
         url, bubble_type, ExclusiveAccessBubbleHideCallback(),
-        /*force_update=*/swapping_screens_during_fullscreen);
+        /*notify_download=*/false,
+        /*force_update=*/display_id != display::kInvalidDisplayId);
   }
 
   // Undo our anti-jankiness hacks and force a re-layout.

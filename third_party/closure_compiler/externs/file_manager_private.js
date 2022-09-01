@@ -492,6 +492,7 @@ chrome.fileManagerPrivate.MountCompletedEvent;
  *   processed: number,
  *   total: number,
  *   numTotalJobs: number,
+ *   showNotification: boolean,
  *   hideWhenZeroJobs: boolean
  * }}
  */
@@ -500,7 +501,8 @@ chrome.fileManagerPrivate.FileTransferStatus;
 /**
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveSyncErrorType,
- *   fileUrl: string
+ *   fileUrl: string,
+ *   showNotification: boolean
  * }}
  */
 chrome.fileManagerPrivate.DriveSyncErrorEvent;
@@ -726,6 +728,7 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
  * @typedef {{
  *   destinationFolder: (DirectoryEntry|undefined),
  *   password: (string|undefined),
+ *   showNotification: (boolean|undefined),
  * }}
  */
 chrome.fileManagerPrivate.IOTaskParams;

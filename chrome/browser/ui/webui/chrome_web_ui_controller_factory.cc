@@ -248,7 +248,7 @@
 #include "chrome/browser/ui/ash/projector/projector_utils.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
-#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
+#include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/arc_power_control/arc_power_control_ui.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
@@ -286,7 +286,7 @@
 #include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
 #include "content/public/common/content_switches.h"
@@ -940,15 +940,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenStartReauthHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
-        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
+    if (!ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenStartReauthUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenNetworkHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
-        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
+    if (!ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenNetworkUI>;
@@ -971,7 +969,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
     return &NewWebUI<ash::AccountMigrationWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
-    return &NewWebUI<chromeos::AddSupervisionUI>;
+    return &NewWebUI<ash::AddSupervisionUI>;
   if (url.host_piece() == chrome::kChromeUIParentAccessHost)
     return &NewWebUI<chromeos::ParentAccessUI>;
   if (url.host_piece() == chrome::kChromeUIAudioHost &&
@@ -1563,6 +1561,7 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kOsUIAppDisabledURL),
       GURL(chrome::kOsUIAppServiceInternalsURL),
       GURL(chrome::kOsUIBluetoothInternalsURL),
+      GURL(chrome::kChromeUIBluetoothInternalsURL),
       GURL(chrome::kChromeUIArcGraphicsTracingURL),
       GURL(chrome::kChromeUIArcOverviewTracingURL),
       GURL(chrome::kChromeUIArcPowerControlURL),

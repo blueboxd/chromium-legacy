@@ -319,12 +319,9 @@ std::string StorageKey::SerializeForLocalStorage() const {
   DCHECK(!origin_.opaque());
 
   // If this is a third-party StorageKey we'll use the standard serialization
-  // scheme.
-  if (nonce_.has_value())
-    return Serialize();
-
-  if (IsThirdPartyStoragePartitioningEnabled() &&
-      top_level_site_ != net::SchemefulSite(origin_)) {
+  // scheme when partitioning is enabled or if there is a nonce.
+  if (nonce_.has_value() ||
+      (IsThirdPartyContext() && IsThirdPartyStoragePartitioningEnabled())) {
     return Serialize();
   }
 
@@ -437,6 +434,12 @@ bool StorageKey::ShouldSkipKeyDueToPartitioning(
   }
   // If otherwise first-party, nonce, or corrupted, don't skip.
   return false;
+}
+
+const absl::optional<net::CookiePartitionKey> StorageKey::ToCookiePartitionKey()
+    const {
+  return net::CookiePartitionKey::FromStorageKeyComponents(top_level_site_,
+                                                           nonce_);
 }
 
 bool operator==(const StorageKey& lhs, const StorageKey& rhs) {

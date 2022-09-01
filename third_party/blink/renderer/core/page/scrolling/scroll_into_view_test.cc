@@ -37,7 +37,8 @@ namespace {
 class ScrollIntoViewTest : public SimTest {};
 
 TEST_F(ScrollIntoViewTest, InstantScroll) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -57,7 +58,8 @@ TEST_F(ScrollIntoViewTest, InstantScroll) {
 }
 
 TEST_F(ScrollIntoViewTest, ScrollPaddingOnDocumentElWhenBodyDefinesViewport) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -89,7 +91,8 @@ TEST_F(ScrollIntoViewTest, ScrollPaddingOnDocumentElWhenBodyDefinesViewport) {
 
 TEST_F(ScrollIntoViewTest,
        ScrollPaddingOnDocumentElWhenDocumentElDefinesViewport) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -118,7 +121,8 @@ TEST_F(ScrollIntoViewTest,
 }
 
 TEST_F(ScrollIntoViewTest, ScrollPaddingOnBodyWhenDocumentElDefinesViewport) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -158,7 +162,8 @@ TEST_F(ScrollIntoViewTest, ScrollPaddingOnBodyWhenDocumentElDefinesViewport) {
 }
 
 TEST_F(ScrollIntoViewTest, SmoothScroll) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -189,7 +194,8 @@ TEST_F(ScrollIntoViewTest, SmoothScroll) {
 }
 
 TEST_F(ScrollIntoViewTest, NestedContainer) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -239,7 +245,8 @@ TEST_F(ScrollIntoViewTest, NestedContainer) {
 }
 
 TEST_F(ScrollIntoViewTest, NewScrollIntoViewAbortsCurrentAnimation) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -307,7 +314,8 @@ TEST_F(ScrollIntoViewTest, NewScrollIntoViewAbortsCurrentAnimation) {
 }
 
 TEST_F(ScrollIntoViewTest, ScrollWindowAbortsCurrentAnimation) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -356,7 +364,8 @@ TEST_F(ScrollIntoViewTest, ScrollWindowAbortsCurrentAnimation) {
 }
 
 TEST_F(ScrollIntoViewTest, BlockAndInlineSettings) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -416,7 +425,8 @@ TEST_F(ScrollIntoViewTest, BlockAndInlineSettings) {
 }
 
 TEST_F(ScrollIntoViewTest, SmoothAndInstantInChain) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -468,7 +478,8 @@ TEST_F(ScrollIntoViewTest, SmoothAndInstantInChain) {
 }
 
 TEST_F(ScrollIntoViewTest, SmoothScrollAnchor) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html#link", "text/html");
   LoadURL("https://example.com/test.html#link");
@@ -499,7 +510,8 @@ TEST_F(ScrollIntoViewTest, SmoothScrollAnchor) {
 }
 
 TEST_F(ScrollIntoViewTest, FindDoesNotScrollOverflowHidden) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -521,7 +533,8 @@ TEST_F(ScrollIntoViewTest, FindDoesNotScrollOverflowHidden) {
 }
 
 TEST_F(ScrollIntoViewTest, ApplyRootElementScrollBehaviorToViewport) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -558,7 +571,8 @@ TEST_F(ScrollIntoViewTest, ApplyRootElementScrollBehaviorToViewport) {
 TEST_F(ScrollIntoViewTest, StopAtLayoutViewportForFocusedEditable) {
   ScopedImplicitRootScrollerForTest implicit_root_scroller(true);
 
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -651,7 +665,8 @@ TEST_F(ScrollIntoViewTest, StopAtLayoutViewportForFocusedEditable) {
 
 // This test passes if it doesn't crash/hit an ASAN check.
 TEST_F(ScrollIntoViewTest, RemoveSequencedScrollableArea) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -709,7 +724,8 @@ TEST_F(ScrollIntoViewTest, RemoveSequencedScrollableArea) {
 }
 
 TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -746,7 +762,8 @@ TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
 }
 
 TEST_F(ScrollIntoViewTest, LongDistanceSmoothScrollFinishedInThreeSeconds) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -779,7 +796,8 @@ TEST_F(ScrollIntoViewTest, LongDistanceSmoothScrollFinishedInThreeSeconds) {
 }
 
 TEST_F(ScrollIntoViewTest, OriginCrossingUseCounter) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main("https://example.com/test.html", "text/html");
   SimRequest local_child("https://example.com/child.html", "text/html");
@@ -870,7 +888,8 @@ TEST_F(ScrollIntoViewTest, OriginCrossingUseCounter) {
 }
 
 TEST_F(ScrollIntoViewTest, FromDisplayNoneIframe) {
-  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  v8::HandleScope HandleScope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main("https://example.com/test.html", "text/html");
   SimRequest child("https://example.com/child.html", "text/html");

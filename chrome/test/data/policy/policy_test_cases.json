@@ -14088,7 +14088,8 @@
               "default_launch_container": "window"
             },
             {
-              "url": "https://foobar.example"
+              "url": "https://foobar.example",
+              "install_as_shortcut": true
             },
             {
               "url": "https://xyz.example",
@@ -19750,6 +19751,29 @@
           "performance_tuning.battery_saver_mode.state": {
             "location": "local_state",
             "value": 2
+          }
+        }
+      }
+    ]
+  },
+  "TabDiscardingExceptions": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "TabDiscardingExceptions": [
+            "example.com"
+          ]
+        },
+        "prefs": {
+          "performance_tuning.tab_discarding.exceptions.managed": {
+            "value": [
+              "example.com"
+            ]
           }
         }
       }

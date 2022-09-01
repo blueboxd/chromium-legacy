@@ -108,7 +108,7 @@ executable("cast_streaming_shell_exe") {
 
   data = [
     "cast_streaming_shell_data",
-    rebase_path("//media/test/data/vp8-I-frame-640x240"),
+    rebase_path("//media/test/data/bear-1280x720.ivf"),
   ]
 
   deps = [
@@ -116,14 +116,14 @@ executable("cast_streaming_shell_exe") {
     "//base",
     "//base/test:test_support",
     "//components/cast/message_port:message_port",
-    "//components/cast_streaming/browser:test_sender",
-    "//components/openscreen_platform:openscreen_platform_using_net_sockets",
+    "//components/cast_streaming/browser:test_sender_using_net_sockets",
     "//fuchsia_web/cast_streaming",
     "//fuchsia_web/common",
     "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/webengine:switches",
     "//fuchsia_web/webinstance_host",
     "//media",
+    "//media/gpu/test:test_helpers",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",

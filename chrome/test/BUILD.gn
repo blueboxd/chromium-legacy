@@ -1558,12 +1558,8 @@ if (!is_android) {
       "//third_party/widevine/cdm:widevine_test_license_server",
       "//tools/media_engagement_preload:make_dafsa_runtime",
       "//ui/webui/resources/js:modulize_local_runtime_data",
-      "//ui/webui/resources/js/cr:modulize_local_runtime_data",
+      "//ui/webui/resources/js/cr:modulize_runtime_data",
     ]
-
-    if (is_chromeos_ash) {
-      data_deps += [ "//ui/webui/resources/js/cr/ui:modulize_runtime_data" ]
-    }
 
     if (!is_component_build) {
       # WebRTC's frame_analyzer doesn't build correctly on component builds,
@@ -3092,21 +3088,29 @@ if (!is_android) {
 
       if (is_win || is_linux || is_mac) {
         sources += [
-          "../browser/enterprise/connectors/device_trust/device_trust_browsertest.cc",
           "../browser/enterprise/idle/idle_service_browsertest.cc",
           "../browser/extensions/api/system_indicator/system_indicator_apitest.cc",
           "../browser/extensions/api/web_authentication_proxy/web_authentication_proxy_apitest.cc",
           "../browser/ui/views/web_apps/file_handler_launch_dialog_browsertest.cc",
         ]
+      }
+
+      if (is_win || is_linux || is_mac || is_chromeos_ash) {
+        sources += [ "../browser/enterprise/connectors/device_trust/device_trust_browsertest.cc" ]
 
         deps += [
           "//chrome/browser/enterprise/connectors/device_trust:features",
           "//chrome/browser/enterprise/connectors/device_trust:prefs",
           "//chrome/browser/enterprise/connectors/device_trust/common",
-          "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
-          "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
           "//components/device_signals/core/common",
           "//components/device_signals/core/common:features",
+        ]
+      }
+
+      if (is_win || is_linux || is_mac) {
+        deps += [
+          "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
+          "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
         ]
       }
 
@@ -3994,8 +3998,8 @@ if (!is_android) {
         "../browser/ui/views/tabs/tab_scrubber_chromeos_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
         "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
-        "../browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
-        "../browser/ui/webui/chromeos/add_supervision/add_supervision_ui_browsertest.cc",
+        "../browser/ui/webui/ash/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
+        "../browser/ui/webui/ash/add_supervision/add_supervision_ui_browsertest.cc",
         "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
         "../browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog_browsertest.cc",
         "../browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_browsertest.cc",
@@ -4010,9 +4014,9 @@ if (!is_android) {
         "../browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog_browsertest.cc",
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/nearby_share/nearby_share_dialog_ui_browsertest.cc",
-        "../browser/ui/webui/settings/chromeos/accessibility_handler_browsertest.cc",
-        "../browser/ui/webui/settings/chromeos/account_manager_handler_browsertest.cc",
-        "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",
+        "../browser/ui/webui/settings/ash/accessibility_handler_browsertest.cc",
+        "../browser/ui/webui/settings/ash/account_manager_handler_browsertest.cc",
+        "../browser/ui/webui/settings/ash/device_power_handler_browsertest.cc",
         "../browser/ui/webui/signin/inline_login_dialog_chromeos_browsertest.cc",
         "../browser/ui/webui/signin/inline_login_handler_chromeos_browsertest.cc",
         "../browser/ui/webui/signin/signin_helper_chromeos_browsertest.cc",
@@ -4173,7 +4177,7 @@ if (!is_android) {
         "//chrome/browser/ui:ash_test_support",
         "//chrome/browser/ui/ash/holding_space:browser_tests",
         "//chrome/browser/ui/ash/system_web_apps",
-        "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
+        "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings",
         "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
         "//chrome/browser/ui/webui/chromeos/manage_mirrorsync:mojo_bindings",
         "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings",
@@ -5369,6 +5373,8 @@ test("unit_tests") {
     "../browser/prefs/profile_pref_store_manager_unittest.cc",
     "../browser/prefs/proxy_policy_unittest.cc",
     "../browser/prefs/session_startup_pref_unittest.cc",
+    "../browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_unit_test_utils.cc",
+    "../browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_unit_test_utils.h",
     "../browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_unittest.cc",
     "../browser/preloading/prefetch/prefetch_proxy/prefetch_container_unittest.cc",
     "../browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_canary_checker_unittest.cc",
@@ -6866,7 +6872,6 @@ test("unit_tests") {
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/cablev2_devices_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
-      "../browser/webauthn/local_credential_management_unittest.cc",
       "../common/importer/mock_importer_bridge.cc",
       "../common/importer/mock_importer_bridge.h",
       "../renderer/media/webrtc_logging_agent_impl_unittest.cc",
@@ -6875,6 +6880,16 @@ test("unit_tests") {
       "../utility/importer/bookmarks_file_importer_unittest.cc",
       "interaction/webui_interaction_test_util_unittest.cc",
     ]
+
+    if (is_mac) {
+      sources +=
+          [ "../browser/webauthn/local_credential_management_mac_unittest.mm" ]
+    }
+
+    if (is_win) {
+      sources +=
+          [ "../browser/webauthn/local_credential_management_win_unittest.cc" ]
+    }
 
     sources += [
       # Badging isn't supported on Android.
@@ -6916,6 +6931,7 @@ test("unit_tests") {
       "../browser/performance_manager/policies/high_efficiency_mode_policy_unittest.cc",
       "../browser/performance_manager/policies/page_discarding_helper_unittest.cc",
       "../browser/performance_manager/policies/urgent_page_discarding_policy_unittest.cc",
+      "../browser/performance_manager/user_tuning/profile_discard_opt_out_list_helper_unittest.cc",
       "../browser/performance_manager/user_tuning/user_performance_tuning_manager_unittest.cc",
     ]
 
@@ -7328,7 +7344,7 @@ test("unit_tests") {
       "../browser/ui/quick_answers/quick_answers_ui_controller_unittest.cc",
       "../browser/ui/quick_answers/ui/quick_answers_view_unittest.cc",
       "../browser/ui/views/crostini/crostini_app_restart_dialog_unittest.cc",
-      "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",
+      "../browser/ui/webui/ash/add_supervision/add_supervision_handler_utils_unittest.cc",
       "../browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_handler_unittest.cc",
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
@@ -8499,8 +8515,8 @@ test("unit_tests") {
 
       if (is_chromeos_ash) {
         sources += [
-          "../browser/ui/webui/settings/chromeos/cups_printers_handler_unittest.cc",
-          "../browser/ui/webui/settings/chromeos/server_printer_url_util_unittest.cc",
+          "../browser/ui/webui/settings/ash/cups_printers_handler_unittest.cc",
+          "../browser/ui/webui/settings/ash/server_printer_url_util_unittest.cc",
         ]
       }
     } else {
@@ -8851,6 +8867,7 @@ test("unit_tests") {
       "//build/config/fuchsia/test/fonts.shard.test-cml",
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 }

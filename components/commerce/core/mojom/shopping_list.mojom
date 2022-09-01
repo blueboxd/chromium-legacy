@@ -53,5 +53,12 @@ interface ShoppingListHandlerFactory {
 // Browser-side handler for requests from WebUI page.
 interface ShoppingListHandler {
   // Returns all the tracked product info from bookmarks.
-  GetAllBookmarkProductInfo() => (array<BookmarkProductInfo> productInfos);
+  GetAllPriceTrackedBookmarkProductInfo()
+      => (array<BookmarkProductInfo> productInfos);
+
+  // Track price for bookmark with 'bookmark_id'.
+  TrackPriceForBookmark(int64 bookmark_id);
+
+  // Untrack price for bookmark with 'bookmark_id'.
+  UntrackPriceForBookmark(int64 bookmark_id);
 };

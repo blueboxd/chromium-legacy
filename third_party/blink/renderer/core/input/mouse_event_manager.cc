@@ -281,10 +281,9 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     std::unique_ptr<EventTiming> event_timing;
     bool should_dispatch =
         !check_for_listener || target->HasEventListeners(mouse_event_type);
-    if (RuntimeEnabledFeatures::ClickPointerEventEnabled() &&
-        (mouse_event_type == event_type_names::kContextmenu ||
-         mouse_event_type == event_type_names::kClick ||
-         mouse_event_type == event_type_names::kAuxclick)) {
+    if (mouse_event_type == event_type_names::kContextmenu ||
+        mouse_event_type == event_type_names::kClick ||
+        mouse_event_type == event_type_names::kAuxclick) {
       PointerEventInit* initializer = PointerEventInit::Create();
       SetMouseEventAttributes(initializer, target_node, mouse_event_type,
                               mouse_event, last_position, related_target,
@@ -338,6 +337,7 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
 
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     Element* mouse_release_target,
+    Element* captured_click_target,
     const WebMouseEvent& mouse_event,
     const PointerId& pointer_id,
     const String& pointer_type) {
@@ -360,12 +360,22 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     return WebInputEventResult::kNotHandled;
 
   Node* click_target_node = nullptr;
-  if (click_element_->GetDocument() == mouse_release_target->GetDocument()) {
+  if (RuntimeEnabledFeatures::ClickToCapturedPointerEnabled() &&
+      captured_click_target) {
+    click_target_node = captured_click_target;
+  } else if (click_element_->GetDocument() ==
+             mouse_release_target->GetDocument()) {
     click_target_node = mouse_release_target->CommonAncestor(
         *click_element_, event_handling_util::ParentForClickEvent);
   }
+
   if (!click_target_node)
     return WebInputEventResult::kNotHandled;
+
+  if (captured_click_target && (click_target_node != captured_click_target)) {
+    UseCounter::Count(frame_->GetDocument(),
+                      WebFeature::kExplicitPointerCaptureClickTargetDiff);
+  }
 
   return DispatchMouseEvent(
       click_target_node,

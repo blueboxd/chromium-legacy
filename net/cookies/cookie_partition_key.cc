@@ -14,6 +14,18 @@
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 
+namespace {
+
+bool PartitionedCookiesEnabled(
+    const absl::optional<base::UnguessableToken>& nonce) {
+  return base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
+         (base::FeatureList::IsEnabled(
+              net::features::kNoncedPartitionedCookies) &&
+          nonce);
+}
+
+}  // namespace
+
 namespace net {
 
 CookiePartitionKey::CookiePartitionKey() = default;
@@ -101,9 +113,7 @@ absl::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
   // If PartitionedCookies is enabled, all partitioned cookies are allowed.
   // If NoncedPartitionedCookies is enabled, only partitioned cookies whose
   // partition key has a nonce are allowed.
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies) &&
-      (!base::FeatureList::IsEnabled(features::kNoncedPartitionedCookies) ||
-       !nonce)) {
+  if (!PartitionedCookiesEnabled(nonce)) {
     return absl::nullopt;
   }
 
@@ -120,6 +130,16 @@ absl::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
       net::CookiePartitionKey(*partition_key_site, nonce));
 }
 
+// static
+absl::optional<net::CookiePartitionKey>
+CookiePartitionKey::FromStorageKeyComponents(
+    const SchemefulSite& top_level_site,
+    const absl::optional<base::UnguessableToken>& nonce) {
+  if (!PartitionedCookiesEnabled(nonce))
+    return absl::nullopt;
+  return CookiePartitionKey::FromWire(top_level_site, nonce);
+}
+
 bool CookiePartitionKey::IsSerializeable() const {
   if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
     DLOG(WARNING) << "Attempting to serialize CookiePartitionKey when "
@@ -133,6 +153,9 @@ bool CookiePartitionKey::IsSerializeable() const {
 
 std::ostream& operator<<(std::ostream& os, const CookiePartitionKey& cpk) {
   os << cpk.site();
+  if (cpk.nonce().has_value()) {
+    os << ",nonced";
+  }
   return os;
 }
 

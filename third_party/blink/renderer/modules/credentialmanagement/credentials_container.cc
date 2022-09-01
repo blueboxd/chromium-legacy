@@ -408,9 +408,6 @@ DOMException* AuthenticatorStatusToDOMException(
     case AuthenticatorStatus::INVALID_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "This is an invalid domain.");
-    case AuthenticatorStatus::INVALID_ICON_URL:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError, "The icon should be a secure URL");
     case AuthenticatorStatus::CREDENTIAL_EXCLUDED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
@@ -515,26 +512,6 @@ DOMException* AuthenticatorStatusToDOMException(
   return nullptr;
 }
 
-// Abort an ongoing PublicKeyCredential create() or get() operation.
-void AbortPublicKeyRequest(ScriptState* script_state) {
-  if (!script_state->ContextIsValid())
-    return;
-
-  auto* authenticator =
-      CredentialManagerProxy::From(script_state)->Authenticator();
-  authenticator->Cancel();
-}
-
-// Abort an ongoing OtpCredential get() operation.
-void AbortOtpRequest(ScriptState* script_state) {
-  if (!script_state->ContextIsValid())
-    return;
-
-  auto* webotp_service =
-      CredentialManagerProxy::From(script_state)->WebOTPService();
-  webotp_service->Abort();
-}
-
 // Abort an ongoing FederatedCredential login() operation.
 void AbortIdentityCredentialRequest(ScriptState* script_state) {
   if (!script_state->ContextIsValid())
@@ -633,6 +610,7 @@ Vector<Vector<uint32_t>> UvmEntryToArray(
 
 void OnMakePublicKeyCredentialComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+    AbortSignal* signal,
     RequiredOriginType required_origin_type,
     AuthenticatorStatus status,
     MakeCredentialAuthenticatorResponsePtr credential,
@@ -641,8 +619,14 @@ void OnMakePublicKeyCredentialComplete(
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status != AuthenticatorStatus::SUCCESS) {
     DCHECK(!credential);
-    resolver->Reject(
-        AuthenticatorStatusToDOMException(status, dom_exception_details));
+    if (signal && signal->aborted()) {
+      auto* script_state = resolver->GetScriptState();
+      ScriptState::Scope script_state_scope(script_state);
+      resolver->Reject(signal->reason(script_state));
+    } else {
+      resolver->Reject(
+          AuthenticatorStatusToDOMException(status, dom_exception_details));
+    }
     return;
   }
   DCHECK(credential);
@@ -718,6 +702,7 @@ bool IsForPayment(const CredentialCreationOptions* options,
 
 void OnSaveCredentialIdForPaymentExtension(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+    AbortSignal* signal,
     MakeCredentialAuthenticatorResponsePtr credential,
     PaymentCredentialStorageStatus storage_status) {
   auto status = AuthenticatorStatus::SUCCESS;
@@ -727,13 +712,14 @@ void OnSaveCredentialIdForPaymentExtension(
     credential = nullptr;
   }
   OnMakePublicKeyCredentialComplete(
-      std::move(scoped_resolver),
+      std::move(scoped_resolver), signal,
       RequiredOriginType::kSecureWithPaymentPermissionPolicy, status,
       std::move(credential), /*dom_exception_details=*/nullptr);
 }
 
 void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+    AbortSignal* signal,
     const String& rp_id_for_payment_extension,
     const WTF::Vector<uint8_t>& user_id_for_payment_extension,
     AuthenticatorStatus status,
@@ -746,8 +732,14 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status != AuthenticatorStatus::SUCCESS) {
     DCHECK(!credential);
-    resolver->Reject(
-        AuthenticatorStatusToDOMException(status, dom_exception_details));
+    if (signal && signal->aborted()) {
+      auto* script_state = resolver->GetScriptState();
+      ScriptState::Scope script_state_scope(script_state);
+      resolver->Reject(signal->reason(script_state));
+    } else {
+      resolver->Reject(
+          AuthenticatorStatusToDOMException(status, dom_exception_details));
+    }
     return;
   }
 
@@ -760,11 +752,12 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
       std::move(user_id_for_payment_extension),
       WTF::Bind(&OnSaveCredentialIdForPaymentExtension,
                 std::make_unique<ScopedPromiseResolver>(resolver),
-                std::move(credential)));
+                WrapPersistent(signal), std::move(credential)));
 }
 
 void OnGetAssertionComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+    AbortSignal* signal,
     AuthenticatorStatus status,
     GetAssertionAuthenticatorResponsePtr credential,
     WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
@@ -834,11 +827,18 @@ void OnGetAssertionComplete(
     return;
   }
   DCHECK(!credential);
-  resolver->Reject(
-      AuthenticatorStatusToDOMException(status, dom_exception_details));
+  if (signal && signal->aborted()) {
+    auto* script_state = resolver->GetScriptState();
+    ScriptState::Scope script_state_scope(script_state);
+    resolver->Reject(signal->reason(script_state));
+  } else {
+    resolver->Reject(
+        AuthenticatorStatusToDOMException(status, dom_exception_details));
+  }
 }
 
 void OnSmsReceive(ScriptPromiseResolver* resolver,
+                  AbortSignal* signal,
                   base::TimeTicks start_time,
                   mojom::blink::SmsStatus status,
                   const String& otp) {
@@ -855,8 +855,14 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
     return;
   }
   if (status == mojom::blink::SmsStatus::kAborted) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError, "OTP retrieval was aborted."));
+    if (signal && signal->aborted()) {
+      auto* script_state = resolver->GetScriptState();
+      ScriptState::Scope script_state_scope(script_state);
+      resolver->Reject(signal->reason(script_state));
+    } else {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, "OTP retrieval was aborted."));
+    }
     return;
   }
   if (status == mojom::blink::SmsStatus::kCancelled) {
@@ -949,6 +955,58 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
 }  // namespace
 
 const char CredentialsContainer::kSupplementName[] = "CredentialsContainer";
+
+class CredentialsContainer::OtpRequestAbortAlgorithm final
+    : public AbortSignal::Algorithm {
+ public:
+  explicit OtpRequestAbortAlgorithm(ScriptState* script_state)
+      : script_state_(script_state) {}
+  ~OtpRequestAbortAlgorithm() override = default;
+
+  // Abort an ongoing OtpCredential get() operation.
+  void Run() override {
+    if (!script_state_->ContextIsValid())
+      return;
+
+    auto* webotp_service =
+        CredentialManagerProxy::From(script_state_)->WebOTPService();
+    webotp_service->Abort();
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(script_state_);
+    Algorithm::Trace(visitor);
+  }
+
+ private:
+  Member<ScriptState> script_state_;
+};
+
+class CredentialsContainer::PublicKeyRequestAbortAlgorithm final
+    : public AbortSignal::Algorithm {
+ public:
+  explicit PublicKeyRequestAbortAlgorithm(ScriptState* script_state)
+      : script_state_(script_state) {}
+  ~PublicKeyRequestAbortAlgorithm() override = default;
+
+  // Abort an ongoing PublicKeyCredential create() or get() operation.
+  void Run() override {
+    if (!script_state_->ContextIsValid())
+      return;
+
+    auto* authenticator =
+        CredentialManagerProxy::From(script_state_)->Authenticator();
+    authenticator->Cancel();
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(script_state_);
+    Algorithm::Trace(visitor);
+  }
+
+ private:
+  Member<ScriptState> script_state_;
+};
 
 CredentialsContainer* CredentialsContainer::credentials(Navigator& navigator) {
   CredentialsContainer* credentials =
@@ -1115,14 +1173,14 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
               "Ignoring unknown publicKey.userVerification value"));
     }
 
-    if (options->hasSignal()) {
-      if (options->signal()->aborted()) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kAbortError, "Request has been aborted."));
+    auto* signal = options->getSignalOr(nullptr);
+    if (signal) {
+      if (signal->aborted()) {
+        resolver->Reject(signal->reason(script_state));
         return promise;
       }
-      options->signal()->AddAlgorithm(
-          WTF::Bind(&AbortPublicKeyRequest, WrapPersistent(script_state)));
+      signal->AddAlgorithm(
+          MakeGarbageCollected<PublicKeyRequestAbortAlgorithm>(script_state));
     }
 
     bool is_conditional_ui_request =
@@ -1149,7 +1207,8 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       authenticator->GetAssertion(
           std::move(mojo_options),
           WTF::Bind(&OnGetAssertionComplete,
-                    std::make_unique<ScopedPromiseResolver>(resolver)));
+                    std::make_unique<ScopedPromiseResolver>(resolver),
+                    WrapPersistent(signal)));
     } else {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
@@ -1166,19 +1225,20 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       return promise;
     }
 
-    if (options->hasSignal()) {
-      if (options->signal()->aborted()) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kAbortError, "Request has been aborted."));
+    auto* signal = options->getSignalOr(nullptr);
+    if (signal) {
+      if (signal->aborted()) {
+        resolver->Reject(signal->reason(script_state));
         return promise;
       }
-      options->signal()->AddAlgorithm(
-          WTF::Bind(&AbortOtpRequest, WrapPersistent(script_state)));
+      signal->AddAlgorithm(
+          MakeGarbageCollected<OtpRequestAbortAlgorithm>(script_state));
     }
 
     auto* webotp_service =
         CredentialManagerProxy::From(script_state)->WebOTPService();
     webotp_service->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
+                                      WrapPersistent(signal),
                                       base::TimeTicks::Now()));
 
     UseCounter::Count(context, WebFeature::kWebOTP);
@@ -1519,14 +1579,14 @@ ScriptPromise CredentialsContainer::create(
     }
   }
 
-  if (options->hasSignal()) {
-    if (options->signal()->aborted()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kAbortError, "Request has been aborted."));
+  auto* signal = options->getSignalOr(nullptr);
+  if (signal) {
+    if (signal->aborted()) {
+      resolver->Reject(signal->reason(script_state));
       return promise;
     }
-    options->signal()->AddAlgorithm(
-        WTF::Bind(&AbortPublicKeyRequest, WrapPersistent(script_state)));
+    signal->AddAlgorithm(
+        MakeGarbageCollected<PublicKeyRequestAbortAlgorithm>(script_state));
   }
 
   if (options->publicKey()->hasAttestation() &&
@@ -1635,24 +1695,6 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext()->GetSecurityOrigin()->Domain();
     }
 
-    if (mojo_options->relying_party->icon) {
-      if (!IsIconURLNullOrSecure(mojo_options->relying_party->icon.value())) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "'rp.icon' should be a secure URL"));
-        return promise;
-      }
-    }
-
-    if (mojo_options->user->icon) {
-      if (!IsIconURLNullOrSecure(mojo_options->user->icon.value())) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "'user.icon' should be a secure URL"));
-        return promise;
-      }
-    }
-
     auto* authenticator =
         CredentialManagerProxy::From(script_state)->Authenticator();
     if (mojo_options->is_payment_credential_creation) {
@@ -1663,14 +1705,14 @@ ScriptPromise CredentialsContainer::create(
           std::move(mojo_options),
           WTF::Bind(&OnMakePublicKeyCredentialWithPaymentExtensionComplete,
                     std::make_unique<ScopedPromiseResolver>(resolver),
-                    rp_id_for_payment_extension,
+                    WrapPersistent(signal), rp_id_for_payment_extension,
                     std::move(user_id_for_payment_extension)));
     } else {
       authenticator->MakeCredential(
           std::move(mojo_options),
           WTF::Bind(&OnMakePublicKeyCredentialComplete,
                     std::make_unique<ScopedPromiseResolver>(resolver),
-                    required_origin_type));
+                    WrapPersistent(signal), required_origin_type));
     }
   }
 

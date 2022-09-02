@@ -38,6 +38,7 @@
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/common/aggregatable_report.mojom-shared.h"
 #include "content/common/private_aggregation_features.h"
+#include "content/common/private_aggregation_host.mojom.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -113,7 +114,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
             content::mojom::AggregatableReportHistogramContribution::New(
                 /*bucket=*/1,
                 /*value=*/2),
-            content::mojom::AggregationServiceMode::kDefault);
+            content::mojom::AggregationServiceMode::kDefault,
+            content::mojom::DebugModeDetails::New());
 
 const auction_worklet::mojom::PrivateAggregationRequestPtr
     kExpectedReportWinPrivateAggregationRequest =
@@ -121,7 +123,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
             content::mojom::AggregatableReportHistogramContribution::New(
                 /*bucket=*/3,
                 /*value=*/4),
-            content::mojom::AggregationServiceMode::kDefault);
+            content::mojom::AggregationServiceMode::kDefault,
+            content::mojom::DebugModeDetails::New());
 
 const auction_worklet::mojom::PrivateAggregationRequestPtr
     kExpectedScoreAdPrivateAggregationRequest =
@@ -129,7 +132,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
             content::mojom::AggregatableReportHistogramContribution::New(
                 /*bucket=*/5,
                 /*value=*/6),
-            content::mojom::AggregationServiceMode::kDefault);
+            content::mojom::AggregationServiceMode::kDefault,
+            content::mojom::DebugModeDetails::New());
 
 const auction_worklet::mojom::PrivateAggregationRequestPtr
     kExpectedReportResultPrivateAggregationRequest =
@@ -137,7 +141,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
             content::mojom::AggregatableReportHistogramContribution::New(
                 /*bucket=*/7,
                 /*value=*/8),
-            content::mojom::AggregationServiceMode::kDefault);
+            content::mojom::AggregationServiceMode::kDefault,
+            content::mojom::DebugModeDetails::New());
 
 // Helper to avoid excess boilerplate.
 template <typename... Ts>
@@ -7860,6 +7865,16 @@ TEST_F(AuctionRunnerTest, ExecutionModeGroupByOrigin) {
 // using its priority vector is negative, so it should be filtered out, and
 // there should be no winner.
 TEST_F(AuctionRunnerTest, PriorityVectorFiltersOnlyGroup) {
+  // Only include bidder 1. Having a second bidder results in following a
+  // slightly different path. With two bidders, the first bidder loads an
+  // interest group, which is filtered, and then the bidder is deleted. Then the
+  // second bidder loads no interest groups, and the auction is deleted. With a
+  // single bidder, the auction is deleted immediately after filtering out the
+  // bidders, which potentially affects the dangling pointer detection code,
+  // since the discarded BuyerHelper must be deleted before the
+  // InterestGroupAuction it has a pointer to.
+  interest_group_buyers_ = {{kBidder1}};
+
   auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
                                          MakeBidScriptSupportsTie());
   std::vector<StorageInterestGroup> bidders;

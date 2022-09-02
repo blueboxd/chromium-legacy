@@ -67,7 +67,7 @@ class PageHandler : public DevToolsDomainHandler,
   PageHandler(EmulationHandler* emulation_handler,
               BrowserHandler* browser_handler,
               bool allow_unsafe_operations,
-              bool may_capture_screenshots_not_from_surface,
+              bool is_trusted,
               absl::optional<url::Origin> navigation_initiator_origin,
               bool may_read_local_files);
 
@@ -223,8 +223,10 @@ class PageHandler : public DevToolsDomainHandler,
   using ResponseOrWebContents = absl::variant<Response, WebContentsImpl*>;
   ResponseOrWebContents GetWebContentsForTopLevelActiveFrame();
 
+  void RetrievePrerenderActivationFromWebContents();
+
   const bool allow_unsafe_operations_;
-  const bool may_capture_screenshots_not_from_surface_;
+  const bool is_trusted_;
   const absl::optional<url::Origin> navigation_initiator_origin_;
   const bool may_read_local_files_;
 
@@ -240,6 +242,10 @@ class PageHandler : public DevToolsDomainHandler,
   int session_id_;
   int frame_counter_;
   int frames_in_flight_;
+
+  // Whether stored prerender activation has been dispatched to Devtools. Reset
+  // whenever a new prerender event received.
+  bool has_dispatched_stored_prerender_activation_ = false;
 
   // |video_consumer_| consumes video frames from FrameSinkVideoCapturerImpl,
   // and provides PageHandler with these frames via OnFrameFromVideoConsumer.

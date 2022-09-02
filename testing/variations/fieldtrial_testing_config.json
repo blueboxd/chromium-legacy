@@ -3333,20 +3333,35 @@
                     "enable_features": [
                         "CriticalPersistedTabData"
                     ]
-                }
-            ]
-        }
-    ],
-    "CrosCellularUseAttachApn": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
+                },
                 {
-                    "name": "Enabled_20210713",
+                    "name": "Enabled_Save_On_Deferred_Startup",
+                    "params": {
+                        "critical_persisted_tab_data_save_only": "false",
+                        "delay_saves_until_deferred_startup": "true"
+                    },
                     "enable_features": [
-                        "CellularUseAttachApn"
+                        "CriticalPersistedTabData"
+                    ]
+                },
+                {
+                    "name": "Enabled_Save_And_Restore",
+                    "params": {
+                        "critical_persisted_tab_data_save_only": "false",
+                        "delay_saves_until_deferred_startup": "false"
+                    },
+                    "enable_features": [
+                        "CriticalPersistedTabData"
+                    ]
+                },
+                {
+                    "name": "Enabled_Save_Only",
+                    "params": {
+                        "critical_persisted_tab_data_save_only": "true",
+                        "delay_saves_until_deferred_startup": "false"
+                    },
+                    "enable_features": [
+                        "CriticalPersistedTabData"
                     ]
                 }
             ]
@@ -3612,15 +3627,38 @@
                     "name": "Enabled",
                     "params": {
                         "AutocompleteStabilityAsyncProvidersFirst": "true",
-                        "AutocompleteStabilityDontCopyDoneProviders": "true",
-                        "AutocompleteStabilityPreserveDefaultAfterTransfer": "true",
-                        "AutocompleteStabilityPreserveDefaultForAsyncUpdates": "false",
-                        "AutocompleteStabilityPreserveDefaultForSyncUpdates": "true"
+                        "AutocompleteStabilityDontCopyDoneProviders": "true"
                     },
                     "enable_features": [
                         "OmniboxAutocompleteStability",
                         "OmniboxDocumentProviderDedupingOptimization",
                         "OmniboxStrippedGurlOptimization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopOmniboxPostAutocompletionPreserveDefault": [
+        {
+            "platforms": [
+                "android",
+                "chromeos_lacros",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AutocompleteStabilityPreserveDefaultAfterTransfer": "true",
+                        "AutocompleteStabilityPreserveDefaultForAsyncUpdates": "true",
+                        "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength": "3"
+                    },
+                    "enable_features": [
+                        "OmniboxPreserveDefault"
                     ]
                 }
             ]
@@ -7564,6 +7602,27 @@
             ]
         }
     ],
+    "PretokenizeCSS": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PretokenizeCSS"
+                    ]
+                }
+            ]
+        }
+    ],
     "PriceDropNtpIPH": [
         {
             "platforms": [
@@ -8169,6 +8228,7 @@
                 "android_webview",
                 "chromeos",
                 "chromeos_lacros",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -11290,6 +11350,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeWhatsNewUI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ZeroCopyTabCaptureExperiment": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ZeroCopyTabCapture"
                     ]
                 }
             ]

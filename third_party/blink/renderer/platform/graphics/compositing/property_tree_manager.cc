@@ -386,10 +386,6 @@ void PropertyTreeManager::SetCurrentEffectState(
   }
 }
 
-void PropertyTreeManager::SetFixedElementsDontOverscroll(const bool value) {
-  transform_tree_.set_fixed_elements_dont_overscroll(value);
-}
-
 int PropertyTreeManager::EnsureCompositorTransformNode(
     const TransformPaintPropertyNode& transform_node) {
   int id = transform_node.CcNodeId(new_sequence_number_);
@@ -418,7 +414,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   cc::TransformNode& compositor_node = *transform_tree_.Node(id);
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
 
-  compositor_node.is_fixed_to_viewport =
+  compositor_node.should_undo_overscroll =
       transform_node.RequiresCompositingForFixedToViewport();
   compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
   compositor_node.flattens_inherited_transform =
@@ -493,7 +489,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (auto* scroll_node = transform_node.ScrollNode()) {
     compositor_node.scrolls = true;
     compositor_node.should_be_snapped = true;
-    CreateCompositorScrollNode(*scroll_node, compositor_node);
+    CreateCompositorScrollNode(*scroll_node, compositor_node,
+                               transform_node.HasDirectCompositingReasons());
   }
 
   compositor_node.visible_frame_element_id =
@@ -559,7 +556,8 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 
 void PropertyTreeManager::CreateCompositorScrollNode(
     const ScrollPaintPropertyNode& scroll_node,
-    const cc::TransformNode& scroll_offset_translation) {
+    const cc::TransformNode& scroll_offset_translation,
+    bool is_composited) {
   DCHECK(!scroll_tree_.Node(scroll_node.CcNodeId(new_sequence_number_)));
 
   int parent_id = scroll_node.Parent()->CcNodeId(new_sequence_number_);
@@ -599,6 +597,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   }
 
   compositor_node.transform_id = scroll_offset_translation.id;
+  compositor_node.is_composited = is_composited;
 
   scroll_node.SetCcNodeId(new_sequence_number_, id);
 

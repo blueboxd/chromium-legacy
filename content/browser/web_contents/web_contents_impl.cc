@@ -5717,6 +5717,15 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       was_ever_audible_ = false;
     }
 
+    // Clear the stored prerender activation result if this is not a prerender
+    // activation. If this is another prerender activation, it will override
+    // the old result in DevTools.
+    if (!navigation_handle->IsPrerenderedPageActivation() &&
+        !navigation_handle->IsSameDocument() &&
+        navigation_handle->IsInPrimaryMainFrame()) {
+      last_navigation_was_prerender_activation_for_devtools_ = false;
+    }
+
     if (!navigation_handle->IsSameDocument())
       last_screen_orientation_change_time_ = base::TimeTicks();
   }
@@ -8776,14 +8785,6 @@ void WebContentsImpl::SetStylusHandwritingEnabled(bool enabled) {
     return;
   stylus_handwriting_enabled_ = enabled;
   NotifyPreferencesChanged();
-}
-
-void WebContentsImpl::BrowserPluginGuestWillDetach() {
-  OPTIONAL_TRACE_EVENT0("content",
-                        "WebContentsImpl::BrowserPluginGuestWillDetach");
-  WebContentsImpl* outermost = GetOutermostWebContents();
-  if (this != outermost && ContainsOrIsFocusedWebContents())
-    outermost->SetAsFocusedWebContentsIfNecessary();
 }
 
 PictureInPictureResult WebContentsImpl::EnterPictureInPicture() {

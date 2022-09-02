@@ -213,6 +213,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDevicePosture, features::kDevicePosture},
     {wf::EnableDigitalGoodsAPI, features::kDigitalGoodsApi,
      kSetOnlyIfOverridden},
+    {wf::EnableDirectSockets, features::kIsolatedWebApps},
     {wf::EnableDocumentPictureInPictureAPI,
      features::kDocumentPictureInPictureAPI},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
@@ -606,6 +607,11 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
             features::kFedCm, features::kFedCmIframeSupportFieldTrialParamName,
             false)) {
       WebRuntimeFeatures::EnableFedCmIframeSupport(true);
+    }
+    if (base::GetFieldTrialParamByFeatureAsBool(
+            features::kFedCm,
+            features::kFedCmIdpSigninStatusFieldTrialParamName, false)) {
+      WebRuntimeFeatures::EnableFedCmIdpSigninStatus(true);
     }
   }
 

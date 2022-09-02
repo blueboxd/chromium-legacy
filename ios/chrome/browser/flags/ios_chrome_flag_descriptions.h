@@ -18,6 +18,15 @@ namespace flag_descriptions {
 extern const char kAdaptiveSuggestionsCountName[];
 extern const char kAdaptiveSuggestionsCountDescription[];
 
+// Title and description for the flag to enable the App Store Rating promo.
+extern const char kAppStoreRatingName[];
+extern const char kAppStoreRatingDescription[];
+
+// Title and description for the flag to enable Chrome branding on form input
+// suggestions.
+extern const char kAutofillBrandingIOSName[];
+extern const char kAutofillBrandingIOSDescription[];
+
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];

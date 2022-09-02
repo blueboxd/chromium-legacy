@@ -435,6 +435,10 @@
   "components/resources/dev_ui_components_resources.grd": {
     "includes": [2560],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/indexed_db/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2570],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/media/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [2580],
@@ -625,14 +629,28 @@
     "META": {"sizes": {"includes": [50],}},
    "includes": [3360],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/ash_projector_app_untrusted_resources.grd": {
+
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/app/trusted/ash_projector_app_trusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [3380],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/ash_projector_app_trusted_resources.grd": {
+ "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/app/untrusted/ash_projector_app_untrusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
-    "includes": [3400],
+    "includes": [3395],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/annotator/untrusted/ash_projector_annotator_untrusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3405],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/annotator/trusted/ash_projector_annotator_trusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3410],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/common/ash_projector_common_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3415],
+  },
+
   # Both projector_app_bundle_resources.grd and projector_app_bundle_mock_resources.grd
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound for number of resource ids is number

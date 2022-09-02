@@ -129,6 +129,16 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       IdpNetworkRequestManager::FetchStatus status,
       IdpNetworkRequestManager::ClientMetadata data);
 
+  // Only send accounts fetch request if the user is signed in with the IDP or
+  // the IDP is used in FedCM for the first time.
+  void MaybeFetchAccounts(const IdentityProviderInfo& idp_info);
+  // Updates the IdpSigninStatus in case of accounts fetch failure and shows a
+  // failure UI if applicable.
+  void HandleAccountsFetchFailure(
+      const GURL& idp_url,
+      blink::mojom::FederatedAuthRequestResult result,
+      absl::optional<content::FedCmRequestIdTokenStatus> token_status);
+
   void OnAccountsResponseReceived(
       const IdentityProviderInfo& idp_info,
       IdpNetworkRequestManager::FetchStatus status,
@@ -136,6 +146,11 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   void OnAccountSelected(const IdentityProviderInfo& idp_info,
                          const std::string& account_id,
                          bool is_sign_in);
+  void OnDismissFailureDialog(
+      blink::mojom::FederatedAuthRequestResult result,
+      absl::optional<content::FedCmRequestIdTokenStatus> token_status,
+      bool should_delay_callback,
+      IdentityRequestDialogController::DismissReason dismiss_reason);
   void OnDialogDismissed(
       IdentityRequestDialogController::DismissReason dismiss_reason);
   void CompleteTokenRequest(const blink::mojom::IdentityProvider& idp,

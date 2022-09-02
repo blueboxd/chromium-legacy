@@ -32,7 +32,7 @@ constexpr char16_t AXNode::kEmbeddedObjectCharacterUTF16[];
 constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF8;
 constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF16;
 
-AXNode::AXNode(AXNode::OwnerTree* tree,
+AXNode::AXNode(AXTree* tree,
                AXNode* parent,
                AXNodeID id,
                size_t index_in_parent,
@@ -106,7 +106,7 @@ AXNode* AXNode::GetChildAtIndexCrossingTreeBoundary(size_t index) const {
     DCHECK_EQ(index, 0u)
         << "A node cannot be hosting both a child tree and other nodes as "
            "children.";
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
   }
 
   return GetChildAtIndex(index);
@@ -136,7 +136,7 @@ AXNode* AXNode::GetUnignoredChildAtIndexCrossingTreeBoundary(
         << "A node cannot be hosting both a child tree and other nodes as "
            "children.";
     // A child tree is never ignored.
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
   }
 
   return GetUnignoredChildAtIndex(index);
@@ -216,7 +216,7 @@ AXNode* AXNode::GetFirstUnignoredChildCrossingTreeBoundary() const {
 
   const AXTreeManager* child_tree_manager = AXTreeManager::ForChildTree(*this);
   if (child_tree_manager)
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
 
   return ComputeFirstUnignoredChildRecursive();
 }
@@ -247,7 +247,7 @@ AXNode* AXNode::GetLastUnignoredChildCrossingTreeBoundary() const {
 
   const AXTreeManager* child_tree_manager = AXTreeManager::ForChildTree(*this);
   if (child_tree_manager)
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
 
   return ComputeLastUnignoredChildRecursive();
 }
@@ -960,7 +960,7 @@ const std::string& AXNode::GetNameUTF8() const {
     const AXTreeManager* child_tree_manager =
         AXTreeManager::ForChildTree(*this);
     if (child_tree_manager)
-      node = child_tree_manager->GetRootAsAXNode();
+      node = child_tree_manager->GetRoot();
   }
 
   return node->GetStringAttribute(ax::mojom::StringAttribute::kName);
@@ -1374,6 +1374,20 @@ const std::vector<AXNode*>* AXNode::GetExtraMacNodes() const {
     return nullptr;
 
   return &table_info->extra_mac_nodes;
+}
+
+bool AXNode::IsGenerated() const {
+  bool is_generated_node = id() < 0;
+#if DCHECK_IS_ON()
+  // Currently, the only generated nodes are columns and table header
+  // containers, and when those roles occur, they are always extra mac nodes.
+  // This could change in the future.
+  bool is_extra_mac_node_role =
+      GetRole() == ax::mojom::Role::kColumn ||
+      GetRole() == ax::mojom::Role::kTableHeaderContainer;
+  DCHECK_EQ(is_generated_node, is_extra_mac_node_role);
+#endif
+  return is_generated_node;
 }
 
 //

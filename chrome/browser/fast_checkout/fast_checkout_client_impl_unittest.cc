@@ -6,33 +6,69 @@
 
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_external_action_delegate.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/fast_checkout_delegate.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill_assistant/browser/public/mock_headless_script_controller.h"
 #include "ui/gfx/native_widget_types.h"
 
+using ::autofill::AutofillProfile;
+using ::autofill::CreditCard;
 using ::testing::_;
+using ::testing::Pointee;
+using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 
 namespace {
 constexpr char kUrl[] = "https://www.example.com";
+const AutofillProfile profile1 = autofill::test::GetFullProfile();
+const AutofillProfile profile2 = autofill::test::GetFullProfile2();
+const CreditCard credit_card1 = autofill::test::GetCreditCard();
+const CreditCard credit_card2 = autofill::test::GetCreditCard2();
+
+std::unique_ptr<KeyedService> BuildTestPersonalDataManager(
+    content::BrowserContext* context) {
+  auto personal_data_manager =
+      std::make_unique<autofill::TestPersonalDataManager>();
+  personal_data_manager->SetAutofillProfileEnabled(true);
+  personal_data_manager->SetAutofillCreditCardEnabled(true);
+  personal_data_manager->SetAutofillWalletImportEnabled(true);
+  personal_data_manager->AddProfile(profile1);
+  personal_data_manager->AddProfile(profile2);
+  personal_data_manager->AddProfile(autofill::test::GetIncompleteProfile1());
+  // Add incomplete autofill profile, should not be shown on the sheet.
+  personal_data_manager->AddCreditCard(credit_card1);
+  personal_data_manager->AddCreditCard(credit_card2);
+  // Add incomplete credit card, should not be shown on the sheet.
+  personal_data_manager->AddCreditCard(
+      autofill::test::GetIncompleteCreditCard());
+  return personal_data_manager;
 }
+
+}  // namespace
 
 class MockFastCheckoutController : public FastCheckoutController {
  public:
   MockFastCheckoutController() : FastCheckoutController() {}
   ~MockFastCheckoutController() override = default;
 
-  MOCK_METHOD(void, Show, (), (override));
+  MOCK_METHOD(void,
+              Show,
+              (const std::vector<AutofillProfile*>& autofill_profiles,
+               const std::vector<CreditCard*>& credit_cards),
+              (override));
   MOCK_METHOD(void,
               OnOptionsSelected,
-              (std::unique_ptr<autofill::AutofillProfile> profile,
-               std::unique_ptr<autofill::CreditCard> credit_card),
+              (std::unique_ptr<AutofillProfile> profile,
+               std::unique_ptr<CreditCard> credit_card),
               (override));
   MOCK_METHOD(void, OnDismiss, (), (override));
   MOCK_METHOD(void, OpenAutofillProfileSettings, (), (override));
@@ -70,8 +106,8 @@ class MockFastCheckoutExternalActionDelegate
 
   MOCK_METHOD(void,
               SetOptionsSelected,
-              (const autofill::AutofillProfile& selected_profile,
-               const autofill::CreditCard& selected_credit_card),
+              (const AutofillProfile& selected_profile,
+               const CreditCard& selected_credit_card),
               (override));
 };
 
@@ -141,6 +177,10 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
+    autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+        GetBrowserContext(),
+        base::BindRepeating(&BuildTestPersonalDataManager));
+
     test_client_ =
         TestFastCheckoutClientImpl::CreateForWebContents(web_contents());
 
@@ -169,6 +209,11 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
     fast_checkout_delegate_ = std::make_unique<MockFastCheckoutDelegate>();
   }
 
+  autofill::TestPersonalDataManager* personal_data_manager() {
+    return static_cast<autofill::TestPersonalDataManager*>(
+        autofill::PersonalDataManagerFactory::GetForProfile(profile()));
+  }
+
   TestFastCheckoutClientImpl* fast_checkout_client() { return test_client_; }
 
   autofill_assistant::MockHeadlessScriptController*
@@ -191,12 +236,12 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
  protected:
   base::test::ScopedFeatureList feature_list_;
 
-  raw_ptr<TestFastCheckoutClientImpl> test_client_;
   raw_ptr<autofill_assistant::MockHeadlessScriptController>
       external_script_controller_;
   raw_ptr<MockFastCheckoutController> fast_checkout_controller_;
   raw_ptr<MockFastCheckoutExternalActionDelegate> external_action_delegate_;
   std::unique_ptr<MockFastCheckoutDelegate> fast_checkout_delegate_;
+  raw_ptr<TestFastCheckoutClientImpl> test_client_;
 };
 
 TEST_F(
@@ -253,7 +298,10 @@ TEST_F(FastCheckoutClientImplTest, Start_FeatureEnabled_RunsSuccessfully) {
           });
 
   // Expect bottomsheet to show up.
-  EXPECT_CALL(*fast_checkout_controller(), Show);
+  EXPECT_CALL(
+      *fast_checkout_controller(),
+      Show(UnorderedElementsAre(Pointee(profile1), Pointee(profile2)),
+           UnorderedElementsAre(Pointee(credit_card1), Pointee(credit_card2))));
 
   // Starting the run successfully.
   EXPECT_TRUE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
@@ -272,6 +320,179 @@ TEST_F(FastCheckoutClientImplTest, Start_FeatureEnabled_RunsSuccessfully) {
 
   // `FastCheckoutClient` state was reset after run finished.
   EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest, Start_FailsIfNoProfilesOnFile) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Remove all profiles.
+  personal_data_manager()->ClearProfiles();
+
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(0);
+
+  // Starting the run unsuccessfully.
+  EXPECT_FALSE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is not running.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest, Start_FailsIfNoCompleteProfile) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Remove all Profiles.
+  personal_data_manager()->ClearProfiles();
+  personal_data_manager()->AddProfile(autofill::test::GetIncompleteProfile1());
+  personal_data_manager()->AddProfile(autofill::test::GetIncompleteProfile2());
+
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(0);
+
+  // Starting the run unsuccessfully.
+  EXPECT_FALSE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is not running.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest, Start_FailsIfNoCreditCardsOnFile) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Remove all credit cards.
+  personal_data_manager()->ClearCreditCards();
+
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(0);
+
+  // Starting the run unsuccessfully.
+  EXPECT_FALSE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is not running.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest, Start_FailsIfNoCompleteorValidCreditCard) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Remove all credit Cards.
+  personal_data_manager()->ClearCreditCards();
+  personal_data_manager()->AddCreditCard(
+      autofill::test::GetExpiredCreditCard());
+  personal_data_manager()->AddCreditCard(
+      autofill::test::GetIncompleteCreditCard());
+
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(0);
+
+  // Starting the run unsuccessfully.
+  EXPECT_FALSE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is not running.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest,
+       OnPersonalDataChanged_StopIfInvalidProfiles) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Expect bottomsheet to show up.
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(1);
+
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is running.
+  EXPECT_TRUE(fast_checkout_client()->IsRunning());
+
+  // Bottom sheet UI is showing.
+  ON_CALL(*delegate(), IsShowingFastCheckoutUI).WillByDefault(Return(true));
+
+  // User removes all the profiles.
+  personal_data_manager()->ClearProfiles();
+  // User adds an incomplete profile only.
+  personal_data_manager()->AddProfile(autofill::test::GetIncompleteProfile1());
+
+  // `FastCheckoutClient` is not running anymore.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest,
+       OnPersonalDataChanged_StopIfInvalidCreditCards) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Expect bottomsheet to show up.
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _)).Times(1);
+
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // `FastCheckoutClient` is running.
+  EXPECT_TRUE(fast_checkout_client()->IsRunning());
+
+  // Bottom sheet UI is showing.
+  ON_CALL(*delegate(), IsShowingFastCheckoutUI).WillByDefault(Return(true));
+
+  // User removes all valid credit cards and adds an incomplete one.
+  personal_data_manager()->ClearCreditCards();
+  personal_data_manager()->AddCreditCard(
+      autofill::test::GetIncompleteCreditCard());
+
+  // `FastCheckoutClient` is not running anymore.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest,
+       OnPersonalDataChanged_UpdatesTheUIWithNewData) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  base::OnceCallback<void()> onboarding_successful_callback;
+  // Expect bottomsheet to show up.
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _))
+      .Times(1)
+      .WillOnce(
+          [&](const base::flat_map<std::string, std::string>& script_parameters,
+              base::OnceCallback<void(
+                  autofill_assistant::HeadlessScriptController::ScriptResult)>
+                  script_ended_callback,
+              bool use_autofill_assistant_onboarding,
+              base::OnceCallback<void()>
+                  onboarding_successful_callback_parameter) {
+            onboarding_successful_callback =
+                std::move(onboarding_successful_callback_parameter);
+          });
+
+  EXPECT_CALL(
+      *fast_checkout_controller(),
+      Show(UnorderedElementsAre(Pointee(profile1), Pointee(profile2)),
+           UnorderedElementsAre(Pointee(credit_card1), Pointee(credit_card2))));
+
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(delegate(), GURL(kUrl)));
+
+  // User accepts the onboarding.
+  std::move(onboarding_successful_callback).Run();
+
+  // `FastCheckoutClient` is running.
+  EXPECT_TRUE(fast_checkout_client()->IsRunning());
+
+  // Bottom sheet UI is showing.
+  ON_CALL(*delegate(), IsShowingFastCheckoutUI).WillByDefault(Return(true));
+
+  // Expect bottomsheet to display the updated info.
+  EXPECT_CALL(*fast_checkout_controller(),
+              Show(UnorderedElementsAre(Pointee(profile1), Pointee(profile2)),
+                   UnorderedElementsAre(Pointee(credit_card1))));
+
+  // User removes all valid credit cards and adds a valid card.
+  personal_data_manager()->ClearCreditCards();
+  personal_data_manager()->AddCreditCard(credit_card1);
+
+  // `FastCheckoutClient` is still running.
+  EXPECT_TRUE(fast_checkout_client()->IsRunning());
 }
 
 TEST_F(FastCheckoutClientImplTest,
@@ -347,9 +568,8 @@ TEST_F(FastCheckoutClientImplTest,
   EXPECT_CALL(*delegate(), OnFastCheckoutUIHidden);
 
   // User selected profile and card in bottomsheet.
-  fast_checkout_client()->OnOptionsSelected(
-      std::make_unique<autofill::AutofillProfile>(),
-      std::make_unique<autofill::CreditCard>());
+  fast_checkout_client()->OnOptionsSelected(std::make_unique<AutofillProfile>(),
+                                            std::make_unique<CreditCard>());
 }
 
 TEST_F(FastCheckoutClientImplTest, RunsSuccessfullyIfDelegateIsDestroyed) {

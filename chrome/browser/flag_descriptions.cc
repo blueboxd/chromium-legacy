@@ -2266,6 +2266,10 @@ const char kPdfXfaFormsDescription[] =
     "Enables support for XFA forms in PDFs. "
     "Has no effect if Chrome was not built with XFA support.";
 
+const char kVmPerBootShaderCacheName[] = "VM per-boot shader cache";
+const char kVmPerBootShaderCacheDescription[] =
+    "Enable per-boot VM shader cache (default is per OS build).";
+
 const char kAutoWebContentsDarkModeName[] = "Auto Dark Mode for Web Contents";
 const char kAutoWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";
@@ -2673,6 +2677,11 @@ const char kSuppressToolbarCapturesName[] = "Suppress Toolbar Captures";
 const char kSuppressToolbarCapturesDescription[] =
     "Suppress Toolbar Captures except when certain properties change.";
 
+const char kSyncAccessHandleAllSyncSurfaceName[] =
+    "Sync Access Handle All Sync Surface";
+const char kSyncAccessHandleAllSyncSurfaceDescription[] =
+    "Enables all-sync surface for SyncAccessHandle in File System Access API.";
+
 const char kSyncEnableHistoryDataTypeName[] = "Enable History sync data type";
 const char kSyncEnableHistoryDataTypeDescription[] =
     "Enables the History sync data type instead of TypedURLs";
@@ -3067,6 +3076,10 @@ const char kAppStoreBillingDebugDescription[] =
     "requested using the Payment Request API. This flag removes the "
     "restriction that the TWA has to be installed from the app-store.";
 
+const char kWebAuthnConditionalUIName[] = "Web Authentication Conditional UI";
+const char kWebAuthnConditionalUIDescription[] =
+    "Enable support for Conditional UI WebAuthn requests.";
+
 const char kWebrtcCaptureMultiChannelApmName[] =
     "WebRTC multi-channel capture audio processing.";
 const char kWebrtcCaptureMultiChannelApmDescription[] =
@@ -3387,6 +3400,12 @@ const char kChimeAndroidSdkName[] = "Use Chime SDK";
 const char kChromeShareLongScreenshotName[] = "Chrome Share Long Screenshots";
 const char kChromeShareLongScreenshotDescription[] =
     "Enables UI to edit and share long screenshots on Android";
+
+const char kChromeSharingCrowLaunchTabName[] =
+    "Launch Thank Creator actions in standard tab";
+const char kChromeSharingCrowLaunchTabDescription[] =
+    "Launches Thank Creator actions in a traditional  new tab; default is a "
+    "custom tab. For internal debugging.";
 
 const char kChromeSharingHubLaunchAdjacentName[] =
     "Launch new share hub actions in adjacent window";
@@ -4831,12 +4850,6 @@ const char kCellularCustomAPNProfilesDescription[] =
     "If enabled, the Settings UI will allow the user to create, edit, and "
     "delete custom APN profiles for a Cellular network.";
 
-const char kCellularUseAttachApnName[] = "Cellular use Attach APN";
-const char kCellularUseAttachApnDescription[] =
-    "Use the mobile operator database to set explicitly an Attach APN "
-    "for the LTE connections rather than letting the modem decide which "
-    "attach APN to use or retrieve it from the network";
-
 const char kCellularUseSecondEuiccName[] = "Use second Euicc";
 const char kCellularUseSecondEuiccDescription[] =
     "When enabled Cellular Setup and Settings UI will use the second available "
@@ -5888,11 +5901,6 @@ const char kSpectreVariant2MitigationDescription[] =
     "bootstrapping the Seccomp BPF sandbox. Can be overridden by "
     "#force-spectre-variant2-mitigation.";
 
-const char kSyncSettingsCategorizationName[] = "Split OS and browser sync";
-const char kSyncSettingsCategorizationDescription[] =
-    "Allows OS sync to be configured separately from browser sync. Changes the "
-    "OS settings UI to provide controls for OS data types.";
-
 const char kSystemChinesePhysicalTypingName[] =
     "Use system IME for Chinese typing";
 const char kSystemChinesePhysicalTypingDescription[] =
@@ -5954,6 +5962,10 @@ const char kTouchscreenCalibrationName[] =
 const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
+
+const char kTouchTextEditingRedesignName[] = "Touch Text Editing Redesign";
+const char kTouchTextEditingRedesignDescription[] =
+    "Enables new touch text editing features.";
 
 const char kTrafficCountersEnabledName[] = "Traffic counters enabled";
 const char kTrafficCountersEnabledDescription[] =
@@ -6145,6 +6157,11 @@ const char kCrOSEnforceSystemAecNsAgcDescription[] =
 
 const char kCrosPrivacyHubName[] = "Enable ChromeOS Privacy Hub";
 const char kCrosPrivacyHubDescription[] = "Enables ChromeOS Privacy Hub.";
+
+const char kCrosPrivacyHubDogfoodName[] =
+    "Enable ChromeOS Privacy Hub dogfood features";
+const char kCrosPrivacyHubDogfoodDescription[] =
+    "Enables ChromeOS Privacy Hub dogfood features.";
 
 const char kCrosPrivacyHubFutureName[] =
     "Enable ChromeOS Privacy Hub future features";

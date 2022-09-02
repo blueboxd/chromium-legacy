@@ -5225,7 +5225,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'isolate_profile_data',
-          'mac_12_arm64',
+          'mac_12_t2_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_14_main',
@@ -6113,6 +6113,22 @@
             {
               'integrity': 'high',
               'pool': 'chromium.tests',
+            }
+          ]
+        },
+      },
+      'win11-updater-tester-dbg-uac': {
+        'mixins': [
+          'win11',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_win_uac',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chromium.win.uac',
             }
           ]
         },

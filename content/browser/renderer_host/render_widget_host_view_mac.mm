@@ -407,6 +407,13 @@ void RenderWidgetHostViewMac::InitAsPopup(
   // the white background on popup open when dark color-scheme is used.
   SetContentBackgroundColor(SK_ColorTRANSPARENT);
 
+  // If HiDPI capture mode is active for the parent, propagate the scale
+  // override to the popup window also. Its content was created assuming
+  // that the new window will share the parent window's scale. See
+  // https://crbug.com/1354703 .
+  scale_override_for_capture_ =
+      popup_parent_host_view_->GetScaleOverrideForCapture();
+
   // This path is used by the time/date picker.
   ns_view_->InitAsPopup(pos, popup_parent_host_view_->ns_view_id_);
 }
@@ -821,10 +828,8 @@ void RenderWidgetHostViewMac::UpdateScreenInfo() {
     display::ScreenInfos new_screen_infos = original_screen_infos_;
     const float old_device_scale_factor =
         new_screen_infos.current().device_scale_factor;
-    // On MacOS, device_scale_factor needs to be an integer value, so
-    // we need to round the final scale to the nearest whole number.
     new_screen_infos.mutable_current().device_scale_factor =
-        std::round(old_device_scale_factor * scale_override_for_capture_);
+        old_device_scale_factor * scale_override_for_capture_;
     if (screen_infos_ != new_screen_infos) {
       DVLOG(1) << __func__ << ": Overriding device_scale_factor from "
                << old_device_scale_factor << " to "

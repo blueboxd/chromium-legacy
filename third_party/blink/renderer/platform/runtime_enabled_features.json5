@@ -200,6 +200,12 @@
       origin_trial_allows_third_party: true,
       status: "experimental",
     },
+    // The runtime flag for AudioContext.setSinkID().
+    // See: https://github.com/WebAudio/web-audio-api/pull/2498
+    {
+      name: "AudioContextSetSinkId",
+      status: "test",
+    },
     {
       name: "AudioOutputDevices",
       // Android does not yet support switching of audio output devices
@@ -381,7 +387,6 @@
     },
     {
       name: "CloseWatcher",
-      status: "experimental",
     },
     {
       name: "CLSScrollAnchoring",
@@ -836,7 +841,7 @@
     },
     {
       name: "DirectSockets",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "DisableDifferentOriginSubframeDialogSuppression",
@@ -990,6 +995,10 @@
       status: "test",
     },
     {
+      name: "FedCmIdpSigninStatus",
+      status: "test",
+    },
+    {
       name: "FedCmIdpSignout",
       status: "test",
     },
@@ -1112,7 +1121,7 @@
     },
     {
       name: "FractionalScrollOffsets",
-      status: "experimental",
+      implied_by: ["PercentBasedScrolling"],
     },
     {
       name: "FreezeFramesOnVisibility",

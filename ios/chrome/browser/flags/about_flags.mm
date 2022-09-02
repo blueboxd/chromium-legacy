@@ -74,6 +74,7 @@
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
+#import "ios/chrome/browser/ui/app_store_rating/features.h"
 #include "ios/chrome/browser/ui/autofill/features.h"
 #include "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -558,6 +559,12 @@ const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
     {"With V2", kOpenInDownloadWithV2, std::size(kOpenInDownloadWithV2),
      nullptr},
 };
+
+const FeatureEntry::FeatureParam kAutofillBrandingIOSMonotone[] = {
+    {autofill::features::kAutofillBrandingIOSParam, "true"}};
+const FeatureEntry::FeatureVariation kAutofillBrandingIOSVariations[] = {
+    {"(Monotone)", kAutofillBrandingIOSMonotone,
+     std::size(kAutofillBrandingIOSMonotone), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -1141,7 +1148,8 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewName,
      flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAutofillEnableNewCardUnmaskPromptView)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableNewCardUnmaskPromptView)},
     {"omnibox-paste-button", flag_descriptions::kOmniboxPasteButtonName,
      flag_descriptions::kOmniboxPasteButtonDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kOmniboxPasteButton,
@@ -1200,6 +1208,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableOpenInDownload,
                                     kOpenInDownloadVariations,
                                     "EnableOpenInDownload")},
+    {"ios-autofill-branding", flag_descriptions::kAutofillBrandingIOSName,
+     flag_descriptions::kAutofillBrandingIOSDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::features::kAutofillBrandingIOS,
+                                    kAutofillBrandingIOSVariations,
+                                    "AutofillBrandingIOS")},
+    {"app-store-rating", flag_descriptions::kAppStoreRatingName,
+     flag_descriptions::kAppStoreRatingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAppStoreRating)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

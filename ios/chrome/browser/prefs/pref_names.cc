@@ -91,11 +91,17 @@ const char kIosBookmarkSigninPromoDisplayedCount[] =
 const char kIosDiscoverFeedLastRefreshTime[] =
     "ios.discover_feed.last_refresh_time";
 
-// List preference maintaining the list of active promo campaigns.
+// List preference maintaining the list of continuous-display, active promo
+// campaigns.
 const char kIosPromosManagerActivePromos[] = "ios.promos_manager.active_promos";
 
 // List preference containing the promo impression history.
 const char kIosPromosManagerImpressions[] = "ios.promos_manager.impressions";
+
+// List preference maintaining the list of single-display, active promo
+// campaigns.
+const char kIosPromosManagerSingleDisplayActivePromos[] =
+    "ios.promos_manager.single_display_active_promos";
 
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in settings view.
@@ -131,6 +137,11 @@ const char kLinkPreviewEnabled[] = "ios.link_preview_enabled";
 // are enabled.
 const char kNTPContentSuggestionsEnabled[] =
     "ios.ntp.content_suggestions_enabled";
+
+// Preference that holds a boolean indicating whether suggestions for supervised
+// users on the NTP are enabled.
+const char kNTPContentSuggestionsForSupervisedUserEnabled[] =
+    "ios.ntp.supervised.content_suggestions_enabled";
 
 // Preference that represents the sorting order of the Following feed content.
 const char kNTPFollowingFeedSortType[] = "ios.ntp.following_feed.sort_type";

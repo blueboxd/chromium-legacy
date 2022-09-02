@@ -6,9 +6,12 @@ source_set("promos") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "promo_protocol.h",
+    "promos_manager_scene_availability_observer.h",
     "standard_promo_display_handler.h",
+    "standard_promo_view_provider.h",
   ]
-  frameworks = [ "Foundation.framework" ]
+  frameworks = [ "UIKit.framework" ]
+  public_deps = [ "//ios/chrome/common/ui/confirmation_alert" ]
   deps = [
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:types",
@@ -22,9 +25,34 @@ source_set("promos_manager_scene_agent") {
     "promos_manager_scene_agent.mm",
   ]
   deps = [
+    ":promos",
     "//base",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser/ui/main:observing_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
+  ]
+}
+
+source_set("promos_manager") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "promos_manager_coordinator.h",
+    "promos_manager_coordinator.mm",
+    "promos_manager_mediator.h",
+    "promos_manager_mediator.mm",
+  ]
+  public_deps = [
+    ":promos",
+    "//ios/chrome/browser/promos_manager",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+  deps = [
+    ":promos_manager_scene_agent",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/promos_manager:constants",
+    "//ios/chrome/browser/ui/main:scene_state_header",
+    "//third_party/abseil-cpp:absl",
   ]
 }

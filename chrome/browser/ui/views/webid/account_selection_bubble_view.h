@@ -7,9 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view_interface.h"
-#include "chrome/browser/ui/webid/account_selection_view.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -68,6 +66,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   void ShowVerifyingSheet(
       const content::IdentityRequestAccount& account,
       const content::IdentityProviderMetadata& idp_metadata) override;
+  void ShowFailureDialog(const std::u16string& rp_for_display,
+                         const std::u16string& idp_for_display) override;
 
  private:
   gfx::Rect GetBubbleBounds() override;

@@ -147,8 +147,6 @@ extern const base::Feature kCellularBypassESimInstallationConnectivityCheck;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularCustomAPNProfiles;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCellularUseAttachApn;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseSecondEuicc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCheckPasswordsAgainstCryptohomeHelper;
@@ -169,6 +167,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrosNextWMP;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrosPrivacyHub;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCrosPrivacyHubDogfood;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrosPrivacyHubFuture;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -646,6 +646,8 @@ extern const base::Feature kTerminalMultiProfile;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTerminalTmuxIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kTouchTextEditingRedesign;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTrafficCountersEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTrilinearFiltering;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kUploadOfficeToCloud;
@@ -673,6 +675,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVirtualKeyboardMultitouch;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVirtualKeyboardRoundCorners;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kVmPerBootShaderCache;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWakeOnWifiAllowed;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -739,6 +743,7 @@ bool IsClipboardHistoryNudgeSessionResetEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryReorderEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsConsumerAutoUpdateToggleAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubDogfoodEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubFutureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosNextWMPEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDesksCloseAllEnabled();
@@ -924,7 +929,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool ShouldArcAndGuestOsFileTasksUseAppService();
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseAttachApn();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseV1DeviceSync();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseV2DeviceSync();
 

@@ -1509,6 +1509,9 @@ extern const char kSystemKeyboardLockDescription[];
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
 
+extern const char kSyncAccessHandleAllSyncSurfaceName[];
+extern const char kSyncAccessHandleAllSyncSurfaceDescription[];
+
 extern const char kSyncEnableHistoryDataTypeName[];
 extern const char kSyncEnableHistoryDataTypeDescription[];
 
@@ -1655,6 +1658,9 @@ extern const char kVariableCOLRV1Description[];
 extern const char kGlobalVaapiLockName[];
 extern const char kGlobalVaapiLockDescription[];
 
+extern const char kVmPerBootShaderCacheDescription[];
+extern const char kVmPerBootShaderCacheName[];
+
 extern const char kVp9kSVCHWDecodingName[];
 extern const char kVp9kSVCHWDecodingDescription[];
 
@@ -1717,6 +1723,9 @@ extern const char kIdentityInCanMakePaymentEventFeatureDescription[];
 
 extern const char kAppStoreBillingDebugName[];
 extern const char kAppStoreBillingDebugDescription[];
+
+extern const char kWebAuthnConditionalUIName[];
+extern const char kWebAuthnConditionalUIDescription[];
 
 extern const char kWebrtcCaptureMultiChannelApmName[];
 extern const char kWebrtcCaptureMultiChannelApmDescription[];
@@ -1906,6 +1915,9 @@ extern const char kChimeAndroidSdkName[];
 
 extern const char kChromeShareLongScreenshotName[];
 extern const char kChromeShareLongScreenshotDescription[];
+
+extern const char kChromeSharingCrowLaunchTabName[];
+extern const char kChromeSharingCrowLaunchTabDescription[];
 
 extern const char kChromeSharingHubLaunchAdjacentName[];
 extern const char kChromeSharingHubLaunchAdjacentDescription[];
@@ -2762,9 +2774,6 @@ extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
 extern const char kCellularCustomAPNProfilesName[];
 extern const char kCellularCustomAPNProfilesDescription[];
 
-extern const char kCellularUseAttachApnName[];
-extern const char kCellularUseAttachApnDescription[];
-
 extern const char kCellularUseSecondEuiccName[];
 extern const char kCellularUseSecondEuiccDescription[];
 
@@ -3372,9 +3381,6 @@ extern const char kSnoopingProtectionDescription[];
 extern const char kSpectreVariant2MitigationName[];
 extern const char kSpectreVariant2MitigationDescription[];
 
-extern const char kSyncSettingsCategorizationName[];
-extern const char kSyncSettingsCategorizationDescription[];
-
 extern const char kSystemChinesePhysicalTypingName[];
 extern const char kSystemChinesePhysicalTypingDescription[];
 
@@ -3407,6 +3413,9 @@ extern const char kTetherDescription[];
 
 extern const char kTouchscreenCalibrationName[];
 extern const char kTouchscreenCalibrationDescription[];
+
+extern const char kTouchTextEditingRedesignName[];
+extern const char kTouchTextEditingRedesignDescription[];
 
 extern const char kTrafficCountersEnabledName[];
 extern const char kTrafficCountersEnabledDescription[];
@@ -3511,6 +3520,9 @@ extern const char kCrOSDspBasedAgcAllowedDescription[];
 
 extern const char kCrosPrivacyHubName[];
 extern const char kCrosPrivacyHubDescription[];
+
+extern const char kCrosPrivacyHubDogfoodName[];
+extern const char kCrosPrivacyHubDogfoodDescription[];
 
 extern const char kCrosPrivacyHubFutureName[];
 extern const char kCrosPrivacyHubFutureDescription[];

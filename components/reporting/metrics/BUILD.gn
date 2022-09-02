@@ -4,6 +4,8 @@
 
 static_library("metrics_data_collection") {
   sources = [
+    "configured_sampler.cc",
+    "configured_sampler.h",
     "metric_data_collector.cc",
     "metric_data_collector.h",
     "metric_event_observer_manager.cc",
@@ -16,6 +18,7 @@ static_library("metrics_data_collection") {
     "metric_reporting_controller.h",
     "reporting_settings.h",
     "sampler.h",
+    "telemetry_sampler_pool_base.h",
   ]
   deps = [
     "//base",
@@ -50,6 +53,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "configured_sampler_unittest.cc",
     "metric_data_collector_unittest.cc",
     "metric_event_observer_manager_unittest.cc",
     "metric_rate_controller_unittest.cc",

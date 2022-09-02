@@ -166,10 +166,17 @@ void NGLogicalAnchorQuery::SetAsStitched(
     WritingDirectionMode writing_direction) {
   // This struct is a variation of |NGAnchorReference|, using the stitched
   // coordinate system for the block-fragmented out-of-flow positioned objects.
-  struct NGStitchedAnchorReference {
-    STACK_ALLOCATED();
+  struct NGStitchedAnchorReference
+      : public GarbageCollected<NGStitchedAnchorReference> {
+    NGStitchedAnchorReference(NGPhysicalAnchorReference* reference,
+                              const LogicalRect& rect,
+                              LogicalOffset first_container_offset,
+                              LayoutUnit first_container_stitched_offset)
+        : reference(reference),
+          rect(rect),
+          first_container_offset(first_container_offset),
+          first_container_stitched_offset(first_container_stitched_offset) {}
 
-   public:
     LogicalRect StitchedRect() const {
       LogicalRect stitched_rect = rect;
       stitched_rect.offset.block_offset += first_container_stitched_offset;
@@ -191,30 +198,46 @@ void NGLogicalAnchorQuery::SetAsStitched(
       rect.Unite(other_rect_in_first_container);
     }
 
+    void Trace(Visitor* visitor) const { visitor->Trace(reference); }
+
     // The |rect| is relative to the first container, so that it can a) unite
     // following fragments in the physical coordinate system, and b) compute the
     // result in the stitched coordinate system.
-    NGPhysicalAnchorReference* reference;
+    Member<NGPhysicalAnchorReference> reference;
     LogicalRect rect;
     LogicalOffset first_container_offset;
     LayoutUnit first_container_stitched_offset;
   };
-  HashMap<AtomicString, NGStitchedAnchorReference> anchors;
-  LayoutUnit stitched_offset;
-  for (const NGLogicalLink& child : children) {
-    if (const NGPhysicalAnchorQuery* child_anchor_query =
-            child->AnchorQuery()) {
+
+  struct NGStitchedAnchorQuery
+      : public GarbageCollected<NGStitchedAnchorQuery> {
+    void AddChild(const NGLogicalLink& child,
+                  const LayoutUnit stitched_offset,
+                  WritingDirectionMode writing_direction) {
+      const NGPhysicalAnchorQuery* anchor_query = child->AnchorQuery();
+      if (!anchor_query)
+        return;
       DCHECK_EQ(child->Style().GetWritingDirection(), writing_direction);
       const WritingModeConverter converter(writing_direction, child->Size());
-      for (const auto& it : *child_anchor_query) {
+      for (const auto& it : *anchor_query) {
         const LogicalRect rect = converter.ToLogical(it.value->rect);
-        const auto result = anchors.insert(
-            it.key, NGStitchedAnchorReference{it.value.Get(), rect,
-                                              child.offset, stitched_offset});
+        const auto result = references.insert(
+            it.key, MakeGarbageCollected<NGStitchedAnchorReference>(
+                        it.value, rect, child.offset, stitched_offset));
         if (!result.is_new_entry)
-          result.stored_value->value.Unite(rect, child.offset);
+          result.stored_value->value->Unite(rect, child.offset);
       }
     }
+
+    void Trace(Visitor* visitor) const { visitor->Trace(references); }
+
+    HeapHashMap<AtomicString, Member<NGStitchedAnchorReference>> references;
+  };
+
+  auto* stitched_anchor_query = MakeGarbageCollected<NGStitchedAnchorQuery>();
+  LayoutUnit stitched_offset;
+  for (const NGLogicalLink& child : children) {
+    stitched_anchor_query->AddChild(child, stitched_offset, writing_direction);
     stitched_offset += child->Size()
                            .ConvertToLogical(writing_direction.GetWritingMode())
                            .block_size;
@@ -222,8 +245,8 @@ void NGLogicalAnchorQuery::SetAsStitched(
 
   // Convert the united anchor references to the stitched coordinate system.
   DCHECK(IsEmpty());
-  for (const auto& it : anchors)
-    Set(it.key, it.value.StitchedAnchorReference());
+  for (const auto& it : stitched_anchor_query->references)
+    Set(it.key, it.value->StitchedAnchorReference());
 }
 
 absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
@@ -321,18 +344,24 @@ absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchor(
     const AtomicString& anchor_name,
     AnchorValue anchor_value) const {
   has_anchor_functions_ = true;
-  return anchor_query_.EvaluateAnchor(
-      anchor_name, anchor_value, available_size_, container_converter_,
-      offset_to_padding_box_, is_y_axis_, is_right_or_bottom_);
+  if (anchor_query_) {
+    return anchor_query_->EvaluateAnchor(
+        anchor_name, anchor_value, available_size_, container_converter_,
+        offset_to_padding_box_, is_y_axis_, is_right_or_bottom_);
+  }
+  return absl::nullopt;
 }
 
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchorSize(
     const AtomicString& anchor_name,
     AnchorSizeValue anchor_size_value) const {
   has_anchor_functions_ = true;
-  return anchor_query_.EvaluateSize(anchor_name, anchor_size_value,
-                                    container_converter_.GetWritingMode(),
-                                    self_writing_mode_);
+  if (anchor_query_) {
+    return anchor_query_->EvaluateSize(anchor_name, anchor_size_value,
+                                       container_converter_.GetWritingMode(),
+                                       self_writing_mode_);
+  }
+  return absl::nullopt;
 }
 
 void NGLogicalAnchorReference::Trace(Visitor* visitor) const {
@@ -342,6 +371,10 @@ void NGLogicalAnchorReference::Trace(Visitor* visitor) const {
 
 void NGPhysicalAnchorReference::Trace(Visitor* visitor) const {
   visitor->Trace(fragment);
+}
+
+void NGLogicalAnchorQuery::Trace(Visitor* visitor) const {
+  visitor->Trace(anchor_references_);
 }
 
 void NGPhysicalAnchorQuery::Trace(Visitor* visitor) const {

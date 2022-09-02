@@ -795,6 +795,7 @@ void LocalFrameView::PerformLayout() {
       }
       for (auto& root : layout_subtree_root_list_.Ordered()) {
         bool should_rebuild_fragments = false;
+        LayoutObject& root_layout_object = *root;
         LayoutBlock* cb = root->ContainingNGBlock();
         if (cb) {
           auto it = fragment_tree_spines.find(cb);
@@ -814,7 +815,7 @@ void LocalFrameView::PerformLayout() {
         // We need to ensure that we mark up all layoutObjects up to the
         // LayoutView for paint invalidation. This simplifies our code as we
         // just always do a full tree walk.
-        if (LayoutObject* container = root->Container())
+        if (LayoutObject* container = root_layout_object.Container())
           container->SetShouldCheckForPaintInvalidation();
       }
       layout_subtree_root_list_.Clear();
@@ -1065,8 +1066,8 @@ void LocalFrameView::RunIntersectionObserverSteps() {
         To<LayoutBox>(layout_object)->PhysicalLayoutOverflowRect().size));
     GetFrame().Client()->OnMainFrameIntersectionChanged(main_frame_dimensions);
     GetFrame().Client()->OnMainFrameViewportRectangleChanged(
-        gfx::Rect(frame_->GetMainFrameScrollPosition(),
-                  frame_->GetMainFrameViewportSize()));
+        gfx::Rect(frame_->GetOutermostMainFrameScrollPosition(),
+                  frame_->GetOutermostMainFrameSize()));
   }
 
   TRACE_EVENT0("blink,benchmark",
@@ -3825,6 +3826,8 @@ void LocalFrameView::SetLayoutSizeInternal(const gfx::Size& size) {
   document->LayoutViewportWasResized();
   if (frame_->IsMainFrame())
     TextAutosizer::UpdatePageInfoInAllFrames(frame_);
+  if (auto* ds_controller = DeferredShapingController::From(*document))
+    ds_controller->OnResizeFrame();
 }
 
 void LocalFrameView::DidChangeScrollOffset() {

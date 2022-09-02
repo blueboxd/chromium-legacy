@@ -593,6 +593,10 @@ crbug.com/1338214 [ android android-chromium android-Nexus-5 passthrough ] confo
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
 
+crbug.com/1357064 [ android android-nexus-5 no-passthrough ] conformance/rendering/blending.html [ Failure ]
+crbug.com/1359027 [ android android-nexus-5 ] conformance/attribs/gl-enable-vertex-attrib.html [ Failure ]
+crbug.com/1359027 [ android android-nexus-5 ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
+
 # Started failing after the upgrade to Marshmallow.
 crbug.com/1264880 [ android-marshmallow android-nexus-5 ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1264882 [ android-marshmallow android-nexus-5 ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ Failure ]

@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <utility>
@@ -444,7 +443,7 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
       views::View::ConvertRectToTarget(target, child, &child_rect);
       return child->HitTestRect(gfx::ToEnclosingRect(child_rect));
     };
-    return std::any_of(children.cbegin(), children.cend(), hits_child);
+    return base::ranges::any_of(children, hits_child);
   }
 };
 
@@ -2622,7 +2621,7 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
-    translate::TranslateErrors::Type error_type,
+    translate::TranslateErrors error_type,
     bool is_user_gesture) {
   if (contents_web_view_->HasFocus() &&
       !GetLocationBarView()->IsMouseHovered() &&

@@ -11,6 +11,8 @@
 
 namespace blink {
 
+constexpr base::TimeDelta kMaximumDeferDuration = base::Seconds(5);
+
 // static
 DeferredShapingController* DeferredShapingController::From(
     const Document& document) {
@@ -58,6 +60,11 @@ void DeferredShapingController::PerformPostLayoutTask() {
   DEFERRED_SHAPING_VLOG(1) << "Deferred " << deferred_elements_.size()
                            << " elements";
   UseCounter::Count(*document_, WebFeature::kDeferredShapingWorked);
+  reshaping_task_handle_ = PostDelayedCancellableTask(
+      *document_->GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
+      WTF::Bind(&DeferredShapingController::ReshapeAllDeferred,
+                WrapWeakPersistent(this), ReshapeReason::kLastResort),
+      kMaximumDeferDuration);
 }
 
 void DeferredShapingController::OnFirstContentfulPaint() {
@@ -68,16 +75,17 @@ void DeferredShapingController::OnFirstContentfulPaint() {
   if (!default_allow_deferred_shaping_ && deferred_elements_.IsEmpty())
     return;
   default_allow_deferred_shaping_ = false;
+  // Cancels the last resort task.
+  reshaping_task_handle_.Cancel();
   reshaping_task_handle_ = PostCancellableTask(
       *document_->GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
       WTF::Bind(&DeferredShapingController::ReshapeAllDeferred,
                 WrapWeakPersistent(this), ReshapeReason::kFcp));
 }
 
-void DeferredShapingController::ReshapeAllDeferred(ReshapeReason reason) {
-  default_allow_deferred_shaping_ = false;
+size_t DeferredShapingController::ReshapeAllDeferredInternal() {
   if (deferred_elements_.IsEmpty())
-    return;
+    return 0;
   size_t count = 0;
   for (auto& element : deferred_elements_) {
     if (!element->isConnected())
@@ -94,6 +102,12 @@ void DeferredShapingController::ReshapeAllDeferred(ReshapeReason reason) {
     box->ClearLayoutResults();
   }
   deferred_elements_.clear();
+  return count;
+}
+
+void DeferredShapingController::ReshapeAllDeferred(ReshapeReason reason) {
+  default_allow_deferred_shaping_ = false;
+  size_t count = ReshapeAllDeferredInternal();
   if (count == 0)
     return;
 
@@ -128,6 +142,10 @@ void DeferredShapingController::ReshapeAllDeferred(ReshapeReason reason) {
       reason_string = "inspector";
       feature = WebFeature::kDeferredShaping2ReshapedByInspector;
       break;
+    case ReshapeReason::kLastResort:
+      reason_string = "the last resort";
+      feature = WebFeature::kDeferredShaping2ReshapedByLastResort;
+      break;
     case ReshapeReason::kPrinting:
       reason_string = "printing";
       feature = WebFeature::kDeferredShaping2ReshapedByPrinting;
@@ -135,6 +153,9 @@ void DeferredShapingController::ReshapeAllDeferred(ReshapeReason reason) {
     case ReshapeReason::kScrollingApi:
       reason_string = "scrolling APIs";
       feature = WebFeature::kDeferredShaping2ReshapedByScrolling;
+      break;
+    case ReshapeReason::kTesting:
+      reason_string = "a test";
       break;
   }
   if (feature != WebFeature::kMaxValue) {
@@ -159,6 +180,17 @@ void DeferredShapingController::ReshapeDeferredForWidth(
 void DeferredShapingController::ReshapeDeferredForHeight(
     const LayoutObject& object) {
   ReshapeAllDeferred(ReshapeReason::kGeometryApi);
+}
+
+void DeferredShapingController::OnResizeFrame() {
+  // This function does not clear default_allow_deferred_shaping_.
+  // We don't need precise geometry of a specific element, and it's ok
+  // to defer elements after the resize.
+  size_t count = ReshapeAllDeferredInternal();
+  if (count <= 0)
+    return;
+  DEFERRED_SHAPING_VLOG(1) << "Reshaped all " << count
+                           << " elements by resizing";
 }
 
 }  // namespace blink

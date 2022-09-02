@@ -198,25 +198,6 @@ apps::AppPtr MakeApp(const std::string& app_id,
   return app;
 }
 
-void AddMojomApp(
-    apps::AppRegistryCache& cache,
-    const std::string& app_id,
-    apps::mojom::AppType app_type,
-    const std::string& publisher_id,
-    apps::mojom::Readiness readiness,
-    apps::mojom::InstallReason install_reason,
-    apps::mojom::InstallSource install_source,
-    bool should_notify_initialized,
-    apps::mojom::OptionalBool is_platform_app =
-        apps::mojom::OptionalBool::kUnknown,
-    apps::mojom::WindowMode window_mode = apps::mojom::WindowMode::kUnknown) {
-  std::vector<apps::mojom::AppPtr> deltas;
-  deltas.push_back(MakeApp(app_id, app_type, publisher_id, readiness,
-                           install_reason, install_source, is_platform_app,
-                           window_mode));
-  cache.OnApps(std::move(deltas), app_type, should_notify_initialized);
-}
-
 void AddApp(apps::AppRegistryCache& cache,
             const std::string& app_id,
             apps::AppType app_type,
@@ -232,13 +213,6 @@ void AddApp(apps::AppRegistryCache& cache,
                            install_reason, install_source, is_platform_app,
                            window_mode));
   cache.OnApps(std::move(deltas), app_type, should_notify_initialized);
-
-  AddMojomApp(cache, app_id, apps::ConvertAppTypeToMojomAppType(app_type),
-              publisher_id, apps::ConvertReadinessToMojomReadiness(readiness),
-              apps::ConvertInstallReasonToMojomInstallReason(install_reason),
-              apps::ConvertInstallSourceToMojomInstallSource(install_source),
-              should_notify_initialized, GetMojomOptionalBool(is_platform_app),
-              ConvertWindowModeToMojomWindowMode(window_mode));
 }
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
@@ -351,9 +325,10 @@ class AppPlatformMetricsServiceTest : public testing::Test,
            Readiness::kReady, InstallReason::kUser, InstallSource::kPlayStore,
            true /* should_notify_initialized */);
 
+    // BuiltIn apps are initialized by the BuiltIn app publisher.
     AddApp(cache, /*app_id=*/"bu", AppType::kBuiltIn, "", Readiness::kReady,
            InstallReason::kSystem, InstallSource::kSystem,
-           true /* should_notify_initialized */);
+           false /* should_notify_initialized */);
 
     AddApp(cache, /*app_id=*/borealis::kClientAppId, AppType::kBorealis, "",
            Readiness::kReady, InstallReason::kUser, InstallSource::kUnknown,
@@ -423,30 +398,6 @@ class AppPlatformMetricsServiceTest : public testing::Test,
         /*app_id=*/"subapp", AppType::kWeb, "", Readiness::kReady,
         InstallReason::kSubApp, InstallSource::kUnknown));
     cache.OnApps(std::move(deltas), AppType::kUnknown,
-                 false /* should_notify_initialized */);
-
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(MakeApp(
-        /*app_id=*/"u", apps::mojom::AppType::kUnknown, "",
-        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kUnknown,
-        apps::mojom::InstallSource::kUnknown));
-    mojom_deltas.push_back(MakeApp(
-        /*app_id=*/"m", apps::mojom::AppType::kMacOs, "",
-        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kUnknown,
-        apps::mojom::InstallSource::kUnknown));
-    mojom_deltas.push_back(MakeApp(
-        /*app_id=*/"p", apps::mojom::AppType::kPluginVm, "",
-        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kUser,
-        apps::mojom::InstallSource::kUnknown));
-    mojom_deltas.push_back(MakeApp(
-        /*app_id=*/"r", apps::mojom::AppType::kRemote, "",
-        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kPolicy,
-        apps::mojom::InstallSource::kUnknown));
-    mojom_deltas.push_back(MakeApp(
-        /*app_id=*/"subapp", apps::mojom::AppType::kWeb, "",
-        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kSubApp,
-        apps::mojom::InstallSource::kUnknown));
-    cache.OnApps(std::move(mojom_deltas), apps::mojom::AppType::kUnknown,
                  false /* should_notify_initialized */);
   }
 
@@ -855,8 +806,8 @@ class AppPlatformMetricsServiceTest : public testing::Test,
 
   void VerifyInstalledAppsUkm(const std::string& app_info,
                               AppTypeName app_type_name,
-                              apps::mojom::InstallReason install_reason,
-                              apps::mojom::InstallSource install_source,
+                              apps::InstallReason install_reason,
+                              apps::InstallSource install_source,
                               InstallTime install_time) {
     const auto entries =
         test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InstalledApp");
@@ -2041,42 +1992,38 @@ TEST_P(AppPlatformMetricsServiceTest,
 TEST_P(AppPlatformMetricsServiceTest, InstalledAppsUkm) {
   // Verify the apps installed during the init phase.
   VerifyInstalledAppsUkm("app://com.google.A", AppTypeName::kArc,
-                         apps::mojom::InstallReason::kUser,
-                         apps::mojom::InstallSource::kPlayStore,
-                         InstallTime::kInit);
-  VerifyInstalledAppsUkm(
-      "app://bu", AppTypeName::kBuiltIn, apps::mojom::InstallReason::kSystem,
-      apps::mojom::InstallSource::kSystem, InstallTime::kInit);
-  VerifyInstalledAppsUkm(
-      "app://s", AppTypeName::kSystemWeb, apps::mojom::InstallReason::kSystem,
-      apps::mojom::InstallSource::kSystem, InstallTime::kInit);
+                         apps::InstallReason::kUser,
+                         apps::InstallSource::kPlayStore, InstallTime::kInit);
+  VerifyInstalledAppsUkm("app://bu", AppTypeName::kBuiltIn,
+                         apps::InstallReason::kSystem,
+                         apps::InstallSource::kSystem, InstallTime::kRunning);
+  VerifyInstalledAppsUkm("app://s", AppTypeName::kSystemWeb,
+                         apps::InstallReason::kSystem,
+                         apps::InstallSource::kSystem, InstallTime::kInit);
   VerifyInstalledAppsUkm("https://foo.com", GetWebAppTypeName(),
-                         apps::mojom::InstallReason::kSync,
-                         apps::mojom::InstallSource::kSync, InstallTime::kInit);
+                         apps::InstallReason::kSync, apps::InstallSource::kSync,
+                         InstallTime::kInit);
+  VerifyInstalledAppsUkm("app://" + std::string(app_constants::kLacrosAppId),
+                         AppTypeName::kStandaloneBrowser,
+                         apps::InstallReason::kSystem,
+                         apps::InstallSource::kSystem, InstallTime::kInit);
   VerifyInstalledAppsUkm(
-      "app://" + std::string(app_constants::kLacrosAppId),
-      AppTypeName::kStandaloneBrowser, apps::mojom::InstallReason::kSystem,
-      apps::mojom::InstallSource::kSystem, InstallTime::kInit);
-  VerifyInstalledAppsUkm("app://" + std::string(kChromeAppId),
-                         AppTypeName::kStandaloneBrowserChromeApp,
-                         apps::mojom::InstallReason::kUser,
-                         apps::mojom::InstallSource::kChromeWebStore,
-                         InstallTime::kInit);
-  VerifyInstalledAppsUkm("app://" + std::string(kExtensionId),
-                         AppTypeName::kStandaloneBrowserExtension,
-                         apps::mojom::InstallReason::kUser,
-                         apps::mojom::InstallSource::kChromeWebStore,
-                         InstallTime::kInit);
+      "app://" + std::string(kChromeAppId),
+      AppTypeName::kStandaloneBrowserChromeApp, apps::InstallReason::kUser,
+      apps::InstallSource::kChromeWebStore, InstallTime::kInit);
+  VerifyInstalledAppsUkm(
+      "app://" + std::string(kExtensionId),
+      AppTypeName::kStandaloneBrowserExtension, apps::InstallReason::kUser,
+      apps::InstallSource::kChromeWebStore, InstallTime::kInit);
 
   // Install a new ARC app during the running time.
   InstallOneApp("aa", AppType::kArc, "com.google.AA", Readiness::kReady,
                 InstallSource::kPlayStore);
 
   // Verify the ARC app installed during the running time.
-  VerifyInstalledAppsUkm("app://com.google.AA", AppTypeName::kArc,
-                         apps::mojom::InstallReason::kUser,
-                         apps::mojom::InstallSource::kPlayStore,
-                         InstallTime::kRunning);
+  VerifyInstalledAppsUkm(
+      "app://com.google.AA", AppTypeName::kArc, apps::InstallReason::kUser,
+      apps::InstallSource::kPlayStore, InstallTime::kRunning);
 
   // Install Chrome apps (hosted apps) during the running time.
   std::string kChromeAppId1 = "bb";
@@ -2093,12 +2040,12 @@ TEST_P(AppPlatformMetricsServiceTest, InstalledAppsUkm) {
   // Verify Chrome apps (hosted apps) installed during the running time.
   VerifyInstalledAppsUkm(
       "app://" + kChromeAppId1, AppTypeName::kStandaloneBrowser,
-      apps::mojom::InstallReason::kUser,
-      apps::mojom::InstallSource::kChromeWebStore, InstallTime::kRunning);
+      apps::InstallReason::kUser, apps::InstallSource::kChromeWebStore,
+      InstallTime::kRunning);
   VerifyInstalledAppsUkm(
       "app://" + kChromeAppId2, AppTypeName::kStandaloneBrowserChromeApp,
-      apps::mojom::InstallReason::kUser,
-      apps::mojom::InstallSource::kChromeWebStore, InstallTime::kRunning);
+      apps::InstallReason::kUser, apps::InstallSource::kChromeWebStore,
+      InstallTime::kRunning);
 }
 
 TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
@@ -2868,8 +2815,9 @@ TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppLaunch) {
 
   auto* const proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
   proxy->SetAppPlatformMetricsServiceForTesting(GetAppPlatformMetricsService());
-  proxy->Launch(app_id, ui::EF_NONE,
-                apps::mojom::LaunchSource::kFromChromeInternal, nullptr);
+  FakePublisher fake_arc_apps(proxy, AppType::kArc);
+  proxy->Launch(app_id, ui::EF_NONE, apps::LaunchSource::kFromChromeInternal,
+                nullptr);
   task_environment_.RunUntilIdle();
 }
 

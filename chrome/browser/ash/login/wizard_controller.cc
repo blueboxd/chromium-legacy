@@ -17,7 +17,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "ash/components/settings/timezone_settings.h"
@@ -189,6 +188,7 @@
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -658,7 +658,7 @@ WizardController::CreateScreens() {
 
   if (HIDDetectionScreen::CanShowScreen()) {
     append(std::make_unique<HIDDetectionScreen>(
-        oobe_ui->GetView<HIDDetectionScreenHandler>(),
+        oobe_ui->GetView<HIDDetectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -1543,12 +1543,8 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
     case EnrollmentScreen::Result::BACK:
     case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
       PerformOOBECompletedActions();
-      if (prescribed_enrollment_config_.is_forced()) {
-        LOG(WARNING) << "User trying to skip enrollment screen";
-        ShowPackagedLicenseScreen();
-      } else {
-        ShowLoginScreen();
-      }
+      DCHECK(!prescribed_enrollment_config_.is_forced());
+      ShowLoginScreen();
       break;
     case EnrollmentScreen::Result::TPM_ERROR:
       DCHECK(switches::IsTpmDynamic());

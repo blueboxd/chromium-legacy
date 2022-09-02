@@ -4440,7 +4440,7 @@ Press an assigned switch or key to remove assignment.
     If you move away from your device, your screen will lock automatically. When you're in front of your device, your screen will stay awake longer. If you aren't using a lock screen, your device will sleep instead of lock.
   </message>
   <message name="IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_TITLE" desc="Text in the smart privacy section which is the subheader for snooping protection options.">
-    Viewing protection
+    Viewing protection (Beta)
   </message>
   <message name="IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_SUBTEXT" desc="Sub-label elaborating on the meaning of snooping protection.">
     When someone else looks at your screen, show the Privacy eye icon on the bottom right of your screen
@@ -4462,6 +4462,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_HARDWARE_TOGGLE_ACTIVE_SUBTEXT" desc="Sub-label on the privacy page that indicates that the hardware microphone toggle is active.">
     All microphones disabled by devices hardware switch
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_NO_MICROPHONE_CONNECTED_SUBTEXT" desc="Sub-label to indicate that the microphone toggle in the privacy hub page is disabled as no microphone is connected to the device.">
+    No microphone connected
   </message>
   <message name="IDS_OS_SETTINGS_GEOLOCATION_TOGGLE_TITLE" desc="The title of the toggle to enable/disable geolocation from the privacy hub.">
     Geolocation

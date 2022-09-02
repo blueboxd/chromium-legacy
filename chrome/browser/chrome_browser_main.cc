@@ -118,6 +118,7 @@
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/printing/printing_init.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
 #include "chrome/common/profiler/unwind_util.h"
@@ -315,11 +316,6 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 #include "printing/printed_document.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && BUILDFLAG(IS_WIN)
-#include "chrome/common/printing/printer_capabilities.h"
-#include "printing/backend/win_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -622,6 +618,10 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 #endif
 
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  ChromeProcessSingleton::RegisterEarlySingletonFeature();
+#endif
 }
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {
@@ -1317,10 +1317,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   // Allow ProcessSingleton to process messages.
   // This is done here instead of just relying on the main message loop's start
   // to avoid rendezvous in RunLoops that may precede MainMessageLoopRun.
-  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled()) {
-    ChromeProcessSingleton::GetInstance()->Unlock(base::BindRepeating(
-        &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
-  }
+  ChromeProcessSingleton::GetInstance()->Unlock(base::BindRepeating(
+      &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
@@ -1698,9 +1696,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && BUILDFLAG(IS_WIN)
-  printing::SetGetDisplayNameFunction(&printing::GetUserFriendlyName);
-#endif
+  printing::InitializeProcessForPrinting();
 
   HandleTestParameters(*base::CommandLine::ForCurrentProcess());
 
@@ -1837,14 +1833,6 @@ void ChromeBrowserMainParts::WillRunMainMessageLoop(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "toplevel", "ChromeBrowserMainParts::MainMessageLoopRun", this);
 #endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled()) {
-    // Allow ProcessSingleton to process messages.
-    ChromeProcessSingleton::GetInstance()->Unlock(base::BindRepeating(
-        &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
-  }
-#endif
 }
 
 void ChromeBrowserMainParts::OnFirstIdle() {

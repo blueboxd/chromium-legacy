@@ -89,6 +89,7 @@
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_file_error_injector.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -833,7 +834,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
     return guest_view_->web_contents();
   }
   content::RenderFrameHost* GetGuestRenderFrameHost() {
-    return guest_view_->web_contents()->GetPrimaryMainFrame();
+    return guest_view_->GetGuestMainFrame();
   }
 
   content::WebContents* GetEmbedderWebContents() {
@@ -1923,41 +1924,33 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
   GetGuestViewManager()->WaitForNumGuestsCreated(2);
 
   content::WebContents* embedder = GetEmbedderWebContents();
-  auto* unattached_guest = extensions::WebViewGuest::FromWebContents(
-      GetGuestViewManager()->DeprecatedGetLastGuestCreated());
+  auto* unattached_guest = GetGuestViewManager()->GetLastGuestViewCreated();
   ASSERT_TRUE(unattached_guest);
   ASSERT_EQ(embedder, unattached_guest->owner_web_contents());
   ASSERT_FALSE(unattached_guest->attached());
   ASSERT_FALSE(unattached_guest->embedder_web_contents());
 
-  std::vector<content::WebContents*> guest_contents_list;
-  GetGuestViewManager()->DeprecatedGetGuestWebContentsList(
-      &guest_contents_list);
-  ASSERT_EQ(2u, guest_contents_list.size());
-  content::WebContents* other_guest =
-      (guest_contents_list[0] == unattached_guest->web_contents())
-          ? guest_contents_list[1]
-          : guest_contents_list[0];
+  std::vector<content::RenderFrameHost*> guest_rfh_list;
+  GetGuestViewManager()->GetGuestRenderFrameHostList(&guest_rfh_list);
+  ASSERT_EQ(2u, guest_rfh_list.size());
+  content::RenderFrameHost* unattached_guest_rfh =
+      unattached_guest->GetGuestMainFrame();
+  content::RenderFrameHost* other_guest_rfh =
+      (guest_rfh_list[0] == unattached_guest_rfh) ? guest_rfh_list[1]
+                                                  : guest_rfh_list[0];
 
   content::RenderFrameHost* embedder_main_frame =
       embedder->GetPrimaryMainFrame();
-  content::RenderFrameHost* unattached_guest_main_frame =
-      unattached_guest->web_contents()->GetPrimaryMainFrame();
-  content::RenderFrameHost* other_guest_main_frame =
-      other_guest->GetPrimaryMainFrame();
-
-  EXPECT_THAT(
-      content::CollectAllRenderFrameHosts(embedder_main_frame),
-      testing::UnorderedElementsAre(embedder_main_frame, other_guest_main_frame,
-                                    unattached_guest_main_frame));
+  EXPECT_THAT(content::CollectAllRenderFrameHosts(embedder_main_frame),
+              testing::UnorderedElementsAre(
+                  embedder_main_frame, other_guest_rfh, unattached_guest_rfh));
 
   // In either case, GetParentOrOuterDocument does not escape GuestViews.
-  EXPECT_EQ(nullptr, other_guest_main_frame->GetParentOrOuterDocument());
-  EXPECT_EQ(nullptr, unattached_guest_main_frame->GetParentOrOuterDocument());
-  EXPECT_EQ(other_guest_main_frame,
-            other_guest_main_frame->GetOutermostMainFrame());
-  EXPECT_EQ(unattached_guest_main_frame,
-            unattached_guest_main_frame->GetOutermostMainFrame());
+  EXPECT_EQ(nullptr, other_guest_rfh->GetParentOrOuterDocument());
+  EXPECT_EQ(nullptr, unattached_guest_rfh->GetParentOrOuterDocument());
+  EXPECT_EQ(other_guest_rfh, other_guest_rfh->GetOutermostMainFrame());
+  EXPECT_EQ(unattached_guest_rfh,
+            unattached_guest_rfh->GetOutermostMainFrame());
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestContentLoadEvent) {
@@ -3914,30 +3907,15 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadDataAPIAccessibleResources) {
              NEEDS_TEST_SERVER);
 }
 
-namespace {
-// Fails the test if a navigation is started in the given WebContents.
-class FailOnNavigation : public content::WebContentsObserver {
- public:
-  explicit FailOnNavigation(content::WebContents* contents)
-      : content::WebContentsObserver(contents) {}
-
-  // content::WebContentsObserver:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    ADD_FAILURE() << "Unexpected navigation: " << navigation_handle->GetURL();
-  }
-};
-}  // namespace
-
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadDataAPINotRelativeToAnotherExtension) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   const extensions::Extension* other_extension =
       LoadExtension(test_data_dir_.AppendASCII("simple_with_file"));
   LoadAppWithGuest("web_view/simple");
   content::WebContents* embedder = GetEmbedderWebContents();
-  content::WebContents* guest = GetGuestWebContents();
+  content::RenderFrameHost* guest = GetGuestView()->GetGuestMainFrame();
 
-  FailOnNavigation fail_if_webview_navigates(guest);
+  content::TestFrameNavigationObserver fail_if_webview_navigates(guest);
   ASSERT_TRUE(content::ExecuteScript(
       embedder, content::JsReplace(
                     "var webview = document.querySelector('webview'); "
@@ -3952,6 +3930,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadDataAPINotRelativeToAnotherExtension) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
+  EXPECT_FALSE(fail_if_webview_navigates.navigation_started());
 }
 
 // This test verifies that the resize and contentResize events work correctly.
@@ -4178,21 +4157,18 @@ IN_PROC_BROWSER_TEST_P(
   std::unique_ptr<EmbedderWebContentsObserver> observer(
       new EmbedderWebContentsObserver(embedder_web_contents));
 
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  ASSERT_TRUE(guest_web_contents);
-  extensions::WebViewGuest* guest =
-      extensions::WebViewGuest::FromWebContents(guest_web_contents);
-  ASSERT_TRUE(guest);
+  guest_view::GuestViewBase* guest_view = GetGuestView();
+  ASSERT_TRUE(guest_view);
 
   // Register rule for the guest.
   Profile* profile = browser()->profile();
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_web_contents()
+          guest_view->owner_web_contents()
               ->GetPrimaryMainFrame()
               ->GetProcess()
               ->GetID(),
-          guest->view_instance_id());
+          guest_view->view_instance_id());
 
   extensions::RulesRegistryService* registry_service =
       extensions::RulesRegistryService::Get(profile);
@@ -4224,22 +4200,19 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
 
   LoadAppWithGuest("web_view/rules_registry");
 
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  ASSERT_TRUE(guest_web_contents);
-  extensions::WebViewGuest* guest =
-      extensions::WebViewGuest::FromWebContents(guest_web_contents);
-  ASSERT_TRUE(guest);
+  guest_view::GuestViewBase* guest_view = GetGuestView();
+  ASSERT_TRUE(guest_view);
 
   Profile* profile = browser()->profile();
   extensions::RulesRegistryService* registry_service =
       extensions::RulesRegistryService::Get(profile);
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_web_contents()
+          guest_view->owner_web_contents()
               ->GetPrimaryMainFrame()
               ->GetProcess()
               ->GetID(),
-          guest->view_instance_id());
+          guest_view->view_instance_id());
 
   // Get an existing registered rule for the guest.
   extensions::RulesRegistry* registry =
@@ -4539,24 +4512,27 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
 IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadAfterCrash) {
   // Load guest and wait for it to appear.
   LoadAppWithGuest("web_view/simple");
-  EXPECT_TRUE(GetGuestWebContents()->GetPrimaryMainFrame()->GetView());
-  content::RenderFrameSubmissionObserver frame_observer(GetGuestWebContents());
+
+  EXPECT_TRUE(GetGuestView()->GetGuestMainFrame()->GetView());
+  content::RenderFrameSubmissionObserver frame_observer(
+      GetGuestView()->GetGuestMainFrame());
   frame_observer.WaitForMetadataChange();
 
   // Kill guest.
-  auto* rph = GetGuestWebContents()->GetPrimaryMainFrame()->GetProcess();
+  auto* rph = GetGuestView()->GetGuestMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   EXPECT_TRUE(rph->Shutdown(content::RESULT_CODE_KILLED));
   crash_observer.Wait();
-  EXPECT_FALSE(GetGuestWebContents()->GetPrimaryMainFrame()->GetView());
+  EXPECT_FALSE(GetGuestView()->GetGuestMainFrame()->GetView());
 
   // Reload guest and make sure it appears.
-  content::TestNavigationObserver load_observer(GetGuestWebContents());
+  content::TestFrameNavigationObserver load_observer(
+      GetGuestView()->GetGuestMainFrame());
   EXPECT_TRUE(ExecuteScript(GetEmbedderWebContents(),
                             "document.querySelector('webview').reload()"));
   load_observer.Wait();
-  EXPECT_TRUE(GetGuestWebContents()->GetPrimaryMainFrame()->GetView());
+  EXPECT_TRUE(GetGuestView()->GetGuestMainFrame()->GetView());
   // Ensure that the guest produces a new frame.
   frame_observer.WaitForAnyFrameSubmission();
 }
@@ -5495,7 +5471,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
   identifiability_metrics_test_helper_.PrepareForTest(&run_loop);
 
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* guest = GetGuestWebContents();
+  content::RenderFrameHost* guest = GetGuestView()->GetGuestMainFrame();
 
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("web_accessible_resources"));
@@ -5504,30 +5480,25 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
 
   GURL iframe_url(embedded_test_server()->GetURL("/title1.html"));
 
-  std::string setup_iframe_script = base::StringPrintf(
-      R"(
+  std::string setup_iframe_script = R"(
           var iframe = document.createElement('iframe');
           iframe.id = 'subframe';
-          iframe.src = '%s';
           document.body.appendChild(iframe);
-      )",
-      iframe_url.spec().c_str());
+      )";
 
   EXPECT_TRUE(content::ExecuteScript(guest, setup_iframe_script));
-  EXPECT_TRUE(content::WaitForLoadStop(guest));
+  content::RenderFrameHost* webview_subframe = ChildFrameAt(guest, 0);
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(webview_subframe, iframe_url));
 
   // Navigate the subframe to an unrelated extension URL.  This shouldn't
   // terminate the renderer. If it does, this test will fail via
   // content::NoRendererCrashesAssertion().
-  content::TestNavigationObserver load_observer(guest);
-  EXPECT_TRUE(BeginNavigateIframeToURL(guest, "subframe", extension_url));
-  load_observer.Wait();
+  webview_subframe = ChildFrameAt(guest, 0);
+  EXPECT_FALSE(
+      content::NavigateToURLFromRenderer(webview_subframe, extension_url));
 
   // The navigation should be aborted and the iframe should be left at its old
   // URL.
-  EXPECT_FALSE(load_observer.last_navigation_succeeded());
-  content::RenderFrameHost* webview_subframe =
-      ChildFrameAt(guest->GetPrimaryMainFrame(), 0);
   EXPECT_EQ(webview_subframe->GetLastCommittedURL(), iframe_url);
 
   // Check that a proper UKM event was logged for failed extension file access.
@@ -6254,9 +6225,8 @@ IN_PROC_BROWSER_TEST_F(WebViewWithDefaultSiteInstanceTest, SimpleNavigations) {
 
   // Load an app with a <webview> guest that starts at a data: URL.
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* guest = GetGuestWebContents();
-  ASSERT_TRUE(guest);
-  content::RenderFrameHost* main_frame = guest->GetPrimaryMainFrame();
+  content::RenderFrameHost* main_frame = GetGuestRenderFrameHost();
+  ASSERT_TRUE(main_frame);
   auto original_id = main_frame->GetGlobalId();
   scoped_refptr<content::SiteInstance> starting_instance =
       main_frame->GetSiteInstance();
@@ -6275,15 +6245,16 @@ IN_PROC_BROWSER_TEST_F(WebViewWithDefaultSiteInstanceTest, SimpleNavigations) {
   const GURL start_url =
       embedded_test_server()->GetURL("a.test", "/iframe.html");
   {
-    content::TestNavigationObserver load_observer(guest);
-    EXPECT_TRUE(
-        ExecuteScript(guest, "location.href = '" + start_url.spec() + "';"));
+    content::TestFrameNavigationObserver load_observer(main_frame);
+    EXPECT_TRUE(ExecuteScript(main_frame,
+                              "location.href = '" + start_url.spec() + "';"));
     load_observer.Wait();
   }
 
   // Expect that we stayed in the same (default) SiteInstance and
   // RenderFrameHost.
-  main_frame = guest->GetPrimaryMainFrame();
+  main_frame = GetGuestRenderFrameHost();
+  ASSERT_TRUE(main_frame);
   EXPECT_EQ(main_frame->GetGlobalId(), original_id);
   EXPECT_EQ(starting_instance, main_frame->GetSiteInstance());
   EXPECT_FALSE(main_frame->GetSiteInstance()->RequiresDedicatedProcess());
@@ -6293,8 +6264,9 @@ IN_PROC_BROWSER_TEST_F(WebViewWithDefaultSiteInstanceTest, SimpleNavigations) {
   // SiteInstance and process.
   const GURL frame_url =
       embedded_test_server()->GetURL("b.test", "/title1.html");
-  EXPECT_TRUE(NavigateIframeToURL(guest, "test", frame_url));
   content::RenderFrameHost* subframe = content::ChildFrameAt(main_frame, 0);
+  ASSERT_TRUE(subframe);
+  EXPECT_TRUE(NavigateToURLFromRenderer(subframe, frame_url));
   EXPECT_EQ(main_frame->GetSiteInstance(), subframe->GetSiteInstance());
   EXPECT_EQ(main_frame->GetProcess(), subframe->GetProcess());
   EXPECT_TRUE(subframe->GetSiteInstance()->IsGuest());

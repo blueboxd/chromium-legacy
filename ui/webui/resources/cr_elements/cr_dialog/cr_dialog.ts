@@ -20,8 +20,8 @@
  * dialog contents).
  */
 import '../cr_icon_button/cr_icon_button.js';
-import '../cr_icons_css.m.js';
-import '../hidden_style_css.m.js';
+import '../cr_icons.css.js';
+import '../cr_hidden_style.css.js';
 import '../shared_vars_css.m.js';
 
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';

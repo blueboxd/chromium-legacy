@@ -435,10 +435,8 @@ bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
 }
 
 bool WaitFor(base::RepeatingCallback<bool()> predicate) {
-  // Heuristically, use a lower value than the `action_timeout()` so that it is
-  // less likely to kill the entire test because this function timed out.
   base::TimeTicks deadline =
-      base::TimeTicks::Now() + TestTimeouts::action_timeout() / 2;
+      base::TimeTicks::Now() + TestTimeouts::action_timeout();
   while (base::TimeTicks::Now() < deadline) {
     if (predicate.Run())
       return true;

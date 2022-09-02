@@ -331,10 +331,6 @@ const base::Feature kCellularBypassESimInstallationConnectivityCheck{
 const base::Feature kCellularCustomAPNProfiles{
     "CellularCustomAPNProfiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, send the LTE attach APN configuration to the modem.
-const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, use second the Euicc that is exposed by Hermes in Cellular Setup
 // and Settings.
 const base::Feature kCellularUseSecondEuicc{"CellularUseSecondEuicc",
@@ -372,6 +368,10 @@ const base::Feature kCrosNextWMP{"CrosNextWMP",
 // Enables Privacy Hub for ChromeOS.
 const base::Feature kCrosPrivacyHub{"CrosPrivacyHub",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Privacy Hub features selected for dogfooding.
+const base::Feature kCrosPrivacyHubDogfood{"CrosPrivacyHubDogfood",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables future features for Privacy Hub for ChromeOS.
 const base::Feature kCrosPrivacyHubFuture{"CrosPrivacyHubFuture",
@@ -925,7 +925,7 @@ const base::Feature kHotspot{"Hotspot", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to start AssistantAudioDecoder service on demand (at query
 // response time).
@@ -1594,6 +1594,10 @@ const base::Feature kTerminalMultiProfile{"TerminalMultiProfile",
 const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable new touch text editing features on ChromeOS.
+const base::Feature kTouchTextEditingRedesign{
+    "TouchTextEditingRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the TrafficCountersHandler class to auto-reset traffic counters
 // and shows Data Usage in the Celluar Settings UI.
 const base::Feature kTrafficCountersEnabled{"TrafficCountersEnabled",
@@ -1662,6 +1666,11 @@ const base::Feature kVirtualKeyboardMultitouch{
 // Enable or disable round corners for virtual keyboard on ChromeOS.
 const base::Feature kVirtualKeyboardRoundCorners{
     "VirtualKeyboardRoundCorners", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables a per-boot host GPU cache generation for VMs. On default, the cache
+// is generated per OS version.
+const base::Feature kVmPerBootShaderCache{"VmPerBootShaderCache",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to allow enabling wake on WiFi features in shill.
 const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
@@ -1920,6 +1929,11 @@ bool IsConsumerAutoUpdateToggleAllowed() {
 bool IsCrosPrivacyHubEnabled() {
   return base::FeatureList::IsEnabled(kCrosPrivacyHub) ||
          IsCrosPrivacyHubFutureEnabled();
+}
+
+bool IsCrosPrivacyHubDogfoodEnabled() {
+  return base::FeatureList::IsEnabled(kCrosPrivacyHubDogfood) ||
+         IsCrosPrivacyHubEnabled();
 }
 
 bool IsCrosPrivacyHubFutureEnabled() {
@@ -2582,10 +2596,6 @@ bool ShouldArcAndGuestOsFileTasksUseAppService() {
 
 bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
-}
-
-bool ShouldUseAttachApn() {
-  return base::FeatureList::IsEnabled(kCellularUseAttachApn);
 }
 
 bool ShouldUseV1DeviceSync() {

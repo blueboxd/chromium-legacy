@@ -183,6 +183,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "app-store-rating",
+    "owners": [ "hiramahmood@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "arc-custom-tabs-experiment",
     "owners": [ "hashimoto", "dominickn" ],
     "expiry_milestone": 95
@@ -746,7 +751,7 @@
   {
     "name": "borealis-disk-management",
     "owners": [ "danielng" ],
-    "expiry_milestone": 103
+    "expiry_milestone": 110
   },
   {
     "name": "borealis-enabled",
@@ -896,11 +901,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "cellular-use-attach-apn",
-    "owners": [ "andrewlassalle", "ejcaruso", "chromeos-cellular-platform@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
     "name": "cellular-use-second-euicc",
     "owners": [ "azeemarshad", "khorimoto", "cros-connectivity@google.com" ],
     // Never expires. This used in ChromeOS to switch to removable EUICC for
@@ -921,6 +921,11 @@
     "name": "chrome-share-long-screenshot",
     "owners": [ "skare", "chrome-with-friends-robots@google.com" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "chrome-sharing-crow-launch-tab",
+    "owners": [ "skare", "chrome-with-friends-robots@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "chrome-sharing-hub-launch-adjacent",
@@ -1128,6 +1133,11 @@
     "name": "cros-labs-float-window",
     "owners": [ "shidi", "afakhry" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "cros-privacy-hub-dogfood",
+    "owners": [ "chromeos-privacyhub@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "cros-privacy-hub-future",
@@ -1905,7 +1915,7 @@
   {
     "name": "enable-cros-privacy-hub",
     "owners": [ "chromeos-privacyhub@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-cros-system-chinese-physical-typing",
@@ -1921,6 +1931,11 @@
     "name": "enable-cros-system-transliteration-physical-typing",
     "owners": [ "shend", "essential-inputs-team@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "enable-cros-touch-text-editing-redesign",
+    "owners": [ "michellegc", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-cros-virtual-keyboard-api",
@@ -3993,6 +4008,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "ios-autofill-branding",
+    "owners": [ "ginnyhuang@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "ios-breadcrumbs",
     "owners": [ "michaeldo", "bling-flags@google.com" ],
     // Breadcrumbs is not a launching feature, but rather a tool used on
@@ -5864,7 +5884,7 @@
   {
     "name": "shelf-drag-to-pin",
     "owners": ["tbarzic", "//ash/shelf/OWNERS" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 110
   },
   {
     "name": "shelf-gestures-with-vk",
@@ -6111,6 +6131,11 @@
   {
     "name": "suppress-toolbar-captures",
     "owners": [ "pnoland@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "sync-access-handle-all-sync-surface",
+    "owners": [ "dslee@google.com", "chrome-owp-storage@google.com" ],
     "expiry_milestone": 110
   },
   {
@@ -6597,6 +6622,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "vm-per-boot-shader-cache",
+    "owners": [ "endlesspring", "hollingum", "cpelling", "renatopereyra", "davidriley"],
+    "expiry_milestone": 111
+  },
+  {
     "name": "voice-button-in-top-toolbar",
     "owners": [
       "jds@google.com",
@@ -6704,6 +6734,11 @@
     "name": "web-sql-access",
     "owners": [ "arichiv"],
     "expiry_milestone": 113
+  },
+  {
+    "name": "webauthn-conditional-ui",
+    "owners": [ "chrome-webauthn@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "webnotes-dynamic-templates",

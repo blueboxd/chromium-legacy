@@ -266,6 +266,8 @@ static_library("common") {
     "desktop_capturer_checker.h",
     "desktop_capturer_proxy.cc",
     "desktop_capturer_proxy.h",
+    "desktop_capturer_wrapper.cc",
+    "desktop_capturer_wrapper.h",
     "desktop_display_info.cc",
     "desktop_display_info.h",
     "desktop_display_info_loader.h",
@@ -510,6 +512,8 @@ static_library("common") {
       "linux/remote_desktop_portal_injector.h",
       "linux/wayland_desktop_capturer.cc",
       "linux/wayland_desktop_capturer.h",
+      "linux/wayland_manager.cc",
+      "linux/wayland_manager.h",
     ]
     public_deps += [ "//third_party/wayland-protocols:xdg_shell_protocol" ]
   }

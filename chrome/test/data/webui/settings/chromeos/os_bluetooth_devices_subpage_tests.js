@@ -7,7 +7,7 @@ import 'chrome://os-settings/strings.m.js';
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
+import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 import {eventToPromise, isVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
@@ -384,4 +384,26 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     assertFalse(isVisible(bluetoothDevicesSubpage.shadowRoot.querySelector(
         '#savedDevicesRowLink')));
   });
+
+  test('Single separator line when Fast Pair UI disabled', async function() {
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
+    loadTimeData.overrideValues({'enableFastPairFlag': false});
+    await init();
+
+    const sepLines = bluetoothDevicesSubpage.shadowRoot.querySelectorAll(
+        '.device-lists-separator');
+    assertEquals(sepLines.length, 1);
+  });
+
+  test(
+      'Greater than 1 separator line when Fast Pair UI enabled',
+      async function() {
+        bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
+        loadTimeData.overrideValues({'enableFastPairFlag': true});
+        await init();
+
+        const sepLines = bluetoothDevicesSubpage.shadowRoot.querySelectorAll(
+            '.device-lists-separator');
+        assertGT(sepLines.length, 1);
+      });
 });

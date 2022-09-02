@@ -7,8 +7,10 @@ import './emoji_group.js';
 import './emoji_group_button.js';
 import './emoji_search.js';
 import './text_group_button.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
+
 import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import * as constants from './constants.js';
 import {EmojiGroupComponent} from './emoji_group.js';
 import {Feature} from './emoji_picker.mojom-webui.js';
@@ -16,7 +18,7 @@ import {EmojiPickerApiProxy, EmojiPickerApiProxyImpl} from './emoji_picker_api_p
 import * as events from './events.js';
 import {CATEGORY_METADATA, EMOJI_GROUP_TABS, V2_SUBCATEGORY_TABS, V2_TABS_CATEGORY_START_INDEX} from './metadata_extension.js';
 import {RecentlyUsedStore} from './store.js';
-import {CategoryData, CategoryEnum, EmojiGroup, EmojiGroupData, EmojiVariants, SubcategoryData, EmojiGroupElement} from './types.js';
+import {CategoryData, CategoryEnum, EmojiGroup, EmojiGroupData, EmojiGroupElement, EmojiVariants, SubcategoryData} from './types.js';
 
 export class EmojiPicker extends PolymerElement {
   static get is() {
@@ -55,8 +57,6 @@ export class EmojiPicker extends PolymerElement {
       categoriesHistory: {type: Object, value: () => ({})},
       /** @private {number} */
       pagination: {type: Number, value: 1, observer: 'onPaginationChanged'},
-      /** @private {string} */
-      search: {type: String, value: '', observer: 'onSearchChanged'},
       /** @private {boolean} */
       searchLazyIndexing: {type: Boolean, value: true},
       /** @private {boolean} */
@@ -122,6 +122,7 @@ export class EmojiPicker extends PolymerElement {
     this.addEventListener(
       events.CATEGORY_BUTTON_CLICK,
       ev => this.onCategoryButtonClick(ev.detail.categoryName));
+    this.addEventListener('search', ev => this.onSearchChanged(ev.detail));
   }
 
   /**
@@ -600,11 +601,6 @@ export class EmojiPicker extends PolymerElement {
    * @param {boolean} updateTabsScroll
    */
   updateActiveGroup(updateTabsScroll) {
-    // no need to update scroll state if search is showing.
-    if (this.search) {
-      return;
-    }
-
     const activeGroupId = this.getActiveGroupIdFromScrollPosition();
     this.set('pagination', this.getPaginationFromGroupId(activeGroupId));
     this.updateChevrons();

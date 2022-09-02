@@ -2569,7 +2569,7 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
-    const blink::ParsedPermissionsPolicy& permissions_policy,
+    const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     mojom::CookieManagerInfoPtr cookie_manager_info,
@@ -2612,7 +2612,9 @@ void RenderFrameImpl::CommitNavigation(
                            navigation_params.get());
   navigation_params->policy_container =
       ToWebPolicyContainer(std::move(policy_container));
-  if (blink::IsIsolatedApplication() && frame_->IsOutermostMainFrame()) {
+
+  if (blink::IsIsolatedApplication() && frame_->IsOutermostMainFrame() &&
+      permissions_policy) {
     navigation_params->permissions_policy_override = permissions_policy;
   }
 
@@ -3608,11 +3610,6 @@ void RenderFrameImpl::DidAddMessageToConsole(
           source_line, blink::ConsoleMessageLevelToLogSeverity(message.level));
     }
   }
-}
-
-void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
-  for (auto& observer : observers_)
-    observer.WillSendSubmitEvent(form);
 }
 
 void RenderFrameImpl::DidCreateDocumentLoader(

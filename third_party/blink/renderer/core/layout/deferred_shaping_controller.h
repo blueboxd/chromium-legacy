@@ -33,8 +33,10 @@ enum class ReshapeReason {
   kFocus,
   kGeometryApi,
   kInspector,
+  kLastResort,
   kPrinting,
   kScrollingApi,
+  kTesting,
 };
 
 // DeferredShapingController class manages states of the Deferred Shaping
@@ -106,8 +108,11 @@ class CORE_EXPORT DeferredShapingController
   // height.
   void ReshapeDeferredForHeight(const LayoutObject& object);
   void OnFirstContentfulPaint();
+  void OnResizeFrame();
 
  private:
+  size_t ReshapeAllDeferredInternal();
+
   Member<Document> document_;
   TaskHandle reshaping_task_handle_;
   HeapHashSet<Member<Element>> deferred_elements_;

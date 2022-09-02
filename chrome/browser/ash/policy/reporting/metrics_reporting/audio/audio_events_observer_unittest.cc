@@ -38,7 +38,7 @@ TEST_F(AudioEventsObserverTest, SevereUnderrun) {
   AudioEventsObserver audio_observer;
   test::TestEvent<MetricData> result_metric_data;
 
-  audio_observer.SetOnEventObservedCallback(result_metric_data.cb());
+  audio_observer.SetOnEventObservedCallback(result_metric_data.repeating_cb());
   audio_observer.SetReportingEnabled(true);
 
   ::ash::cros_healthd::FakeCrosHealthd::Get()
@@ -49,5 +49,6 @@ TEST_F(AudioEventsObserverTest, SevereUnderrun) {
   EXPECT_EQ(metric_data.event_data().type(),
             reporting::MetricEventType::AUDIO_SEVERE_UNDERRUN);
 }
+
 }  // namespace
 }  // namespace reporting

@@ -1173,10 +1173,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // contained within it (but not owned by another WebContents).
   void SetFocusedFrameTree(FrameTree* frame_tree_to_focus);
 
-  // Called by this WebContents's BrowserPluginGuest (if one exists) to indicate
-  // that the guest will be detached.
-  void BrowserPluginGuestWillDetach();
-
   // Notifies the Picture-in-Picture controller that there is a new video player
   // entering video Picture-in-Picture. (This is not used for document
   // Picture-in-Picture,
@@ -1342,6 +1338,16 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   RenderWidgetHost* mouse_lock_widget_for_testing() {
     return mouse_lock_widget_;
+  }
+
+  // Record a prerender activation for DevTools.
+  void set_last_navigation_was_prerender_activation_for_devtools() {
+    last_navigation_was_prerender_activation_for_devtools_ = true;
+  }
+
+  // Check if prerender was just activated.
+  bool last_navigation_was_prerender_activation_for_devtools() {
+    return last_navigation_was_prerender_activation_for_devtools_;
   }
 
  private:
@@ -2348,6 +2354,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool pip_lock_aspect_ratio_ = false;
 
   VisibleTimeRequestTrigger visible_time_request_trigger_;
+
+  // Stores the information whether last navigation was prerender activation for
+  // DevTools. Set when a prerender activation completes, and cleared when
+  // either DevTools is opened and consults this value or when a non-prerendered
+  // navigation commits in the primary main frame.
+  bool last_navigation_was_prerender_activation_for_devtools_ = false;
 
   bool prerender2_disabled_ = false;
 

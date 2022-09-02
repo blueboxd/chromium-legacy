@@ -28,19 +28,23 @@ declare_args() {
   swift_whole_module_optimization = -1
 
   # If unspecified, will use the toolchain downloaded via deps.
-  swift_toolchain_path = ""
+  swift_toolchain_path = -1
 }
 
-if (swift_toolchain_path == "" && build_with_chromium) {
-  # Version of the hermetic compiler. Needs to be updated when a new version of
-  # the compiler is rolled to ensure that all outputs are regenerated. It must
-  # be kept in sync with the `version` of `third_party/swift-toolchain` in
-  # //DEPS.
-  swiftc_version = "swift-5.7-20220818"
+if (swift_toolchain_path == -1) {
+  if (build_with_chromium) {
+    # Version of the hermetic compiler. Needs to be updated when a new version of
+    # the compiler is rolled to ensure that all outputs are regenerated. It must
+    # be kept in sync with the `version` of `third_party/swift-toolchain` in
+    # //DEPS.
+    swiftc_version = "swift-5.7-20220818"
 
-  # Use the hermetic swift toolchain.
-  swift_toolchain_path =
-      rebase_path("//third_party/swift-toolchain/", root_build_dir)
+    # Use the hermetic swift toolchain.
+    swift_toolchain_path =
+        rebase_path("//third_party/swift-toolchain/", root_build_dir)
+  } else {
+    swift_toolchain_path = ""
+  }
 }
 
 if (swift_whole_module_optimization == -1) {
@@ -657,6 +661,10 @@ template("apple_toolchain") {
           _extra_flags += " -module-cache-path '$_module_cache_path'"
         }
 
+        if (swift_toolchain_path != "") {
+          _extra_flags += " -swift-toolchain-path $swift_toolchain_path"
+        }
+
         # Enable hack to convert `__has_feature(modules)` to 0. This is needed
         # to build with -std=c++20 when using clang ToT. Since the check does
         # evaluate to 0 when building with -std=c++17 and Chromium does not yet
@@ -677,7 +685,6 @@ template("apple_toolchain") {
             "-depfile {{target_out_dir}}/{{module_name}}.d " +
             "-depfile-filter {{target_gen_dir}}/{{module_name}}.swiftmodule " +
             "-bridge-header {{bridge_header}} $_extra_flags " +
-            "-swift-toolchain-path $swift_toolchain_path " +
             "{{swiftflags}} {{include_dirs}} {{module_dirs}} {{inputs}}"
       }
     }
@@ -696,10 +703,12 @@ template("apple_toolchain") {
         }
 
         command =
-            "$_env_vars $python_path $_tool -p \"${invoker.sdk_name}\" " +
-            "-t \"${invoker.deployment_target}\" " +
-            "-T \"{{bundle_product_type}}\" " +
-            "-P \"{{bundle_partial_info_plist}}\" " + "-o {{output}} {{inputs}}"
+            "$_env_vars $python_path $_tool " +
+            "-p '${toolchain_args.current_os}' " +
+            "-e '${invoker.target_environment}' " +
+            "-t '${invoker.deployment_target}' " +
+            "-T '{{bundle_product_type}}' " +
+            "-P '{{bundle_partial_info_plist}}' " + "-o {{output}} {{inputs}}"
 
         description = "COMPILE_XCASSETS {{output}}"
         pool = "//build/toolchain/apple:bundle_pool($default_toolchain)"

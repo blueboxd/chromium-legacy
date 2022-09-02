@@ -197,7 +197,6 @@ source_set("browser_sources") {
     "gpu_service_registry.h",
     "gpu_utils.cc",
     "gpu_utils.h",
-    "guest_host.h",
     "hid_chooser.h",
     "hid_delegate.h",
     "histogram_fetcher.h",
@@ -616,6 +615,8 @@ source_set("browser_sources") {
 
   if (!is_android) {
     sources += [
+      "direct_sockets_delegate.h",
+
       # Some Web Authentication related targets only apply to desktop because
       # Android provides its own native implementation of that API.
       "web_authentication_request_proxy.h",

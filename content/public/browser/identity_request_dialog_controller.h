@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/span.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -86,14 +85,14 @@ struct CONTENT_EXPORT IdentityProviderMetadata {
 };
 
 struct CONTENT_EXPORT IdentityProviderData {
-  IdentityProviderData(const GURL& idp_config_url,
+  IdentityProviderData(const std::string& idp_url_for_display,
                        const std::vector<IdentityRequestAccount>& accounts,
                        const IdentityProviderMetadata& idp_metadata,
                        const ClientIdData& client_id_data);
   IdentityProviderData(const IdentityProviderData& other);
   ~IdentityProviderData();
 
-  GURL idp_config_url;
+  std::string idp_for_display;
   std::vector<IdentityRequestAccount> accounts;
   IdentityProviderMetadata idp_metadata;
   ClientIdData client_id_data;
@@ -143,11 +142,20 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // is called with the selected account id or empty string otherwise.
   // |sign_in_mode| represents whether this is an auto sign in flow.
   virtual void ShowAccountsDialog(
-      content::WebContents* rp_web_contents,
+      WebContents* rp_web_contents,
+      const std::string& rp_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
       AccountSelectionCallback on_selected,
       DismissCallback dismiss_callback);
+
+  // Shows a failure UI when the accounts fetch is failed such that it is
+  // observable by users. This could happen when an IDP claims that the user is
+  // signed in but not respond with any user account during browser fetches.
+  virtual void ShowFailureDialog(WebContents* rp_web_contents,
+                                 const std::string& rp_for_display,
+                                 const std::string& idp_for_display,
+                                 DismissCallback dismiss_callback);
 };
 
 }  // namespace content

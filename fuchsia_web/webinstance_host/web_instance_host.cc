@@ -36,7 +36,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/fuchsia_component_support/config_reader.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/webengine/features.h"
@@ -397,13 +396,14 @@ std::vector<std::string> GetRequiredServicesForConfig(
   if (params.has_features())
     features = params.features();
 
-  // TODO(crbug.com/1020273): Allow access to network services only if the
-  // NETWORK feature flag is set.
-  services.insert(services.end(), {
-                                      "fuchsia.net.interfaces.State",
-                                      "fuchsia.net.name.Lookup",
-                                      "fuchsia.posix.socket.Provider",
-                                  });
+  if ((features & fuchsia::web::ContextFeatureFlags::NETWORK) ==
+      fuchsia::web::ContextFeatureFlags::NETWORK) {
+    services.insert(services.end(), {
+                                        "fuchsia.net.interfaces.State",
+                                        "fuchsia.net.name.Lookup",
+                                        "fuchsia.posix.socket.Provider",
+                                    });
+  }
 
   if ((features & fuchsia::web::ContextFeatureFlags::AUDIO) ==
       fuchsia::web::ContextFeatureFlags::AUDIO) {
@@ -515,7 +515,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
   if (params.has_remote_debugging_port()) {
     if ((features & fuchsia::web::ContextFeatureFlags::NETWORK) !=
         fuchsia::web::ContextFeatureFlags::NETWORK) {
-      LOG(WARNING) << "Enabling remote debugging requires NETWORK feature.";
+      LOG(ERROR) << "Enabling remote debugging port requires NETWORK feature.";
+      return ZX_ERR_INVALID_ARGS;
     }
     launch_args.AppendSwitchNative(
         kRemoteDebuggingPortSwitch,

@@ -22,6 +22,10 @@
 
 namespace ui {
 
+namespace ime {
+enum class KeyEventHandledState;
+}
+
 // A `ui::InputMethod` implementation for Ash.
 class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
     : public InputMethodBase,
@@ -92,7 +96,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // Process a key returned from the input method.
   [[nodiscard]] virtual ui::EventDispatchDetails ProcessKeyEventPostIME(
       ui::KeyEvent* event,
-      bool handled,
+      ui::ime::KeyEventHandledState handled_state,
       bool stopped_propagation);
 
   // Resets context and abandon all pending results and key events.
@@ -131,7 +135,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // It returns the result of whether the event has been stopped propagation
   // when dispatching post IME.
   [[nodiscard]] ui::EventDispatchDetails ProcessFilteredKeyPressEvent(
-      ui::KeyEvent* event);
+      ui::KeyEvent* event,
+      bool only_dispatch_vkey_processkey);
 
   // Processes a key event that was not filtered by the input method.
   [[nodiscard]] ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(
@@ -171,7 +176,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   TextInputMode GetTextInputMode() const;
 
   // Called from the engine when it completes processing.
-  void ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled);
+  void ProcessKeyEventDone(ui::KeyEvent* event,
+                           ui::ime::KeyEventHandledState handled_state);
 
   bool IsPasswordOrNoneInputFieldFocused();
 

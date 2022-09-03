@@ -380,10 +380,10 @@ void PageInfo::OnStatusChanged(CookieControlsStatus status,
                                int allowed_cookies,
                                int blocked_cookies) {
 #if !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1346305): React to enforcement.
   if (base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage)) {
-    if (status != status_) {
+    if (status != status_ || enforcement != enforcement_) {
       status_ = status;
+      enforcement_ = enforcement;
       PresentSiteData(base::DoNothing());
     }
   }
@@ -396,6 +396,9 @@ void PageInfo::OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) {
 void PageInfo::OnThirdPartyToggleClicked(bool block_third_party_cookies) {
   DCHECK(status_ != CookieControlsStatus::kDisabled);
   DCHECK(status_ != CookieControlsStatus::kUninitialized);
+  RecordPageInfoAction(block_third_party_cookies
+                           ? PAGE_INFO_COOKIES_BLOCKED_FOR_SITE
+                           : PAGE_INFO_COOKIES_ALLOWED_FOR_SITE);
   controller_->OnCookieBlockingEnabledForSite(block_third_party_cookies);
 }
 
@@ -584,12 +587,16 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
           base::UserMetricsAction("PageInfo.AboutThisSite.MoreAboutClicked"));
       break;
     case PAGE_INFO_COOKIES_PAGE_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.CookiesSubpage.Opened"));
       break;
     case PAGE_INFO_COOKIES_SETTINGS_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
-    case PAGE_INFO_ALL_SITES_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
+      base::RecordAction(base::UserMetricsAction(
+          "PageInfo.CookiesSubpage.SettingsLinkClicked"));
+      break;
+    case PAGE_INFO_ALL_SITES_WITH_FPS_FILTER_OPENED:
+      base::RecordAction(base::UserMetricsAction(
+          "PageInfo.CookiesSubpage.AllSitesFilteredOpened"));
       break;
   }
 }
@@ -727,7 +734,7 @@ void PageInfo::OpenAllSitesView() {
 #if BUILDFLAG(IS_ANDROID)
   NOTREACHED();
 #else
-  RecordPageInfoAction(PAGE_INFO_ALL_SITES_OPENED);
+  RecordPageInfoAction(PAGE_INFO_ALL_SITES_WITH_FPS_FILTER_OPENED);
   delegate_->ShowAllSitesSettings();
 #endif
 }
@@ -1203,7 +1210,7 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 #endif
     }
     cookies_info.status = status_;
-
+    cookies_info.enforcement = enforcement_;
     ui_->SetCookieInfo(cookies_info);
   } else {
     CookieInfoList cookie_info_list;

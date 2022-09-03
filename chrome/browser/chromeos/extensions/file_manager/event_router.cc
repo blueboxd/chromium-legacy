@@ -203,6 +203,8 @@ file_manager_private::IOTaskType GetIOTaskType(
       return file_manager_private::IO_TASK_TYPE_MOVE;
     case file_manager::io_task::OperationType::kRestore:
       return file_manager_private::IO_TASK_TYPE_RESTORE;
+    case file_manager::io_task::OperationType::kRestoreToDestination:
+      return file_manager_private::IO_TASK_TYPE_RESTORE_TO_DESTINATION;
     case file_manager::io_task::OperationType::kTrash:
       return file_manager_private::IO_TASK_TYPE_TRASH;
     case file_manager::io_task::OperationType::kZip:
@@ -797,9 +799,8 @@ void EventRouter::OnCopyStarted(int copy_id,
   file_manager_private::CopyOrMoveProgressStatus status;
   // Send started event.
   status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_BEGIN;
-  status.source_url = std::make_unique<std::string>(source_url.spec());
-  status.destination_url =
-      std::make_unique<std::string>(destination_url.spec());
+  status.source_url = source_url.spec();
+  status.destination_url = destination_url.spec();
   // Use the bytes copied member to store space needed for this event.
   status.size = space_needed;
 
@@ -817,13 +818,12 @@ void EventRouter::OnCopyCompleted(int copy_id,
     // Send success event.
     status.type =
         file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_SUCCESS;
-    status.source_url = std::make_unique<std::string>(source_url.spec());
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.spec());
+    status.source_url = source_url.spec();
+    status.destination_url = destination_url.spec();
   } else {
     // Send error event.
     status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_ERROR;
-    status.error = std::make_unique<std::string>(FileErrorToErrorName(error));
+    status.error = FileErrorToErrorName(error);
   }
 
   notification_manager_->HandleCopyEvent(copy_id, status);
@@ -843,22 +843,19 @@ void EventRouter::OnCopyProgress(
 
   file_manager_private::CopyOrMoveProgressStatus status;
   status.type = CopyOrMoveProgressTypeToCopyOrMoveProgressStatusType(type);
-  status.source_url = std::make_unique<std::string>(source_url.spec());
+  status.source_url = source_url.spec();
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kError) {
     // For cross-filesystems moves, no destination_url is provided when an error
     // occurs. This translates into to a non-valid destination GURL.
     // status.destination_url should never be used in this case.
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.possibly_invalid_spec());
+    status.destination_url = destination_url.possibly_invalid_spec();
   } else if (type != FileManagerCopyOrMoveHookDelegate::ProgressType::
                          kEndRemoveSource) {
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.spec());
+    status.destination_url = destination_url.spec();
   }
 
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kError) {
-    status.error = std::make_unique<std::string>(
-        FileErrorToErrorName(base::File::FILE_ERROR_FAILED));
+    status.error = FileErrorToErrorName(base::File::FILE_ERROR_FAILED);
   }
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kProgress)
     status.size = size;

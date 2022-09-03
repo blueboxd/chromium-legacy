@@ -20,11 +20,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#import "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/test_autofill_manager_injector.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
@@ -127,6 +129,22 @@ class FormStructureBrowserTest
   FormStructureBrowserTest& operator=(const FormStructureBrowserTest&) = delete;
 
  protected:
+  class TestAutofillManager : public BrowserAutofillManager {
+   public:
+    TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
+        : BrowserAutofillManager(driver,
+                                 client,
+                                 "en-US",
+                                 EnableDownloadManager(false)) {}
+
+    TestAutofillManagerWaiter& waiter() { return waiter_; }
+
+   private:
+    TestAutofillManagerWaiter waiter_{
+        *this,
+        {&AutofillManager::Observer::OnAfterFormsSeen}};
+  };
+
   FormStructureBrowserTest();
   ~FormStructureBrowserTest() override {}
 
@@ -150,6 +168,8 @@ class FormStructureBrowserTest
   std::unique_ptr<web::WebState> web_state_;
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
+  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
+      autofill_manager_injector_;
   FormSuggestionController* suggestion_controller_;
 
  private:
@@ -236,6 +256,10 @@ void FormStructureBrowserTest::SetUp() {
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
       autofill::AutofillManager::EnableDownloadManager(false));
+
+  autofill_manager_injector_ =
+      std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
+          web_state());
 }
 
 void FormStructureBrowserTest::TearDown() {
@@ -277,15 +301,10 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
   ASSERT_TRUE(LoadHtmlWithoutSubresourcesAndInitRendererIds(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
-  BrowserAutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
-          ->autofill_manager();
+  TestAutofillManager* autofill_manager =
+      autofill_manager_injector_->GetForMainFrame();
   ASSERT_NE(nullptr, autofill_manager);
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^bool() {
-        return autofill_manager->NumFormsDetected() != 0;
-      }));
+  ASSERT_TRUE(autofill_manager->waiter().Wait(1));
   *output = FormStructuresToString(autofill_manager->form_structures());
 }
 
@@ -315,23 +334,23 @@ std::string FormStructureBrowserTest::FormStructuresToString(
         section = section.substr(first_underscore);
       }
 
-      // Normalize the section by replacing the unique but platform-dependent
-      // integers in `field->section` with consecutive unique integers.
-      // The section string is of the form "fieldname_id1_id2-suffix", where
-      // id1, id2 are platform-dependent and thus need to be substituted.
-      size_t last_underscore = section.find_last_of('_');
-      size_t second_last_underscore =
-          section.find_last_of('_', last_underscore - 1);
-      size_t next_dash = section.find_first_of('-', last_underscore);
-      int new_section_index = static_cast<int>(section_to_index.size() + 1);
-      int section_index =
-          section_to_index.insert(std::make_pair(section, new_section_index))
-              .first->second;
-      if (second_last_underscore != std::string::npos &&
-          next_dash != std::string::npos) {
-        section = base::StringPrintf(
-            "%s%d%s", section.substr(0, second_last_underscore + 1).c_str(),
-            section_index, section.substr(next_dash).c_str());
+      if (field->section.is_from_fieldidentifier()) {
+        // Normalize the section by replacing the unique but platform-dependent
+        // integers in `field->section` with consecutive unique integers.
+        // The section string is of the form "fieldname_id1_id2-suffix", where
+        // id1, id2 are platform-dependent and thus need to be substituted.
+        size_t last_underscore = section.find_last_of('_');
+        size_t second_last_underscore =
+            section.find_last_of('_', last_underscore - 1);
+        int new_section_index = static_cast<int>(section_to_index.size() + 1);
+        int section_index =
+            section_to_index.insert(std::make_pair(section, new_section_index))
+                .first->second;
+        if (second_last_underscore != std::string::npos) {
+          section = base::StringPrintf(
+              "%s%d", section.substr(0, second_last_underscore + 1).c_str(),
+              section_index);
+        }
       }
 
       forms_string += field->Type().ToString();

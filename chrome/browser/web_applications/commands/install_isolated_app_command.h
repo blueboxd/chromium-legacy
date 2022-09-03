@@ -56,7 +56,7 @@ class InstallIsolatedAppCommand : public WebAppCommand {
   //
   // The `id` in the application's manifest must equal "/".
   explicit InstallIsolatedAppCommand(
-      base::StringPiece application_url,
+      const GURL& application_url,
       WebAppUrlLoader& url_loader,
       WebAppInstallFinalizer& install_finalizer,
       base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
@@ -80,8 +80,12 @@ class InstallIsolatedAppCommand : public WebAppCommand {
   void ReportSuccess();
 
   void DownloadIcons(WebAppInstallInfo install_info);
+  void OnGetIcons(WebAppInstallInfo install_info,
+                  IconsDownloadedResult result,
+                  std::map<GURL, std::vector<SkBitmap>> icons_map,
+                  std::map<GURL, int /*http_status_code*/> icons_http_results);
 
-  void LoadUrl(GURL url);
+  void LoadUrl();
   void OnLoadUrl(WebAppUrlLoaderResult result);
 
   void CheckInstallabilityAndRetrieveManifest();
@@ -102,7 +106,7 @@ class InstallIsolatedAppCommand : public WebAppCommand {
 
   std::unique_ptr<SharedWebContentsWithAppLock> lock_;
 
-  std::string url_;
+  GURL url_;
 
   WebAppUrlLoader& url_loader_;
   WebAppInstallFinalizer& install_finalizer_;

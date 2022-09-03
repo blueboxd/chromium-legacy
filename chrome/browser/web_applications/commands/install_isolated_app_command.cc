@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -56,7 +57,7 @@ absl::optional<std::string> UTF16ToUTF8(base::StringPiece16 src) {
 }  // namespace
 
 InstallIsolatedAppCommand::InstallIsolatedAppCommand(
-    base::StringPiece url,
+    const GURL& url,
     WebAppUrlLoader& url_loader,
     WebAppInstallFinalizer& install_finalizer,
     base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
@@ -70,6 +71,7 @@ InstallIsolatedAppCommand::InstallIsolatedAppCommand(
       data_retriever_(std::make_unique<WebAppDataRetriever>()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
+  DCHECK(url_.is_valid());
   DCHECK(!callback.is_null());
 
   callback_ =
@@ -93,20 +95,11 @@ Lock& InstallIsolatedAppCommand::lock() const {
 
 void InstallIsolatedAppCommand::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  auto url = GURL{url_};
-  if (!url.is_valid()) {
-    ReportFailure(base::StrCat({"Invalid application URL: ", url_}));
-    return;
-  }
-
-  LoadUrl(url);
+  LoadUrl();
 }
 
-void InstallIsolatedAppCommand::LoadUrl(GURL url) {
-  DCHECK(url.is_valid());
-
-  url_loader_.LoadUrl(url, shared_web_contents(),
+void InstallIsolatedAppCommand::LoadUrl() {
+  url_loader_.LoadUrl(url_, shared_web_contents(),
                       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
                       base::BindOnce(&InstallIsolatedAppCommand::OnLoadUrl,
                                      weak_factory_.GetWeakPtr()));
@@ -125,18 +118,9 @@ void InstallIsolatedAppCommand::OnLoadUrl(WebAppUrlLoaderResult result) {
 }
 
 void InstallIsolatedAppCommand::CheckInstallabilityAndRetrieveManifest() {
-  // TODO(kuragin): Fix order of calls to the data retrieve.
-  //
-  // The order should be:
-  //  1. |GetWebAppInstallInfo|
-  //  2. |CheckInstallabilityAndRetrieveManifest|
-  //  3. |GetIcons|
-  //
-  // See install from sync command unit-test for details:
-  // https://crsrc.org/c/chrome/browser/web_applications/commands/install_from_sync_command_unittest.cc;l=333;drc=ddce2fc4e67fd4500d29cbe5f4993b3fb8e4e2ba
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       shared_web_contents(),
-      /*bypass_service_worker_check=*/false,
+      /*bypass_service_worker_check=*/true,
       base::BindOnce(
           &InstallIsolatedAppCommand::OnCheckInstallabilityAndRetrieveManifest,
           weak_factory_.GetWeakPtr()));
@@ -179,12 +163,12 @@ InstallIsolatedAppCommand::CreateInstallInfoFromManifest(
 
   info.manifest_id = "";
 
-  GURL origin = GURL{url_}.Resolve("/");
-  if (manifest.scope != origin) {
+  url::Origin origin = url::Origin::Create(url_);
+  if (manifest.scope != origin.GetURL()) {
     return base::unexpected{
         base::StrCat({"Scope should resolve to the origin. scope: ",
                       manifest.scope.possibly_invalid_spec(),
-                      ", origin: ", origin.possibly_invalid_spec()})};
+                      ", origin: ", origin.Serialize()})};
   }
 
   return info;
@@ -256,8 +240,28 @@ void InstallIsolatedAppCommand::OnFinalizeInstall(
 }
 
 void InstallIsolatedAppCommand::DownloadIcons(WebAppInstallInfo install_info) {
-  // TODO(kuragin): Find a way to test icons downloading and relationship with
-  // icon population in the web app install info. Implement icons downloading.
+  base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(install_info);
+  data_retriever_->GetIcons(
+      shared_web_contents(), std::move(icon_urls),
+      /*skip_page_favicons=*/true,
+      base::BindOnce(&InstallIsolatedAppCommand::OnGetIcons,
+                     weak_factory_.GetWeakPtr(), std::move(install_info)));
+}
+
+void InstallIsolatedAppCommand::OnGetIcons(
+    WebAppInstallInfo install_info,
+    IconsDownloadedResult result,
+    std::map<GURL, std::vector<SkBitmap>> icons_map,
+    std::map<GURL, int /*http_status_code*/> unused_icons_http_results) {
+  if (result != IconsDownloadedResult::kCompleted) {
+    ReportFailure(base::StrCat({"Error during icon downloading: ",
+                                IconsDownloadedResultToString(result)}));
+    return;
+  }
+
+  PopulateProductIcons(&install_info, &icons_map);
+  PopulateOtherIcons(&install_info, icons_map);
+
   FinalizeInstall(install_info);
 }
 

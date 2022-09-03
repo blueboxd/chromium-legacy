@@ -66,15 +66,13 @@ api::developer_private::ItemInfo MangleExtensionInfo(
   result.terminated =
       info.state == api::developer_private::EXTENSION_STATE_TERMINATED;
 
-  if (info.path)
-    result.path = std::make_unique<std::string>(*info.path);
+  result.path = info.path;
   if (info.options_page)
-    result.options_url = std::make_unique<std::string>(info.options_page->url);
-  if (info.launch_url)
-    result.app_launch_url = std::make_unique<std::string>(*info.launch_url);
+    result.options_url = info.options_page->url;
+  result.app_launch_url = info.launch_url;
   if (!info.home_page.url.empty())
-    result.homepage_url = std::make_unique<std::string>(info.home_page.url);
-  result.update_url = std::make_unique<std::string>(info.update_url);
+    result.homepage_url = info.home_page.url;
+  result.update_url = info.update_url;
   for (const std::string& str_warning : info.install_warnings) {
     api::developer_private::InstallWarning warning;
     warning.message = str_warning;
@@ -85,7 +83,7 @@ api::developer_private::ItemInfo MangleExtensionInfo(
     std::unique_ptr<base::DictionaryValue> value = error.ToValue();
     value->SetIntKey("type", static_cast<int>(ExtensionError::MANIFEST_ERROR));
     value->SetIntKey("level", static_cast<int>(logging::LOG_WARNING));
-    result.manifest_errors.push_back(std::move(value));
+    result.manifest_errors.push_back(std::move(*value));
   }
   for (const api::developer_private::RuntimeError& error :
        info.runtime_errors) {
@@ -97,7 +95,7 @@ api::developer_private::ItemInfo MangleExtensionInfo(
     else if (error.severity == api::developer_private::ERROR_LEVEL_ERROR)
       severity = logging::LOG_ERROR;
     value->SetIntKey("level", static_cast<int>(severity));
-    result.runtime_errors.push_back(std::move(value));
+    result.runtime_errors.push_back(std::move(*value));
   }
   result.offline_enabled = info.offline_enabled;
   for (const api::developer_private::ExtensionView& view : info.views) {

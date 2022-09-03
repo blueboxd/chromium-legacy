@@ -2140,7 +2140,7 @@ DOMRectList* Element::getClientRects() {
   return MakeGarbageCollected<DOMRectList>(quads);
 }
 
-gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdate() const {
+gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdateNoAdjustment() const {
   Vector<gfx::QuadF> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
@@ -2149,6 +2149,13 @@ gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdate() const {
   gfx::RectF result;
   for (auto& quad : quads)
     result.Union(quad.BoundingBox());
+  return result;
+}
+
+gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdate() const {
+  gfx::RectF result = GetBoundingClientRectNoLifecycleUpdateNoAdjustment();
+  if (result == gfx::RectF())
+    return result;
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
@@ -5575,8 +5582,6 @@ void Element::Focus(const FocusParams& params) {
       frame_owner_element->contentDocument()->UnloadStarted())
     return;
 
-  DeferredShapingController::From(GetDocument())
-      ->ReshapeAllDeferred(ReshapeReason::kFocus);
   // Ensure we have clean style (including forced display locks).
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
 
@@ -5601,6 +5606,7 @@ void Element::Focus(const FocusParams& params) {
   ActivateDisplayLockIfNeeded(params.type == mojom::blink::FocusType::kScript
                                   ? DisplayLockActivationReason::kScriptFocus
                                   : DisplayLockActivationReason::kUserFocus);
+  DeferredShapingController::From(GetDocument())->OnFocus(*this);
 
   if (!GetDocument().GetPage()->GetFocusController().SetFocusedElement(
           this, GetDocument().GetFrame(), params))
@@ -7120,11 +7126,14 @@ PseudoElement* Element::GetNestedPseudoElement(
   if (!IsTransitionPseudoElement(pseudo_id))
     return GetPseudoElement(pseudo_id, document_transition_tag);
 
+  // The transition pseudos can currently only exist on the document element.
+  if (!IsDocumentElement())
+    return nullptr;
+
   // This traverses the pseudo element hierarchy generated in
   // RecalcTransitionPseudoTreeStyle to query nested ::page-transition-container
   // ::page-transition-image-wrapper and
   // ::page-transition-{incoming,outgoing}-image pseudo elements.
-  DCHECK_EQ(this, GetDocument().documentElement());
   auto* transition_pseudo = GetPseudoElement(kPseudoIdPageTransition);
   if (!transition_pseudo || pseudo_id == kPseudoIdPageTransition)
     return transition_pseudo;

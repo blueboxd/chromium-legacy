@@ -75,7 +75,6 @@ class CORE_EXPORT CullRectUpdater {
 
   PaintLayer& starting_layer_;
   PropertyTreeState root_state_ = PropertyTreeState::Uninitialized();
-  bool simulate_old_behavior_ = false;
 };
 
 // Used when painting with a custom top-level cull rect, e.g. when printing a

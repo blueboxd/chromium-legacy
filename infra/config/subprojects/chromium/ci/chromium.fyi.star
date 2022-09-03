@@ -17,6 +17,7 @@ ci.defaults.set(
     execution_timeout = 10 * time.hour,
     goma_backend = goma.backend.RBE_PROD,
     pool = ci.DEFAULT_POOL,
+    priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
@@ -1177,6 +1178,7 @@ This builder measures Windows build performance with goma vs reclient in cq conf
 The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-compilator">win10_chromium_x64_rel_ng-compilator</a>.\
 """,
     goma_jobs = 300,
+    goma_enable_ats = False,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Windows CQ - cache siloed",

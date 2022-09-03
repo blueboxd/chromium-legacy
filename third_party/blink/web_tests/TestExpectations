@@ -434,7 +434,7 @@ crbug.com/1095540 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/res
 crbug.com/841567 [ Debug Mac11 ] virtual/threaded-prefer-compositing/fast/scrolling/same-page-navigate.html [ Failure Pass ]
 crbug.com/1279758 [ Win10.20h2 ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-animation-on-by-default.html [ Failure Pass ]
 crbug.com/1279758 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-animation-on-by-default.html [ Failure Pass ]
-crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Failure Pass ]
+crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Failure Pass Timeout ]
 crbug.com/1058244 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Failure Pass ]
 
 crbug.com/915926 fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
@@ -1483,7 +1483,6 @@ crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-17.html [ Fa
 crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-18.html [ Failure ]
 crbug.com/1240186 [ Mac ] external/wpt/css/css-fonts/font-variant-ligatures-11.html [ Failure ]
 crbug.com/1212668 external/wpt/css/css-fonts/font-variant-position.html [ Failure ]
-crbug.com/1240186 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
 crbug.com/1240236 [ Mac ] external/wpt/css/css-fonts/system-ui-ar.html [ Failure ]
 crbug.com/1240236 [ Mac ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
 crbug.com/1240236 external/wpt/css/css-fonts/system-ui-ja-vs-zh.html [ Failure ]
@@ -1933,7 +1932,6 @@ crbug.com/1068610 external/wpt/css/css-color/xyz-d65-005.html [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t422-rgba-a0.6-a.xht [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/t32-opacity-basic-0.6-a.xht [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t425-hsla-basic-a.xht [ Failure ]
-crbug.com/1068610 [ Mac ] external/wpt/css/css-color/color-function-parsing.html [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t422-rgba-onscreen-multiple-boxes-c.xht [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
@@ -2458,6 +2456,7 @@ crbug.com/736319 external/wpt/css/css-writing-modes/text-combine-upright-compres
 crbug.com/736319 external/wpt/css/css-writing-modes/text-combine-upright-compression-006.html [ Failure ]
 crbug.com/736319 external/wpt/css/css-writing-modes/text-combine-upright-compression-006a.html [ Failure ]
 
+crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
 crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-11.html [ Failure ]
 crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-12.html [ Failure ]
 crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
@@ -4056,6 +4055,10 @@ crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Pass
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Mac ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
+
+crbug.com/1359409 [ Mac12 ] http/tests/media/video-preload-metadata.html [ Timeout Pass ]
+
+crbug.com/1358638 [ Mac11 ] fast/scroll-behavior/middleclick-autoscroll-nested-elements.html [ Failure Pass ]
 
 crbug.com/1157857 virtual/percent-based-scrolling/max-percent-delta-cross-origin-iframes.html [ Failure Pass Timeout ]
 
@@ -6862,7 +6865,7 @@ crbug.com/1358051 external/wpt/longtask-timing/containerTypes.html [ Failure Pas
 # TODO(crbug.com/1358147): Re-enable this test
 virtual/plz-dedicated-worker/external/wpt/resource-timing/no-entries-for-cross-origin-css-fetched-memory-cache.sub.html [ Skip ]
 
-# Disable step failure trigger flaky tests   
+# Disable step failure trigger flaky tests
 crbug.com/1351571 [ Mac12-arm64 ] http/tests/devtools/persistence/automapping-bind-committed-network-sourcecode.js [ Failure Pass Timeout ]
 crbug.com/1358333 [ Mac10.15 ] external/wpt/webmessaging/event.origin.sub.htm [ Failure Pass ]
 

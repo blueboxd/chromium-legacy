@@ -51,11 +51,11 @@ class TestPrefsUtil : public PrefsUtil {
     pref_object->key = name;
     pref_object->type = api::settings_private::PrefType::PREF_TYPE_LIST;
 
-    base::ListValue* value = new base::ListValue();
+    base::Value::List value;
     for (auto& email : user_list_) {
-      value->Append(email);
+      value.Append(email);
     }
-    pref_object->value.reset(value);
+    pref_object->value = base::Value(std::move(value));
 
     return pref_object;
   }
@@ -171,7 +171,7 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 };
 
 // static
-TestDelegate* UsersPrivateApiTest::s_test_delegate_ = NULL;
+TestDelegate* UsersPrivateApiTest::s_test_delegate_ = nullptr;
 
 class LoginStatusTestConfig {
  public:

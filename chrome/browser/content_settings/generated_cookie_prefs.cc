@@ -160,10 +160,10 @@ GeneratedCookiePrimarySettingPref::GetPrefObject() const {
       profile_->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
 
   if (content_setting == ContentSetting::CONTENT_SETTING_BLOCK) {
-    pref_object->value = std::make_unique<base::Value>(
-        static_cast<int>(CookiePrimarySetting::BLOCK_ALL));
+    pref_object->value =
+        base::Value(static_cast<int>(CookiePrimarySetting::BLOCK_ALL));
   } else {
-    pref_object->value = std::make_unique<base::Value>(
+    pref_object->value = base::Value(
         static_cast<int>(ToCookiePrimarySetting(cookie_controls_mode)));
   }
 
@@ -180,9 +180,8 @@ GeneratedCookiePrimarySettingPref::GetPrefObject() const {
     // unit_tests associated with this file.
     std::sort(pref_object->user_selectable_values->begin(),
               pref_object->user_selectable_values->end(),
-              [](const std::unique_ptr<base::Value>& a,
-                 std::unique_ptr<base::Value>& b) {
-                return a->GetInt() < b->GetInt();
+              [](const base::Value& a, const base::Value& b) {
+                return a.GetInt() < b.GetInt();
               });
   }
   return pref_object;
@@ -246,7 +245,7 @@ void GeneratedCookiePrimarySettingPref::ApplyPrimaryCookieSettingManagedState(
   if (cookie_controls_mode_recommended) {
     auto recommended_value = static_cast<CookieControlsMode>(
         cookie_controls_mode_pref->GetRecommendedValue()->GetInt());
-    pref_object->recommended_value = std::make_unique<base::Value>(
+    pref_object->recommended_value = base::Value(
         static_cast<int>(ToCookiePrimarySetting(recommended_value)));
 
     // Based on state assessed so far the enforcement is only recommended. This
@@ -324,7 +323,7 @@ GeneratedCookieSessionOnlyPref::GetPrefObject() const {
 
   pref_object->user_control_disabled =
       content_setting == ContentSetting::CONTENT_SETTING_BLOCK;
-  pref_object->value = std::make_unique<base::Value>(
+  pref_object->value = base::Value(
       content_setting == ContentSetting::CONTENT_SETTING_SESSION_ONLY);
 
   // Content settings can be managed via policy, extension or supervision, but

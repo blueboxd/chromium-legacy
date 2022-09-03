@@ -9,6 +9,7 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view.h"
+#include "chrome/browser/ui/views/webid/identity_provider_display_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -53,9 +54,10 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   friend class FedCmAccountSelectionViewBrowserTest;
 
   // Creates bubble views::Widget.
-  virtual views::Widget* CreateBubble(Browser* browser,
-                                      const std::u16string& rp_etld_plus_one,
-                                      const std::u16string& idp_etld_plus_one);
+  virtual views::Widget* CreateBubble(
+      Browser* browser,
+      const std::u16string& rp_etld_plus_one,
+      const absl::optional<std::u16string>& idp_title);
 
   // Returns AccountSelectionBubbleViewInterface for bubble views::Widget.
   virtual AccountSelectionBubbleViewInterface* GetBubbleView();
@@ -79,7 +81,8 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // AccountSelectionBubbleView::Observer:
-  void OnAccountSelected(const std::string& account_id) override;
+  void OnAccountSelected(const Account& account,
+                         const IdentityProviderDisplayData& idp_data) override;
   void OnLinkClicked(const GURL& url) override;
   void OnBackButtonClicked() override;
   void OnCloseButtonClicked() override;
@@ -95,13 +98,9 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   void OnDismiss(
       content::IdentityRequestDialogController::DismissReason dismiss_reason);
 
-  std::u16string idp_etld_plus_one_;
-  content::IdentityProviderMetadata idp_metadata_;
-  std::unique_ptr<content::ClientIdData> client_data_;
+  std::vector<IdentityProviderDisplayData> idp_data_list_;
 
-  // The list of accounts to select from. Not updated when the user selects an
-  // account and navigates to the privacy policy / terms of service page.
-  std::vector<content::IdentityRequestAccount> account_list_;
+  std::u16string rp_for_display_;
 
   State state_{State::ACCOUNT_PICKER};
 

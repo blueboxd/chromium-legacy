@@ -199,11 +199,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[::prefs::kPolicyThemeColor] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  (*s_allowlist)[::prefs::kUsesSystemTheme] =
+#if BUILDFLAG(IS_LINUX)
+  (*s_allowlist)[::prefs::kUsesSystemThemeDeprecated] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kSystemTheme] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 #endif
   (*s_allowlist)[::prefs::kHomePage] = settings_api::PrefType::PREF_TYPE_URL;
   (*s_allowlist)[::prefs::kHomePageIsNewTabPage] =
@@ -953,7 +953,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetCrosSettingsPref(
   }
   pref_object->key = name;
   pref_object->type = GetType(name, value->type());
-  pref_object->value = base::Value::ToUniquePtrValue(value->Clone());
+  pref_object->value = value->Clone();
 #endif
 
   return pref_object;
@@ -984,8 +984,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object = std::make_unique<settings_api::PrefObject>();
     pref_object->key = pref->name();
     pref_object->type = GetType(name, pref->GetType());
-    pref_object->value =
-        base::Value::ToUniquePtrValue(pref->GetValue()->Clone());
+    pref_object->value = pref->GetValue()->Clone();
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1007,11 +1006,10 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_PRIMARY_USER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name =
-        std::make_unique<std::string>(user_manager::UserManager::Get()
+    pref_object->controlled_by_name = user_manager::UserManager::Get()
                                           ->GetPrimaryUser()
                                           ->GetAccountId()
-                                          .GetUserEmail());
+                                          .GetUserEmail();
     return pref_object;
   }
 #endif
@@ -1037,8 +1035,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
         settings_api::ControlledBy::CONTROLLED_BY_USER_POLICY;
     pref_object->enforcement =
         settings_api::Enforcement::ENFORCEMENT_RECOMMENDED;
-    pref_object->recommended_value =
-        base::Value::ToUniquePtrValue(recommended->Clone());
+    pref_object->recommended_value = recommended->Clone();
     return pref_object;
   }
 
@@ -1051,8 +1048,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_OWNER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name = std::make_unique<std::string>(
-        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
+    pref_object->controlled_by_name =
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail();
     return pref_object;
   }
 
@@ -1060,7 +1057,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->value = std::make_unique<base::Value>(
+    pref_object->value = base::Value(
         GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());
     return pref_object;
   }
@@ -1079,9 +1076,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->extension_id = std::make_unique<std::string>(extension->id());
-    pref_object->controlled_by_name =
-        std::make_unique<std::string>(extension->name());
+    pref_object->extension_id = extension->id();
+    pref_object->controlled_by_name = extension->name();
     bool can_be_disabled =
         !ExtensionSystem::Get(profile_)->management_policy()->MustRemainEnabled(
             extension, nullptr);

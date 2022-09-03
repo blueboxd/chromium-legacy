@@ -1287,28 +1287,6 @@
             ]
         }
     ],
-    "AutofillIgnoreEarlyClicksOnPopup": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220625",
-                    "params": {
-                        "duration": "500ms"
-                    },
-                    "enable_features": [
-                        "AutofillIgnoreEarlyClicksOnPopup"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillKeyboardAccessory": [
         {
             "platforms": [
@@ -2747,34 +2725,6 @@
             ]
         }
     ],
-    "ChromeStart": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "CandidateB",
-                    "params": {
-                        "hide_switch_when_no_incognito_tabs": "true",
-                        "open_ntp_instead_of_start": "true",
-                        "show_last_active_tab_only": "true",
-                        "signin_promo_NTP_count_limit": "5",
-                        "signin_promo_NTP_reset_after_hours": "672",
-                        "signin_promo_NTP_since_first_time_shown_limit_hours": "336",
-                        "start_surface_variation": "single",
-                        "support_accessibility": "true",
-                        "tab_count_button_on_start_surface": "true",
-                        "tab_switcher_on_return_time_ms": "28800000"
-                    },
-                    "enable_features": [
-                        "StartSurfaceAndroid",
-                        "TabSwitcherOnReturn"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeTipsInMainMenu": [
         {
             "platforms": [
@@ -3467,6 +3417,26 @@
                     "name": "Enabled_20220601",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DeferredShaping": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DeferredShaping"
                     ]
                 }
             ]
@@ -5016,6 +4986,42 @@
                     },
                     "enable_features": [
                         "HappinessTrackingUnlock"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HeapProfilingSubprocess": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledInBrowserAndGPU",
+                    "params": {
+                        "nonstable-probability": "1",
+                        "stable-probability": "1",
+                        "supported-processes": "browser;gpu"
+                    },
+                    "enable_features": [
+                        "HeapProfilerReporting"
+                    ]
+                },
+                {
+                    "name": "EnabledInGPU",
+                    "params": {
+                        "nonstable-probability": "1",
+                        "sampling-rate": "1000000",
+                        "stable-probability": "1",
+                        "supported-processes": "gpu"
+                    },
+                    "enable_features": [
+                        "HeapProfilerReporting"
                     ]
                 }
             ]
@@ -9634,6 +9640,25 @@
             ]
         }
     ],
+    "TailoredSecurityIntegrationDesktopNotice": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220902",
+                    "enable_features": [
+                        "TailoredSecurityDesktopNotice"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThemeProviderColorProviderRedirection": [
         {
             "platforms": [
@@ -10484,6 +10509,32 @@
                     "name": "Enabled",
                     "enable_features": [
                         "V8VirtualMemoryCage"
+                    ]
+                }
+            ]
+        }
+    ],
+    "V8WasmLazyCompilation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebAssemblyLazyCompilation"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "WebAssemblyLazyCompilation"
                     ]
                 }
             ]

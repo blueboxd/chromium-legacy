@@ -605,6 +605,12 @@ extern const char kExperimentalAccessibilityColorEnhancementSettingsName[];
 extern const char
     kExperimentalAccessibilityColorEnhancementSettingsDescription[];
 
+extern const char kAccessibilitySelectToSpeakPageMigrationName[];
+extern const char kAccessibilitySelectToSpeakPageMigrationDescription[];
+
+extern const char kAccessibilitySelectToSpeakPrefsMigrationName[];
+extern const char kAccessibilitySelectToSpeakPrefsMigrationDescription[];
+
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
@@ -977,6 +983,9 @@ extern const char kJavascriptHarmonyDescription[];
 
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
+
+extern const char kJavascriptExperimentalSharedMemoryName[];
+extern const char kJavascriptExperimentalSharedMemoryDescription[];
 
 extern const char kJourneysName[];
 extern const char kJourneysDescription[];
@@ -3151,6 +3160,9 @@ extern const char kImeAssistMultiWordExpandedDescription[];
 
 extern const char kImeAssistMultiWordLacrosSupportName[];
 extern const char kImeAssistMultiWordLacrosSupportDescription[];
+
+extern const char kImeTrayHideVoiceButtonName[];
+extern const char kImeTrayHideVoiceButtonDescription[];
 
 extern const char kLacrosProfileMigrationForAnyUserName[];
 extern const char kLacrosProfileMigrationForAnyUserDescription[];

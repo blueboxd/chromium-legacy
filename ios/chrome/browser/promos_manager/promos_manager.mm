@@ -16,6 +16,7 @@
 #import "base/time/time.h"
 #import "base/values.h"
 #import "components/prefs/pref_service.h"
+#import "components/prefs/scoped_user_pref_update.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "ios/chrome/browser/promos_manager/features.h"
@@ -32,6 +33,25 @@ namespace {
 // from UTC midnight to UTC midnight.
 int TodaysDay() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InDays();
+}
+
+// Conditionally appends `promo` to the list pref `pref_path`. If `promo`
+// already exists in the list pref `pref_path`, does nothing. If `promo` doesn't
+// exist in the list pref `pref_path`, appends `promo` to the list.
+void ConditionallyAppendPromoToPrefList(promos_manager::Promo promo,
+                                        const std::string& pref_path,
+                                        PrefService* local_state) {
+  DCHECK(local_state);
+
+  ListPrefUpdate update(local_state, pref_path);
+  base::Value::List& active_promos = update->GetList();
+  std::string promo_name = promos_manager::NameForPromo(promo);
+
+  // Erase `promo_name` if it already exists in `active_promos`; avoid polluting
+  // `active_promos` with duplicate `promo_name` entries.
+  active_promos.EraseValue(base::Value(promo_name));
+
+  active_promos.Append(promo_name);
 }
 
 }  // namespace
@@ -57,15 +77,37 @@ void PromosManager::Init() {
 
   active_promos_ = ActivePromos(
       local_state_->GetValueList(prefs::kIosPromosManagerActivePromos));
+  single_display_active_promos_ = ActivePromos(local_state_->GetValueList(
+      prefs::kIosPromosManagerSingleDisplayActivePromos));
   impression_history_ = ImpressionHistory(
       local_state_->GetValueList(prefs::kIosPromosManagerImpressions));
 }
 
+void PromosManager::RegisterPromoForContinuousDisplay(
+    promos_manager::Promo promo) {
+  ConditionallyAppendPromoToPrefList(
+      promo, prefs::kIosPromosManagerActivePromos, local_state_);
+}
+
+void PromosManager::RegisterPromoForSingleDisplay(promos_manager::Promo promo) {
+  ConditionallyAppendPromoToPrefList(
+      promo, prefs::kIosPromosManagerSingleDisplayActivePromos, local_state_);
+}
+
 absl::optional<promos_manager::Promo> PromosManager::NextPromoForDisplay()
     const {
+  // Construct a superset including active (1) single-display and
+  // (2) continuous-display promo campaigns.
+  std::set<promos_manager::Promo> all_active_promos(active_promos_);
+
+  // Non-destructively insert the single-display promos into
+  // `all_active_promos`.
+  all_active_promos.insert(single_display_active_promos_.begin(),
+                           single_display_active_promos_.end());
+
   absl::optional<std::vector<promos_manager::Promo>>
       least_recently_shown_promos =
-          LeastRecentlyShown(active_promos_, impression_history_);
+          LeastRecentlyShown(all_active_promos, impression_history_);
 
   if (!least_recently_shown_promos.has_value())
     return absl::nullopt;

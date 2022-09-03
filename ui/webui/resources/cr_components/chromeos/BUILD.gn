@@ -23,10 +23,10 @@ group("polymer3_elements") {
   public_deps = [
     "bluetooth:polymer3_elements",
     "cellular_setup:polymer3_elements",
-    "multidevice_setup:polymer3_elements",
+    "multidevice_setup:web_components",
     "network:polymer3_elements",
     "network_health:web_components",
-    "quick_unlock:polymer3_elements",
+    "quick_unlock:web_components",
     "smb_shares:web_components",
     "traffic_counters:web_components",
   ]

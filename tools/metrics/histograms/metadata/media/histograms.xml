@@ -3957,7 +3957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.PipelineStatus.Start" enum="PipelineStatus"
-    expires_after="2022-10-09">
+    expires_after="2023-10-09">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -5656,6 +5656,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.WebMediaPlayerImpl.WatchTime"
     enum="WebMediaPlayerWatchTimeType" expires_after="2021-08-01">
+  <obsolete>
+    Removed 09/2022.
+  </obsolete>
   <owner>sandersd@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>

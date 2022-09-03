@@ -5,17 +5,14 @@
 #ifndef COMPONENTS_HEAP_PROFILING_IN_PROCESS_HEAP_PROFILER_CONTROLLER_H_
 #define COMPONENTS_HEAP_PROFILING_IN_PROCESS_HEAP_PROFILER_CONTROLLER_H_
 
-#include <map>
-#include <vector>
-
-#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/version_info/channel.h"
+
+namespace heap_profiling {
 
 // HeapProfilerController controls collection of sampled heap allocation
 // snapshots for the current process.
@@ -50,37 +47,6 @@ class HeapProfilerController {
   // Starts periodic heap snapshot collection. Does nothing except record a
   // metric if heap profiling is disabled.
   void StartIfEnabled();
-
-  // Public for testing.
-  using Sample = base::SamplingHeapProfiler::Sample;
-  struct SampleComparator {
-    bool operator()(const Sample& lhs, const Sample& rhs) const;
-  };
-  struct SampleValue {
-    // Sum of all allocations attributed to this Sample's stack trace.
-    size_t total = 0;
-    // Count of all allocations attributed to this Sample's stack trace.
-    size_t count = 0;
-  };
-
-  // The value of the map tracks total size and count of all Samples associated
-  // with the key's stack trace.
-  // We use a std::map here since most comparisons will early out in one of the
-  // first entries in the vector. For reference: the first entry is likely the
-  // address of the code calling malloc(). Using a hash-based container would
-  // typically entail hashing the entire contents of the stack trace.
-  using SampleMap = std::map<Sample, SampleValue, SampleComparator>;
-
-  // Merges samples that have identical stack traces, excluding total and size.
-  static SampleMap MergeSamples(const std::vector<Sample>& samples);
-
-  // If this is disabled, the client will not collect heap profiles. If it is
-  // enabled, the client may enable the sampling heap profiler (with probability
-  // based on the "stable-probability" parameter if the client is on the stable
-  // channel, or the "nonstable-probability" parameter otherwise). Sampled heap
-  // profiles will then be reported through the metrics service iff metrics
-  // reporting is enabled.
-  static const base::Feature kHeapProfilerReporting;
 
   // Uses the exact parameter values for the sampling interval and time between
   // samples, instead of a distribution around those values. This must be called
@@ -154,5 +120,7 @@ class HeapProfilerController {
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
+
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_HEAP_PROFILING_IN_PROCESS_HEAP_PROFILER_CONTROLLER_H_

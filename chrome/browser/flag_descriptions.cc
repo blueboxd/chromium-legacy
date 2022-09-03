@@ -1052,6 +1052,18 @@ const char kExperimentalAccessibilityColorEnhancementSettingsDescription[] =
     "This option enables the experimental Accessibility color enhancement "
     "settings found in the OS Accessibility settings.";
 
+const char kAccessibilitySelectToSpeakPrefsMigrationName[] =
+    "Select-to-Speak Prefs Migration";
+const char kAccessibilitySelectToSpeakPrefsMigrationDescription[] =
+    "This option enables Select-to-Speak prefs migration from extension local "
+    "storage to Chrome prefs.";
+
+const char kAccessibilitySelectToSpeakPageMigrationName[] =
+    "Select-to-Speak Page Migration";
+const char kAccessibilitySelectToSpeakPageMigrationDescription[] =
+    "This option enables Select-to-Speak page migration from extension options "
+    "page to a Chrome OS settings page.";
+
 const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
 const char kPostQuantumCECPQ2Description[] =
     "This option enables a post-quantum (i.e. resistent to quantum computers) "
@@ -1746,6 +1758,13 @@ const char kJavascriptHarmonyShippingDescription[] =
     "Some web pages use legacy or non-standard JavaScript extensions that may "
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
+
+const char kJavascriptExperimentalSharedMemoryName[] =
+    "Experimental JavaScript shared memory features";
+const char kJavascriptExperimentalSharedMemoryDescription[] =
+    "Enable web pages to use non-standard, experimental JavaScript shared "
+    "memory features. Their use requires the same HTTP headers required by "
+    "cross-thread usage of SharedArrayBuffers (i.e. COOP and COEP).";
 
 const char kJourneysName[] = "History Journeys";
 const char kJourneysDescription[] = "Enables the History Journeys UI.";
@@ -5509,6 +5528,11 @@ const char kImeAssistMultiWordLacrosSupportDescription[] =
 const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
 const char kImeAssistPersonalInfoDescription[] =
     "Enable auto-complete suggestions on personal infomation for native IME.";
+
+const char kImeTrayHideVoiceButtonName[] =
+    "Hides redudant voice button in IME tray";
+const char kImeTrayHideVoiceButtonDescription[] =
+    "Hides voice button in IME tray when mic icon is shown in the shelf";
 
 const char kVirtualKeyboardNewHeaderName[] =
     "Enable new header for virtual keyboard";

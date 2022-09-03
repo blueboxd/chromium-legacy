@@ -109,108 +109,104 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that roughly matches http://*.example.com and
   // https://www.example.com and cancels it
   api::events::Rule CreateRule1() {
-    auto scheme_http = std::make_unique<base::ListValue>();
-    scheme_http->Append("http");
-    auto http_condition_dict = std::make_unique<base::DictionaryValue>();
-    http_condition_dict->SetStringKey(keys2::kHostSuffixKey, "example.com");
-    base::DictionaryValue http_condition_url_filter;
-    http_condition_url_filter.SetStringKey(keys::kInstanceTypeKey,
-                                           keys::kRequestMatcherType);
+    base::Value::List scheme_http;
+    scheme_http.Append("http");
+    base::Value::Dict http_condition_dict;
+    http_condition_dict.Set(keys2::kHostSuffixKey, "example.com");
+    base::Value::Dict http_condition_url_filter;
+    http_condition_url_filter.Set(keys::kInstanceTypeKey,
+                                  keys::kRequestMatcherType);
 
-    scheme_http->Append("https");
-    auto https_condition_dict = std::make_unique<base::DictionaryValue>();
-    https_condition_dict->Set(keys2::kSchemesKey,
-                              std::make_unique<base::ListValue>());
-    https_condition_dict->SetStringKey(keys2::kHostSuffixKey, "example.com");
-    https_condition_dict->SetStringKey(keys2::kHostPrefixKey, "www");
-    base::DictionaryValue https_condition_url_filter;
+    scheme_http.Append("https");
+    base::Value::Dict https_condition_dict;
+    https_condition_dict.Set(keys2::kSchemesKey, base::Value::List());
+    https_condition_dict.Set(keys2::kHostSuffixKey, "example.com");
+    https_condition_dict.Set(keys2::kHostPrefixKey, "www");
+
+    base::Value::Dict https_condition_url_filter;
     https_condition_url_filter.Set(keys::kUrlKey,
                                    std::move(https_condition_dict));
-    https_condition_url_filter.SetStringKey(keys::kInstanceTypeKey,
-                                            keys::kRequestMatcherType);
+    https_condition_url_filter.Set(keys::kInstanceTypeKey,
+                                   keys::kRequestMatcherType);
 
-    base::DictionaryValue action_dict;
-    action_dict.SetStringKey(keys::kInstanceTypeKey, keys::kCancelRequestType);
+    base::Value::Dict action_dict;
+    action_dict.Set(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id = std::make_unique<std::string>(kRuleId1);
+    rule.id = kRuleId1;
     rule.priority = 100;
-    rule.actions.push_back(action_dict.CreateDeepCopy());
-    http_condition_dict->Set(keys2::kSchemesKey, std::move(scheme_http));
+    rule.actions.emplace_back(action_dict.Clone());
+    http_condition_dict.Set(keys2::kSchemesKey, std::move(scheme_http));
     http_condition_url_filter.Set(keys::kUrlKey,
                                   std::move(http_condition_dict));
-    rule.conditions.push_back(http_condition_url_filter.CreateDeepCopy());
-    rule.conditions.push_back(https_condition_url_filter.CreateDeepCopy());
+    rule.conditions.emplace_back(http_condition_url_filter.Clone());
+    rule.conditions.emplace_back(https_condition_url_filter.Clone());
     return rule;
   }
 
   // Returns a rule that matches anything and cancels it.
   api::events::Rule CreateRule2() {
-    base::DictionaryValue condition_dict;
-    condition_dict.SetStringKey(keys::kInstanceTypeKey,
-                                keys::kRequestMatcherType);
+    base::Value::Dict condition_dict;
+    condition_dict.Set(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    base::DictionaryValue action_dict;
-    action_dict.SetStringKey(keys::kInstanceTypeKey, keys::kCancelRequestType);
+    base::Value::Dict action_dict;
+    action_dict.Set(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id = std::make_unique<std::string>(kRuleId2);
+    rule.id = kRuleId2;
     rule.priority = 100;
-    rule.actions.push_back(action_dict.CreateDeepCopy());
-    rule.conditions.push_back(condition_dict.CreateDeepCopy());
+    rule.actions.emplace_back(action_dict.Clone());
+    rule.conditions.emplace_back(condition_dict.Clone());
     return rule;
   }
 
   api::events::Rule CreateRedirectRule(const std::string& destination) {
-    base::DictionaryValue condition_dict;
-    condition_dict.SetStringKey(keys::kInstanceTypeKey,
-                                keys::kRequestMatcherType);
+    base::Value::Dict condition_dict;
+    condition_dict.Set(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    base::DictionaryValue action_dict;
-    action_dict.SetStringKey(keys::kInstanceTypeKey,
-                             keys::kRedirectRequestType);
-    action_dict.SetStringKey(keys::kRedirectUrlKey, destination);
+    base::Value::Dict action_dict;
+    action_dict.Set(keys::kInstanceTypeKey, keys::kRedirectRequestType);
+    action_dict.Set(keys::kRedirectUrlKey, destination);
 
     api::events::Rule rule;
-    rule.id = std::make_unique<std::string>(kRuleId3);
+    rule.id = kRuleId3;
     rule.priority = 100;
-    rule.actions.push_back(action_dict.CreateDeepCopy());
-    rule.conditions.push_back(condition_dict.CreateDeepCopy());
+    rule.actions.emplace_back(action_dict.Clone());
+    rule.conditions.emplace_back(condition_dict.Clone());
     return rule;
   }
 
   // Create a rule to ignore all other rules for a destination that
   // contains index.html.
   api::events::Rule CreateIgnoreRule() {
-    base::DictionaryValue condition_dict;
-    auto http_condition_dict = std::make_unique<base::DictionaryValue>();
-    http_condition_dict->SetStringKey(keys2::kPathContainsKey, "index.html");
-    condition_dict.SetStringKey(keys::kInstanceTypeKey,
-                                keys::kRequestMatcherType);
+    base::Value::Dict condition_dict;
+    base::Value::Dict http_condition_dict;
+    http_condition_dict.Set(keys2::kPathContainsKey, "index.html");
+    condition_dict.Set(keys::kInstanceTypeKey, keys::kRequestMatcherType);
     condition_dict.Set(keys::kUrlKey, std::move(http_condition_dict));
 
-    base::DictionaryValue action_dict;
-    action_dict.SetStringKey(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
-    action_dict.SetIntKey(keys::kLowerPriorityThanKey, 150);
+    base::Value::Dict action_dict;
+    action_dict.Set(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
+    action_dict.Set(keys::kLowerPriorityThanKey, 150);
 
     api::events::Rule rule;
-    rule.id = std::make_unique<std::string>(kRuleId4);
+    rule.id = kRuleId4;
     rule.priority = 200;
-    rule.actions.push_back(action_dict.CreateDeepCopy());
-    rule.conditions.push_back(condition_dict.CreateDeepCopy());
+    rule.actions.emplace_back(action_dict.Clone());
+    rule.conditions.emplace_back(condition_dict.Clone());
     return rule;
   }
 
   // Create a condition with the attributes specified. An example value of
   // |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
-  std::unique_ptr<base::Value> CreateCondition(const std::string& attributes) {
+  base::Value CreateCondition(const std::string& attributes) {
     std::string json_description =
         "{ \n"
         "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n";
     json_description += attributes;
     json_description += "}";
 
-    return base::test::ParseJsonDeprecated(json_description);
+    return base::test::ParseJson(json_description);
   }
 
   // Create a rule with the ID |rule_id| and with conditions created from the
@@ -219,15 +215,15 @@ class WebRequestRulesRegistryTest : public testing::Test {
   api::events::Rule CreateCancellingRule(
       const char* rule_id,
       const std::vector<const std::string*>& attributes) {
-    base::DictionaryValue action_dict;
-    action_dict.SetStringKey(keys::kInstanceTypeKey, keys::kCancelRequestType);
+    base::Value::Dict action_dict;
+    action_dict.Set(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id = std::make_unique<std::string>(rule_id);
+    rule.id = rule_id;
     rule.priority = 1;
-    rule.actions.push_back(action_dict.CreateDeepCopy());
-    for (auto it = attributes.cbegin(); it != attributes.cend(); ++it)
-      rule.conditions.push_back(CreateCondition(**it));
+    rule.actions.emplace_back(action_dict.Clone());
+    for (auto* attribute : attributes)
+      rule.conditions.push_back(CreateCondition(*attribute));
     return rule;
   }
 
@@ -736,13 +732,11 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
       "  \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
       "  \"redirectUrl\": \"http://bar.com\"                         \n"
       "}                                                             ";
-  std::unique_ptr<base::Value> action_value =
-      base::JSONReader::ReadDeprecated(kAction);
+  absl::optional<base::Value> action_value = base::JSONReader::Read(kAction);
   ASSERT_TRUE(action_value);
 
   WebRequestActionSet::Values actions;
-  actions.push_back(std::move(action_value));
-  ASSERT_TRUE(actions.back().get());
+  actions.push_back(std::move(*action_value));
 
   std::string error;
   bool bad_message = false;

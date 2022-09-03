@@ -460,6 +460,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("zipCreateFileDownloads"),
                       TestCase("zipCreateFileDownloads").InGuestMode(),
                       TestCase("zipCreateFileDrive"),
+                      TestCase("zipCreateFileDriveOffice"),
                       TestCase("zipCreateFileUsb"),
                       TestCase("zipExtractA11y").ExtractArchive(),
                       TestCase("zipExtractCheckContent").ExtractArchive(),
@@ -820,6 +821,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("transferFromDriveToDownloads"),
+        TestCase("transferOfficeFileFromDriveToDownloads"),
         TestCase("transferFromDownloadsToMyFiles"),
         TestCase("transferFromDownloadsToMyFilesMove"),
         TestCase("transferFromDownloadsToDrive"),
@@ -1010,7 +1012,17 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogExtensionNotAddedWhenProvided").WithBrowser(),
         TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
         TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
-        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));
+        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser(),
+        TestCase("saveFileDialogGuestOs").WithBrowser().EnableGuestOsFiles(),
+        TestCase("saveFileDialogGuestOs")
+            .WithBrowser()
+            .EnableGuestOsFiles()
+            .InIncognito(),
+        TestCase("openFileDialogGuestOs").WithBrowser().EnableGuestOsFiles(),
+        TestCase("openFileDialogGuestOs")
+            .WithBrowser()
+            .EnableGuestOsFiles()
+            .InIncognito()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */

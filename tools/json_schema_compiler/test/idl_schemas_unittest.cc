@@ -97,7 +97,7 @@ TEST(IdlCompiler, OptionalArguments) {
   std::unique_ptr<Function8::Params> f8_params =
       Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
-  EXPECT_EQ(nullptr, f8_params->arg2.get());
+  EXPECT_FALSE(f8_params->arg2.has_value());
   list.Append("foo");
   f8_params = Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
@@ -183,7 +183,7 @@ TEST(IdlCompiler, ObjectTypes) {
 
   // Test the BarType type.
   BarType b1;
-  b1.x = std::make_unique<base::Value>(7);
+  b1.x = base::Value(7);
   std::unique_ptr<base::DictionaryValue> serialized_bar = b1.ToValue();
   BarType b2;
   EXPECT_TRUE(BarType::Populate(*serialized_bar.get(), &b2));

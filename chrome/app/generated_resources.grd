@@ -10356,10 +10356,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Translated
         </message>
         <message name="IDS_PARTIAL_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="Title text for the partial translate bubble label when the text selection could not be translated. This is also announced to the screenreader.">
-          The selection could not be translated at this time
+          This selection couldn't be translated
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="Title text for the translate bubble label when the page could not be translated. This is also announced to the screenreader.">
-          This page could not be translated
+          This page couldn't be translated
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_SOURCE_LANG_COMBOBOX_ACCNAME" desc="Accessible name for the source language selection combobox.">
           Choose the page language to translate from
@@ -13567,6 +13567,25 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ERROR_SCREEN_DESCRIPTION" desc="The description shown in the side panel when an error with the script execution occurred." translateable="false">
         Check the site and try changing your password.
+      </message>
+    </if>
+
+    <!-- Battery Saver Toolbar strings  -->
+    <if expr="not is_android">
+      <message name="IDS_BATTERY_SAVER_BUTTON_TOOLTIP" desc="The tooltip for the battery saver toolbar button">
+        Battery Saver is on
+      </message>
+      <message name="IDS_BATTERY_SAVER_BUTTON_ACCNAME" desc="The accessibility text for the battery saver toolbar button">
+        Battery Saver is on
+      </message>
+      <message name="IDS_BATTERY_SAVER_BUBBLE_TITLE" desc="The title of the battery saver bubble dialog">
+        Battery Saver is on
+      </message>
+      <message name="IDS_BATTERY_SAVER_BUBBLE_DESCRIPTION" desc="The description text of the battery saver bubble dialog">
+        Background activity and some visual effects, like smooth scrolling, may be limited.
+      </message>
+      <message name="IDS_BATTERY_SAVER_SESSION_TURN_OFF" desc="The label for the turn off battery saver for current session button in battery saver bubble dialog">
+        Turn off now
       </message>
     </if>
     <!-- High Efficiency Chip strings -->

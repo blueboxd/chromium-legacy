@@ -395,6 +395,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kCormorant,
+    &share::kCrowLaunchTab,
     &share::kPersistShareHubOnAppSwitch,
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
@@ -903,7 +904,7 @@ const base::Feature kShowExtendedPreloadingSetting{
     "ShowExtendedPreloadingSetting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFeedPositionAndroid{"FeedPositionAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

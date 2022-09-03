@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -50,8 +51,9 @@ bool IsWebUIAndUsesTLDForProcessLockURL(const GURL& url) {
   WebUIDomains domains = GetWebUIDomains(url);
   // This only applies to WebUI urls with two or more non-empty domains.
   return domains.size() >= 2 &&
-         std::all_of(domains.begin(), domains.end(),
-                     [](const std::string& domain) { return !domain.empty(); });
+         base::ranges::all_of(domains, [](const std::string& domain) {
+           return !domain.empty();
+         });
 }
 
 // For WebUI URLs of the form chrome://foo.bar/ creates the appropriate process
@@ -177,17 +179,15 @@ bool GetGuestPartitionConfigForSite(
 // static
 SiteInfo SiteInfo::CreateForErrorPage(
     const StoragePartitionConfig storage_partition_config,
-    bool is_guest) {
-  // TODO(crbug.com/1340662): Investigate whether we need to pass the correct
-  // value of |is_fenced| here and further process-isolate error pages inside
-  // fenced frames.
-  return SiteInfo(
-      GetErrorPageSiteAndLockURL(), GetErrorPageSiteAndLockURL(),
-      false /* requires_origin_keyed_process */, false /* is_sandboxed */,
-      UrlInfo::kInvalidUniqueSandboxId, storage_partition_config,
-      WebExposedIsolationInfo::CreateNonIsolated(), is_guest,
-      false /* does_site_request_dedicated_process_for_coop */,
-      false /* is_jit_disabled */, false /* is_pdf */, false /* is_fenced */);
+    bool is_guest,
+    bool is_fenced) {
+  return SiteInfo(GetErrorPageSiteAndLockURL(), GetErrorPageSiteAndLockURL(),
+                  false /* requires_origin_keyed_process */,
+                  false /* is_sandboxed */, UrlInfo::kInvalidUniqueSandboxId,
+                  storage_partition_config,
+                  WebExposedIsolationInfo::CreateNonIsolated(), is_guest,
+                  false /* does_site_request_dedicated_process_for_coop */,
+                  false /* is_jit_disabled */, false /* is_pdf */, is_fenced);
 }
 
 // static
@@ -301,7 +301,8 @@ SiteInfo SiteInfo::CreateInternal(const IsolationContext& isolation_context,
 
   if (url_info.url.SchemeIs(kChromeErrorScheme)) {
     return CreateForErrorPage(storage_partition_config.value(),
-                              /*is_guest=*/isolation_context.is_guest());
+                              /*is_guest=*/isolation_context.is_guest(),
+                              /*is_fenced=*/isolation_context.is_fenced());
   }
   // We should only set |requires_origin_keyed_process| if we are actually
   // creating separate SiteInstances for OAC isolation. When we do same-process

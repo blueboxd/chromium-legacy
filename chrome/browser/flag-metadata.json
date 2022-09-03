@@ -1624,6 +1624,16 @@
     "expiry_milestone": 110
   },
   {
+    "name": "enable-accessibility-select-to-speak-page-migration",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "enable-accessibility-select-to-speak-prefs-migration",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-accessibility-service",
     "owners": [ "katie", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 120
@@ -1896,6 +1906,11 @@
     "name": "enable-cros-ime-system-emoji-picker-search-extension",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-cros-ime-tray-hide-voice-button",
+    "owners": [ "greywang", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-cros-language-settings-update-japanese",
@@ -2437,6 +2452,11 @@
     "expiry_milestone": 140
   },
   {
+    "name": "enable-javascript-experimental-shared-memory",
+    "owners": [ "syg", "dinfuehr", "pthier" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-javascript-harmony",
     "owners": [ "adamk", "hablich" ],
     // This flag is used by web developers to test upcoming javascript features.
@@ -2664,6 +2684,11 @@
     // This flag is used by dev teams on Android to disable this feature, since
     // it can badly break pages under test.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-password-grouping",
+    "owners": [ "veronguyen", "tmartino" ],
+    "expiry_milestone": 112
   },
   {
     "name": "enable-password-manager-branding-update",

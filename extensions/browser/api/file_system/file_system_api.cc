@@ -172,7 +172,7 @@ bool GetFileTypesFromAcceptOption(
   if (extensions->empty())
     return false;
 
-  if (accept_option.description.get())
+  if (accept_option.description)
     *description = base::UTF8ToUTF16(*accept_option.description);
   else if (description_id)
     *description = l10n_util::GetStringUTF16(description_id);
@@ -202,7 +202,7 @@ void PassFileInfoToUIThread(FileInfoOptCallback callback,
                             const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<base::File::Info> file_info(
-      result == base::File::FILE_OK ? new base::File::Info(info) : NULL);
+      result == base::File::FILE_OK ? new base::File::Info(info) : nullptr);
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(file_info)));
 }
@@ -722,7 +722,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 }
 
 void FileSystemChooseEntryFunction::BuildSuggestion(
-    const std::string* opt_name,
+    const absl::optional<std::string>& opt_name,
     base::FilePath* suggested_name,
     base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
@@ -820,7 +820,7 @@ ExtensionFunction::ResponseAction FileSystemChooseEntryFunction::Run() {
     }
 
     base::FilePath::StringType suggested_extension;
-    BuildSuggestion(options->suggested_name.get(), &suggested_name,
+    BuildSuggestion(options->suggested_name, &suggested_name,
                     &suggested_extension);
 
     BuildFileTypeInfo(&file_type_info, suggested_extension,

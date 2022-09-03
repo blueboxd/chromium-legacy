@@ -5,8 +5,6 @@
 #include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 
 #include "base/auto_reset.h"
-#include "base/feature_list.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -19,6 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -83,8 +82,7 @@ bool ShouldUseInfiniteCullRect(const PaintLayer& layer,
     }
 
     // This avoids cull rect change of composited sticky elements on scroll.
-    if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled() &&
-        properties->StickyTranslation() &&
+    if (properties->StickyTranslation() &&
         properties->StickyTranslation()
             ->RequiresCompositingForStickyPosition()) {
       return true;
@@ -159,8 +157,7 @@ bool HasScrolledEnough(const LayoutObject& object) {
 
 CullRectUpdater::CullRectUpdater(PaintLayer& starting_layer)
     : starting_layer_(starting_layer) {
-  if (base::FeatureList::IsEnabled(features::kOldCullRectUpdater))
-    simulate_old_behavior_ = true;
+  DCHECK(RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled());
 }
 
 void CullRectUpdater::Update() {
@@ -250,8 +247,6 @@ void CullRectUpdater::UpdateRecursively(const Context& parent_context,
       (context.fixed.force_update_children &&
        !object.CanContainFixedPositionObjects() &&
        layer.HasFixedPositionDescendant());
-  if (simulate_old_behavior_)
-    should_traverse_children |= !object.IsStackingContext();
   if (should_traverse_children) {
     context.current.container = &layer;
     if (object.CanContainAbsolutePositionObjects())
@@ -275,14 +270,8 @@ void CullRectUpdater::UpdateForDescendants(const Context& context,
   if (object.ChildPaintBlockedByDisplayLock())
     return;
 
-  for (auto* child = layer.FirstChild(); child; child = child->NextSibling()) {
-    if (simulate_old_behavior_ && !child->IsReplacedNormalFlowStacking() &&
-        child->GetLayoutObject().IsStacked()) {
-      child->SetNeedsCullRectUpdate();
-    }
-
+  for (auto* child = layer.FirstChild(); child; child = child->NextSibling())
     UpdateRecursively(context, *child);
-  }
 
   if (auto* embedded_content = DynamicTo<LayoutEmbeddedContent>(object)) {
     if (auto* embedded_view = embedded_content->GetEmbeddedContentView()) {
@@ -522,6 +511,8 @@ void CullRectUpdater::PaintPropertiesChanged(
 OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
                                                  const CullRect& cull_rect)
     : starting_layer_(starting_layer) {
+  if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
+    return;
   if (starting_layer.GetLayoutObject().GetFrame()->IsLocalRoot() &&
       !starting_layer.NeedsCullRectUpdate() &&
       !starting_layer.DescendantNeedsCullRectUpdate() &&
@@ -537,6 +528,8 @@ OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
 }
 
 OverriddenCullRectScope::~OverriddenCullRectScope() {
+  if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
+    return;
   if (updated_)
     starting_layer_.SetNeedsCullRectUpdate();
 }

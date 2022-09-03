@@ -11,9 +11,10 @@ import org.chromium.components.autofill.VirtualCardEnrollmentState;
 /** A collection of helper methods for FastCheckout tests. */
 class FastCheckoutTestUtils {
     /** Creates a detailed {@link FastCheckoutAutofillProfile}. */
-    static FastCheckoutAutofillProfile createDetailedProfile(String name, String streetAddress,
-            String city, String postalCode, String email, String phoneNumber) {
-        return new FastCheckoutAutofillProfile(/* guid= */ "", /* origin= */ "",
+    static FastCheckoutAutofillProfile createDetailedProfile(String guid, String name,
+            String streetAddress, String city, String postalCode, String email,
+            String phoneNumber) {
+        return new FastCheckoutAutofillProfile(guid, /* origin= */ "",
                 /* isLocal= */ true, /* honorificPrefix= */ "", name,
                 /* companyName= */ "", /* streetAddress= */ streetAddress,
                 /* region= */ "", /* locality= */ "", /* dependentLocality= */ "",
@@ -24,18 +25,28 @@ class FastCheckoutTestUtils {
 
     /** Creates a simple {@link FastCheckoutAutofillProfile}.  */
     static FastCheckoutAutofillProfile createDummyProfile(String name, String email) {
-        return createDetailedProfile(name, /*streetAddress=*/"", /*city=*/"", /*postalCode=*/"",
-                email, /*phoneNumber=*/"");
+        return createDetailedProfile(/*guid=*/"", name, /*streetAddress=*/"", /*city=*/"",
+                /*postalCode=*/"", email, /*phoneNumber=*/"");
     }
 
-    /** Creates a simple {@link FastCheckoutCreditCard}.  */
-    static FastCheckoutCreditCard createDummyCreditCard(String origin, String number) {
-        return new FastCheckoutCreditCard(/* guid= */ "john", origin, /* isLocal= */ true,
-                /* isCached= */ true, "John Doe", number, "1111", "12", "2050", "visa",
-                /* billingAddressId= */ "", /* billingAddressId= */ "john",
+    /** Creates a detailed {@link FastCheckoutCreditCard}.  */
+    static FastCheckoutCreditCard createDetailedCreditCard(String guid, String origin, String name,
+            String number, String obfuscatedNumber, String month, String year,
+            String issuerIconString) {
+        return new FastCheckoutCreditCard(guid, origin, /* isLocal= */ true,
+                /* isCached= */ true, name, number, obfuscatedNumber, month, year,
+                /* basicCardIssuerNetwork= */ "visa", issuerIconString,
+                /* billingAddressId= */ "john",
                 /* serverId= */ "", /* instrumentId= */ 0, /* nickname= */ "",
                 /* cardArtUrl= */ null,
                 /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.UNSPECIFIED,
                 /* productDescription= */ "");
+    }
+
+    /** Creates a simple {@link FastCheckoutCreditCard}.  */
+    static FastCheckoutCreditCard createDummyCreditCard(String guid, String origin, String number) {
+        return createDetailedCreditCard(guid, origin, /* name= */ "John Doe", number,
+                /* obfuscatedNumber= */ "1111", /* month= */ "12", /* year= */ "2050",
+                /* issuerIconString= */ "visaCC");
     }
 }

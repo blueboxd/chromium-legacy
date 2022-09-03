@@ -239,8 +239,9 @@ void ArcMetricsService::RecordArcUserInteraction(UserInteractionType type) {
     obs.OnUserInteraction(type);
 }
 
-void ArcMetricsService::SetHistogramNamer(HistogramNamer histogram_namer) {
-  histogram_namer_ = histogram_namer;
+void ArcMetricsService::SetHistogramNamerCallback(
+    HistogramNamerCallback histogram_namer_cb) {
+  histogram_namer_cb_ = histogram_namer_cb;
 }
 
 void ArcMetricsService::OnProcessConnectionReady() {
@@ -464,6 +465,10 @@ void ArcMetricsService::ReportBootProgress(
     return;
   }
   boot_type_ = boot_type;
+  for (auto& obs : boot_type_observers_)
+    obs.OnBootTypeRetrieved(boot_type);
+  if (metrics_anr_)
+    metrics_anr_->set_uma_suffix(BootTypeToString(boot_type));
 
   if (IsArcVmEnabled()) {
     // For VM builds, do not call into session_manager since we don't use it
@@ -913,6 +918,16 @@ void ArcMetricsService::RemoveUserInteractionObserver(
   user_interaction_observers_.RemoveObserver(obs);
 }
 
+void ArcMetricsService::AddBootTypeObserver(BootTypeObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  boot_type_observers_.AddObserver(obs);
+}
+
+void ArcMetricsService::RemoveBootTypeObserver(BootTypeObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  boot_type_observers_.RemoveObserver(obs);
+}
+
 absl::optional<base::TimeTicks> ArcMetricsService::GetArcStartTimeFromEvents(
     std::vector<mojom::BootProgressEventPtr>& events) {
   mojom::BootProgressEventPtr arc_upgraded_event;
@@ -1019,7 +1034,8 @@ ArcMetricsService::IntentHelperObserver::~IntentHelperObserver() = default;
 void ArcMetricsService::IntentHelperObserver::OnConnectionClosed() {
   // Ignore closed connections due to the container shutting down.
   if (!arc_bridge_service_observer_->arc_bridge_closing_) {
-    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_.Run(
+    DCHECK(arc_metrics_service_->histogram_namer_cb_);
+    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_cb_.Run(
                             "Arc.Session.MojoDisconnection"),
                         MojoConnectionType::INTENT_HELPER);
   }
@@ -1036,7 +1052,8 @@ ArcMetricsService::AppLauncherObserver::~AppLauncherObserver() = default;
 void ArcMetricsService::AppLauncherObserver::OnConnectionClosed() {
   // Ignore closed connections due to the container shutting down.
   if (!arc_bridge_service_observer_->arc_bridge_closing_) {
-    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_.Run(
+    DCHECK(arc_metrics_service_->histogram_namer_cb_);
+    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_cb_.Run(
                             "Arc.Session.MojoDisconnection"),
                         MojoConnectionType::APP_LAUNCHER);
   }

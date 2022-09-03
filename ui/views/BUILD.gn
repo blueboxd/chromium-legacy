@@ -265,6 +265,7 @@ component("views") {
     "widget/native_widget_private.h",
     "widget/root_view.h",
     "widget/root_view_targeter.h",
+    "widget/sublevel_manager.h",
     "widget/tooltip_manager.h",
     "widget/unique_widget_ptr.h",
     "widget/widget.h",
@@ -469,6 +470,7 @@ component("views") {
     "widget/native_widget_private.cc",
     "widget/root_view.cc",
     "widget/root_view_targeter.cc",
+    "widget/sublevel_manager.cc",
     "widget/tooltip_manager.cc",
     "widget/unique_widget_ptr.cc",
     "widget/widget.cc",
@@ -609,6 +611,7 @@ component("views") {
       "event_monitor_mac.h",
       "widget/native_widget_mac.h",
       "widget/widget_utils_mac.h",
+      "window/native_frame_view_mac.h",
     ]
     sources += [
       "accessibility/ax_virtual_view_mac.mm",
@@ -637,6 +640,7 @@ component("views") {
       "views_touch_selection_controller_factory_mac.cc",
       "widget/native_widget_mac.mm",
       "widget/widget_utils_mac.mm",
+      "window/native_frame_view_mac.mm",
     ]
     public_deps += [ "//components/remote_cocoa/common:mojo" ]
     deps += [
@@ -1211,6 +1215,7 @@ test("views_unittests") {
     "widget/drop_helper_unittest.cc",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
+    "widget/sublevel_manager_unittest.cc",
     "widget/unique_widget_ptr_unittest.cc",
     "widget/widget_delegate_unittest.cc",
     "widget/widget_unittest.cc",

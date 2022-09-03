@@ -182,7 +182,7 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   make_credential_response.enterprise_attestation_returned =
       enterprise_attestation_requested;
   if (large_blob_key) {
-    make_credential_response.set_large_blob_key(*large_blob_key);
+    make_credential_response.large_blob_key = *large_blob_key;
   }
   make_credential_response.device_public_key_signature =
       std::move(dpk_signature);
@@ -1375,6 +1375,12 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
     if (remaining_resident_credentials() == 0) {
       return CtapDeviceResponseCode::kCtap2ErrKeyStoreFull;
+    }
+
+    // Simulate some security keys that return an error if user.displayName is
+    // empty.
+    if (request.user.display_name && request.user.display_name->empty()) {
+      return CtapDeviceResponseCode::kCtap1ErrInvalidLength;
     }
 
     registration.is_resident = true;

@@ -60,11 +60,9 @@ std::unique_ptr<std::vector<std::string>> GetValueList(
 }
 
 // Gets the string corresponding to |type| from |profile|.
-std::unique_ptr<std::string> GetStringFromProfile(
-    const autofill::AutofillProfile& profile,
-    const autofill::ServerFieldType& type) {
-  return std::make_unique<std::string>(
-      base::UTF16ToUTF8(profile.GetRawInfo(type)));
+std::string GetStringFromProfile(const autofill::AutofillProfile& profile,
+                                 const autofill::ServerFieldType& type) {
+  return base::UTF16ToUTF8(profile.GetRawInfo(type));
 }
 
 autofill_private::AddressEntry ProfileToAddressEntry(
@@ -73,7 +71,7 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   autofill_private::AddressEntry address;
 
   // Add all address fields to the entry.
-  address.guid = std::make_unique<std::string>(profile.guid());
+  address.guid = profile.guid();
   address.full_names = GetValueList(profile, autofill::NAME_FULL);
   address.honorific =
       GetStringFromProfile(profile, autofill::NAME_HONORIFIC_PREFIX);
@@ -95,8 +93,7 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   address.phone_numbers =
       GetValueList(profile, autofill::PHONE_HOME_WHOLE_NUMBER);
   address.email_addresses = GetValueList(profile, autofill::EMAIL_ADDRESS);
-  address.language_code =
-      std::make_unique<std::string>(profile.language_code());
+  address.language_code = profile.language_code();
 
   // Parse |label| so that it can be used to create address metadata.
   std::u16string separator =
@@ -108,8 +105,8 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   std::unique_ptr<autofill_private::AutofillMetadata> metadata(
       new autofill_private::AutofillMetadata);
   metadata->summary_label = base::UTF16ToUTF8(label_pieces[0]);
-  metadata->summary_sublabel = std::make_unique<std::string>(
-      base::UTF16ToUTF8(label.substr(label_pieces[0].size())));
+  metadata->summary_sublabel =
+      base::UTF16ToUTF8(label.substr(label_pieces[0].size()));
   address.metadata = std::move(metadata);
 
   return address;
@@ -122,37 +119,11 @@ autofill_private::CountryEntry CountryToCountryEntry(
   // A null |country| means "insert a space here", so we add a country w/o a
   // |name| or |country_code| to the list and let the UI handle it.
   if (country) {
-    entry.name =
-        std::make_unique<std::string>(base::UTF16ToUTF8(country->name()));
-    entry.country_code = std::make_unique<std::string>(country->country_code());
+    entry.name = base::UTF16ToUTF8(country->name());
+    entry.country_code = country->country_code();
   }
 
   return entry;
-}
-
-std::string CardNetworkToIconResourceIdString(const std::string& network) {
-  if (network == autofill::kAmericanExpressCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_AMEX";
-  if (network == autofill::kDinersCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_DINERS";
-  if (network == autofill::kDiscoverCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_DISCOVER";
-  if (network == autofill::kEloCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_ELO";
-  if (network == autofill::kJCBCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_JCB";
-  if (network == autofill::kMasterCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_MASTERCARD";
-  if (network == autofill::kMirCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_MIR";
-  if (network == autofill::kTroyCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_TROY";
-  if (network == autofill::kUnionPay)
-    return "chrome://theme/IDR_AUTOFILL_CC_UNIONPAY";
-  if (network == autofill::kVisaCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_VISA";
-
-  return "chrome://theme/IDR_AUTOFILL_CC_GENERIC";
 }
 
 autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
@@ -161,26 +132,21 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
   autofill_private::CreditCardEntry card;
 
   // Add all credit card fields to the entry.
-  card.guid = std::make_unique<std::string>(
-      credit_card.record_type() == autofill::CreditCard::LOCAL_CARD
-          ? credit_card.guid()
-          : credit_card.server_id());
-  card.name = std::make_unique<std::string>(base::UTF16ToUTF8(
-      credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL)));
-  card.card_number = std::make_unique<std::string>(
-      base::UTF16ToUTF8(credit_card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
-  card.expiration_month = std::make_unique<std::string>(base::UTF16ToUTF8(
-      credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH)));
-  card.expiration_year = std::make_unique<std::string>(base::UTF16ToUTF8(
-      credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)));
-  card.network = std::make_unique<std::string>(
-      base::UTF16ToUTF8(credit_card.NetworkForDisplay()));
+  card.guid = credit_card.record_type() == autofill::CreditCard::LOCAL_CARD
+                  ? credit_card.guid()
+                  : credit_card.server_id();
+  card.name = base::UTF16ToUTF8(
+      credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+  card.card_number =
+      base::UTF16ToUTF8(credit_card.GetRawInfo(autofill::CREDIT_CARD_NUMBER));
+  card.expiration_month = base::UTF16ToUTF8(
+      credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH));
+  card.expiration_year = base::UTF16ToUTF8(
+      credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  card.network = base::UTF16ToUTF8(credit_card.NetworkForDisplay());
   if (!credit_card.nickname().empty()) {
-    card.nickname = std::make_unique<std::string>(
-        base::UTF16ToUTF8(credit_card.nickname()));
+    card.nickname = base::UTF16ToUTF8(credit_card.nickname());
   }
-  card.image_src = std::make_unique<std::string>(
-      CardNetworkToIconResourceIdString(credit_card.network()));
 
   // Create card metadata and add it to |card|.
   std::unique_ptr<autofill_private::AutofillMetadata> metadata(
@@ -188,8 +154,7 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
   std::pair<std::u16string, std::u16string> label_pieces =
       credit_card.LabelPieces();
   metadata->summary_label = base::UTF16ToUTF8(label_pieces.first);
-  metadata->summary_sublabel =
-      std::make_unique<std::string>(base::UTF16ToUTF8(label_pieces.second));
+  metadata->summary_sublabel = base::UTF16ToUTF8(label_pieces.second);
   metadata->is_local =
       credit_card.record_type() == autofill::CreditCard::LOCAL_CARD;
   metadata->is_cached =

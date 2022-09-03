@@ -28,6 +28,14 @@ class PromosManager {
   // Returns the next promo for display, if any.
   absl::optional<promos_manager::Promo> NextPromoForDisplay() const;
 
+  // Registers `promo` for continuous display, and persists registration status
+  // across app launches.
+  void RegisterPromoForContinuousDisplay(promos_manager::Promo promo);
+
+  // Registers `promo` for single (one-time) display, and persists registration
+  // status across app launches.
+  void RegisterPromoForSingleDisplay(promos_manager::Promo promo);
+
   // Initialize the Promos Manager by restoring state from Prefs. Must be called
   // after creation and before any other operation.
   void Init();
@@ -36,8 +44,11 @@ class PromosManager {
   // Weak pointer to the local state prefs store.
   const raw_ptr<PrefService> local_state_;
 
-  // The set of currently active promos.
+  // The set of currently active, continuous-display promos.
   std::set<promos_manager::Promo> active_promos_;
+
+  // The set of currently active, single-display promos.
+  std::set<promos_manager::Promo> single_display_active_promos_;
 
   // The impression history sorted by `day` (most recent -> least recent).
   std::vector<promos_manager::Impression> impression_history_;
@@ -179,6 +190,24 @@ class PromosManager {
                            ReturnsBlankActivePromosForBlankPrefs);
   FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
                            ReturnsActivePromosAndSkipsMalformedData);
+  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
+                           RegistersPromoForContinuousDisplay);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromosManagerTest,
+      RegistersPromoForContinuousDisplayForEmptyActivePromos);
+  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
+                           RegistersAlreadyRegisteredPromoForContinuousDisplay);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromosManagerTest,
+      RegistersAlreadyRegisteredPromoForContinuousDisplayForEmptyActivePromos);
+  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest, RegistersPromoForSingleDisplay);
+  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
+                           RegistersPromoForSingleDisplayForEmptyActivePromos);
+  FRIEND_TEST_ALL_PREFIXES(PromosManagerTest,
+                           RegistersAlreadyRegisteredPromoForSingleDisplay);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromosManagerTest,
+      RegistersAlreadyRegisteredPromoForSingleDisplayForEmptyActivePromos);
 };
 
 #endif  // IOS_CHROME_BROWSER_PROMOS_MANAGER_PROMOS_MANAGER_H_

@@ -3,13 +3,21 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/toolbar/toolbar_action_hover_card_bubble_view.h"
+#include <string>
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/extensions/extensions_dialogs_utils.h"
+#include "chrome/grit/generated_resources.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/common/extension_features.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout.h"
@@ -24,6 +32,8 @@ namespace {
 
 // Maximum number of lines that labels can occupy.
 constexpr int kHoverCardTitleMaxLines = 2;
+constexpr int kHoverCardFootnoteTitleMaxLines = 2;
+constexpr int kHoverCardFootnoteDescriptionMaxLines = 2;
 
 // Hover card fixed width. Toolbar actions are not visible when window is too
 // small to display them, therefore hover cards wouldn't be displayed if the
@@ -46,6 +56,60 @@ bool CustomShadowsSupported() {
 #else
   return true;
 #endif
+}
+
+std::u16string GetFootnoteTitle(
+    ToolbarActionViewController::HoverCardState state) {
+  int title_id = -1;
+  switch (state) {
+    case ToolbarActionViewController::HoverCardState::kAllExtensionsAllowed:
+    case ToolbarActionViewController::HoverCardState::kExtensionHasAccess:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_HAS_ACCESS;
+      break;
+    case ToolbarActionViewController::HoverCardState::kAllExtensionsBlocked:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_BLOCKED_ACCESS;
+      break;
+    case ToolbarActionViewController::HoverCardState::kExtensionRequestsAccess:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_REQUESTS_ACCESS;
+      break;
+    case ToolbarActionViewController::HoverCardState::
+        kExtensionDoesNotWantAccess:
+      NOTREACHED();
+      break;
+  }
+  return l10n_util::GetStringUTF16(title_id);
+}
+
+std::u16string GetFootnoteDescription(
+    ToolbarActionViewController::HoverCardState state,
+    std::u16string host) {
+  int title_id = -1;
+  switch (state) {
+    case ToolbarActionViewController::HoverCardState::kAllExtensionsAllowed:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_ALL_EXTENSIONS_ALLOWED_ACCESS;
+      break;
+    case ToolbarActionViewController::HoverCardState::kAllExtensionsBlocked:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_ALL_EXTENSIONS_BLOCKED_ACCESS;
+      break;
+    case ToolbarActionViewController::HoverCardState::kExtensionHasAccess:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_EXTENSION_HAS_ACESSS;
+      break;
+    case ToolbarActionViewController::HoverCardState::kExtensionRequestsAccess:
+      title_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_EXTENSION_REQUESTS_ACESSS;
+      break;
+    case ToolbarActionViewController::HoverCardState::
+        kExtensionDoesNotWantAccess:
+      NOTREACHED();
+      break;
+  }
+  return l10n_util::GetStringFUTF16(title_id, host);
 }
 
 // Label that renders its background in a solid color. Placed in front of a
@@ -123,7 +187,7 @@ class ToolbarActionHoverCardBubbleView::FadeLabel : public views::View {
     primary_label_->SetText(text);
   }
 
-  // Sets the fade-out of the label as |percent| in the range [0, 1]. Since
+  // Sets the fade-out of the label as `percent` in the range [0, 1]. Since
   // FadeLabel is designed to mask new text with the old and then fade away, the
   // higher the percentage the less opaque the label.
   void SetFade(double percent) {
@@ -136,6 +200,20 @@ class ToolbarActionHoverCardBubbleView::FadeLabel : public views::View {
         SkColorSetA(label_fading_out_->GetBackgroundColor(), alpha));
     label_fading_out_->SetEnabledColor(
         SkColorSetA(label_fading_out_->GetEnabledColor(), alpha));
+  }
+
+  void SetBackgroundColorId(ui::ColorId background_color_id) {
+    background_color_id_ = background_color_id;
+  }
+
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+
+    if (background_color_id_.has_value()) {
+      label_fading_out_->SetBackgroundColor(
+          GetColorProvider()->GetColor(background_color_id_.value()));
+      SetFade(percent_);
+    }
   }
 
   std::u16string GetText() const { return primary_label_->GetText(); }
@@ -168,7 +246,9 @@ class ToolbarActionHoverCardBubbleView::FadeLabel : public views::View {
   raw_ptr<RenderTextFactoryLabel> primary_label_;
   raw_ptr<SolidLabel> label_fading_out_;
   absl::optional<bool> was_filename_;
+
   double percent_ = 1.0;
+  absl::optional<ui::ColorId> background_color_id_;
 };
 
 class ToolbarActionHoverCardBubbleView::FootnoteView : public views::View {
@@ -176,42 +256,46 @@ class ToolbarActionHoverCardBubbleView::FootnoteView : public views::View {
   FootnoteView() {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
+    title_label_ = AddChildView(std::make_unique<FadeLabel>(
+        CONTEXT_TAB_HOVER_CARD_TITLE, kHoverCardFootnoteTitleMaxLines));
+    description_label_ = AddChildView(
+        std::make_unique<FadeLabel>(views::style::CONTEXT_DIALOG_BODY_TEXT,
+                                    kHoverCardFootnoteDescriptionMaxLines));
 
-    title_label_ = AddChildView(std::make_unique<views::Label>(
-        std::u16string(), CONTEXT_TAB_HOVER_CARD_TITLE,
-        views::style::STYLE_PRIMARY));
-    description_label_ = AddChildView(std::make_unique<views::Label>(
-        std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
-        views::style::STYLE_PRIMARY));
-
-    auto format_label = [](views::Label* label) {
-      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      label->SetMultiLine(true);
-    };
-    format_label(title_label_);
-    format_label(description_label_);
+    title_label_->SetBackgroundColorId(ui::kColorBubbleFooterBackground);
+    description_label_->SetBackgroundColorId(ui::kColorBubbleFooterBackground);
   }
+
   ~FootnoteView() override = default;
 
-  // TODO(crbug.com/1351778): Set content based on a given site access status.
-  void SetContent() {
-    // TODO(crbug.com/1351778): Set visibility based on the status.
-    SetVisible(true);
-    title_label_->SetText(u"Site access");
-    description_label_->SetText(u"Description of the extension site access");
+  void SetContent(ToolbarActionViewController::HoverCardState state,
+                  std::u16string host) {
+    DCHECK_NE(state, ToolbarActionViewController::HoverCardState::
+                         kExtensionDoesNotWantAccess);
+    title_label_->SetText(GetFootnoteTitle(state), absl::nullopt);
+    description_label_->SetText(GetFootnoteDescription(state, host),
+                                absl::nullopt);
+  }
+
+  void SetFade(double percent) {
+    title_label_->SetFade(percent);
+    description_label_->SetFade(percent);
+  }
+
+  std::u16string GetTitleText() const { return title_label_->GetText(); }
+
+  std::u16string GetDescriptionText() const {
+    return description_label_->GetText();
   }
 
  private:
-  // TODO(crbug.com/1351778): Consider using FadeLabel after implementing
-  // content based on the extension.
-  raw_ptr<views::Label> title_label_;
-  raw_ptr<views::Label> description_label_;
+  raw_ptr<FadeLabel> title_label_;
+  raw_ptr<FadeLabel> description_label_;
 };
 
 // ToolbarActionHoverCardBubbleView:
 // ----------------------------------------------------------
 
-// TODO(crbug.com/1351778): Add content based on `action_view`.
 ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
     ToolbarActionView* action_view)
     : BubbleDialogDelegateView(action_view,
@@ -290,19 +374,48 @@ ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
   // Start in the fully "faded-in" position so that whatever text we initially
   // display is visible.
   SetTextFade(1.0);
-
-  UpdateCardContent();
 }
 
-void ToolbarActionHoverCardBubbleView::UpdateCardContent() {
-  title_label_->SetText(u"Extension name", absl::nullopt);
+void ToolbarActionHoverCardBubbleView::UpdateCardContent(
+    const ToolbarActionViewController* action_controller,
+    content::WebContents* web_contents) {
+  title_label_->SetText(action_controller->GetActionName(), absl::nullopt);
 
   DCHECK(GetBubbleFrameView());
-  footnote_view_->SetContent();
+  ToolbarActionViewController::HoverCardState state =
+      action_controller->GetHoverCardState(web_contents);
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  if (state_ == ToolbarActionViewController::HoverCardState::
+                    kExtensionDoesNotWantAccess) {
+    footnote_view_->SetVisible(false);
+  } else {
+    footnote_view_->SetContent(state, GetCurrentHost(web_contents));
+    footnote_view_->SetVisible(true);
+  }
 }
 
 void ToolbarActionHoverCardBubbleView::SetTextFade(double percent) {
   title_label_->SetFade(percent);
+  footnote_view_->SetFade(percent);
+}
+
+std::u16string ToolbarActionHoverCardBubbleView::GetTitleTextForTesting()
+    const {
+  return title_label_->GetText();
+}
+
+std::u16string
+ToolbarActionHoverCardBubbleView::GetFootnoteTitleTextForTesting() const {
+  return footnote_view_->GetVisible() ? footnote_view_->GetTitleText() : u"";
+}
+
+std::u16string
+ToolbarActionHoverCardBubbleView::GetFootnoteDescriptionTextForTesting() const {
+  return footnote_view_->GetVisible() ? footnote_view_->GetDescriptionText()
+                                      : u"";
 }
 
 void ToolbarActionHoverCardBubbleView::OnThemeChanged() {

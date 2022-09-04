@@ -63,8 +63,6 @@ class BrowserWindowDefaultTouchBarUnitTest : public BrowserWithTestWindowTest {
 
   void SetShowHomeButton(bool flag) {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kShowHomeButton, flag);
-    browser()->profile()->GetPrefs()->ChangePrefValueStore(nullptr, nullptr,
-                                                           nullptr, nullptr);
   }
 
   void TearDown() override {

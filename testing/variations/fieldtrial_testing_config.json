@@ -1360,6 +1360,28 @@
             ]
         }
     ],
+    "AutofillParseAsync": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillParseAsync"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillParseMerchantPromoCodeFields": [
         {
             "platforms": [
@@ -3576,6 +3598,34 @@
                     ],
                     "disable_features": [
                         "NtpShoppingTasksModule"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopOmniboxBookmarkPaths": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
+                        "ShortBookmarkSuggestionsByTotalInputLengthThreshold": "3"
+                    },
+                    "enable_features": [
+                        "BookmarkApproximateNodeMatch",
+                        "BookmarkTypedUrlsMap",
+                        "OmniboxBookmarkPaths",
+                        "OmniboxShortBookmarkSuggestionsByTotalInputLength"
                     ]
                 }
             ]
@@ -6561,18 +6611,15 @@
                     "params": {
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
-                        "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
                         "OmniboxLocalZeroSuggestAgeThreshold": "90",
                         "OmniboxMaxURLMatches": "7",
                         "PrefixSuggestIgnoreDuplicateVisits": "true",
-                        "ShortBookmarkSuggestionsByTotalInputLengthThreshold": "3",
                         "UIMaxAutocompleteMatches": "8",
                         "ZeroSuggestIgnoreDuplicateVisits": "false"
                     },
                     "enable_features": [
                         "LocalHistorySuggestRevamp",
                         "OmniboxBlurWithEscape",
-                        "OmniboxBookmarkPaths",
                         "OmniboxClosePopupWithEscape",
                         "OmniboxDocumentProviderAso",
                         "OmniboxEntitySuggestionsReduceLatency",
@@ -6582,7 +6629,6 @@
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxPreserveLongerShortcutsText",
                         "OmniboxRemoveSuggestionsFromClipboard",
-                        "OmniboxShortBookmarkSuggestionsByTotalInputLength",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ],
                     "disable_features": []

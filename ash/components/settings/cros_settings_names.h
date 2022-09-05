@@ -102,8 +102,6 @@ COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDeviceLocation[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkConfiguration[];
 COMPONENT_EXPORT(ASH_SETTINGS)
-extern const char kReportDeviceNetworkInterfaces[];
-COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDevicePeripherals[];
@@ -112,8 +110,6 @@ extern const char kReportDevicePowerStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceStorageStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDeviceUsers[];
-COMPONENT_EXPORT(ASH_SETTINGS)
-extern const char kReportDeviceHardwareStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceSecurityStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)

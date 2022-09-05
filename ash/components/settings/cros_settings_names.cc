@@ -149,11 +149,6 @@ const char kReportDeviceLocation[] = "cros.device_status.report_location";
 const char kReportDeviceNetworkConfiguration[] =
     "cros.device_status.report_network_configuration";
 
-// Determines whether the device reports network interface types and addresses
-// in device status reports to the device management server.
-const char kReportDeviceNetworkInterfaces[] =
-    "cros.device_status.report_network_interfaces";
-
 // Determines whether the device reports dynamic network information such
 // connection state, signal strength, and IP Address in device status reports
 // and to management server.
@@ -182,11 +177,6 @@ const char kReportDeviceSecurityStatus[] =
 // Determines whether the device reports recently logged in users in device
 // status reports to the device management server.
 const char kReportDeviceUsers[] = "cros.device_status.report_users";
-
-// Determines whether the device reports hardware status (CPU utilization,
-// disk space, etc) in device status reports to the device management server.
-const char kReportDeviceHardwareStatus[] =
-    "cros.device_status.report_hardware_status";
 
 // Determines whether the device reports kiosk session status (app IDs,
 // versions, etc) in device status reports to the device management server.

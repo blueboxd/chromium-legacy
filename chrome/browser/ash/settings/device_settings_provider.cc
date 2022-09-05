@@ -133,13 +133,11 @@ const char* const kKnownSettings[] = {
     kReportDeviceCrashReportInfo,
     kReportDeviceCpuInfo,
     kReportDeviceFanInfo,
-    kReportDeviceHardwareStatus,
     kReportDeviceLocation,
     kReportDevicePeripherals,
     kReportDevicePowerStatus,
     kReportDeviceStorageStatus,
     kReportDeviceNetworkConfiguration,
-    kReportDeviceNetworkInterfaces,
     kReportDeviceNetworkStatus,
     kReportDeviceNetworkTelemetryCollectionRateMs,
     kReportDeviceNetworkTelemetryEventCheckingRateMs,
@@ -687,11 +685,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           kReportDeviceNetworkConfiguration,
           reporting_policy.report_network_configuration());
     }
-    if (reporting_policy.has_report_network_interfaces()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceNetworkInterfaces,
-          reporting_policy.report_network_interfaces());
-    }
     if (reporting_policy.has_report_network_status()) {
       new_values_cache->SetBoolean(kReportDeviceNetworkStatus,
                                    reporting_policy.report_network_status());
@@ -699,10 +692,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_users()) {
       new_values_cache->SetBoolean(kReportDeviceUsers,
                                    reporting_policy.report_users());
-    }
-    if (reporting_policy.has_report_hardware_status()) {
-      new_values_cache->SetBoolean(kReportDeviceHardwareStatus,
-                                   reporting_policy.report_hardware_status());
     }
     if (reporting_policy.has_report_session_status()) {
       new_values_cache->SetBoolean(kReportDeviceSessionStatus,

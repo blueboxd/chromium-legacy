@@ -45,10 +45,6 @@ tast_disabled_tests_from_chrome_all = [
   "ui.ChromeCrashReporterMetrics.success_breakpad",
   "ui.ChromeCrashReporterMetrics.miss_breakpad",
 
-  # https://crbug.com/1273485: Flaky.
-  "printer.ProxyAdd.epson_software_collate",
-  "printer.ProxyAdd.epson_software_uncollated",
-
   # https://crbug.com/1279285: Flaky.
   "policy.AllowWakeLocks",
 
@@ -239,8 +235,8 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.SSHFSMount.bullseye_stable",
   "crostini.SSHFSMount.buster_stable",
 
-  # https://crbug.com/1354215
-  "lacros.Basic",
+  # https://crbug.com/1359911
+  "crostini.AppEmacs",
 
   # https://crbug.com/1352525
   "apps.ContentPreview",

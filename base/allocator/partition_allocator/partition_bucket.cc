@@ -10,6 +10,7 @@
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/freeslot_bitmap.h"
+#include "base/allocator/partition_allocator/freeslot_bitmap_constants.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
@@ -585,10 +586,8 @@ PA_ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
                                                unsigned int flags,
                                                size_t slot_span_alignment) {
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(root->next_partition_page) %
-              PartitionPageSize()));
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(root->next_partition_page_end) %
-              PartitionPageSize()));
+  PA_DCHECK(!(root->next_partition_page % PartitionPageSize()));
+  PA_DCHECK(!(root->next_partition_page_end % PartitionPageSize()));
 
   size_t num_partition_pages = get_pages_per_slot_span();
   size_t slot_span_reservation_size = num_partition_pages
@@ -954,6 +953,9 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
       PA_DCHECK(free_list_entries_added);
       prev_entry->SetNext(entry);
     }
+#if BUILDFLAG(USE_FREESLOT_BITMAP)
+    FreeSlotBitmapMarkSlotAsFree(next_slot);
+#endif
     next_slot = next_slot_end;
     next_slot_end = next_slot + slot_size;
     prev_entry = entry;
@@ -961,6 +963,10 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
     free_list_entries_added++;
 #endif
   }
+
+#if BUILDFLAG(USE_FREESLOT_BITMAP)
+  FreeSlotBitmapMarkSlotAsFree(return_slot);
+#endif
 
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   // The only provisioned slot not added to the free list is the one being

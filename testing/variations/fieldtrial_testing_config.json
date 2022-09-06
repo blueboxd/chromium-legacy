@@ -1360,28 +1360,6 @@
             ]
         }
     ],
-    "AutofillParseAsync": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillParseAsync"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillParseMerchantPromoCodeFields": [
         {
             "platforms": [
@@ -2742,6 +2720,34 @@
                     },
                     "enable_features": [
                         "ChromeOSZramWriteback"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeStart": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "CandidateB",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "open_ntp_instead_of_start": "true",
+                        "show_last_active_tab_only": "true",
+                        "signin_promo_NTP_count_limit": "5",
+                        "signin_promo_NTP_reset_after_hours": "672",
+                        "signin_promo_NTP_since_first_time_shown_limit_hours": "336",
+                        "start_surface_variation": "single",
+                        "support_accessibility": "true",
+                        "tab_count_button_on_start_surface": "true",
+                        "tab_switcher_on_return_time_ms": "28800000"
+                    },
+                    "enable_features": [
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
                     ]
                 }
             ]
@@ -8104,28 +8110,6 @@
                     "name": "Enabled_20220208",
                     "enable_features": [
                         "ReadLaterReminderNotification"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ReadWritePasswordNotesBackupField": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReadWritePasswordNotesBackupField"
                     ]
                 }
             ]

@@ -791,7 +791,6 @@ extern const char kDeviceEnrollmentSubOrganization[];
 extern const char kDeviceEnrollmentAutoStart[];
 extern const char kDeviceEnrollmentCanExit[];
 extern const char kDeviceDMToken[];
-extern const char kUsersLastInputMethod[];
 extern const char kCachedMultiProfileUserBehavior[];
 extern const char kInitialLocale[];
 extern const char kDeviceRegistered[];
@@ -1143,10 +1142,6 @@ extern const char kUsageStatsEnabled[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kClientCertificateManagementAllowed[];
 extern const char kCACertificateManagementAllowed[];
-#endif
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)

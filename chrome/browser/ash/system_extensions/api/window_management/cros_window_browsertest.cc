@@ -16,9 +16,11 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/token.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system_extensions/api/test_support/system_extensions_api_browsertest.h"
 #include "chrome/browser/ash/system_extensions/api/window_management/cros_window_management_test_helper.test-mojom.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
@@ -32,6 +34,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/service_worker_context.h"
@@ -44,6 +48,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
@@ -139,6 +144,58 @@ class ServiceWorkerConsoleObserver
   base::RunLoop run_loop_;
 };
 
+Profile* GetProfile() {
+  user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  DCHECK(active_user);
+  auto* profile = ProfileHelper::Get()->GetProfileByUser(active_user);
+  DCHECK(profile);
+  return profile;
+}
+
+// Class used to wait for InstanceRegistry events.
+class InstanceRegistryEventWaiter : public apps::InstanceRegistry::Observer {
+ public:
+  InstanceRegistryEventWaiter() {
+    instance_registry_observation_.Observe(
+        &apps::AppServiceProxyFactory::GetForProfile(GetProfile())
+             ->InstanceRegistry());
+  }
+
+  ~InstanceRegistryEventWaiter() override = default;
+
+  // Returns the id of the next window that gets created.
+  base::UnguessableToken WaitForCreation() {
+    run_loop_.Run();
+    return window_id_.value();
+  }
+
+  // apps::InstanceRegistry::Observer
+  void OnInstanceUpdate(const apps::InstanceUpdate& update) override {
+    if (!update.IsCreation())
+      return;
+
+    window_id_ = update.InstanceId();
+    instance_registry_observation_.Reset();
+    run_loop_.Quit();
+  }
+
+  void OnInstanceRegistryWillBeDestroyed(
+      apps::InstanceRegistry* cache) override {
+    // This class is created and destroyed during tests so it will always be
+    // destroyed by the time the InstanceRegistry is destroyed.
+    NOTREACHED();
+  }
+
+ private:
+  base::ScopedObservation<apps::InstanceRegistry,
+                          apps::InstanceRegistry::Observer>
+      instance_registry_observation_{this};
+
+  base::RunLoop run_loop_;
+  absl::optional<base::UnguessableToken> window_id_;
+};
+
 base::FilePath GetWindowManagerExtensionDir() {
   base::FilePath test_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
@@ -163,12 +220,40 @@ class CrosWindowManagementTestHelper
   CrosWindowManagementTestHelper() = default;
   ~CrosWindowManagementTestHelper() override = default;
 
+  void OpenBrowserWindow(OpenBrowserWindowCallback callback) override {
+    InstanceRegistryEventWaiter waiter;
+    chrome::NewEmptyWindow(GetProfile());
+    base::UnguessableToken window_id = waiter.WaitForCreation();
+    std::move(callback).Run(window_id.ToString());
+  }
+
   void SetDisplays(const std::string& displays,
                    SetDisplaysCallback callback) override {
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay(displays);
 
     std::move(callback).Run();
+  }
+
+  void GetMinimumSize(const std::string& id,
+                      GetMinimumSizeCallback callback) override {
+    // Create a UnguessableToken from the passed string.
+    absl::optional<base::Token> token = base::Token::FromString(id);
+    DCHECK(token.has_value());
+
+    base::UnguessableToken target_id =
+        base::UnguessableToken::Deserialize(token->high(), token->low());
+
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(GetProfile());
+    CHECK(proxy->InstanceRegistry().ForOneInstance(
+        target_id, [callback = std::move(callback)](
+                       const apps::InstanceUpdate& update) mutable {
+          std::move(callback).Run(update.Window()
+                                      ->GetToplevelWindow()
+                                      ->delegate()
+                                      ->GetMinimumSize());
+        }));
   }
 
   void GetShelfHeight(GetShelfHeightCallback callback) override {
@@ -203,18 +288,19 @@ class CrosWindowManagementTestHelper
 class CrosWindowManagementBrowserTest : public SystemExtensionsApiBrowserTest {
  public:
   CrosWindowManagementBrowserTest()
-      : SystemExtensionsApiBrowserTest({
-            .tests_dir = kTestsDir,
-            .manifest_template = kManifestTemplate,
-            .additional_src_files = {"chrome/test/data/system_extensions/"
-                                     "cros_window_test_utils.js"},
-            .additional_gen_files =
-                {"gen/chrome/browser/ash/system_extensions/api/"
+      : SystemExtensionsApiBrowserTest(
+            {.tests_dir = kTestsDir,
+             .manifest_template = kManifestTemplate,
+             .additional_src_files = {"chrome/test/data/system_extensions/"
+                                      "cros_window_test_utils.js"},
+             .additional_gen_files = {
+                 "gen/chrome/browser/ash/system_extensions/api/"
                  "window_management/"
                  "cros_window_management_test_helper.test-mojom-lite.js",
                  "gen/ui/events/mojom/keyboard_codes.mojom-lite.js",
-                 "gen/ui/events/mojom/event_constants.mojom-lite.js"},
-        }) {
+                 "gen/ui/events/mojom/event_constants.mojom-lite.js",
+                 "gen/ui/gfx/geometry/mojom/geometry.mojom-lite.js",
+             }}) {
     AddRendererInterface(base::BindLambdaForTesting(
         [](mojo::PendingReceiver<
             system_extensions_test::mojom::CrosWindowManagementTestHelper>
@@ -371,6 +457,16 @@ IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowResizeBy) {
 }
 
 IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
+                       CrosWindowResizeBy_OverrideMinimumSize) {
+  RunTest("cros_window_resize_by_override_minimum_size.js");
+}
+
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
+                       CrosWindowResizeTo_OverrideMinimumSize) {
+  RunTest("cros_window_resize_to_override_minimum_size.js");
+}
+
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
                        CrosWindowSetFullscreen) {
   RunTest("cros_window_set_fullscreen.js");
 }
@@ -402,61 +498,11 @@ IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowFocusSingle) {
 }
 
 IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowFocusMulti) {
-  // Open browser instance to take focus.
-  chrome::NewWindow(browser());
-
   RunTest("cros_window_focus_multi.js");
 }
 
-IN_PROC_BROWSER_TEST_F(CrosWindowLegacyBrowserTest, CrosWindowClose) {
-  // Open browser instance to close outside of service worker.
-  chrome::NewWindow(browser());
-
-  aura::Window* initial = browser()->window()->GetNativeWindow();
-  aura::Window* new_window =
-      BrowserList::GetInstance()->GetLastActive()->window()->GetNativeWindow();
-
-  ASSERT_NE(initial, new_window);
-
-  // Set target id to crosWindow id of newly opened window as per instance
-  // registry.
-  std::string target_id;
-
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-  proxy->InstanceRegistry().ForEachInstance(
-      [&target_id, &new_window](const apps::InstanceUpdate& update) {
-        if (update.Window()->GetToplevelWindow() == new_window) {
-          CHECK(target_id.empty());
-          target_id = update.InstanceId().ToString();
-        }
-      });
-
-  std::string test_code = base::StringPrintf(R"(
-async function cros_test() {
-  let windows = await chromeos.windowManagement.getWindows();
-  assert_equals(windows.length, 2);
-
-  let window_to_close = windows.find(window => window.id === "%1$s");
-  assert_not_equals(undefined, window_to_close,
-      `Could not find window with id: (%1$s);`);
-
-  // TODO(b/242264794): Events are only dispatched to system extensions. Since
-  // this test doesn't use an actual System Extension, the commented out code
-  // below hangs. Uncomment once this test moves to running in a System
-  // Extension.
-  // let promise = eventPromise(chromeos.windowManagement, 'windowclosed');
-  // window_to_close.close();
-  // let e = await promise;
-  // assert_equals(e.window.id, "%1$s");
-
-  // windows = await chromeos.windowManagement.getWindows();
-  // assert_equals(windows.length, 1);
-}
-  )",
-                                             target_id.c_str());
-
-  RunTest(test_code);
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowClose) {
+  RunTest("cros_window_close.js");
 }
 
 IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,

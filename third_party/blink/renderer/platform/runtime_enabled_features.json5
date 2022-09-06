@@ -462,10 +462,6 @@
       status: "experimental",
     },
     {
-      name: "CSS3Text",
-      status: "experimental",
-    },
-    {
       // Allows positioning a positioned element relative to another one.
       // https://tabatkins.github.io/specs/css-anchor-position/
       name: "CSSAnchorPositioning",
@@ -1899,7 +1895,6 @@
     },
     {
       name: "RegionCapture",
-      origin_trial_feature_name: "RegionCapture",
       status: {"Android": "", "default": "stable"},
     },
     {
@@ -1918,7 +1913,7 @@
     },
     {
       name: "RenderBlockingStatus",
-      status: "experimental"
+      status: "stable"
     },
     {
       // The renderpriority attribute feature.

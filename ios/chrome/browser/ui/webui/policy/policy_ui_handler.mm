@@ -21,6 +21,7 @@
 #import "components/policy/core/browser/policy_conversions.h"
 #import "components/policy/core/browser/webui/json_generation.h"
 #import "components/policy/core/browser/webui/machine_level_user_cloud_policy_status_provider.h"
+#import "components/policy/core/browser/webui/policy_webui_constants.h"
 #import "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #import "components/policy/core/common/policy_map.h"
 #import "components/policy/core/common/policy_types.h"
@@ -157,7 +158,7 @@ std::string PolicyUIHandler::GetPoliciesAsJson() {
       ChromeBrowserState::FromWebUIIOS(web_ui()));
 
   return policy::GenerateJson(
-      std::move(client), GetStatusValue(/*include_box_legend_key=*/false),
+      std::move(client), GetStatusValue(),
       policy::JsonGenerationParams()
           .with_application_name(l10n_util::GetStringUTF8(IDS_IOS_PRODUCT_NAME))
           .with_channel_name(GetChannelString(GetChannel()))
@@ -196,20 +197,29 @@ base::Value::Dict PolicyUIHandler::GetPolicyNames() const {
   }
 
   base::Value::Dict chrome_values;
-  chrome_values.Set("name", "Chrome Policies");
-  chrome_values.Set("policyNames", std::move(chrome_policy_names));
+  chrome_values.Set(policy::kNameKey, policy::kChromePoliciesName);
+  chrome_values.Set(policy::kPolicyNamesKey, std::move(chrome_policy_names));
 
   base::Value::Dict names;
-  names.Set("chrome", std::move(chrome_values));
+  names.Set(policy::kChromePoliciesId, std::move(chrome_values));
   return names;
 }
 
-base::Value::List PolicyUIHandler::GetPolicyValues() const {
+base::Value::Dict PolicyUIHandler::GetPolicyValues() const {
+  base::Value::List policy_ids;
+  policy_ids.Append(policy::kChromePoliciesId);
+
   auto client = std::make_unique<PolicyConversionsClientIOS>(
       ChromeBrowserState::FromWebUIIOS(web_ui()));
-  return policy::ArrayPolicyConversions(std::move(client))
-      .EnableConvertValues(true)
-      .ToValueList();
+  base::Value::Dict policy_values =
+      policy::ChromePolicyConversions(std::move(client))
+          .EnableConvertValues(true)
+          .ToValueDict();
+
+  base::Value::Dict dict;
+  dict.Set(policy::kPolicyValuesKey, std::move(policy_values));
+  dict.Set(policy::kPolicyIdsKey, std::move(policy_ids));
+  return dict;
 }
 
 void PolicyUIHandler::HandleListenPoliciesUpdates(
@@ -224,12 +234,11 @@ void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
 
 void PolicyUIHandler::SendPolicies() {
   base::Value::Dict names = GetPolicyNames();
-  base::Value::List values = GetPolicyValues();
+  base::Value::Dict values = GetPolicyValues();
   web_ui()->FireWebUIListener("policies-updated", names, values);
 }
 
-base::Value::Dict PolicyUIHandler::GetStatusValue(
-    bool include_box_legend_key) const {
+base::Value::Dict PolicyUIHandler::GetStatusValue() const {
   base::Value::Dict machine_status = machine_status_provider_->GetStatus();
 
   // Given that it's usual for users to bring their own devices and the fact
@@ -238,17 +247,12 @@ base::Value::Dict PolicyUIHandler::GetStatusValue(
   machine_status.Remove("machine");
 
   base::Value::Dict status;
-  if (!machine_status.empty()) {
-    if (include_box_legend_key) {
-      machine_status.Set("boxLegendKey", "statusDevice");
-    }
-    status.Set("machine", std::move(machine_status));
-  }
+  status.Set("machine", std::move(machine_status));
   return status;
 }
 
 void PolicyUIHandler::SendStatus() {
-  base::Value::Dict status = GetStatusValue(/*include_box_legend_key=*/true);
+  base::Value::Dict status = GetStatusValue();
   web_ui()->FireWebUIListener("status-updated", status);
 }
 

@@ -26,7 +26,7 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
 
   void CookiesSettingsLinkClicked(const ui::Event& event);
 
-  void FPSSettingsButtonClicked(const ui::Event& event);
+  void FpsSettingsButtonClicked(const ui::Event& event);
 
   void OnToggleButtonPressed();
 
@@ -35,6 +35,12 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
   // information if necessary.
   void InitCookiesDialogButton();
 
+  //  Checks if |blocking_third_party_cookies_row_| should be initiated and if
+  //  so does it  and sets its info.
+  void SetBlockingThirdPartyCookiesInfo(const CookiesNewInfo& cookie_info,
+                                        bool is_fps_allowed);
+
+  // Updates toggles state according to info.
   void UpdateBlockingThirdPartyCookiesToggle(bool are_cookies_blocked);
 
   // Creates the child view of |blocking_third_party_cookies_row_| which is
@@ -46,9 +52,14 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
   // information if necessary.
   void InitBlockingThirdPartyCookiesRow();
 
+  //  Checks if |fps_button_| should be initiated and if so does it and sets its
+  //  info.
+  void SetFpsCookiesInfo(absl::optional<CookiesFpsInfo> fps_info,
+                         bool is_fps_allowed);
+
   // Ensures the first-party sets information UI is present, with
   // placeholder information if necessary.
-  void InitFPSButton();
+  void InitFpsButton();
 
   raw_ptr<PageInfo> presenter_;
 

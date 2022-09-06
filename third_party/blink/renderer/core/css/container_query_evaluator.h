@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CONTAINER_QUERY_EVALUATOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/container_selector.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 #include "third_party/blink/renderer/core/css/style_recalc_change.h"
@@ -23,7 +24,6 @@ class Document;
 class Element;
 class MatchResult;
 class StyleRecalcContext;
-class ContainerSelector;
 
 class CORE_EXPORT ContainerQueryEvaluator final
     : public GarbageCollected<ContainerQueryEvaluator> {
@@ -35,6 +35,7 @@ class CORE_EXPORT ContainerQueryEvaluator final
   static bool EvalAndAdd(const Element& matching_element,
                          const StyleRecalcContext&,
                          const ContainerQuery&,
+                         ContainerSelectorCache&,
                          MatchResult&);
 
   // Creates an evaluator with no containment, hence all queries evaluated
@@ -95,8 +96,6 @@ class CORE_EXPORT ContainerQueryEvaluator final
 
   Change ComputeSizeChange() const;
   Change ComputeStyleChange() const;
-  bool Eval(const ContainerQuery&) const;
-  bool Eval(const ContainerQuery&, MediaQueryResultFlags*) const;
 
   struct Result {
     // Main evaluation result.
@@ -107,6 +106,8 @@ class CORE_EXPORT ContainerQueryEvaluator final
     // Indicates what we need to invalidate if the result value changes.
     Change change = Change::kNone;
   };
+
+  Result Eval(const ContainerQuery&) const;
 
   // Evaluate and add a dependent query to this evaluator. During calls to
   // SizeContainerChanged/StyleChanged, all dependent queries are checked to see

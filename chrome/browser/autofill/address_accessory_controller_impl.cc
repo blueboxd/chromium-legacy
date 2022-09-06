@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
@@ -49,8 +50,10 @@ void AddProfileInfoAsSelectableField(UserInfo* info,
   if (type == ServerFieldType::NAME_MIDDLE && field.empty()) {
     field = profile->GetRawInfo(ServerFieldType::NAME_MIDDLE_INITIAL);
   }
-  info->add_field(AccessorySheetField(field, field, /*is_password=*/false,
-                                      /*selectable=*/true));
+  info->add_field(AccessorySheetField(
+      /*display_text=*/field, /*text_to_fill=*/field,
+      /*a11y_description=*/field, /*id=*/std::string(), /*is_obfuscated=*/false,
+      /*selectable=*/true));
 }
 
 UserInfo TranslateProfile(const AutofillProfile* profile) {
@@ -158,6 +161,8 @@ void AddressAccessoryControllerImpl::OnToggleChanged(
 }
 
 void AddressAccessoryControllerImpl::RefreshSuggestions() {
+  TRACE_EVENT0("passwords",
+               "AddressAccessoryControllerImpl::RefreshSuggestions");
   if (!personal_data_manager_) {
     personal_data_manager_ =
         autofill::PersonalDataManagerFactory::GetForProfile(

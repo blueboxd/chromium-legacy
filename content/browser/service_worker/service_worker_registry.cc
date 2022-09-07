@@ -563,6 +563,21 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
       static_cast<const int64_t>(registration_id), key, value);
 }
 
+void ServiceWorkerRegistry::UpdateFetchHandlerType(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    blink::mojom::ServiceWorkerFetchHandlerType fetch_handler_type,
+    StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::UpdateFetchHandlerType,
+      base::BindOnce(&ServiceWorkerRegistry::DidUpdateRegistration,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      static_cast<const int64_t>(registration_id), key,
+      static_cast<const blink::mojom::ServiceWorkerFetchHandlerType>(
+          fetch_handler_type));
+}
+
 void ServiceWorkerRegistry::StoreUncommittedResourceId(
     int64_t resource_id,
     const blink::StorageKey& key) {
@@ -902,9 +917,12 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
     version->set_used_features(std::move(used_features));
     version->set_cross_origin_embedder_policy(
         data.cross_origin_embedder_policy);
-    version->set_policy_container_host(
-        base::MakeRefCounted<PolicyContainerHost>(
-            PolicyContainerPolicies(*data.policy_container_policies)));
+    // policy_container_host could be null for registration restored from old DB
+    if (data.policy_container_policies) {
+      version->set_policy_container_host(
+          base::MakeRefCounted<PolicyContainerHost>(
+              PolicyContainerPolicies(*data.policy_container_policies)));
+    }
   }
   version->set_script_response_time_for_devtools(data.script_response_time);
 

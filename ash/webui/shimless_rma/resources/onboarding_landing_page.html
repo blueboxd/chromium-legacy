@@ -14,7 +14,6 @@
 
   #unqualifiedComponentsLink {
     color: var(--cros-link-color);
-    text-decoration: none;
   }
 
   .button-spinner {
@@ -30,7 +29,7 @@
 
 <base-page>
   <div slot="left-pane">
-    <h1>[[i18n('welcomeTitleText')]]</h1>
+    <h1 tabindex="-1">[[i18n('welcomeTitleText')]]</h1>
     <div class="instructions">[[i18n('beginRmaWarningText')]]</div>
     <div id="verificationMessage" class="icon-message">
       <paper-spinner-lite id="busyIcon" class="small-spinner"

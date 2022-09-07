@@ -816,8 +816,10 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
         To<LayoutBlock>(Node().GetLayoutBox());
     if (auto baseline_offset = layout_block->BaselineForEmptyLine(
             layout_block->IsHorizontalWritingMode() ? kHorizontalLine
-                                                    : kVerticalLine))
+                                                    : kVerticalLine)) {
       container_builder_.SetBaseline(*baseline_offset);
+      container_builder_.SetLastBaseline(*baseline_offset);
+    }
   }
 
   // Collapse annotation overflow and padding.
@@ -1025,6 +1027,10 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
 
   // Adjust the position of the final baseline if needed.
   container_builder_.SetLastBaselineToBlockEndMarginEdgeIfNeeded();
+  if (ConstraintSpace().BaselineAlgorithmType() ==
+      NGBaselineAlgorithmType::kInlineBlock) {
+    container_builder_.SetUseLastBaselineForInlineBaseline();
+  }
 
   // An exclusion space is confined to nodes within the same formatting context.
   if (ConstraintSpace().IsNewFormattingContext())
@@ -2740,7 +2746,7 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
   // Check if we've already found an appropriate baseline.
   if (container_builder_.Baseline() &&
       ConstraintSpace().BaselineAlgorithmType() ==
-          NGBaselineAlgorithmType::kFirstLine)
+          NGBaselineAlgorithmType::kDefault)
     return;
 
   if (child.IsLineBox()) {
@@ -2772,8 +2778,8 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
       container_builder_.SetBaseline(baseline);
 
     // Set the last baseline only if required.
-    if (ConstraintSpace().BaselineAlgorithmType() !=
-        NGBaselineAlgorithmType::kFirstLine)
+    if (ConstraintSpace().BaselineAlgorithmType() ==
+        NGBaselineAlgorithmType::kInlineBlock)
       container_builder_.SetLastBaseline(baseline);
 
     return;
@@ -2789,13 +2795,14 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromBlockChild(
 
   // When computing the baseline for an inline-block, table's don't contribute
   // to any baselines.
-  if (child.IsTableNG() && ConstraintSpace().BaselineAlgorithmType() !=
-                               NGBaselineAlgorithmType::kFirstLine) {
+  if (child.IsTableNG() && ConstraintSpace().BaselineAlgorithmType() ==
+                               NGBaselineAlgorithmType::kInlineBlock) {
     return;
   }
 
+  const auto& physical_fragment = To<NGPhysicalBoxFragment>(child);
   NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                         To<NGPhysicalBoxFragment>(child));
+                         physical_fragment);
 
   if (!container_builder_.Baseline()) {
     if (auto baseline = fragment.FirstBaseline())
@@ -2803,13 +2810,13 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromBlockChild(
   }
 
   // Set the last baseline only if required.
-  if (ConstraintSpace().BaselineAlgorithmType() !=
-      NGBaselineAlgorithmType::kFirstLine) {
-    // TODO(ikilpatrick): Select baseline depending on type.
-    if (auto last_baseline = fragment.LastBaseline())
-      container_builder_.SetLastBaseline(block_offset + *last_baseline);
-    else if (auto first_baseline = fragment.FirstBaseline())
-      container_builder_.SetLastBaseline(block_offset + *first_baseline);
+  if (ConstraintSpace().BaselineAlgorithmType() ==
+      NGBaselineAlgorithmType::kInlineBlock) {
+    const auto baseline = physical_fragment.UseLastBaselineForInlineBaseline()
+                              ? fragment.LastBaseline()
+                              : fragment.FirstBaseline();
+    if (baseline)
+      container_builder_.SetLastBaseline(block_offset + *baseline);
   }
 }
 

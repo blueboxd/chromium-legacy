@@ -81,8 +81,8 @@ export function onboardingSelectComponentsPageTest() {
    * @return {!Promise}
    */
   function clickReworkButton() {
-    const reworkFlowLink = component.shadowRoot.querySelector('#reworkFlowLink')
-                               .shadowRoot.querySelector('a');
+    const reworkFlowLink =
+        component.shadowRoot.querySelector('#reworkFlowLink');
     assertTrue(!!reworkFlowLink);
     reworkFlowLink.click();
     return flushTasks();
@@ -217,8 +217,7 @@ export function onboardingSelectComponentsPageTest() {
 
     await flushTasks();
 
-    // At the beginning we should be focused on the first clickable component,
-    // which is the camera.
+    componentCameraButton.click();
     assertDeepEquals(componentCameraButton, getDeepActiveElement());
     // We are at the beginning of the list, so left arrow should do nothing.
     window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft'}));

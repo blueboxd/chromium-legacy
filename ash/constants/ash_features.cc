@@ -778,10 +778,6 @@ const base::Feature kFilesTrash{"FilesTrash",
 const base::Feature kFilesWebDriveOffice{"FilesWebDriveOffice",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables filters in Files app Recents view.
-const base::Feature kFiltersInRecents{"FiltersInRecents",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables filters in Files app Recents view V2.
 const base::Feature kFiltersInRecentsV2{"FiltersInRecentsV2",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1268,10 +1264,6 @@ const base::Feature kPhoneHubCallNotification{
 const base::Feature kPhoneHubMonochromeNotificationIcons{
     "PhoneHubMonochromeNotificationIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables rounded corners for the Picture-in-picture window.
-const base::Feature kPipRoundedCorners{"PipRoundedCorners",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
 const base::Feature kPreferConstantFrameRate{"PreferConstantFrameRate",
@@ -1481,7 +1473,7 @@ const base::Feature kShelfPalmRejectionSwipeOffset{
 
 // Enables or disables the new shimless rma flow.
 const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables launching Shimless RMA as a standalone app.
 const base::Feature kShimlessRMAEnableStandalone{
@@ -1932,17 +1924,22 @@ bool IsConsumerAutoUpdateToggleAllowed() {
 }
 
 bool IsCrosPrivacyHubEnabled() {
-  return base::FeatureList::IsEnabled(kCrosPrivacyHub) ||
+  return IsCrosPrivacyHubDogfoodEnabled() || IsCrosPrivacyHubMVPEnabled() ||
          IsCrosPrivacyHubFutureEnabled();
 }
 
 bool IsCrosPrivacyHubDogfoodEnabled() {
   return base::FeatureList::IsEnabled(kCrosPrivacyHubDogfood) ||
-         IsCrosPrivacyHubEnabled();
+         IsCrosPrivacyHubMVPEnabled();
 }
 
 bool IsCrosPrivacyHubFutureEnabled() {
   return base::FeatureList::IsEnabled(kCrosPrivacyHubFuture);
+}
+
+bool IsCrosPrivacyHubMVPEnabled() {
+  return base::FeatureList::IsEnabled(kCrosPrivacyHub) ||
+         IsCrosPrivacyHubFutureEnabled();
 }
 
 bool IsCrosNextWMPEnabled() {
@@ -2369,10 +2366,6 @@ bool IsPinAutosubmitBackfillFeatureEnabled() {
 
 bool IsPinAutosubmitFeatureEnabled() {
   return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmit);
-}
-
-bool IsPipRoundedCornersEnabled() {
-  return base::FeatureList::IsEnabled(kPipRoundedCorners);
 }
 
 bool IsPolyDevicePairingAllowed() {

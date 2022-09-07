@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/model/ambient_weather_model.h"
@@ -12,6 +13,7 @@
 #include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/glanceables_restore_view.h"
 #include "ash/glanceables/glanceables_up_next_view.h"
+#include "ash/glanceables/glanceables_util.h"
 #include "ash/glanceables/glanceables_view.h"
 #include "ash/glanceables/glanceables_weather_view.h"
 #include "ash/glanceables/glanceables_welcome_label.h"
@@ -32,6 +34,7 @@
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/time/time.h"
@@ -124,6 +127,13 @@ class GlanceablesTest : public AshTestBase {
   GlanceablesUpNextView* GetUpNextView() {
     return controller_->view_->up_next_view_;
   }
+
+  std::vector<std::tuple<views::Label*, views::Label*>>
+  GetEventsListItemsViews() {
+    return GetUpNextView()->events_list_items_views_;
+  }
+
+  views::Label* GetNoEventsLabel() { return GetUpNextView()->no_events_label_; }
 
   views::Label* GetRestoreSessionLabel() {
     return controller_->view_->restore_session_label_;
@@ -230,7 +240,7 @@ TEST_F(GlanceablesTest, UpNextViewRendersCorrectly) {
   SimulateCalendarEventsFetched();
 
   // Events list contains rendered event items inside.
-  const auto& items = GetUpNextView()->events_list_items_views_for_test();
+  const auto& items = GetEventsListItemsViews();
   EXPECT_EQ(items.size(), 2u);
 
   EXPECT_EQ(std::get<0>(items[0])->GetText(),
@@ -256,7 +266,7 @@ TEST_F(GlanceablesTest, UpNextViewRendersCorrectlyIn24HrClockFormat) {
   SimulateCalendarEventsFetched();
 
   // Events list contains rendered event items inside.
-  const auto& items = GetUpNextView()->events_list_items_views_for_test();
+  const auto& items = GetEventsListItemsViews();
   EXPECT_EQ(items.size(), 2u);
 
   EXPECT_EQ(std::get<0>(items[0])->GetText(),
@@ -265,6 +275,26 @@ TEST_F(GlanceablesTest, UpNextViewRendersCorrectlyIn24HrClockFormat) {
 
   EXPECT_EQ(std::get<0>(items[1])->GetText(), u"Future event, later today");
   EXPECT_EQ(std::get<1>(items[1])->GetText(), u"21:30 – 22:30");
+}
+
+TEST_F(GlanceablesTest, UpNextViewShowsNoEventsLabel) {
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
+  base::subtle::ScopedTimeClockOverrides time_override(
+      []() {
+        base::Time now;
+        // `SimulateCalendarEventsFetched()` call below won't have any events
+        // for this date/time.
+        EXPECT_TRUE(base::Time::FromString("12 Jan 2022 13:00 GMT", &now));
+        return now;
+      },
+      nullptr, nullptr);
+
+  controller_->CreateUi();
+  SimulateCalendarEventsFetched();
+
+  EXPECT_EQ(GetEventsListItemsViews().size(), 0u);
+  EXPECT_TRUE(GetNoEventsLabel());
+  EXPECT_EQ(GetNoEventsLabel()->GetText(), u"No events today");
 }
 
 TEST_F(GlanceablesTest, RestoreViewRendersScreenshot) {
@@ -402,6 +432,25 @@ TEST_F(GlanceablesTest, UnminimizingOneWindowRestoresAllWindows) {
   // Both windows are restored.
   EXPECT_TRUE(WindowState::Get(back_window.get())->IsNormalStateType());
   EXPECT_TRUE(WindowState::Get(front_window.get())->IsNormalStateType());
+}
+
+TEST_F(GlanceablesTest, RecordSignoutScreenshotDurationMetric) {
+  PrefService* local_state = Shell::Get()->local_state();
+
+  // Simulate a previous session that recorded a duration.
+  const base::TimeDelta duration = base::Milliseconds(123);
+  glanceables_util::SaveSignoutScreenshotDuration(local_state, duration);
+
+  // Recording the metric records a histogram.
+  base::HistogramTester histograms;
+  glanceables_util::RecordSignoutScreenshotDurationMetric(local_state);
+  histograms.ExpectUniqueTimeSample("Ash.Glanceables.SignoutScreenshotDuration",
+                                    duration, 1);
+
+  // Pref is reset.
+  const base::TimeDelta updated_duration =
+      glanceables_util::GetSignoutScreenshotDurationForTest(local_state);
+  EXPECT_EQ(0, updated_duration.InMilliseconds());
 }
 
 }  // namespace ash

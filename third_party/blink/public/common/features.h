@@ -147,6 +147,12 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // Enables the Prerender2 feature: https://crbug.com/1126305
 // But see comments in the .cc file also.
 BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
+
+// Enables the multiple prerendering in a sequential way:
+// https://crbug.com/1355151
+BLINK_COMMON_EXPORT extern const base::Feature
+    kPrerender2SequentialPrerendering;
+
 // The number of prerenderings that can run concurrently. This only applies for
 // prerenderings triggered by speculation rules.
 BLINK_COMMON_EXPORT extern const char
@@ -169,6 +175,9 @@ BLINK_COMMON_EXPORT extern const char
 // Enables same-site cross origin Prerender2
 BLINK_COMMON_EXPORT extern const base::Feature
     kSameSiteCrossOriginForSpeculationRulesPrerender;
+// Enables to keep prerenderings alive in the background when their visibility
+// state changes to HIDDEN.
+BLINK_COMMON_EXPORT extern const base::Feature kPrerender2InBackground;
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 // Returns true when the same-site cross origin Prerender2 feature is

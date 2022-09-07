@@ -223,14 +223,24 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (!is_inside_prerender_frame_tree)
     return;
 
+  const bool is_prerender_main_frame =
+      navigation_request->GetFrameTreeNodeId() == frame_tree_node_id_;
+
+  if (is_prerender_main_frame) {
+    GetPrerenderedMainFrameHost()
+        ->delegate()
+        ->GetPrerenderHostRegistry()
+        ->OnPrerenderNavigationFinished(
+            navigation_request->GetFrameTreeNodeId());
+  }
+
   // Cancel prerendering on navigation request failure.
   //
   // Check net::Error here rather than PrerenderNavigationThrottle as CSP
   // blocking occurs before NavigationThrottles so cannot be observed in
   // NavigationThrottle::WillFailRequest().
   net::Error net_error = navigation_request->GetNetErrorCode();
-  const bool is_prerender_main_frame =
-      navigation_request->GetFrameTreeNodeId() == frame_tree_node_id_;
+
   absl::optional<FinalStatus> status;
   if (net_error == net::Error::ERR_BLOCKED_BY_CSP) {
     status = FinalStatus::kNavigationRequestBlockedByCsp;
@@ -259,6 +269,11 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
 void PrerenderHost::OnVisibilityChanged(Visibility visibility) {
   TRACE_EVENT("navigation", "PrerenderHost::OnVisibilityChanged");
+  // Keep prerenderings alive in the background when their visibility state
+  // changes to HIDDEN if the feature is enabled.
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground))
+    return;
+
   if (visibility == Visibility::HIDDEN) {
     Cancel(FinalStatus::kTriggerBackgrounded);
   }

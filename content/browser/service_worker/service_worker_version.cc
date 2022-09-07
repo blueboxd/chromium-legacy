@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1216,6 +1217,18 @@ void ServiceWorkerVersion::OnStarted(
   blink::ServiceWorkerStatusCode status =
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
+  // TODO(crbug.com/1360324): update the live version if it is feasible.
+  if (status == blink::ServiceWorkerStatusCode::kOk && fetch_handler_type_ &&
+      fetch_handler_type_ != fetch_handler_type) {
+    context_->registry()->UpdateFetchHandlerType(
+        registration_id_, key_, fetch_handler_type,
+        base::BindOnce([](blink::ServiceWorkerStatusCode status) {
+          // Ignore errors; bumping the update fetch handler type is
+          // just best-effort.
+        }));
+    base::UmaHistogramEnumeration(
+        "ServiceWorker.OnStarted.UpdatedFetchHandlerType", fetch_handler_type);
+  }
   if (status == blink::ServiceWorkerStatusCode::kOk && !fetch_handler_type_) {
     set_fetch_handler_type(fetch_handler_type);
   }
@@ -1978,9 +1991,11 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   params->ukm_source_id = ukm_source_id_;
 
-  DCHECK(policy_container_host_);
-  params->policy_container =
-      policy_container_host_->CreatePolicyContainerForBlink();
+  // policy_container_host could be null for registration restored from old DB
+  if (policy_container_host_) {
+    params->policy_container =
+        policy_container_host_->CreatePolicyContainerForBlink();
+  }
 
   embedded_worker_->Start(std::move(params),
                           base::BindOnce(&ServiceWorkerVersion::OnStartSent,

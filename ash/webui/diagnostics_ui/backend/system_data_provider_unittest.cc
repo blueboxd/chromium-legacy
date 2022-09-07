@@ -41,9 +41,16 @@ namespace {
 namespace healthd_mojom = cros_healthd::mojom;
 
 constexpr char kSystemDataError[] = "ChromeOS.DiagnosticsUi.Error.System";
+constexpr char kBatteryDataError[] = "ChromeOS.DiagnosticsUi.Error.Battery";
 
 constexpr char kProbeErrorBatteryInfo[] =
     "ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.BatteryInfo";
+constexpr char kProbeErrorCpuInfo[] =
+    "ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.CpuInfo";
+constexpr char kProbeErrorMemoryInfo[] =
+    "ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.MemoryInfo";
+constexpr char kProbeErrorSystemInfo[] =
+    "ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.SystemInfo";
 
 void SetProbeTelemetryInfoResponse(healthd_mojom::BatteryInfoPtr battery_info,
                                    healthd_mojom::CpuInfoPtr cpu_info,
@@ -468,6 +475,20 @@ void VerifySystemDataErrorBucketCounts(
   tester.ExpectBucketCount(kSystemDataError, metrics::DataError::kNotANumber,
                            expected_not_a_number_error);
   tester.ExpectBucketCount(kSystemDataError,
+                           metrics::DataError::kExpectationNotMet,
+                           expected_expectation_not_met_error);
+}
+
+void VerifyBatteryDataErrorBucketCounts(
+    const base::HistogramTester& tester,
+    size_t expected_no_data_error,
+    size_t expected_not_a_number_error,
+    size_t expected_expectation_not_met_error) {
+  tester.ExpectBucketCount(kBatteryDataError, metrics::DataError::kNoData,
+                           expected_no_data_error);
+  tester.ExpectBucketCount(kBatteryDataError, metrics::DataError::kNotANumber,
+                           expected_not_a_number_error);
+  tester.ExpectBucketCount(kBatteryDataError,
                            metrics::DataError::kExpectationNotMet,
                            expected_expectation_not_met_error);
 }
@@ -1431,6 +1452,209 @@ TEST_F(SystemDataProviderTest, RecordProbeError_BatteryInfo) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+// Validate expected metric triggered when request for CpuInfo returns a
+// ProbeError.
+TEST_F(SystemDataProviderTest, RecordProbeError_CpuInfo) {
+  base::HistogramTester histogram_tester;
+  // Setup Timer
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  system_data_provider_->SetCpuUsageTimerForTesting(std::move(timer));
+
+  FakeCpuUsageObserver cpu_usage_observer;
+  system_data_provider_->ObserveCpuUsage(
+      cpu_usage_observer.receiver.BindNewPipeAndPassRemote());
+
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorCpuInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/0);
+  auto info = healthd_mojom::TelemetryInfo::New();
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      info);
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyProbeErrorBucketCounts(
+      histogram_tester, kProbeErrorCpuInfo, /*expected_unknown_error=*/0,
+      /*expected_parse_error=*/0, /*expected_service_unavailable=*/0,
+      /*expected_system_utility_error=*/0, /*expected_file_read_error=*/0);
+
+  auto cpu_result = healthd_mojom::CpuResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kFileReadError));
+  info->cpu_result = std::move(cpu_result);
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      info);
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorCpuInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/1);
+}
+
+// Validate expected metric triggered when request for MemoryInfo returns a
+// ProbeError.
+TEST_F(SystemDataProviderTest, RecordProbeError_MemoryInfo) {
+  base::HistogramTester histogram_tester;
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorMemoryInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/0);
+
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  system_data_provider_->SetMemoryUsageTimerForTesting(std::move(timer));
+  FakeMemoryUsageObserver observer;
+  system_data_provider_->ObserveMemoryUsage(
+      observer.receiver.BindNewPipeAndPassRemote());
+  // Clear any pending observerations from initializing.
+  base::RunLoop().RunUntilIdle();
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorMemoryInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/0);
+
+  auto info = healthd_mojom::TelemetryInfo::New();
+  auto memory_result = healthd_mojom::MemoryResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kSystemUtilityError));
+  info->memory_result = std::move(memory_result);
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      info);
+
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorMemoryInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/1,
+                               /*expected_file_read_error=*/0);
+}
+
+// Validate expected metric triggered when request for SystemInfo returns a
+// ProbeError.
+TEST_F(SystemDataProviderTest, RecordProbeError_SystemInfo) {
+  base::HistogramTester histogram_tester;
+  VerifyProbeErrorBucketCounts(
+      histogram_tester, kProbeErrorSystemInfo, /*expected_unknown_error=*/0,
+      /*expected_parse_error=*/0, /*expected_service_unavailable=*/0,
+      /*expected_system_utility_error=*/0, /*expected_file_read_error=*/0);
+
+  auto system_result = healthd_mojom::SystemResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kServiceUnavailable));
+  auto info = healthd_mojom::TelemetryInfo::New();
+  info->system_result = std::move(system_result);
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      info);
+
+  base::RunLoop run_loop;
+  system_data_provider_->GetSystemInfo(
+      base::BindLambdaForTesting([&](mojom::SystemInfoPtr ptr) {
+        ASSERT_TRUE(ptr);
+        VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorSystemInfo,
+                                     /*expected_unknown_error=*/0,
+                                     /*expected_parse_error=*/0,
+                                     /*expected_service_unavailable=*/1,
+                                     /*expected_system_utility_error=*/0,
+                                     /*expected_file_read_error=*/0);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Validate expected metric ExpectationNotMet error triggered when
+// charge_full_design value from battery_info is zero.
+TEST_F(SystemDataProviderTest, RecordBatteryDataError_ChargeFullDesignZero) {
+  base::HistogramTester histogram_tester;
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/0);
+
+  const std::string vendor = "fake_vendor";
+  healthd_mojom::BatteryInfoPtr battery_info_all_zero =
+      CreateCrosHealthdBatteryInfoResponse(vendor, /*charge_full_design*/ 0);
+  SetProbeTelemetryInfoResponse(std::move(battery_info_all_zero),
+                                /*cpu_info=*/nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+
+  base::RunLoop run_loop;
+  system_data_provider_->GetBatteryInfo(
+      base::BindLambdaForTesting([&](mojom::BatteryInfoPtr ptr) {
+        ASSERT_TRUE(ptr);
+        VerifyBatteryDataErrorBucketCounts(
+            histogram_tester,
+            /*expected_no_data_error=*/0,
+            /*expected_not_a_number_error=*/0,
+            /*expected_expectation_not_met_error=*/1);
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Validate expected metric ExpectationNotMet error triggered when
+// charge_full value from battery_info is zero.
+TEST_F(SystemDataProviderTest, RecordBatteryDataError_ChargeFullZero) {
+  base::HistogramTester histogram_tester;
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/0);
+
+  const std::string vendor = "fake_vendor";
+  healthd_mojom::BatteryInfoPtr battery_info_charge_full_zero =
+      CreateCrosHealthdBatteryInfoResponse(vendor, /*charge_full_design*/ 1);
+  SetProbeTelemetryInfoResponse(std::move(battery_info_charge_full_zero),
+                                /*cpu_info=*/nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+
+  // Registering as an observer should trigger one update.
+  FakeBatteryHealthObserver health_observer;
+  system_data_provider_->ObserveBatteryHealth(
+      health_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/1);
+}
+
+// Validate expected metric ExpectationNotMet error triggered when
+// has battery info mismatch from two sources.
+TEST_F(SystemDataProviderTest, RecordBatteryDataError_HasBatteryInfoMismatch) {
+  base::HistogramTester histogram_tester;
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/0);
+
+  // Registering as an observer should trigger one update.
+  FakeBatteryChargeStatusObserver charge_status_observer;
+  system_data_provider_->ObserveBatteryChargeStatus(
+      charge_status_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/1);
 }
 
 }  // namespace ash::diagnostics

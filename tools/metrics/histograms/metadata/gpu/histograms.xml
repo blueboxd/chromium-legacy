@@ -304,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D11FeatureLevel" enum="D3DFeatureLevel"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D11InitializeResult" enum="D3D11InitializeResult"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -329,7 +329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D9InitializeResult" enum="D3D9InitializeResult"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -376,8 +376,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="GPU.AppHelpIsLoaded" enum="Boolean" expires_after="2023-02-19">
+  <owner>zmo@chromium.org</owner>
+  <owner>spvw@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Records whether AppHelp.dll is loaded at GPU initialization. Only recorded
+    on Windows platform at GPU process launch time.
+
+    It is not yet known what exactly is triggering the load of AppHelp.dll, and
+    so we can't be sure that AppHelp.dll won't be loaded after this is
+    collected, even if this metric is false.
+
+    A bug tracking metric collection related to the application compatibility
+    layer can be found at crbug.com/1357617.
+
+    Part of a performance investigation that Catan is doing into GPU startup
+    time.
+  </summary>
+</histogram>
+
 <histogram name="GPU.BlocklistFeatureTestResults"
-    enum="GPUBlocklistFeatureTestResults" expires_after="2023-01-01">
+    enum="GPUBlocklistFeatureTestResults" expires_after="2023-03-05">
   <owner>vmiura@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -397,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.CanvasOopRaster.OopRasterAndGpuAcceleration"
-    enum="CanvasOopRasterAndGpuAcceleration" expires_after="2023-01-01">
+    enum="CanvasOopRasterAndGpuAcceleration" expires_after="2023-03-05">
   <owner>vasilyt@chromium.org</owner>
   <owner>nazabris@microsoft.com</owner>
   <owner>jochin@microsoft.com</owner>
@@ -476,7 +496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.D3DShaderModel" enum="ShaderModel"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -531,7 +551,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.DirectComposition.DCLayer.YUVOverlayCount"
-    units="overlays" expires_after="2023-01-01">
+    units="overlays" expires_after="2023-03-05">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -847,7 +867,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GLImplementation" enum="GLImplementation"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -899,7 +919,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessExitCode" enum="GPUProcessExitCode"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -917,7 +937,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessLaunchTime" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>vmiura@chromium.org</owner>
   <summary>
     Startup time of the GPU process as measured by the GPU process host.
@@ -938,7 +958,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessTerminationStatus2" enum="GpuTerminationStatus"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>vmiura@chromium.org</owner>
   <summary>
     Counts for each time the GPU Process Host detects the process dies.
@@ -972,7 +992,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.InitializeOneOffMediumTime" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -1418,7 +1438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.SoftwareRendering" enum="BooleanSoftwareRendering"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1678,9 +1698,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DelegatedCompositing.Status" enum="DelegatedStatus"
-    expires_after="2022-10-09">
+    expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     An enum status result for attempted delegated compositing (success or
     failure reason) recorded every drawn frame. Currently only recorded for
@@ -1689,9 +1710,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayNumProposedCandidates"
-    units="units" expires_after="2023-02-26">
+    units="units" expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
-  <owner>dcastagna@chromium.org</owner>
+  <owner>khaslett@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     A count of the number of proposed overlay candidates available for overlay
     selection. Recorded every time a frame is rendered by the display
@@ -1700,9 +1722,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayQuadMaterial"
-    enum="OverlayQuadMaterial" expires_after="2023-02-26">
+    enum="OverlayQuadMaterial" expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
-  <owner>dcastagna@chromium.org</owner>
+  <owner>khaslett@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     Quad material for current promoted overlay, per frame. Recorded every time a
     frame is rendered by the display compositor.
@@ -1710,9 +1733,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayStrategy"
-    enum="OverlayStrategies" expires_after="2023-01-29">
+    enum="OverlayStrategies" expires_after="2023-06-09">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     Overlay strategies used to promote Hardware Overlays, once or more per
     frame. Recorded every time a frame is rendered by the display compositor, or
@@ -1721,9 +1745,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlaySwitchInterval" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
-  <owner>dcastagna@chromium.org</owner>
+  <owner>khaslett@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     The time, in milliseconds, since the change in overlay selection. Recorded
     every time a frame is rendered by the display compositor.
@@ -1749,9 +1774,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.FileDescriptorTracking.TimeToCompute" units="microseconds"
-    expires_after="2023-01-09">
+    expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     Time spent computing the number of active File Descriptors. This is logged
     once every 5 minutes as the cost of this computation is estimated to be at
@@ -1763,9 +1789,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.FileDescriptorTracking.{FdStat}" units="units"
-    expires_after="2023-01-09">
+    expires_after="2023-06-09">
   <owner>petermcneeley@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     {FdStat} File Descriptors for the GPU process. This is logged once every 5
     minutes as the cost of this computation is estimated to be at least 1ms.

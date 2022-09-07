@@ -69,9 +69,6 @@ extern const char kAlignWakeUpsDescription[];
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
-extern const char kAndroidPWAsDefaultOfflinePageName[];
-extern const char kAndroidPWAsDefaultOfflinePageDescription[];
-
 extern const char kAnimatedImageResumeName[];
 extern const char kAnimatedImageResumeDescription[];
 
@@ -538,9 +535,6 @@ extern const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[];
 extern const char kDesktopPWAsRemoveStatusBarName[];
 extern const char kDesktopPWAsRemoveStatusBarDescription[];
 
-extern const char kDesktopPWAsDefaultOfflinePageName[];
-extern const char kDesktopPWAsDefaultOfflinePageDescription[];
-
 extern const char kDesktopPWAsElidedExtensionsMenuName[];
 extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
 
@@ -837,6 +831,9 @@ extern const char kFractionalScrollOffsetsDescription[];
 
 extern const char kFedCmName[];
 extern const char kFedCmDescription[];
+
+extern const char kFedCmMultiIdpName[];
+extern const char kFedCmMultiIdpDescription[];
 
 extern const char kFileHandlingAPIName[];
 extern const char kFileHandlingAPIDescription[];
@@ -1275,6 +1272,9 @@ extern const char kPasswordStrengthIndicatorDescription[];
 extern const char kForceEnablePasswordDomainCapabilitiesName[];
 extern const char kForceEnablePasswordDomainCapabilitiesDescription[];
 
+extern const char kForceEnableFastCheckoutCapabilitiesName[];
+extern const char kForceEnableFastCheckoutCapabilitiesDescription[];
+
 extern const char kPdfOcrName[];
 extern const char kPdfOcrDescription[];
 
@@ -1347,6 +1347,9 @@ extern const char kProminentDarkModeActiveTabTitleDescription[];
 extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
+
+extern const char kPWAsDefaultOfflinePageName[];
+extern const char kPWAsDefaultOfflinePageDescription[];
 
 extern const char kPwaUpdateDialogForAppIconName[];
 extern const char kPwaUpdateDialogForAppIconDescription[];
@@ -2523,6 +2526,9 @@ extern const char kPwaUninstallInWindowsOsDescription[];
 extern const char kRawAudioCaptureName[];
 extern const char kRawAudioCaptureDescription[];
 
+extern const char kFakeAudioCaptureTimestamps[];
+extern const char kFakeAudioCaptureTimestampsDescription[];
+
 extern const char kRunVideoCaptureServiceInBrowserProcessName[];
 extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
 
@@ -2689,9 +2695,6 @@ extern const char kArcEnableUsapDesc[];
 
 extern const char kArcEnableVirtioBlkForDataName[];
 extern const char kArcEnableVirtioBlkForDataDesc[];
-
-extern const char kAshEnablePipRoundedCornersName[];
-extern const char kAshEnablePipRoundedCornersDescription[];
 
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
@@ -3099,9 +3102,6 @@ extern const char kFilesTrashDescription[];
 
 extern const char kFilesWebDriveOfficeName[];
 extern const char kFilesWebDriveOfficeDescription[];
-
-extern const char kFiltersInRecentsName[];
-extern const char kFiltersInRecentsDescription[];
 
 extern const char kFiltersInRecentsV2Name[];
 extern const char kFiltersInRecentsV2Description[];

@@ -75,11 +75,6 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
-const char kAndroidPWAsDefaultOfflinePageName[] =
-    "Android PWAs default offline page";
-const char kAndroidPWAsDefaultOfflinePageDescription[] =
-    "Shows customised default offline page when web app is offline.";
-
 const char kWindowsFollowCursorName[] =
     "Windows open on the display with the cursor";
 const char kWindowsFollowCursorDescription[] =
@@ -943,11 +938,6 @@ const char kDesktopPWAsRemoveStatusBarName[] = "Desktop PWAs remove status bar";
 const char kDesktopPWAsRemoveStatusBarDescription[] =
     "Hides the status bar popup in Desktop PWA app windows.";
 
-const char kDesktopPWAsDefaultOfflinePageName[] =
-    "Desktop PWAs default offline page";
-const char kDesktopPWAsDefaultOfflinePageDescription[] =
-    "Shows customised default offline page when web app is offline.";
-
 const char kDesktopPWAsElidedExtensionsMenuName[] =
     "Desktop PWAs elided extensions menu";
 const char kDesktopPWAsElidedExtensionsMenuDescription[] =
@@ -1500,6 +1490,11 @@ const char kFractionalScrollOffsetsDescription[] =
 const char kFedCmName[] = "FedCM";
 const char kFedCmDescription[] =
     "Enables JavaScript API to intermediate federated identity requests.";
+
+const char kFedCmMultiIdpName[] = "FedCmMultiIdp";
+const char kFedCmMultiIdpDescription[] =
+    "Allows the FedCM API to request multiple identity providers "
+    "simultaneously. Requires FedCM to be enabled as well.";
 
 const char kFileHandlingAPIName[] = "File Handling API";
 const char kFileHandlingAPIDescription[] =
@@ -2275,6 +2270,12 @@ const char kForceEnablePasswordDomainCapabilitiesDescription[] =
     "Force enables password change capabilities for every domain, regardless "
     "of the server response.";
 
+const char kForceEnableFastCheckoutCapabilitiesName[] =
+    "Force enable fast checkout capabilities";
+const char kForceEnableFastCheckoutCapabilitiesDescription[] =
+    "Force enables fast checkout capabilities for every domain, regardless "
+    "of the server response.";
+
 const char kPdfOcrName[] = "Performs OCR on inaccessible PDFs";
 const char kPdfOcrDescription[] =
     "Enables a feature whereby inaccessible (i.e. untagged) PDFs are made "
@@ -2406,6 +2407,10 @@ const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
 const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
+
+const char kPWAsDefaultOfflinePageName[] = "Default offline page for PWAs";
+const char kPWAsDefaultOfflinePageDescription[] =
+    "Shows customised default offline page when web app is offline.";
 
 const char kPwaUpdateDialogForAppIconName[] =
     "Enable PWA install update dialog for icon changes";
@@ -4426,6 +4431,12 @@ const char kRawAudioCaptureDescription[] =
     "for endpoint specific, always-on processing in the Audio Processing Object"
     " (APO), driver, and hardware.";
 
+const char kFakeAudioCaptureTimestamps[] = "Fake audio capture timestamps";
+const char kFakeAudioCaptureTimestampsDescription[] =
+    "Emulates audio capture timestamps instead of using timestamps from the "
+    "actual audio device. Can be used as a temporary workaround in situations "
+    "where the selected audio device generates invalid timestamp sequences.";
+
 const char kRunVideoCaptureServiceInBrowserProcessName[] =
     "Run video capture service in browser";
 const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
@@ -4702,11 +4713,6 @@ const char kArcEnableVirtioBlkForDataName[] =
     "Enable virtio-blk for ARCVM /data";
 const char kArcEnableVirtioBlkForDataDesc[] =
     "If enabled, ARCVM uses virtio-blk for /data in Android storage.";
-
-const char kAshEnablePipRoundedCornersName[] =
-    "Enable Picture-in-Picture rounded corners.";
-const char kAshEnablePipRoundedCornersDescription[] =
-    "Enable rounded corners on the Picture-in-Picture window.";
 
 const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
@@ -5442,11 +5448,6 @@ const char kForceSpectreVariant2MitigationDescription[] =
     "Forces Spectre variant 2 mitigation. Setting this to enabled will "
     "override #spectre-variant2-mitigation and any system-level setting that "
     "disables Spectre variant 2 mitigation.";
-
-const char kFiltersInRecentsName[] = "Enable filters in Recents";
-const char kFiltersInRecentsDescription[] =
-    "Enable file-type filters (Audio, Images, Videos) in Files App Recents "
-    "view.";
 
 const char kFiltersInRecentsV2Name[] = "Filters in Recents enhancement";
 const char kFiltersInRecentsV2Description[] =

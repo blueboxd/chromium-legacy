@@ -293,11 +293,6 @@
     "expiry_milestone": 102
   },
   {
-    "name": "ash-enable-pip-rounded-corners",
-    "owners": [ "edcourtney" ],
-    "expiry_milestone": 96
-  },
-  {
     "name": "ash-enable-unified-desktop",
     "owners": [ "//ash/OWNERS" ],
     // Unified desktop can be enabled by enterprise policy. The switch exists in
@@ -1649,11 +1644,6 @@
     "expiry_milestone": 115
   },
   {
-    "name": "enable-android-pwas-default-offline-page",
-    "owners": [ "finnur@google.com", "beverloo@google.com" ],
-    "expiry_milestone": 120
-  },
-  {
     "name": "enable-app-discovery-for-oobe",
     "owners": [ "melzhang", "tsergeant", "chromeos-apps-foundation-team" ],
     "expiry_milestone": 110
@@ -2408,7 +2398,7 @@
   {
     "name": "enable-hostname-setting",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 115
   },
   {
     "name": "enable-ikev2-vpn",
@@ -2792,6 +2782,11 @@
     "name": "enable-projector-local-playback",
     "owners": [ "tobyhuang", "cros-projector@google.com" ],
     "expiry_milestone": 108
+  },
+  {
+    "name": "enable-pwas-default-offline-page",
+    "owners": [ "finnur@google.com", "beverloo@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-quic",
@@ -3416,6 +3411,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "fake-audio-capture-timestamps",
+    "owners": [ "henrika@google.com", "video-cmi-mpp@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "fast-checkout",
     "owners": [ "vizcay", "bwolfgang", "jkeitel" ],
     "expiry_milestone": 112
@@ -3460,8 +3460,13 @@
   },
   {
     "name": "fedcm",
-    "owners": [ "goto", "webid-core@google.com"],
-    "expiry_milestone": 110
+    "owners": [ "goto", "web-identity-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "fedcm-multi-idp",
+    "owners": ["npm", "web-identity-eng@google.com"],
+    "expiry_milestone": 120
   },
   {
     "name": "feed-ablation",
@@ -3549,11 +3554,6 @@
     "expiry_milestone": 112
   },
   {
-    "name": "files-filters-in-recents",
-    "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "wenbojie" ],
-    "expiry_milestone": 103
-  },
-  {
     "name": "files-filters-in-recents-v2",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "wenbojie" ],
     "expiry_milestone": 110
@@ -3617,6 +3617,11 @@
   {
     "name": "force-enable-cast-remoting-query",
     "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
+    "name": "force-enable-fast-checkout-capabilities",
+    "owners": [ "vizcay", "bwolfgang", "jkeitel" ],
     "expiry_milestone": 115
   },
   {

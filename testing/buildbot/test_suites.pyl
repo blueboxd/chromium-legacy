@@ -3869,6 +3869,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
     },
 
@@ -3882,6 +3885,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
     },
 
@@ -6783,6 +6789,16 @@
         ]
       },
     },
+
+    'lacros_arm64_generic_rel_skylab_fyi': {
+      'lacros_skylab_poc': {
+        'variants': [
+          'CROS_JACUZZI_PUBLIC',
+          'CROS_KEVIN_PUBLIC',
+        ]
+      },
+    },
+
 
     'lacros_device_arm_tests': {
       'lacros_all_tast_tests': {

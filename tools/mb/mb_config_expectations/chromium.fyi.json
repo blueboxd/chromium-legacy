@@ -995,8 +995,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true,
-      "use_lld": false
+      "use_goma": true
     }
   },
   "ios15-beta-simulator": {
@@ -1062,9 +1061,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "treat_warnings_as_errors": false,
-      "use_goma": true,
-      "use_lld": false
+      "use_goma": true
     }
   },
   "lacros-amd64-generic-rel (goma cache silo)": {
@@ -1104,6 +1101,19 @@
   },
   "lacros-amd64-generic-rel-skylab-fyi": {
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
+    "gn_args": {
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_chromeos_device": true,
+      "is_debug": false,
+      "is_skylab": true,
+      "ozone_platform_headless": true,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
+  "lacros-arm64-generic-rel-skylab-fyi": {
+    "args_file": "//build/args/chromeos/arm64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
       "dcheck_always_on": false,

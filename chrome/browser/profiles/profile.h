@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -517,10 +518,15 @@ class Profile : public content::BrowserContext {
   // true or false, so that calls can be nested.
   int accessibility_pause_level_ = 0;
 
-  base::ObserverList<ProfileObserver> observers_;
+  base::ObserverList<ProfileObserver,
+                     /*check_empty=*/true,
+                     /*allow_reentrancy=*/false>
+      observers_;
 
   class ChromeVariationsClient;
   std::unique_ptr<variations::VariationsClient> chrome_variations_client_;
+
+  base::WeakPtrFactory<Profile> weak_factory_{this};
 };
 
 // The comparator for profile pointers as key in a map.

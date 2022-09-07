@@ -74,17 +74,6 @@ TrashConfig.CONFIG = [
   new TrashConfig(
       VolumeManagerCommon.VolumeType.DOWNLOADS, '/', '/.Trash/',
       'MY_FILES_ROOT_LABEL'),
-  new TrashConfig(
-      VolumeManagerCommon.VolumeType.CROSTINI, '/', '/.local/share/Trash/',
-      'LINUX_FILES_ROOT_LABEL', {},
-      /*prefixPathWithRemoteMount=*/ true),
-  new TrashConfig(
-      VolumeManagerCommon.VolumeType.DRIVE, '/', '/.Trash-1000/',
-      'DRIVE_DIRECTORY_LABEL', {
-        'root': 'DRIVE_MY_DRIVE_LABEL',
-        'team_drives': 'DRIVE_SHARED_DRIVES_LABEL',
-        'Computers': 'DRIVE_COMPUTERS_LABEL',
-      }),
 ];
 
 /**
@@ -494,6 +483,9 @@ class TrashDirectoryReader {
         error(e);
         return;
       }
+      if (!entries.length) {
+        break;
+      }
       const infoEntryMap = {};
       for (const e of entries) {
         if (!e.isFile || !e.name.endsWith('.trashinfo')) {
@@ -525,9 +517,6 @@ class TrashDirectoryReader {
         if (trashEntry) {
           result.push(trashEntry);
         }
-      }
-      if (!parsedEntries.length || result.length) {
-        break;
       }
     }
     success(result);

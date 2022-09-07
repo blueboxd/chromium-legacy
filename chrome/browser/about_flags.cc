@@ -2592,12 +2592,22 @@ const FeatureEntry::FeatureParam
              kPasswordChangeInSettingsWithForcedWarningForEverySite,
          "true"}};
 
+const FeatureEntry::FeatureParam
+    kPasswordChangeInSettingsVariationWeakCredentials[] = {
+        {password_manager::features::
+             kPasswordChangeInSettingsWeakCredentialsParam.name,
+         "true"}};
+
 const FeatureEntry::FeatureVariation
     kPasswordChangeInSettingsFeatureVariations[] = {
         {"Force leak warnings for every site in settings.",
          kPasswordChangeInSettingsVariationWithForcedWarningForEverySite,
          std::size(
              kPasswordChangeInSettingsVariationWithForcedWarningForEverySite),
+         nullptr},
+        {"Include weak credentials.",
+         kPasswordChangeInSettingsVariationWeakCredentials,
+         std::size(kPasswordChangeInSettingsVariationWeakCredentials),
          nullptr}};
 
 #if BUILDFLAG(IS_ANDROID)
@@ -4400,17 +4410,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRemoveStatusBarName,
      flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveStatusBarInWebApps)},
-#if BUILDFLAG(IS_ANDROID)
-    {"enable-android-pwas-default-offline-page",
-     flag_descriptions::kAndroidPWAsDefaultOfflinePageName,
-     flag_descriptions::kAndroidPWAsDefaultOfflinePageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kAndroidPWAsDefaultOfflinePage)},
-#else
-    {"enable-desktop-pwas-default-offline-page",
-     flag_descriptions::kDesktopPWAsDefaultOfflinePageName,
-     flag_descriptions::kDesktopPWAsDefaultOfflinePageDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsDefaultOfflinePage)},
-#endif  // BUILDFLAG(IS_ANDROID)
+    {"enable-pwas-default-offline-page",
+     flag_descriptions::kPWAsDefaultOfflinePageName,
+     flag_descriptions::kPWAsDefaultOfflinePageDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPWAsDefaultOfflinePage)},
     {"enable-desktop-pwas-elided-extensions-menu",
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,
@@ -5181,9 +5185,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-extract-archive", flag_descriptions::kFilesExtractArchiveName,
      flag_descriptions::kFilesExtractArchiveDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesExtractArchive)},
-    {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
-     flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
     {"files-filters-in-recents-v2", flag_descriptions::kFiltersInRecentsV2Name,
      flag_descriptions::kFiltersInRecentsV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecentsV2)},
@@ -6446,10 +6447,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"ash-enable-pip-rounded-corners",
-     flag_descriptions::kAshEnablePipRoundedCornersName,
-     flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
     {"cros-labs-float-window", flag_descriptions::kFloatWindow,
      flag_descriptions::kFloatWindowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::wm::features::kFloatWindow)},
@@ -7933,6 +7930,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"raw-audio-capture", flag_descriptions::kRawAudioCaptureName,
      flag_descriptions::kRawAudioCaptureDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kWasapiRawAudioCapture)},
+
+    {"fake-audio-capture-timestamps",
+     flag_descriptions::kFakeAudioCaptureTimestamps,
+     flag_descriptions::kFakeAudioCaptureTimestampsDescription, kOsWin,
+     FEATURE_VALUE_TYPE(media::kUseFakeAudioCaptureTimestamps)},
 #endif  // BUILDFLAG(IS_WIN)
 
     {"enable-managed-configuration-web-api",
@@ -8089,6 +8091,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFedCm,
                                     kFedCmFeatureVariations,
                                     "FedCmFeatureVariations")},
+    {"fedcm-multi-idp", flag_descriptions::kFedCmMultiIdpName,
+     flag_descriptions::kFedCmMultiIdpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kFedCmMultipleIdentityProviders)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"bluetooth-sessionized-metrics",
@@ -8221,6 +8226,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"fast-checkout", flag_descriptions::kFastCheckoutName,
      flag_descriptions::kFastCheckoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kFastCheckout)},
+    {"force-enable-fast-checkout-capabilities",
+     flag_descriptions::kForceEnableFastCheckoutCapabilitiesName,
+     flag_descriptions::kForceEnableFastCheckoutCapabilitiesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kForceEnableFastCheckoutCapabilities)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

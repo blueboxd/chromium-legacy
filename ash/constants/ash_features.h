@@ -331,7 +331,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesTrash;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesWebDriveOffice;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFiltersInRecents;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFiltersInRecentsV2;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFirmwareUpdaterApp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFloatingWorkspace;
@@ -520,7 +519,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPhoneHubCallNotification;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPhoneHubMonochromeNotificationIcons;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPipRoundedCorners;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPreferConstantFrameRate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -748,6 +746,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsConsumerAutoUpdateToggleAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubDogfoodEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubFutureEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubMVPEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosNextWMPEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDesksCloseAllEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
@@ -862,7 +861,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCallNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitBackfillFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitFeatureEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPipRoundedCornersEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPolyDevicePairingAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPrivacyIndicatorsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProductivityLauncherEnabled();

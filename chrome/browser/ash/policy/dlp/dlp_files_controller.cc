@@ -59,7 +59,7 @@ std::vector<absl::optional<ino_t>> GetFilesInodes(
 absl::optional<DlpRulesManager::Component> MapFilePathtoPolicyComponent(
     Profile* profile,
     const base::FilePath file_path) {
-  if (base::FilePath(file_manager::util::kAndroidFilesPath)
+  if (base::FilePath(file_manager::util::GetAndroidFilesPath())
           .IsParent(file_path)) {
     return DlpRulesManager::Component::kArc;
   }
@@ -125,9 +125,10 @@ DlpFilesController::DlpFileRestrictionDetails::~DlpFileRestrictionDetails() =
     default;
 
 DlpFilesController::FileDaemonInfo::FileDaemonInfo(
+    ino_t inode,
     const base::FilePath& path,
     const std::string& source_url)
-    : path(path), source_url(source_url) {}
+    : inode(inode), path(path), source_url(source_url) {}
 
 DlpFilesController::DlpFileDestination::DlpFileDestination(
     const std::string& url)
@@ -287,7 +288,7 @@ void DlpFilesController::CheckIfDownloadAllowed(
     return;
   }
 
-  FileDaemonInfo file_info(base::FilePath(""), download_url.spec());
+  FileDaemonInfo file_info({}, base::FilePath(""), download_url.spec());
   IsFilesTransferRestricted(
       {std::move(file_info)}, DlpFileDestination(file_path.value()),
       DlpWarnDialog::FilesAction::kDownload,

@@ -681,30 +681,28 @@
             ]
         }
     ],
-    "ArcVmInitThrottle2": [
+    "ArcVmInitThrottle3": [
         {
             "platforms": [
                 "chromeos"
             ],
             "experiments": [
                 {
-                    "name": "throttle_to_70_percent",
+                    "name": "throttle_to_50_percent",
+                    "params": {
+                        "quota": "50"
+                    },
                     "enable_features": [
-                        "CrOSLateBootArcVmInitial70Throttle"
-                    ],
-                    "disable_features": [
-                        "CrOSLateBootArcVmInitial30Throttle",
-                        "CrOSLateBootArcVmInitial50Throttle"
+                        "CrOSLateBootArcVmInitialThrottle"
                     ]
                 },
                 {
-                    "name": "throttle_to_50_percent",
+                    "name": "throttle_to_75_percent",
+                    "params": {
+                        "quota": "75"
+                    },
                     "enable_features": [
-                        "CrOSLateBootArcVmInitial50Throttle"
-                    ],
-                    "disable_features": [
-                        "CrOSLateBootArcVmInitial30Throttle",
-                        "CrOSLateBootArcVmInitial70Throttle"
+                        "CrOSLateBootArcVmInitialThrottle"
                     ]
                 }
             ]
@@ -1327,39 +1325,6 @@
             ]
         }
     ],
-    "AutofillMorePredictableDesktopUI": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_2022-01-27",
-                    "enable_features": [
-                        "AutofillCenterAlignedSuggestions",
-                        "AutofillTypeSpecificPopupWidth",
-                        "AutofillUseConsistentPopupSettingsIcons",
-                        "AutofillVisualImprovementsForSuggestionUi"
-                    ],
-                    "disable_features": []
-                },
-                {
-                    "name": "Disabled_2022-01-27",
-                    "enable_features": [],
-                    "disable_features": [
-                        "AutofillCenterAlignedSuggestions",
-                        "AutofillTypeSpecificPopupWidth",
-                        "AutofillUseConsistentPopupSettingsIcons",
-                        "AutofillVisualImprovementsForSuggestionUi"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillParseMerchantPromoCodeFields": [
         {
             "platforms": [
@@ -1679,6 +1644,21 @@
                 "windows"
             ],
             "experiments": [
+                {
+                    "name": "Enabled_LazyAds",
+                    "params": {
+                        "allowed_websites": "https://www.youtube.com|/embed,https://www.google.com|/maps/embed",
+                        "strategy": "allow_list",
+                        "timeout": "0"
+                    },
+                    "enable_features": [
+                        "AutomaticLazyFrameLoadingToAds",
+                        "AutomaticLazyFrameLoadingToEmbedUrls"
+                    ],
+                    "disable_features": [
+                        "AutomaticLazyFrameLoadingToEmbeds"
+                    ]
+                },
                 {
                     "name": "Enabled_LazyEmbeds0_20220809",
                     "params": {
@@ -3624,11 +3604,13 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "BookmarkLimitNumNodesForBookmarkSearchCount": "500",
                         "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
                         "ShortBookmarkSuggestionsByTotalInputLengthThreshold": "3"
                     },
                     "enable_features": [
                         "BookmarkApproximateNodeMatch",
+                        "BookmarkLimitNumNodesForBookmarkSearch",
                         "BookmarkTypedUrlsMap",
                         "OmniboxBookmarkPaths",
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength"
@@ -5416,6 +5398,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "RestoreSessionFromCache"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSShareChrome": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "kNewOverflowMenuShareChromeAction"
                     ]
                 }
             ]
@@ -7574,6 +7571,25 @@
             ]
         }
     ],
+    "PreconnectInNetworkService": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220906",
+                    "enable_features": [
+                        "PreconnectInNetworkService"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreconnectToSearchDesktop": [
         {
             "platforms": [
@@ -8360,9 +8376,31 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_28_3_20220721",
+                    "name": "Enabled_29_5_20220831",
                     "params": {
-                        "reporter_omaha_tag": "28.3"
+                        "reporter_omaha_tag": "29.5"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionTag"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingCSDDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_29_5_20220831",
+                    "params": {
+                        "reporter_omaha_tag": "29.5"
                     },
                     "enable_features": [
                         "ClientSideDetectionTag"

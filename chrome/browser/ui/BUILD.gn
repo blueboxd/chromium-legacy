@@ -2598,6 +2598,8 @@ static_library("ui") {
       "webui/chromeos/cloud_upload/cloud_upload_dialog.h",
       "webui/chromeos/cloud_upload/cloud_upload_handler.cc",
       "webui/chromeos/cloud_upload/cloud_upload_handler.h",
+      "webui/chromeos/cloud_upload/cloud_upload_notification_manager.cc",
+      "webui/chromeos/cloud_upload/cloud_upload_notification_manager.h",
       "webui/chromeos/cloud_upload/cloud_upload_page_handler.cc",
       "webui/chromeos/cloud_upload/cloud_upload_page_handler.h",
       "webui/chromeos/cloud_upload/cloud_upload_ui.cc",
@@ -3098,6 +3100,7 @@ static_library("ui") {
       "//ash/webui/camera_app_ui",
       "//ash/webui/color_internals",
       "//ash/webui/connectivity_diagnostics",
+      "//ash/webui/demo_mode_app_ui",
       "//ash/webui/diagnostics_ui",
       "//ash/webui/eche_app_ui",
       "//ash/webui/file_manager:file_manager_ui",
@@ -3303,10 +3306,7 @@ static_library("ui") {
           "webui/chromeos/emulator/device_emulator_ui.h",
         ]
       }
-      deps += [
-        "//ash/webui/demo_mode_app_ui",
-        "//ash/webui/sample_system_web_app_ui",
-      ]
+      deps += [ "//ash/webui/sample_system_web_app_ui" ]
     }
   }
 
@@ -3773,6 +3773,8 @@ static_library("ui") {
       "cocoa/tab_menu_bridge.mm",
       "cocoa/task_manager_mac.h",
       "cocoa/task_manager_mac.mm",
+      "cocoa/task_manager_mac_table_view.h",
+      "cocoa/task_manager_mac_table_view.mm",
       "cocoa/touchbar/browser_window_default_touch_bar.h",
       "cocoa/touchbar/browser_window_default_touch_bar.mm",
       "cocoa/touchbar/browser_window_touch_bar_controller.h",

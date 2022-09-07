@@ -478,17 +478,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Apps.AppList.DriveZeroStateProvider.ShouldWarm" enum="Boolean"
-    expires_after="2022-10-04">
-  <owner>tby@chromium.org</owner>
-  <owner>thanhdng@chromium.org</owner>
-  <owner>wrong@chromium.org</owner>
-  <summary>
-    Whether or not the the ItemSuggest cache should be warmed on login. Reported
-    once per login, when the DriveZeroStateProvider is created.
-  </summary>
-</histogram>
-
 <histogram name="Apps.AppList.DriveZeroStateProvider.Status"
     enum="DriveZeroStateProviderStatus" expires_after="2023-02-12">
   <owner>tby@chromium.org</owner>
@@ -526,7 +515,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.FileSearchProvider.Latency" units="ms"
-    expires_after="2022-11-30">
+    expires_after="2023-03-05">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -548,7 +537,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.FileSearchProvider.TimedOut"
-    enum="BooleanTimedOut" expires_after="2022-11-30">
+    enum="BooleanTimedOut" expires_after="2023-03-05">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -698,7 +687,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.NumberOfFolders" units="count"
-    expires_after="2022-12-01">
+    expires_after="2023-03-05">
   <owner>jamescook@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
@@ -1733,7 +1722,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListShow.InputLatency" units="ms"
-    expires_after="2022-12-31">
+    expires_after="2023-03-05">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
@@ -2628,7 +2617,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.PreferredApps.EntryCount" units="entries"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>mxcai@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>

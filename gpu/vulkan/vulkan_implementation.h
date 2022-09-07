@@ -20,7 +20,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_hardware_buffer_handle.h"
-#include "ui/gfx/geometry/size.h"
 #endif
 
 namespace gfx {
@@ -155,7 +154,8 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
     VulkanImplementation* vulkan_implementation,
     uint32_t option,
     const GPUInfo* gpu_info = nullptr,
-    uint32_t heap_memory_limit = 0);
+    uint32_t heap_memory_limit = 0,
+    const bool is_thread_safe = false);
 
 }  // namespace gpu
 

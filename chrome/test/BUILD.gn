@@ -2406,7 +2406,10 @@ if (!is_android) {
     }
 
     if (is_chromeos_ash) {
-      sources += [ "../browser/sessions/tab_restore_service_browsertest.cc" ]
+      sources += [
+        "../browser/media/webrtc/get_display_media_set_browsertest.cc",
+        "../browser/sessions/tab_restore_service_browsertest.cc",
+      ]
       deps += [
         "//chrome/browser/ash/system_web_apps:browser_tests",
         "//chrome/browser/ash/system_web_apps/test_support",
@@ -3728,6 +3731,7 @@ if (!is_android) {
         "../browser/ash/login/screens/packaged_license_screen_browsertest.cc",
         "../browser/ash/login/screens/parental_handoff_screen_browsertest.cc",
         "../browser/ash/login/screens/pin_setup_screen_browsertest.cc",
+        "../browser/ash/login/screens/quick_start_screen_browsertest.cc",
         "../browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.cc",
         "../browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h",
         "../browser/ash/login/screens/recommend_apps_screen_browsertest.cc",
@@ -3867,6 +3871,7 @@ if (!is_android) {
         "../browser/ash/system/device_disabling_browsertest.cc",
         "../browser/ash/system/tray_accessibility_browsertest.cc",
         "../browser/ash/web_applications/camera_app/camera_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/demo_mode_app_integration_browsertest.cc",
         "../browser/ash/web_applications/diagnostics_app_integration_browsertest.cc",
         "../browser/ash/web_applications/eche_app_integration_browsertest.cc",
         "../browser/ash/web_applications/face_ml_integration_browsertest.cc",
@@ -4057,14 +4062,8 @@ if (!is_android) {
         "//testing/buildbot/filters:chromeos_filters",
       ]
       if (!is_official_build) {
-        sources += [
-          "../browser/ash/web_applications/demo_mode_app_integration_browsertest.cc",
-          "../browser/ash/web_applications/sample_system_web_app_integration_browsertest.cc",
-        ]
-        deps += [
-          "//ash/webui/demo_mode_app_ui",
-          "//ash/webui/sample_system_web_app_ui",
-        ]
+        sources += [ "../browser/ash/web_applications/sample_system_web_app_integration_browsertest.cc" ]
+        deps += [ "//ash/webui/sample_system_web_app_ui" ]
       }
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
@@ -4139,6 +4138,7 @@ if (!is_android) {
         "//ash/keyboard/ui:test_support",
         "//ash/public/cpp/external_arc",
         "//ash/services/multidevice_setup/public/cpp:test_support",
+        "//ash/webui/demo_mode_app_ui",
         "//ash/webui/diagnostics_ui",
         "//ash/webui/eche_app_ui",
         "//ash/webui/face_ml_app_ui",
@@ -4171,6 +4171,7 @@ if (!is_android) {
         "//chrome/browser/chromeos:add_remove_user_event_proto",
         "//chrome/browser/chromeos:dlp_policy_event_proto",
         "//chrome/browser/chromeos:key_permissions_proto",
+        "//chrome/browser/chromeos:login_logout_event_proto",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/enterprise/connectors/device_trust:features",
         "//chrome/browser/enterprise/connectors/device_trust/common",
@@ -4260,6 +4261,7 @@ if (!is_android) {
         "//components/drive",
         "//components/exo:test_support",
         "//components/feedback:feedback",
+        "//components/feedback/content:factory",
         "//components/live_caption:constants",
         "//components/metrics/structured",
         "//components/metrics/structured:structured_events",
@@ -4283,6 +4285,7 @@ if (!is_android) {
         "//components/upload_list",
         "//components/user_manager:test_support",
         "//components/web_resource",
+        "//extensions/browser:test_support",
         "//extensions/components/native_app_window",
         "//mojo/core/embedder",
         "//services/audio/public/cpp",
@@ -4759,7 +4762,9 @@ if (is_chromeos_lacros) {
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
-      "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
+
+      # TODO(crbug.com/1357999): Fix the flakiness.
+      # "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
       "../browser/web_applications/app_service/lacros_web_apps_controller_lacros_browsertest.cc",
     ]
@@ -8758,7 +8763,10 @@ test("unit_tests") {
       "../browser/ui/window_name_prompt/window_name_prompt_unittest.cc",
     ]
     if (is_linux) {
-      sources += [ "../browser/ui/views/frame/browser_frame_view_layout_linux_native_unittest.cc" ]
+      sources += [
+        "../browser/ui/views/frame/browser_frame_view_layout_linux_native_unittest.cc",
+        "../browser/ui/views/frame/browser_frame_view_layout_linux_unittest.cc",
+      ]
       deps += [ "//ui/linux:linux_ui" ]
     }
     if (enable_plugins) {

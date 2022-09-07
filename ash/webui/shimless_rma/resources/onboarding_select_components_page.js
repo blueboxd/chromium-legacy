@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import './base_page.js';
 import './repair_component_chip.js';
 import './shimless_rma_shared_css.js';
@@ -14,7 +13,7 @@ import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://re
 import {ComponentTypeToId} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {Component, ComponentRepairStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
+import {enableNextButton, executeThenTransitionState, focusPageTitle} from './shimless_rma_util.js';
 
 /**
  * @typedef {{
@@ -196,6 +195,8 @@ export class OnboardingSelectComponentsPageElement extends
             gradient.style.setProperty('visibility', 'visible');
           }
         });
+
+    focusPageTitle(this);
   }
 
   /** @private */
@@ -223,9 +224,6 @@ export class OnboardingSelectComponentsPageElement extends
       // Focus on the first clickable component at the beginning.
       this.focusedComponentIndex_ =
           this.componentCheckboxes_.findIndex(component => !component.disabled);
-      afterNextRender(this, () => {
-        this.focusOnCurrentComponent_();
-      });
     });
   }
 
@@ -295,8 +293,7 @@ export class OnboardingSelectComponentsPageElement extends
   setReworkFlowLink_() {
     this.reworkFlowLinkText_ =
         this.i18nAdvanced('reworkFlowLinkText', {attrs: ['id']});
-    const linkElement = this.shadowRoot.querySelector('#reworkFlowLink')
-                            .shadowRoot.querySelector('a');
+    const linkElement = this.shadowRoot.querySelector('#reworkFlowLink');
     linkElement.setAttribute('href', '#');
     linkElement.addEventListener('click', e => {
       if (this.allButtonsDisabled) {

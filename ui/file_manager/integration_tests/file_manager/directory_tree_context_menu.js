@@ -1143,13 +1143,9 @@ testcase.dirContextMenuCrostini = async () => {
     ['#copy', true],
     ['#paste-into-folder', false],
     ['#rename', true],
-    ['#move-to-trash', true],
     ['#delete', true],
     ['#new-folder', true],
   ];
-  if (await sendTestMessage({name: 'isTrashEnabled'}) !== 'true') {
-    folderMenus.splice(4, 1);
-  }
   const linuxQuery = '#directory-tree [entry-label="Linux files"]';
 
   // Add a crostini folder.
@@ -1533,61 +1529,6 @@ testcase.dirContextMenuDocumentsProvider = async () => {
   await checkContextMenu(
       appId, '/DocumentsProvider/Read-Only Folder', folderMenus,
       false /* rootMenu */);
-};
-
-/**
- * Tests context menu for Audio, Images and Videos roots, currently they don't
- * show context menu.
- */
-testcase.dirContextMenuMediaView = async () => {
-  const audioViewQuery = '#directory-tree [entry-label="Audio"]';
-  const imagesViewQuery = '#directory-tree [entry-label="Images"]';
-  const videosViewQuery = '#directory-tree [entry-label="Videos"]';
-
-  await sendTestMessage({name: 'mountMediaView'});
-
-  // Open Files app on local Downloads.
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
-
-  // Right click Audio root.
-  await remoteCall.waitAndClickElement(appId, audioViewQuery);
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Audio');
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, [audioViewQuery]),
-      'fakeMouseRightClick failed');
-
-  // Check that both menus are still hidden.
-  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
-  await remoteCall.waitForElement(
-      appId, '#directory-tree-context-menu[hidden]');
-
-  // Right click Images root.
-  await remoteCall.waitAndClickElement(appId, imagesViewQuery);
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Images');
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, [imagesViewQuery]),
-      'fakeMouseRightClick failed');
-
-  // Check that both menus are still hidden.
-  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
-  await remoteCall.waitForElement(
-      appId, '#directory-tree-context-menu[hidden]');
-
-  // Right click Videos root.
-  await remoteCall.waitAndClickElement(appId, videosViewQuery);
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Videos');
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, [videosViewQuery]),
-      'fakeMouseRightClick failed');
-
-  // Check that both menus are still hidden.
-  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
-  await remoteCall.waitForElement(
-      appId, '#directory-tree-context-menu[hidden]');
 };
 
 /**

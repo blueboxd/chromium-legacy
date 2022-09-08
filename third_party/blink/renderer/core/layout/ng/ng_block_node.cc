@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
@@ -1703,17 +1702,6 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
   }
 }
 
-bool NGBlockNode::IsPaginatedRoot() const {
-  const auto* view = DynamicTo<LayoutNGView>(box_.Get());
-  if (!view || !view->IsFragmentationContextRoot())
-    return false;
-  if (const LayoutObject* child = view->FirstChild()) {
-    if (child->ForceLegacyLayout())
-      return false;
-  }
-  return true;
-}
-
 bool NGBlockNode::IsInlineFormattingContextRoot(
     NGLayoutInputNode* first_child_out) const {
   if (const auto* block = DynamicTo<LayoutBlockFlow>(box_.Get())) {
@@ -2019,14 +2007,14 @@ void NGBlockNode::CopyBaselinesFromLegacyLayout(
     case NGBaselineAlgorithmType::kDefault: {
       LayoutUnit position = box_->FirstLineBoxBaseline();
       if (position != -1)
-        builder->SetBaseline(position);
+        builder->SetFirstBaseline(position);
       break;
     }
     case NGBaselineAlgorithmType::kInlineBlock: {
       LayoutUnit position =
           AtomicInlineBaselineFromLegacyLayout(constraint_space);
       if (position != -1)
-        builder->SetBaseline(position);
+        builder->SetFirstBaseline(position);
       break;
     }
   }

@@ -168,9 +168,6 @@
     'arc_power': {
       'filepath': 'components/arc/power/',
     },
-    'ash': {
-      'filepath': 'ash/',
-    },
     'ash_webui_common': {
       'filepath': 'ash/webui/common/'\
                   '|chrome/test/data/webui/chromeos/ash_common/',
@@ -2251,7 +2248,6 @@
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],
     'arc_power': ['ejcaruso+watch@chromium.org'],
-    'ash': ['sadrul@chromium.org'],
     'ash_webui_common': ['gavinwill+watch-ash-webui-common@chromium.org',
                          'jimmyxgong+watch-ash-webui-common@chromium.org',
                          'zentaro+watch-ash-webui-common@chromium.org'],
@@ -2846,7 +2842,8 @@
                       'drubery+watch@chromium.org',
                       'nwokedi+watch@chromium.org',
                       'vakh+safe_browsing_watch@chromium.org',
-                      'xinghuilu+watch@chromium.org'],
+                      'xinghuilu+watch@chromium.org',
+                      'zackhan+watch@chromium.org'],
     'sampling_profiler': ['wittman+watch@chromium.org',
                           'chenleihu@google.com'],
     'scanning': ['gavinwill+scanning-watch@chromium.org',

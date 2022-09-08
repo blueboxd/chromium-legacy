@@ -5,7 +5,9 @@
 #include <set>
 
 #include "base/memory/raw_ptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,6 +15,12 @@ class AppCapabilityAccessCacheMojomTest
     : public testing::Test,
       public apps::AppCapabilityAccessCache::Observer {
  protected:
+  AppCapabilityAccessCacheMojomTest() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndDisableFeature(
+        apps::kAppServiceCapabilityAccessWithoutMojom);
+  }
+
   static apps::mojom::CapabilityAccessPtr MakeCapabilityAccess(
       const char* app_id,
       apps::mojom::OptionalBool camera,
@@ -58,6 +66,7 @@ class AppCapabilityAccessCacheMojomTest
 
   const AccountId& account_id() const { return account_id_; }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::set<std::string> updated_ids_;
   std::set<std::string> accessing_camera_apps_;
   std::set<std::string> accessing_microphone_apps_;

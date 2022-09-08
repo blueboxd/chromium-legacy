@@ -8,6 +8,10 @@ below:
 
 ### General Purpose Fragments
 
+#### archivist.shard.test-cml
+Runs an `archivist-without-attribution` with custom protocol routing for tests
+that want to intercept events written to a `LogSink` by a component.
+
 #### chromium_test_facet.shard.test-cml
 Runs CFv2 tests in the "chromium" test realm. This is generally required for all
 Chromium tests that must interact with true system services.
@@ -20,7 +24,7 @@ runs an isolated font provider, but serves the fonts present on the system.
 For tests that use the fonts in `//third_party/test_fonts` by way of
 `//skia:test_fonts_cfv2`.
 
-#### jit_capabilities.test-cmx and mark_vmo_executable.shard.test-cml
+#### mark_vmo_executable.shard.test-cml
 Required by tests that execute JavaScript. Should only be required in a small
 number of tests.
 
@@ -83,5 +87,5 @@ Contains services that need to be present when creating a `fuchsia.web.Context`.
 Note that the `fuchsia.scheduler.ProfileProvider` service is only used in tests
 that encounter memory pressure code.
 
-#### web_instance_host_capabilities.test-cmx
+#### web_instance_host_capabilities.test-cmx and web_instance_host.shard.test-cml
 Contains services that need to be present to use `WebInstanceHost`.

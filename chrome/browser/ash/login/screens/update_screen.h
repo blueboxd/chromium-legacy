@@ -83,15 +83,13 @@ class UpdateScreen : public BaseScreen,
   base::OneShotTimer* GetErrorMessageTimerForTesting();
   VersionUpdater* GetVersionUpdaterForTesting();
 
-
   // VersionUpdater::Delegate:
   void OnWaitForRebootTimeElapsed() override;
   void PrepareForUpdateCheck() override;
   void ShowErrorMessage() override;
-  void UpdateErrorMessage(
-      const NetworkPortalDetector::CaptivePortalStatus status,
-      const NetworkError::ErrorState& error_state,
-      const std::string& network_name) override;
+  void UpdateErrorMessage(NetworkState::PortalState state,
+                          NetworkError::ErrorState error_state,
+                          const std::string& network_name) override;
   void DelayErrorMessage() override;
   void UpdateInfoChanged(
       const VersionUpdater::UpdateInfo& update_info) override;
@@ -111,6 +109,10 @@ class UpdateScreen : public BaseScreen,
   void set_wait_before_reboot_time_for_testing(
       base::TimeDelta wait_before_reboot_time) {
     wait_before_reboot_time_ = wait_before_reboot_time;
+  }
+
+  void set_show_delay_for_testing(base::TimeDelta show_delay) {
+    show_delay_ = show_delay;
   }
 
   base::OneShotTimer* GetWaitRebootTimerForTesting() {
@@ -222,6 +224,9 @@ class UpdateScreen : public BaseScreen,
 
   // Time in seconds after which we initiate reboot.
   base::TimeDelta wait_before_reboot_time_;
+
+  // Time to delay showing the screen.
+  base::TimeDelta show_delay_;
 
   const base::TickClock* tick_clock_;
 

@@ -330,9 +330,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
       const viz::BeginFrameArgs& args,
+      bool next_bmf,
       bool scroll_and_viewport_changes_synced);
   virtual void ReadyToCommit(
       const viz::BeginFrameArgs& commit_args,
+      bool scroll_and_viewport_changes_synced,
       const BeginMainFrameMetrics* begin_main_frame_metrics,
       bool commit_timeout = false);
   virtual void BeginCommit(int source_frame_number, uint64_t trace_id);
@@ -698,7 +700,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   // During commit, processes and returns changes in the compositor since the
   // last commit.
-  std::unique_ptr<CompositorCommitData> ProcessCompositorDeltas();
+  std::unique_ptr<CompositorCommitData> ProcessCompositorDeltas(
+      const MutatorHost* main_thread_mutator_host);
 
   DroppedFrameCounter* dropped_frame_counter() {
     return &dropped_frame_counter_;

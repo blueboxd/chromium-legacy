@@ -839,6 +839,7 @@ if (is_android) {
       "//components/metrics/demographics:test_support",
       "//components/metrics_services_manager",
       "//components/optimization_guide/core",
+      "//components/optimization_guide/core:page_content_annotations",
       "//components/page_load_metrics/browser:test_support",
       "//components/page_load_metrics/browser/observers/ad_metrics:test_support",
       "//components/safe_browsing/core/browser/db:v4_database",
@@ -1357,6 +1358,7 @@ if (!is_android) {
       "//components/optimization_guide/content/renderer",
       "//components/optimization_guide/core",
       "//components/optimization_guide/core:bloomfilter",
+      "//components/optimization_guide/core:page_content_annotations",
       "//components/optimization_guide/core:prediction",
       "//components/optimization_guide/core:test_support",
       "//components/optimization_guide/proto:optimization_guide_proto",
@@ -4817,6 +4819,7 @@ if (is_chromeos_lacros) {
       "data/extensions/",
       "data/media/",
       "data/policy/test_certs/",
+      "data/webapps_integration/",
       "data/web_app_shortcuts/",
       "data/web_apps/",
       "data/web_share_target/",
@@ -5229,9 +5232,6 @@ test("unit_tests") {
     "../browser/first_party_sets/first_party_sets_policy_service_factory_unittest.cc",
     "../browser/font_pref_change_notifier_unittest.cc",
     "../browser/geolocation/geolocation_permission_context_delegate_unittest.cc",
-    "../browser/google/google_search_domain_mixing_metrics_emitter_factory_unittest.cc",
-    "../browser/google/google_search_domain_mixing_metrics_emitter_unittest.cc",
-    "../browser/google/google_update_settings_unittest.cc",
     "../browser/history/history_tab_helper_unittest.cc",
     "../browser/history_clusters/history_clusters_tab_helper_unittest.cc",
     "../browser/idle/idle_detection_permission_context_unittest.cc",
@@ -5287,6 +5287,7 @@ test("unit_tests") {
     "../browser/notifications/persistent_notification_handler_unittest.cc",
     "../browser/notifications/platform_notification_service_unittest.cc",
     "../browser/optimization_guide/chrome_hints_manager_unittest.cc",
+    "../browser/optimization_guide/page_content_annotations_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core/amp_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer_unittest.cc",
@@ -5688,6 +5689,7 @@ test("unit_tests") {
     "//chrome/browser/favicon",
     "//chrome/browser/feature_guide/notifications:unit_tests",
     "//chrome/browser/first_party_sets",
+    "//chrome/browser/google:unit_tests",
     "//chrome/browser/media/router",
     "//chrome/browser/media/router:media_router_feature",
     "//chrome/browser/media/router:unittests",
@@ -5809,6 +5811,7 @@ test("unit_tests") {
     "//components/optimization_guide/content/renderer",
     "//components/optimization_guide/core",
     "//components/optimization_guide/core:bloomfilter",
+    "//components/optimization_guide/core:page_content_annotations",
     "//components/optimization_guide/core:test_support",
     "//components/os_crypt:test_support",
     "//components/page_info",
@@ -6108,14 +6111,10 @@ test("unit_tests") {
     if (is_chrome_branded) {
       sources += [
         "../browser/component_updater/recovery_improved_component_unittest.cc",
-        "../browser/google/google_update_policy_fetcher_win_util_unittest.cc",
-        "../browser/google/google_update_win_unittest.cc",
       ]
 
       data_deps +=
           [ "//components/update_client:recovery_component_tests_bundle_data" ]
-
-      deps += [ "//google_update" ]
     }
   }
 
@@ -7175,7 +7174,6 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/attestation/ash/ash_attestation_service_unittest.cc",
       "../browser/enterprise/reporting/android_app_info_generator_unittest.cc",
       "../browser/extensions/api/terminal/startup_status_unittest.cc",
-      "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/lifetime/application_lifetime_chromeos_unittest.cc",
       "../browser/media/webrtc/chrome_screen_enumerator_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
@@ -8467,7 +8465,6 @@ test("unit_tests") {
       "../browser/plugins/plugin_finder_unittest.cc",
       "../browser/plugins/plugin_info_host_impl_unittest.cc",
       "../browser/plugins/plugin_installer_unittest.cc",
-      "../browser/plugins/plugin_metadata_unittest.cc",
       "../browser/plugins/plugin_prefs_unittest.cc",
     ]
   }
@@ -8607,6 +8604,11 @@ test("unit_tests") {
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
       "../common/channel_info_unittest.cc",
     ]
+
+    if (is_linux || is_win || is_mac) {
+      sources +=
+          [ "../browser/ui/views/policy/enterprise_startup_dialog_unittest.cc" ]
+    }
 
     deps += [ "//components/enterprise:test_support" ]
   }
@@ -10178,6 +10180,7 @@ if (!is_android) {
     data = [
       "//chrome/test/data/password/",
       "//chrome/test/data/sync/",
+      "//chrome/test/data/webapps_integration/",
       "//chrome/test/data/web_apps/",
       "//chrome/test/data/banners/",
       "//net/tools/testserver/",

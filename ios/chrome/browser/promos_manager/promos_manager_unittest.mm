@@ -9,6 +9,7 @@
 #import <vector>
 
 #import "base/test/scoped_feature_list.h"
+#import "base/values.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
@@ -269,6 +270,8 @@ TEST_F(PromosManagerTest, DetectsNoImpressionLimitTriggered) {
 // Tests PromosManager::CanShowPromo() correctly allows a promo to be shown
 // because it hasn't met any impression limits.
 TEST_F(PromosManagerTest, DecidesCanShowPromo) {
+  CreatePromosManager();
+
   const std::vector<promos_manager::Impression> zeroImpressions = {};
   EXPECT_EQ(promos_manager_->CanShowPromo(promos_manager::Promo::Test,
                                           zeroImpressions),
@@ -278,6 +281,8 @@ TEST_F(PromosManagerTest, DecidesCanShowPromo) {
 // Tests PromosManager::CanShowPromo() correctly denies promos from being shown
 // as they've triggered impression limits.
 TEST_F(PromosManagerTest, DecidesCannotShowPromo) {
+  CreatePromosManager();
+
   int today = TodaysDay();
 
   const std::vector<promos_manager::Impression> impressions = {
@@ -892,4 +897,71 @@ TEST_F(PromosManagerTest,
                 prefs::kIosPromosManagerSingleDisplayActivePromos)[0],
             promos_manager::NameForPromo(
                 promos_manager::Promo::CredentialProviderExtension));
+}
+
+// Tests PromosManager::InitializePromoImpressionLimits() correctly registers
+// promo-specific impression limits.
+TEST_F(PromosManagerTest, RegistersPromoSpecificImpressionLimits) {
+  CreatePromosManager();
+
+  ImpressionLimit* onceEveryTwoDays = [[ImpressionLimit alloc] initWithLimit:1
+                                                                  forNumDays:2];
+  ImpressionLimit* thricePerWeek = [[ImpressionLimit alloc] initWithLimit:3
+                                                               forNumDays:7];
+  NSArray<ImpressionLimit*>* defaultBrowserLimits = @[
+    onceEveryTwoDays,
+  ];
+
+  NSArray<ImpressionLimit*>* credentialProviderLimits = @[
+    thricePerWeek,
+  ];
+
+  base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>
+      promoImpressionLimits;
+  promoImpressionLimits[promos_manager::Promo::DefaultBrowser] =
+      defaultBrowserLimits;
+  promoImpressionLimits[promos_manager::Promo::CredentialProviderExtension] =
+      credentialProviderLimits;
+  promos_manager_->InitializePromoImpressionLimits(
+      std::move(promoImpressionLimits));
+
+  EXPECT_EQ(promos_manager_->PromoImpressionLimits(
+                promos_manager::Promo::DefaultBrowser),
+            defaultBrowserLimits);
+  EXPECT_EQ(promos_manager_->PromoImpressionLimits(
+                promos_manager::Promo::CredentialProviderExtension),
+            credentialProviderLimits);
+}
+
+// Tests PromosManager::RecordImpression() correctly records a new impression.
+TEST_F(PromosManagerTest, RecordsImpression) {
+  CreatePromosManager();
+  promos_manager_->RecordImpression(promos_manager::Promo::DefaultBrowser);
+
+  EXPECT_EQ(
+      local_state_->GetValueList(prefs::kIosPromosManagerImpressions).size(),
+      (size_t)1);
+
+  promos_manager_->RecordImpression(
+      promos_manager::Promo::CredentialProviderExtension);
+
+  const auto& impression_history =
+      local_state_->GetValueList(prefs::kIosPromosManagerImpressions);
+  const base::Value::Dict& first_impression = impression_history[0].GetDict();
+  const base::Value::Dict& second_impression = impression_history[1].GetDict();
+
+  EXPECT_EQ(impression_history.size(), (size_t)2);
+  EXPECT_EQ(*first_impression.FindString(promos_manager::kImpressionPromoKey),
+            "promos_manager::Promo::DefaultBrowser");
+  EXPECT_TRUE(
+      first_impression.FindInt(promos_manager::kImpressionDayKey).has_value());
+  EXPECT_EQ(first_impression.FindInt(promos_manager::kImpressionDayKey).value(),
+            TodaysDay());
+  EXPECT_EQ(*second_impression.FindString(promos_manager::kImpressionPromoKey),
+            "promos_manager::Promo::CredentialProviderExtension");
+  EXPECT_TRUE(
+      second_impression.FindInt(promos_manager::kImpressionDayKey).has_value());
+  EXPECT_EQ(
+      second_impression.FindInt(promos_manager::kImpressionDayKey).value(),
+      TodaysDay());
 }

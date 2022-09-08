@@ -16,6 +16,7 @@
 #include "ui/linux/window_frame_provider.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/test/views_test_utils.h"
 
 namespace {
 
@@ -80,10 +81,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsTranslucentWindowOpacitySupported() const override { return true; }
   bool ShouldDrawRestoredFrameShadow() const override { return true; }
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  OpaqueBrowserFrameViewLayoutDelegate::TiledEdges GetTiledEdges()
-      const override {
-    return {};
-  }
+  ui::WindowTiledEdges GetTiledEdges() const override { return {}; }
 #endif
 };
 
@@ -259,7 +257,7 @@ TEST_F(BrowserFrameViewLayoutLinuxNativeTest, NativeNavButtons) {
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
   ResetNativeNavButtonImagesFromButtonProvider();
 
-  RunScheduledLayout(root_view_);
+  views::test::RunScheduledLayout(root_view_);
 
   const int frame_top_thickness = FrameInsets().top();
 

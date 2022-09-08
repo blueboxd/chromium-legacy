@@ -75,17 +75,19 @@ constexpr char kExampleUrl4[] = "https://example4.com/";
 constexpr ino_t kInode1 = 1;
 constexpr ino_t kInode2 = 2;
 constexpr ino_t kInode3 = 3;
+constexpr ino_t kInode4 = 4;
 
 constexpr char kFilePath1[] = "test1.txt";
 constexpr char kFilePath2[] = "test2.txt";
 constexpr char kFilePath3[] = "test3.txt";
+constexpr char kFilePath4[] = "test4.txt";
 
 bool CreateDummyFile(const base::FilePath& path) {
   return WriteFile(path, "42", sizeof("42")) == sizeof("42");
 }
 
 struct FilesTransferInfo {
-  FilesTransferInfo(DlpWarnDialog::FilesAction files_action,
+  FilesTransferInfo(policy::DlpFilesController::FileAction files_action,
                     std::vector<ino_t> file_inodes,
                     std::vector<std::string> file_sources,
                     std::vector<std::string> file_paths)
@@ -94,7 +96,7 @@ struct FilesTransferInfo {
         file_sources(file_sources),
         file_paths(file_paths) {}
 
-  DlpWarnDialog::FilesAction files_action;
+  policy::DlpFilesController::FileAction files_action;
   std::vector<ino_t> file_inodes;
   std::vector<std::string> file_sources;
   std::vector<std::string> file_paths;
@@ -528,10 +530,18 @@ TEST_F(DlpFilesControllerTest, CheckReportingOnIsDlpPolicyMatched) {
 
   EXPECT_CALL(*rules_manager_, GetReportingManager).Times(testing::AnyNumber());
 
-  ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(kExampleUrl1));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(kExampleUrl2));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(kExampleUrl3));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(kExampleUrl4));
+  ASSERT_TRUE(
+      files_controller_->IsDlpPolicyMatched(DlpFilesController::FileDaemonInfo(
+          kInode1, base::FilePath(kFilePath1), kExampleUrl1)));
+  ASSERT_FALSE(
+      files_controller_->IsDlpPolicyMatched(DlpFilesController::FileDaemonInfo(
+          kInode2, base::FilePath(kFilePath2), kExampleUrl2)));
+  ASSERT_FALSE(
+      files_controller_->IsDlpPolicyMatched(DlpFilesController::FileDaemonInfo(
+          kInode3, base::FilePath(kFilePath3), kExampleUrl3)));
+  ASSERT_FALSE(
+      files_controller_->IsDlpPolicyMatched(DlpFilesController::FileDaemonInfo(
+          kInode4, base::FilePath(kFilePath4), kExampleUrl4)));
 
   ASSERT_EQ(events.size(), 3u);
   EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -692,7 +702,7 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
   files_controller_->IsFilesTransferRestricted(
       transferred_files,
       DlpFilesController::DlpFileDestination(dst_url.path().value()),
-      DlpWarnDialog::FilesAction::kTransfer, cb.Get());
+      DlpFilesController::FileAction::kTransfer, cb.Get());
 
   ASSERT_EQ(events.size(), 2u);
   EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -784,7 +794,7 @@ TEST_P(DlpFilesUrlDestinationTest, IsFilesTransferRestricted_Url) {
 
   files_controller_->IsFilesTransferRestricted(
       transferred_files, DlpFilesController::DlpFileDestination(dst),
-      DlpWarnDialog::FilesAction::kDownload, cb.Get());
+      DlpFilesController::FileAction::kDownload, cb.Get());
 
   ASSERT_EQ(events.size(), disallowed_files.size());
   for (size_t i = 0u; i < disallowed_files.size(); ++i) {
@@ -851,15 +861,15 @@ INSTANTIATE_TEST_SUITE_P(
     DlpFiles,
     DlpFilesWarningDialogContentTest,
     ::testing::Values(
-        FilesTransferInfo(DlpWarnDialog::FilesAction::kDownload,
+        FilesTransferInfo(policy::DlpFilesController::FileAction::kDownload,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(DlpWarnDialog::FilesAction::kTransfer,
+        FilesTransferInfo(policy::DlpFilesController::FileAction::kTransfer,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(DlpWarnDialog::FilesAction::kTransfer,
+        FilesTransferInfo(policy::DlpFilesController::FileAction::kTransfer,
                           std::vector<ino_t>({kInode1, kInode2}),
                           std::vector<std::string>({kExampleUrl1,
                                                     kExampleUrl2}),
@@ -890,7 +900,7 @@ TEST_P(DlpFilesWarningDialogContentTest,
   files_controller_->SetWarnNotifierForTesting(std::move(wrapper));
   DlpConfidentialContents expected_contents;
 
-  if (transfer_info.files_action != DlpWarnDialog::FilesAction::kDownload) {
+  if (transfer_info.files_action != DlpFilesController::FileAction::kDownload) {
     for (int i = 0; i < transfer_info.file_sources.size(); ++i) {
       expected_contents.Add(
           chromeos::GetIconForPath(

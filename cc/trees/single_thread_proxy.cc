@@ -1054,7 +1054,8 @@ void SingleThreadProxy::DoBeginMainFrame(
     std::unique_ptr<CompositorCommitData> commit_data;
     {
       DebugScopedSetImplThread impl(task_runner_provider_);
-      commit_data = host_impl_->ProcessCompositorDeltas();
+      commit_data = host_impl_->ProcessCompositorDeltas(
+          /* main_thread_mutator_host */ nullptr);
     }
     layer_tree_host_->ApplyCompositorChanges(commit_data.get());
     did_apply_compositor_deltas_ = true;
@@ -1082,7 +1083,7 @@ void SingleThreadProxy::DoPainting(const viz::BeginFrameArgs& commit_args) {
 
   std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics =
       layer_tree_host_->TakeBeginMainFrameMetrics();
-  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get());
+  host_impl_->ReadyToCommit(commit_args, true, begin_main_frame_metrics.get());
 
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
@@ -1103,7 +1104,7 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   host_impl_->BeginMainFrameAborted(
       reason, std::move(empty_swap_promises),
       scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args(),
-      did_apply_compositor_deltas_);
+      /* next_bmf */ false, did_apply_compositor_deltas_);
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 

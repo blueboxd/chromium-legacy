@@ -1369,27 +1369,6 @@
             ]
         }
     ],
-    "AutofillProfileImportFromUnfocusableFields": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillProfileImportFromUnfocusableFields"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillRationalizeStreetAddressAndAddressLine": [
         {
             "platforms": [
@@ -1644,21 +1623,6 @@
                 "windows"
             ],
             "experiments": [
-                {
-                    "name": "Enabled_LazyAds",
-                    "params": {
-                        "allowed_websites": "https://www.youtube.com|/embed,https://www.google.com|/maps/embed",
-                        "strategy": "allow_list",
-                        "timeout": "0"
-                    },
-                    "enable_features": [
-                        "AutomaticLazyFrameLoadingToAds",
-                        "AutomaticLazyFrameLoadingToEmbedUrls"
-                    ],
-                    "disable_features": [
-                        "AutomaticLazyFrameLoadingToEmbeds"
-                    ]
-                },
                 {
                     "name": "Enabled_LazyEmbeds0_20220809",
                     "params": {
@@ -2140,25 +2104,6 @@
             ]
         }
     ],
-    "BreakupLongOmniboxTasks": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "clear_focus_asynchronously": "true"
-                    },
-                    "enable_features": [
-                        "ClearOmniboxFocusAfterNavigation",
-                        "PostTaskFocusTab"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowserSwitcherNoneIsGreylist": [
         {
             "platforms": [
@@ -2288,6 +2233,27 @@
                     "name": "Disabled",
                     "disable_features": [
                         "CacheCodeOnIdle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CacheFeatureOverrideState": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CacheFeatureOverrideState"
                     ]
                 }
             ]
@@ -3418,7 +3384,8 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos"
             ],
             "experiments": [
                 {
@@ -6296,6 +6263,21 @@
             ]
         }
     ],
+    "MessagesForAndroidOfferNotification": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidOfferNotification"
+                    ]
+                }
+            ]
+        }
+    ],
     "MessagesPreinstall": [
         {
             "platforms": [
@@ -6448,6 +6430,23 @@
                     },
                     "enable_features": [
                         "NuxOnboarding"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NewEvSignalsEnabled": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewEvSignalsEnabled"
                     ]
                 }
             ]
@@ -6743,6 +6742,27 @@
             ]
         }
     ],
+    "OmniboxNavigationLatencyImprovements": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "LaunchTarget",
+                    "params": {
+                        "clear_focus_asynchronously": "true"
+                    },
+                    "enable_features": [
+                        "CacheDeprecatedSystemLocationSetting",
+                        "ClearOmniboxFocusAfterNavigation",
+                        "OptimizeGeolocationHeaderGeneration",
+                        "PostTaskFocusTab"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxPrerender": [
         {
             "platforms": [
@@ -6895,22 +6915,6 @@
                     },
                     "enable_features": [
                         "OptimizationHintsFetching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptimizeGeolocationHeaderGeneration": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CacheDeprecatedSystemLocationSetting",
-                        "OptimizeGeolocationHeaderGeneration"
                     ]
                 }
             ]
@@ -8508,6 +8512,21 @@
                     },
                     "enable_features": [
                         "SearchResumptionModuleAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SegmentationCompactionFix": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SegmentationCompactionFix"
                     ]
                 }
             ]
@@ -11038,6 +11057,29 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-Bwe-LossBasedBweV2": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled:true,CandidateFactors:1.02|1.0|0.95,DelayBasedCandidate:true,HigherBwBiasFactor:0.0002,HigherLogBwBiasFactor:0.02,ObservationDurationLowerBound:250ms,InstantUpperBoundBwBalance:75kbps,BwRampupUpperBoundFactor:1000000.0,InstantUpperBoundTemporalWeightFactor:0.9,TemporalWeightFactor:0.9,MaxIncreaseFactor:1.3,NewtonStepSize:0.75,InherentLossUpperBoundBwBalance:75kbps,LossThresholdOfHighBandwidthPreference:0.15,_20220905"
+                },
+                {
+                    "name": "Enabled:true,CandidateFactors:1.02|1.0|0.95,DelayBasedCandidate:true,HigherBwBiasFactor:0.0002,HigherLogBwBiasFactor:0.02,ObservationDurationLowerBound:250ms,InstantUpperBoundBwBalance:75kbps,BwRampupUpperBoundFactor:1000000.0,InstantUpperBoundTemporalWeightFactor:0.9,TemporalWeightFactor:0.9,MaxIncreaseFactor:1.3,NewtonStepSize:0.75,InherentLossUpperBoundBwBalance:75kbps,LossThresholdOfHighBandwidthPreference:0.15,NotIncreaseIfInherentLossLessThanAverageLoss:true,_20220905"
+                },
+                {
+                    "name": "Enabled:true,CandidateFactors:1.02|1.0|0.95,DelayBasedCandidate:true,HigherBwBiasFactor:0.0002,HigherLogBwBiasFactor:0.02,ObservationDurationLowerBound:250ms,InstantUpperBoundBwBalance:75kbps,BwRampupUpperBoundFactor:1000000.0,InstantUpperBoundTemporalWeightFactor:0.9,TemporalWeightFactor:0.9,MaxIncreaseFactor:1.3,NewtonStepSize:0.75,InherentLossUpperBoundBwBalance:75kbps,LossThresholdOfHighBandwidthPreference:0.15,NotIncreaseIfInherentLossLessThanAverageLoss:true,TrendlineIntegrationEnabled:true,TrendlineObservationsWindowSize:2,_20220905"
                 }
             ]
         }

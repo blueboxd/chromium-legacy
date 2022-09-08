@@ -343,11 +343,15 @@ class PLATFORM_EXPORT TransformationMatrix {
   //
   TransformationMatrix& Zoom(double zoom_factor);
 
-  bool IsInvertible() const;
+  bool IsInvertible() const { return InternalInverse(); }
 
   // This method returns the identity matrix if it is not invertible.
-  // Use isInvertible() before calling this if you need to know.
-  [[nodiscard]] TransformationMatrix Inverse() const;
+  // Use IsInvertible() before calling this if you need to know.
+  [[nodiscard]] TransformationMatrix Inverse() const {
+    TransformationMatrix m;
+    InternalInverse(&m);
+    return m;
+  }
 
   // decompose the matrix into its component parts
   typedef struct {
@@ -486,11 +490,38 @@ class PLATFORM_EXPORT TransformationMatrix {
   gfx::PointF InternalMapPoint(const gfx::PointF&) const;
   gfx::Point3F InternalMapPoint(const gfx::Point3F&) const;
   gfx::QuadF InternalMapQuad(const gfx::QuadF&) const;
+  bool InternalInverse(TransformationMatrix* result = nullptr) const;
 
   void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }
 
   static float ClampToFloat(double value) {
     return UNLIKELY(std::isnan(value)) ? 0 : ClampTo<float>(value);
+  }
+
+#if defined(__clang__)
+  template <typename T>
+  using VectorExt4 = T __attribute__((ext_vector_type(4)));
+#elif defined(__GNUC__)
+  template <typename T>
+  struct Vector4Helper {
+    typedef T __attribute__((vector_size(4 * sizeof(T)))) type;
+  };
+  template <typename T>
+  using VectorExt4 = Vector4Helper<T>::type;
+#else
+#error Unsupported compiler.
+#endif
+
+  using Double4 = VectorExt4<double>;
+
+  ALWAYS_INLINE Double4 Col(int c) const {
+    return {matrix_[c][0], matrix_[c][1], matrix_[c][2], matrix_[c][3]};
+  }
+  ALWAYS_INLINE void SetCol(int c, Double4 v) {
+    matrix_[c][0] = v.s0;
+    matrix_[c][1] = v.s1;
+    matrix_[c][2] = v.s2;
+    matrix_[c][3] = v.s3;
   }
 
   Matrix4 matrix_;

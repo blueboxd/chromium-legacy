@@ -71,7 +71,8 @@ function processOneFile(
     inlineSourcemaps) {
   const inputFile = fs.readFileSync(inputFileName, 'utf8');
   const inputLines = inputFile.split('\n');
-  const map = new SourceMapGenerator();
+  const map = new SourceMapGenerator(
+      {file: path.resolve(outputFileName), sourceRoot: process.cwd()});
 
   let originalLine = 0;
   let generatedLine = 0;
@@ -93,6 +94,10 @@ function processOneFile(
       originalLine += removedLines;
     }
   }
+
+  // Inline the source content.
+  map.setSourceContent(
+      originalFileName, fs.readFileSync(originalFileName).toString());
 
   if (!inlineSourcemaps) {
     fs.writeFileSync(outputFileName, map.toString());

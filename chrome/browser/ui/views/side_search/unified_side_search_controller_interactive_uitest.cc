@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_search/side_search_browsertest.h"
+#include "chrome/browser/ui/views/side_search/side_search_icon_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/test_tracker.h"
@@ -148,17 +149,9 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_FALSE(GetSidePanelFor(browser())->GetVisible());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
-  DISABLED_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
-#else
-#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
-  SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
-#endif
 IN_PROC_BROWSER_TEST_F(
     SideSearchV2Test,
-    MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
+    SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
   NavigateToMatchingSearchPageAndOpenSidePanel(browser());
 
   Browser* browser2 = CreateBrowser(browser()->profile());
@@ -178,16 +171,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1348296): Test is flaky on Mac.
-#define MAYBE_SidePanelTogglesCorrectlyMultipleTabs \
-  DISABLED_SidePanelTogglesCorrectlyMultipleTabs
-#else
-#define MAYBE_SidePanelTogglesCorrectlyMultipleTabs \
-  SidePanelTogglesCorrectlyMultipleTabs
-#endif
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
-                       MAYBE_SidePanelTogglesCorrectlyMultipleTabs) {
+                       SidePanelTogglesCorrectlyMultipleTabs) {
   // Navigate to a matching search URL followed by a non-matching URL in two
   // independent browser tabs such that both have the side panel ready. The
   // side panel should respect the state-per-tab flag.
@@ -263,14 +248,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_FALSE(side_panel->GetVisible());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1347306): This test is flakey on macOS.
-#define MAYBE_SidePanelCrashesCloseSidePanel \
-  DISABLED_SidePanelCrashesCloseSidePanel
-#else
-#define MAYBE_SidePanelCrashesCloseSidePanel SidePanelCrashesCloseSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SidePanelCrashesCloseSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SidePanelCrashesCloseSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
   coordinator->SetNoDelaysForTesting();
@@ -355,14 +333,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchSidePanelInSingleTab) {
             coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1341272): Test is flaky on Mac.
-#define MAYBE_SwitchTabsWithGlobalSidePanel \
-  DISABLED_SwitchTabsWithGlobalSidePanel
-#else
-#define MAYBE_SwitchTabsWithGlobalSidePanel SwitchTabsWithGlobalSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithGlobalSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
   coordinator->SetNoDelaysForTesting();
@@ -418,15 +389,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
             coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_SwitchTabsWithoutGlobalSidePanel \
-  DISABLED_SwitchTabsWithoutGlobalSidePanel
-#else
-#define MAYBE_SwitchTabsWithoutGlobalSidePanel SwitchTabsWithoutGlobalSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
-                       MAYBE_SwitchTabsWithoutGlobalSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithoutGlobalSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
 
@@ -476,14 +439,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_CloseSidePanelShouldClearCache \
-  DISABLED_CloseSidePanelShouldClearCache
-#else
-#define MAYBE_CloseSidePanelShouldClearCache CloseSidePanelShouldClearCache
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_CloseSidePanelShouldClearCache) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseSidePanelShouldClearCache) {
   auto* browser_view = BrowserViewFor(browser());
   NavigateActiveTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
@@ -506,18 +462,9 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_CloseSidePanelShouldClearCache) {
   EXPECT_EQ(nullptr, tab_contents_helper->side_panel_contents_for_testing());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_NewForegroundTabShouldNotDestroySidePanelContents \
-  DISABLED_NewForegroundTabShouldNotDestroySidePanelContents
-#else
-#define MAYBE_NewForegroundTabShouldNotDestroySidePanelContents \
-  NewForegroundTabShouldNotDestroySidePanelContents
-#endif
 // Test added for crbug.com/1349687 .
-IN_PROC_BROWSER_TEST_F(
-    SideSearchV2Test,
-    MAYBE_NewForegroundTabShouldNotDestroySidePanelContents) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       NewForegroundTabShouldNotDestroySidePanelContents) {
   auto* browser_view = BrowserViewFor(browser());
   NavigateActiveTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
@@ -546,17 +493,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(nullptr, tab_contents_helper->side_panel_contents_for_testing());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_CloseTabWithSideSearchOpenShouldNotCrash \
-  DISABLED_CloseTabWithSideSearchOpenShouldNotCrash
-#else
-#define MAYBE_CloseTabWithSideSearchOpenShouldNotCrash \
-  CloseTabWithSideSearchOpenShouldNotCrash
-#endif
 // Test added for crbug.com/1356966 .
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
-                       MAYBE_CloseTabWithSideSearchOpenShouldNotCrash) {
+                       CloseTabWithSideSearchOpenShouldNotCrash) {
   auto* browser_view = BrowserViewFor(browser());
   NavigateActiveTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
@@ -570,30 +509,15 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   browser()->tab_strip_model()->CloseAllTabs();
 }
 
-class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
+// Fixture base to test feature engagement functionality for the side search
+// feature.
+class SideSearchFeatureEngagementTest : public SideSearchBrowserTest {
  public:
-  SideSearchV2TestAutoTriggeringBrowserTest() {
-    constexpr char kParam[] = "SideSearchAutoTriggeringReturnCount";
-    constexpr char kTriggerCount[] = "2";
-    base::FieldTrialParams params = {{kParam, kTriggerCount}};
-
-    feature_list_.InitWithFeaturesAndParameters(
-        {
-            {features::kSideSearch, {}},
-            {features::kSideSearchDSESupport, {}},
-            {features::kUnifiedSidePanel, {}},
-            {features::kSideSearchAutoTriggering, params},
-            {feature_engagement::kIPHSideSearchAutoTriggeringFeature,
-             GetFeatureEngagementParams()},
-        },
-        {});
-
-    subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterCreateServicesCallbackForTesting(
-                base::BindRepeating(&SideSearchV2TestAutoTriggeringBrowserTest::
-                                        RegisterTestTracker));
-  }
+  SideSearchFeatureEngagementTest()
+      : subscription_(
+            BrowserContextDependencyManager::GetInstance()
+                ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                    &SideSearchFeatureEngagementTest::RegisterTestTracker))) {}
 
   SidePanel* GetSidePanelFor(Browser* browser) override {
     return BrowserViewFor(browser)->unified_side_panel();
@@ -612,6 +536,14 @@ class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser, url));
   }
 
+  std::map<std::string, std::string> GetFeatureEngagementParams() {
+    return {
+        {"availability", "any"},
+        {"event_used", "name:used;comparator:any;window:360;storage:360"},
+        {"event_trigger", "name:trigger;comparator:any;window:360;storage:360"},
+        {"session_rate", "<1"}};
+  }
+
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
@@ -625,20 +557,32 @@ class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
     return feature_engagement::CreateTestTracker();
   }
 
-  std::map<std::string, std::string> GetFeatureEngagementParams() {
-    constexpr char kEventUsedKey[] = "event_used";
-    constexpr char kEventUsedValue[] =
-        "name:used;comparator:any;window:360;storage:360";
-    constexpr char kEventTriggerKey[] = "event_trigger";
-    constexpr char kEventTriggerValue[] =
-        "name:trigger;comparator:any;window:360;storage:360";
-    return {{kEventUsedKey, kEventUsedValue},
-            {kEventTriggerKey, kEventTriggerValue}};
+  base::HistogramTester histogram_tester_;
+  base::CallbackListSubscription subscription_;
+};
+
+class SideSearchAutoTriggeringBrowserTest
+    : public SideSearchFeatureEngagementTest {
+ public:
+  SideSearchAutoTriggeringBrowserTest() {
+    constexpr char kParam[] = "SideSearchAutoTriggeringReturnCount";
+    constexpr char kTriggerCount[] = "2";
+    base::FieldTrialParams params = {{kParam, kTriggerCount}};
+
+    feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kSideSearch, {}},
+            {features::kSideSearchDSESupport, {}},
+            {features::kUnifiedSidePanel, {}},
+            {features::kSideSearchAutoTriggering, params},
+            {feature_engagement::kIPHSideSearchAutoTriggeringFeature,
+             GetFeatureEngagementParams()},
+        },
+        {});
   }
 
-  base::HistogramTester histogram_tester_;
+ private:
   base::test::ScopedFeatureList feature_list_;
-  base::CallbackListSubscription subscription_;
 };
 
 #if BUILDFLAG(IS_MAC)
@@ -650,7 +594,7 @@ class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
   SidePanelAutoTriggersAfterReturningToAPreviousSRP
 #endif
 IN_PROC_BROWSER_TEST_F(
-    SideSearchV2TestAutoTriggeringBrowserTest,
+    SideSearchAutoTriggeringBrowserTest,
     MAYBE_SidePanelAutoTriggersAfterReturningToAPreviousSRP) {
   const auto srp_url = GetMatchingSearchUrl();
   const auto non_srp_url_1 = GetNonMatchingUrl();
@@ -719,4 +663,83 @@ IN_PROC_BROWSER_TEST_F(
       "SideSearch.AutoTrigger."
       "NavigationCommittedWithinSideSearchCountPerJourney",
       1, 1);
+}
+
+class SideSearchPageActionLabelTriggerBrowserTest
+    : public SideSearchFeatureEngagementTest {
+ public:
+  SideSearchPageActionLabelTriggerBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kSideSearch, {}},
+            {features::kSideSearchDSESupport, {}},
+            {features::kUnifiedSidePanel, {}},
+            {feature_engagement::kIPHSideSearchPageActionLabelFeature,
+             GetFeatureEngagementParams()},
+        },
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+#if BUILDFLAG(IS_MAC)
+// Test is flaky on Mac.
+#define MAYBE_SideSearchPageActionLabelAnimationTriggersCorrectly \
+  DISABLED_SideSearchPageActionLabelAnimationTriggersCorrectly
+#else
+#define MAYBE_SideSearchPageActionLabelAnimationTriggersCorrectly \
+  SideSearchPageActionLabelAnimationTriggersCorrectly
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SideSearchPageActionLabelTriggerBrowserTest,
+    MAYBE_SideSearchPageActionLabelAnimationTriggersCorrectly) {
+  auto* button_view = GetSidePanelButtonFor(browser());
+  ASSERT_NE(nullptr, button_view);
+  auto* icon_view = views::AsViewClass<SideSearchIconView>(button_view);
+
+  // Get the browser into a state where the icon view is visible.
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  ASSERT_FALSE(icon_view->GetVisible());
+  NavigateActiveTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_TRUE(icon_view->IsLabelVisibleForTesting());
+
+  // Show the icon's label and toggle the side panel. It should correctly log
+  // being shown while the label was visible.
+  NotifyButtonClick(browser());
+  EXPECT_FALSE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kVisible, 1);
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kNotVisible, 0);
+
+  // Close the side panel.
+  NotifyCloseButtonClick(browser());
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_FALSE(GetSidePanelFor(browser())->GetVisible());
+
+  // The Label should no longer be visible.
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+
+  // Toggle the side panel again, it should correctly log
+  // being shown while the label was hidden.
+  NotifyButtonClick(browser());
+  EXPECT_FALSE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kVisible, 1);
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kNotVisible, 1);
 }

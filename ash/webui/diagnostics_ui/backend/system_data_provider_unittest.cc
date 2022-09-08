@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1449,6 +1449,32 @@ TEST_F(SystemDataProviderTest, RecordProbeError_BatteryInfo) {
                                      /*expected_service_unavailable=*/0,
                                      /*expected_system_utility_error=*/0,
                                      /*expected_file_read_error=*/0);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Validate expected metric NoData error triggered when request for SystemInfo
+// returns no battery info data.
+TEST_F(SystemDataProviderTest, RecordBatteryDataError_BatteryInfoNoDataError) {
+  base::HistogramTester histogram_tester;
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/0);
+
+  // Intentionally do not set any battery info.
+
+  base::RunLoop run_loop;
+  system_data_provider_->GetBatteryInfo(
+      base::BindLambdaForTesting([&](mojom::BatteryInfoPtr ptr) {
+        ASSERT_TRUE(ptr);
+        VerifyBatteryDataErrorBucketCounts(
+            histogram_tester,
+            /*expected_no_data_error=*/1,
+            /*expected_not_a_number_error=*/0,
+            /*expected_expectation_not_met_error=*/0);
+
         run_loop.Quit();
       }));
   run_loop.Run();

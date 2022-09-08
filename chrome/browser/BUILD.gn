@@ -568,12 +568,6 @@ static_library("browser") {
     "geolocation/geolocation_permission_context_delegate.h",
     "geolocation/geolocation_permission_context_extensions.cc",
     "geolocation/geolocation_permission_context_extensions.h",
-    "google/google_brand.cc",
-    "google/google_brand.h",
-    "google/google_search_domain_mixing_metrics_emitter.cc",
-    "google/google_search_domain_mixing_metrics_emitter.h",
-    "google/google_search_domain_mixing_metrics_emitter_factory.cc",
-    "google/google_search_domain_mixing_metrics_emitter_factory.h",
     "gpu/chrome_browser_main_extra_parts_gpu.cc",
     "gpu/chrome_browser_main_extra_parts_gpu.h",
     "gpu/gpu_mode_manager.cc",
@@ -966,6 +960,8 @@ static_library("browser") {
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/page_content_annotations_service_factory.cc",
     "optimization_guide/page_content_annotations_service_factory.h",
+    "optimization_guide/page_content_annotations_web_contents_observer.cc",
+    "optimization_guide/page_content_annotations_web_contents_observer.h",
     "optimization_guide/prediction/prediction_model_download_client.cc",
     "optimization_guide/prediction/prediction_model_download_client.h",
     "page_info/about_this_site_service_factory.cc",
@@ -1900,12 +1896,12 @@ static_library("browser") {
   allow_circular_includes_from = [
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
+    "//chrome/browser/google",
     "//chrome/browser/profiling_host",
 
     # TODO(crbug.com/1335199): break this dep when favicon is in its own target
     "//chrome/browser/share",
     "//chrome/browser/ui",
-    "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/storage_access_api:permissions",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
@@ -1916,8 +1912,14 @@ static_library("browser") {
     "//chrome/browser/media/router",
   ]
 
+  if (!is_chromeos_lacros) {
+    allow_circular_includes_from +=
+        [ "//chrome/browser/ui/webui/bluetooth_internals" ]
+  }
+
   public_deps = [
     "//base",
+    "//chrome/browser/google",
     "//chrome/common",
     "//chrome/common:buildflags",
     "//chrome/common:constants",
@@ -2015,7 +2017,6 @@ static_library("browser") {
     "//chrome/browser/ui/color:mixers",
     "//chrome/browser/ui/webui:configs",
     "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
-    "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/feed:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
@@ -2081,6 +2082,8 @@ static_library("browser") {
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/contextual_search/core/browser",
+    "//components/continuous_search/browser",
+    "//components/continuous_search/common/public/mojom",
     "//components/cookie_config",
     "//components/country_codes",
     "//components/crash/core/browser",
@@ -2177,6 +2180,7 @@ static_library("browser") {
     "//components/optimization_guide/content/browser",
     "//components/optimization_guide/core",
     "//components/optimization_guide/core:bloomfilter",
+    "//components/optimization_guide/core:page_content_annotations",
     "//components/optimization_guide/core:prediction",
     "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/os_crypt",
@@ -2501,7 +2505,6 @@ static_library("browser") {
   if (is_posix || is_fuchsia) {
     sources += [
       "download/trusted_sources_manager_posix.cc",
-      "google/google_update_settings_posix.cc",
       "performance_monitor/metric_evaluator_helper_posix.cc",
       "performance_monitor/metric_evaluator_helper_posix.h",
     ]
@@ -4817,10 +4820,6 @@ static_library("browser") {
       "enterprise/reporting/android_app_info_generator.h",
       "feedback/system_logs/log_sources/lacros_log_files_log_source.cc",
       "feedback/system_logs/log_sources/lacros_log_files_log_source.h",
-      "google/google_brand_chromeos.cc",
-      "google/google_brand_chromeos.h",
-      "google/google_brand_code_map_chromeos.cc",
-      "google/google_brand_code_map_chromeos.h",
       "icon_loader_chromeos.cc",
       "lifetime/application_lifetime_chromeos.cc",
       "lifetime/application_lifetime_chromeos.h",
@@ -5647,6 +5646,8 @@ static_library("browser") {
 
     # component builds are not compatible on device.
     assert(!is_chromeos_device || !is_component_build)
+  } else {
+    deps += [ "//chrome/browser/ui/webui/bluetooth_internals" ]
   }
 
   if (is_chromeos) {
@@ -5864,8 +5865,6 @@ static_library("browser") {
       "font_prewarmer_tab_helper.cc",
       "font_prewarmer_tab_helper.h",
       "fullscreen_win.cc",
-      "google/did_run_updater_win.cc",
-      "google/did_run_updater_win.h",
       "hang_monitor/hang_crash_dump_win.cc",
       "icon_loader_win.cc",
       "importer/firefox_profile_lock_win.cc",
@@ -6064,14 +6063,6 @@ static_library("browser") {
       sources += [
         "component_updater/third_party_module_list_component_installer_win.cc",
         "component_updater/third_party_module_list_component_installer_win.h",
-        "google/google_update_policy_fetcher_win.cc",
-        "google/google_update_policy_fetcher_win.h",
-        "google/google_update_policy_fetcher_win_util.cc",
-        "google/google_update_policy_fetcher_win_util.h",
-        "google/google_update_win.cc",
-        "google/google_update_win.h",
-        "google/switches.cc",
-        "google/switches.h",
         "policy/status_provider/updater_status_and_value_provider.cc",
         "policy/status_provider/updater_status_and_value_provider.h",
         "win/conflicts/incompatible_applications_updater.cc",
@@ -7612,10 +7603,11 @@ static_library("browser") {
     sources += [
       "content_settings/content_settings_supervised_provider.cc",
       "content_settings/content_settings_supervised_provider.h",
-      "supervised_user/child_accounts/child_account_service.cc",
       "supervised_user/child_accounts/child_account_service.h",
       "supervised_user/child_accounts/child_account_service_factory.cc",
       "supervised_user/child_accounts/child_account_service_factory.h",
+      "supervised_user/child_accounts/child_account_service_impl.cc",
+      "supervised_user/child_accounts/child_account_service_impl.h",
       "supervised_user/child_accounts/family_info_fetcher.cc",
       "supervised_user/child_accounts/family_info_fetcher.h",
       "supervised_user/child_accounts/kids_management_api.cc",

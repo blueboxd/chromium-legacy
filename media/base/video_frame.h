@@ -71,6 +71,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     kAPlane = 3,
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   // Defines the pixel storage type. Differentiates between directly accessible
   // |data_| and pixels that are only indirectly accessible and not via mappable
   // memory.
@@ -90,7 +92,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     STORAGE_DMABUFS = 5,  // Each plane is stored into a DmaBuf.
 #endif
     STORAGE_GPU_MEMORY_BUFFER = 6,
-    STORAGE_LAST = STORAGE_GPU_MEMORY_BUFFER,
+    STORAGE_MAX = STORAGE_GPU_MEMORY_BUFFER,
   };
 
   // CB to be called on the mailbox backing this frame and its GpuMemoryBuffers
@@ -514,7 +516,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     DCHECK(IsMappable());
     return data_[plane];
   }
-  uint8_t* data(size_t plane) {
+  uint8_t* writable_data(size_t plane) {
     DCHECK(IsValidPlane(format(), plane));
     DCHECK(IsMappable());
     return data_[plane];
@@ -529,7 +531,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // plane buffer specified by visible_rect().origin(). Memory is owned by
   // VideoFrame object and must not be freed by the caller.
   const uint8_t* visible_data(size_t plane) const;
-  uint8_t* visible_data(size_t plane);
+  uint8_t* GetWritableVisibleData(size_t plane);
 
   // Returns a mailbox holder for a given texture.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
@@ -698,6 +700,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns true iff the frame has a shared memory storage type, and the
   // associated regions are valid.
   bool IsValidSharedMemoryFrame() const;
+
+  template <typename T>
+  T GetVisibleDataInternal(T data, size_t plane) const;
 
   // VideFrameLayout (includes format, coded_size, and strides).
   const VideoFrameLayout layout_;

@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "components/reporting/metrics/configured_sampler.h"
-#include "components/reporting/metrics/telemetry_sampler_pool_base.h"
+#include "components/reporting/metrics/event_driven_telemetry_sampler_pool.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
 
 namespace reporting {
@@ -37,7 +37,7 @@ class Sampler;
 // reporting.
 class MetricReportingManager : public policy::ManagedSessionService::Observer,
                                public ::ash::DeviceSettingsService::Observer,
-                               public TelemetrySamplerPoolBase {
+                               public EventDrivenTelemetrySamplerPool {
  public:
   // Delegate class for dependencies and behaviors that need to be overridden
   // for testing purposes.
@@ -70,9 +70,9 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   // DeviceSettingsService::Observer:
   void DeviceSettingsUpdated() override;
 
-  // TelemetrySamplerPoolBase:
-  ConfiguredSampler* GetConfiguredTelemetrySampler(
-      base::StringPiece sampler_name) override;
+  // EventDrivenTelemetrySamplerPool:
+  std::vector<ConfiguredSampler*> GetTelemetrySamplers(
+      MetricEventType event_type) override;
 
  private:
   MetricReportingManager(
@@ -114,7 +114,6 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
 
   void InitPeriodicEventCollector(const std::string& sampler_name,
                                   std::unique_ptr<EventDetector> event_detector,
-                                  std::vector<Sampler*> additional_samplers,
                                   MetricReportQueue* metric_report_queue,
                                   const std::string& rate_setting_path,
                                   base::TimeDelta default_rate,
@@ -123,8 +122,7 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   void InitEventObserverManager(
       std::unique_ptr<MetricEventObserver> event_observer,
       const std::string& enable_setting_path,
-      bool setting_enabled_default_value,
-      std::vector<Sampler*> additional_samplers = {});
+      bool setting_enabled_default_value);
 
   void UploadTelemetry();
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ class ASH_EXPORT MultiCaptureServiceClient
     virtual void MultiCaptureStarted(const std::string& label,
                                      const url::Origin& origin) = 0;
     virtual void MultiCaptureStopped(const std::string& label) = 0;
+    virtual void MultiCaptureServiceClientDestroyed() = 0;
 
    protected:
     ~Observer() override = default;

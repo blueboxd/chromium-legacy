@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class Textfield;
 
 namespace ash {
 
-struct AuthenticationError;
+class AuthenticationError;
 
 // To be used for in-session authentication. Currently, only password
 // is supported, however, there are plans to enrich this dialog to eventually

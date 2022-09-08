@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,16 +11,41 @@
 
 namespace ash {
 
-// Struct that wraps implementation details of cryptohomed error reporting.
-struct COMPONENT_EXPORT(ASH_LOGIN_AUTH) AuthenticationError {
-  explicit AuthenticationError(user_data_auth::CryptohomeErrorCode error_code);
+// Struct that wraps various errors that can happen during login/authentication.
+
+class COMPONENT_EXPORT(ASH_LOGIN_AUTH) AuthenticationError {
+ public:
+  enum class Origin {
+    // The error comes from `cryptohomed`.
+    kCryptohome,
+    // The error represents some erroneous state detected by the chrome.
+    kChrome,
+  };
+  explicit AuthenticationError(
+      user_data_auth::CryptohomeErrorCode cryptohome_code);
+  explicit AuthenticationError(AuthFailure::FailureReason auth_failure);
+
   ~AuthenticationError();
 
-  // Original error reported by cryptohome.
-  user_data_auth::CryptohomeErrorCode error_code;
+  Origin get_origin() const { return origin_; }
+
+  AuthFailure::FailureReason get_resolved_failure() const {
+    return failure_reason_;
+  }
+
+  void ResolveToFailure(AuthFailure::FailureReason auth_failure);
+
+  user_data_auth::CryptohomeErrorCode get_cryptohome_code() const {
+    return cryptohome_code_;
+  }
+
+ private:
+  Origin origin_;
+  // Cryptohome-specific fields:
+  user_data_auth::CryptohomeErrorCode cryptohome_code_;
 
   // Mapping of the `error_code` to auth flow failure reason.
-  AuthFailure::FailureReason failure_reason = AuthFailure::NONE;
+  AuthFailure::FailureReason failure_reason_ = AuthFailure::NONE;
 };
 
 }  // namespace ash

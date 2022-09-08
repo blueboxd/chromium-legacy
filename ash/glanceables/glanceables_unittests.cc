@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,6 +175,14 @@ TEST_F(GlanceablesTest, CreateAndDestroyUi) {
 
   // Delegate was notified that glanceables were closed.
   EXPECT_EQ(1, GetTestDelegate()->on_glanceables_closed_count());
+}
+
+TEST_F(GlanceablesTest, HidesInTabletMode) {
+  controller_->CreateUi();
+  ASSERT_TRUE(controller_->IsShowing());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_FALSE(controller_->IsShowing());
 }
 
 TEST_F(GlanceablesTest, GlanceablesViewCreatesChildViews) {
@@ -378,6 +386,17 @@ TEST_F(GlanceablesTest, ShowFromOverview) {
   // Glanceables are showing and overview mode is closed.
   EXPECT_TRUE(controller_->IsShowing());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+}
+
+TEST_F(GlanceablesTest, OverviewDoesNotHaveUpNextButtonForSecondaryUser) {
+  // Sign in a secondary user.
+  SimulateUserLogin("user@test.com");
+  ASSERT_FALSE(Shell::Get()->session_controller()->IsUserPrimary());
+
+  // Overview mode does not have the "Up next" button.
+  EnterOverview();
+  const DesksBarView* desks_bar_view = GetPrimaryRootDesksBarView();
+  EXPECT_FALSE(desks_bar_view->up_next_button());
 }
 
 TEST_F(GlanceablesTest, ShowFromOverviewHidesAppWindows) {

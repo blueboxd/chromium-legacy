@@ -97,37 +97,16 @@ ScriptRunner::ScriptRunner(Document* document)
   DCHECK(document);
 }
 
-ScriptRunner::DelayReasons ScriptRunner::DetermineDelayReasonsToWait(
-    PendingScript* pending_script) {
-  DelayReasons reasons = static_cast<DelayReasons>(DelayReason::kLoad);
-
-  if (pending_script->IsEligibleForDelay() &&
-      (active_delay_reasons_ &
-       static_cast<DelayReasons>(DelayReason::kMilestone))) {
-    reasons |= static_cast<DelayReasons>(DelayReason::kMilestone);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kForceDeferScriptIntervention)) {
-    if (active_delay_reasons_ &
-        static_cast<DelayReasons>(DelayReason::kForceDefer)) {
-      reasons |= static_cast<DelayReasons>(DelayReason::kForceDefer);
-    }
-  }
-
-  return reasons;
-}
-
-void ScriptRunner::QueueScriptForExecution(
-    PendingScript* pending_script,
-    absl::optional<DelayReasons> delay_reasons_override_for_test) {
+void ScriptRunner::QueueScriptForExecution(PendingScript* pending_script,
+                                           DelayReasons delay_reasons) {
   DCHECK(pending_script);
+  DCHECK(delay_reasons & static_cast<DelayReasons>(DelayReason::kLoad));
   document_->IncrementLoadEventDelayCount();
+
   switch (pending_script->GetSchedulingType()) {
     case ScriptSchedulingType::kAsync:
-      pending_async_scripts_.insert(
-          pending_script, delay_reasons_override_for_test
-                              ? *delay_reasons_override_for_test
-                              : DetermineDelayReasonsToWait(pending_script));
+      pending_async_scripts_.insert(pending_script, delay_reasons);
+      number_of_async_scripts_not_evaluated_yet_++;
       break;
 
     case ScriptSchedulingType::kInOrder:
@@ -149,12 +128,12 @@ void ScriptRunner::QueueScriptForExecution(
 }
 
 void ScriptRunner::AddDelayReason(DelayReason delay_reason) {
-  DCHECK(!(active_delay_reasons_ & static_cast<DelayReasons>(delay_reason)));
+  DCHECK(!IsActive(delay_reason));
   active_delay_reasons_ |= static_cast<DelayReasons>(delay_reason);
 }
 
 void ScriptRunner::RemoveDelayReason(DelayReason delay_reason) {
-  DCHECK(active_delay_reasons_ & static_cast<DelayReasons>(delay_reason));
+  DCHECK(IsActive(delay_reason));
   active_delay_reasons_ &= ~static_cast<DelayReasons>(delay_reason);
 
   HeapVector<Member<PendingScript>> pending_async_scripts;
@@ -200,8 +179,8 @@ void ScriptRunner::RemoveDelayReasonFromScript(PendingScript* pending_script,
   // Script is really ready to evaluate.
   pending_async_scripts_.erase(it);
   base::OnceClosure task =
-      WTF::Bind(&ScriptRunner::ExecutePendingScript, WrapWeakPersistent(this),
-                WrapPersistent(pending_script));
+      WTF::Bind(&ScriptRunner::ExecuteAsyncPendingScript,
+                WrapWeakPersistent(this), WrapPersistent(pending_script));
   if (base::FeatureList::IsEnabled(
           features::kLowPriorityAsyncScriptExecution)) {
     PostTaskWithLowPriorityUntilTimeout(
@@ -210,6 +189,20 @@ void ScriptRunner::RemoveDelayReasonFromScript(PendingScript* pending_script,
         low_priority_task_runner_, task_runner_);
   } else {
     task_runner_->PostTask(FROM_HERE, std::move(task));
+  }
+}
+
+void ScriptRunner::ExecuteAsyncPendingScript(PendingScript* pending_script) {
+  DCHECK_GT(number_of_async_scripts_not_evaluated_yet_, 0u);
+  ExecutePendingScript(pending_script);
+  number_of_async_scripts_not_evaluated_yet_--;
+  if (base::FeatureList::IsEnabled(
+          features::kDOMContentLoadedWaitForAsyncScript) &&
+      !HasAsyncScripts()) {
+    if (ScriptableDocumentParser* parser =
+            document_->GetScriptableDocumentParser()) {
+      parser->NotifyNoRemainingAsyncScripts();
+    }
   }
 }
 

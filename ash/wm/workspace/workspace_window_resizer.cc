@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -971,8 +971,11 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
   }
 
-  // Drag/Resize a floated window won't change window restore bounds.
+  // Update the restore bounds of a floated window in case it has changed
+  // displays.
   if (window_state()->IsFloated()) {
+    window_state()->SetRestoreBoundsInParent(
+        details().restore_bounds_in_parent);
     return;
   }
 

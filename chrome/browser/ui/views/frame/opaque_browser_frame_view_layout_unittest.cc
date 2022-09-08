@@ -26,6 +26,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/test/views_test_utils.h"
 
 namespace {
 
@@ -91,10 +92,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsTranslucentWindowOpacitySupported() const override { return true; }
   bool ShouldDrawRestoredFrameShadow() const override { return true; }
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  OpaqueBrowserFrameViewLayoutDelegate::TiledEdges GetTiledEdges()
-      const override {
-    return {};
-  }
+  ui::WindowTiledEdges GetTiledEdges() const override { return {}; }
 #endif
 
  private:
@@ -380,7 +378,7 @@ class OpaqueBrowserFrameViewLayoutTest
 TEST_P(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
   // Tests the layout of a default chrome window with a tabstrip and no window
   // title.
-  RunScheduledLayout(root_view_);
+  views::test::RunScheduledLayout(root_view_);
   ExpectCaptionButtons(false, 0);
   ExpectTabStripAndMinimumSize(false);
   ExpectWindowIcon(false);
@@ -395,7 +393,7 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   leading_buttons.push_back(views::FrameButton::kMaximize);
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
 
-  RunScheduledLayout(root_view_);
+  views::test::RunScheduledLayout(root_view_);
   ExpectCaptionButtons(true, 0);
   ExpectTabStripAndMinimumSize(true);
   ExpectWindowIcon(true);
@@ -406,7 +404,7 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   // should force the tab strip to be condensed).
   delegate_->set_show_caption_buttons(false);
 
-  RunScheduledLayout(root_view_);
+  views::test::RunScheduledLayout(root_view_);
   ExpectCaptionButtons(false, 0);
   ExpectTabStripAndMinimumSize(false);
   ExpectWindowIcon(false);
@@ -417,7 +415,7 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
   delegate_->set_window_title(u"Window Title");
   AddWindowTitleIcons();
 
-  RunScheduledLayout(root_view_);
+  views::test::RunScheduledLayout(root_view_);
   ExpectCaptionButtons(false, 0);
   ExpectWindowIcon(false);
   ExpectWindowTitle();

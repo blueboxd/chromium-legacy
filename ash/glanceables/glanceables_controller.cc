@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -46,11 +47,21 @@ bool IsWindowOnAnyDesk(aura::Window* window) {
 
 }  // namespace
 
-GlanceablesController::GlanceablesController() {
+GlanceablesController::GlanceablesController()
+    : start_of_month_utc_(
+          calendar_utils::GetStartOfMonthUTC(base::Time::Now())) {
   Shell::Get()->activation_client()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
+
+  // Adding current month to the set of *non-prunable* months will trigger
+  // another fetch and `OnEventsFetched` call. Otherwise, the default behavior
+  // is that *prunable* months are cached and do not trigger another fetch.
+  Shell::Get()->system_tray_model()->calendar_model()->AddNonPrunableMonth(
+      start_of_month_utc_);
 }
 
 GlanceablesController::~GlanceablesController() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
@@ -64,12 +75,22 @@ void GlanceablesController::Init(
 }
 
 void GlanceablesController::ShowOnLogin() {
+  if (Shell::Get()->IsInTabletMode()) {
+    // TODO(crbug.com/1360528): Implement tablet mode support.
+    return;
+  }
+
   show_session_restore_ = true;
   CreateUi();
   FetchData();
 }
 
 void GlanceablesController::ShowFromOverview() {
+  if (Shell::Get()->IsInTabletMode()) {
+    // TODO(crbug.com/1360528): Implement tablet mode support.
+    return;
+  }
+
   // Hide any open windows.
   window_hider_ = std::make_unique<GlanceablesWindowHider>();
   show_session_restore_ = false;
@@ -134,6 +155,14 @@ void GlanceablesController::OnWindowActivated(
     DestroyUi();
 }
 
+void GlanceablesController::OnTabletModeStarted() {
+  if (!IsShowing())
+    return;
+
+  // TODO(crbug.com/1360528): Implement tablet mode support.
+  DestroyUi();
+}
+
 void GlanceablesController::FetchData() {
   // GlanceablesWeatherView observes the weather model for updates.
   Shell::Get()
@@ -142,7 +171,7 @@ void GlanceablesController::FetchData() {
       ->FetchWeather();
 
   Shell::Get()->system_tray_model()->calendar_model()->FetchEvents(
-      calendar_utils::GetStartOfMonthUTC(base::Time::Now()));
+      start_of_month_utc_);
 }
 
 void GlanceablesController::ApplyBackdrop() const {

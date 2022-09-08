@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -2120,10 +2119,7 @@ void RenderFrameHostImpl::OnPortalCreatedForTesting(
 
 Portal* RenderFrameHostImpl::FindPortalByToken(
     const blink::PortalToken& portal_token) {
-  auto it =
-      std::find_if(portals_.begin(), portals_.end(), [&](const auto& portal) {
-        return portal->portal_token() == portal_token;
-      });
+  auto it = base::ranges::find(portals_, portal_token, &Portal::portal_token);
   return it == portals_.end() ? nullptr : it->get();
 }
 
@@ -3084,10 +3080,8 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     // frames arguably are renderer-created.
     //
     // TODO(https://crbug.com/1194421): Address the prerendering case.
-    // TODO(crbug.com/1316388): With MPArch there may be embedded main frames
-    // and so is_main_frame should not be used to identify all embedded frames.
-    // Follow up to confirm correctness.
-    if (IsOutermostMainFrame() && !renderer_initiated_creation_of_main_frame &&
+    DCHECK(IsOutermostMainFrame());
+    if (!renderer_initiated_creation_of_main_frame &&
         lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
       policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
     }
@@ -6321,7 +6315,7 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
   if (!browser_accessibility_manager_)
     return;
 
-  DCHECK(delegate_->GetAccessibilityMode().has_mode(ui::kAXModeBasic.mode()));
+  DCHECK(delegate_->GetAccessibilityMode().has_mode(ui::AXMode::kNativeAPIs));
   if (!browser_accessibility_manager_->OnAccessibilityEvents(details)) {
     // OnAccessibilityEvents returns false in IPC error conditions.
     AccessibilityFatalError();
@@ -9847,7 +9841,7 @@ RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
   // Never create a BrowserAccessibilityManager unless needed for the AXMode.
   // At least basic mode is required; it contains kWebContents and KNativeAPIs.
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (!accessibility_mode.has_mode(ui::kAXModeBasic.mode())) {
+  if (!accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
     DCHECK(!browser_accessibility_manager_);
     return nullptr;
   }

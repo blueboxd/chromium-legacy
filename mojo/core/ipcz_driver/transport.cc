@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
+#include "mojo/core/ipcz_driver/data_pipe.h"
 #include "mojo/core/ipcz_driver/object.h"
 #include "mojo/core/ipcz_driver/shared_buffer.h"
 #include "mojo/core/ipcz_driver/transmissible_platform_handle.h"
@@ -100,6 +101,10 @@ PlatformHandle DecodeHandle(HANDLE handle,
 }
 #endif  // BUILDFLAG(IS_WIN)
 
+scoped_refptr<base::SingleThreadTaskRunner>& GetIOTaskRunnerStorage() {
+  static base::NoDestructor<scoped_refptr<base::SingleThreadTaskRunner>> runner;
+  return *runner;
+}
 }  // namespace
 
 Transport::Transport(Destination destination,
@@ -123,6 +128,18 @@ Transport::CreatePair(Destination first_destination,
 
 Transport::~Transport() = default;
 
+// static
+void Transport::SetIOTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> runner) {
+  GetIOTaskRunnerStorage() = std::move(runner);
+}
+
+// static
+const scoped_refptr<base::SingleThreadTaskRunner>&
+Transport::GetIOTaskRunner() {
+  return GetIOTaskRunnerStorage();
+}
+
 bool Transport::Activate(IpczHandle transport,
                          IpczTransportActivityHandler activity_handler) {
   scoped_refptr<Channel> channel;
@@ -136,9 +153,8 @@ bool Transport::Activate(IpczHandle transport,
     ipcz_transport_ = transport;
     activity_handler_ = activity_handler;
     self_reference_for_channel_ = base::WrapRefCounted(this);
-    channel_ = Channel::CreateForIpczDriver(
-        this, std::move(inactive_endpoint_),
-        Core::Get()->GetNodeController()->io_task_runner());
+    channel_ = Channel::CreateForIpczDriver(this, std::move(inactive_endpoint_),
+                                            GetIOTaskRunner());
     channel_->Start();
 
     if (!pending_transmissions_.empty()) {
@@ -358,6 +374,10 @@ IpczResult Transport::DeserializeObject(
 
     case ObjectBase::kWrappedPlatformHandle:
       object = WrappedPlatformHandle::Deserialize(object_data, object_handles);
+      break;
+
+    case ObjectBase::kDataPipe:
+      object = DataPipe::Deserialize(object_data, object_handles);
       break;
 
     default:

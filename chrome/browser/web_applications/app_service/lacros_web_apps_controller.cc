@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/render_frame_host.h"
@@ -416,22 +417,10 @@ void LacrosWebAppsController::ModifyWebAppCapabilityAccess(
     return;
   }
 
-  std::vector<apps::mojom::CapabilityAccessPtr> capability_accesses;
-  auto capability_access = apps::mojom::CapabilityAccess::New();
-  capability_access->app_id = app_id;
-
-  if (accessing_camera.has_value()) {
-    capability_access->camera = accessing_camera.value()
-                                    ? apps::mojom::OptionalBool::kTrue
-                                    : apps::mojom::OptionalBool::kFalse;
-  }
-
-  if (accessing_microphone.has_value()) {
-    capability_access->microphone = accessing_microphone.value()
-                                        ? apps::mojom::OptionalBool::kTrue
-                                        : apps::mojom::OptionalBool::kFalse;
-  }
-
+  std::vector<apps::CapabilityAccessPtr> capability_accesses;
+  auto capability_access = std::make_unique<apps::CapabilityAccess>(app_id);
+  capability_access->camera = accessing_camera;
+  capability_access->microphone = accessing_microphone;
   capability_accesses.push_back(std::move(capability_access));
 
   if (remote_publisher_version_ <

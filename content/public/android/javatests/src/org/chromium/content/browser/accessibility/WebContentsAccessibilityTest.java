@@ -465,6 +465,7 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1360513")
     public void testUMAHistograms_OnDemand_AXModeComplete_100Percent() throws Throwable {
         // Build a simple web page with a few nodes to traverse.
         setupTestWithHTML("<p>This is a test 1</p>\n"
@@ -1020,6 +1021,7 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @LargeTest
+    @DisabledTest(message = "https://crbug.com/1360585")
     public void testEvent_contenteditable_SelectionON_CharacterGranularity() throws Throwable {
         setupTestWithHTML("<div contenteditable>Testing</div>");
 

@@ -20,6 +20,8 @@ Range::Range(const NSRange& range) {
 Range Range::FromPossiblyInvalidNSRange(const NSRange& range) {
   uint32_t end;
   if (range.location == NSNotFound ||
+      !base::IsValueInRangeForNumericType<uint32_t>(range.location) ||
+      !base::IsValueInRangeForNumericType<uint32_t>(range.length) ||
       !base::CheckAdd<uint32_t>(range.location, range.length)
            .AssignIfValid(&end)) {
     return InvalidRange();

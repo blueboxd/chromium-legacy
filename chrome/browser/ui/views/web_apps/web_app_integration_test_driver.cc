@@ -29,6 +29,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -172,6 +173,8 @@ Site InstallableSiteToSite(InstallableSite site) {
       return Site::kFileHandler;
     case InstallableSite::kNoServiceWorker:
       return Site::kNoServiceWorker;
+    case InstallableSite::kNotInstalled:
+      return Site::kNotInstalled;
   }
 }
 
@@ -213,9 +216,9 @@ struct SiteConfig {
 
 base::flat_map<Site, SiteConfig> g_site_configs = {
     {Site::kStandalone,
-     {.relative_scope_url = "/web_apps/standalone/",
-      .relative_start_url = "/web_apps/standalone/basic.html",
-      .relative_manifest_id = "web_apps/standalone/basic.html",
+     {.relative_scope_url = "/webapps_integration/standalone/",
+      .relative_start_url = "/webapps_integration/standalone/basic.html",
+      .relative_manifest_id = "webapps_integration/standalone/basic.html",
       .app_name = "Site A",
       // WCO disabled is the defaulting state so the title when disabled should
       // match with the app's name.
@@ -223,45 +226,45 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .icon_color = SK_ColorGREEN,
       .alternate_titles = {"Site A - Updated name"}}},
     {Site::kMinimalUi,
-     {.relative_scope_url = "/web_apps/minimal_ui/",
-      .relative_start_url = "/web_apps/minimal_ui/basic.html",
-      .relative_manifest_id = "web_apps/minimal_ui/basic.html",
+     {.relative_scope_url = "/webapps_integration/minimal_ui/",
+      .relative_start_url = "/webapps_integration/minimal_ui/basic.html",
+      .relative_manifest_id = "webapps_integration/minimal_ui/basic.html",
       .app_name = "Site B",
       .wco_not_enabled_title = u"Site B",
       .icon_color = SK_ColorBLACK}},
     {Site::kNotPromotable,
-     {.relative_scope_url = "/web_apps/not_promotable/",
-      .relative_start_url = "/web_apps/not_promotable/basic.html",
-      .relative_manifest_id = "web_apps/not_promotable/basic.html",
+     {.relative_scope_url = "/webapps_integration/not_promotable/",
+      .relative_start_url = "/webapps_integration/not_promotable/basic.html",
+      .relative_manifest_id = "webapps_integration/not_promotable/basic.html",
       .app_name = "Site C",
       .wco_not_enabled_title = u"Site C",
       .icon_color = SK_ColorTRANSPARENT}},
     {Site::kWco,
-     {.relative_scope_url = "/web_apps/wco/",
-      .relative_start_url = "/web_apps/wco/basic.html",
-      .relative_manifest_id = "web_apps/wco/basic.html",
+     {.relative_scope_url = "/webapps_integration/wco/",
+      .relative_start_url = "/webapps_integration/wco/basic.html",
+      .relative_manifest_id = "webapps_integration/wco/basic.html",
       .app_name = "Site WCO",
       .wco_not_enabled_title = u"Site WCO",
       .icon_color = SK_ColorGREEN}},
     {Site::kStandaloneNestedA,
-     {.relative_scope_url = "/web_apps/standalone/foo/",
-      .relative_start_url = "/web_apps/standalone/foo/basic.html",
-      .relative_manifest_id = "web_apps/standalone/foo/basic.html",
+     {.relative_scope_url = "/webapps_integration/standalone/foo/",
+      .relative_start_url = "/webapps_integration/standalone/foo/basic.html",
+      .relative_manifest_id = "webapps_integration/standalone/foo/basic.html",
       .app_name = "Site A Foo",
       .wco_not_enabled_title = u"Site A Foo",
       .icon_color = SK_ColorGREEN}},
     {Site::kStandaloneNestedB,
-     {.relative_scope_url = "/web_apps/standalone/bar/",
-      .relative_start_url = "/web_apps/standalone/bar/basic.html",
-      .relative_manifest_id = "web_apps/standalone/bar/basic.html",
+     {.relative_scope_url = "/webapps_integration/standalone/bar/",
+      .relative_start_url = "/webapps_integration/standalone/bar/basic.html",
+      .relative_manifest_id = "webapps_integration/standalone/bar/basic.html",
       .app_name = "Site A Bar",
       .wco_not_enabled_title = u"Site A Bar",
       .icon_color = SK_ColorGREEN}},
     {Site::kIsolated,
-     {.relative_scope_url = "/web_apps/isolated_app/",
-      // This file actually lives in /web_apps/isolated_app/. We serve this
-      // directory as root in a special test server to allow the isolated app
-      // to live at the root scope.
+     {.relative_scope_url = "/webapps_integration/isolated_app/",
+      // This file actually lives in /webapps_integration/isolated_app/. We
+      // serve this directory as root in a special test server to allow the
+      // isolated app to live at the root scope.
       .relative_start_url = "/basic.html",
       // same note for this file
       .relative_manifest_id = "basic.html",
@@ -269,19 +272,28 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .wco_not_enabled_title = u"Isolated App",
       .icon_color = SK_ColorGREEN}},
     {Site::kFileHandler,
-     {.relative_scope_url = "/web_apps/file_handler/",
-      .relative_start_url = "/web_apps/file_handler/basic.html",
-      .relative_manifest_id = "web_apps/file_handler/basic.html",
+     {.relative_scope_url = "/webapps_integration/file_handler/",
+      .relative_start_url = "/webapps_integration/file_handler/basic.html",
+      .relative_manifest_id = "webapps_integration/file_handler/basic.html",
       .app_name = "File Handler",
       .wco_not_enabled_title = u"File Handler",
       .icon_color = SK_ColorBLACK}},
     {Site::kNoServiceWorker,
-     {.relative_scope_url = "/web_apps/site_no_service_worker/",
-      .relative_start_url = "/web_apps/site_no_service_worker/basic.html",
-      .relative_manifest_id = "web_apps/site_no_service_worker/basic.html",
+     {.relative_scope_url = "/webapps_integration/site_no_service_worker/",
+      .relative_start_url =
+          "/webapps_integration/site_no_service_worker/basic.html",
+      .relative_manifest_id =
+          "webapps_integration/site_no_service_worker/basic.html",
       .app_name = "Site NoServiceWorker",
       .wco_not_enabled_title = u"Site NoServiceWorker",
       .icon_color = SK_ColorGREEN}},
+    {Site::kNotInstalled,
+     {.relative_scope_url = "/webapps_integration/not_installed/",
+      .relative_start_url = "/webapps_integration/not_installed/basic.html",
+      .relative_manifest_id = "webapps_integration/not_installed/basic.html",
+      .app_name = "Not Installed",
+      .wco_not_enabled_title = u"Not Installed",
+      .icon_color = SK_ColorBLUE}},
 };
 
 struct DisplayConfig {
@@ -647,7 +659,7 @@ WebAppIntegrationTestDriver::~WebAppIntegrationTestDriver() = default;
 void WebAppIntegrationTestDriver::SetUp() {
   isolated_app_test_server_ = std::make_unique<net::EmbeddedTestServer>();
   isolated_app_test_server_->AddDefaultHandlers(base::FilePath(
-      FILE_PATH_LITERAL("chrome/test/data/web_apps/isolated_app/")));
+      FILE_PATH_LITERAL("chrome/test/data/webapps_integration/isolated_app/")));
   CHECK(isolated_app_test_server_->Start());
 
   webapps::TestAppBannerManagerDesktop::SetUp();
@@ -1107,12 +1119,12 @@ void WebAppIntegrationTestDriver::LaunchFromLaunchIcon(Site site) {
   ASSERT_TRUE(IntentPickerBubbleView::intent_picker_bubble());
   EXPECT_TRUE(IntentPickerBubbleView::intent_picker_bubble()->GetVisible());
 
-  LOG(INFO) << "Launching app window";
   IntentPickerBubbleView::intent_picker_bubble()->AcceptDialog();
   browser_added_waiter.Wait();
   app_browser_ = browser_added_waiter.browser_added();
   ActivateBrowserAndWait(app_browser_);
-  CHECK(app_browser_->is_type_app());
+  ASSERT_TRUE(app_browser_->is_type_app());
+  ASSERT_TRUE(AppBrowserController::IsForWebApp(app_browser_, app_id));
   active_app_id_ = app_browser()->app_controller()->app_id();
   AfterStateChangeAction();
 }
@@ -1345,9 +1357,9 @@ std::vector<base::FilePath> WebAppIntegrationTestDriver::GetTestFilePaths(
     FilesOptions files_options) {
   std::vector<base::FilePath> file_paths;
   base::FilePath txt_file_path = GetResourceFile(
-      FILE_PATH_LITERAL("web_apps/files/file_handler_test.txt"));
+      FILE_PATH_LITERAL("webapps_integration/files/file_handler_test.txt"));
   base::FilePath png_file_path = GetResourceFile(
-      FILE_PATH_LITERAL("web_apps/files/file_handler_test.png"));
+      FILE_PATH_LITERAL("webapps_integration/files/file_handler_test.png"));
   switch (files_options) {
     case FilesOptions::kOneTextFile:
       file_paths.push_back(txt_file_path);
@@ -2436,7 +2448,7 @@ AppId WebAppIntegrationTestDriver::GetAppIdBySiteMode(Site site) {
   std::string manifest_id = site_config.relative_manifest_id;
   auto relative_start_url = site_config.relative_start_url;
   GURL start_url = GetTestServerForSiteMode(site).GetURL(relative_start_url);
-  CHECK(start_url.is_valid());
+  DCHECK(start_url.is_valid());
 
   return GenerateAppId(manifest_id, start_url);
 }
@@ -2961,6 +2973,10 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   disabled_features.push_back(features::kWebAppsCrosapi);
   disabled_features.push_back(chromeos::features::kLacrosPrimary);
+#endif
+#if BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/1357905): Update test driver to work with new UI.
+  disabled_features.push_back(apps::features::kLinkCapturingUiUpdate);
 #endif
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }

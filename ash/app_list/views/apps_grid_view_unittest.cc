@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,6 +80,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
@@ -567,9 +568,9 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
   // depends on item positions.
   void UpdateLayout() {
     if (!create_as_tablet_mode_ && features::IsProductivityLauncherEnabled())
-      GetAppListTestHelper()->GetBubbleView()->Layout();
+      views::test::RunScheduledLayout(GetAppListTestHelper()->GetBubbleView());
     else
-      app_list_view_->Layout();
+      views::test::RunScheduledLayout(app_list_view_);
   }
 
   AppListItemView* InitiateDragForItemAtCurrentPageAt(

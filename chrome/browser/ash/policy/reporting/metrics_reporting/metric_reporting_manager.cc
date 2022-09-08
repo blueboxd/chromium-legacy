@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/components/settings/cros_settings_names.h"
 #include "base/check.h"
@@ -105,14 +106,10 @@ void MetricReportingManager::DeviceSettingsUpdated() {
   }
 }
 
-ConfiguredSampler* MetricReportingManager::GetConfiguredTelemetrySampler(
-    base::StringPiece sampler_name) {
+std::vector<ConfiguredSampler*> MetricReportingManager::GetTelemetrySamplers(
+    MetricEventType event_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!base::Contains(telemetry_sampler_map_, sampler_name)) {
-    return nullptr;
-  }
-  return telemetry_sampler_map_.at(sampler_name).get();
+  return {};
 }
 
 MetricReportingManager::MetricReportingManager(
@@ -343,7 +340,6 @@ void MetricReportingManager::InitPeriodicCollector(
 void MetricReportingManager::InitPeriodicEventCollector(
     const std::string& sampler_name,
     std::unique_ptr<EventDetector> event_detector,
-    std::vector<Sampler*> additional_samplers,
     MetricReportQueue* metric_report_queue,
     const std::string& rate_setting_path,
     base::TimeDelta default_rate,
@@ -359,7 +355,7 @@ void MetricReportingManager::InitPeriodicEventCollector(
       telemetry_sampler_map_.at(sampler_name).get();
   periodic_collectors_.emplace_back(delegate_->CreatePeriodicEventCollector(
       configured_sampler->GetSampler(), std::move(event_detector),
-      std::move(additional_samplers), metric_report_queue, &reporting_settings_,
+      /*sampler_pool=*/this, metric_report_queue, &reporting_settings_,
       configured_sampler->GetEnableSettingPath(),
       configured_sampler->GetSettingEnabledDefaultValue(), rate_setting_path,
       default_rate, rate_unit_to_ms));
@@ -368,15 +364,14 @@ void MetricReportingManager::InitPeriodicEventCollector(
 void MetricReportingManager::InitEventObserverManager(
     std::unique_ptr<MetricEventObserver> event_observer,
     const std::string& enable_setting_path,
-    bool setting_enabled_default_value,
-    std::vector<Sampler*> additional_samplers) {
+    bool setting_enabled_default_value) {
   if (!event_report_queue_) {
     return;
   }
   event_observer_managers_.emplace_back(delegate_->CreateEventObserverManager(
       std::move(event_observer), event_report_queue_.get(),
       &reporting_settings_, enable_setting_path, setting_enabled_default_value,
-      std::move(additional_samplers)));
+      /*sampler_pool=*/this));
 }
 
 void MetricReportingManager::UploadTelemetry() {
@@ -404,7 +399,8 @@ void MetricReportingManager::InitTelemetryConfiguredSampler(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto configured_sampler = std::make_unique<ConfiguredSampler>(
-      std::move(sampler), enable_setting_path, default_value);
+      std::move(sampler), enable_setting_path, default_value,
+      &reporting_settings_);
   telemetry_sampler_map_.insert({sampler_name, std::move(configured_sampler)});
 }
 
@@ -420,7 +416,7 @@ void MetricReportingManager::InitNetworkCollectors(Profile* profile) {
   // HttpsLatency events.
   InitPeriodicEventCollector(
       kSamplerHttpsLatency, std::make_unique<HttpsLatencyEventDetector>(),
-      /*additional_samplers=*/{}, event_report_queue_.get(),
+      event_report_queue_.get(),
       ::ash::kReportDeviceNetworkTelemetryEventCheckingRateMs,
       metrics::GetDefaultEventCheckingRate(
           metrics::kDefaultNetworkTelemetryEventCheckingRate));
@@ -475,7 +471,7 @@ void MetricReportingManager::InitPeripheralsCollectors() {
       peripheral_events_and_telemetry_report_queue_.get(), &reporting_settings_,
       ::ash::kReportDevicePeripherals,
       metrics::kReportDevicePeripheralsDefaultValue,
-      /*additional_samplers=*/std::vector<Sampler*>()));
+      /*sampler_pool=*/this));
 
   // Peripheral telemetry
   InitOneShotTelemetryCollector(

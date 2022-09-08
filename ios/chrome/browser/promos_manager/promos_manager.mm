@@ -83,6 +83,22 @@ void PromosManager::Init() {
       local_state_->GetValueList(prefs::kIosPromosManagerImpressions));
 }
 
+// Impression history should grow in sorted order. Given this happens on the
+// main thread, appending to the end of the impression history list is
+// sufficient.
+void PromosManager::RecordImpression(promos_manager::Promo promo) {
+  DCHECK(local_state_);
+
+  base::Value::Dict impression;
+  impression.Set(promos_manager::kImpressionPromoKey,
+                 promos_manager::NameForPromo(promo));
+  impression.Set(promos_manager::kImpressionDayKey, TodaysDay());
+
+  ListPrefUpdate update(local_state_, prefs::kIosPromosManagerImpressions);
+  base::Value::List& impression_history = update->GetList();
+  impression_history.Append(std::move(impression));
+}
+
 void PromosManager::RegisterPromoForContinuousDisplay(
     promos_manager::Promo promo) {
   ConditionallyAppendPromoToPrefList(
@@ -92,6 +108,12 @@ void PromosManager::RegisterPromoForContinuousDisplay(
 void PromosManager::RegisterPromoForSingleDisplay(promos_manager::Promo promo) {
   ConditionallyAppendPromoToPrefList(
       promo, prefs::kIosPromosManagerSingleDisplayActivePromos, local_state_);
+}
+
+void PromosManager::InitializePromoImpressionLimits(
+    base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>
+        promo_impression_limits) {
+  promo_impression_limits_ = std::move(promo_impression_limits);
 }
 
 absl::optional<promos_manager::Promo> PromosManager::NextPromoForDisplay()
@@ -174,8 +196,12 @@ std::set<promos_manager::Promo> PromosManager::ActivePromos(
 
 NSArray<ImpressionLimit*>* PromosManager::PromoImpressionLimits(
     promos_manager::Promo promo) const {
-  // TODO(crbug.com/1354665): Return `promo`-specific limits.
-  return @[];
+  auto it = promo_impression_limits_.find(promo);
+
+  if (it == promo_impression_limits_.end())
+    return @[];
+
+  return it->second;
 }
 
 NSArray<ImpressionLimit*>* PromosManager::GlobalImpressionLimits() const {

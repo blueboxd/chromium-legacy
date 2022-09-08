@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,8 @@ public class FlagsFragmentTest {
             Flag.commandLine(AwSwitches.WEBVIEW_VERBOSE_LOGGING,
                     "WebView will log additional debugging information to logcat, such as "
                             + "variations and commandline state."),
+            // Validity check: make sure omitting the description doesn't cause any crashes
+            Flag.baseFeature("FeatureWithoutDescription"),
             Flag.baseFeature("FakeWebViewFeatureForTesting", "Fake base::Feature for testing."),
             Flag.commandLine("last-switch-for-testing",
                     "Fake switch for testing. This is at the end of the mock flag list."),

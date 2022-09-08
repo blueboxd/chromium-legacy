@@ -129,7 +129,6 @@ void ProxyMain::BeginMainFrame(
     std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   DCHECK(IsMainThread());
   DCHECK_EQ(NO_PIPELINE_STAGE, current_pipeline_stage_);
-  DCHECK(!layer_tree_host_->in_commit());
 
   {
     TRACE_EVENT_WITH_FLOW0(
@@ -232,10 +231,9 @@ void ProxyMain::BeginMainFrame(
     StopDeferringCommits(ReasonToTimeoutTrigger(*paint_holding_reason_));
     commit_timeout = true;
   }
-  bool skip_commit = IsDeferringCommits();
-  bool scroll_and_viewport_changes_synced = false;
 
-  if (!skip_commit) {
+  bool scroll_and_viewport_changes_synced = false;
+  if (!IsDeferringCommits()) {
     // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from
     // the compositor thread to the main thread for both cc and and its client
     // (e.g. Blink). Do not do this if we explicitly plan to not commit the
@@ -266,6 +264,11 @@ void ProxyMain::BeginMainFrame(
   // to track animation states such that they are cleaned up properly.
   layer_tree_host_->AnimateLayers(frame_args.frame_time);
 
+  // If NonBlockingCommit is enabled, and the previous BeginMainFrame has not
+  // yet completed commit on the impl thread, then the above call to
+  // AnimateLayers should have blocked until the previous commit finished.
+  DCHECK(!layer_tree_host_->in_commit());
+
   // Recreates all UI resources if the compositor thread evicted UI resources
   // because it became invisible or there was a lost context when the compositor
   // thread initiated the commit.
@@ -277,10 +280,9 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->RequestMainFrameUpdate(true /* report_cc_metrics */);
 
   // At this point the main frame may have deferred main frame updates to
-  // avoid committing right now, or we may be deferring commits but not
-  // deferring main frame updates. Either may have changed the status
-  // of the defer... flags, so re-evaluate skip_commit.
-  skip_commit |= defer_main_frame_update_ || IsDeferringCommits();
+  // avoid committing right now, or may have allowed commits to go through. So
+  // evaluate this flag now.
+  bool skip_commit = defer_main_frame_update_ || IsDeferringCommits();
 
   // When we don't need to produce a CompositorFrame, there's also no need to
   // commit our updates. We still need to run layout and paint though, as it can
@@ -429,12 +431,12 @@ void ProxyMain::BeginMainFrame(
 
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
-                       base::Unretained(proxy_impl_.get()), completion_event,
-                       std::move(commit_state), &unsafe_state,
-                       begin_main_frame_start_time, frame_args,
-                       blocking ? &commit_timestamps : nullptr,
-                       commit_timeout));
+        base::BindOnce(
+            &ProxyImpl::NotifyReadyToCommitOnImpl,
+            base::Unretained(proxy_impl_.get()), completion_event,
+            std::move(commit_state), &unsafe_state, begin_main_frame_start_time,
+            frame_args, scroll_and_viewport_changes_synced,
+            blocking ? &commit_timestamps : nullptr, commit_timeout));
     if (blocking)
       layer_tree_host_->WaitForProtectedSequenceCompletion();
   }

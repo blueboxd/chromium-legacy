@@ -1548,6 +1548,9 @@ const base::FeatureParam<base::TimeDelta>
     kTimeoutForLowPriorityAsyncScriptExecution{
         &kLowPriorityAsyncScriptExecution, "timeout", base::Milliseconds(0)};
 
+const base::Feature kDOMContentLoadedWaitForAsyncScript{
+    "DOMContentLoadedWaitForAsyncScript", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kForceDeferScriptIntervention{
     "ForceDeferScriptIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1577,6 +1580,8 @@ const base::Feature kCSSParserSelectorArena{"CSSParserSelectorArena",
 
 const base::Feature kPendingBeaconAPI{"PendingBeaconAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool> kPendingBeaconAPIRequiresOriginTrial = {
+    &kPendingBeaconAPI, "requires_origin_trial", false};
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 const base::Feature kPrefetchFontLookupTables{
@@ -1627,7 +1632,7 @@ const base::Feature kTimedHTMLParserBudget{"TimedHTMLParserBudget",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCSSOverflowForReplacedElements{
-    "CSSOverflowForReplacedElements", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CSSOverflowForReplacedElements", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kScrollUpdateOptimizations{
     "ScrollUpdateOptimizations", base::FEATURE_ENABLED_BY_DEFAULT};

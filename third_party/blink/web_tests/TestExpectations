@@ -1688,6 +1688,27 @@ crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 # TablesNG ends
 
+### With LayoutNGView enabled:
+
+crbug.com/1294155 external/wpt/css/css-break/flexbox/flex-container-fragmentation-008.html [ Failure ]
+crbug.com/1294155 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-029.html [ Failure ]
+crbug.com/1294155 external/wpt/css/css-contain/container-queries/top-layer-dialog-backdrop.html [ Crash Failure ]
+crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
+crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
+crbug.com/1294155 paint/invalidation/outline/outline-change-vertical-rl.html [ Failure ]
+crbug.com/1294155 paint/invalidation/svg/relative-sized-document-scrollbars.svg [ Failure ]
+crbug.com/1294155 printing/fixed-positioned-overflow-scroll.html [ Failure ]
+crbug.com/1294155 printing/multi-page-background.html [ Failure ]
+crbug.com/1294155 printing/page-orientation-propagated.html [ Failure ]
+crbug.com/1294155 [ Win ] printing/vertical-rl.html [ Failure ]
+crbug.com/1294155 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
+crbug.com/1294155 svg/custom/mixed-percent-size-zoom.svg [ Failure ]
+crbug.com/1294155 svg/custom/percent-size-zoom.svg [ Failure ]
+crbug.com/1294155 [ Linux ] svg/text/caret-in-svg-text.xhtml [ Failure ]
+crbug.com/1294155 [ Win ] svg/text/caret-in-svg-text.xhtml [ Failure ]
+crbug.com/1294155 svg/zoom/page/zoom-coords-viewattr-01-b.svg [ Failure ]
+crbug.com/1294155 svg/zoom/page/zoom-foreign-content.svg [ Failure ]
+
 # ====== LayoutNG-only failures until here ======
 
 # ====== MathMLCore-only tests from here ======
@@ -1950,10 +1971,6 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1158554 external/wpt/css/css-conditional/at-supports-046.html [ Failure ]
 crbug.com/1255685 external/wpt/css/css-conditional/at-supports-font-format-001.html [ Failure ]
 crbug.com/1255685 external/wpt/css/css-conditional/at-supports-font-tech-001.html [ Failure ]
-
-
-# @container / contain:inline-size
-crbug.com/1294155 external/wpt/css/css-contain/container-queries/canvas-as-container-004.html [ Failure ]
 
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
@@ -3294,6 +3311,9 @@ crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-003
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-border-sizing.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-content-sizing.html [ Failure ]
+crbug.com/626703 external/wpt/page-visibility/visibility-state-entry.tentative.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/mathml/relations/css-styling/mathvariant-double-struck-font-style-font-weight.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
@@ -5380,6 +5400,13 @@ crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ 
 crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.html [ Timeout ]
 
 
+# No support for Drag-and-Drop handlers being called.
+crbug.com/1353435 external/wpt/html/editing/dnd/images/006.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/007.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/008.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/009.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/010.html [ Timeout ]
+
 # Sheriff 2021-02-11
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause-infinite.js [ Failure Pass ]
@@ -6913,3 +6940,5 @@ crbug.com/1356664 [ Debug Linux ] virtual/no-alloc-direct-call/fast/canvas/disco
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]
+
+http/tests/media/autoplay/document-user-activation-navigation-click.html [ Skip ]

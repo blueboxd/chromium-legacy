@@ -4,7 +4,6 @@
 
 #include "chrome/updater/update_service_impl.h"
 
-#include <algorithm>
 #include <iterator>
 #include <map>
 #include <string>
@@ -21,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
@@ -391,13 +391,12 @@ void UpdateServiceImpl::ForceInstall(StateChangeCallback state_update,
   DCHECK(!force_install_apps.empty());
 
   std::vector<std::string> installed_app_ids = persisted_data_->GetAppIds();
-  std::sort(force_install_apps.begin(), force_install_apps.end());
-  std::sort(installed_app_ids.begin(), installed_app_ids.end());
+  base::ranges::sort(force_install_apps);
+  base::ranges::sort(installed_app_ids);
 
   std::vector<std::string> app_ids_to_install;
-  std::set_difference(force_install_apps.begin(), force_install_apps.end(),
-                      installed_app_ids.begin(), installed_app_ids.end(),
-                      std::back_inserter(app_ids_to_install));
+  base::ranges::set_difference(force_install_apps, installed_app_ids,
+                               std::back_inserter(app_ids_to_install));
   if (app_ids_to_install.empty()) {
     base::BindPostTask(main_task_runner_, std::move(callback))
         .Run(UpdateService::Result::kSuccess);
@@ -521,8 +520,8 @@ void UpdateServiceImpl::CancelInstalls(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   auto range = cancellation_callbacks_.equal_range(app_id);
-  std::for_each(range.first, range.second,
-                [](const auto& i) { i.second.Run(); });
+  base::ranges::for_each(range.first, range.second,
+                         [](const auto& i) { i.second.Run(); });
 }
 
 void UpdateServiceImpl::RunInstaller(const std::string& app_id,
@@ -674,10 +673,9 @@ void UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork(
           [&app_install_data_index]() {
             std::vector<std::string> app_ids;
             app_ids.reserve(app_install_data_index.size());
-            std::transform(app_install_data_index.begin(),
-                           app_install_data_index.end(),
-                           std::back_inserter(app_ids),
-                           [](const auto& param) { return param.first; });
+            base::ranges::transform(
+                app_install_data_index, std::back_inserter(app_ids),
+                [](const auto& param) { return param.first; });
             return app_ids;
           }(),
           base::BindOnce(&GetComponents, config_, persisted_data_,

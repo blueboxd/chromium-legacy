@@ -6684,24 +6684,6 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
   }
 }
 
-bool RenderFrameHostImpl::UnloadHandlerExistsInSameSiteInstanceSubtree() {
-  DCHECK(!GetParent());
-  bool result = false;
-  ForEachRenderFrameHostWithAction(
-      [this, &result](RenderFrameHostImpl* rfhi) -> FrameIterationAction {
-        // If we aren't from the same page ignore unload handlers.
-        if (&rfhi->GetPage() != &GetPage())
-          return FrameIterationAction::kSkipChildren;
-        if (rfhi->GetSiteInstance() == GetSiteInstance() &&
-            rfhi->has_unload_handler_) {
-          result = true;
-          return FrameIterationAction::kStop;
-        }
-        return FrameIterationAction::kContinue;
-      });
-  return result;
-}
-
 void RenderFrameHostImpl::DidDispatchDOMContentLoadedEvent() {
   document_associated_data_->dom_content_loaded = true;
 
@@ -12267,8 +12249,6 @@ void RenderFrameHostImpl::SendCommitNavigation(
     // is just an optimization, so it is fine for it to be null in the case
     // where these don't match.
 
-    absl::optional<url::Origin> isolation_info_frame_origin =
-        navigation_request->isolation_info_for_subresources().frame_origin();
     if (net::IsolationInfo::IsFrameSiteEnabled() &&
         common_params->url.SchemeIsHTTPOrHTTPS() &&
         !origin_to_commit.opaque() &&

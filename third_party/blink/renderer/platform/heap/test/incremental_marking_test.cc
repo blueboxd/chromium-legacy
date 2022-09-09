@@ -157,9 +157,23 @@ TEST_F(IncrementalMarkingTest, HeapVectorCopyMember) {
   vec->push_back(obj);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapVector<Member<LinkedObject>>>(*vec);
+  *MakeGarbageCollected<HeapVector<Member<LinkedObject>>>() = *vec;
   driver.FinishGC();
   EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorCopyMemberInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapVector<Member<LinkedObject>>* vec =
+      MakeGarbageCollected<HeapVector<Member<LinkedObject>>>();
+  vec->push_back(obj);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapVector<Member<LinkedObject>>>(*vec);
+  driver.FinishGC();
+  // Copy during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorCopyNonGCedContainer) {
@@ -169,9 +183,23 @@ TEST_F(IncrementalMarkingTest, HeapVectorCopyNonGCedContainer) {
   vec->emplace_back(obj, 1);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>(*vec);
+  *MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>() = *vec;
   driver.FinishGC();
   EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorCopyNonGCedContainerInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapVector<NonGarbageCollectedContainer>* vec =
+      MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
+  vec->emplace_back(obj, 1);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>(*vec);
+  driver.FinishGC();
+  // Copy during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorCopyStdPair) {
@@ -182,10 +210,26 @@ TEST_F(IncrementalMarkingTest, HeapVectorCopyStdPair) {
   vec->emplace_back(obj1, obj2);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapVector<ValueType>>(*vec);
+  *MakeGarbageCollected<HeapVector<ValueType>>() = *vec;
   driver.FinishGC();
   EXPECT_TRUE(obj1);
   EXPECT_TRUE(obj2);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorCopyStdPairInCtor) {
+  using ValueType = std::pair<Member<LinkedObject>, Member<LinkedObject>>;
+  WeakPersistent<LinkedObject> obj1 = MakeGarbageCollected<LinkedObject>();
+  WeakPersistent<LinkedObject> obj2 = MakeGarbageCollected<LinkedObject>();
+  HeapVector<ValueType>* vec = MakeGarbageCollected<HeapVector<ValueType>>();
+  vec->emplace_back(obj1, obj2);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapVector<ValueType>>(*vec);
+  driver.FinishGC();
+  // Copy during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj1);
+  EXPECT_FALSE(obj2);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveMember) {
@@ -195,9 +239,23 @@ TEST_F(IncrementalMarkingTest, HeapVectorMoveMember) {
   vec->push_back(obj);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapVector<Member<LinkedObject>>>(std::move(*vec));
+  *MakeGarbageCollected<HeapVector<Member<LinkedObject>>>() = std::move(*vec);
   driver.FinishGC();
   EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorMoveMemberInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapVector<Member<LinkedObject>>* vec =
+      MakeGarbageCollected<HeapVector<Member<LinkedObject>>>();
+  vec->push_back(obj);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapVector<Member<LinkedObject>>>(std::move(*vec));
+  driver.FinishGC();
+  // Move during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveNonGCedContainer) {
@@ -207,10 +265,25 @@ TEST_F(IncrementalMarkingTest, HeapVectorMoveNonGCedContainer) {
   vec->emplace_back(obj, 1);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
+  *MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>() =
+      std::move(*vec);
+  driver.FinishGC();
+  EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorMoveNonGCedContainerInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapVector<NonGarbageCollectedContainer>* vec =
+      MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
+  vec->emplace_back(obj, 1);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
   MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>(
       std::move(*vec));
   driver.FinishGC();
-  EXPECT_TRUE(obj);
+  // Move during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveStdPair) {
@@ -221,10 +294,26 @@ TEST_F(IncrementalMarkingTest, HeapVectorMoveStdPair) {
   vec->emplace_back(obj1, obj2);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapVector<ValueType>>(std::move(*vec));
+  *MakeGarbageCollected<HeapVector<ValueType>>() = std::move(*vec);
   driver.FinishGC();
   EXPECT_TRUE(obj1);
   EXPECT_TRUE(obj2);
+}
+
+TEST_F(IncrementalMarkingTest, HeapVectorMoveStdPairInCtor) {
+  using ValueType = std::pair<Member<LinkedObject>, Member<LinkedObject>>;
+  WeakPersistent<LinkedObject> obj1 = MakeGarbageCollected<LinkedObject>();
+  WeakPersistent<LinkedObject> obj2 = MakeGarbageCollected<LinkedObject>();
+  HeapVector<ValueType>* vec = MakeGarbageCollected<HeapVector<ValueType>>();
+  vec->emplace_back(obj1, obj2);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapVector<ValueType>>(std::move(*vec));
+  driver.FinishGC();
+  // Move during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj1);
+  EXPECT_FALSE(obj2);
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorSwapMember) {
@@ -363,9 +452,23 @@ TEST_F(IncrementalMarkingTest, HeapDequeCopyMember) {
   deq->push_back(obj);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>(*deq);
+  *MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>() = *deq;
   driver.FinishGC();
   EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapDequeCopyMemberInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapDeque<Member<LinkedObject>>* deq =
+      MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>();
+  deq->push_back(obj);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>(*deq);
+  driver.FinishGC();
+  // Copy during object construction does not emit write barriers as
+  // in-construction/on-stack objects would be found during conservative GC.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapDequeMoveMember) {
@@ -375,9 +478,22 @@ TEST_F(IncrementalMarkingTest, HeapDequeMoveMember) {
   deq->push_back(obj);
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
-  MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>(std::move(*deq));
+  *MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>() = std::move(*deq);
   driver.FinishGC();
   EXPECT_TRUE(obj);
+}
+
+TEST_F(IncrementalMarkingTest, HeapDequeMoveMemberInCtor) {
+  WeakPersistent<LinkedObject> obj = MakeGarbageCollected<LinkedObject>();
+  HeapDeque<Member<LinkedObject>>* deq =
+      MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>();
+  deq->push_back(obj);
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.StartGC();
+  MakeGarbageCollected<HeapDeque<Member<LinkedObject>>>(std::move(*deq));
+  driver.FinishGC();
+  // Move construction does not emit a write barrier.
+  EXPECT_FALSE(obj);
 }
 
 TEST_F(IncrementalMarkingTest, HeapDequeSwapMember) {

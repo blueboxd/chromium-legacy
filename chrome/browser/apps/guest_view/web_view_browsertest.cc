@@ -2787,7 +2787,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuInspectElement) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuLanguageSettings) {
   LoadAppWithGuest("web_view/context_menus/basic");
 
-  content::WebContents* guest_web_contents = GetGuestWebContents();
   content::WebContents* embedder = GetEmbedderWebContents();
   ASSERT_TRUE(embedder);
 
@@ -2796,8 +2795,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuLanguageSettings) {
 
   GURL page_url("http://www.google.com");
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::Create(guest_web_contents, page_url, GURL(),
-                                        GURL()));
+      TestRenderViewContextMenu::Create(GetGuestRenderFrameHost(), page_url,
+                                        GURL(), GURL()));
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS, 0);
 
   content::WebContents* new_contents =
@@ -2813,7 +2812,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuLanguageSettings) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
   LoadAppWithGuest("web_view/context_menus/basic");
 
-  content::WebContents* guest_web_contents = GetGuestWebContents();
   content::WebContents* embedder = GetEmbedderWebContents();
   ASSERT_TRUE(embedder);
 
@@ -2828,8 +2826,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
   GURL page_url("http://www.google.com");
   // Create and build our test context menu.
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::Create(guest_web_contents, page_url, GURL(),
-                                        GURL()));
+      TestRenderViewContextMenu::Create(GetGuestRenderFrameHost(), page_url,
+                                        GURL(), GURL()));
   // Look for the extension item in the menu, and execute it.
   int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
@@ -4997,17 +4995,16 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   content::RenderFrameSubmissionObserver embedder_frame_observer(
       embedder_contents);
 
-  std::vector<content::WebContents*> guest_web_contents_list;
+  std::vector<content::RenderFrameHost*> guest_rfh_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
-  GetGuestViewManager()->DeprecatedGetGuestWebContentsList(
-      &guest_web_contents_list);
-  ASSERT_EQ(1u, guest_web_contents_list.size());
+  GetGuestViewManager()->GetGuestRenderFrameHostList(&guest_rfh_list);
+  ASSERT_EQ(1u, guest_rfh_list.size());
 
-  content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
+  content::RenderFrameHost* guest_frame = guest_rfh_list[0];
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_frame);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
-  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+  gfx::Rect guest_rect = guest_frame->GetView()->GetViewBounds();
 
   guest_rect.set_x(guest_rect.x() - embedder_rect.x());
   guest_rect.set_y(guest_rect.y() - embedder_rect.y());
@@ -5041,12 +5038,12 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   // Send scroll gesture to guest and verify embedder scrolls.
   // Perform a scroll gesture of the same magnitude, but in the opposite
   // direction and centered over the GuestView this time.
-  guest_rect = guest_contents->GetContainerBounds();
+  guest_rect = guest_frame->GetView()->GetViewBounds();
   {
     gfx::Point guest_scroll_location(guest_rect.width() / 2,
                                      guest_rect.height() / 2);
 
-    content::SimulateGestureScrollSequence(guest_contents,
+    content::SimulateGestureScrollSequence(guest_frame->GetRenderWidgetHost(),
                                            guest_scroll_location,
                                            gfx::Vector2dF(0, gesture_distance));
 
@@ -5184,47 +5181,51 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
 // https://crbug.com/751916 and https://crbug.com/751920.
 IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* guest = GetGuestWebContents();
+  guest_view::GuestViewBase* guest = GetGuestView();
 
   // Navigate <webview> to an isolated origin.
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.com", "/title1.html"));
   {
-    content::TestNavigationObserver load_observer(guest);
+    content::TestFrameNavigationObserver load_observer(
+        guest->GetGuestMainFrame());
     EXPECT_TRUE(
-        ExecuteScript(guest, "location.href = '" + isolated_url.spec() + "';"));
+        ExecuteScript(guest->GetGuestMainFrame(),
+                      "location.href = '" + isolated_url.spec() + "';"));
     load_observer.Wait();
   }
 
-  EXPECT_TRUE(guest->GetPrimaryMainFrame()->GetSiteInstance()->IsGuest());
+  EXPECT_TRUE(guest->GetGuestMainFrame()->GetSiteInstance()->IsGuest());
 
   // Now, navigate <webview> to a regular page with a subframe.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
   {
-    content::TestNavigationObserver load_observer(guest);
-    EXPECT_TRUE(
-        ExecuteScript(guest, "location.href = '" + foo_url.spec() + "';"));
+    content::TestFrameNavigationObserver load_observer(
+        guest->GetGuestMainFrame());
+    EXPECT_TRUE(ExecuteScript(guest->GetGuestMainFrame(),
+                              "location.href = '" + foo_url.spec() + "';"));
     load_observer.Wait();
   }
 
   // Navigate subframe in <webview> to an isolated origin.
-  EXPECT_TRUE(NavigateIframeToURL(guest, "test", isolated_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      ChildFrameAt(guest->GetGuestMainFrame(), 0), isolated_url));
 
   // If site isolation for <webview> is not used, the subframe will stay in the
   // guest process and SiteInstance.  Otherwise, it will be in its own
   // SiteInstance and process.
   content::RenderFrameHost* webview_subframe =
-      ChildFrameAt(guest->GetPrimaryMainFrame(), 0);
+      ChildFrameAt(guest->GetGuestMainFrame(), 0);
   if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()) {
     EXPECT_NE(webview_subframe->GetProcess(),
-              guest->GetPrimaryMainFrame()->GetProcess());
+              guest->GetGuestMainFrame()->GetProcess());
     EXPECT_NE(webview_subframe->GetSiteInstance(),
-              guest->GetPrimaryMainFrame()->GetSiteInstance());
+              guest->GetGuestMainFrame()->GetSiteInstance());
   } else {
     EXPECT_EQ(webview_subframe->GetProcess(),
-              guest->GetPrimaryMainFrame()->GetProcess());
+              guest->GetGuestMainFrame()->GetProcess());
     EXPECT_EQ(webview_subframe->GetSiteInstance(),
-              guest->GetPrimaryMainFrame()->GetSiteInstance());
+              guest->GetGuestMainFrame()->GetSiteInstance());
   }
 
   // Load a page with subframe in a regular tab.
@@ -5238,17 +5239,17 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
   EXPECT_TRUE(NavigateIframeToURL(tab, "test", isolated_url));
   content::RenderFrameHost* subframe =
       ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
-  EXPECT_NE(guest->GetPrimaryMainFrame()->GetProcess(), subframe->GetProcess());
+  EXPECT_NE(guest->GetGuestMainFrame()->GetProcess(), subframe->GetProcess());
 
   // Check that the guest process hasn't crashed.
-  EXPECT_TRUE(guest->GetPrimaryMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(guest->GetGuestMainFrame()->IsRenderFrameLive());
 
   // Check that accessing a foo.com cookie from the WebView doesn't result in a
   // renderer kill. This might happen if we erroneously applied an isolated.com
   // origin lock to the WebView process when committing isolated.com.
   bool cookie_is_correct = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest,
+      guest->GetGuestMainFrame(),
       "document.cookie = 'foo=bar';\n"
       "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
       &cookie_is_correct));
@@ -5263,7 +5264,7 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
 IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
                        LoadIsolatedOriginInWebviewAfterLoadingInRegularTab) {
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* guest = GetGuestWebContents();
+  guest_view::GuestViewBase* guest = GetGuestView();
 
   // Load a page with subframe in a regular tab.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
@@ -5281,28 +5282,30 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
 
   // Navigate <webview> to a regular page with an isolated origin subframe.
   {
-    content::TestNavigationObserver load_observer(guest);
-    EXPECT_TRUE(
-        ExecuteScript(guest, "location.href = '" + foo_url.spec() + "';"));
+    content::TestFrameNavigationObserver load_observer(
+        guest->GetGuestMainFrame());
+    EXPECT_TRUE(ExecuteScript(guest->GetGuestMainFrame(),
+                              "location.href = '" + foo_url.spec() + "';"));
     load_observer.Wait();
   }
-  EXPECT_TRUE(NavigateIframeToURL(guest, "test", isolated_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      ChildFrameAt(guest->GetGuestMainFrame(), 0), isolated_url));
 
   // If site isolation for <webview> is not used, the subframe will stay in the
   // guest process and SiteInstance.  Otherwise, it will be in its own
   // SiteInstance and process.
   content::RenderFrameHost* webview_subframe =
-      ChildFrameAt(guest->GetPrimaryMainFrame(), 0);
+      ChildFrameAt(guest->GetGuestMainFrame(), 0);
   if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()) {
     EXPECT_NE(webview_subframe->GetProcess(),
-              guest->GetPrimaryMainFrame()->GetProcess());
+              guest->GetGuestMainFrame()->GetProcess());
     EXPECT_NE(webview_subframe->GetSiteInstance(),
-              guest->GetPrimaryMainFrame()->GetSiteInstance());
+              guest->GetGuestMainFrame()->GetSiteInstance());
   } else {
     EXPECT_EQ(webview_subframe->GetProcess(),
-              guest->GetPrimaryMainFrame()->GetProcess());
+              guest->GetGuestMainFrame()->GetProcess());
     EXPECT_EQ(webview_subframe->GetSiteInstance(),
-              guest->GetPrimaryMainFrame()->GetSiteInstance());
+              guest->GetGuestMainFrame()->GetSiteInstance());
   }
 
   // The isolated origin subframe in <webview> shouldn't share the process with
@@ -5310,7 +5313,7 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
   EXPECT_NE(webview_subframe->GetProcess(), subframe->GetProcess());
 
   // Check that the guest and regular tab processes haven't crashed.
-  EXPECT_TRUE(guest->GetPrimaryMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(guest->GetGuestMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(tab->GetPrimaryMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(subframe->IsRenderFrameLive());
 
@@ -5319,7 +5322,7 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
   // origin lock to the WebView process when committing isolated.com.
   bool cookie_is_correct = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest,
+      guest->GetGuestMainFrame(),
       "document.cookie = 'foo=bar';\n"
       "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
       &cookie_is_correct));
@@ -5335,7 +5338,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, AutoResizeMessages) {
   // Helper function as this test requires inspecting a number of content::
   // internal objects.
   EXPECT_TRUE(content::TestGuestAutoresize(GetEmbedderWebContents(),
-                                           GetGuestWebContents()));
+                                           GetGuestRenderFrameHost()));
 }
 
 // Test that a guest sees the synthetic wheel events of a touchpad pinch.
@@ -5615,33 +5618,34 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
 // and does not result in a renderer kill.  See https://crbug.com/1197674.
 IN_PROC_BROWSER_TEST_P(WebstoreWebViewTest, NoRendererKillWithChromeWebStore) {
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* guest = GetGuestWebContents();
+  content::RenderFrameHost* guest = GetGuestRenderFrameHost();
   ASSERT_TRUE(guest);
 
   // Navigate <webview> to a Chrome Web Store URL.  This should result in an
   // error and shouldn't lead to a renderer kill.
   const GURL webstore_url =
       https_server()->GetURL("chrome.foo.com", "/frame_tree/simple.htm");
+
   content::TestNavigationObserver error_observer(
-      guest, content::MessageLoopRunner::QuitMode::IMMEDIATE,
+      webstore_url, content::MessageLoopRunner::QuitMode::IMMEDIATE,
       /*ignore_uncommitted_navigations=*/false);
+  error_observer.WatchExistingWebContents();
   EXPECT_TRUE(
       ExecuteScript(guest, "location.href = '" + webstore_url.spec() + "';"));
   error_observer.Wait();
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
   EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
 
-  content::RenderFrameHost* guest_rfh = guest->GetPrimaryMainFrame();
-  EXPECT_TRUE(guest_rfh->IsRenderFrameLive());
+  guest = GetGuestRenderFrameHost();
+  EXPECT_TRUE(guest->IsRenderFrameLive());
 
   // Double-check that after the attempted navigation the <webview> is not
   // considered an extension process and does not have privileged webstore
   // APIs.
   auto* process_map = extensions::ProcessMap::Get(guest->GetBrowserContext());
-  EXPECT_FALSE(process_map->Contains(guest_rfh->GetProcess()->GetID()));
-  EXPECT_TRUE(
-      process_map->GetExtensionsInProcess(guest_rfh->GetProcess()->GetID())
-          .empty());
+  EXPECT_FALSE(process_map->Contains(guest->GetProcess()->GetID()));
+  EXPECT_TRUE(process_map->GetExtensionsInProcess(guest->GetProcess()->GetID())
+                  .empty());
   EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.webstorePrivate"));
   EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.dashboardPrivate"));
 }

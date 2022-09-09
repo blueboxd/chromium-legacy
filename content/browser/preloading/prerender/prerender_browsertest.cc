@@ -7,7 +7,6 @@
 
 #include "base/barrier_closure.h"
 #include "base/base_switches.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
@@ -118,18 +117,15 @@ namespace {
 
 enum class BackForwardCacheType {
   kDisabled,
-  kEnabledCrossSiteOnly,
-  kEnabledWithSameSite,
+  kEnabled,
 };
 
 std::string ToString(const testing::TestParamInfo<BackForwardCacheType>& info) {
   switch (info.param) {
     case BackForwardCacheType::kDisabled:
       return "Disabled";
-    case BackForwardCacheType::kEnabledCrossSiteOnly:
+    case BackForwardCacheType::kEnabled:
       return "Enabled";
-    case BackForwardCacheType::kEnabledWithSameSite:
-      return "EnabledWithSameSite";
   }
 }
 
@@ -3699,154 +3695,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderLowMemoryBrowserTest, NoPrerender) {
   }
 }
 
-class PrerenderSequentialPrerenderingBrowserTest : public PrerenderBrowserTest {
- public:
-  PrerenderSequentialPrerenderingBrowserTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kPrerender2,
-          {{"max_num_of_running_speculation_rules",
-            base::NumberToString(MaxNumOfRunningPrerenders())}}},
-         {blink::features::kPrerender2SequentialPrerendering, {}}},
-        {});
-  }
-
-  int MaxNumOfRunningPrerenders() const { return 3; }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-namespace {
-
-// Records all the navigation start and finish events until the navigation to
-// `target_url` finished.
-class SequentialPrerenderObserver : public WebContentsObserver {
- public:
-  enum class EventType {
-    kStart,
-    kFinish,
-  };
-
-  SequentialPrerenderObserver(WebContents& web_contents, const GURL& target_url)
-      : WebContentsObserver(&web_contents), target_url_(target_url) {}
-
-  const std::vector<std::pair<GURL, EventType>>& events_sequence() const {
-    return events_sequence_;
-  }
-
-  void WaitForTargetNavigationFinished() {
-    if (target_navigation_finished_) {
-      return;
-    }
-    base::RunLoop loop;
-    quit_closure_ = loop.QuitClosure();
-    loop.Run();
-  }
-
- private:
-  void DidStartNavigation(NavigationHandle* handle) override {
-    events_sequence_.emplace_back(handle->GetURL(), EventType::kStart);
-  }
-
-  void DidFinishNavigation(NavigationHandle* handle) override {
-    events_sequence_.emplace_back(handle->GetURL(), EventType::kFinish);
-    if (handle->GetURL() != target_url_) {
-      return;
-    }
-    target_navigation_finished_ = true;
-    if (quit_closure_) {
-      std::move(quit_closure_).Run();
-    }
-  }
-
-  const GURL target_url_;
-  base::OnceClosure quit_closure_;
-  bool target_navigation_finished_ = false;
-
-  std::vector<std::pair<GURL, EventType>> events_sequence_;
-};
-
-}  // namespace
-
-// Tests that multiple prerenderings should be enqueued and the pending request
-// starts right after the previous prerender calls DidFinishNavigation.
-IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
-                       SequentialPrerendering) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  std::vector<GURL> prerender_urls;
-  for (int i = 0; i < MaxNumOfRunningPrerenders(); i++) {
-    prerender_urls.push_back(
-        GetUrl("/empty.html?prerender" + base::NumberToString(i)));
-  }
-
-  SequentialPrerenderObserver observer(*web_contents(), prerender_urls[2]);
-
-  // Insert 3 URLs into the speculation rules at the same time.
-  ASSERT_TRUE(
-      ExecJs(web_contents_impl()->GetPrimaryMainFrame(),
-             JsReplace(
-                 R"(
-                  const sc = document.createElement('script');
-                  sc.type = 'speculationrules';
-                  sc.textContent = JSON.stringify({
-                    prerender: [
-                      {source: "list", urls: [$1, $2, $3]}
-                    ]
-                  });
-                  document.head.appendChild(sc);
-                  )",
-                 prerender_urls[0], prerender_urls[1], prerender_urls[2])));
-
-  // Wait for DidFinishNavigation on the last URL.
-  observer.WaitForTargetNavigationFinished();
-
-  // Check if all the prerender requests are handled sequentially.
-  std::vector<std::pair<GURL, SequentialPrerenderObserver::EventType>>
-      expected_sequence = {
-          {prerender_urls[0], SequentialPrerenderObserver::EventType::kStart},
-          {prerender_urls[0], SequentialPrerenderObserver::EventType::kFinish},
-          {prerender_urls[1], SequentialPrerenderObserver::EventType::kStart},
-          {prerender_urls[1], SequentialPrerenderObserver::EventType::kFinish},
-          {prerender_urls[2], SequentialPrerenderObserver::EventType::kStart},
-          {prerender_urls[2], SequentialPrerenderObserver::EventType::kFinish},
-      };
-  EXPECT_EQ(observer.events_sequence(), expected_sequence);
-
-  // Make sure if the activation succeeds and other prerender hosts are
-  // destroyed.
-  std::vector<std::unique_ptr<test::PrerenderHostObserver>> prerender_observers;
-  for (int i = 0; i < MaxNumOfRunningPrerenders(); i++) {
-    prerender_observers.push_back(std::make_unique<test::PrerenderHostObserver>(
-        *web_contents(), GetHostForUrl(prerender_urls[i])));
-  }
-  NavigatePrimaryPage(prerender_urls[1]);
-  prerender_observers[0]->WaitForDestroyed();
-  prerender_observers[1]->WaitForActivation();
-  prerender_observers[2]->WaitForDestroyed();
-
-  EXPECT_TRUE(prerender_observers[1]->was_activated());
-  EXPECT_FALSE(HasHostForUrl(prerender_urls[1]));
-  EXPECT_EQ(web_contents()->GetLastCommittedURL(), prerender_urls[1]);
-  histogram_tester().ExpectBucketCount(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderHost::FinalStatus::kActivated, 1);
-  histogram_tester().ExpectBucketCount(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderHost::FinalStatus::kTriggerDestroyed, 2);
-}
-
-// TODO(crbug.com/1355151): Test to make sure that the completion of iframe
-// navigation in a prerendered page doesn't start a pending prerender request.
-
-// TODO(crbug.com/1355151): Test that activation with the pending
-// PrerenderHost succeeds.
-
-// TODO(crbug.com/1355151): Test that the requests from embedder are
-// handled immediately regardless of the requests from speculation rules after
-// supporting that behaviour.
-
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        IsInactiveAndDisallowActivationCancelsPrerendering) {
   const GURL kInitialUrl = GetUrl("/empty.html");
@@ -4937,7 +4785,7 @@ class PrerenderBackForwardCacheBrowserTest : public PrerenderBrowserTest {
  public:
   PrerenderBackForwardCacheBrowserTest() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{features::kBackForwardCache, {{"enable_same_site", "true"}}},
+        {{features::kBackForwardCache, {}},
          {kBackForwardCacheNoTimeEviction, {}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
@@ -5158,12 +5006,7 @@ class PrerenderWithBackForwardCacheBrowserTest
       case BackForwardCacheType::kDisabled:
         feature_list_.InitAndDisableFeature(features::kBackForwardCache);
         break;
-      case BackForwardCacheType::kEnabledCrossSiteOnly:
-        feature_params["enable_same_site"] = "false";
-        feature_list_.InitWithFeaturesAndParameters(
-            {{features::kBackForwardCache, feature_params}}, disabled_features);
-        break;
-      case BackForwardCacheType::kEnabledWithSameSite:
+      case BackForwardCacheType::kEnabled:
         feature_list_.InitWithFeaturesAndParameters(
             {{features::kBackForwardCache, feature_params}}, disabled_features);
         break;
@@ -5174,13 +5017,11 @@ class PrerenderWithBackForwardCacheBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PrerenderWithBackForwardCacheBrowserTest,
-    testing::Values(BackForwardCacheType::kDisabled,
-                    BackForwardCacheType::kEnabledCrossSiteOnly,
-                    BackForwardCacheType::kEnabledWithSameSite),
-    ToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         PrerenderWithBackForwardCacheBrowserTest,
+                         testing::Values(BackForwardCacheType::kDisabled,
+                                         BackForwardCacheType::kEnabled),
+                         ToString);
 
 // Tests that history navigation works after activation. This runs with variaous
 // BFCache configurations that may modify behavior of history navigation.
@@ -5213,19 +5054,10 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
       // not cached in the BFCache.
       delete_observer.WaitUntilDeleted();
       break;
-    case BackForwardCacheType::kEnabledCrossSiteOnly:
-      // Same-origin prerender activation should allow the initial page to be
-      // cached in the BFCache even if BFCache for same-site navigations is not
-      // enabled. This is because prerender activation always swaps
-      // BrowsingInstance, making the previous page cacheable, unlike regular
-      // same-origin navigation.
-      ASSERT_FALSE(IsSameSiteBackForwardCacheEnabled());
-      EXPECT_TRUE(initial_frame_host->IsInBackForwardCache());
-      break;
-    case BackForwardCacheType::kEnabledWithSameSite:
+    case BackForwardCacheType::kEnabled:
       // Same-origin prerender activation should allow the initial page to be
       // cached in the BFCache.
-      ASSERT_TRUE(IsSameSiteBackForwardCacheEnabled());
+      ASSERT_TRUE(IsBackForwardCacheEnabled());
       EXPECT_TRUE(initial_frame_host->IsInBackForwardCache());
       break;
   }
@@ -5242,8 +5074,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
       // The frame host should be created again.
       EXPECT_NE(current_frame_host()->GetFrameToken(), initial_frame_token);
       break;
-    case BackForwardCacheType::kEnabledCrossSiteOnly:
-    case BackForwardCacheType::kEnabledWithSameSite:
+    case BackForwardCacheType::kEnabled:
       // The frame host should be restored.
       EXPECT_EQ(current_frame_host()->GetFrameToken(), initial_frame_token);
       EXPECT_FALSE(initial_frame_host->IsInBackForwardCache());
@@ -5252,7 +5083,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
 }
 
 // Tests that a trigger page destroys a prerendered page when it navigates
-// forward and goes into the BFCache.
+// forward and goes into the back/forward cache.
 IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
                        CancelOnAfterTriggerIsStoredInBackForwardCache_Forward) {
   const GURL kInitialUrl = GetUrl("/empty.html");
@@ -5270,28 +5101,23 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
   // Navigate the initial page to a non-prerendered page.
   ASSERT_TRUE(NavigateToURL(shell(), kNextUrl));
 
-  // Check if the initial page is in the BFCache.
+  // Check if the initial page is in the back/forward cache.
   switch (GetParam()) {
     case BackForwardCacheType::kDisabled:
-      // The BFCache is disabled, so the initial page is not in the BFCache.
+      // The BFCache is disabled, so the initial page is not in the
+      // back/forward cache.
       ASSERT_FALSE(initial_frame_host->IsInBackForwardCache());
       break;
-    case BackForwardCacheType::kEnabledCrossSiteOnly:
-      // The BFCache is enabled but the same-site BFCache is disabled. The
-      // navigation was same-origin, so the initial page is not in the BFCache.
-      ASSERT_FALSE(IsSameSiteBackForwardCacheEnabled());
-      ASSERT_FALSE(initial_frame_host->IsInBackForwardCache());
-      break;
-    case BackForwardCacheType::kEnabledWithSameSite:
-      // The same-site BFCache is enabled, so the initial page is in the BFCache
-      // after the same-origin navigation.
-      ASSERT_TRUE(IsSameSiteBackForwardCacheEnabled());
+    case BackForwardCacheType::kEnabled:
+      // The back/forward cache is enabled, so the initial page is in the
+      // back/forward cache after the same-origin navigation.
+      ASSERT_TRUE(IsBackForwardCacheEnabled());
       ASSERT_TRUE(initial_frame_host->IsInBackForwardCache());
       break;
   }
 
   // The navigation should destroy the prerendered page regardless of if the
-  // initial page was in the BFCache.
+  // initial page was in the back/forward cache.
   prerender_observer.WaitForDestroyed();
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   ExpectFinalStatusForSpeculationRule(
@@ -5323,28 +5149,23 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
   navigation_observer.Wait();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
 
-  // Check if the next page is in the BFCache.
+  // Check if the next page is in the back/forward cache.
   switch (GetParam()) {
     case BackForwardCacheType::kDisabled:
-      // The BFCache is disabled, so the next page is not in the BFCache.
+      // The back/forward cache is disabled, so the next page is not in the
+      // back/forward cache.
       ASSERT_FALSE(next_frame_host->IsInBackForwardCache());
       break;
-    case BackForwardCacheType::kEnabledCrossSiteOnly:
-      // The BFCache is enabled but the same-site BFCache is disabled. The back
-      // navigation was same-origin, so the next page is not in the BFCache.
-      ASSERT_FALSE(IsSameSiteBackForwardCacheEnabled());
-      ASSERT_FALSE(next_frame_host->IsInBackForwardCache());
-      break;
-    case BackForwardCacheType::kEnabledWithSameSite:
-      // The same-site BFCache is enabled, so the next page is in the BFCache
-      // after the same-origin back navigation.
-      ASSERT_TRUE(IsSameSiteBackForwardCacheEnabled());
+    case BackForwardCacheType::kEnabled:
+      // The back/forward cache is enabled, so the next page is in the
+      // back/forward cache after the same-origin back navigation.
+      ASSERT_TRUE(IsBackForwardCacheEnabled());
       ASSERT_TRUE(next_frame_host->IsInBackForwardCache());
       break;
   }
 
   // The navigation should destroy the prerendered page regardless of if the
-  // next page was in the BFCache.
+  // next page was in the back/forward cache.
   prerender_observer.WaitForDestroyed();
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   ExpectFinalStatusForSpeculationRule(

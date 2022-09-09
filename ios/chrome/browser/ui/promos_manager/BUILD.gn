@@ -7,6 +7,7 @@ source_set("promos") {
   sources = [
     "promo_protocol.h",
     "promos_manager_scene_availability_observer.h",
+    "standard_promo_action_handler.h",
     "standard_promo_display_handler.h",
     "standard_promo_view_provider.h",
   ]
@@ -55,6 +56,7 @@ source_set("promos_manager") {
     "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/ui/main:scene_state_header",
+    "//ios/chrome/common/ui/confirmation_alert",
     "//third_party/abseil-cpp:absl",
   ]
 }

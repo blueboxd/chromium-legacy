@@ -21,7 +21,6 @@ generate_grd("build_grd") {
     "html:build_grdp",
     "images:build_grdp",
     "js:build_grdp",
-    "js/cr/ui:build_grdp",
     "js/metrics_reporter:build_grdp",
     "//third_party/jstemplate:build_grdp",
   ]
@@ -29,7 +28,6 @@ generate_grd("build_grd") {
     "$target_gen_dir/css/resources.grdp",
     "$target_gen_dir/html/resources.grdp",
     "$target_gen_dir/images/resources.grdp",
-    "$target_gen_dir/js/cr/ui/resources.grdp",
     "$target_gen_dir/js/metrics_reporter/resources.grdp",
     "$target_gen_dir/js/resources.grdp",
     "$target_gen_dir/resources_ts.grdp",
@@ -85,6 +83,7 @@ generate_grd("build_grd") {
   if (is_chromeos_ash) {
     public_deps += [
       ":build_cros_styles_grdp",
+      "js/cr/ui:build_grdp",
       "//ash/webui/common/resources:build_grdp",
       "//ash/webui/common/resources:build_html_css_wrapper_files_grdp",
       "//chromeos/ash/components/cros_elements:build_grdp",
@@ -98,6 +97,7 @@ generate_grd("build_grd") {
       "$root_gen_dir/third_party/material_web_components/material_web_components_resources.grdp",
       "$root_gen_dir/third_party/web-animations-js/web_animations_resources.grdp",
       "$root_gen_dir/ui/webui/resources/cros_styles_resources.grdp",
+      "$root_gen_dir/ui/webui/resources/js/cr/ui/resources.grdp",
     ]
   }
 
@@ -165,14 +165,6 @@ checked_in_dts_files = [
   "js/web_ui_listener_behavior.m.d.ts",
 ]
 
-if (is_chromeos_ash || is_fuchsia || is_linux || is_mac || is_win) {
-  checked_in_dts_files += [
-    "js/cr/ui/context_menu_handler.d.ts",
-    "js/cr/ui/menu_button.d.ts",
-    "js/cr/ui/menu_item.d.ts",
-  ]
-}
-
 if (is_chromeos_ash) {
   checked_in_dts_files += [
     "cr_components/chromeos/bluetooth/bluetooth_base_page.d.ts",
@@ -187,20 +179,20 @@ if (is_chromeos_ash) {
     "cr_components/chromeos/bluetooth/bluetooth_pairing_request_code_page.d.ts",
     "cr_components/chromeos/bluetooth/bluetooth_pairing_ui.d.ts",
     "cr_components/chromeos/bluetooth/bluetooth_spinner_page.d.ts",
-    "cr_components/chromeos/cellular_setup/base_page.m.d.ts",
-    "cr_components/chromeos/cellular_setup/button_bar.m.d.ts",
-    "cr_components/chromeos/cellular_setup/cellular_eid_dialog.m.d.ts",
-    "cr_components/chromeos/cellular_setup/cellular_setup.m.d.ts",
-    "cr_components/chromeos/cellular_setup/cellular_setup_delegate.m.d.ts",
-    "cr_components/chromeos/cellular_setup/cellular_setup_icons.m.d.ts",
-    "cr_components/chromeos/cellular_setup/cellular_types.m.d.ts",
-    "cr_components/chromeos/cellular_setup/esim_flow_ui.m.d.ts",
-    "cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.m.d.ts",
-    "cr_components/chromeos/cellular_setup/esim_manager_utils.m.d.ts",
-    "cr_components/chromeos/cellular_setup/profile_discovery_list_page.m.d.ts",
-    "cr_components/chromeos/cellular_setup/provisioning_page.m.d.ts",
-    "cr_components/chromeos/cellular_setup/psim_flow_ui.m.d.ts",
-    "cr_components/chromeos/cellular_setup/setup_loading_page.m.d.ts",
+    "cr_components/chromeos/cellular_setup/base_page.d.ts",
+    "cr_components/chromeos/cellular_setup/button_bar.d.ts",
+    "cr_components/chromeos/cellular_setup/cellular_eid_dialog.d.ts",
+    "cr_components/chromeos/cellular_setup/cellular_setup.d.ts",
+    "cr_components/chromeos/cellular_setup/cellular_setup_delegate.d.ts",
+    "cr_components/chromeos/cellular_setup/cellular_setup_icons.d.ts",
+    "cr_components/chromeos/cellular_setup/cellular_types.d.ts",
+    "cr_components/chromeos/cellular_setup/esim_flow_ui.d.ts",
+    "cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.d.ts",
+    "cr_components/chromeos/cellular_setup/esim_manager_utils.d.ts",
+    "cr_components/chromeos/cellular_setup/profile_discovery_list_page.d.ts",
+    "cr_components/chromeos/cellular_setup/provisioning_page.d.ts",
+    "cr_components/chromeos/cellular_setup/psim_flow_ui.d.ts",
+    "cr_components/chromeos/cellular_setup/setup_loading_page.d.ts",
     "cr_components/chromeos/network/cellular_utils.d.ts",
     "cr_components/chromeos/network/cr_policy_network_behavior_mojo.d.ts",
     "cr_components/chromeos/network/cr_policy_network_indicator_mojo.d.ts",
@@ -249,7 +241,6 @@ generate_definitions_js_files = [
   "js/cr/event_target.m.js",
   "js/cr.m.js",
   "js/cr/ui.m.js",
-  "js/cr/ui/keyboard_shortcut_list.js",
   "js/event_tracker.m.js",
   "js/load_time_data.m.js",
   "js/plural_string_proxy.js",
@@ -257,17 +248,11 @@ generate_definitions_js_files = [
   "js/util.m.js",
 ]
 
-if (is_chromeos_ash || is_fuchsia || is_linux || is_mac || is_win) {
-  generate_definitions_js_files += [
-    "js/cr/ui/menu.js",
-    "js/cr/ui/command.js",
-    "js/cr/ui/position_util.js",
-  ]
-}
-
 if (is_chromeos_ash) {
   generate_definitions_js_files += [
     "js/cr/ui/focus_row_js.js",
+    "js/cr/ui/focus_without_ink_js.js",
+    "js/cr/ui/keyboard_shortcut_list_js.js",
     "js/cr/ui/store_client.js",
     "js/cr/ui/store.js",
   ]
@@ -294,10 +279,6 @@ if (include_polymer) {
   }
 }
 
-if (!is_android) {
-  generate_definitions_js_files += [ "js/cr/ui/focus_without_ink.js" ]
-}
-
 if (is_ios) {
   generate_definitions_js_files += [ "js/ios/web_ui.js" ]
 }
@@ -315,6 +296,7 @@ ts_library("library") {
                "js/cr/ui/focus_grid.ts",
                "js/cr/ui/focus_row.ts",
                "js/cr/ui/focus_outline_manager.ts",
+               "js/cr/ui/keyboard_shortcut_list.ts",
                "js/cr/ui/store_ts.ts",
              ]
 
@@ -327,6 +309,7 @@ ts_library("library") {
       "cr_components/managed_footnote/managed_footnote.html.ts",
       "cr_components/managed_footnote/managed_footnote.ts",
       "js/cr/ui/focus_row_mixin.ts",
+      "js/cr/ui/focus_without_ink.ts",
       "js/i18n_mixin.ts",
       "js/list_property_update_mixin.ts",
       "js/search_highlight_utils.ts",

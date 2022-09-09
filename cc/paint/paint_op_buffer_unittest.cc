@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1429,8 +1429,8 @@ void PushConcatOps(PaintOpBuffer* buffer) {
 }
 
 void PushCustomDataOps(PaintOpBuffer* buffer) {
-  for (size_t i = 0; i < test_ids.size(); ++i)
-    buffer->push<CustomDataOp>(test_ids[i]);
+  for (uint32_t test_id : test_ids)
+    buffer->push<CustomDataOp>(test_id);
   ValidateOps<CustomDataOp>(buffer);
 }
 
@@ -1705,8 +1705,8 @@ void PushRestoreOps(PaintOpBuffer* buffer) {
 }
 
 void PushRotateOps(PaintOpBuffer* buffer) {
-  for (size_t i = 0; i < test_floats.size(); ++i)
-    buffer->push<RotateOp>(test_floats[i]);
+  for (float test_float : test_floats)
+    buffer->push<RotateOp>(test_float);
   ValidateOps<RotateOp>(buffer);
 }
 
@@ -1759,8 +1759,8 @@ void PushTranslateOps(PaintOpBuffer* buffer) {
 }
 
 void PushSetNodeIdOps(PaintOpBuffer* buffer) {
-  for (size_t i = 0; i < test_ids.size(); i++)
-    buffer->push<SetNodeIdOp>(static_cast<int>(test_ids[i]));
+  for (uint32_t test_id : test_ids)
+    buffer->push<SetNodeIdOp>(static_cast<int>(test_id));
   ValidateOps<SetNodeIdOp>(buffer);
 }
 
@@ -2668,8 +2668,8 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
       static_cast<SkBlendMode>(static_cast<uint8_t>(~0)),
   };
 
-  for (size_t i = 0; i < std::size(bad_modes_for_draw_color); ++i) {
-    buffer.push<DrawColorOp>(SkColors::kMagenta, bad_modes_for_draw_color[i]);
+  for (SkBlendMode blend_mode : bad_modes_for_draw_color) {
+    buffer.push<DrawColorOp>(SkColors::kMagenta, blend_mode);
   }
 
   for (size_t i = 0; i < std::size(bad_modes_for_flags); ++i) {
@@ -4333,6 +4333,37 @@ TEST(IteratorTest, CompositeOffsetEqualityTest) {
 
   EXPECT_TRUE(iter1 == iter2);
   EXPECT_FALSE(iter1 == ++iter2);
+}
+
+TEST(IteratorTest, CompositeOffsetMixedTypeEqualityTest) {
+  PaintOpBuffer buffer;
+  std::vector<size_t> offsets = {0, 4};
+  PaintOpBuffer::CompositeIterator iter(&buffer, /*offsets=*/nullptr);
+  PaintOpBuffer::CompositeIterator offset_iter(&buffer, &offsets);
+
+  EXPECT_TRUE(iter == iter);
+  EXPECT_TRUE(offset_iter == offset_iter);
+  EXPECT_FALSE(iter == offset_iter);
+}
+
+TEST(IteratorTest, CompositeOffsetBoolCheck) {
+  PaintOpBuffer buffer;
+  size_t offset = 0;
+  offset += buffer.push<SaveOp>().skip;
+  offset += buffer.push<RestoreOp>().skip;
+  buffer.push<NoopOp>();
+
+  PaintOpBuffer::CompositeIterator iter(&buffer, /*offsets=*/nullptr);
+  EXPECT_TRUE(iter);
+  EXPECT_TRUE(++iter);
+  EXPECT_TRUE(++iter);
+  EXPECT_FALSE(++iter);
+
+  std::vector<size_t> offsets = {0, offset};
+  PaintOpBuffer::CompositeIterator offset_iter(&buffer, &offsets);
+  EXPECT_TRUE(offset_iter);
+  EXPECT_TRUE(++offset_iter);
+  EXPECT_FALSE(++offset_iter);
 }
 
 }  // namespace cc

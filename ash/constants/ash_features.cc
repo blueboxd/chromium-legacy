@@ -381,7 +381,7 @@ const base::Feature kCrosPrivacyHubFuture{"CrosPrivacyHubFuture",
 // with a button to close desk and windows and a button to combine desks (the
 // legacy behavior).
 const base::Feature kDesksCloseAll{"DesksCloseAll",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables contextual nudges for gesture education.
 const base::Feature kContextualNudges{"ContextualNudges",
@@ -763,9 +763,6 @@ const base::Feature kFilesAppExperimental{"FilesAppExperimental",
 const base::Feature kFilesExtractArchive{"FilesExtractArchive",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the System Web App (SWA) version of file manager.
-const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables partitioning of removable disks in file manager.
 const base::Feature kFilesSinglePartitionFormat{
     "FilesSinglePartitionFormat", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1091,6 +1088,10 @@ const base::Feature kMacAddressRandomization{"MacAddressRandomization",
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the custom color picker and recent colors UI in the media app.
+const base::Feature kMediaAppCustomColors{"MediaAppCustomColors",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Within the ChromeOS media app, reveals the button to edit the current image
 // in Photos.
 const base::Feature kMediaAppPhotosIntegrationImage{
@@ -1374,10 +1375,6 @@ const base::Feature kQuickUnlockPinAutosubmit{"QuickUnlockPinAutosubmit",
 // Controls whether the PIN auto submit backfill operation should be performed.
 const base::Feature kQuickUnlockPinAutosubmitBackfill{
     "QuickUnlockPinAutosubmitBackfill", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables redirect to default IdP without interstitial step.
-const base::Feature kRedirectToDefaultIdP{"RedirectToDefaultIdP",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Release Notes notifications on non-stable ChromeOS
 // channels. Used for testing.
@@ -2055,7 +2052,7 @@ bool IsFileManagerFuseBoxDebugEnabled() {
 }
 
 bool IsFileManagerSwaEnabled() {
-  return base::FeatureList::IsEnabled(kFilesSWA);
+  return true;
 }
 
 bool IsFilesWebDriveOfficeEnabled() {
@@ -2444,10 +2441,6 @@ bool IsQuickDimEnabled() {
 
 bool IsQuickSettingsNetworkRevampEnabled() {
   return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
-}
-
-bool IsRedirectToDefaultIdPEnabled() {
-  return base::FeatureList::IsEnabled(kRedirectToDefaultIdP);
 }
 
 bool IsReleaseTrackUiEnabled() {

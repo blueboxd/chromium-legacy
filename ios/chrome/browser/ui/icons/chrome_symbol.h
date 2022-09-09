@@ -41,6 +41,7 @@ extern NSString* const kPlusSymbol;
 extern NSString* const kSearchSymbol;
 extern NSString* const kCheckmarkSymbol;
 extern NSString* const kArrowDownCircleFillSymbol;
+extern NSString* const kSecureSymbol;
 extern NSString* const kWarningSymbol;
 extern NSString* const kWarningFillSymbol;
 extern NSString* const kHelpFillSymbol;
@@ -50,6 +51,10 @@ extern NSString* const kFailMarkCircleFillSymbol;
 extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;
 extern NSString* const kClockArrowSymbol;
+extern NSString* const kWifiSymbol;
+
+// The corner radius of the symbol with a colorful background.
+extern const CGFloat kColorfulBackgroundSymbolCornerRadius;
 
 // Returns a SF symbol named `symbol_name` configured with the given
 // `configuration`.

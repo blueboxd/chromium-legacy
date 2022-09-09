@@ -17,7 +17,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/pref_names.h"
 #import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -447,28 +446,25 @@ bool GetStatusForSigninPolicy() {
           kBetterSearchAndBrowsingItemAccessibilityID;
       [items addObject:betterSearchAndBrowsingItem];
     }
-    if (IsPriceAlertsWithOptOutEnabled()) {
-      if (self.userPrefService->IsManagedPreference(
-              prefs::kTrackPricesOnTabsEnabled)) {
-        TableViewInfoButtonItem* trackPricesOnTabsItem = [self
-            tableViewInfoButtonItemType:TrackPricesOnTabsItemType
-                           textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
-                         detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
-                                 status:self.trackPricesOnTabsPreference];
-        trackPricesOnTabsItem.accessibilityIdentifier =
-            kTrackPricesOnTabsItemAccessibilityID;
-        [items addObject:trackPricesOnTabsItem];
-      } else {
-        SyncSwitchItem* trackPricesOnTabsItem = [self
-            switchItemWithItemType:TrackPricesOnTabsItemType
-                      textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
-                    detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION];
-        trackPricesOnTabsItem.accessibilityIdentifier =
-            kTrackPricesOnTabsItemAccessibilityID;
-        [items addObject:trackPricesOnTabsItem];
-      }
+    if (self.userPrefService->IsManagedPreference(
+            prefs::kTrackPricesOnTabsEnabled)) {
+      TableViewInfoButtonItem* trackPricesOnTabsItem = [self
+          tableViewInfoButtonItemType:TrackPricesOnTabsItemType
+                         textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                       detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
+                               status:self.trackPricesOnTabsPreference];
+      trackPricesOnTabsItem.accessibilityIdentifier =
+          kTrackPricesOnTabsItemAccessibilityID;
+      [items addObject:trackPricesOnTabsItem];
+    } else {
+      SyncSwitchItem* trackPricesOnTabsItem = [self
+          switchItemWithItemType:TrackPricesOnTabsItemType
+                    textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                  detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION];
+      trackPricesOnTabsItem.accessibilityIdentifier =
+          kTrackPricesOnTabsItemAccessibilityID;
+      [items addObject:trackPricesOnTabsItem];
     }
-
     _nonPersonalizedItems = items;
   }
   return _nonPersonalizedItems;
@@ -515,7 +511,7 @@ bool GetStatusForSigninPolicy() {
   managedItem.statusText = status ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   if (!status) {
-    managedItem.tintColor = [UIColor colorNamed:kGrey300Color];
+    managedItem.iconTintColor = [UIColor colorNamed:kGrey300Color];
   }
 
   // This item is not controllable, then set the color opacity to 40%.

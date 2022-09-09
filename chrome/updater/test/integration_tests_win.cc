@@ -1087,11 +1087,11 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
 
   std::vector<base::win::ScopedVariant> variant_params;
   variant_params.reserve(kMaxParameters);
-  std::transform(parameters.begin(), parameters.end(),
-                 std::back_inserter(variant_params), [](const auto& param) {
-                   return base::win::ScopedVariant(
-                       base::UTF8ToWide(param.GetString()).c_str());
-                 });
+  base::ranges::transform(parameters, std::back_inserter(variant_params),
+                          [](const auto& param) {
+                            return base::win::ScopedVariant(
+                                base::UTF8ToWide(param.GetString()).c_str());
+                          });
   for (size_t i = parameters.size(); i < kMaxParameters; ++i)
     variant_params.emplace_back(base::win::ScopedVariant::kEmptyVariant);
 
@@ -1206,7 +1206,8 @@ int RunVPythonCommand(const base::CommandLine& command_line) {
   int exit_code = -1;
   base::Process process = base::LaunchProcess(python_command, {});
   EXPECT_TRUE(process.IsValid());
-  EXPECT_TRUE(process.WaitForExitWithTimeout(base::Seconds(60), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
   return exit_code;
 }
 
@@ -1287,7 +1288,8 @@ void RunUninstallCmdLine(UpdaterScope scope) {
   EXPECT_TRUE(process.IsValid());
 
   int exit_code = 0;
-  EXPECT_TRUE(process.WaitForExitWithTimeout(base::Seconds(45), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
   EXPECT_EQ(0, exit_code);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,7 +313,7 @@ void Scheduler::StartOrStopBeginFrames() {
     return;
   }
 
-  bool needs_begin_frames = state_machine_.BeginFrameNeeded();
+  bool needs_begin_frames = state_machine_.ShouldSubscribeToBeginFrames();
   if (needs_begin_frames == observing_begin_frame_source_)
     return;
 
@@ -857,6 +857,15 @@ void Scheduler::SetDeferBeginMainFrame(bool defer_begin_main_frame) {
     TRACE_EVENT1("cc", "Scheduler::SetDeferBeginMainFrame",
                  "defer_begin_main_frame", defer_begin_main_frame);
     state_machine_.SetDeferBeginMainFrame(defer_begin_main_frame);
+  }
+  ProcessScheduledActions();
+}
+
+void Scheduler::SetPauseRendering(bool pause_rendering) {
+  {
+    TRACE_EVENT1("cc", "Scheduler::SetPauseRendering", "pause_rendering",
+                 pause_rendering);
+    state_machine_.SetPauseRendering(pause_rendering);
   }
   ProcessScheduledActions();
 }

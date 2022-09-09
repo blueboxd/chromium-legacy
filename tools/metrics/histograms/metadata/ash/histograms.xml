@@ -2234,7 +2234,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.HotseatTransition.AnimationSmoothness{HotseatTransitionType}"
-    units="%" expires_after="2022-10-07">
+    units="%" expires_after="2023-09-06">
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -3581,6 +3581,16 @@ chromium-metrics-reviews@google.com.
     ideally smooth 60 frames per second. 50% represents only 30 frames per
     second is achieved during the animations. 0% should not happen. This metric
     is recorded exactly once when the user rotates the screen.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Search.DriveFileSuggestDataValidation.Status"
+    enum="DriveFileSuggestDataValidationStatus" expires_after="2023-02-12">
+  <owner>wrong@chromium.org</owner>
+  <owner>andrewxu@chromium.org</owner>
+  <summary>
+    The outcome of drive file suggestion data validation. Recorded once per
+    validation.
   </summary>
 </histogram>
 

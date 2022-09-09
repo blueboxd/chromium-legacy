@@ -159,7 +159,8 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<app_notification::mojom::AppNotificationsHandler>
+    mojo::PendingReceiver<
+        ash::settings::app_notification::mojom::AppNotificationsHandler>
         receiver) {
   OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
       ->app_notification_handler()
@@ -218,7 +219,7 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<bluetooth_config::mojom::CrosBluetoothConfig>
+    mojo::PendingReceiver<ash::bluetooth_config::mojom::CrosBluetoothConfig>
         receiver) {
   DCHECK(features::IsBluetoothRevampEnabled());
   ash::GetBluetoothConfigService(std::move(receiver));

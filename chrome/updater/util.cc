@@ -4,7 +4,6 @@
 
 #include "chrome/updater/util.h"
 
-#include <algorithm>
 #include <cctype>
 #include <string>
 #include <vector>
@@ -21,6 +20,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -202,9 +202,8 @@ absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
     return absl::nullopt;
 
   const std::vector<tagging::AppArgs>& apps_args = tag_args->apps;
-  std::vector<tagging::AppArgs>::const_iterator it = std::find_if(
-      std::begin(apps_args), std::end(apps_args),
-      [&app_id](const tagging::AppArgs& app_args) {
+  std::vector<tagging::AppArgs>::const_iterator it = base::ranges::find_if(
+      apps_args, [&app_id](const tagging::AppArgs& app_args) {
         return base::EqualsCaseInsensitiveASCII(app_args.app_id, app_id);
       });
   return it != std::end(apps_args) ? absl::optional<tagging::AppArgs>(*it)
@@ -242,8 +241,6 @@ void InitLogging(UpdaterScope updater_scope) {
                        /*enable_timestamp=*/true,
                        /*enable_tickcount=*/false);
   VLOG(1) << "Log file: " << settings.log_file_path;
-  VLOG(1) << "Process command line: "
-          << base::CommandLine::ForCurrentProcess()->GetCommandLineString();
 }
 
 // This function and the helper functions are copied from net/base/url_util.cc
@@ -287,8 +284,7 @@ bool PathOwnedByUser(const base::FilePath& path) {
 
 std::wstring GetTaskNamePrefix(UpdaterScope scope) {
   std::wstring task_name = GetTaskDisplayName(scope);
-  task_name.erase(std::remove_if(task_name.begin(), task_name.end(), isspace),
-                  task_name.end());
+  task_name.erase(base::ranges::remove_if(task_name, isspace), task_name.end());
   return task_name;
 }
 

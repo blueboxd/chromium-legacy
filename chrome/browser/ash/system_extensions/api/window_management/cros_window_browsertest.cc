@@ -25,10 +25,14 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/console_message.h"
@@ -111,6 +115,13 @@ Profile* GetProfile() {
   auto* profile = ProfileHelper::Get()->GetProfileByUser(active_user);
   DCHECK(profile);
   return profile;
+}
+
+base::UnguessableToken GetUnguessableToken(base::StringPiece str) {
+  absl::optional<base::Token> token = base::Token::FromString(str);
+  DCHECK(token.has_value());
+
+  return base::UnguessableToken::Deserialize(token->high(), token->low());
 }
 
 // Class used to wait for InstanceRegistry events.
@@ -200,6 +211,23 @@ class CrosWindowManagementTestHelper
     std::move(callback).Run(window_id.ToString());
   }
 
+  void CloseBrowserWindow(const std::string& id,
+                          CloseBrowserWindowCallback callback) override {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(GetProfile());
+    CHECK(proxy->InstanceRegistry().ForOneInstance(
+        GetUnguessableToken(id),
+        [callback =
+             std::move(callback)](const apps::InstanceUpdate& update) mutable {
+          Browser* browser = chrome::FindBrowserWithWindow(
+              update.Window()->GetToplevelWindow());
+          CHECK(browser);
+
+          chrome::CloseWindow(browser);
+          std::move(callback).Run();
+        }));
+  }
+
   void SetDisplays(const std::string& displays,
                    SetDisplaysCallback callback) override {
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
@@ -210,18 +238,12 @@ class CrosWindowManagementTestHelper
 
   void GetMinimumSize(const std::string& id,
                       GetMinimumSizeCallback callback) override {
-    // Create a UnguessableToken from the passed string.
-    absl::optional<base::Token> token = base::Token::FromString(id);
-    DCHECK(token.has_value());
-
-    base::UnguessableToken target_id =
-        base::UnguessableToken::Deserialize(token->high(), token->low());
-
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(GetProfile());
     CHECK(proxy->InstanceRegistry().ForOneInstance(
-        target_id, [callback = std::move(callback)](
-                       const apps::InstanceUpdate& update) mutable {
+        GetUnguessableToken(id),
+        [callback =
+             std::move(callback)](const apps::InstanceUpdate& update) mutable {
           std::move(callback).Run(update.Window()
                                       ->GetToplevelWindow()
                                       ->delegate()
@@ -429,6 +451,35 @@ IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowClose) {
   RunTest("cros_window_close.js");
 }
 
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowWebAppTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+
+  // Install sample web app to open in tabbed mode.
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  web_app_info->start_url = start_url;
+  web_app_info->user_display_mode = web_app::UserDisplayMode::kBrowser;
+  const web_app::AppId app_id = web_app::test::InstallWebApp(
+      browser()->profile(), std::move(web_app_info));
+  web_app::AppReadinessWaiter(browser()->profile(), app_id).Await();
+
+  // Launch app through App Service proxy and wait for open.
+  auto* const proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+
+  ui_test_utils::TabAddedWaiter waiter(browser());
+  proxy->Launch(app_id,
+                /*event_flags=*/0, apps::LaunchSource::kFromAppListGrid);
+  waiter.Wait();
+
+  // Unfocus the web app.
+  chrome::SelectPreviousTab(browser());
+
+  // Run test which calls .getWindows().
+  RunTest("cros_window_web_app_tab.js");
+}
+
 IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
                        CacheGetWindowsReturnsProperty) {
   RunTest("cache_get_windows_returns_property.js");
@@ -472,50 +523,13 @@ IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, CrosWindowEventIdl) {
   RunTest("cros_window_event_idl.js");
 }
 
-IN_PROC_BROWSER_TEST_F(CrosWindowExtensionBrowserTest, StartEvent) {
-  // TODO(b/230811571): Rather than using the console to wait for the
-  // observer to get called, we should add support for running async functions
-  // to content::ServiceWorkerContext::ExecuteScriptForTest.
-  auto sw_console_observer = GetConsoleObserver();
-  InstallSystemExtension();
-  EXPECT_EQ(u"start event fired",
-            sw_console_observer.WaitAndGetNextConsoleMessage());
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, StartEvent) {
+  RunTest("cros_start_event.js");
 }
 
-IN_PROC_BROWSER_TEST_F(CrosWindowExtensionBrowserTest, CloseEvent) {
-  InstallAndStartExtension();
-
-  // Open browser instance to close outside of service worker.
-  chrome::NewWindow(browser());
-
-  // Keep track of the new browser window so we can close it.
-  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
-  ASSERT_NE(browser(), new_browser);
-
-  // Set target id to crosWindow id of newly opened window as per instance
-  // registry.
-  std::string target_id;
-
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-  proxy->InstanceRegistry().ForEachInstance(
-      [&target_id, &new_browser](const apps::InstanceUpdate& update) {
-        if (update.Window()->GetToplevelWindow() ==
-            new_browser->window()->GetNativeWindow()) {
-          CHECK(target_id.empty());
-          target_id = update.InstanceId().ToString();
-        }
-      });
-
-  auto observer = GetConsoleObserver();
-
-  chrome::CloseWindow(new_browser);
-
-  base::Value result = observer.WaitAndGetNextConsoleMessageAsValue();
-
-  // Our event should be dispatched with our system extension logging the id of
-  // the window firing the event.
-  EXPECT_EQ(result, target_id);
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
+                       CloseOutsideOfExtension) {
+  RunTest("close_outside_of_extension.js");
 }
 
 IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest, AcceleratorEvent) {

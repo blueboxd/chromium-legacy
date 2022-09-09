@@ -289,6 +289,7 @@
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 using base::UserMetricsAction;
@@ -565,6 +566,10 @@ Browser::Browser(const CreateParams& params)
         ->GetDownloadDisplayController()
         ->ListenToFullScreenChanges();
   }
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  CreateScreenAIAnnotatorIfNeeded();
+#endif
 
   BrowserList::AddBrowser(this);
 }
@@ -1650,7 +1655,9 @@ void Browser::AddNewContents(
   // On the Mac, the convention is to turn popups into new tabs when in browser
   // fullscreen mode. Only worry about user-initiated fullscreen as showing a
   // popup in HTML5 fullscreen would have kicked the page out of fullscreen.
-  if (disposition == WindowOpenDisposition::NEW_POPUP &&
+  // However if this Browser is for an app, we don't want to turn popups into
+  // new tabs. Popups should open as new app windows instead.
+  if (!app_controller_ && disposition == WindowOpenDisposition::NEW_POPUP &&
       fullscreen_controller->IsFullscreenForBrowser()) {
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
@@ -3161,6 +3168,17 @@ BackgroundContents* Browser::CreateBackgroundContents(
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+// TODO(https://crbug.com/1278249): Create only one AXScreenAIAnnotator per
+// profile and remove this function.
+void Browser::CreateScreenAIAnnotatorIfNeeded() {
+  // TODO(https://crbug.com/1278249): Implement settings to replace flags.
+  if (features::IsPdfOcrEnabled()) {
+    DCHECK(!screen_ai_annotator_);
+    screen_ai_annotator_ =
+        std::make_unique<screen_ai::AXScreenAIAnnotator>(this);
+  }
+}
+
 void Browser::RunScreenAIAnnotator() {
   if (!screen_ai_annotator_) {
     screen_ai_annotator_ =

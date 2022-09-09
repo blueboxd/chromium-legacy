@@ -12,7 +12,7 @@ namespace {
 
 UIViewAnimationOptions AnimationOptionsForceLinearTiming(
     UIViewAnimationOptions options) {
-  // Remove any non-linear timing options from |options|. They should be
+  // Remove any non-linear timing options from `options`. They should be
   // ignored.
   options &=
       ~(UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionCurveEaseIn |
@@ -95,39 +95,6 @@ CAMediaTimingFunction* MaterialTimingFunction(MaterialCurve curve) {
                    animations:animations
                    completion:completion];
   [CATransaction commit];
-}
-
-@end
-
-@implementation UIView (CrMaterialAnimations2)
-
-+ (void)cr_animateWithDuration:(NSTimeInterval)duration
-                         delay:(NSTimeInterval)delay
-                         curve:(ios::material::Curve)curve
-                       options:(UIViewAnimationOptions)options
-                    animations:(void (^)(void))animations
-                    completion:(void (^)(BOOL finished))completion {
-  MaterialCurve materialCurve;
-  switch (curve) {
-    case ios::material::CurveLinear:
-      materialCurve = MaterialCurveLinear;
-      break;
-    case ios::material::CurveEaseIn:
-      materialCurve = MaterialCurveEaseIn;
-      break;
-    case ios::material::CurveEaseOut:
-      materialCurve = MaterialCurveEaseOut;
-      break;
-    case ios::material::CurveEaseInOut:
-      materialCurve = MaterialCurveEaseInOut;
-      break;
-  }
-  [self cr_animateWithDuration:duration
-                         delay:delay
-                 materialCurve:materialCurve
-                       options:options
-                    animations:animations
-                    completion:completion];
 }
 
 @end

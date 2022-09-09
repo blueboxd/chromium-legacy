@@ -102,6 +102,11 @@ bool SharedImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   return false;
 }
 
+bool SharedImageBacking::ReadbackToMemory(SkPixmap& pixmap) {
+  NOTREACHED();
+  return false;
+}
+
 bool SharedImageBacking::PresentSwapChain() {
   return false;
 }
@@ -194,7 +199,7 @@ SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
 }
 #endif
 
-void SharedImageBacking::SetNotReferencedCounted() {
+void SharedImageBacking::SetNotRefCounted() {
   DCHECK(!HasAnyRefs());
   is_ref_counted_ = false;
 }

@@ -130,7 +130,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
 
-    ASSERT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
+    ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
     ASSERT_TRUE(GetEmbedderWebContents());
   }
 
@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
   ASSERT_TRUE(alert->is_before_unload_dialog());
   alert->view()->AcceptAppModalDialog();
 
-  EXPECT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
+  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, PostMessage) {
@@ -653,26 +653,21 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, RejectPointLock) {
                                    1 /* world_id */));
 }
 
-// Flaky (https://crbug.com/1033009)
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
-                       DISABLED_GuestDevToolsReloadsEmbedder) {
+                       GuestDevToolsReloadsEmbedder) {
   GURL data_url("data:application/pdf,foo");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
   auto* embedder_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  auto* guest_web_contents =
-      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
-  EXPECT_NE(embedder_web_contents, guest_web_contents);
-  while (guest_web_contents->IsLoading()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  auto* guest_view = GetGuestViewManager()->WaitForSingleGuestViewCreated();
+  ASSERT_TRUE(guest_view);
+  EXPECT_NE(embedder_web_contents->GetPrimaryMainFrame(),
+            guest_view->GetGuestMainFrame());
+  TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(guest_view);
 
   // Load DevTools.
   scoped_refptr<content::DevToolsAgentHost> devtools_agent_host =
-      content::DevToolsAgentHost::GetOrCreateFor(guest_web_contents);
+      content::DevToolsAgentHost::GetOrCreateFor(guest_view->web_contents());
   StubDevToolsAgentHostClient devtools_agent_host_client;
   devtools_agent_host->AttachClient(&devtools_agent_host_client);
 
@@ -695,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
       "data:text/html, <iframe src='data:application/pdf,foo' "
       "style='display:none'></iframe>,foo2");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
-  ASSERT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
+  ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

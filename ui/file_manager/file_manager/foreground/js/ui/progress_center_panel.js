@@ -78,6 +78,9 @@ export class ProgressCenterPanel {
           if (item.type === ProgressItemType.DELETE) {
             return strf('DELETE_FILE_NAME', source);
           }
+          if (item.type === ProgressItemType.TRASH) {
+            return strf('MOVE_TO_TRASH_FILE_NAME', source);
+          }
           if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
             return strf('RESTORE_FROM_TRASH_FILE_NAME', source);
           }
@@ -96,6 +99,9 @@ export class ProgressCenterPanel {
         }
         if (item.type === ProgressItemType.DELETE) {
           return strf('DELETE_ITEMS_REMAINING', count);
+        }
+        if (item.type === ProgressItemType.TRASH) {
+          return strf('MOVE_TO_TRASH_ITEMS_REMAINING', count);
         }
         if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
           return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', count);
@@ -172,6 +178,11 @@ export class ProgressCenterPanel {
           if (item.type === ProgressItemType.DELETE) {
             return strf('DELETE_FILE_NAME', source);
           }
+          if (item.type === ProgressItemType.TRASH) {
+            return item.state == ProgressItemState.PROGRESSING ?
+                strf('MOVE_TO_TRASH_FILE_NAME', source) :
+                strf('UNDO_DELETE_ONE', source);
+          }
           if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
             return strf('RESTORE_FROM_TRASH_FILE_NAME', source);
           }
@@ -199,6 +210,11 @@ export class ProgressCenterPanel {
         }
         if (item.type === ProgressItemType.DELETE) {
           return strf('DELETE_ITEMS_REMAINING', count);
+        }
+        if (item.type === ProgressItemType.TRASH) {
+          return item.state == ProgressItemState.PROGRESSING ?
+              strf('MOVE_TO_TRASH_ITEMS_REMAINING', count) :
+              strf('UNDO_DELETE_SOME', count);
         }
         if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
           return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', count);
@@ -316,6 +332,10 @@ export class ProgressCenterPanel {
       panelItem.primaryText = primaryText;
       panelItem.setAttribute('data-progress-id', item.id);
 
+      // Certain visual signals have the functionality to display an extra
+      // button with an arbitrary callback.
+      let extraButton = null;
+
       // On progress panels, make the cancel button aria-label more useful.
       const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
       panelItem.closeButtonAriaLabel = cancelLabel;
@@ -325,8 +345,13 @@ export class ProgressCenterPanel {
         } else if (signal === 'dismiss') {
           this.feedbackHost_.removePanelItem(panelItem);
           this.dismissErrorItemCallback(item.id);
-        } else if (signal === 'learn-more') {
-          window.open(item.learnMoreLink, '_blank');
+        } else if (
+            signal === 'extra-button' && extraButton && extraButton.callback) {
+          extraButton.callback();
+          this.feedbackHost_.removePanelItem(panelItem);
+          // The extra-button currently acts as a dismissal to invoke the
+          // error item callback as well.
+          this.dismissErrorItemCallback(item.id);
         }
       };
       panelItem.progress = item.progressRateInPercent.toString();
@@ -339,14 +364,25 @@ export class ProgressCenterPanel {
               item.type === ProgressItemType.FORMAT ||
               item.type === ProgressItemType.ZIP ||
               item.type === ProgressItemType.DELETE ||
-              item.type == ProgressItemType.RESTORE_TO_DESTINATION) {
+              item.type === ProgressItemType.TRASH ||
+              item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
             const donePanelItem = this.feedbackHost_.addPanelItem(item.id);
+            if (item.extraButton.has(ProgressItemState.COMPLETED)) {
+              extraButton = item.extraButton.get(ProgressItemState.COMPLETED);
+              donePanelItem.dataset.extraButtonText = extraButton.text;
+            }
             donePanelItem.id = item.id;
             donePanelItem.panelType = donePanelItem.panelTypeDone;
             donePanelItem.primaryText = primaryText;
             donePanelItem.secondaryText = str('COMPLETE_LABEL');
             donePanelItem.signalCallback = (signal) => {
               if (signal === 'dismiss') {
+                this.feedbackHost_.removePanelItem(donePanelItem);
+                delete this.items_[donePanelItem.id];
+              } else if (
+                  signal === 'extra-button' && extraButton &&
+                  extraButton.callback) {
+                extraButton.callback();
                 this.feedbackHost_.removePanelItem(donePanelItem);
                 delete this.items_[donePanelItem.id];
               }
@@ -364,8 +400,9 @@ export class ProgressCenterPanel {
           this.feedbackHost_.removePanelItem(panelItem);
           break;
         case ProgressItemState.ERROR:
-          if (item.learnMoreLink) {
-            panelItem.dataset.learnMoreLink = item.learnMoreLink;
+          if (item.extraButton.has(ProgressItemState.ERROR)) {
+            extraButton = item.extraButton.get(ProgressItemState.ERROR);
+            panelItem.dataset.extraButtonText = extraButton.text;
           }
           panelItem.panelType = panelItem.panelTypeError;
           panelItem.primaryText = item.message;

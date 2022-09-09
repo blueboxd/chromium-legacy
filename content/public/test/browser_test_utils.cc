@@ -1144,12 +1144,9 @@ void SimulateGesturePinchSequence(WebContents* web_contents,
   SimulateGesturePinchSequence(widget_host, point, scale, source_device);
 }
 
-void SimulateGestureScrollSequence(WebContents* web_contents,
+void SimulateGestureScrollSequence(RenderWidgetHost* render_widget_host,
                                    const gfx::Point& point,
                                    const gfx::Vector2dF& delta) {
-  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
-      web_contents->GetPrimaryMainFrame()->GetRenderViewHost()->GetWidget());
-
   blink::WebGestureEvent scroll_begin(
       blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
@@ -1157,7 +1154,7 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   scroll_begin.SetPositionInWidget(gfx::PointF(point));
   scroll_begin.data.scroll_begin.delta_x_hint = delta.x();
   scroll_begin.data.scroll_begin.delta_y_hint = delta.y();
-  widget_host->ForwardGestureEvent(scroll_begin);
+  render_widget_host->ForwardGestureEvent(scroll_begin);
 
   blink::WebGestureEvent scroll_update(
       blink::WebGestureEvent::Type::kGestureScrollUpdate,
@@ -1168,14 +1165,23 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   scroll_update.data.scroll_update.delta_y = delta.y();
   scroll_update.data.scroll_update.velocity_x = 0;
   scroll_update.data.scroll_update.velocity_y = 0;
-  widget_host->ForwardGestureEvent(scroll_update);
+  render_widget_host->ForwardGestureEvent(scroll_update);
 
   blink::WebGestureEvent scroll_end(
       blink::WebGestureEvent::Type::kGestureScrollEnd,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
       blink::WebGestureDevice::kTouchpad);
   scroll_end.SetPositionInWidget(gfx::PointF(point));
-  widget_host->ForwardGestureEvent(scroll_end);
+  render_widget_host->ForwardGestureEvent(scroll_end);
+}
+
+void SimulateGestureScrollSequence(WebContents* web_contents,
+                                   const gfx::Point& point,
+                                   const gfx::Vector2dF& delta) {
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetPrimaryMainFrame()->GetRenderWidgetHost());
+
+  SimulateGestureScrollSequence(widget_host, point, delta);
 }
 
 void SimulateGestureEvent(WebContents* web_contents,
@@ -3936,18 +3942,13 @@ void EnsureCookiesFlushed(BrowserContext* browser_context) {
 }
 
 bool TestGuestAutoresize(WebContents* embedder_web_contents,
-                         WebContents* guest_web_contents) {
-  FrameTreeNode* guest_main_frame_node =
-      static_cast<WebContentsImpl*>(guest_web_contents)
-          ->GetPrimaryFrameTree()
-          .root();
+                         RenderFrameHost* guest_main_frame) {
   RenderFrameProxyHost* subframe_proxy_host =
-      guest_main_frame_node->render_manager()->GetProxyToOuterDelegate();
-
-  RenderWidgetHost* guest_rwh =
-      guest_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
-  RenderWidgetHostImpl* guest_rwh_impl =
-      static_cast<RenderWidgetHostImpl*>(guest_rwh);
+      FrameTreeNode::From(guest_main_frame)
+          ->render_manager()
+          ->GetProxyToOuterDelegate();
+  RenderWidgetHostImpl* guest_rwh_impl = static_cast<RenderWidgetHostImpl*>(
+      guest_main_frame->GetRenderWidgetHost());
 
   auto interceptor = std::make_unique<SynchronizeVisualPropertiesInterceptor>(
       subframe_proxy_host);

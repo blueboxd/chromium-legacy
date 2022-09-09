@@ -4,10 +4,12 @@
 
 #include "chrome/updater/test/integration_tests_impl.h"
 
-#include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -425,8 +427,9 @@ bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   if (!process.IsValid())
     return false;
 
-  // TODO(crbug.com/1096654): Get the timeout from TestTimeouts.
-  return process.WaitForExitWithTimeout(base::Seconds(360), exit_code);
+  // macOS requires a larger timeout value for --install.
+  return process.WaitForExitWithTimeout(2 * TestTimeouts::action_max_timeout(),
+                                        exit_code);
 }
 
 bool WaitFor(base::RepeatingCallback<bool()> predicate) {

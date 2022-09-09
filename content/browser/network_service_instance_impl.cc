@@ -52,6 +52,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
+#include "net/first_party_sets/public_sets.h"
 #include "net/log/net_log_util.h"
 #include "sandbox/policy/features.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
@@ -296,8 +297,17 @@ void CreateNetworkContextInternal(
     }
   }
 
-  GetNetworkService()->CreateNetworkContext(std::move(context),
-                                            std::move(params));
+  // This might recreate g_client if the network service needed to be restarted.
+  auto* network_service = GetNetworkService();
+
+#if BUILDFLAG(USE_SOCKET_BROKER)
+  if (GetContentClient()->browser()->ShouldSandboxNetworkService() &&
+      !params->socket_broker) {
+    params->socket_broker = g_client->BindSocketBroker();
+  }
+#endif  // BUILDFLAG(USE_SOCKET_BROKER)
+
+  network_service->CreateNetworkContext(std::move(context), std::move(params));
 }
 
 scoped_refptr<base::SequencedTaskRunner>& GetNetworkTaskRunnerStorage() {
@@ -612,13 +622,11 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       if (FirstPartySetsHandlerImpl::GetInstance()->IsEnabled()) {
-        if (absl::optional<network::mojom::PublicFirstPartySetsPtr> sets =
+        if (absl::optional<net::PublicSets> sets =
                 FirstPartySetsHandlerImpl::GetInstance()->GetSets(
-                    base::BindOnce(
-                        [](network::mojom::PublicFirstPartySetsPtr sets) {
-                          GetNetworkService()->SetFirstPartySets(
-                              std::move(sets));
-                        }));
+                    base::BindOnce([](net::PublicSets sets) {
+                      GetNetworkService()->SetFirstPartySets(std::move(sets));
+                    }));
             sets.has_value()) {
           g_network_service_remote->get()->SetFirstPartySets(
               std::move(sets.value()));
@@ -872,13 +880,6 @@ void CreateNetworkContextInNetworkService(
         params->http_cache_file_operations_factory
             .InitWithNewPipeAndPassReceiver());
   }
-
-#if BUILDFLAG(USE_SOCKET_BROKER)
-  if (GetContentClient()->browser()->ShouldSandboxNetworkService() &&
-      !params->socket_broker) {
-    params->socket_broker = g_client->BindSocketBroker();
-  }
-#endif  // BUILDFLAG(USE_SOCKET_BROKER)
 
 #if BUILDFLAG(IS_ANDROID)
   // On Android, if a cookie_manager pending receiver was passed then migration

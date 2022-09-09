@@ -117,6 +117,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
@@ -3026,6 +3027,13 @@ static ui::AXMode ComputeAXModeFromAXContexts(Vector<AXContext*> ax_contexts) {
   ui::AXMode ax_mode = 0;
   for (AXContext* context : ax_contexts)
     ax_mode |= context->GetAXMode();
+
+  if (!ax_contexts.IsEmpty()) {
+    DCHECK(!ax_mode.is_mode_off())
+        << "The computed AX mode was empty but there were > 0 AXContext "
+           "objects. A caller should have called RemoveAXContext().";
+  }
+
   return ax_mode;
 }
 
@@ -3052,6 +3060,12 @@ void Document::AddAXContext(AXContext* context) {
     ax_object_cache_ =
         AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
   }
+}
+
+void Document::AXContextModeChanged() {
+  DCHECK_GT(ax_contexts_.size(), 0u);
+  DCHECK(ax_object_cache_);
+  ax_object_cache_->SetAXMode(ComputeAXModeFromAXContexts(ax_contexts_));
 }
 
 void Document::RemoveAXContext(AXContext* context) {
@@ -8715,6 +8729,17 @@ void Document::RemoveFocusedElementChangeObserver(
 void Document::WriteIntoTrace(perfetto::TracedValue ctx) const {
   perfetto::TracedDictionary dict = std::move(ctx).WriteDictionary();
   dict.Add("url", Url());
+}
+
+bool Document::DeferredCompositorCommitIsAllowed() const {
+  // Don't defer commits if a transition is in progress. It requires commits to
+  // send directives to the compositor and uses a separate mechanism to pause
+  // all rendering when needed.
+  auto* supplement = DocumentTransitionSupplement::FromIfExists(*this);
+  if (supplement && !supplement->GetTransition()->IsIdle())
+    return false;
+
+  return deferred_compositor_commit_is_allowed_;
 }
 
 Document::PaintPreviewScope::PaintPreviewScope(Document& document,

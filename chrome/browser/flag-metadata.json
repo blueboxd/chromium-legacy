@@ -1800,7 +1800,7 @@
   {
     "name": "enable-commerce-hint-android",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 106
+    "expiry_milestone": 108
   },
   {
     "name": "enable-commerce-merchant-viewer",
@@ -2123,6 +2123,11 @@
     "name": "enable-discover-feed-top-sync-promo",
     "owners": [ "mrefaat", "sczs"],
     "expiry_milestone": 106
+  },
+  {
+    "name": "enable-discover-multi-column",
+    "owners": [ "skavuluru", "clank-app-team@google.com" ],
+    "expiry_milestone": 118
   },
   {
     "name": "enable-dns-proxy",
@@ -3564,11 +3569,6 @@
     "expiry_milestone": 104
   },
   {
-    "name": "files-swa",
-    "owners": [ "majewski", "simmonsjosh@google.com" ],
-    "expiry_milestone": 112
-  },
-  {
     "name": "files-trash",
     "owners": [ "benreich", "joelhockey", "noel", "simmonsjosh@google.com" ],
     "expiry_milestone": 115
@@ -4135,6 +4135,12 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-color-management",
+    "owners": [ "mrfemi", "jshargo" ],
+    // This flag is used for chrome color management
+    "expiry_milestone": 120
+  },
+  {
     "name": "lacros-merge-icu-data-file",
     "owners": [ "andreaorru", "hidehiko", "lacros-team@google.com" ],
     "expiry_milestone": 130
@@ -4313,6 +4319,11 @@
     "name": "mbi-mode",
     "owners": [ "dom", "blink-isolation-dev@chromium.org" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "media-app-custom-colors",
+    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
+    "expiry_milestone": 120
   },
   {
     "name": "media-app-photos-integration-image",
@@ -6855,6 +6866,11 @@
     "name": "welcome-screen",
     "owners": ["jamescook", "amitrokhin", "cros-system-ui@google.com"],
     "expiry_milestone": 118
+  },
+  {
+    "name": "whats-new-ios",
+    "owners": [ "cheickcisse@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 111
   },
   {
     "name": "wifi-connect-mac-address-randomization",

@@ -144,7 +144,7 @@ void Mediator::BindToCrosBluetoothConfig() {
       cros_discovery_session_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
-chromeos::bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
+bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
   return fast_pair_bluetooth_config_delegate_.get();
 }
 
@@ -164,7 +164,9 @@ void Mediator::OnFastPairEnabledChanged(bool is_enabled) {
 
 void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
-  // On discovery, download and decode device images.
+  // On discovery, download and decode device images. TODO (b/244472452):
+  // remove logic that is executed for every advertisement even if no
+  // notification is shown.
   ui_broker_->ShowDiscovery(device);
   fast_pair_repository_->FetchDeviceImages(device);
 }
@@ -246,6 +248,7 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
     case DiscoveryAction::kDismissedByUser:
     case DiscoveryAction::kDismissed:
     case DiscoveryAction::kLearnMore:
+    case DiscoveryAction::kAlreadyDisplaying:
       break;
   }
 }
@@ -278,8 +281,7 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
 }
 
 void Mediator::OnAdapterStateControllerChanged(
-    chromeos::bluetooth_config::AdapterStateController*
-        adapter_state_controller) {
+    bluetooth_config::AdapterStateController* adapter_state_controller) {
   // Always reset the observation first to handle the case where the ptr
   // became a nullptr (i.e. AdapterStateController was destroyed).
   adapter_state_controller_observation_.Reset();
@@ -288,17 +290,17 @@ void Mediator::OnAdapterStateControllerChanged(
 }
 
 void Mediator::OnAdapterStateChanged() {
-  chromeos::bluetooth_config::AdapterStateController* adapter_state_controller =
+  bluetooth_config::AdapterStateController* adapter_state_controller =
       fast_pair_bluetooth_config_delegate_->adapter_state_controller();
   DCHECK(adapter_state_controller);
-  chromeos::bluetooth_config::mojom::BluetoothSystemState adapter_state =
+  bluetooth_config::mojom::BluetoothSystemState adapter_state =
       adapter_state_controller->GetAdapterState();
 
   // The FeatureStatusTracker already observes when Bluetooth is enabled,
   // disabled, or unavailable. We observe the Bluetooth Config to additionally
   // disable Fast Pair when the adapter is disabling.
   if (adapter_state ==
-      chromeos::bluetooth_config::mojom::BluetoothSystemState::kDisabling) {
+      bluetooth_config::mojom::BluetoothSystemState::kDisabling) {
     QP_LOG(INFO) << __func__ << ": Adapter disabling, disabling Fast Pair.";
     SetFastPairState(false);
     // In addition to stopping scanning, we cancel pairing here to prevent a

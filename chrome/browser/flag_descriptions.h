@@ -1590,6 +1590,9 @@ extern const char kTabSearchFuzzySearchDescription[];
 extern const char kTabStripImprovementsAndroidName[];
 extern const char kTabStripImprovementsAndroidDescription[];
 
+extern const char kDiscoverFeedMultiColumnAndroidName[];
+extern const char kDiscoverFeedMultiColumnAndroidDescription[];
+
 extern const char kTailoredSecurityDesktopNoticeName[];
 extern const char kTailoredSecurityDesktopNoticeDescription[];
 
@@ -3094,9 +3097,6 @@ extern const char kFilesExtractArchiveDescription[];
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];
 
-extern const char kFilesSWAName[];
-extern const char kFilesSWADescription[];
-
 extern const char kFilesTrashName[];
 extern const char kFilesTrashDescription[];
 
@@ -3243,6 +3243,9 @@ extern const char kEnableHardwareMirrorModeDescription[];
 
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
+
+extern const char kMediaAppCustomColorsName[];
+extern const char kMediaAppCustomColorsDescription[];
 
 extern const char kMediaAppPhotosIntegrationImageName[];
 extern const char kMediaAppPhotosIntegrationImageDescription[];
@@ -3571,6 +3574,9 @@ extern const char kIntentChipAppIconDescription[];
 
 extern const char kKioskEnableAppServiceName[];
 extern const char kKioskEnableAppServiceDescription[];
+
+extern const char kLacrosColorManagementName[];
+extern const char kLacrosColorManagementDescription[];
 
 extern const char kLinkCapturingAutoDisplayIntentPickerName[];
 extern const char kLinkCapturingAutoDisplayIntentPickerDescription[];

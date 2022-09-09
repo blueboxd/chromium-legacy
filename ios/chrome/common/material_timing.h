@@ -30,47 +30,18 @@ typedef NS_ENUM(NSUInteger, MaterialCurve) {
 // Per material spec, a motion curve with "follow through".
 CAMediaTimingFunction* MaterialTransformCurve2();
 
-// Returns a timing function related to the given |curve|.
+// Returns a timing function related to the given `curve`.
 CAMediaTimingFunction* MaterialTimingFunction(MaterialCurve curve);
 
 @interface UIView (CrMaterialAnimations)
 
-// Performs a standard UIView animation using a material timing |curve|.
-// Note: any curve option specified in |options| will be ignored in favor of the
+// Performs a standard UIView animation using a material timing `curve`.
+// Note: any curve option specified in `options` will be ignored in favor of the
 // specified curve value.
 // See also: +[UIView animateWithDuration:delay:animations:completion].
 + (void)cr_animateWithDuration:(NSTimeInterval)duration
                          delay:(NSTimeInterval)delay
                  materialCurve:(MaterialCurve)materialCurve
-                       options:(UIViewAnimationOptions)options
-                    animations:(void (^)(void))animations
-                    completion:(void (^)(BOOL finished))completion;
-
-@end
-
-// Temporarily keep these old enum and function around to aid in the transition
-// process to the constant version above;
-namespace ios {
-namespace material {
-// Type of material timing curve.
-typedef NS_ENUM(NSUInteger, Curve) {
-  CurveEaseInOut,
-  CurveEaseOut,
-  CurveEaseIn,
-  CurveLinear,
-};
-}  // namespace material
-}  // namespace ios
-
-@interface UIView (CrMaterialAnimations2)
-
-// Performs a standard UIView animation using a material timing |curve|.
-// Note: any curve option specified in |options| will be ignored in favor of the
-// specified curve value.
-// See also: +[UIView animateWithDuration:delay:animations:completion].
-+ (void)cr_animateWithDuration:(NSTimeInterval)duration
-                         delay:(NSTimeInterval)delay
-                         curve:(ios::material::Curve)curve
                        options:(UIViewAnimationOptions)options
                     animations:(void (^)(void))animations
                     completion:(void (^)(BOOL finished))completion;

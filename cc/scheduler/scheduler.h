@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,6 +247,11 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // Deferring begin main frame prevents all document lkifecycle updates and
   // updates of new layer tree state.
   void SetDeferBeginMainFrame(bool defer_begin_main_frame);
+
+  // Pausing rendering prevents new main frames and impl-side invalidations from
+  // being triggered. Impl frames are drawn until any in-flight updates from the
+  // main thread are drawn.
+  void SetPauseRendering(bool pause_rendering);
 
   // Controls whether the BeginMainFrameNotExpected messages should be sent to
   // the main thread by the cc scheduler.

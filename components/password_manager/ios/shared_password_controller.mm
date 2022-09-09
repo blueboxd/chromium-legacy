@@ -394,7 +394,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
         [formQuery.type isEqual:@"keyup"]) {
       [self.formHelper updateFieldDataOnUserInput:formQuery.uniqueFieldID
                                        inputValue:formQuery.typedValue];
-
       _passwordManager->UpdateStateOnUserInput(
           [_driverHelper PasswordManagerDriver:frame], formQuery.uniqueFormID,
           formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
@@ -422,6 +421,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   NSArray<FormSuggestion*>* rawSuggestions = [self.suggestionHelper
       retrieveSuggestionsWithFormID:formQuery.uniqueFormID
                     fieldIdentifier:formQuery.uniqueFieldID
+                            inFrame:frame
                           fieldType:formQuery.fieldType];
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
@@ -519,7 +519,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       NSString* username = [suggestion.value
           substringToIndex:suggestion.value.length - kSuggestionSuffix.length];
       std::unique_ptr<password_manager::FillData> fillData =
-          [self.suggestionHelper passwordFillDataForUsername:username];
+          [self.suggestionHelper passwordFillDataForUsername:username
+                                                     inFrame:frame];
 
       if (!fillData) {
         completion();
@@ -550,10 +551,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
+                 inFrame:(web::WebFrame*)frame
        completionHandler:(void (^)(BOOL))completionHandler {
-  [self.suggestionHelper processWithPasswordFormFillData:formData];
+  [self.suggestionHelper processWithPasswordFormFillData:formData
+                                                 inFrame:frame];
   [self.formHelper fillPasswordForm:formData
-                            inFrame:web::GetMainFrame(_webState)
+                            inFrame:frame
                   completionHandler:completionHandler];
 }
 
@@ -880,7 +883,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // TODO(crbug.com/1344776): Add a test with two password forms
   if (params.type == "input" || params.type == "change") {
     _lastSubmittedPasswordManagerDriver =
-        IOSPasswordManagerDriverFactory::GetRetainableDriver(frame);
+        IOSPasswordManagerDriverFactory::GetRetainableDriver(_webState, frame);
   }
 
   if (params.type == "focus") {

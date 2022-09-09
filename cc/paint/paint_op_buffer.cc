@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "cc/paint/skottie_serialization_history.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -389,7 +390,7 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider,
       custom_callback(custom_callback),
       did_draw_op_callback(did_draw_op_callback) {}
 
-PlaybackParams::~PlaybackParams() {}
+PlaybackParams::~PlaybackParams() = default;
 
 PlaybackParams::PlaybackParams(const PlaybackParams& other) = default;
 PlaybackParams& PlaybackParams::operator=(const PlaybackParams& other) =
@@ -2778,8 +2779,7 @@ DrawImageOp::DrawImageOp(const PaintImage& image, SkScalar left, SkScalar top)
     : PaintOpWithFlags(kType, PaintFlags()),
       image(image),
       left(left),
-      top(top),
-      sampling(SkSamplingOptions()) {}
+      top(top) {}
 
 DrawImageOp::DrawImageOp(const PaintImage& image,
                          SkScalar left,
@@ -2808,7 +2808,6 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       image(image),
       src(src),
       dst(dst),
-      sampling(SkSamplingOptions()),
       constraint(constraint) {}
 
 DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
@@ -2893,12 +2892,14 @@ DrawTextBlobOp::~DrawTextBlobOp() = default;
 PaintOpBuffer::CompositeIterator::CompositeIterator(
     const PaintOpBuffer* buffer,
     const std::vector<size_t>* offsets)
-    : using_offsets_(!!offsets) {
+    : iter_(offsets == nullptr ? absl::variant<Iterator, OffsetIterator>(
+                                     absl::in_place_type<Iterator>,
+                                     buffer)
+                               : absl::variant<Iterator, OffsetIterator>(
+                                     absl::in_place_type<OffsetIterator>,
+                                     buffer,
+                                     offsets)) {
   DCHECK(!buffer->are_ops_destroyed());
-  if (using_offsets_)
-    offset_iter_.emplace(buffer, offsets);
-  else
-    iter_.emplace(buffer);
 }
 
 PaintOpBuffer::CompositeIterator::CompositeIterator(

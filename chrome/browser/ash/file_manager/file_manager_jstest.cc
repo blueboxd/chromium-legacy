@@ -29,6 +29,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
   RunTestURL("foreground/js/ui/actions_submenu_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ArrayDataModel) {
+  RunTestURL("common/js/array_data_model_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerController) {
   RunTestURL("foreground/js/banner_controller_unittest.js");
 }
@@ -49,16 +53,20 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerWarning) {
   RunTestURL("foreground/js/ui/banners/warning_banner_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Command) {
+  RunTestURL("foreground/js/ui/command_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
   RunTestURL("foreground/js/metadata/content_metadata_provider_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
-  RunTestURL("background/js/crostini_unittest.js");
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContextMenuHandler) {
+  RunTestURL("foreground/js/ui/context_menu_handler_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
-  RunTestURL("background/js/device_handler_unittest.js");
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
+  RunTestURL("background/js/crostini_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryContentsTest) {
@@ -75,10 +83,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DriveSyncHandlerTest) {
   RunTestURL("background/js/drive_sync_handler_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DuplicateFinderTest) {
-  RunTestURL("background/js/duplicate_finder_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExifParser) {
@@ -175,24 +179,28 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilteredVolumeManagerTest) {
   RunTestURL("common/js/filtered_volume_manager_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Grid) {
+  RunTestURL("foreground/js/ui/grid_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(CanvasFileManagerJsTest, ImageOrientation) {
   RunTestURL("foreground/js/metadata/image_orientation_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
-  RunTestURL("foreground/js/import_controller_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImporterCommonTest) {
-  RunTestURL("common/js/importer_common_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportHistoryTest) {
-  RunTestURL("background/js/import_history_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, InstallLinuxPackageDialogTest) {
   RunTestURL("foreground/js/ui/install_linux_package_dialog_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, List) {
+  RunTestURL("foreground/js/ui/list_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListSelectionModel) {
+  RunTestURL("foreground/js/ui/list_selection_model_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListSingleSelectionModel) {
+  RunTestURL("foreground/js/ui/list_single_selection_model_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListThumbnailLoader) {
@@ -203,12 +211,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
   RunTestURL("common/js/lru_cache_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
-  RunTestURL("background/js/media_import_handler_unittest.js");
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Menu) {
+  RunTestURL("foreground/js/ui/menu_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
-  RunTestURL("background/js/media_scanner_unittest.js");
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MenuButton) {
+  RunTestURL("foreground/js/ui/menu_button_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
@@ -247,6 +255,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, PathComponent) {
   RunTestURL("foreground/js/path_component_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, PositionUtil) {
+  RunTestURL("foreground/js/ui/position_util_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
   RunTestURL("foreground/js/providers_model_unittest.js");
 }
@@ -265,10 +277,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, StorageAdapter) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
   RunTestURL("foreground/js/task_controller_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
-  RunTestURL("background/js/task_queue_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {

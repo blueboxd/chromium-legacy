@@ -59,11 +59,11 @@
 namespace content {
 
 // Version number of the database.
-const int AttributionStorageSql::kCurrentVersionNumber = 35;
+const int AttributionStorageSql::kCurrentVersionNumber = 36;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 35;
+const int AttributionStorageSql::kCompatibleVersionNumber = 36;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -1811,9 +1811,10 @@ bool AttributionStorageSql::HasCapacityForStoringSource(
     const std::string& serialized_origin) {
   static constexpr char kCountSourcesSql[] =
       // clang-format off
-      "SELECT COUNT(source_origin)FROM sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_origin")
-      "WHERE source_origin=?";  // clang-format on
+      "SELECT COUNT(*)FROM sources "
+      DCHECK_SQL_INDEXED_BY("active_sources_by_source_origin")
+      "WHERE source_origin=? "
+      "AND(event_level_active=1 OR aggregatable_active=1)";  // clang-format on
 
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kCountSourcesSql));
@@ -1993,12 +1994,14 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
       return false;
     }
     if (!db_->Open(path_to_database_)) {
+      DLOG(ERROR) << "Failed to open Conversion database";
       HandleInitializationFailure(InitStatus::kFailedToOpenDbFile);
       return false;
     }
   }
 
   if (!InitializeSchema(db_init_status_ == DbStatus::kDeferringCreation)) {
+    DLOG(ERROR) << "Failed to initialize schema for Conversion database";
     HandleInitializationFailure(InitStatus::kFailedToInitializeSchema);
     return false;
   }
@@ -2126,10 +2129,11 @@ bool AttributionStorageSql::CreateSchema() {
   if (!db_->Execute(kImpressionExpiryIndexSql))
     return false;
 
-  // Optimizes counting sources by source origin.
+  // Optimizes counting active sources by source origin.
   static constexpr char kImpressionOriginIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS sources_by_origin "
-      "ON sources(source_origin)";
+      "CREATE INDEX IF NOT EXISTS active_sources_by_source_origin "
+      "ON sources(source_origin)"
+      "WHERE event_level_active=1 OR aggregatable_active=1";
   if (!db_->Execute(kImpressionOriginIndexSql))
     return false;
 

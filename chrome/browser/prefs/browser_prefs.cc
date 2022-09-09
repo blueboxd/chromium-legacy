@@ -297,6 +297,7 @@
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/services/device_sync/public/cpp/device_sync_prefs.h"
 #include "ash/services/multidevice_setup/multidevice_setup_service.h"
+#include "chrome/browser/apps/app_preload_service/app_preload_service.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
@@ -766,6 +767,10 @@ const char kProfileAvatarTutorialShown[] =
 constexpr char kUsersLastInputMethod[] = "UsersLRUInputMethod";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 09/2022.
+const char kPrivacySandboxFirstPartySetsDataAccessAllowed[] =
+    "privacy_sandbox.first_party_sets_data_access_allowed";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1009,6 +1014,10 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 08/2022.
   registry->RegisterBooleanPref(prefs::kUsesSystemThemeDeprecated, false);
 #endif
+
+  // Deprecated 09/2022
+  registry->RegisterBooleanPref(kPrivacySandboxFirstPartySetsDataAccessAllowed,
+                                true);
 }
 
 }  // namespace
@@ -1119,9 +1128,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   crosapi::browser_util::RegisterLocalStatePrefs(registry);
   ash::CupsPrintersManager::RegisterLocalStatePrefs(registry);
   ash::BrowserDataMigratorImpl::RegisterLocalStatePrefs(registry);
-  chromeos::bluetooth_config::BluetoothPowerControllerImpl::
-      RegisterLocalStatePrefs(registry);
-  chromeos::bluetooth_config::DeviceNameManagerImpl::RegisterLocalStatePrefs(
+  ash::bluetooth_config::BluetoothPowerControllerImpl::RegisterLocalStatePrefs(
+      registry);
+  ash::bluetooth_config::DeviceNameManagerImpl::RegisterLocalStatePrefs(
       registry);
   ash::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
   ash::DemoSession::RegisterLocalStatePrefs(registry);
@@ -1139,8 +1148,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::KioskAppManager::RegisterLocalStatePrefs(registry);
   ash::KioskCryptohomeRemover::RegisterPrefs(registry);
   ash::language_prefs::RegisterPrefs(registry);
-  chromeos::local_search_service::SearchMetricsReporter::
-      RegisterLocalStatePrefs(registry);
+  ash::local_search_service::SearchMetricsReporter::RegisterLocalStatePrefs(
+      registry);
   ash::login::SecurityTokenSessionController::RegisterLocalStatePrefs(registry);
   ash::reporting::LoginLogoutReporter::RegisterPrefs(registry);
   ash::MultiProfileUserController::RegisterPrefs(registry);
@@ -1459,6 +1468,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::AppListSyncableService::RegisterProfilePrefs(registry);
   apps::AppPlatformMetricsService::RegisterProfilePrefs(registry);
+  apps::AppPreloadService::RegisterProfilePrefs(registry);
   apps::webapk_prefs::RegisterProfilePrefs(registry);
   arc::prefs::RegisterProfilePrefs(registry);
   ArcAppListPrefs::RegisterProfilePrefs(registry);
@@ -1469,8 +1479,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::app_time::AppTimeController::RegisterProfilePrefs(registry);
   ash::assistant::prefs::RegisterProfilePrefs(registry);
   ash::bluetooth::DebugLogsManager::RegisterPrefs(registry);
-  chromeos::bluetooth_config::BluetoothPowerControllerImpl::
-      RegisterProfilePrefs(registry);
+  ash::bluetooth_config::BluetoothPowerControllerImpl::RegisterProfilePrefs(
+      registry);
   ash::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   ash::CupsPrintersManager::RegisterProfilePrefs(registry);
   ash::device_sync::RegisterProfilePrefs(registry);
@@ -1594,6 +1604,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
   RegisterProfilePrefsForMigration(registry);
+
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterIntegerPref(prefs::kHighEfficiencyChipExpandedCount, 0);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -1977,6 +1991,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   }
   profile_prefs->ClearPref(prefs::kUsesSystemThemeDeprecated);
 #endif
+
+  // Added 09/2022.
+  profile_prefs->ClearPref(kPrivacySandboxFirstPartySetsDataAccessAllowed);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

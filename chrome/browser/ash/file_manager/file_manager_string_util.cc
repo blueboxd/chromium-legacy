@@ -902,6 +902,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_UNDO_DELETE_ACTION_LABEL);
   SET_STRING("UNDO_DELETE_ONE", IDS_FILE_BROWSER_UNDO_DELETE_ONE);
   SET_STRING("UNDO_DELETE_SOME", IDS_FILE_BROWSER_UNDO_DELETE_SOME);
+  SET_STRING("MOVE_TO_TRASH_FILE_NAME",
+             IDS_FILE_BROWSER_MOVE_TO_TRASH_FILE_NAME);
+  SET_STRING("MOVE_TO_TRASH_ITEMS_REMAINING",
+             IDS_FILE_BROWSER_MOVE_TO_TRASH_ITEMS_REMAINING);
   SET_STRING("UNKNOWN_FILESYSTEM_WARNING",
              IDS_FILE_BROWSER_UNKNOWN_FILESYSTEM_WARNING);
   SET_STRING("UNMOUNT_DEVICE_BUTTON_LABEL",
@@ -1021,8 +1025,7 @@ void AddFileManagerFeatureStrings(const std::string& locale,
             crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->Set("PLUGIN_VM_ENABLED",
             plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
-  dict->Set("FILES_SWA",
-            base::FeatureList::IsEnabled(chromeos::features::kFilesSWA));
+  dict->Set("FILES_SWA", true);
   dict->Set("FILES_TRASH_ENABLED",
             base::FeatureList::IsEnabled(chromeos::features::kFilesTrash));
   dict->Set("DRIVE_DSS_PIN_ENABLED",

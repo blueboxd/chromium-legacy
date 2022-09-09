@@ -30,7 +30,7 @@ namespace {
 UIImageSymbolConfiguration* kDefaultSettingsRootSymbolConfiguration =
     [UIImageSymbolConfiguration
         configurationWithPointSize:kSettingsRootSymbolImagePointSize
-                            weight:UIImageSymbolWeightRegular
+                            weight:UIImageSymbolWeightMedium
                              scale:UIImageSymbolScaleMedium];
 
 }  // namespace

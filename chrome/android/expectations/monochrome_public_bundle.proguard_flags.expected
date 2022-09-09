@@ -1,5 +1,5 @@
 # File: ../../third_party/androidx/androidx_fragment.flags
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 }
 
 # File: ../../third_party/androidx/androidx_mediarouter.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,7 +26,7 @@
 }
 
 # File: ../../build/android/chromium_annotations.flags
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,7 +98,7 @@
 }
 
 # File: ../../base/android/proguard/chromium_apk.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -163,18 +163,6 @@
     public static **[] values();
 }
 
-# Allows Proguard freedom in removing these log related calls.
--assumenosideeffects class android.util.Log {
-  static int d(...);
-  static int v(...);
-  static boolean isLoggable(...);
-}
-
-# Makes try-with-resources less inefficient. Saved 3.8kb when added.
--assumenosideeffects class java.lang.Throwable {
-  void addSuppressed(...);
-}
-
 # This is to workaround crbug.com/1204690 - an old GMS app version crashes when
 # ObjectWrapper contains > 1 fields, and this prevents R8 from inserting a
 # synthetic field.
@@ -193,8 +181,23 @@
   public boolean requiresSignIn();
 }
 
+# Remove calls to String.format() where the result goes unused. This can mask
+# exceptions if the parameters to String.format() are invalid, but such cases
+# are generally programming bugs anyways.
+# Not using the return value generally occurs due to logging being stripped.
+-assumenosideeffects class java.lang.String {
+  static java.lang.String format(...);
+}
+
+# Allows R8 to remove static field accesses to library APIs when the results
+# are unused (E.g. tell it that it's okay to not trigger <clinit>).
+# Not using the return value generally occurs due to logging being stripped.
+-assumenosideeffects class android.**, java.** {
+  static <fields>;
+}
+
 # File: ../../base/android/proguard/chromium_code.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -253,7 +256,7 @@
 }
 
 # File: ../../build/android/dcheck_is_off.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -267,7 +270,7 @@
 }
 
 # File: ../../chrome/android/proguard/main.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -312,7 +315,7 @@
 }
 
 # File: ../../third_party/android_deps/material_design.flags
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -364,7 +367,7 @@
 -dontwarn com.google.protobuf.nano.NanoEnumValue
 
 # File: ../../android_webview/support_library/boundary_interfaces/proguard.flags
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -375,7 +378,7 @@
 -keep public class org.chromium.support_lib_boundary.* { public *; }
 
 # File: ../../android_webview/nonembedded/java/proguard.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -444,7 +447,7 @@
 }
 
 # File: ../../chrome/android/features/start_surface/proguard.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -859,6 +862,53 @@
 # rule, fields may be removed that would cause runtime failures.
 -keepclassmembers class * extends com.google.android.gms.internal.vision.zzjb {
   <fields>;
+}
+
+# File: ../../base/android/proguard/remove_logging.flags
+# Copyright 2022 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+# Remove Log.d(), Log.v(), and all isLoggable() (which is generally used
+# only with Level.DEBUG and Level.VERBOSE).
+-assumenosideeffects class android.util.Log {
+  static int d(...);
+  static int v(...);
+  static boolean isLoggable(...) return false;
+}
+
+# Makes try-with-resources less inefficient. Saved 3.8kb when added.
+-assumenosideeffects class java.lang.Throwable {
+  void addSuppressed(...);
+}
+
+# Remove all logging calls via JDK Loggers. They are generally from
+# unused parts of third-party libraries.
+-assumenosideeffects class java.util.logging.Logger {
+    void finest(...);
+    void finer(...);
+    void fine(...);
+    void info(...);
+    void warning(...);
+    void severe(...);
+    void throwing(...);
+    void log(...);
+    void logp(...);
+    static java.util.logging.Logger getLogger(...) return _NONNULL_;
+    boolean isLoggable(...) return false;
+}
+
+# Remove accesses to Level.<thing> that go unused.
+-assumenosideeffects class java.util.logging.Level {
+  <fields>;
+  # Flogger uses Level objects, so do not set a return value for intValue().
+  int intValue();
+}
+
+# Remove fields of type Logger.
+-assumenosideeffects class * {
+  java.util.logging.Logger * return _NONNULL_;
 }
 
 # File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.1.jar:META-INF/com.android.tools/r8-from-1.6.0/coroutines.pro

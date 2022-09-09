@@ -341,26 +341,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.CBCMRealTimeReportQueueConfigurationCreation"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-10-01">
-  <owner>zmin@chromium.org</owner>
-  <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
-  <summary>
-    Recorded when real time report queue is created. It indicates whether the
-    configuration is created successfully or not.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.CBCMRealTimeReportQueueCreation"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-10-01">
-  <owner>zmin@chromium.org</owner>
-  <owner>src/chrome/browser/enterprise/reporting/OWNERS</owner>
-  <summary>
-    Recorded when real time report queue is created. It indicates whether the
-    queue is created successfully or not.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.CBCMRemoteCommand.Executed"
     enum="RemoteCommandExecutionStatus" expires_after="2023-10-01">
   <owner>anthonyvd@chromium.org</owner>
@@ -778,6 +758,21 @@ chromium-metrics-reviews@google.com.
   <token key="Variant">
     <variant name="Creation" summary="create (i.e. without nonce)"/>
     <variant name="Rotation" summary="rotate (i.e. with nonce)"/>
+  </token>
+</histogram>
+
+<histogram name="Enterprise.DeviceTrust.Mac.SecureEnclaveOperation.{KeyType}"
+    enum="DTSecureEnclaveOperationStatus" expires_after="2023-09-01">
+  <owner>hmare@google.com</owner>
+  <owner>rogerta@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <summary>
+    Recorded when a device attempts to issue an API that interacts with the
+    Secure Enclave signing key in the {KeyType} key storage.
+  </summary>
+  <token key="KeyType">
+    <variant name="Permanent" summary="Permanent key storage"/>
+    <variant name="Temporary" summary="Temporary key storage"/>
   </token>
 </histogram>
 

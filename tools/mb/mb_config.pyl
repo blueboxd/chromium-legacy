@@ -271,9 +271,15 @@
     },
 
     'chromium.fuchsia.fyi': {
+      'fuchsia-arm64-cast-receiver-rel': 'release_bot_fuchsia_arm64_cast_receiver',
+       # TODO(crbug.com/1294938): Move to 'chromium.fuchsia'.
+      'fuchsia-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
+      # TODO(crbug.com/1294938): Move to 'chromium.fuchsia'.
+      'fuchsia-x64-cast-receiver-rel': 'release_bot_fuchsia_cast_receiver',
+      'fuchsia-x64-rel': 'release_bot_fuchsia',
     },
 
     'chromium.fuzz': {
@@ -305,7 +311,7 @@
       'Libfuzzer Upload iOS Catalyst Debug': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting',
       'MSAN Release (chained origins)': 'msan_release_bot_reclient',
       'MSAN Release (no origins)': 'msan_no_origins_release_bot_reclient',
-      'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
+      'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot_reclient',
       'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot_reclient',
       'TSAN Release': 'tsan_disable_nacl_release_bot_reclient',
@@ -615,7 +621,7 @@
     },
 
     'chromium.mac': {
-      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
+      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting_reclient',
       'ios-device': 'ios_device_release_compile_only_reclient',
@@ -872,7 +878,7 @@
       # cause them to produce different baselines than the release
       # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux-blink-optional-highdpi-rel': 'release_bot_blink_minimal_symbols',
-      'linux-blink-rel': 'release_bot_blink_minimal_symbols',
+      'linux-blink-rel': 'release_bot_blink_minimal_symbols_reclient',
       'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac10.15-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
@@ -1038,7 +1044,7 @@
       'android-angle-chromium-try': 'gpu_tests_android_release_trybot_arm64_fastbuild',
       'fuchsia-angle-try': 'angle_deqp_release_trybot_fuchsia',
       'ios-angle-try-intel': 'angle_deqp_release_trybot_ios',
-      'linux-angle-chromium-try': 'gpu_tests_release_trybot',
+      'linux-angle-chromium-try': 'gpu_tests_release_trybot_reclient',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x86-try': 'gpu_tests_release_trybot_x86',
@@ -1108,14 +1114,22 @@
     },
 
     'tryserver.chromium.fuchsia': {
+      # TODO(crbug.com/1294938): Remove this bot after the transition.
       'fuchsia-arm64-cast': 'release_trybot_fuchsia_arm64_cast_receiver',
+      'fuchsia-arm64-cast-receiver-rel': 'release_trybot_fuchsia_arm64_cast_receiver',
+      'fuchsia-arm64-rel': 'release_trybot_fuchsia_arm64',
       'fuchsia-binary-size': 'release_fuchsia_arm64',
       'fuchsia-compile-x64-dbg': 'debug_bot_fuchsia_compile_only',
       'fuchsia-deterministic-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
+      # TODO(crbug.com/1294938): Remove this bot after the transition.
       'fuchsia-x64-cast': 'release_trybot_fuchsia_cast_receiver',
+      'fuchsia-x64-cast-receiver-rel': 'release_trybot_fuchsia_cast_receiver',
+      'fuchsia-x64-rel': 'release_trybot_fuchsia',
+      # TODO(crbug.com/1294938): Remove this bot after the transition.
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
+      # TODO(crbug.com/1294938): Remove this bot after the transition.
       'fuchsia_x64': 'release_trybot_fuchsia',
     },
 
@@ -1158,7 +1172,7 @@
       'linux-lacros-fyi-rel': 'lacros_on_linux_release_trybot',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-layout-tests-edit-ng': 'release_trybot',
-      'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
+      'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot_reclient',
       'linux-mbi-mode-per-render-process-host-rel': 'gpu_tests_release_trybot_mbi_mode_per_render_process_host',
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
       'linux-perfetto-rel': 'perfetto_release_trybot',
@@ -1167,7 +1181,7 @@
       'linux-rel-ml': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_do_typecheck',
       'linux-rel-warmed': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-viz-rel': 'release_trybot',
-      'linux-wayland-rel': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
+      'linux-wayland-rel': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-wayland-rel-reclient': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-webkit-msan-rel': 'msan_release_bot',
       'linux-wpt-content-shell-fyi-rel': 'release_trybot',
@@ -1881,8 +1895,8 @@
       'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
     ],
 
-    'asan_disable_nacl_fuzzer_v8_heap_release_bot': [
-      'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'release_bot',
+    'asan_disable_nacl_fuzzer_v8_heap_release_bot_reclient': [
+      'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'release_bot_reclient',
     ],
 
     'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_reclient': [
@@ -2864,6 +2878,10 @@
       'gpu_tests', 'release_trybot_minimal_symbols', 'v8_pointer_compression',
     ],
 
+    'gpu_tests_release_trybot_reclient': [
+      'gpu_tests', 'release_trybot_reclient',
+    ],
+
     'gpu_tests_release_trybot_resource_allowlisting': [
       'gpu_tests', 'release_trybot', 'resource_allowlisting',
     ],
@@ -2895,11 +2913,6 @@
 
     'gpu_tests_wayland_release_bot_reclient': [
       'gpu_tests', 'release_bot_reclient', 'linux_wayland', 'ozone_headless',
-    ],
-
-    'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
-      'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
-      'linux_wayland', 'ozone_headless', 'remoting_use_wayland',
     ],
 
     'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient': [
@@ -3078,8 +3091,8 @@
       'libfuzzer', 'asan', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm', 'disable_seed_corpus',
     ],
 
-    'libfuzzer_asan_release_trybot': [
-      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
+    'libfuzzer_asan_release_trybot_reclient': [
+      'libfuzzer', 'asan', 'shared_release_trybot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
     ],
 
     # Meant for local development of fuzzers where no reclient/goma is needed.
@@ -3233,11 +3246,11 @@
     ],
 
     'official_goma_fuchsia_arm64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator', 'fuchsia_cfv2_script'
     ],
 
     'official_goma_fuchsia_x64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_chromebook_image', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_chromebook_image', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator', 'fuchsia_cfv2_script'
     ],
 
     'official_goma_linux_perf': [
@@ -3391,6 +3404,10 @@
       'disable_nacl',
     ],
 
+    'release_bot_blink_minimal_symbols_reclient': [
+      'release_bot_blink_reclient', 'minimal_symbols',
+    ],
+
     'release_bot_blink_reclient': [
       'release_bot_blink_reclient',
     ],
@@ -3532,19 +3549,19 @@
     ],
 
     'release_trybot_backuprefptr_arm64_reclient': [
-      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'android', 'arm64',
+      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'android', 'arm64', 'enable_dangling_raw_ptr_checks',
     ],
 
     'release_trybot_backuprefptr_arm_reclient': [
-      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'android', 'arm',
+      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'android', 'arm', 'enable_dangling_raw_ptr_checks',
     ],
 
     'release_trybot_backuprefptr_x64_reclient': [
-      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'x64',
+      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'x64', 'enable_dangling_raw_ptr_checks',
     ],
 
     'release_trybot_backuprefptr_x86_reclient': [
-      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'x86',
+      'release_trybot_minimal_symbols_reclient', 'backuprefptr', 'x86', 'enable_dangling_raw_ptr_checks',
     ],
 
     'release_trybot_blink': [
@@ -4102,6 +4119,14 @@
       'gn_args': 'cppgc_enable_verify_heap=true',
     },
 
+    # Enables dangling raw pointer detection.
+    # This configuration will silently deactivate the ref count cookie in:
+    # https://crsrc.org/c/base/allocator/partition_allocator/partition_alloc_config.h;l=208-216;drc=2d195004c75699bdd87c69cdb7e8d293249dcfdd
+    'enable_dangling_raw_ptr_checks': {
+      'gn_args': 'enable_dangling_raw_ptr_checks=true',
+      'mixins': ["dcheck_always_on"],
+    },
+
     'enable_rust': {
       'gn_args': 'enable_rust=true',
     },
@@ -4592,6 +4617,10 @@
 
     'shared_release_trybot': {
       'mixins': ['shared_release_bot', 'no_symbols', 'dcheck_always_on'],
+    },
+
+    'shared_release_trybot_reclient': {
+      'mixins': ['shared_release_bot_reclient', 'no_symbols', 'dcheck_always_on'],
     },
 
     'skip_generate_fuzzer_owners': {

@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,9 @@ class CC_EXPORT Proxy {
   // Defers LayerTreeHost::BeginMainFrameUpdate and commits until it is
   // reset. It is only supported when using a scheduler.
   virtual void SetDeferMainFrameUpdate(bool defer_main_frame_update) = 0;
+
+  // Pauses all main and impl-side rendering.
+  virtual void SetPauseRendering(bool pause_rendering) = 0;
 
   // Defers commits until at most the given |timeout| period has passed,
   // but continues to update the document lifecycle in

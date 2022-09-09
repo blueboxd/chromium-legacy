@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -76,20 +77,35 @@ void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
     return;
   }
 
-  in_diacritical_autocorrect_session_ =
-      IsCurrentInputMethodExperimentalMultilingual() &&
-      diacritics_insensitive_string_comparator_.Equal(original_text,
-                                                      current_text);
-
   if (pending_autocorrect_.has_value()) {
     AcceptOrClearPendingAutocorrect();
   }
 
-  input_context->SetAutocorrectRange(autocorrect_range);  // show underline
+  input_context->SetAutocorrectRange(
+      autocorrect_range,
+      base::BindOnce(&AutocorrectManager::ProcessSetAutocorrectRangeDone,
+                     weak_ptr_factory_.GetWeakPtr(), autocorrect_range,
+                     original_text, current_text));  // show underline
+}
+
+void AutocorrectManager::ProcessSetAutocorrectRangeDone(
+    const gfx::Range& autocorrect_range,
+    const std::u16string& original_text,
+    const std::u16string& current_text,
+    bool set_range_success) {
+  if (!set_range_success) {
+    // TODO(b/161490813): record metrics for failed set range calls.
+    return;
+  }
 
   if (autocorrect_range.is_empty()) {
     return;
   }
+
+  in_diacritical_autocorrect_session_ =
+      IsCurrentInputMethodExperimentalMultilingual() &&
+      diacritics_insensitive_string_comparator_.Equal(original_text,
+                                                      current_text);
 
   bool virtual_keyboard_visible =
       ChromeKeyboardControllerClient::HasInstance() &&
@@ -235,7 +251,7 @@ void AutocorrectManager::ProcessTextFieldChange() {
   // Clear autocorrect range if any.
   if (input_context) {
     HideUndoWindow();
-    input_context->SetAutocorrectRange(gfx::Range());
+    input_context->SetAutocorrectRange(gfx::Range(), base::DoNothing());
   }
 
   if (pending_autocorrect_.has_value()) {
@@ -397,7 +413,8 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
   // Non-empty autocorrect range means that the user has not modified
   // autocorrect suggestion to invalidate it. So, it is considered as accepted.
   if (input_context && !input_context->GetAutocorrectRange().is_empty()) {
-    input_context->SetAutocorrectRange(gfx::Range()); // clear underline
+    input_context->SetAutocorrectRange(gfx::Range(),
+                                       base::DoNothing());  // clear underline
     LogAssistiveAutocorrectAction(
       AutocorrectActions::kUserAcceptedAutocorrect);
   } else {

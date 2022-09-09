@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2824,10 +2824,6 @@ test("base_perftests") {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
     shard_timeout = 600
   }
-  if (is_fuchsia) {
-    # TODO(crbug.com/1306335): Switch to CFv2 once infrastructure supports it.
-    use_cfv2 = false
-  }
 
   if (!is_official_build) {
     # The extra data tables required by stack traces are turned off for official
@@ -4313,6 +4309,7 @@ if (is_android) {
     proguard_configs = [
       "android/proguard/chromium_apk.flags",
       "android/proguard/chromium_code.flags",
+      "android/proguard/remove_logging.flags",
     ]
   }
 

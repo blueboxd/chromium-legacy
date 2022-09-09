@@ -18,9 +18,10 @@
 namespace ash {
 namespace input_method {
 
+// Must match with IMEAutocorrectActions in enums.xml
+//
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Needs to match ImeAutocorrectActions
-// in enums.xml.
+// numeric values should never be reused.
 enum class AutocorrectActions {
   kWindowShown = 0,
   kUnderlined = 1,
@@ -116,15 +117,25 @@ class AutocorrectManager {
                                       bool set_range_success);
 
   struct PendingAutocorrectState {
-    explicit PendingAutocorrectState(
-        const std::u16string& original_text,
-        const base::TimeTicks& start_time,
-        bool virtual_keyboard_visible = false);
+    explicit PendingAutocorrectState(const std::u16string& original_text,
+                                     const std::u16string& suggested_text,
+                                     const base::TimeTicks& start_time,
+                                     bool virtual_keyboard_visible = false);
     PendingAutocorrectState(const PendingAutocorrectState& other);
     ~PendingAutocorrectState();
 
     // Original text that is now corrected by autocorrect.
     std::u16string original_text;
+
+    // Autocorrect suggestion that replaced original text.
+    std::u16string suggested_text;
+
+    // Specifies if the suggestion is validated in the surrounding text.
+    bool is_validated = false;
+
+    // Number of times that validation of autocorrect suggestion in the
+    // surrounding text failed.
+    int validation_tries = 0;
 
     // Number of characters inserted anytime after setting the pending
     // autocorrect range. Negative means no autocorrect range is pending or a

@@ -200,6 +200,11 @@ vars = {
   # qemu on linux-arm64 machines.
   'checkout_fuchsia_for_arm64_host': False,
 
+  # Whether to checkout test related data. For compile only builder, we should
+  # consider using this flag to save some resources.
+  # This is introduced because of crbug.com/1358788.
+  'checkout_testdata': True,
+
   # Revision of Crubit (trunk on 2022-08-26).  This should typically be the
   # same as the revision specified in CRUBIT_REVISION in
   # tools/rust/update_rust.py.  More details and roll instructions can be
@@ -300,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '11ed2972730743778b091ecc06b12ecc92c2c7c5',
+  'skia_revision': '22fcbc6609237c1b49b95f7d197b18a19c87fa70',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -308,7 +313,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '526e8e647636c2cc2531e226673c073818c2d3f6',
+  'angle_revision': '8fdfd8be4e54c6a0338596b88238bf65127d76bc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -415,7 +420,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1ef40f24ff8e5a675ac5f6d7a7960fd7b68ff5e2',
+  'dawn_revision': '0d7cd27fd349302c74bde0dfd5e6602817bddf71',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -785,7 +790,7 @@ deps = {
   },
 
   'src/ios/third_party/edo/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '101cd0562999a9b6fb6cff7c5783c1293a366acf',
+      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + 'fa262201b8c29d6160d5773eac72f9a4dccd1c92',
       'condition': 'checkout_ios',
   },
 
@@ -955,7 +960,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'OxbOMNUh5yPM3zr0-njLiCO4_TnL65jBlBNPmW9qBfwC',
+          'version': 'Awq_oSRi0iV_SdxE4y_1Y_f3ZxeNH2eHj-LoFwxvSKgC',
       },
     ],
     'condition': 'checkout_android',
@@ -1592,7 +1597,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '04d4278363f55b9a5dc51542bcefc96b81374366',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c82228f26f9e66840cff62e8217d2c65592ae20b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1737,7 +1742,7 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d7952456e433ab415329ee3bc6faa4b4fe4d3cdb',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@b772fe545415ddf21499ade5718815f2206e3004',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1849,7 +1854,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@57256acf68ec15d915b042f8efe85ce4b20dccac',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b0b6e54b85f32d4f2c19e3dfc50b3c0c62ec3f14',
     'condition': 'checkout_src_internal',
   },
 
@@ -4103,6 +4108,7 @@ hooks = [
  {
     'name': 'test_fonts',
     'pattern': '.',
+    'condition': 'checkout_testdata',
     'action': [ 'python3',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -4116,6 +4122,7 @@ hooks = [
   {
     'name': 'opus_test_files',
     'pattern': '.',
+    'condition': 'checkout_testdata',
     'action': ['python3',
                'src/third_party/depot_tools/download_from_google_storage.py',
                '--no_auth',
@@ -4165,6 +4172,7 @@ hooks = [
   {
     'name': 'wasm_fuzzer',
     'pattern': '.',
+    'condition': 'checkout_testdata',
     'action': [ 'python3',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -4321,6 +4329,7 @@ hooks = [
   {
     'name': 'maps_perf_test_load_dataset',
     'pattern': '\\.sha1',
+    'condition': 'checkout_testdata',
     'action': [ 'python3',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -4366,6 +4375,7 @@ hooks = [
   {
     'name': 'zucchini_testdata',
     'pattern': '.',
+    'condition': 'checkout_testdata',
     'action': [ 'python3',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -279,6 +279,7 @@ source_set("crosapi") {
     "//chromeos/ash/components/login/auth",
     "//chromeos/ash/components/network",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
+    "//chromeos/components/certificate_provider:certificate_provider",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors",

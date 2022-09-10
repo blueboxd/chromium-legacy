@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,8 +165,7 @@ class MetricsConsentHandlerTest : public testing::Test {
 
     // Keys to be used for testing.
     non_owner_keys->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-    owner_keys->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-    owner_keys->SetPrivateKey(device_policy_.GetSigningKey());
+    owner_keys->ImportPrivateKeyAndSetPublicKey(device_policy_.GetSigningKey());
 
     content::RunAllTasksUntilIdle();
 

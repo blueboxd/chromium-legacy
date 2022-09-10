@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,7 @@ class SidePanelRegistry final : public base::SupportsUserData::Data,
 
   // SidePanelEntryObserver:
   void OnEntryShown(SidePanelEntry* id) override;
+  void OnEntryIconUpdated(SidePanelEntry* entry) override;
 
  private:
   void RemoveEntry(SidePanelEntry* entry);

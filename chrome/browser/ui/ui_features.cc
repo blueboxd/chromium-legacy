@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,6 +114,11 @@ const base::Feature kSideSearchFeedback{"SideSearchFeedback",
 const base::Feature kSideSearchDSESupport{"SideSearchDSESupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Displays right-click search results of a highlighted text in side panel,
+// So users are not forced to switch to a new tab to view the search results
+const base::Feature kSearchWebInSidePanel{"SearchWebInSidePanel",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether to clobber all side search side panels in the current browser window
 // or only the side search in the current tab before read later or lens side
 // panel is open.
@@ -136,6 +141,9 @@ const base::FeatureParam<int> kSideSearchAutoTriggeringReturnCount{
 // side panel project launches.
 const base::Feature kSidePanelImprovedClobbering{
     "SidePanelImprovedClobbering", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSidePanelWebView{"SidePanelWebView",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSidePanelJourneys{"SidePanelJourneys",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

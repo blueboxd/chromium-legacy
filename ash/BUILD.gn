@@ -1773,6 +1773,10 @@ component("ash") {
     "system/unified/notification_icons_controller.h",
     "system/unified/page_indicator_view.cc",
     "system/unified/page_indicator_view.h",
+    "system/unified/quick_settings_button_base.cc",
+    "system/unified/quick_settings_button_base.h",
+    "system/unified/quick_settings_metrics_util.cc",
+    "system/unified/quick_settings_metrics_util.h",
     "system/unified/quick_settings_view.cc",
     "system/unified/quick_settings_view.h",
     "system/unified/quiet_mode_feature_pod_controller.cc",
@@ -2229,6 +2233,8 @@ component("ash") {
     "wm/workspace/workspace_window_resizer.h",
     "wm/workspace_controller.cc",
     "wm/workspace_controller.h",
+    "wm_mode/wm_mode_controller.cc",
+    "wm_mode/wm_mode_controller.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -2840,6 +2846,9 @@ test("ash_unittests") {
     "system/geolocation/geolocation_controller_unittest.cc",
     "system/gesture_education/gesture_education_notification_controller_unittest.cc",
     "system/holding_space/holding_space_animation_registry_unittest.cc",
+    "system/holding_space/holding_space_ash_test_base.cc",
+    "system/holding_space/holding_space_ash_test_base.h",
+    "system/holding_space/holding_space_tray_child_bubble_unittest.cc",
     "system/holding_space/holding_space_tray_unittest.cc",
     "system/human_presence/human_presence_orientation_controller_unittest.cc",
     "system/human_presence/lock_on_leave_controller_unittest.cc",
@@ -3083,6 +3092,7 @@ test("ash_unittests") {
     "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
+    "wm_mode/wm_mode_unittests.cc",
   ]
   configs += [ "//build/config:precompiled_headers" ]
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,9 @@ std::u16string GetApplicationTitle(content::WebContents* web_contents,
   // web.
   if (extension)
     return base::UTF8ToUTF16(extension->name());
+
+  if (!web_contents)
+    return std::u16string();
 
   return url_formatter::FormatOriginForSecurityDisplay(
       web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin(),
@@ -342,14 +345,16 @@ void DesktopCaptureAccessHandler::HandleRequest(
   const bool should_display_notification =
       display_notification_ && ShouldDisplayNotification(extension) &&
       !HasNotificationExemption(request.security_origin);
+
   std::unique_ptr<PendingAccessRequest> pending_request =
       std::make_unique<PendingAccessRequest>(
           /*picker=*/nullptr, request, std::move(callback),
           GetApplicationTitle(web_contents, extension),
           should_display_notification, is_allowlisted_extension);
 
-  if (request.video_type !=
-      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
+  if (!web_contents ||
+      request.video_type !=
+          blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     std::move(pending_request->callback)
         .Run(blink::mojom::StreamDevicesSet(),
              blink::mojom::MediaStreamRequestResult::INVALID_STATE,
@@ -482,6 +487,7 @@ void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
     content::WebContents* web_contents,
     std::unique_ptr<PendingAccessRequest> pending_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(web_contents);
   DCHECK_EQ(pending_request->request.video_type,
             blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE);
 
@@ -535,6 +541,7 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
     const RequestsQueue& queue,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(web_contents);
 
   const PendingAccessRequest& pending_request = *queue.front();
 
@@ -549,8 +556,8 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
           content::DesktopMediaID::kNullId, web_contents_id);
       media_id.audio_share = pending_request.request.audio_type !=
                              blink::mojom::MediaStreamType::NO_SERVICE;
-      OnPickerDialogResults(web_contents, pending_request.application_title,
-                            media_id);
+      OnPickerDialogResults(web_contents->GetWeakPtr(),
+                            pending_request.application_title, media_id);
       return;
     }
   }
@@ -569,11 +576,12 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
   // base::Unretained(this) is safe because DesktopCaptureAccessHandler is owned
   // by MediaCaptureDevicesDispatcher, which is a lazy singleton which is
   // destroyed when the browser process terminates.
-  DesktopMediaPicker::DoneCallback done_callback = base::BindOnce(
-      &DesktopCaptureAccessHandler::OnPickerDialogResults,
-      base::Unretained(this), web_contents, pending_request.application_title);
+  DesktopMediaPicker::DoneCallback done_callback =
+      base::BindOnce(&DesktopCaptureAccessHandler::OnPickerDialogResults,
+                     base::Unretained(this), web_contents->GetWeakPtr(),
+                     pending_request.application_title);
   DesktopMediaPicker::Params picker_params;
-  picker_params.web_contents = web_contents;
+  picker_params.web_contents = web_contents->GetWeakPtr();
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
   picker_params.context = parent_window;
   picker_params.parent = parent_window;
@@ -594,13 +602,19 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
 }
 
 void DesktopCaptureAccessHandler::OnPickerDialogResults(
-    content::WebContents* web_contents,
+    base::WeakPtr<content::WebContents> web_contents,
     const std::u16string& application_title,
     content::DesktopMediaID media_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(web_contents);
 
-  auto it = pending_requests_.find(web_contents);
+  if (!web_contents) {
+    // If `pending_requests_` contained the old value of `pending_requests_`
+    // before it got nulled out, then WebContentsDestroyed() will be
+    // called with the value and evict the request from `pending_requests_`.
+    return;
+  }
+
+  auto it = pending_requests_.find(web_contents.get());
   if (it == pending_requests_.end())
     return;
   RequestsQueue& queue = it->second;
@@ -627,16 +641,16 @@ void DesktopCaptureAccessHandler::OnPickerDialogResults(
     policy::DlpContentManager::Get()->CheckScreenShareRestriction(
         media_id, application_title,
         base::BindOnce(&DesktopCaptureAccessHandler::OnDlpRestrictionChecked,
-                       base::Unretained(this), web_contents->GetWeakPtr(),
+                       base::Unretained(this), web_contents,
                        std::move(pending_request), media_id,
                        media_id.audio_share));
 #else   // BUILDFLAG(IS_CHROMEOS)
-    AcceptRequest(web_contents, std::move(pending_request), media_id,
+    AcceptRequest(web_contents.get(), std::move(pending_request), media_id,
                   media_id.audio_share);
 #endif  // !BUILDFLAG(IS_CHROMEOS)
   }
   if (!queue.empty())
-    ProcessQueuedAccessRequest(queue, web_contents);
+    ProcessQueuedAccessRequest(queue, web_contents.get());
 }
 
 void DesktopCaptureAccessHandler::WebContentsDestroyed(

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,9 @@ class DesktopMediaSourceView : public views::View {
 
   // Returns true if the source is selected.
   bool GetSelected() const;
+
+  // Clears selection from this item, or no-ops if it is not selected.
+  void ClearSelection();
 
   // views::View interface.
   views::View* GetSelectedViewForGroup(int group) override;

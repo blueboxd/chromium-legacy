@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
   DCHECK(delegate);
 
   settings_private::SetPrefResult result =
-      delegate->SetPref(parameters->name, &*parameters->value);
+      delegate->SetPref(parameters->name, &parameters->value);
   switch (result) {
     case settings_private::SetPrefResult::SUCCESS:
       return RespondNow(OneArgument(base::Value(true)));

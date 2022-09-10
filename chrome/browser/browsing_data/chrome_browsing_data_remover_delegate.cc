@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -781,10 +781,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         website_settings_filter);
 
 #if !BUILDFLAG(IS_ANDROID)
-    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
-        ContentSettingsType::INSTALLED_WEB_APP_METADATA, delete_begin_,
-        delete_end_, website_settings_filter);
-
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::INTENT_PICKER_DISPLAY, delete_begin_, delete_end_,
         website_settings_filter);

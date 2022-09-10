@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
   // Open the specified |process_name| with supplied |args|.
   ExtensionFunction::ResponseAction OpenProcess(
       const std::string& process_name,
-      std::unique_ptr<std::vector<std::string>> args);
+      absl::optional<std::vector<std::string>> args);
 
  private:
   void OnGuestRunning(const std::string& user_id_hash,

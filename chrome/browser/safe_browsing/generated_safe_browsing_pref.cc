@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,8 +184,7 @@ void GeneratedSafeBrowsingPref::ApplySafeBrowsingManagementState(
     extensions::settings_private::GeneratedPref::ApplyControlledByFromPref(
         pref_object, reporting_pref);
 
-    pref_object->user_selectable_values =
-        std::make_unique<std::vector<base::Value>>();
+    pref_object->user_selectable_values.emplace();
     pref_object->user_selectable_values->emplace_back(
         base::to_underlying(SafeBrowsingSetting::STANDARD));
     pref_object->user_selectable_values->emplace_back(

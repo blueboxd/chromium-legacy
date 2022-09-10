@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,12 @@ void SidePanelEntry::CacheView(std::unique_ptr<views::View> view) {
 
 void SidePanelEntry::ClearCachedView() {
   content_view_.reset(nullptr);
+}
+
+void SidePanelEntry::ResetIcon(ui::ImageModel icon) {
+  icon_ = std::move(icon);
+  for (SidePanelEntryObserver& observer : observers_)
+    observer.OnEntryIconUpdated(this);
 }
 
 void SidePanelEntry::OnEntryShown() {

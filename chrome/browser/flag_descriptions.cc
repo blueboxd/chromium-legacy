@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2390,7 +2390,8 @@ const char kPrivacyGuideAndroidDescription[] =
 const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
-    "Fenced Frames, Shared Storage, and their associated features.";
+    "Fenced Frames, Shared Storage, Private Aggregation, and their associated "
+    "features.";
 
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
@@ -2565,6 +2566,10 @@ const char kSidePanelJourneysFlagId[] = "side-panel-journeys";
 const char kSidePanelJourneysName[] = "Side panel journeys";
 const char kSidePanelJourneysDescription[] =
     "Enables Journeys within the side panel.";
+
+const char kSidePanelWebViewName[] = "Side panel webview";
+const char kSidePanelWebViewDescription[] =
+    "Adds a side panel option to load arbitrary web content, with a URL bar.";
 
 const char kSharingDesktopScreenshotsName[] = "Desktop Screenshots";
 const char kSharingDesktopScreenshotsDescription[] =
@@ -2940,11 +2945,6 @@ const char kUnsafeFastJSCallsDescription[] =
 
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
-
-const char kUseFirstPartySetName[] = "First-Party Set";
-const char kUseFirstPartySetDescription[] =
-    "Use the provided list of origins as a First-Party Set, with the first "
-    "valid origin as the owner of the set.";
 
 const char kUsernameFirstFlowName[] = "Username first flow voting";
 const char kUsernameFirstFlowDescription[] =
@@ -6331,6 +6331,10 @@ const char kSideSearchDescription[] =
 const char kSideSearchDSESupportName[] = "Side search DSE support";
 const char kSideSearchDSESupportDescription[] =
     "Side search with support for participating chrome search engines.";
+
+const char kSearchWebInSidePanelName[] = "Search web in side panel";
+const char kSearchWebInSidePanelDescription[] =
+    "Displays right-click search results of a highlighted text in side panel";
 
 #endif  // defined(TOOLKIT_VIEWS)
 

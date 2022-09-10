@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -284,8 +284,7 @@ std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
   if (!GetStringList(value, kTargetURLPatternsKey, &target_url_patterns))
     return nullptr;
 
-  if (!result->PopulateURLPatterns(&document_url_patterns,
-                                   &target_url_patterns,
+  if (!result->PopulateURLPatterns(&document_url_patterns, &target_url_patterns,
                                    error)) {
     return nullptr;
   }
@@ -306,8 +305,8 @@ std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
 }
 
 bool MenuItem::PopulateURLPatterns(
-    std::vector<std::string>* document_url_patterns,
-    std::vector<std::string>* target_url_patterns,
+    const std::vector<std::string>* document_url_patterns,
+    const std::vector<std::string>* target_url_patterns,
     std::string* error) {
   if (document_url_patterns) {
     if (!document_url_patterns_.Populate(

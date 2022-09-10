@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,10 @@ generate_grd("build_grdp") {
 
   # Add local test files.
   input_files_base_dir = rebase_path(".", "//")
-  input_files = [ "password_change_authenticator_test.js" ]
+  input_files = [
+    "password_change_authenticator_test.js",
+    "saml_username_autofill_test.js",
+  ]
 
   # Add the core files from c/b/r/gaia_auth_host as well.
   deps = [ "//chrome/browser/resources/gaia_auth_host:preprocess_gen_js_files" ]

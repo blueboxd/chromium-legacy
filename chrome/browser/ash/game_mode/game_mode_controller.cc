@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,7 +184,9 @@ void GameModeController::WindowTracker::OnPostWindowStateTypeChange(
   UpdateGameModeStatus(window_state);
 }
 
-GameMode GameModeController::GameModeEnabler::mode() const { return mode_; }
+GameMode GameModeController::GameModeEnabler::mode() const {
+  return mode_;
+}
 
 void GameModeController::WindowTracker::UpdateGameModeStatus(
     ash::WindowState* window_state) {

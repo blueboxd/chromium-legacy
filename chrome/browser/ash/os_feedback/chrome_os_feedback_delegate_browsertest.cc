@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,9 +97,8 @@ class FakeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   ~FakeFeedbackPrivateDelegate() override = default;
 
   // FeedbackPrivateDelegate:
-  std::unique_ptr<base::DictionaryValue> GetStrings(
-      content::BrowserContext* browser_context,
-      bool from_crash) const override;
+  base::Value::Dict GetStrings(content::BrowserContext* browser_context,
+                               bool from_crash) const override;
   void FetchSystemInformation(
       content::BrowserContext* context,
       system_logs::SysLogsFetcherCallback callback) const override;
@@ -121,11 +120,11 @@ class FakeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   base::RepeatingCallback<void(bool)> on_fetch_completed_;
 };
 
-std::unique_ptr<base::DictionaryValue> FakeFeedbackPrivateDelegate::GetStrings(
+base::Value::Dict FakeFeedbackPrivateDelegate::GetStrings(
     content::BrowserContext* browser_context,
     bool from_crash) const {
   NOTIMPLEMENTED();
-  return nullptr;
+  return {};
 }
 
 void FakeFeedbackPrivateDelegate::FetchSystemInformation(

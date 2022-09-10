@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,8 +116,7 @@ api::windows::Window CreateWindowModelHelper(
     const api::windows::WindowType& type,
     const api::windows::WindowState& state) {
   api::windows::Window window_struct;
-  window_struct.tabs =
-      std::make_unique<std::vector<api::tabs::Tab>>(std::move(tabs));
+  window_struct.tabs = std::move(tabs);
   window_struct.session_id = session_id;
   window_struct.incognito = false;
   window_struct.always_on_top = false;

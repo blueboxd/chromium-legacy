@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,12 +13,10 @@ assert(is_chromeos, "OOBE UI is only available on ChromeOS builds")
 
 group("polymer3_elements") {
   public_deps = [
-    ":app_downloading_module",
     ":app_launch_splash_module",
     ":assistant_optin_module",
     ":consolidated_consent_module",
     ":device_disabled_module",
-    ":enable_kiosk_module",
     ":error_message_module",
     ":family_link_notice_module",
     ":gaia_signin_module",
@@ -49,7 +47,7 @@ js_type_check("closure_compile_local") {
   closure_flags = default_closure_args
   deps = [
     ":adb_sideloading",
-    ":app_downloading.m",
+    ":app_downloading",
     ":app_launch_splash.m",
     ":arc_terms_of_service",
 
@@ -57,7 +55,7 @@ js_type_check("closure_compile_local") {
     ":autolaunch",
     ":consolidated_consent.m",
     ":device_disabled.m",
-    ":enable_kiosk.m",
+    ":enable_kiosk",
     ":error_message.m",
     ":family_link_notice.m",
     ":fingerprint_setup",
@@ -109,8 +107,8 @@ js_library("adb_sideloading") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("app_downloading.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/app_downloading.m.js" ]
+js_library("app_downloading") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/app_downloading.js" ]
   deps = [
     "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -119,7 +117,7 @@ js_library("app_downloading.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":app_downloading_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("app_launch_splash.m") {
@@ -212,8 +210,8 @@ js_library("device_disabled.m") {
   extra_deps = [ ":device_disabled_module" ]
 }
 
-js_library("enable_kiosk.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/enable_kiosk.m.js" ]
+js_library("enable_kiosk") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/enable_kiosk.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -221,7 +219,7 @@ js_library("enable_kiosk.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":enable_kiosk_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("family_link_notice.m") {
@@ -656,15 +654,6 @@ js_library("error_message.m") {
   extra_deps = [ ":error_message_module" ]
 }
 
-polymer_modulizer("app_downloading") {
-  js_file = "app_downloading.js"
-  html_file = "app_downloading.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("app_launch_splash") {
   js_file = "app_launch_splash.js"
   html_file = "app_launch_splash.html"
@@ -693,14 +682,6 @@ polymer_modulizer("consolidated_consent") {
 polymer_modulizer("device_disabled") {
   js_file = "device_disabled.js"
   html_file = "device_disabled.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("enable_kiosk") {
-  js_file = "enable_kiosk.js"
-  html_file = "enable_kiosk.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
@@ -837,8 +818,10 @@ polymer_modulizer("error_message") {
 html_to_js("web_components") {
   js_files = [
     "adb_sideloading.js",
+    "app_downloading.js",
     "arc_terms_of_service.js",
     "autolaunch.js",
+    "enable_kiosk.js",
     "fingerprint_setup.js",
     "gesture_navigation.js",
     "managed_terms_of_service.js",

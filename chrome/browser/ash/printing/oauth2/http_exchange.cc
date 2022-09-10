@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -336,6 +336,10 @@ bool HttpExchange::ParamStringGet(const std::string& name,
   }
   if (!node->is_string()) {
     error_msg_ = base::StrCat({"Field ", name, " must be a string"});
+    return false;
+  }
+  if (required && node->GetString().empty()) {
+    error_msg_ = base::StrCat({"Field ", name, " cannot be empty"});
     return false;
   }
   if (value) {

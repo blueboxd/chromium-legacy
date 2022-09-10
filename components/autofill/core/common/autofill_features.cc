@@ -124,6 +124,14 @@ const base::Feature kAutofillConsiderVariationCountryCodeForPhoneNumbers{
     "AutofillConsiderVariationCountryCodeForPhoneNumbers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Chrome needs to map country names ("Italy"/"Italien") to country codes
+// ("IT"). If enabled, the lookup considers all locales that are registered
+// for a country. This helps in case a Chrome fails to determine the language
+// of a website.
+// TODO(crbug.com/1360502): Cleanup when launched.
+const base::Feature kAutofillCountryFromLocalName{
+    "AutofillCountryFromLocalName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, three address profiles are created for testing.
 const base::Feature kAutofillCreateDataForTest{
     "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -228,7 +236,7 @@ const base::Feature kAutofillEnableDependentLocalityParsing{
 // extending Autofill's address format by additional fields.
 // TODO(crbug.com/1300548) Remove when launched.
 const base::Feature kAutofillEnableExtendedAddressFormats{
-    "AutofillEnableExtendedAddressFormats", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillEnableExtendedAddressFormats", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to save the first number in a form with multiple phone
 // numbers instead of aborting the import.
@@ -446,11 +454,6 @@ const base::Feature kAutofillProbableFormSubmissionInBrowser{
     "AutofillProbableFormSubmissionInBrowser",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// TODO(crbug.com/1101280): Remove once feature is tested.
-const base::Feature kAutofillProfileImportFromUnfocusableFields{
-    "AutofillProfileImportFromUnfocusableFields",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If we observe a sequence of fields of (street address, address line 2), these
 // get rationalized to (address line 1, address line 2).
 // TODO(crbug.com/1326425): Remove once feature is lanuched.
@@ -458,19 +461,11 @@ const base::Feature kAutofillRationalizeStreetAddressAndAddressLine{
     "AutofillRationalizeStreetAddressAndAddressLine",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Prevents Autofill from importing setting-inaccessible field types on profile
-// import.
-// TODO(crbug.com/1299435): Cleanup when launched.
-const base::Feature kAutofillRemoveInaccessibleProfileValues{
-    "AutofillRemoveInaccessibleProfileValues",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-// If enabled, setting-inaccessible field types are additionally removed from
-// existing profiles on startup. These can exit in profile imported prior to
-// AutofillRemoveInaccessibleProfileValues.
-const base::FeatureParam<bool>
-    kAutofillRemoveInaccessibleProfileValuesOnStartup{
-        &kAutofillRemoveInaccessibleProfileValues,
-        "remove_inaccessible_fields_on_startup", false};
+// Removes setting-inaccessible field types from existing profiles on startup.
+// TODO(crbug.com/1300548): Cleanup when launched.
+const base::Feature kAutofillRemoveInaccessibleProfileValuesOnStartup{
+    "AutofillRemoveInaccessibleProfileValuesOnStartup",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, invalid phone numbers are removed on profile import, rather than
 // invalidating the entire profile.
@@ -487,11 +482,6 @@ const base::Feature kAutofillRetrieveOverallPredictionsFromCache{
 // Controls whether UPI/VPA values will be saved and filled into payment forms.
 const base::Feature kAutofillSaveAndFillVPA{"AutofillSaveAndFillVPA",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables creating a new form section when an unstructured name input
-// containing a |NAME_LAST| field is encountered after a structured name input.
-const base::Feature kAutofillSectionUponRedundantNameInfo{
-    "AutofillSectionUponRedundantNameInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls non-default Autofill API predictions. See crbug.com/1331322.
 const base::Feature kAutofillServerBehaviors{"AutofillServerBehaviors",

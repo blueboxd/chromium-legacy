@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,7 @@ void GeneratedPref::AddUserSelectableValue(
     settings_api::PrefObject* pref_object,
     int value) {
   if (!pref_object->user_selectable_values) {
-    pref_object->user_selectable_values =
-        std::make_unique<std::vector<base::Value>>();
+    pref_object->user_selectable_values.emplace();
   }
   pref_object->user_selectable_values->push_back(base::Value(value));
 }

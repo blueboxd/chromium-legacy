@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,7 @@ class StatsReportingControllerTest : public testing::Test {
     device_policy_.Build();
     fake_session_manager_client_.set_device_policy(device_policy_.GetBlob());
 
-    both_keys->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-    both_keys->SetPrivateKey(device_policy_.GetSigningKey());
+    both_keys->ImportPrivateKeyAndSetPublicKey(device_policy_.GetSigningKey());
     public_key_only->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
 

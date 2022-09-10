@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   const OnProcessPriorityCallback on_process_priority_callback_;
 
   // To assert we're running on the correct thread.
-  base::SequenceChecker worker_pool_sequenced_checker_;
+  SEQUENCE_CHECKER(worker_pool_sequenced_checker_);
 };
 
 }  // namespace task_manager

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,11 +56,11 @@ SourceDestinationTestingHelper::~SourceDestinationTestingHelper() {
 
 storage::FileSystemURL
 SourceDestinationTestingHelper::GetTestFileSystemURLForVolume(
-    VolumeInfo volume_info) {
+    VolumeInfo volume_info,
+    const std::string& component) {
   return storage::FileSystemURL::CreateForTest(
       kTestStorageKey, storage::kFileSystemTypeLocal,
-      GetBasePathForVolume(temp_dir_.GetPath(), volume_info)
-          .Append("test.txt"));
+      GetBasePathForVolume(temp_dir_.GetPath(), volume_info).Append(component));
 }
 
 base::FilePath SourceDestinationTestingHelper::GetTempDirPath() {

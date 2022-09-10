@@ -449,7 +449,7 @@
             ],
             "experiments": [
                 {
-                    "name": "RationaleShownAtFirstRequest_20220406",
+                    "name": "RationaleShownAtFirstRequest_20220909",
                     "params": {
                         "always_show_rationale_before_requesting_permission": "true",
                         "notification_permission_dialog_text_variant_2": "false",
@@ -460,7 +460,7 @@
                     ]
                 },
                 {
-                    "name": "TextVariant2_20220406",
+                    "name": "TextVariant2_20220909",
                     "params": {
                         "always_show_rationale_before_requesting_permission": "true",
                         "notification_permission_dialog_text_variant_2": "true",
@@ -1018,27 +1018,6 @@
             ]
         }
     ],
-    "AutofillEnableExtendedAddressFormats": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillEnableExtendedAddressFormats"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillEnableLabelPrecedenceForTurkishAddresses": [
         {
             "platforms": [
@@ -1491,27 +1470,6 @@
                     },
                     "enable_features": [
                         "AutofillSaveCardUiExperiment"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillSectionUponRedundantNameInfo": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillSectionUponRedundantNameInfo"
                     ]
                 }
             ]
@@ -3147,6 +3105,21 @@
             ]
         }
     ],
+    "CrOSEnforceSystemAec": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CrOSEnforceSystemAec"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrOSEnforceSystemAecNsAgc": [
         {
             "platforms": [
@@ -3651,6 +3624,31 @@
                     },
                     "enable_features": [
                         "OmniboxPreserveDefault"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopOmniboxPostAutocompletionUpdateResultDebounce": [
+        {
+            "platforms": [
+                "android",
+                "chromeos_lacros",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AutocompleteStabilityUpdateResultDebounceDelay": "20",
+                        "AutocompleteStabilityUpdateResultDebounceFromLastRun": "true"
+                    },
+                    "enable_features": [
+                        "OmniboxUpdateResultDebounce"
                     ]
                 }
             ]
@@ -7426,6 +7424,25 @@
             ]
         }
     ],
+    "PasswordImport": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordImport"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordManagerRebranding": [
         {
             "platforms": [
@@ -8149,6 +8166,8 @@
                     "name": "EnabledExploreAndServerRankingAndRawTrendingSegmentation2",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "behavioural_targeting": "model_comparison",
+                        "enable_default_model": "true",
                         "experiment_tag": "{maxLevels : 1, rankTiles : true, enableTrending : true, maxTrendingQueries : 8, disableEntityTranslation: true}",
                         "image_prefetch_mode": "top",
                         "is_unmetered_network_required": "false",
@@ -8175,6 +8194,7 @@
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
                         "behavioural_targeting": "model_comparison",
+                        "enable_default_model": "true",
                         "experiment_tag": "{maxLevels : 1, enableTrending : true, maxTrendingQueries : 8}",
                         "image_prefetch_mode": "top",
                         "is_unmetered_network_required": "false",
@@ -9490,27 +9510,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "StylusWritingToInput"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SubframeShutdownDelay": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledConstant",
-                    "params": {
-                        "type": "constant"
-                    },
-                    "enable_features": [
-                        "SubframeShutdownDelay"
                     ]
                 }
             ]

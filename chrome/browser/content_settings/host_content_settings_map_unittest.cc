@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,6 +85,11 @@ class MockUserModifiableProvider
                base::Time(const ContentSettingsPattern&,
                           const ContentSettingsPattern&,
                           ContentSettingsType));
+
+  MOCK_METHOD3(UpdateLastVisitTime,
+               bool(const ContentSettingsPattern& primary_pattern,
+                    const ContentSettingsPattern& secondary_pattern,
+                    ContentSettingsType content_type));
 
   MOCK_METHOD1(SetClockForTesting, void(base::Clock*));
 };

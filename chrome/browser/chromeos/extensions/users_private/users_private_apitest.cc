@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,8 @@ class UsersPrivateApiTest : public ExtensionApiTest {
     // OwnerSettingsServiceAsh is created.
     scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util =
         new ownership::MockOwnerKeyUtil();
-    owner_key_util->SetPrivateKey(crypto::RSAPrivateKey::Create(512));
+    owner_key_util->ImportPrivateKeyAndSetPublicKey(
+        crypto::RSAPrivateKey::Create(512));
 
     ash::OwnerSettingsServiceAshFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.test.util.browser.Features;
@@ -84,8 +83,6 @@ public class ToolbarTabControllerImplTest {
     @Mock
     public Profile.Natives mMockProfileNatives;
     @Mock
-    private ObservableSupplier<TabModelSelector> mTabModelSelectorSupplier;
-    @Mock
     private NativePage mNativePage;
 
     @Rule
@@ -102,10 +99,9 @@ public class ToolbarTabControllerImplTest {
         doReturn(mProfile).when(mMockProfileNatives).fromWebContents(any());
         doReturn(mNativePage).when(mTab).getNativePage();
         TrackerFactory.setTrackerForTests(mTracker);
-        doReturn(new ObservableSupplierImpl<>()).when(mTabModelSelectorSupplier).get();
         mToolbarTabController = new ToolbarTabControllerImpl(mTabSupplier,
                 mOverrideHomePageSupplier, mTrackerSupplier, mBottomControlsCoordinatorSupplier,
-                ToolbarManager::homepageUrl, mRunnable, mTabModelSelectorSupplier);
+                ToolbarManager::homepageUrl, mRunnable, new ObservableSupplierImpl<>());
     }
 
     @Test

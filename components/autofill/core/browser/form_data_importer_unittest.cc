@@ -1421,23 +1421,12 @@ TEST_P(FormDataImporterTest,
            {ADDRESS_HOME_COUNTRY, kDefaultCountry}})});
 }
 
+// Test that even from unfocusable fields we import.
 TEST_P(FormDataImporterTest, ImportAddressProfiles_UnFocussableFields) {
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultProfileFormStructure();
   // Set the Address line field as unfocusable.
   form_structure->field(4)->is_focusable = false;
-
-  base::test::ScopedFeatureList unfocusable_feature;
-
-  // With the feature disabled, there should be no import.
-  unfocusable_feature.InitAndDisableFeature(
-      features::kAutofillProfileImportFromUnfocusableFields);
-  ImportAddressProfileAndVerifyImportOfNoProfile(*form_structure);
-
-  unfocusable_feature.Reset();
-  // In contrast, with the feature enabled, there should be import.
-  unfocusable_feature.InitAndEnableFeature(
-      features::kAutofillProfileImportFromUnfocusableFields);
   ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
 
@@ -3337,62 +3326,6 @@ TEST_P(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
   EXPECT_THAT(*results[0], ComparesEqual(expected_card));
 }
 
-// Test that a form is split into two sections correctly when the name has
-// a different input format between the sections.
-TEST_P(FormDataImporterTest, ImportFormData_TwoAddressesNameFirst) {
-  base::test::ScopedFeatureList redundant_name_sectioning_feature;
-  redundant_name_sectioning_feature.InitAndEnableFeature(
-      features::kAutofillSectionUponRedundantNameInfo);
-
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  FormFieldData field;
-  // Address section 1.
-  test::CreateTestFormField("First name:", "first_name", "George", "text",
-                            &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
-                            &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
-                            &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
-                            &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("State:", "state", "California", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
-  form.fields.push_back(field);
-
-  // Address section 2.
-  // The sectioning should start a new section when a name
-  // follows a FIRST_NAME + LAST_NAME field.
-  test::CreateTestFormField("Name:", "name", "Barack Obama", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Address:", "address", "1600 Pennsylvania Avenue",
-                            "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("City:", "city", "Washington", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("State:", "state", "DC", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Zip:", "zip", "20500", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Country:", "country", "USA", "text", &field);
-  form.fields.push_back(field);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
-  ImportAddressProfiles(/*extraction_successful=*/true, form_structure);
-
-  // Test that both addresses have been saved.
-  EXPECT_EQ(2U, personal_data_manager_->GetProfiles().size());
-}
-
 // Test that a form with both address and credit card sections imports only the
 // the credit card if addresses are disabled.
 TEST_P(FormDataImporterTest, ImportFormData_AddressesDisabledOneCreditCard) {
@@ -4345,10 +4278,6 @@ TEST_P(FormDataImporterTest, UnusableIncompleteProfile) {
 // Note that this function doesn't test the removal functionality itself. This
 // is done in the AutofillProfile unit tests.
 TEST_P(FormDataImporterTest, RemoveInaccessibleProfileValuesMetrics) {
-  base::test::ScopedFeatureList remove_inaccessible_values_feature;
-  remove_inaccessible_values_feature.InitAndEnableFeature(
-      features::kAutofillRemoveInaccessibleProfileValues);
-
   // Minimal importable profile, but with a state, which is setting-inaccessible
   // for Germany.
   TypeValuePairs type_value_pairs = {{ADDRESS_HOME_COUNTRY, "DE"},

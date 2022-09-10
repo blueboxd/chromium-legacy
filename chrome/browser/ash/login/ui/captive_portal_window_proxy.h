@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -102,18 +103,15 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   // notifications from `widget_` and resets it.
   void DetachFromWidget(views::Widget* widget);
 
-  CaptivePortalView* captive_portal_view_for_testing() {
-    return captive_portal_view_for_testing_;
-  }
-
   Profile* profile_ = ProfileHelper::GetSigninProfile();
   content::WebContents* web_contents_;
   views::Widget* widget_ = nullptr;
 
   std::unique_ptr<CaptivePortalView> captive_portal_view_;
-  CaptivePortalView* captive_portal_view_for_testing_ = nullptr;
 
   base::ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<CaptivePortalWindowProxy> weak_factory_{this};
 };
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2186,7 +2186,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, CloseSystemAppByShelfContextMenu) {
   std::unique_ptr<ash::SystemTrayTestApi> tray_test_api =
       ash::SystemTrayTestApi::Create();
   tray_test_api->ShowBubble();
-  tray_test_api->ClickBubbleView(ash::VIEW_ID_SETTINGS_BUTTON_VIEW);
+  tray_test_api->ClickBubbleView(ash::VIEW_ID_QS_SETTINGS_BUTTON);
 
   // Flush mojo calls in order to create the browser window for the launched
   // system app.

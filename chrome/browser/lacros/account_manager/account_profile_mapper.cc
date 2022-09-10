@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,7 +128,12 @@ void AccountProfileMapper::ReportAuthError(
     const base::FilePath& profile_path,
     const account_manager::AccountKey& account,
     const GoogleServiceAuthError& error) {
-  DCHECK(initialized_) << "ReportAuthError called before initialization";
+  if (!initialized_) {
+    initialization_callbacks_.push_back(base::BindOnce(
+        &AccountProfileMapper::ReportAuthError, weak_factory_.GetWeakPtr(),
+        profile_path, account, error));
+    return;
+  }
 
   if (!ProfileContainsAccount(profile_path, account))
     return;
@@ -291,8 +296,12 @@ void AccountProfileMapper::OnAccountRemoved(
 void AccountProfileMapper::OnAuthErrorChanged(
     const account_manager::AccountKey& account,
     const GoogleServiceAuthError& error) {
-  DCHECK(initialized_)
-      << "Received account error updates before initialization";
+  if (!initialized_) {
+    initialization_callbacks_.push_back(
+        base::BindOnce(&AccountProfileMapper::OnAuthErrorChanged,
+                       weak_factory_.GetWeakPtr(), account, error));
+    return;
+  }
 
   DCHECK_EQ(account.account_type(), account_manager::AccountType::kGaia);
   if (!account_cache_.FindAccountByGaiaId(account.id())) {

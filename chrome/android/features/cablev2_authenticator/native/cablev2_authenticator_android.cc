@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -712,21 +712,19 @@ static jlong JNI_CableAuthenticator_StartQR(
 
   global_data.event_to_record_if_stopped =
       CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
-  global_data
-      .current_transaction = device::cablev2::authenticator::TransactFromQRCode(
-      // Just because the client supports storing linking information doesn't
-      // imply that it supports revision one, but we happened to introduce
-      // these features at the same time.
-      /*protocol_revision=*/decoded_qr->supports_linking.has_value() ? 1 : 0,
-      std::make_unique<AndroidPlatform>(env, cable_authenticator,
-                                        /*is_usb=*/false),
-      global_data.network_context, *global_data.root_secret,
-      ConvertJavaStringToUTF8(authenticator_name), decoded_qr->secret,
-      decoded_qr->peer_identity,
-      link ? global_data.registration->contact_id() : absl::nullopt,
-      // If the QR code knows about at least two registered tunnel server
-      // domains then we consider it recent enough to use the new Crypter mode.
-      /*use_new_crypter_construction=*/decoded_qr->num_known_domains >= 2);
+  global_data.current_transaction =
+      device::cablev2::authenticator::TransactFromQRCode(
+          // Just because the client supports storing linking information
+          // doesn't imply that it supports revision one, but we happened to
+          // introduce these features at the same time.
+          /*protocol_revision=*/decoded_qr->supports_linking.has_value() ? 1
+                                                                         : 0,
+          std::make_unique<AndroidPlatform>(env, cable_authenticator,
+                                            /*is_usb=*/false),
+          global_data.network_context, *global_data.root_secret,
+          ConvertJavaStringToUTF8(authenticator_name), decoded_qr->secret,
+          decoded_qr->peer_identity,
+          link ? global_data.registration->contact_id() : absl::nullopt);
 
   return ++global_data.instance_num;
 }
@@ -781,8 +779,7 @@ static jlong JNI_CableAuthenticator_StartServerLink(
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                             /*is_usb=*/false),
           global_data.network_context, dummy_root_secret,
-          dummy_authenticator_name, qr_secret, peer_identity, absl::nullopt,
-          /*use_new_crypter_construction=*/false);
+          dummy_authenticator_name, qr_secret, peer_identity, absl::nullopt);
 
   return ++global_data.instance_num;
 }
@@ -880,7 +877,8 @@ static void JNI_CableAuthenticator_OnActivityStop(JNIEnv* env,
 static void JNI_CableAuthenticator_OnAuthenticatorAttestationResponse(
     JNIEnv* env,
     jint ctap_status,
-    const JavaParamRef<jbyteArray>& jattestation_object) {
+    const JavaParamRef<jbyteArray>& jattestation_object,
+    const JavaParamRef<jbyteArray>& jdevice_public_key_signature) {
   GlobalData& global_data = GetGlobalData();
 
   if (!global_data.pending_make_credential_callback) {
@@ -889,8 +887,15 @@ static void JNI_CableAuthenticator_OnAuthenticatorAttestationResponse(
   auto callback = std::move(*global_data.pending_make_credential_callback);
   global_data.pending_make_credential_callback.reset();
 
+  absl::optional<base::span<const uint8_t>> device_public_key_signature;
+  if (jdevice_public_key_signature) {
+    device_public_key_signature =
+        JavaByteArrayToSpan(env, jdevice_public_key_signature);
+  }
+
   std::move(callback).Run(ctap_status,
-                          JavaByteArrayToSpan(env, jattestation_object));
+                          JavaByteArrayToSpan(env, jattestation_object),
+                          device_public_key_signature);
 }
 
 static void JNI_CableAuthenticator_OnAuthenticatorAssertionResponse(

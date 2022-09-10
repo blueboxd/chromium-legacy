@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -501,13 +500,17 @@ void NativeDesktopMediaList::Worker::OnSelection() {
 }
 
 void NativeDesktopMediaList::Worker::OnCancelled() {
-  // TODO(https://crbug.com/1351577): Implement.
-  NOTIMPLEMENTED();
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NativeDesktopMediaList::OnDelegatedSourceListDismissed,
+                     media_list_));
 }
 
 void NativeDesktopMediaList::Worker::OnError() {
-  // TODO(https://crbug.com/1351577): Implement.
-  NOTIMPLEMENTED();
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NativeDesktopMediaList::OnDelegatedSourceListDismissed,
+                     media_list_));
 }
 
 NativeDesktopMediaList::NativeDesktopMediaList(

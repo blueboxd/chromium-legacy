@@ -26,7 +26,7 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 buildflag_header("buildflags") {
   header = "buildflags.h"
 
-  use_socket_broker = is_android
+  use_socket_broker = is_android || is_win
 
   flags = [ "USE_SOCKET_BROKER=$use_socket_broker" ]
 }
@@ -379,6 +379,7 @@ source_set("browser") {
     "aggregation_service/aggregatable_report.h",
     "aggregation_service/aggregatable_report_assembler.cc",
     "aggregation_service/aggregatable_report_assembler.h",
+    "aggregation_service/aggregatable_report_request_storage_id.h",
     "aggregation_service/aggregatable_report_scheduler.cc",
     "aggregation_service/aggregatable_report_scheduler.h",
     "aggregation_service/aggregatable_report_sender.cc",

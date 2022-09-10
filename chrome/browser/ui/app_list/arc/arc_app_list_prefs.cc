@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -757,13 +757,12 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
     permission_val->GetAsDictionary(&permission_dict);
     DCHECK(permission_dict);
 
-    for (base::DictionaryValue::Iterator iter(*permission_dict);
-         !iter.IsAtEnd(); iter.Advance()) {
+    for (const auto item : permission_dict->GetDict()) {
       int64_t permission_type = -1;
-      base::StringToInt64(iter.key(), &permission_type);
+      base::StringToInt64(item.first, &permission_type);
       DCHECK_NE(-1, permission_type);
 
-      const base::Value& permission_state = iter.value();
+      const base::Value& permission_state = item.second;
 
       const base::DictionaryValue* permission_state_dict;
       if (permission_state.GetAsDictionary(&permission_state_dict)) {

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
@@ -31,7 +30,6 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
 
     // Ensure that the testing profile is registered for creating a PluginPrefs.
     PluginPrefs::GetForTestingProfile(profile());
-    PluginFinder::GetInstance();
 
     filter_ = ChromePluginServiceFilter::GetInstance();
     filter_->RegisterProfile(profile());

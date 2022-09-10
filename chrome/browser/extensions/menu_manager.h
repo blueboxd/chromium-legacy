@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,9 +225,10 @@ class MenuItem {
                                             std::string* error);
 
   // Sets any document and target URL patterns from |properties|.
-  bool PopulateURLPatterns(std::vector<std::string>* document_url_patterns,
-                           std::vector<std::string>* target_url_patterns,
-                           std::string* error);
+  bool PopulateURLPatterns(
+      const std::vector<std::string>* document_url_patterns,
+      const std::vector<std::string>* target_url_patterns,
+      std::string* error);
 
  protected:
   friend class MenuManager;

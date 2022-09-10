@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,9 +123,11 @@ void RecordUmaCancellation(DialogType dialog_type) {
 // |source_type| is there to help us distinguish the current tab being
 // selected explicitly, from it being selected from the list of all tabs.
 void RecordUmaSelection(DialogType dialog_type,
-                        content::WebContents* web_contents,
+                        content::GlobalRenderFrameHostId capturer_global_id,
                         const DesktopMediaID& selected_media,
                         DesktopMediaList::Type source_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   switch (source_type) {
     case DesktopMediaList::Type::kNone: {
       NOTREACHED();
@@ -155,10 +157,9 @@ void RecordUmaSelection(DialogType dialog_type,
       // through a non-explicit selection of the current tab through the
       // list of all available tabs.
       const bool current_tab_selected =
-          web_contents &&
-          web_contents->GetPrimaryMainFrame()->GetProcess()->GetID() ==
+          capturer_global_id.child_id ==
               selected_media.web_contents_id.render_process_id &&
-          web_contents->GetPrimaryMainFrame()->GetRoutingID() ==
+          capturer_global_id.frame_routing_id ==
               selected_media.web_contents_id.main_render_frame_id;
 
       if (dialog_type == DialogType::kPreferCurrentTab) {
@@ -295,9 +296,13 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaPicker::Params& params,
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
-    : web_contents_(params.web_contents),
-      audio_requested_(params.request_audio),
+    : audio_requested_(params.request_audio),
+      capturer_global_id_(
+          params.web_contents
+              ? params.web_contents->GetPrimaryMainFrame()->GetGlobalId()
+              : content::GlobalRenderFrameHostId()),
       parent_(parent) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!params.force_audio_checkboxes_to_default_checked ||
          !params.exclude_system_audio);
 
@@ -512,10 +517,10 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   views::Widget* widget = nullptr;
   bool modal_dialog = params.web_contents &&
                       !params.web_contents->GetDelegate()->IsNeverComposited(
-                          params.web_contents);
+                          params.web_contents.get());
   if (modal_dialog) {
-    widget =
-        constrained_window::ShowWebModalDialogViews(this, params.web_contents);
+    widget = constrained_window::ShowWebModalDialogViews(
+        this, params.web_contents.get());
   } else {
 #if BUILDFLAG(IS_MAC)
     // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
@@ -689,7 +694,7 @@ bool DesktopMediaPickerDialogView::Accept() {
     source.web_contents_id.disable_local_echo = true;
   }
 
-  RecordUmaSelection(dialog_type_, web_contents_, source,
+  RecordUmaSelection(dialog_type_, capturer_global_id_, source,
                      GetSelectedSourceListType());
 
   if (parent_)
@@ -744,6 +749,31 @@ void DesktopMediaPickerDialogView::OnSourceListLayoutChanged() {
 
   // When not using the web-modal dialog, center the dialog with its new size.
   GetWidget()->CenterWindow(new_size);
+}
+
+void DesktopMediaPickerDialogView::OnDelegatedSourceListDismissed() {
+  if (!tabbed_pane_) {
+    Reject();
+    return;
+  }
+
+  size_t fallback_pane_index = std::distance(
+      categories_.begin(),
+      std::find_if(
+          categories_.begin(), categories_.end(), [](const auto& category) {
+            return category.type == DesktopMediaList::Type::kWebContents;
+          }));
+
+  if (fallback_pane_index >= categories_.size()) {
+    Reject();
+    return;
+  }
+
+  categories_[fallback_pane_index].controller->ClearSelection();
+
+  tabbed_pane_->SelectTabAt(fallback_pane_index);
+
+  GetCancelButton()->RequestFocus();
 }
 
 BEGIN_METADATA(DesktopMediaPickerDialogView, views::DialogDelegateView)

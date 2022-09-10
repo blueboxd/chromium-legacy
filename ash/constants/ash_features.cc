@@ -1071,6 +1071,10 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
 const base::Feature kLockScreenInlineReply{"LockScreenInlineReply",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables new flow for Education license packaged devices.
+const base::Feature kEducationEnrollmentOobeFlow{
+    "EducationEnrollmentOobeFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables notifications on the lock screen.
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1201,10 +1205,6 @@ const base::Feature kOobeNewRecommendApps{"OobeNewRecommendApps",
 // successful enrollment step.
 const base::Feature kOobeRemoveShutdownButton{"OobeRemoveShutdownButton",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables StartDemoModeSetupForTesting call.
-const base::Feature kOobeStartDemoModeForTesting{
-    "OobeStartDemoModeForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
@@ -1350,6 +1350,10 @@ const base::Feature kProjectorLocalPlayback("ProjectorLocalPlayback",
 const base::Feature kProjectorBleedingEdgeExperience(
     "ProjectorBleedingEdgeExperience",
     base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to enable crash report from the Projector web component.
+const base::Feature kProjectorWebReportCrash("ProjectorWebReportCrash",
+                                             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable quick settings revamped view.
 const base::Feature kQsRevamp{"QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1717,6 +1721,10 @@ const base::Feature kWifiSyncApplyDeletes{"WifiSyncApplyDeletes",
 const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables an experimental feature that lets users easily layout, resize and
+// position their windows using only mouse and touch gestures.
+const base::Feature kWmMode{"WmMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Fresnel Device Active reporting on ChromeOS.
 const base::Feature kDeviceActiveClient{"DeviceActiveClient",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1777,6 +1785,10 @@ bool AreDesksTrackpadSwipeImprovementsEnabled() {
 
 bool IsAutocompleteExtendedSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kAutocompleteExtendedSuggestions);
+}
+
+bool IsAvatarsCloudMigrationEnabled() {
+  return base::FeatureList::IsEnabled(kAvatarsCloudMigration);
 }
 
 bool DoWindowsFollowCursor() {
@@ -2207,6 +2219,10 @@ bool IsLogControllerForDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableLogControllerForDiagnosticsApp);
 }
 
+bool IsEducationEnrollmentOobeFlowEnabled() {
+  return base::FeatureList::IsEnabled(kEducationEnrollmentOobeFlow);
+}
+
 bool IsLockScreenInlineReplyEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenInlineReply);
 }
@@ -2431,6 +2447,10 @@ bool IsProjectorLocalPlaybackEnabled() {
          base::FeatureList::IsEnabled(kProjectorBleedingEdgeExperience);
 }
 
+bool IsProjectorWebReportCrashEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorWebReportCrash);
+}
+
 bool IsQsRevampEnabled() {
   return base::FeatureList::IsEnabled(kQsRevamp);
 }
@@ -2583,6 +2603,10 @@ bool IsWebUITabStripTabDragIntegrationEnabled() {
 
 bool IsWifiSyncAndroidEnabled() {
   return base::FeatureList::IsEnabled(kWifiSyncAndroid);
+}
+
+bool IsWmModeEnabled() {
+  return base::FeatureList::IsEnabled(kWmMode);
 }
 
 bool ShouldArcAndGuestOsFileTasksUseAppService() {

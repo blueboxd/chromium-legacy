@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,11 @@ bool DesktopMediaPickerViewsTestApi::HasSourceAtIndex(size_t index) const {
 
 views::View* DesktopMediaPickerViewsTestApi::GetSelectedListView() {
   return picker_->dialog_->GetSelectedController()->view_;
+}
+
+DesktopMediaListController*
+DesktopMediaPickerViewsTestApi::GetSelectedController() {
+  return picker_->dialog_->GetSelectedController();
 }
 
 views::Checkbox* DesktopMediaPickerViewsTestApi::GetAudioShareCheckbox() {

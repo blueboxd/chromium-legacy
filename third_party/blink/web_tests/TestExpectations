@@ -1648,8 +1648,6 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/page-break-avoid.html [ Fa
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-orientation-propagated.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-orientation.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/thead-tfoot-containing-svg-repeat-extra-pages.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/thead-tfoot-containing-svg-repeat.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.html [ Skip ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/width-overflow.html [ Failure ]
 
@@ -1689,7 +1687,6 @@ crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 crbug.com/1294155 external/wpt/css/css-break/flexbox/flex-container-fragmentation-008.html [ Failure ]
 crbug.com/1294155 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-029.html [ Failure ]
-crbug.com/1294155 external/wpt/css/css-contain/container-queries/top-layer-dialog-backdrop.html [ Crash Failure ]
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
 crbug.com/1294155 paint/invalidation/outline/outline-change-vertical-rl.html [ Failure ]
@@ -2082,7 +2079,7 @@ crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/904592 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 crbug.com/904592 [ Win ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 
-crbug.com/280342 http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
+crbug.com/280342 http/tests/media/progress-events-generated-correctly.html [ Failure Timeout Pass ]
 
 # This test is flaky when FixedElementsDontOverscroll is enabled.
 crbug.com/585766 fast/table/frame-and-rules.html [ Failure Pass Timeout ]
@@ -3309,6 +3306,16 @@ crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-003
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 [ Mac12 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 [ Mac12-arm64 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
+crbug.com/626703 external/wpt/mathml/presentation-markup/operators/op-dict-7.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-2.html [ Skip Timeout ]
+crbug.com/626703 external/wpt/mathml/relations/css-styling/mathvariant-basic-transforms-with-default-font.html [ Failure ]
+crbug.com/626703 [ Mac12 ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-iframe.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-border-sizing.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-content-sizing.html [ Failure ]
 crbug.com/626703 external/wpt/page-visibility/visibility-state-entry.tentative.html [ Skip Timeout ]
@@ -5397,13 +5404,21 @@ crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ 
 # No support for key combinations like Alt + c in testdriver.Actions for content_shell
 crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.html [ Timeout ]
 
-
 # No support for Drag-and-Drop handlers being called.
+crbug.com/1353435 external/wpt/html/editing/dnd/images/001.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/002.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/004.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/005.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/006.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/007.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/008.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/009.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/010.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/015.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/016.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/017.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/018.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/021.html [ Timeout ]
 
 # Sheriff 2021-02-11
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]
@@ -6936,7 +6951,11 @@ crbug.com/1358298 external/wpt/html/cross-origin-embedder-policy/require-corp.ht
 # Disable more gpu test on linux dbg
 crbug.com/1356664 [ Debug Linux ] virtual/no-alloc-direct-call/fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure Pass ]
 
+# Disable scrolling flake on win
+crbug.com/1359541 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-custom-scrollbar.html [ Failure Pass Timeout ]
+
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]
 
-http/tests/media/autoplay/document-user-activation-navigation-click.html [ Skip ]
+# Sheriff 2022-09-09
+crbug.com/1361956 [ Linux ] fast/dom/Element/scrollTop-scrollLeft-body.html [ Pass Timeout ]

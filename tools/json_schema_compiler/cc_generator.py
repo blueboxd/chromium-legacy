@@ -277,15 +277,14 @@ class _Generator(object):
           c.Append('out->additional_properties.MergeDictionary(dict);')
         else:
           cpp_type = self._type_helper.GetCppType(type_.additional_properties)
-          (c.Append('for (base::DictionaryValue::Iterator it(*dict);')
-            .Sblock('     !it.IsAtEnd(); it.Advance()) {')
+          (c.Sblock('for (const auto item : dict->GetDict()) {')
               .Append('%s tmp;' % cpp_type)
               .Concat(self._GeneratePopulateVariableFromValue(
                   type_.additional_properties,
-                  'it.value()',
+                  'item.second',
                   'tmp',
                   'false'))
-              .Append('out->additional_properties[it.key()] = tmp;')
+              .Append('out->additional_properties[item.first] = tmp;')
             .Eblock('}')
           )
       c.Append('return true;')
@@ -637,15 +636,12 @@ class _Generator(object):
         else:
           c.Sblock('if (%s) {' % prop_var)
 
-      # ANY is a base::Value which is abstract and cannot be a direct member, so
-      # it will always be a pointer.
-      is_ptr = prop.optional or prop.type_.property_type == PropertyType.ANY
       c.Cblock(self._CreateValueFromType(
           'to_value_result->GetDict().Set("%s", std::move(*%%s));' % prop.name,
           prop.name,
           prop.type_,
           prop_var,
-          is_ptr=is_ptr))
+          is_ptr=prop.optional))
 
       if prop.optional:
         c.Eblock('}')
@@ -1108,8 +1104,7 @@ class _Generator(object):
     if is_ptr:
       accessor = '->'
       cpp_type = self._type_helper.GetCppType(item_type)
-      c.Append('%s = std::make_unique<std::vector<%s>>();' %
-                   (dst_var, cpp_type))
+      c.Append('%s.emplace();' % dst_var)
     (c.Sblock('for (const auto& it : (%s).GetList()) {' % src_var)
       .Append('%s tmp;' % self._type_helper.GetCppType(item_type))
       .Concat(self._GenerateStringToEnumConversion(item_type,

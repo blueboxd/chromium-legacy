@@ -5831,6 +5831,11 @@
     "expiry_milestone": 109
   },
   {
+    "name" : "search-web-in-side-panel",
+    "owners": [ "chrome-cros@google.com", "pengchaocai" ],
+    "expiry_milestone" : 107
+  },
+  {
     "name": "secondary-google-account-usage",
     "owners": [ "rodmartin", "sinhak", "chromeos-commercial-identity@google.com" ],
     "expiry_milestone": 102
@@ -6037,6 +6042,11 @@
     "name" : "side-panel-journeys",
     "owners": [ "mfacey", "chrome-journeys@google.com", "chrome-desktop-ui-sea@google.com"],
     "expiry_milestone" : 110
+  },
+  {
+    "name": "side-panel-web-view",
+    "owners": [ "ellyjones" ],
+    "expiry_milestone": 110
   },
   {
     "name" : "side-search",
@@ -6553,12 +6563,6 @@
     "owners": [ "mcasas", "chromeos-gfx@google.com" ],
     // This flag is used for ChromeOS media testing to mock a source device.
     "expiry_milestone": -1
-  },
-  {
-      "name": "use-first-party-set",
-      "owners": [ "chrome-first-party-sets@chromium.org" ],
-      // This flag is used by site developers to test their site configurations.
-      "expiry_milestone": -1
   },
   {
     "name": "use-hdr-transfer-function",

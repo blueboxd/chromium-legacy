@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1435,6 +1435,9 @@ extern const char kSidePanelJourneysFlagId[];
 extern const char kSidePanelJourneysName[];
 extern const char kSidePanelJourneysDescription[];
 
+extern const char kSidePanelWebViewName[];
+extern const char kSidePanelWebViewDescription[];
+
 extern const char kSharingDesktopScreenshotsName[];
 extern const char kSharingDesktopScreenshotsDescription[];
 
@@ -1657,9 +1660,6 @@ extern const char kUnsafeFastJSCallsDescription[];
 
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
-
-extern const char kUseFirstPartySetName[];
-extern const char kUseFirstPartySetDescription[];
 
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
@@ -3629,6 +3629,9 @@ extern const char kSideSearchDescription[];
 
 extern const char kSideSearchDSESupportName[];
 extern const char kSideSearchDSESupportDescription[];
+
+extern const char kSearchWebInSidePanelName[];
+extern const char kSearchWebInSidePanelDescription[];
 #endif  // defined(TOOLKIT_VIEWS)
 
 // Random platform combinations -----------------------------------------------

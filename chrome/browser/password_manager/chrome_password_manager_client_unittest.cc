@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -854,16 +854,16 @@ TEST_F(ChromePasswordManagerClientTest,
 
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::SAVED_PASSWORD, "username",
-      credentials, true);
+      credentials, true, 0, std::string());
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      "username", credentials, true);
+      "username", credentials, true, 0, std::string());
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD,
-      "username", credentials, true);
+      "username", credentials, true, 0, std::string());
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::ENTERPRISE_PASSWORD,
-      "username", credentials, true);
+      "username", credentials, true, 0, std::string());
 }
 
 TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {

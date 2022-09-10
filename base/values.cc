@@ -354,6 +354,10 @@ Value::List& Value::GetList() {
   return absl::get<List>(data_);
 }
 
+Value::Dict Value::TakeDict() && {
+  return std::move(GetDict());
+}
+
 Value::List Value::TakeList() && {
   return std::move(GetList());
 }
@@ -1781,13 +1785,6 @@ void DictionaryValue::Swap(DictionaryValue* other) {
   CHECK(other->is_dict());
   dict().swap(other->dict());
 }
-
-DictionaryValue::Iterator::Iterator(const DictionaryValue& target)
-    : target_(target), it_(target.DictItems().begin()) {}
-
-DictionaryValue::Iterator::Iterator(const Iterator& other) = default;
-
-DictionaryValue::Iterator::~Iterator() = default;
 
 std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
   return std::make_unique<DictionaryValue>(dict());

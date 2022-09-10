@@ -1,5 +1,5 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2014 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
@@ -183,6 +183,8 @@ static_library("browser") {
     "autofill/autofill_image_fetcher_factory.h",
     "autofill/autofill_offer_manager_factory.cc",
     "autofill/autofill_offer_manager_factory.h",
+    "autofill/iban_manager_factory.cc",
+    "autofill/iban_manager_factory.h",
     "autofill/merchant_promo_code_manager_factory.cc",
     "autofill/merchant_promo_code_manager_factory.h",
     "autofill/personal_data_manager_factory.cc",
@@ -844,6 +846,8 @@ static_library("browser") {
     "navigation_predictor/navigation_predictor_preconnect_client.h",
     "navigation_predictor/search_engine_preconnector.cc",
     "navigation_predictor/search_engine_preconnector.h",
+    "net/cert_verifier_configuration.cc",
+    "net/cert_verifier_configuration.h",
     "net/chrome_mojo_proxy_resolver_factory.cc",
     "net/chrome_mojo_proxy_resolver_factory.h",
     "net/chrome_network_delegate.cc",
@@ -3158,6 +3162,9 @@ static_library("browser") {
       "password_manager/android/password_manager_infobar_delegate_android.h",
       "password_manager/android/password_manager_launcher_android.cc",
       "password_manager/android/password_manager_launcher_android.h",
+      "password_manager/android/password_manager_sign_in_helper_bridge.h",
+      "password_manager/android/password_manager_sign_in_helper_bridge_impl.cc",
+      "password_manager/android/password_manager_sign_in_helper_bridge_impl.h",
       "password_manager/android/password_scripts_fetcher_android.cc",
       "password_manager/android/password_store_bridge.cc",
       "password_manager/android/password_store_bridge.h",
@@ -6195,8 +6202,6 @@ static_library("browser") {
       "process_singleton_mac.mm",
       "renderer_host/chrome_render_widget_host_view_mac_delegate.h",
       "renderer_host/chrome_render_widget_host_view_mac_delegate.mm",
-      "renderer_host/chrome_render_widget_host_view_mac_history_swiper.h",
-      "renderer_host/chrome_render_widget_host_view_mac_history_swiper.mm",
       "shell_integration_mac.mm",
       "upgrade_detector/directory_monitor.cc",
       "upgrade_detector/directory_monitor.h",
@@ -6208,6 +6213,7 @@ static_library("browser") {
       "//chrome/app:notification_metrics",
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
+      "//chrome/browser/renderer_host:history_swiper",
       "//chrome/browser/webshare:storage",
       "//chrome/services/mac_notifications",
       "//chrome/services/mac_notifications/public/cpp",
@@ -7405,16 +7411,8 @@ static_library("browser") {
       "plugins/chrome_plugin_service_filter.h",
       "plugins/hung_plugin_infobar_delegate.cc",
       "plugins/hung_plugin_infobar_delegate.h",
-      "plugins/plugin_finder.cc",
-      "plugins/plugin_finder.h",
       "plugins/plugin_info_host_impl.cc",
       "plugins/plugin_info_host_impl.h",
-      "plugins/plugin_infobar_delegates.cc",
-      "plugins/plugin_infobar_delegates.h",
-      "plugins/plugin_installer.cc",
-      "plugins/plugin_installer.h",
-      "plugins/plugin_installer_observer.cc",
-      "plugins/plugin_installer_observer.h",
       "plugins/plugin_metadata.cc",
       "plugins/plugin_metadata.h",
       "plugins/plugin_observer.cc",
@@ -7937,11 +7935,6 @@ grit("resources") {
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]
-
-  # TODO(crbug.com/1064647): Remove PluginFinder completely.
-  if (enable_plugins) {
-    inputs = [ "resources/plugin_metadata.json" ]
-  }
 
   if (enable_webui_certificate_viewer) {
     deps += [ "//chrome/browser/resources/certificate_viewer:build_ts" ]

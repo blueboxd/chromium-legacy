@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -595,7 +595,7 @@ void ProfileMenuView::BuildFeatureButtons() {
         base::BindRepeating(
             &ProfileMenuView::OnManageGoogleAccountButtonClicked,
             base::Unretained(this)),
-        kGoogleGLogoIcon,
+        vector_icons::kGoogleGLogoIcon,
         /*icon_to_image_ratio=*/0.75f);
 #else
     AddFeatureButton(

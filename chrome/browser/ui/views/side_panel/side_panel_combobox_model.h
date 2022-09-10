@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,9 @@ class SidePanelComboboxModel : public ui::ComboboxModel {
   void AddItems(const std::vector<std::unique_ptr<SidePanelEntry>>& entries);
   void RemoveItems(const std::vector<std::unique_ptr<SidePanelEntry>>& entries);
   SidePanelEntry::Key GetKeyAt(int index) const;
+
+  // If the entry is in |entries_|, update the icon.
+  void UpdateIconForEntry(SidePanelEntry* entry);
 
   // Returns the index for the given side panel entry id, if the id doesn't
   // exist in entries_ then default to 0.

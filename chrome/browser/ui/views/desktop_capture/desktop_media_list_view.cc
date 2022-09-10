@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,6 +160,13 @@ absl::optional<content::DesktopMediaID> DesktopMediaListView::GetSelection() {
 DesktopMediaListController::SourceListListener*
 DesktopMediaListView::GetSourceListListener() {
   return this;
+}
+
+void DesktopMediaListView::ClearSelection() {
+  DesktopMediaSourceView* view = GetSelectedView();
+  if (view) {
+    view->ClearSelection();
+  }
 }
 
 void DesktopMediaListView::OnSourceAdded(size_t index) {

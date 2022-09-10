@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,10 +40,6 @@ class ConditionalUiDelegateAndroid : public base::SupportsUserData::Data {
       content::RenderFrameHost* frame_host,
       const std::vector<device::DiscoverableCredentialMetadata>& credentials,
       base::OnceCallback<void(const std::vector<uint8_t>& id)> callback);
-
-  // Called when an outstanding request is aborted. This triggers the cached
-  // callback with an empty credential.
-  void CancelWebAuthnRequest(content::RenderFrameHost* frame_host);
 
   // Tells the driver that the user has selected a Web Authentication
   // credential from a dialog, and provides the credential ID for the selected

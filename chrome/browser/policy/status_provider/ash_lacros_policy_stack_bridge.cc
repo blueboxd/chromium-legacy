@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,10 +82,10 @@ void AshLacrosPolicyStackBridge::OnDevicePolicyLoadedDeprecated(
   base::Value::Dict device_policy_dict;
   base::Value::Dict legend_data_dict;
   if (device_policy.is_dict()) {
-    device_policy_dict = std::move(device_policy.GetDict());
+    device_policy_dict = std::move(device_policy).TakeDict();
   }
   if (legend_data.is_dict()) {
-    legend_data_dict = std::move(legend_data.GetDict());
+    legend_data_dict = std::move(legend_data).TakeDict();
   }
   OnDevicePolicyLoaded(std::move(device_policy_dict),
                        std::move(legend_data_dict));

@@ -1,4 +1,4 @@
-<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+<!-- Copyright 2018 The Chromium Authors
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
@@ -11,8 +11,8 @@
   }
 </style>
 <oobe-adaptive-dialog id="setupFingerprint" role="dialog" for-step="start"
-    footer-shrinkable
-    aria-label$="[[i18nDynamic(locale, 'setupFingerprintScreenAriaLabel')]]">
+    footer-shrinkable aria-label$="[[getAriaLabel_(locale, hasAriaLabel_,
+                                                    isChildAccount_)]]">
   <h1 slot="title" hidden="[[isChildAccount_]]">
     [[i18nDynamic(locale, 'setupFingerprintScreenTitle')]]
   </h1>

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ class SidePanelEntry final {
     kReadAnything,
     kUserNote,
     kFeed,
+    kWebView,
     // Contextual Entries
     kSideSearch,
     kLens,
@@ -90,6 +91,8 @@ class SidePanelEntry final {
     return content_view_ ? content_view_.get() : nullptr;
   }
 
+  void ResetIcon(ui::ImageModel icon);
+
   // Called when the entry has been shown/hidden in the side panel.
   void OnEntryShown();
   void OnEntryHidden();
@@ -108,7 +111,7 @@ class SidePanelEntry final {
  private:
   const Key key_;
   const std::u16string name_;
-  const ui::ImageModel icon_;
+  ui::ImageModel icon_;
   std::unique_ptr<views::View> content_view_;
 
   base::RepeatingCallback<std::unique_ptr<views::View>()>

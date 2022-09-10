@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
 #include "base/types/optional_util.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -141,7 +140,9 @@ void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,
     const std::vector<MatchingReusedCredential>& matching_reused_credentials,
-    bool password_field_exists) {}
+    bool password_field_exists,
+    uint64_t reused_password_hash,
+    const std::string& domain) {}
 
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 

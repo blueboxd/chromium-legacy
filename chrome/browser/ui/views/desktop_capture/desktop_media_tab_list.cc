@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -322,6 +322,12 @@ DesktopMediaListController::SourceListListener*
 DesktopMediaTabList::GetSourceListListener() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return model_.get();
+}
+
+void DesktopMediaTabList::ClearSelection() {
+  // Changing the selection in the list will ensure that all appropriate change
+  // events are fired.
+  list_->Select(absl::nullopt);
 }
 
 void DesktopMediaTabList::ClearPreview() {

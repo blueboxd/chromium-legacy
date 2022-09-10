@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -448,6 +448,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                         R.string.multiple_history_items_deleted, numItemsRemoved));
             }
 
+            notifyHistoryClustersCoordinatorOfDeletion();
+
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
             mContentManager.removeHeader();
@@ -637,6 +639,11 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
         }
     }
 
+    private void notifyHistoryClustersCoordinatorOfDeletion() {
+        if (mHistoryClustersCoordinator == null) return;
+        mHistoryClustersCoordinator.onHistoryDeletedExternally();
+    }
+
     /**
      * @param action The user action string to record.
      */
@@ -744,6 +751,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
         if (mSelectionDelegate.isItemSelected(item)) {
             mSelectionDelegate.toggleSelectionForItem(item);
         }
+
+        notifyHistoryClustersCoordinatorOfDeletion();
     }
 
     // HistoryContentManager.Observer
@@ -769,6 +778,12 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
     public void onUserAccountStateChanged() {
         mToolbar.onSignInStateChange();
         mShouldShowClearBrowsingDataSupplier.set(mContentManager.getShouldShowClearData());
+    }
+
+    // HistoryContentManager.Observer
+    @Override
+    public void onHistoryDeletedExternally() {
+        notifyHistoryClustersCoordinatorOfDeletion();
     }
 
     @VisibleForTesting

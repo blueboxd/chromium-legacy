@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ var GaiaAuthHostBrowserTest = class extends testing.Test {
 };
 
 [['PasswordChangeAuthenticator', 'password_change_authenticator_test.js'],
+ ['SamlUsernameAutofill', 'saml_username_autofill_test.js'],
 ].forEach(test => registerTest(...test));
 
 // Common WebUI pattern for test registration.

@@ -332,16 +332,13 @@ bool FormDataImporter::SetPhoneNumber(
 void FormDataImporter::RemoveInaccessibleProfileValues(
     AutofillProfile& profile,
     const std::string& predicted_country_code) {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillRemoveInaccessibleProfileValues)) {
-    const ServerFieldTypeSet inaccessible_fields =
-        profile.FindInaccessibleProfileValues(predicted_country_code);
-    profile.ClearFields(inaccessible_fields);
-    AutofillMetrics::LogRemovedSettingInaccessibleFields(
-        !inaccessible_fields.empty());
-    for (const ServerFieldType inaccessible_field : inaccessible_fields) {
-      AutofillMetrics::LogRemovedSettingInaccessibleField(inaccessible_field);
-    }
+  const ServerFieldTypeSet inaccessible_fields =
+      profile.FindInaccessibleProfileValues(predicted_country_code);
+  profile.ClearFields(inaccessible_fields);
+  AutofillMetrics::LogRemovedSettingInaccessibleFields(
+      !inaccessible_fields.empty());
+  for (const ServerFieldType inaccessible_field : inaccessible_fields) {
+    AutofillMetrics::LogRemovedSettingInaccessibleField(inaccessible_field);
   }
 }
 
@@ -535,14 +532,8 @@ bool FormDataImporter::ImportAddressProfileForSection(
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, or the field is non-focusable (hidden), then
-    // skip it.
-    // TODO(crbug.com/1101280): Remove |skip_unfocussable_field|
-    bool skip_unfocussable_field =
-        !field->is_focusable &&
-        !base::FeatureList::IsEnabled(
-            features::kAutofillProfileImportFromUnfocusableFields);
-    if (!field->IsFieldFillable() || skip_unfocussable_field || value.empty())
+    // information into the field, then skip it.
+    if (!field->IsFieldFillable() || value.empty())
       continue;
 
     AutofillType field_type = field->Type();

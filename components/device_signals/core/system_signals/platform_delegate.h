@@ -5,8 +5,16 @@
 #ifndef COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_PLATFORM_DELEGATE_H_
 #define COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_PLATFORM_DELEGATE_H_
 
+#include <string>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "components/device_signals/core/system_signals/platform_utils.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 namespace base {
 class FilePath;
@@ -45,6 +53,30 @@ class PlatformDelegate {
   // `file_paths`.
   virtual FilePathMap<bool> AreExecutablesRunning(
       const FilePathSet& file_paths) = 0;
+
+  struct ProductMetadata {
+    ProductMetadata();
+
+    ProductMetadata(const ProductMetadata&);
+    ProductMetadata& operator=(const ProductMetadata&);
+
+    ~ProductMetadata();
+
+    absl::optional<std::string> name = absl::nullopt;
+    absl::optional<std::string> version = absl::nullopt;
+  };
+
+  // Returns product metadata for a given `file_path`.
+  // On Windows, this looks at file metadata.
+  // On Mac, it looks for app bundle metadata.
+  virtual absl::optional<ProductMetadata> GetProductMetadata(
+      const base::FilePath& file_path);
+
+  // Returns the public key SHA256 hash of the certificate used to sign an
+  // executable file located at `file_path`. Returns absl::nullopt if no
+  // public key can be retrieved.
+  virtual absl::optional<std::string> GetSigningCertificatePublicKeyHash(
+      const base::FilePath& file_path);
 };
 
 }  // namespace device_signals

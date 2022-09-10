@@ -636,17 +636,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.DNS.DnsConfig.Nsswitch.IncompatibleReason"
-    enum="NsswitchIncompatibleReason" expires_after="2022-01-15">
-  <owner>ericorth@chromium.org</owner>
-  <owner>src/net/OWNERS</owner>
-  <summary>
-    Reason enumeration of why a read and parsed nsswitch.conf DNS configuration
-    file was considered incompatible with Chrome, leading to Chrome's built-in
-    DNS resolver being disabled.
-  </summary>
-</histogram>
-
 <histogram name="Net.DNS.DnsConfig.Nsswitch.IncompatibleService"
     enum="NsswitchService" expires_after="2023-02-12">
   <owner>ericorth@chromium.org</owner>
@@ -670,16 +659,6 @@ chromium-metrics-reviews@google.com.
     of an nsswitch.conf. Recorded when a resolv.conf file is successfully read
     by Chrome and the DNS configuration read from the resolv.conf file is
     considered compatible with Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Net.DNS.DnsConfig.Nsswitch.NumServices" units="#services"
-    expires_after="2022-01-15">
-  <owner>ericorth@chromium.org</owner>
-  <owner>src/net/OWNERS</owner>
-  <summary>
-    Number of services parsed from the nsswitch.conf DNS configuration file.
-    Reported whenever the file is read and parsed.
   </summary>
 </histogram>
 
@@ -849,11 +828,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.FailureTime"
-    units="ms" expires_after="2022-08-14">
+    units="ms" expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by an insecure DnsTransaction to fail.
@@ -861,11 +840,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.SuccessTime"
-    units="ms" expires_after="2022-08-14">
+    units="ms" expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by an insecure DnsTransaction to succeed.
@@ -874,11 +853,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2022-08-14">
+    enum="NetErrorCodes" expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Counts of specific error codes returned by secure DnsTransactions to a DoH
@@ -889,11 +868,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureTime" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to a DoH server that is
@@ -904,11 +883,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.SuccessTime" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to a DoH server that is
@@ -919,11 +898,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2022-08-14">
+    enum="NetErrorCodes" expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Counts of specific error codes returned by secure DnsTransactions to an
@@ -935,11 +914,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureTime" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to an available DoH server
@@ -950,11 +929,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.SuccessTime" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2023-01-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
-  <owner>ericorth@chromium.org</owner>
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to an available DoH server
@@ -1145,8 +1124,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Failure.AttemptTime"
-    units="ms" expires_after="2022-07-11">
-  <owner>ericorth@chromium.org</owner>
+    units="ms" expires_after="2023-01-11">
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a probe attempt to fail. The time is measured
@@ -1155,8 +1134,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Success.AttemptTime"
-    units="ms" expires_after="2022-07-11">
-  <owner>ericorth@chromium.org</owner>
+    units="ms" expires_after="2023-01-11">
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a probe attempt to succeed. The time is measured
@@ -1165,8 +1144,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Failure.AttemptTime"
-    units="ms" expires_after="2022-06-26">
-  <owner>ericorth@chromium.org</owner>
+    units="ms" expires_after="2023-01-11">
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a probe attempt to fail. The time is measured
@@ -1175,8 +1154,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Success.AttemptTime"
-    units="ms" expires_after="2022-06-26">
-  <owner>ericorth@chromium.org</owner>
+    units="ms" expires_after="2023-01-11">
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Duration of time taken by a probe attempt to succeed. The time is measured

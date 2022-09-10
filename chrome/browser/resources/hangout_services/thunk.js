@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,6 +228,13 @@ function onChooseDesktopMediaPort(port) {
       // the choice offered to the user.
       const options = message['options'] ||
           {systemAudio: 'include', selfBrowserSurface: 'include'};
+
+      // For historical reasons, default to the common behavior of users
+      // of the Hangouts Extension, but still allow users of this API
+      // to explicitly set their own value.
+      if (!('suppressLocalAudioPlaybackIntended' in options)) {
+        options['suppressLocalAudioPlaybackIntended'] = true;
+      }
 
       let cancelId = null;
       const tab = port.sender.tab;

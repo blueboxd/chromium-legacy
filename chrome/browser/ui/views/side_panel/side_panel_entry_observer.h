@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@ class SidePanelEntryObserver : public base::CheckedObserver {
 
   // Called when a SidePanelEntry is hidden.
   virtual void OnEntryHidden(SidePanelEntry* entry) {}
+
+  // Called when a SidePanelEntry's icon is updated.
+  virtual void OnEntryIconUpdated(SidePanelEntry* entry) {}
 
  protected:
   ~SidePanelEntryObserver() override = default;

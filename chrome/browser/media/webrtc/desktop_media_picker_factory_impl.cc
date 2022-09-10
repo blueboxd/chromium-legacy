@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ DesktopMediaPickerFactoryImpl::CreateMediaList(
         break;
       }
       case DesktopMediaList::Type::kCurrentTab: {
-        if (have_current_tab)
+        if (have_current_tab || !web_contents)
           continue;
         have_current_tab = true;
         source_lists.push_back(

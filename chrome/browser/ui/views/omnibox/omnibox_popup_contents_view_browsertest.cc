@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   matches.push_back(match);
   results.AppendMatches(matches);
   results.SortAndCull(input, nullptr);
-  autocomplete_controller->NotifyChanged(true);
+  autocomplete_controller->NotifyChanged();
 
   // Check that arrowing up and down emits the event.
   TestAXEventObserver observer;
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.value_changed_count(), 0);
   EXPECT_EQ(observer.active_descendant_changed_count(), 0);
 
-  // This is equiverlent of the user arrowing down in the omnibox.
+  // This is equivalent of the user arrowing down in the omnibox.
   edit_model()->SetPopupSelection(OmniboxPopupSelection(1));
   EXPECT_EQ(observer.selected_children_changed_count(), 1);
   EXPECT_EQ(observer.selection_changed_count(), 1);
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
 
   // TODO(accessibility) Test that closing the popup fires an activedescendant
-  // changed event.
+  //  changed event.
 
   // Check accessibility of list box while it's open.
   ui::AXNodeData popup_node_data_while_open;

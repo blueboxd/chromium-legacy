@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,6 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   const ContentSettingsType content_settings[] = {
     ContentSettingsType::DURABLE_STORAGE,
     ContentSettingsType::APP_BANNER,
-#if !BUILDFLAG(IS_ANDROID)
-    ContentSettingsType::INSTALLED_WEB_APP_METADATA,
-#endif
   };
   for (auto type : content_settings) {
     tasks_ += 1;

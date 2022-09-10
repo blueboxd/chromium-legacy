@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -863,10 +863,8 @@ void TaskManagerTableModel::StoreColumnsSettings() {
   DictionaryPrefUpdate dict_update(local_state,
                                    prefs::kTaskManagerColumnVisibility);
 
-  base::DictionaryValue::Iterator it(*columns_settings_);
-  while (!it.IsAtEnd()) {
-    dict_update->SetPath(it.key(), it.value().Clone());
-    it.Advance();
+  for (const auto item : columns_settings_->GetDict()) {
+    dict_update->SetPath(item.first, item.second.Clone());
   }
 
   // Store the current sort status to be restored again at startup.

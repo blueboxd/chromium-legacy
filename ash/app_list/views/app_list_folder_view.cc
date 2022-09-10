@@ -37,6 +37,7 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -161,8 +162,8 @@ class BackgroundAnimation : public AppListFolderView::Animation,
     to_rect -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
         AppListColorProvider::Get()->GetFolderBackgroundColor();
-    const SkColor bubble_color =
-        AppListColorProvider::Get()->GetFolderBubbleColor();
+    const SkColor bubble_color = folder_view_->GetColorProvider()->GetColor(
+        kColorAshControlBackgroundColorInactive);
     const SkColor from_color = show_ ? bubble_color : background_color;
     const SkColor to_color = show_ ? background_color : bubble_color;
 
@@ -261,7 +262,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
         folder_view_(folder_view),
         folder_item_view_(folder_item_view) {
     SkColor title_color = AppListColorProvider::Get()->GetAppListItemTextColor(
-        /*is_in_folder=*/false);
+        /*is_in_folder=*/false, folder_view_->GetWidget());
     // Calculate the source and target states.
     from_color_ = show_ ? title_color : SK_ColorTRANSPARENT;
     to_color_ = show_ ? SK_ColorTRANSPARENT : title_color;
@@ -1020,7 +1021,7 @@ void AppListFolderView::ResetState(bool restore_folder_item_view_state) {
     folder_item_view_->SetIconVisible(true);
     folder_item_view_->title()->SetEnabledColor(
         AppListColorProvider::Get()->GetAppListItemTextColor(
-            /*is_in_folder=*/false));
+            /*is_in_folder=*/false, GetWidget()));
   }
 
   folder_item_view_observer_.Reset();

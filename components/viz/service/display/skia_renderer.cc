@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -852,6 +853,10 @@ void SkiaRenderer::FinishDrawingFrame() {
 
   swap_buffer_rect_ = current_frame()->root_damage_rect;
 
+#if defined(USE_OZONE)
+  MaybeScheduleBackgroundImage(current_frame()->overlay_list);
+#endif  // defined(USE_OZONE)
+
   // TODO(weiliangc): Remove this once OverlayProcessor schedules overlays.
   if (current_frame()->output_surface_plane) {
     auto& surface_plane = current_frame()->output_surface_plane.value();
@@ -940,12 +945,28 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   }
   available_render_pass_overlay_backings_.clear();
 #endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+
+#if defined(USE_OZONE)
+  // Clear cached solid color buffers that weren't reused.
+  base::EraseIf(solid_color_buffers_, [this](auto entry) {
+    SolidColorBuffer& color_buffer = entry.second;
+    if (!color_buffer.use_count) {
+      skia_output_surface_->DestroySharedImage(color_buffer.mailbox);
+      return true;
+    }
+    return false;
+  });
+#endif  // defined(USE_OZONE)
 }
 
 void SkiaRenderer::SwapBuffersSkipped() {
   gfx::Rect root_pass_damage_rect = gfx::Rect(surface_size_for_swap_buffers());
   if (use_partial_swap_)
     root_pass_damage_rect.Intersect(swap_buffer_rect_);
+
+#if defined(USE_OZONE)
+  MaybeDecrementSolidColorBuffers(pending_overlay_locks_.back());
+#endif  // defined(USE_OZONE)
 
   pending_overlay_locks_.pop_back();
   skia_output_surface_->SwapBuffersSkipped(root_pass_damage_rect);
@@ -982,6 +1003,10 @@ void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
         std::make_move_iterator(committed_overlay_locks_.end()));
   }
 
+#if defined(USE_OZONE)
+  MaybeDecrementSolidColorBuffers(committed_overlay_locks_);
+#endif  // defined(USE_OZONE)
+
   // Right now, only macOS and Ozone need to return mailboxes of released
   // overlays, so we should not release |committed_overlay_locks_| here. The
   // resources in it will be released in DidReceiveReleasedOverlays() later.
@@ -1000,7 +1025,11 @@ void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
 }
 
 void SkiaRenderer::BuffersPresented() {
-  DCHECK(!read_lock_release_fence_overlay_locks_.empty());
+  if (read_lock_release_fence_overlay_locks_.empty()) {
+    // Debug crbug.com/1357789.
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
   read_lock_release_fence_overlay_locks_.pop_front();
 }
 
@@ -2689,9 +2718,19 @@ void SkiaRenderer::ScheduleOverlays() {
       locks.emplace_back(overlay.mailbox);
       continue;
     }
-    // Solid Color quads do not have associated resource buffers.
-    if (overlay.is_solid_color)
+    // If non-backed solid color overlays aren't supported (e.g. Lacros on
+    // Linux) then we need to create buffers to send over Wayland.
+    if (overlay.is_solid_color) {
+      if (!output_surface_->capabilities()
+               .supports_non_backed_solid_color_overlays) {
+        DCHECK(overlay.color);
+        overlay.mailbox = GetImageMailboxForColor(*overlay.color);
+        // This can now be treated as a regular overlay with a mailbox backing.
+        overlay.is_solid_color = false;
+        locks.emplace_back(overlay.mailbox);
+      }
       continue;
+    }
 
     // Resources will be unlocked after the next SwapBuffers() is completed.
     locks.emplace_back(resource_provider(), overlay.resource_id);
@@ -3675,6 +3714,65 @@ void SkiaRenderer::EnsureMinNumberOfBuffers(int n) {
     ReallocatedFrameBuffers();
   }
 }
+
+#if defined(USE_OZONE)
+const gpu::Mailbox SkiaRenderer::GetImageMailboxForColor(
+    const SkColor4f& color) {
+  // Currently the Wayland protocol does not have protocol to support solid
+  // color quads natively as surfaces. Here we create tiny 1x1 image buffers
+  // in the color space of the frame buffer and fill them with the quad's solid
+  // color. These freshly created buffers are then treated like any other
+  // overlay via the mailbox interface.
+  gpu::Mailbox solid_color_mailbox;
+  // First try for an existing same color image.
+  auto it = solid_color_buffers_.find(color.toSkColor());
+  if (it != solid_color_buffers_.end()) {
+    solid_color_mailbox = it->second.mailbox;
+    it->second.use_count++;
+  } else {
+    solid_color_mailbox = skia_output_surface_->CreateSolidColorSharedImage(
+        color, reshape_color_space());
+
+    solid_color_buffers_.insert({color.toSkColor(), {solid_color_mailbox, 1}});
+  }
+  return solid_color_mailbox;
+}
+
+void SkiaRenderer::MaybeScheduleBackgroundImage(
+    OverlayProcessorInterface::CandidateList& overlay_list) {
+  if (!output_surface_->capabilities().needs_background_image) {
+    return;
+  }
+
+  OverlayCandidate background_candidate;
+  background_candidate.color_space = reshape_color_space();
+  background_candidate.display_rect =
+      gfx::RectF(gfx::SizeF(viewport_size_for_swap_buffers()));
+  background_candidate.color = SkColors::kTransparent;
+  background_candidate.plane_z_order = INT32_MIN;
+  // ScheduleOverlays() will convert this to a buffer-backed solid color overlay
+  // if necessary.
+  background_candidate.is_solid_color = true;
+
+  overlay_list.push_back(background_candidate);
+}
+
+void SkiaRenderer::MaybeDecrementSolidColorBuffers(
+    std::vector<OverlayLock>& finished_locks) {
+  if (output_surface_->capabilities()
+          .supports_non_backed_solid_color_overlays) {
+    return;
+  }
+  for (auto& lock : finished_locks) {
+    for (auto& entry : solid_color_buffers_) {
+      if (entry.second.mailbox == lock.mailbox()) {
+        entry.second.use_count--;
+        break;
+      }
+    }
+  }
+}
+#endif  // defined(USE_OZONE)
 
 SkiaRenderer::OverlayLock::OverlayLock(
     DisplayResourceProvider* resource_provider,

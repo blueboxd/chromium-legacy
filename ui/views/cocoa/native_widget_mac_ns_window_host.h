@@ -249,6 +249,10 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void RemoveRemoteWindowControlsOverlayView(
       remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type);
 
+  // Notify PWA whether can GoBack/GoForward.
+  void CanGoBack(bool can_go_back);
+  void CanGoForward(bool can_go_forward);
+
  private:
   friend class TextInputHost;
 
@@ -341,7 +345,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void SetRemoteAccessibilityTokens(
       const std::vector<uint8_t>& window_token,
       const std::vector<uint8_t>& view_token) override;
-  bool GetRootViewAccessibilityToken(int64_t* pid,
+  bool GetRootViewAccessibilityToken(base::ProcessId* pid,
                                      std::vector<uint8_t>* token) override;
   bool ValidateUserInterfaceItem(
       int32_t command,

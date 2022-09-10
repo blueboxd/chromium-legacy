@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
       std::unique_ptr<PendingAccessRequest> pending_request);
   void ProcessQueuedAccessRequest(const RequestsQueue& queue,
                                   content::WebContents* web_contents);
-  void OnPickerDialogResults(content::WebContents* web_contents,
+  void OnPickerDialogResults(base::WeakPtr<content::WebContents> web_contents,
                              const std::u16string& application_title,
                              content::DesktopMediaID source);
   void DeletePendingAccessRequest(int render_process_id,

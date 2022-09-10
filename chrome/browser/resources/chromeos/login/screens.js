@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,14 @@
 
 // COMMON SCREENS
 import './screens/common/adb_sideloading.js';
-import './screens/common/app_downloading.m.js';
+import './screens/common/app_downloading.js';
 import './screens/common/app_launch_splash.m.js';
 import './screens/common/arc_terms_of_service.js';
 import './screens/common/assistant_optin.m.js';
 import './screens/common/autolaunch.js';
 import './screens/common/consolidated_consent.m.js';
 import './screens/common/device_disabled.m.js';
-import './screens/common/enable_kiosk.m.js';
+import './screens/common/enable_kiosk.js';
 import './screens/common/error_message.m.js';
 import './screens/common/family_link_notice.m.js';
 import './screens/common/fingerprint_setup.js';

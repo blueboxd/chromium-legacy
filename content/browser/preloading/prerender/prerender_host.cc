@@ -183,6 +183,13 @@ bool PrerenderHost::StartPrerendering() {
   if (!created_navigation_handle)
     return false;
 
+  // Even when LoadURLWithParams() returns a valid navigation handle, navigation
+  // can fail during navigation start, for example, due to prerendering a
+  // non-supported URL scheme that is filtered out in
+  // PrerenderNavigationThrottle.
+  if (final_status_.has_value())
+    return false;
+
   if (initial_navigation_id_.has_value()) {
     // In usual code path, `initial_navigation_id_` should be set by
     // PrerenderNavigationThrottle during `LoadURLWithParams` above.
@@ -734,6 +741,10 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
     case FinalStatus::kDataSaverEnabled:
     case FinalStatus::kHasEffectiveUrl:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
+      // We reset the attempt to ensure we don't update once we have reported it
+      // as failure or accidentally use it for any other prerender attempts as
+      // PrerenderHost deletion is async.
+      attempt_.reset();
       return;
   }
 }

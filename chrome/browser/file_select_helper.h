@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,10 @@ class WebContents;
 namespace ui {
 struct SelectedFileInfo;
 }
+
+namespace policy {
+FORWARD_DECLARE_TEST(DlpFilesControllerBrowserTest, FilesUploadRestrictedFile);
+}  // namespace policy
 
 // This class handles file-selection requests coming from renderer processes.
 // It implements both the initialisation and listener functions for
@@ -96,6 +100,8 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
                            ContentAnalysisCompletionCallback_SystemOKBadFiles);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetFileTypesFromAcceptType);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, MultipleFileExtensionsForMime);
+  FRIEND_TEST_ALL_PREFIXES(policy::DlpFilesControllerBrowserTest,
+                           FilesUploadRestrictedFile);
 
   explicit FileSelectHelper(Profile* profile);
   ~FileSelectHelper() override;

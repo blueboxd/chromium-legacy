@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,6 +166,11 @@ public class HistoryClustersCoordinator extends RecyclerView.OnScrollListener
     /** Handles a back button press event, returning true if the event is handled. */
     public boolean onBackPressed() {
         return mSelectableListLayout.onBackPressed();
+    }
+
+    /** Called to notify the Journeys UI that history has been deleted by some other party. */
+    public void onHistoryDeletedExternally() {
+        mMediator.onHistoryDeletedExternally();
     }
 
     void inflateActivityView() {

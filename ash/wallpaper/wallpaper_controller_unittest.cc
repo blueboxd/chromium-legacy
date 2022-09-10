@@ -3975,6 +3975,8 @@ TEST_F(WallpaperControllerTest,
   using base::Time;
 
   SimulateUserLogin(account_id_1);
+  // Resets the count as user will start with a default image after login.
+  ClearWallpaperCount();
 
   std::vector<OnlineWallpaperVariant> variants;
   variants.emplace_back(kAssetId, GURL(kDummyUrl),

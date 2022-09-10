@@ -513,27 +513,12 @@
           'shards': 1,
         },
       },
-      'mac10.13-blink-rel-dummy': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       'mac10.14-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.14-blink-rel-dummy': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       'mac10.15-blink-rel': {
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'mac10.15-blink-rel-dummy': {
         'swarming': {
           'shards': 8,
         },
@@ -835,27 +820,12 @@
           'shards': 1,
         },
       },
-      'mac10.13-blink-rel-dummy': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       'mac10.14-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.14-blink-rel-dummy': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       'mac10.15-blink-rel': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
-      'mac10.15-blink-rel-dummy': {
         'swarming': {
           'shards': 12,
         },
@@ -946,6 +916,11 @@
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
           'shards': 30, # https://crbug.com/1103330
+        },
+      },
+      'Linux CFI': {
+        'swarming': {
+          'shards': 20,  # https://crbug.com/1361973
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -1040,6 +1015,9 @@
       },
       'Mac12 Tests': {
         'ci_only': True,
+        'swarming': {
+          'shards': 20,  # crbug.com/1361887
+        },
       },
       'Mac12 Tests (dbg)': {
         # crbug.com/1042757

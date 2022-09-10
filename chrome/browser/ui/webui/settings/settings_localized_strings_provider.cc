@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
@@ -85,6 +86,7 @@
 #include "net/base/url_util.h"
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -109,7 +111,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/system_handler.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -260,7 +261,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  html_source->AddBoolean("isAccessibilityOSSettingsVisibilityEnabled",
+                          base::FeatureList::IsEnabled(
+                              features::kAccessibilityOSSettingsVisibility));
+#else
   html_source->AddBoolean(
       "showFocusHighlightOption",
       base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
@@ -1035,6 +1040,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"passwordsGotIt", IDS_SETTINGS_GOT_IT},
     {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
     {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
+    {"noPasswordsFoundImport", IDS_SETTINGS_PASSWORDS_NONE_WITH_IMPORT},
     {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
     {"optInAccountStorageLabel",
      IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL},
@@ -1632,21 +1638,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(features::kHttpsOnlyMode));
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  bool chrome_root_store_used =
-      base::FeatureList::IsEnabled(net::features::kChromeRootStoreUsed);
-#if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
-  const PrefService::Preference* chrome_root_store_enabled_pref =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kChromeRootStoreEnabled);
-  if (chrome_root_store_enabled_pref &&
-      chrome_root_store_enabled_pref->IsManaged()) {
-    chrome_root_store_used =
-        chrome_root_store_enabled_pref->GetValue()->GetBool();
-  }
-#endif  // BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
-
-  html_source->AddBoolean("showChromeRootStoreCertificates",
-                          chrome_root_store_used);
+  html_source->AddBoolean(
+      "showChromeRootStoreCertificates",
+      GetChromeCertVerifierServiceParams()->use_chrome_root_store);
 
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);

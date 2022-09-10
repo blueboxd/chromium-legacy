@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,12 +67,15 @@ extern const base::Feature kSplitTabStrip;
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
 extern const base::Feature kSidePanelImprovedClobbering;
 
+extern const base::Feature kSidePanelWebView;
+
 extern const base::Feature kSidePanelJourneys;
 extern const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox;
 
 extern const base::Feature kSideSearch;
 extern const base::Feature kSideSearchFeedback;
 extern const base::Feature kSideSearchDSESupport;
+extern const base::Feature kSearchWebInSidePanel;
 extern const base::Feature kClobberAllSideSearchSidePanels;
 
 extern const base::Feature kSideSearchAutoTriggering;

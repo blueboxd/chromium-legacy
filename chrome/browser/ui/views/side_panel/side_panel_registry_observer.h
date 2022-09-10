@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,9 @@ class SidePanelRegistryObserver : public base::CheckedObserver {
   // Called immediately before a SidePanelEntry is being removed from the
   // registry.
   virtual void OnEntryWillDeregister(SidePanelEntry* entry) {}
+
+  // Called when a SidePanelEntry's icon has been updated
+  virtual void OnEntryIconUpdated(SidePanelEntry* entry) {}
 
  protected:
   ~SidePanelRegistryObserver() override = default;

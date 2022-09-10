@@ -4,6 +4,7 @@
 
 module remote_cocoa.mojom;
 
+import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "third_party/blink/public/mojom/webshare/share_error.mojom";
@@ -107,6 +108,12 @@ interface RenderWidgetHostNSView {
   // delivered later than they should. This method is called before closing the
   // remote, and is treated as if a close notification was received.
   Destroy();
+
+  // Ack gesture scroll event from the renderer.
+  GestureScrollEventAck(blink.mojom.Event event, bool consumed);
+
+  // Ack overscroll message from the renderer.
+  DidOverscroll(blink.mojom.DidOverscrollParams params);
 };
 
 // The interface through which the RenderWidgetHostViewCocoa NSView in the app
@@ -245,6 +252,12 @@ interface RenderWidgetHostNSViewHost {
   // return the result as |is_speaking|.
   [Sync]
   SyncIsSpeaking() => (bool is_speaking);
+
+  // Return in |element_token| the token for the root content AX node for this
+  // view and in |host_pid| the pid for the host process.
+  [Sync]
+  GetRenderWidgetAccessibilityToken() =>
+      (mojo_base.mojom.ProcessId host_pid, array<uint8> element_token);
 
   // Send the token for the NSWindow in which this NSView is being displayed.
   SetRemoteAccessibilityWindowToken(array<uint8> window_token);

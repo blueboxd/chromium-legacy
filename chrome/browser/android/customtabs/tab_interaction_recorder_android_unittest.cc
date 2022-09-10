@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,6 +195,15 @@ TEST_F(TabInteractionRecorderAndroidTest, HasNavigatedFromFirstPage) {
       ->NavigateAndCommit(GURL("https://bar.com"));
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(helper->HasNavigatedFromFirstPage());
+}
+
+TEST_F(TabInteractionRecorderAndroidTest, DidGetUserInteraction) {
+  std::unique_ptr<content::WebContents> contents = CreateTestWebContents();
+  auto* helper = TabInteractionRecorderAndroid::FromWebContents(contents.get());
+
+  EXPECT_FALSE(helper->did_get_user_interaction());
+  helper->DidGetUserInteraction(blink::WebTouchEvent());
+  EXPECT_TRUE(helper->did_get_user_interaction());
 }
 
 }  // namespace customtabs

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+<!-- Copyright 2019 The Chromium Authors
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
@@ -7,7 +7,6 @@
     <dimen name="tab_list_selected_inset">7dp</dimen>
     <dimen name="tab_list_selected_inset_low_end">6dp</dimen>
     <dimen name="tab_list_selected_margin">7dp</dimen>
-    <dimen name="tab_list_card_padding">8dp</dimen>
     <dimen name="tab_list_card_radius">4dp</dimen>
     <dimen name="tab_grid_price_card_radius">4dp</dimen>
     <dimen name="tab_list_mini_card_radius">4dp</dimen>
@@ -64,8 +63,6 @@
     <dimen name="tab_grid_card_thumbnail_margin">4dp</dimen>
     <dimen name="tab_list_card_action_button_size">48dp</dimen>
     <dimen name="tab_list_card_action_button_margin">4dp</dimen>
-    <dimen name="tab_list_card_title_fading_length">24dp</dimen>
-    <dimen name="tab_list_card_title_end_margin">32dp</dimen>
 
     <dimen name="tab_grid_dialog_bg_radius">24dp</dimen>
     <dimen name="tab_grid_dialog_app_bar_padding">8dp</dimen>

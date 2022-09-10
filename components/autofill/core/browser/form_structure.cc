@@ -742,7 +742,8 @@ void FormStructure::UpdateAutofillCount() {
   }
 }
 
-bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
+bool FormStructure::ShouldBeParsed(ShouldBeParsedParams params,
+                                   LogManager* log_manager) const {
   // Exclude URLs not on the web via HTTP(S).
   if (!HasAllowedScheme(source_url_)) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
@@ -750,12 +751,10 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
     return false;
   }
 
-  size_t min_required_fields =
-      std::min({kMinRequiredFieldsForHeuristics, kMinRequiredFieldsForQuery,
-                kMinRequiredFieldsForUpload});
-  if (active_field_count() < min_required_fields &&
+  if (active_field_count() < params.min_required_fields &&
       (!all_fields_are_passwords() ||
-       active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
+       active_field_count() <
+           params.required_fields_for_forms_with_only_password_fields) &&
       !has_author_specified_types_) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
                         << LogMessage::kAbortParsingNotEnoughFields
@@ -1454,10 +1453,6 @@ void FormStructure::IdentifySectionsWithNewMethod() {
   if (fields_.empty())
     return;
 
-  const bool is_enabled_autofill_redundant_name_sectioning =
-      base::FeatureList::IsEnabled(
-          features::kAutofillSectionUponRedundantNameInfo);
-
   // Use unique local frame tokens of the fields to generate sections.
   base::flat_map<LocalFrameToken, size_t> frame_token_ids;
 
@@ -1499,14 +1494,6 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     // little off.  Hence, ignore this field type as a signal here.
     if (AutofillType(current_type).group() == FieldTypeGroup::kPhoneHome)
       already_saw_current_type = false;
-
-    if (is_enabled_autofill_redundant_name_sectioning) {
-      // Forms sometimes have a different format of inputting names in
-      // different sections. If we believe a new name is being entered, assume
-      // it is a new section (unless there are two identical inputs in a row).
-      if (current_type == NAME_FULL)
-        already_saw_current_type |= (seen_types.count(NAME_LAST) > 0);
-    }
 
     bool ignored_field = !field->IsFocusable();
 
@@ -1617,10 +1604,6 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
     return;
   }
 
-  const bool is_enabled_autofill_redundant_name_sectioning =
-      base::FeatureList::IsEnabled(
-          features::kAutofillSectionUponRedundantNameInfo);
-
   // Use unique local frame tokens of the fields to generate sections.
   base::flat_map<LocalFrameToken, size_t> frame_token_ids;
 
@@ -1664,14 +1647,6 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
       // little off.  Hence, ignore this field type as a signal here.
       if (AutofillType(current_type).group() == FieldTypeGroup::kPhoneHome)
         already_saw_current_type = false;
-
-      if (is_enabled_autofill_redundant_name_sectioning) {
-        // Forms sometimes have a different format of inputting names in
-        // different sections. If we believe a new name is being entered, assume
-        // it is a new section (unless there are two identical inputs in a row).
-        if (current_type == NAME_FULL)
-          already_saw_current_type |= (seen_types.count(NAME_LAST) > 0);
-      }
 
       bool ignored_field = !field->IsFocusable();
 

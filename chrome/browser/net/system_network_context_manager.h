@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,9 +124,7 @@ class SystemNetworkContextManager {
 
   // Configures default set of parameters for configuring the network context.
   void ConfigureDefaultNetworkContextParams(
-      network::mojom::NetworkContextParams* network_context_params,
-      cert_verifier::mojom::CertVerifierCreationParams*
-          cert_verifier_creation_params);
+      network::mojom::NetworkContextParams* network_context_params);
 
   // Performs the same function as ConfigureDefaultNetworkContextParams(), and
   // then returns a newly allocated network::mojom::NetworkContextParams with

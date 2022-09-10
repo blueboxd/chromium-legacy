@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,7 +211,7 @@ void PasswordItemsView::PasswordRow::AddPasswordRow(
           parent_->AddChildView(std::make_unique<views::ImageView>());
       image_view->SetImage(gfx::CreateVectorIcon(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-          kGoogleGLogoIcon,
+          vector_icons::kGoogleGLogoIcon,
 #else
           vector_icons::kSyncIcon,
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)

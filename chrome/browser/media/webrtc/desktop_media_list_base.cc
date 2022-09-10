@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,4 +246,11 @@ void DesktopMediaListBase::OnDelegatedSourceListSelection() {
   DCHECK(IsSourceListDelegated());
   if (observer_)
     observer_->OnDelegatedSourceListSelection();
+}
+
+void DesktopMediaListBase::OnDelegatedSourceListDismissed() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsSourceListDelegated());
+  if (observer_)
+    observer_->OnDelegatedSourceListDismissed();
 }

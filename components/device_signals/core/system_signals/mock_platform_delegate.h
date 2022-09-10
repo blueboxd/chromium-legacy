@@ -27,6 +27,14 @@ class MockPlatformDelegate : public PlatformDelegate {
               AreExecutablesRunning,
               (const FilePathSet&),
               (override));
+  MOCK_METHOD(absl::optional<ProductMetadata>,
+              GetProductMetadata,
+              (const base::FilePath&),
+              (override));
+  MOCK_METHOD(absl::optional<std::string>,
+              GetSigningCertificatePublicKeyHash,
+              (const base::FilePath&),
+              (override));
 };
 
 }  // namespace device_signals

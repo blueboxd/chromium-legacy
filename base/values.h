@@ -348,7 +348,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // Callers that want to transfer ownership can use std::move() in conjunction
   // with one of the mutable variants below, e.g.:
   //   std::string taken_string = std::move(value.GetString());
-  //   base::Value::Dict taken_dict = std::move(value.GetDict());
   const std::string& GetString() const;
   std::string& GetString();
   const BlobStorage& GetBlob() const;
@@ -360,8 +359,9 @@ class BASE_EXPORT GSL_OWNER Value {
   // Transfers ownership of the underlying value. Similarly to `Get...()`
   // variants above, fails with a `CHECK()` on a type mismatch. After
   // transferring the ownership `*this` is in a valid, but unspecified, state.
-  // Prefer over `std::move(value.GetList())` so clang-tidy can warn about
+  // Prefer over `std::move(value.Get...())` so clang-tidy can warn about
   // potential use-after-move mistakes.
+  Dict TakeDict() &&;
   List TakeList() &&;
 
   // Represents a dictionary of string keys to Values.
@@ -1398,28 +1398,6 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Swaps contents with the `other` dictionary.
   void Swap(DictionaryValue* other);
-
-  // This class provides an iterator over both keys and values in the
-  // dictionary.  It can't be used to modify the dictionary.
-  //
-  // DEPRECATED: Use a range-based for loop over `base::Value::Dict` directly
-  // instead.
-  class BASE_EXPORT Iterator {
-   public:
-    explicit Iterator(const DictionaryValue& target);
-    Iterator(const Iterator& other);
-    ~Iterator();
-
-    bool IsAtEnd() const { return it_ == target_.DictItems().end(); }
-    void Advance() { ++it_; }
-
-    const std::string& key() const { return it_->first; }
-    const Value& value() const { return it_->second; }
-
-   private:
-    const DictionaryValue& target_;
-    detail::const_dict_iterator it_;
-  };
 
   // DEPRECATED, use `Value::Dict::Clone()` instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.

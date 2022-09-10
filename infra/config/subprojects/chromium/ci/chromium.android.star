@@ -704,10 +704,9 @@ ci.builder(
             target_platform = builder_config.target_platform.ANDROID,
         ),
         android_config = builder_config.android_config(
-            config = "main_builder_mb",
+            config = "x64_builder_mb",
         ),
         build_gs_bucket = "chromium-android-archive",
-        run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|tablet",
@@ -1281,6 +1280,34 @@ ci.builder(
         category = "builder_tester|x86",
         short_name = "M_non-cq",
     ),
+)
+
+ci.builder(
+    name = "android-nougat-x86-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android", "enable_reclient", "enable_wpr_tests"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|x86",
+        short_name = "N",
+    ),
+    execution_timeout = 4 * time.hour,
+    # TODO(crbug/1303439): Add this builder to sheriff once the success rate is
+    # close to 90%.
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.thin_tester(

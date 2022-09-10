@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,9 +54,10 @@ DesktopMediaPickerController::Params MakeDesktopPickerParams(
   DesktopMediaPickerController::Params params;
   // Value of |web_contents| comes from the UI, and typically corresponds to
   // the active tab.
-  params.web_contents = web_contents;
-  if (web_contents)
+  if (web_contents) {
+    params.web_contents = web_contents->GetWeakPtr();
     params.context = web_contents->GetTopLevelNativeWindow();
+  }
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
   params.select_only_screen = true;

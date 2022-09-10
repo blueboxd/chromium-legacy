@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ FileBrowserHandlerInternalSelectFileFunction::Run() {
 
   base::FilePath suggested_name(params->selection_params.suggested_name);
   std::vector<std::string> allowed_extensions;
-  if (params->selection_params.allowed_file_extensions.get())
+  if (params->selection_params.allowed_file_extensions)
     allowed_extensions = *params->selection_params.allowed_file_extensions;
 
   if (!user_gesture() && user_gesture_check_enabled_) {

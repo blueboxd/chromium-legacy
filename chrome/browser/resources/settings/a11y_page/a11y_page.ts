@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,7 +182,13 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
 
   // <if expr="chromeos_ash">
   private onManageSystemAccessibilityFeaturesTap_() {
-    window.location.href = 'chrome://os-settings/manageAccessibility';
+    if (loadTimeData.valueExists(
+            'isAccessibilityOSSettingsVisibilityEnabled') &&
+        loadTimeData.getBoolean('isAccessibilityOSSettingsVisibilityEnabled')) {
+      window.location.href = 'chrome://os-settings/osAccessibility';
+    } else {
+      window.location.href = 'chrome://os-settings/manageAccessibility';
+    }
   }
   // </if>
 

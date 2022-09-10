@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,9 @@ class NetworkPortalNotificationController
   // has been detected. On click the captive portal login page is opened in the
   // browser.
   std::unique_ptr<message_center::Notification>
-  CreateDefaultCaptivePortalNotification(const ash::NetworkState* network);
+  CreateDefaultCaptivePortalNotification(
+      const ash::NetworkState* network,
+      NetworkState::PortalState portal_state);
 
   // NetworkStateHandlerObserver:
   void PortalStateChanged(const NetworkState* network,

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
@@ -17,6 +18,8 @@
 #include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 
 namespace content {
+
+using RetargetEventType = ui::AXTreeManager::RetargetEventType;
 
 class MockContentClient : public TestContentClient {
  public:
@@ -112,9 +115,9 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetTextOnly) {
   BrowserAccessibility* text_obj = manager->GetFromID(111);
   EXPECT_TRUE(text_obj->IsLeaf());
   EXPECT_FALSE(text_obj->CanFireEvents());
-  BrowserAccessibility* updated = manager->RetargetForEvents(
-      text_obj, BrowserAccessibilityManager::RetargetEventType::
-                    RetargetEventTypeBlinkHover);
+  BrowserAccessibility* updated =
+      manager->GetFromAXNode(manager->RetargetForEvents(
+          text_obj->node(), RetargetEventType::RetargetEventTypeBlinkHover));
   // |updated| should be the paragraph.
   EXPECT_EQ(11, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
@@ -151,9 +154,9 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetHeading) {
   BrowserAccessibility* text_obj = manager->GetFromID(111);
   EXPECT_TRUE(text_obj->IsLeaf());
   EXPECT_FALSE(text_obj->CanFireEvents());
-  BrowserAccessibility* updated = manager->RetargetForEvents(
-      text_obj, BrowserAccessibilityManager::RetargetEventType::
-                    RetargetEventTypeBlinkHover);
+  BrowserAccessibility* updated =
+      manager->GetFromAXNode(manager->RetargetForEvents(
+          text_obj->node(), RetargetEventType::RetargetEventTypeBlinkHover));
   // |updated| should be the heading.
   EXPECT_EQ(11, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
@@ -191,9 +194,9 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetFocusable) {
   BrowserAccessibility* text_obj = manager->GetFromID(111);
   EXPECT_TRUE(text_obj->IsLeaf());
   EXPECT_FALSE(text_obj->CanFireEvents());
-  BrowserAccessibility* updated = manager->RetargetForEvents(
-      text_obj, BrowserAccessibilityManager::RetargetEventType::
-                    RetargetEventTypeBlinkHover);
+  BrowserAccessibility* updated =
+      manager->GetFromAXNode(manager->RetargetForEvents(
+          text_obj->node(), RetargetEventType::RetargetEventTypeBlinkHover));
   // |updated| should be the paragraph.
   EXPECT_EQ(11, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
@@ -280,9 +283,10 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetInputControl) {
   BrowserAccessibility* label_text_obj = manager->GetFromID(label_text.id);
   EXPECT_TRUE(label_text_obj->IsLeaf());
   EXPECT_FALSE(label_text_obj->CanFireEvents());
-  BrowserAccessibility* updated = manager->RetargetForEvents(
-      label_text_obj, BrowserAccessibilityManager::RetargetEventType::
-                          RetargetEventTypeBlinkHover);
+  BrowserAccessibility* updated =
+      manager->GetFromAXNode(manager->RetargetForEvents(
+          label_text_obj->node(),
+          RetargetEventType::RetargetEventTypeBlinkHover));
   EXPECT_EQ(label.id, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
 
@@ -293,17 +297,16 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetInputControl) {
       manager->GetFromID(input_container.id);
   EXPECT_TRUE(input_time_container_obj->IsLeaf());
   EXPECT_FALSE(input_time_container_obj->CanFireEvents());
-  updated = manager->RetargetForEvents(
-      input_time_container_obj, BrowserAccessibilityManager::RetargetEventType::
-                                    RetargetEventTypeBlinkHover);
+  updated = manager->GetFromAXNode(manager->RetargetForEvents(
+      input_time_container_obj->node(),
+      RetargetEventType::RetargetEventTypeBlinkHover));
   EXPECT_EQ(input_time.id, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
   BrowserAccessibility* input_text_obj = manager->GetFromID(input_text.id);
   EXPECT_TRUE(input_text_obj->IsLeaf());
   EXPECT_FALSE(input_text_obj->CanFireEvents());
-  updated = manager->RetargetForEvents(
-      input_text_obj, BrowserAccessibilityManager::RetargetEventType::
-                          RetargetEventTypeBlinkHover);
+  updated = manager->GetFromAXNode(manager->RetargetForEvents(
+      input_text_obj->node(), RetargetEventType::RetargetEventTypeBlinkHover));
   EXPECT_EQ(input_time.id, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
 
@@ -313,11 +316,85 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetInputControl) {
   BrowserAccessibility* button_text_obj = manager->GetFromID(button_text.id);
   EXPECT_TRUE(button_text_obj->IsLeaf());
   EXPECT_FALSE(button_text_obj->CanFireEvents());
-  updated = manager->RetargetForEvents(
-      button_text_obj, BrowserAccessibilityManager::RetargetEventType::
-                           RetargetEventTypeBlinkHover);
+  updated = manager->GetFromAXNode(manager->RetargetForEvents(
+      button_text_obj->node(), RetargetEventType::RetargetEventTypeBlinkHover));
   EXPECT_EQ(button.id, updated->GetId());
   EXPECT_TRUE(updated->CanFireEvents());
+  manager.reset();
+}
+
+TEST_F(BrowserAccessibilityAndroidTest, TestGetTextContent) {
+  ui::AXNodeData text1;
+  text1.id = 111;
+  text1.role = ax::mojom::Role::kStaticText;
+  text1.SetName("1Foo");
+
+  ui::AXNodeData text2;
+  text2.id = 112;
+  text2.role = ax::mojom::Role::kStaticText;
+  text2.SetName("2Bar");
+
+  ui::AXNodeData text3;
+  text3.id = 113;
+  text3.role = ax::mojom::Role::kStaticText;
+  text3.SetName("3Baz");
+
+  ui::AXNodeData container_para;
+  container_para.id = 11;
+  container_para.role = ax::mojom::Role::kGenericContainer;
+  container_para.child_ids = {text1.id, text2.id, text3.id};
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {container_para.id};
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdateForTesting(root, container_para, text1, text2, text3),
+          test_browser_accessibility_delegate_.get()));
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(features::kOptimizeAccessibilityUiThreadWork);
+
+    BrowserAccessibility* container_obj = manager->GetFromID(11);
+    // Default caller gets full text.
+    EXPECT_EQ(u"1Foo2Bar3Baz", container_obj->GetTextContentUTF16());
+
+    BrowserAccessibilityAndroid* node =
+        static_cast<BrowserAccessibilityAndroid*>(container_obj);
+    // No predicate returns all text.
+    EXPECT_EQ(u"1Foo2Bar3Baz",
+              node->GetSubstringTextContentUTF16(absl::nullopt));
+    // Non-empty predicate terminates after one text node.
+    EXPECT_EQ(u"1Foo", node->GetSubstringTextContentUTF16(
+                           BrowserAccessibilityAndroid::NonEmptyPredicate()));
+    // Length of 5 not satisfied by one node.
+    EXPECT_EQ(u"1Foo2Bar", node->GetSubstringTextContentUTF16(
+                               BrowserAccessibilityAndroid::LengthAtLeast(5)));
+    // Length of 10 not satisfied by two nodes.
+    EXPECT_EQ(u"1Foo2Bar3Baz",
+              node->GetSubstringTextContentUTF16(
+                  BrowserAccessibilityAndroid::LengthAtLeast(10)));
+  }
+  {
+    // With experiment disabled, predicate checks are disabled.
+    BrowserAccessibility* container_obj = manager->GetFromID(11);
+    // Default caller gets full text.
+    EXPECT_EQ(u"1Foo2Bar3Baz", container_obj->GetTextContentUTF16());
+
+    BrowserAccessibilityAndroid* node =
+        static_cast<BrowserAccessibilityAndroid*>(container_obj);
+    EXPECT_EQ(u"1Foo2Bar3Baz",
+              node->GetSubstringTextContentUTF16(absl::nullopt));
+    EXPECT_EQ(u"1Foo2Bar3Baz",
+              node->GetSubstringTextContentUTF16(
+                  BrowserAccessibilityAndroid::NonEmptyPredicate()));
+    EXPECT_EQ(u"1Foo2Bar3Baz",
+              node->GetSubstringTextContentUTF16(
+                  BrowserAccessibilityAndroid::LengthAtLeast(5)));
+  }
+
   manager.reset();
 }
 

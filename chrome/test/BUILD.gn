@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -760,11 +760,17 @@ if (is_android) {
 
     # TODO(crbug.com/1310086): Move WebEngine-specific cases in //fuchsia_web.
     if (fuchsia_browser_type == "web_engine_shell") {
+      data += [
+        "$root_gen_dir/package_metadata/cast_streaming_shell.meta",
+        "$root_gen_dir/package_metadata/web_engine_shell.meta",
+        "$root_gen_dir/package_metadata/web_engine_with_webui.meta",
+      ]
       data_deps += [
         "//fuchsia_web/shell",
         "//fuchsia_web/webengine:web_engine_with_webui_installer",
       ]
     }
+    data += [ "$root_gen_dir/package_metadata/chrome.meta" ]
     data_deps += [ "//chrome/app:chrome_fuchsia" ]
   }
 } else {
@@ -1286,6 +1292,7 @@ if (!is_android) {
       "//components/breadcrumbs/core:feature_flags",
       "//components/browser_sync",
       "//components/browsing_data/content",
+      "//components/browsing_data/content:test_support",
       "//components/browsing_data/core",
       "//components/browsing_topics",
       "//components/captive_portal/content",
@@ -1342,6 +1349,7 @@ if (!is_android) {
       "//components/memory_pressure",
       "//components/memory_pressure:test_support",
       "//components/metrics:content",
+      "//components/metrics:metrics",
       "//components/metrics/demographics",
       "//components/metrics/demographics:test_support",
       "//components/metrics_services_manager",
@@ -1701,6 +1709,7 @@ if (!is_android) {
       "../browser/bluetooth/web_bluetooth_browsertest.cc",
       "../browser/browser_encoding_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
+      "../browser/browsing_data/browsing_data_model_browsertest.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest_base.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest_base.h",
@@ -2206,6 +2215,7 @@ if (!is_android) {
       "../browser/ui/toolbar/toolbar_actions_model_browsertest.cc",
       "../browser/ui/update_chrome_dialog_browsertest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_browsertest.cc",
+      "../browser/ui/views/autofill_assistant/password_change/assistant_stopped_bubble_coordinator_impl_browsertest.cc",
       "../browser/ui/views/bluetooth_device_credentials_view_browsertest.cc",
       "../browser/ui/views/bluetooth_device_pair_confirm_view_browsertest.cc",
       "../browser/ui/views/bookmarks/bookmark_bar_view_browsertest.cc",
@@ -2602,6 +2612,7 @@ if (!is_android) {
       deps += [
         "//chrome/app_shim",
         "//chrome/browser/apps/app_shim",
+        "//chrome/browser/renderer_host:history_swiper",
         "//components/onc",
         "//components/remote_cocoa/app_shim",
         "//third_party/ocmock",
@@ -3114,6 +3125,7 @@ if (!is_android) {
           "//chrome/browser/enterprise/connectors/device_trust/common",
           "//components/device_signals/core/common",
           "//components/device_signals/core/common:features",
+          "//components/device_signals/test:test_support",
         ]
       }
 
@@ -3830,6 +3842,7 @@ if (!is_android) {
         "../browser/ash/policy/display/display_rotation_default_handler_browsertest.cc",
         "../browser/ash/policy/dlp/data_transfer_dlp_controller_ash_browsertest.cc",
         "../browser/ash/policy/dlp/dlp_content_manager_ash_browsertest.cc",
+        "../browser/ash/policy/dlp/dlp_files_controller_browsertest.cc",
         "../browser/ash/policy/external_data/device_cloud_external_data_policy_observer_browsertest.cc",
         "../browser/ash/policy/external_data/device_policy_cloud_external_data_manager_browsertest.cc",
         "../browser/ash/policy/external_data/handlers/device_wilco_dtc_configuration_external_data_handler_browsertest.cc",
@@ -5997,6 +6010,8 @@ test("unit_tests") {
     "//ui/native_theme:test_support",
     "//ui/resources",
     "//ui/shell_dialogs",
+    "//ui/strings:app_locale_settings_grit",
+    "//ui/strings:ui_strings_grit",
     "//ui/web_dialogs:web_dialogs_unittests",
     "//ui/webui",
     "//v8",
@@ -6174,6 +6189,7 @@ test("unit_tests") {
     deps += [
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
+      "//chrome/browser/renderer_host:history_swiper",
       "//chrome/common/notifications",
       "//chrome/common/safe_browsing:archive_analyzer_results",
       "//chrome/common/safe_browsing:disk_image_type_sniffer_mac",
@@ -7174,6 +7190,8 @@ test("unit_tests") {
       "../browser/component_updater/metadata_table_chromeos_unittest.cc",
       "../browser/device_identity/chromeos/device_oauth2_token_store_chromeos_unittest.cc",
       "../browser/enterprise/connectors/analysis/file_transfer_analysis_delegate_unittest.cc",
+      "../browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.cc",
+      "../browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.h",
       "../browser/enterprise/connectors/analysis/source_destination_matcher_ash_unittest.cc",
       "../browser/enterprise/connectors/analysis/source_destination_test_util.cc",
       "../browser/enterprise/connectors/analysis/source_destination_test_util.h",
@@ -8471,9 +8489,7 @@ test("unit_tests") {
   if (enable_plugins) {
     sources += [
       "../browser/plugins/chrome_plugin_service_filter_unittest.cc",
-      "../browser/plugins/plugin_finder_unittest.cc",
       "../browser/plugins/plugin_info_host_impl_unittest.cc",
-      "../browser/plugins/plugin_installer_unittest.cc",
       "../browser/plugins/plugin_prefs_unittest.cc",
     ]
   }

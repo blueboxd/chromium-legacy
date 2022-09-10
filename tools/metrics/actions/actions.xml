@@ -23863,61 +23863,73 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="OutdatedPluginInfobar.AllowThisTime">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Closed">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Dismissed">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.LearnMore">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Java">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.QuickTime">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Reader">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.RealPlayer">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Shockwave">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Silverlight">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Update">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -24513,6 +24525,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.Gmail.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a Gmail
+    account.
+  </description>
+</action>
+
+<action name="PasswordProtection.GSuite.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a Gsuite
+    account.
+  </description>
+</action>
+
 <action name="PasswordProtection.Interstitial.ResetPassword">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -24548,6 +24578,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.NonGaiaEnterprise.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a
+    Non-Gaia-Enterprise account.
+  </description>
+</action>
+
 <action name="PasswordProtection.PageInfo.ChangePasswordButtonClicked">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -24563,6 +24602,15 @@ should be able to be added at any place in this file.
   <description>
     Reported when the user clicks on the mark site as legitimate button on the
     page info bubble.
+  </description>
+</action>
+
+<action name="PasswordProtection.SavedPassword.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a saved
+    password.
   </description>
 </action>
 

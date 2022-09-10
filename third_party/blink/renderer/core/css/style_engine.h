@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
@@ -910,6 +911,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   friend class WhitespaceAttacherTest;
   friend class StyleCascadeTest;
   friend class StyleImageCacheTest;
+  FRIEND_TEST_ALL_PREFIXES(NGBlockChildIteratorTest, DeleteNodeWhileIteration);
 
   HeapHashSet<Member<TextTrack>> text_tracks_;
   Member<Element> vtt_originating_element_;
@@ -928,6 +930,15 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // URL.
   StyleImageCache style_image_cache_;
 };
+
+// Helper function for checking if we need to handle legacy fragmentation cases
+// for container queries.
+inline bool HasFullNGFragmentationSupport() {
+  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
+         RuntimeEnabledFeatures::LayoutNGFlexFragmentationEnabled() &&
+         RuntimeEnabledFeatures::LayoutNGGridFragmentationEnabled() &&
+         RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled();
+}
 
 }  // namespace blink
 

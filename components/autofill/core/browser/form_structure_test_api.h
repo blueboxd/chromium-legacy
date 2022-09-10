@@ -17,6 +17,8 @@ namespace autofill {
 // Exposes some testing operations for FormStructure.
 class FormStructureTestApi {
  public:
+  using ShouldBeParsedParams = FormStructure::ShouldBeParsedParams;
+
   static void ParseApiQueryResponse(
       base::StringPiece payload,
       const std::vector<FormStructure*>& forms,
@@ -43,6 +45,11 @@ class FormStructureTestApi {
     DCHECK(form_structure_);
   }
 
+  [[nodiscard]] bool ShouldBeParsed(ShouldBeParsedParams params = {},
+                                    LogManager* log_manager = nullptr) {
+    return form_structure_->ShouldBeParsed(params, log_manager);
+  }
+
   // Set the heuristic and server types for each field. The `heuristic_types`
   // and `server_types` vectors must be aligned with the indices of the fields
   // in the form. For each field in `heuristic_types` there must be exactly one
@@ -59,8 +66,17 @@ class FormStructureTestApi {
   void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
                      const std::vector<ServerFieldType>& server_types);
 
+  void SetFieldTypes(const std::vector<ServerFieldType>& overall_types) {
+    SetFieldTypes(/*heuristic_types=*/overall_types,
+                  /*server_types=*/overall_types);
+  }
+
   const std::vector<std::unique_ptr<AutofillField>>& fields() {
     return form_structure_->fields_;
+  }
+
+  mojom::SubmissionIndicatorEvent get_submission_event() const {
+    return form_structure_->submission_event_;
   }
 
   void IdentifySections(bool ignore_autocomplete) {

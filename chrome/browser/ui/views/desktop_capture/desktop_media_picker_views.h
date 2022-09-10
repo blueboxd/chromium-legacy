@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void AcceptSpecificSource(content::DesktopMediaID source);
   void Reject();
   void OnSourceListLayoutChanged();
+  void OnDelegatedSourceListDismissed();
 
   // Relevant for UMA. (E.g. for DesktopMediaPickerViews to report
   // when the dialog gets dismissed.)
@@ -99,8 +100,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   DesktopMediaList::Type GetSelectedSourceListType() const;
 
-  const raw_ptr<content::WebContents> web_contents_;
   const bool audio_requested_;
+  const content::GlobalRenderFrameHostId capturer_global_id_;
 
   raw_ptr<DesktopMediaPickerViews> parent_;
 

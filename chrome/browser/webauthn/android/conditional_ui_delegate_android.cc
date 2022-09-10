@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,18 +45,6 @@ void ConditionalUiDelegateAndroid::OnWebAuthnRequestPending(
       content::WebContents::FromRenderFrameHost(frame_host))
       ->GetDelegateForFrame(frame_host)
       ->OnCredentialsReceived(credentials);
-}
-
-void ConditionalUiDelegateAndroid::CancelWebAuthnRequest(
-    content::RenderFrameHost* frame_host) {
-  // Calling OnCredentialsReceived() with an empty list will prevent autofill
-  // from offering WebAuthn credentials in the popup.
-  ChromeWebAuthnCredentialsDelegateFactory::GetFactory(
-      content::WebContents::FromRenderFrameHost(frame_host))
-      ->GetDelegateForFrame(frame_host)
-      ->OnCredentialsReceived(
-          std::vector<device::DiscoverableCredentialMetadata>());
-  std::move(webauthn_account_selection_callback_).Run(std::vector<uint8_t>());
 }
 
 void ConditionalUiDelegateAndroid::OnWebAuthnAccountSelected(

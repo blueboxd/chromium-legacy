@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -274,7 +274,8 @@ void MaybeRegisterChromeFeaturePromos(
           IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_TO_ACCOUNT)
           .SetBubbleTitleText(IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_ACCOUNT)
           .SetInAnyContext(true)
-          .SetBubbleArrow(HelpBubbleArrow::kBottomLeft)));
+          .SetBubbleArrow(HelpBubbleArrow::kBottomLeft)
+          .SetBubbleIcon(&vector_icons::kCelebrationIcon)));
 
   // kIPHBatterySaverModeFeature:
   registry.RegisterFeature(std::move(

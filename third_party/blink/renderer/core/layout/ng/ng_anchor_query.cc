@@ -31,13 +31,15 @@ struct FragmentainerContext {
 // coordinate system for the block-fragmented out-of-flow positioned objects.
 struct NGStitchedAnchorReference
     : public GarbageCollected<NGStitchedAnchorReference> {
-  NGStitchedAnchorReference(NGPhysicalAnchorReference* reference,
+  NGStitchedAnchorReference(const NGPhysicalFragment& fragment_ref,
                             const LogicalRect& rect,
                             const FragmentainerContext& fragmentainer)
-      : reference(reference),
+      : fragment(&fragment_ref),
         rect_in_first_fragmentainer(rect),
         first_fragmentainer_offset(fragmentainer.offset),
-        first_fragmentainer_stitched_offset(fragmentainer.stitched_offset) {}
+        first_fragmentainer_stitched_offset(fragmentainer.stitched_offset) {
+    DCHECK(fragment);
+  }
 
   LogicalRect StitchedRect() const {
     LogicalRect stitched_rect = rect_in_first_fragmentainer;
@@ -46,8 +48,9 @@ struct NGStitchedAnchorReference
   }
 
   NGLogicalAnchorReference* StitchedAnchorReference() const {
+    DCHECK(fragment);
     return MakeGarbageCollected<NGLogicalAnchorReference>(
-        *reference->fragment, StitchedRect(), /* is_invalid */ false);
+        *fragment, StitchedRect(), /* is_invalid */ false);
   }
 
   void Unite(const LogicalRect& other_rect,
@@ -61,9 +64,9 @@ struct NGStitchedAnchorReference
     rect_in_first_fragmentainer.Unite(other_rect_in_first_fragmentainer);
   }
 
-  void Trace(Visitor* visitor) const { visitor->Trace(reference); }
+  void Trace(Visitor* visitor) const { visitor->Trace(fragment); }
 
-  Member<NGPhysicalAnchorReference> reference;
+  Member<const NGPhysicalFragment> fragment;
   // The |rect_in_first_fragmentainer| is relative to the first fragmentainer,
   // so that it can a) unite following fragments in the physical coordinate
   // system, and b) compute the result in the stitched coordinate system.
@@ -93,27 +96,35 @@ struct NGStitchedAnchorQuery : public GarbageCollected<NGStitchedAnchorQuery> {
     if (!anchor_query)
       return;
     for (const auto& it : *anchor_query) {
-      const PhysicalRect physical_rect_in_fragmentainer =
-          it.value->rect + offset_from_fragmentainer;
-      const LogicalRect rect_in_fragmentainer =
-          fragmentainer.converter.ToLogical(physical_rect_in_fragmentainer);
-      auto* new_value = MakeGarbageCollected<NGStitchedAnchorReference>(
-          it.value, rect_in_fragmentainer, fragmentainer);
-      const auto result = references.insert(it.key, new_value);
-      if (result.is_new_entry)
-        continue;
-
-      // If this is the same anchor-name on a different box, ignore it. The
-      // first one in the pre-order wins.
-      NGStitchedAnchorReference* existing = result.stored_value->value;
-      if (existing->reference->fragment->GetLayoutObject() !=
-          new_value->reference->fragment->GetLayoutObject()) {
-        continue;
-      }
-
-      // If this is a fragment of the same box, unite it.
-      existing->Unite(rect_in_fragmentainer, fragmentainer.offset);
+      DCHECK(it.value->fragment);
+      AddAnchorReference(it.key, *it.value->fragment,
+                         it.value->rect + offset_from_fragmentainer,
+                         fragmentainer);
     }
+  }
+
+  void AddAnchorReference(const AtomicString& anchor_name,
+                          const NGPhysicalFragment& fragment,
+                          const PhysicalRect& physical_rect_in_fragmentainer,
+                          const FragmentainerContext& fragmentainer) {
+    const LogicalRect rect_in_fragmentainer =
+        fragmentainer.converter.ToLogical(physical_rect_in_fragmentainer);
+    auto* new_value = MakeGarbageCollected<NGStitchedAnchorReference>(
+        fragment, rect_in_fragmentainer, fragmentainer);
+    const auto result = references.insert(anchor_name, new_value);
+    if (result.is_new_entry)
+      return;
+
+    // If this is the same anchor-name on a different box, ignore it. The
+    // first one in the pre-order wins.
+    NGStitchedAnchorReference* existing = result.stored_value->value;
+    if (existing->fragment->GetLayoutObject() !=
+        new_value->fragment->GetLayoutObject()) {
+      return;
+    }
+
+    // If this is a fragment of the same box, unite it.
+    existing->Unite(rect_in_fragmentainer, fragmentainer.offset);
   }
 
   void Trace(Visitor* visitor) const { visitor->Trace(references); }

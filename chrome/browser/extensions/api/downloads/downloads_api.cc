@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -614,19 +614,18 @@ void RunDownloadQuery(const downloads::DownloadQuery& query_in,
     }
     query_out.AddFilter(danger_type);
   }
-  if (query_in.order_by.get()) {
+  if (query_in.order_by) {
     CompileDownloadQueryOrderBy(*query_in.order_by, error, &query_out);
     if (!error->empty())
       return;
   }
 
   std::unique_ptr<base::DictionaryValue> query_in_value(query_in.ToValue());
-  for (base::DictionaryValue::Iterator query_json_field(*query_in_value);
-       !query_json_field.IsAtEnd(); query_json_field.Advance()) {
+  for (const auto query_json_field : query_in_value->GetDict()) {
     FilterTypeMap::const_iterator filter_type =
-        filter_types.Get().find(query_json_field.key());
+        filter_types.Get().find(query_json_field.first);
     if (filter_type != filter_types.Get().end()) {
-      if (!query_out.AddFilter(filter_type->second, query_json_field.value())) {
+      if (!query_out.AddFilter(filter_type->second, query_json_field.second)) {
         *error = download_extension_errors::kInvalidFilter;
         return;
       }
@@ -1059,7 +1058,7 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
   if (options.save_as)
     download_params->set_prompt(*options.save_as);
 
-  if (options.headers.get()) {
+  if (options.headers) {
     for (const downloads::HeaderNameValuePair& name_value : *options.headers) {
       if (!net::HttpUtil::IsValidHeaderName(name_value.name)) {
         return RespondNow(Error(download_extension_errors::kInvalidHeaderName));

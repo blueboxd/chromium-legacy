@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,10 +38,8 @@ class DividerView extends View {
         if (isThick) {
             layoutParams.height =
                     getResources().getDimensionPixelSize(R.dimen.thick_divider_height);
-            layoutParams.topMargin = getResources().getDimensionPixelSize(R.dimen.divider_margin);
         } else {
             layoutParams.height = getResources().getDimensionPixelSize(R.dimen.divider_height);
-            layoutParams.topMargin = 0;
         }
         requestLayout();
     }

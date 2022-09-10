@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,8 +158,7 @@ class ApiParameterExtractor {
   }
 
   WindowController::TypeFilter type_filters() {
-    if (params_->query_options.get() &&
-        params_->query_options->window_types.get())
+    if (params_->query_options.get() && params_->query_options->window_types)
       return WindowController::GetFilterFromWindowTypes(
           *params_->query_options->window_types);
     return WindowController::kNoWindowFilter;

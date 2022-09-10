@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -334,7 +335,7 @@ public class HistoryClustersMediatorTest {
                 clusterModel.get(HistoryClustersItemProperties.ACCESSIBILITY_STATE));
         assertEquals(shadowOf(clusterModel.get(HistoryClustersItemProperties.END_BUTTON_DRAWABLE))
                              .getCreatedFromResId(),
-                R.drawable.ic_expand_more_black_24dp);
+                R.drawable.ic_expand_less_black_24dp);
         verify(mMetricsLogger).incrementQueryCount();
 
         ListItem visitItem = mModelList.get(1);
@@ -974,6 +975,22 @@ public class HistoryClustersMediatorTest {
         mMediator.setQueryState(QueryState.forQuery("query", ""));
         fulfillPromise(promise, singletonVisitResult);
         assertEquals(0, mModelList.size());
+    }
+
+    @Test
+    public void testHistoryDeletedExternally() {
+        mMediator.onHistoryDeletedExternally();
+
+        Promise promise = new Promise<>();
+        doReturn(promise).when(mBridge).queryClusters("query");
+
+        mMediator.setQueryState(QueryState.forQuery("query", ""));
+        verify(mBridge, times(1)).queryClusters("query");
+        fulfillPromise(promise, mHistoryClustersResultWithQuery);
+
+        mMediator.onHistoryDeletedExternally();
+        assertThat(mModelList, hasExactItemTypes(ItemType.MORE_PROGRESS));
+        verify(mBridge, times(2)).queryClusters("query");
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

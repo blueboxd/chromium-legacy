@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,17 @@ void SidePanelComboboxModel::RemoveItems(
 
 SidePanelEntry::Key SidePanelComboboxModel::GetKeyAt(int index) const {
   return entries_[index].key;
+}
+
+void SidePanelComboboxModel::UpdateIconForEntry(SidePanelEntry* entry) {
+  for (auto& item : entries_) {
+    if (item.key == entry->key()) {
+      item.icon = entry->icon();
+      for (auto& observer : observers()) {
+        observer.OnComboboxModelChanged(this);
+      }
+    }
+  }
 }
 
 int SidePanelComboboxModel::GetIndexForKey(const SidePanelEntry::Key& key) {

@@ -550,11 +550,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // The allocator flag is per-process, so other threads may temporarily
   // not have fatal OOM occur while this method executes, but it is better
   // than crashing when using IME.
-  base::allocator::SetCallNewHandlerOnMallocFailure(false);
+  allocator_shim::SetCallNewHandlerOnMallocFailure(false);
   g_swizzle_imk_input_session
       ->InvokeOriginal<void, NSRange, long long, void (^)(void)>(
           self, _cmd, range, attributes, block);
-  base::allocator::SetCallNewHandlerOnMallocFailure(true);
+  allocator_shim::SetCallNewHandlerOnMallocFailure(true);
 }
 
 @end

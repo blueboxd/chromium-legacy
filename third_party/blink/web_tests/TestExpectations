@@ -2079,7 +2079,7 @@ crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/904592 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 crbug.com/904592 [ Win ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 
-crbug.com/280342 http/tests/media/progress-events-generated-correctly.html [ Failure Timeout Pass ]
+crbug.com/280342 http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
 
 # This test is flaky when FixedElementsDontOverscroll is enabled.
 crbug.com/585766 fast/table/frame-and-rules.html [ Failure Pass Timeout ]
@@ -3306,6 +3306,8 @@ crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-003
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-skip-spaces-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-2.html [ Failure ]
+crbug.com/626703 external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/mathml/presentation-markup/operators/op-dict-5.html [ Failure ]
@@ -5419,6 +5421,8 @@ crbug.com/1353435 external/wpt/html/editing/dnd/images/016.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/017.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/018.html [ Timeout ]
 crbug.com/1353435 external/wpt/html/editing/dnd/images/021.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/023.html [ Timeout ]
+crbug.com/1353435 external/wpt/html/editing/dnd/images/024.html [ Timeout ]
 
 # Sheriff 2021-02-11
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]

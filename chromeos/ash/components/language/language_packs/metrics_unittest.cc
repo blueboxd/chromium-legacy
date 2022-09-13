@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <map>
@@ -12,7 +12,7 @@
 #include "base/test/metrics/histogram_enum_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos::language_packs {
+namespace ash::language_packs {
 
 TEST(LanguagePackMetricsTest, CheckLanguageCodes) {
   const std::vector<std::string> language_codes = {
@@ -47,4 +47,4 @@ TEST(LanguagePackMetricsTest, CheckLanguageCodes) {
       << missing_codes;
 }
 
-}  // namespace chromeos::language_packs
+}  // namespace ash::language_packs

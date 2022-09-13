@@ -51,8 +51,6 @@ extern const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillInferCountryCallingCode;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillComplementCountryCodeOnImport;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderPhoneNumberSeparatorsValidLabels;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderPlaceholderForParsing;
@@ -203,6 +201,10 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseNewSectioningMethod;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillUseParameterizedSectioning;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillRefillByFormRendererId;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseConsistentPopupSettingsIcons;
 COMPONENT_EXPORT(AUTOFILL)

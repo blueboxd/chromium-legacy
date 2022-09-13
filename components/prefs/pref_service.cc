@@ -329,14 +329,12 @@ const base::Value& PrefService::GetValue(const std::string& path) const {
   return *GetPreferenceValueChecked(path);
 }
 
-const base::Value::Dict& PrefService::GetValueDict(
-    const std::string& path) const {
+const base::Value::Dict& PrefService::GetDict(const std::string& path) const {
   const base::Value& value = GetValue(path);
   return value.GetDict();
 }
 
-const base::Value::List& PrefService::GetValueList(
-    const std::string& path) const {
+const base::Value::List& PrefService::GetList(const std::string& path) const {
   const base::Value& value = GetValue(path);
   return value.GetList();
 }

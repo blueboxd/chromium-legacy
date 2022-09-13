@@ -93,10 +93,6 @@ extern const base::Feature kRemoveExcessNTPs;
 // Chrome.
 extern const base::Feature kEnableShortenedPasswordAutoFillInstruction;
 
-// Feature flag to show the setting allowing the user to choose the mode
-// (Desktop/Mobile) in which the pages will be requested by default.
-extern const base::Feature kAddSettingForDefaultPageMode;
-
 // Feature flag to switch images to SFSymbols when enabled.
 extern const base::Feature kUseSFSymbols;
 
@@ -114,5 +110,10 @@ extern const base::Feature kMapsExperienceKit;
 
 // Feature flag to enable Mini Map in experience kit.
 extern const base::Feature kEnableMiniMap;
+
+// Feature flag and param that enables the new post device restore experience
+// which will prompt the user to sign-in again.
+extern const base::Feature kIOSNewPostRestoreExperience;
+extern const char kIOSNewPostRestoreExperienceParam[];
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

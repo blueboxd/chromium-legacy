@@ -279,6 +279,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRelatedSearchesSimplifiedUx,
     &kRelatedSearchesUi,
     &kRequestDesktopSiteDefaults,
+    &kRequestDesktopSiteDefaultsDowngrade,
     &kSafeModeForCachedFlags,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoExistingDeviceV2,
@@ -401,6 +402,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
     &switches::kAllowSyncOffForChildAccounts,
+    &switches::kCreateSigninCheckerBeforeSyncConsentFragment,
     &switches::kEnableCbdSignOut,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
@@ -808,6 +810,9 @@ const base::Feature kRelatedSearchesUi{"RelatedSearchesUi",
 const base::Feature kRequestDesktopSiteDefaults{
     "RequestDesktopSiteDefaults", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRequestDesktopSiteDefaultsDowngrade{
+    "RequestDesktopSiteDefaultsDowngrade", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSafeModeForCachedFlags{"SafeModeForCachedFlags",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -908,7 +913,7 @@ const base::Feature kShowExtendedPreloadingSetting{
     "ShowExtendedPreloadingSetting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFeedPositionAndroid{"FeedPositionAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

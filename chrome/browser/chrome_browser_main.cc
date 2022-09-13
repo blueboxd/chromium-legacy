@@ -674,7 +674,7 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
   if (!command_line->HasSwitch(
           embedder_support::kOriginTrialDisabledFeatures)) {
     const base::Value::List& override_disabled_feature_list =
-        local_state->GetValueList(
+        local_state->GetList(
             embedder_support::prefs::kOriginTrialDisabledFeatures);
     std::vector<base::StringPiece> disabled_features;
     for (const auto& item : override_disabled_feature_list) {
@@ -691,7 +691,7 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
     }
   }
   if (!command_line->HasSwitch(embedder_support::kOriginTrialDisabledTokens)) {
-    const base::Value::List& disabled_token_list = local_state->GetValueList(
+    const base::Value::List& disabled_token_list = local_state->GetList(
         embedder_support::prefs::kOriginTrialDisabledTokens);
     std::vector<base::StringPiece> disabled_tokens;
     for (const auto& item : disabled_token_list) {
@@ -1212,6 +1212,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
 }
 
 void ChromeBrowserMainParts::CallPostProfileInit(Profile* profile) {
+  DCHECK(profile);
   bool is_initial_profile = !initialized_initial_profile_;
   initialized_initial_profile_ = true;
 
@@ -1730,6 +1731,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     variations_service->PerformPreMainMessageLoopStartup();
 
 #if BUILDFLAG(IS_ANDROID)
+  DCHECK_EQ(profile_info.mode, StartupProfileMode::kBrowserWindow);
   // Just initialize the policy prefs service here. Variations seed fetching
   // will be initialized when the app enters foreground mode.
   variations_service->set_policy_pref_service(profile->GetPrefs());

@@ -580,6 +580,12 @@ const FeatureEntry::FeatureVariation kAutofillBrandingIOSVariations[] = {
     {"(Monotone)", kAutofillBrandingIOSMonotone,
      std::size(kAutofillBrandingIOSMonotone), nullptr}};
 
+const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
+    {kIOSNewPostRestoreExperienceParam, "minimal"}};
+const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
+    {{"minimal", kIOSNewPostRestoreExperienceMinimal,
+      std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -959,9 +965,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)},
-    {"default-mode-ua", flag_descriptions::kAddSettingForDefaultPageModeName,
-     flag_descriptions::kAddSettingForDefaultPageModeDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kAddSettingForDefaultPageMode)},
     {"ios-media-permissions-control",
      flag_descriptions::kMediaPermissionsControlName,
      flag_descriptions::kMediaPermissionsControlDescription, flags_ui::kOsIos,
@@ -994,12 +997,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFaviconForPasswordsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableFaviconForPasswords)},
-    {"enable-password-grouping",
-     flag_descriptions::kEnableGroupingForPasswordManagerName,
-     flag_descriptions::kEnableGroupingForPasswordManagerDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableGroupingForPasswordManager)},
+    {"enable-password-grouping", flag_descriptions::kPasswordsGroupingName,
+     flag_descriptions::kPasswordsGroupingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordsGrouping)},
     {"autofill-enable-sending-bcn-in-get-upload-details",
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsName,
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsDescription,
@@ -1246,6 +1246,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"app-store-rating", flag_descriptions::kAppStoreRatingName,
      flag_descriptions::kAppStoreRatingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAppStoreRating)},
+    {"ios-new-post-restore-experience",
+     flag_descriptions::kIOSNewPostRestoreExperienceName,
+     flag_descriptions::kIOSNewPostRestoreExperienceDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kIOSNewPostRestoreExperience,
+                                    kIOSNewPostRestoreExperienceVariations,
+                                    "IOSNewPostRestoreExperience")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

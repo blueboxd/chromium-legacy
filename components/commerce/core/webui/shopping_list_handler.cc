@@ -3,16 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/commerce/core/webui/shopping_list_handler.h"
-#include "components/commerce/core/price_tracking_utils.h"
 
 #include <memory>
 #include <vector>
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_node.h"
-#include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/commerce/core/shopping_service.h"
-#include "components/power_bookmarks/core/power_bookmark_utils.h"
-#include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,14 +60,16 @@ void ShoppingListHandler::TrackPriceForBookmark(int64_t bookmark_id) {
   commerce::SetPriceTrackingStateForBookmark(
       shopping_service_, bookmark_model_,
       bookmarks::GetBookmarkNodeByID(bookmark_model_, bookmark_id), true,
-      base::DoNothing());
+      base::BindOnce(&ShoppingListHandler::onPriceTrackResult,
+                     weak_ptr_factory_.GetWeakPtr(), bookmark_id));
 }
 
 void ShoppingListHandler::UntrackPriceForBookmark(int64_t bookmark_id) {
   commerce::SetPriceTrackingStateForBookmark(
       shopping_service_, bookmark_model_,
       bookmarks::GetBookmarkNodeByID(bookmark_model_, bookmark_id), false,
-      base::DoNothing());
+      base::BindOnce(&ShoppingListHandler::onPriceTrackResult,
+                     weak_ptr_factory_.GetWeakPtr(), bookmark_id));
 }
 
 void ShoppingListHandler::BookmarkModelChanged() {}
@@ -144,5 +139,17 @@ std::vector<BookmarkProductInfoPtr> ShoppingListHandler::BookmarkListToMojoList(
   }
 
   return info_list;
+}
+
+void ShoppingListHandler::onPriceTrackResult(int64_t bookmark_id,
+                                             bool success) {
+  if (success)
+    return;
+  auto* node = bookmarks::GetBookmarkNodeByID(bookmark_model_, bookmark_id);
+  if (commerce::IsBookmarkPriceTracked(bookmark_model_, node)) {
+    remote_page_->PriceTrackedForBookmark(bookmark_id);
+  } else {
+    remote_page_->PriceUntrackedForBookmark(bookmark_id);
+  }
 }
 }  // namespace commerce

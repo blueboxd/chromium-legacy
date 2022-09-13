@@ -523,6 +523,12 @@
           'shards': 8,
         },
       },
+      'mac11.0-blink-rel': {
+        'swarming': {
+          'shards': 5,
+          'hard_timeout': 1800,
+        },
+      },
       'mac11.0-blink-rel-dummy': {
         'swarming': {
           'shards': 5,
@@ -828,6 +834,12 @@
       'mac10.15-blink-rel': {
         'swarming': {
           'shards': 12,
+        },
+      },
+      'mac11.0-blink-rel': {
+        'swarming': {
+          'shards': 7,
+          'hard_timeout': 1800,
         },
       },
       'mac11.0-blink-rel-dummy': {
@@ -3515,6 +3527,14 @@
     ],
   },
   'trace_test': {
+    'remove_from': [
+      # Trace tests currently don't work on non-rooted devices due to a private
+      # directory being used for storing the trace config file.
+      # TODO(crbug.com/1358240): Enable this test on these bots once tracing is
+      # updated to work properly without root.
+      'Android FYI Release (Samsung A13)',
+      'Android FYI Release (Samsung A23)',
+    ],
     'modifications': {
       'fuchsia-fyi-x64-rel': { # https://crbug.com/1269976
         'experiment_percentage': 100,

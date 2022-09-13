@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,6 +36,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #include "components/password_manager/ios/password_manager_ios_util.h"
@@ -85,6 +87,12 @@ constexpr int kMinimumLengthForEditedPassword = 4;
 
 // The string ' •••' appended to the username in the suggestion.
 NSString* const kSuggestionSuffix = @" ••••••••";
+
+BOOL canProcessCrossOriginIframes() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kIOSPasswordManagerCrossOriginIframeSupport);
+}
+
 }  // namespace
 
 @interface SharedPasswordController ()
@@ -269,9 +277,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       uniqueIDDataTabHelper->GetNextAvailableRendererID();
   [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
                                              inFrame:web_frame];
-  // Form parsing is run via the main frame for all same origin iframes.
-  // TODO(crbug.com/1344776): Process cross-origin iframes.
-  if (web_frame->IsMainFrame() && webState->ContentIsHTML()) {
+
+  if ([self isCrossOriginIframe:web_frame] && !canProcessCrossOriginIframes()) {
+    return;
+  }
+
+  if (webState->ContentIsHTML()) {
     [self findPasswordFormsAndSendToPasswordStoreForFormChange:false
                                                        inFrame:web_frame];
   }
@@ -289,15 +300,15 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     return;
   }
 
-  // TODO(crbug.com/1344776): Support cross-origin password saving
-  if ([self isCrossOriginIframe:web_frame]) {
-    // Password saving is only supported on main frame and iframes with the
-    // same origin.
+  if ([self isCrossOriginIframe:web_frame] && !canProcessCrossOriginIframes()) {
     return;
   }
+
+  auto fieldDataManager =
+      UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
   _passwordManager->OnIframeDetach(
       web_frame->GetFrameId(), [_driverHelper PasswordManagerDriver:web_frame],
-      *self.formHelper.fieldDataManager);
+      *fieldDataManager);
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -323,7 +334,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (void)checkIfSuggestionsAvailableForForm:
             (FormSuggestionProviderQuery*)formQuery
-                               isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
@@ -335,22 +345,19 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   web::WebFrame* frame =
       web::GetWebFrameWithId(webState, SysNSStringToUTF8(formQuery.frameID));
 
-  // TODO(crbug.com/1344776): Support cross-origin password filling
   // Clicking on a password form field from a different form on the same page
   // triggers displaying the on-screen keyboard. When the keyboard is
   // displayed, FormInputAccessoryMediator uses the cached parameters from the
   // previous clicked field in the previous password form. Getting the frame
   // from this previous frame id will result in a null frame pointer, hence
   // the check below.
-  if (!frame || [self isCrossOriginIframe:frame]) {
-    // Password filling is only supported on main frame and iframes with the
-    // same origin.
+  if (!frame ||
+      ([self isCrossOriginIframe:frame] && !canProcessCrossOriginIframes())) {
     completion(NO);
     return;
   }
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formQuery
-                             isMainFrame:isMainFrame
                                 webState:webState
                        completionHandler:^(BOOL suggestionsAvailable) {
                          // Always display "Show All..." for password fields.
@@ -411,10 +418,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   web::WebFrame* frame =
       web::GetWebFrameWithId(_webState, SysNSStringToUTF8(formQuery.frameID));
 
-  // TODO(crbug.com/1344776): Support cross-origin password filling
-  if ([self isCrossOriginIframe:frame]) {
-    // Password filling is only supported on main frame and iframes with the
-    // same origin.
+  if ([self isCrossOriginIframe:frame] && !canProcessCrossOriginIframes()) {
     completion({}, self);
     return;
   }
@@ -572,17 +576,15 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (void)formHelper:(PasswordFormHelper*)formHelper
      didSubmitForm:(const FormData&)form
-       inMainFrame:(BOOL)inMainFrame
            inFrame:(web::WebFrame*)frame {
+  DCHECK(frame);
+
   IOSPasswordManagerDriver* driver =
       [_driverHelper PasswordManagerDriver:frame];
-  if (inMainFrame) {
+  if (frame->IsMainFrame()) {
     _passwordManager->OnPasswordFormSubmitted(driver, form);
   } else {
-    // TODO(crbug.com/1344776): Support cross-origin password saving
-    if ([self isCrossOriginIframe:frame]) {
-      // Password filling is only supported on main frame and iframes with the
-      // same origin.
+    if ([self isCrossOriginIframe:frame] && !canProcessCrossOriginIframes()) {
       return;
     }
     // Show a save prompt immediately because for iframes it is very hard to
@@ -646,13 +648,16 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // Read all password forms from the page and send them to the password
   // manager.
   __weak SharedPasswordController* weakSelf = self;
-  [self.formHelper findPasswordFormsWithCompletionHandler:^(
-                       const std::vector<FormData>& forms, uint32_t maxID) {
-    [weakSelf didFinishPasswordFormExtraction:forms
-                              withMaxUniqueID:maxID
-                        triggeredByFormChange:triggeredByFormChange
-                                      inFrame:frame];
-  }];
+  auto completionHandler =
+      ^(const std::vector<FormData>& forms, uint32_t maxID) {
+        [weakSelf didFinishPasswordFormExtraction:forms
+                                  withMaxUniqueID:maxID
+                            triggeredByFormChange:triggeredByFormChange
+                                          inFrame:frame];
+      };
+
+  [self.formHelper findPasswordFormsInFrame:frame
+                          completionHandler:completionHandler];
 }
 
 - (BOOL)canGeneratePasswordForForm:(FormRendererId)formIdentifier
@@ -704,11 +709,11 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       !generationData ||
       generationData->new_password_renderer_id != fieldIdentifier;
   if (isManuallyTriggered && shouldUpdateGenerationData) {
-    PasswordFormGenerationData generationData = {
+    PasswordFormGenerationData newGenerationData = {
         .form_renderer_id = formIdentifier,
         .new_password_renderer_id = fieldIdentifier,
     };
-    [self formEligibleForGenerationFound:generationData];
+    [self formEligibleForGenerationFound:newGenerationData];
   }
 
   __weak SharedPasswordController* weakSelf = self;
@@ -761,6 +766,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   };
 
   [self.formHelper extractPasswordFormData:formIdentifier
+                                   inFrame:frame
                          completionHandler:formDataCompletion];
 
   IOSPasswordManagerDriver* driver =
@@ -825,6 +831,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   };
 
   [self.formHelper extractPasswordFormData:formIdentifier
+                                   inFrame:frame
                          completionHandler:passwordPresaved];
   self.isPasswordGenerated = YES;
   self.passwordGeneratedIdentifier = newPasswordUniqueId;
@@ -854,7 +861,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   return YES;
 }
 
-- (bool)isCrossOriginIframe:(web::WebFrame*)webFrame {
+- (BOOL)isCrossOriginIframe:(web::WebFrame*)webFrame {
   return !webFrame->IsMainFrame() &&
          _webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
              webFrame->GetSecurityOrigin();
@@ -870,17 +877,13 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   GURL pageURL;
   if (!GetPageURLAndCheckTrustLevel(webState, &pageURL) || !frame ||
       !frame->CanCallJavaScriptFunction() || params.input_missing ||
-      // Password filling is only supported on main frame and iframes with the
-      // same origin.
-      // TODO(crbug.com/1344776): Support cross-origin password filling
-      [self isCrossOriginIframe:frame]) {
+      ([self isCrossOriginIframe:frame] && !canProcessCrossOriginIframes())) {
     _lastFocusedFormIdentifier = FormRendererId();
     _lastFocusedFieldIdentifier = FieldRendererId();
     _lastFocusedFrame = nullptr;
     return;
   }
 
-  // TODO(crbug.com/1344776): Add a test with two password forms
   if (params.type == "input" || params.type == "change") {
     _lastSubmittedPasswordManagerDriver =
         IOSPasswordManagerDriverFactory::GetRetainableDriver(_webState, frame);
@@ -919,10 +922,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     didRegisterFormRemoval:(const autofill::FormRemovalParams&)params
                    inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
-  // TODO(crbug.com/1344776): Support cross-origin password saving
-  if ([self isCrossOriginIframe:frame]) {
-    // Password saving is only supported on main frame and iframes with the
-    // same origin.
+  if ([self isCrossOriginIframe:frame] && !canProcessCrossOriginIframes()) {
     return;
   }
   if (!params.unique_form_id) {
@@ -932,9 +932,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       return;
     }
   }
+
+  auto fieldDataManager =
+      UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
   _passwordManager->OnPasswordFormRemoved(
-      [_driverHelper PasswordManagerDriver:frame],
-      *self.formHelper.fieldDataManager, params.unique_form_id);
+      [_driverHelper PasswordManagerDriver:frame], *fieldDataManager,
+      params.unique_form_id);
 }
 
 @end

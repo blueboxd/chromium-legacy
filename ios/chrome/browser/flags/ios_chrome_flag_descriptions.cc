@@ -203,11 +203,6 @@ const char kDefaultBrowserIntentsShowSettingsDescription[] =
     "When enabled, external apps can trigger the settings screen showing "
     "default browser tutorial.";
 
-const char kAddSettingForDefaultPageModeName[] = "Let user choose default mode";
-const char kAddSettingForDefaultPageModeDescription[] =
-    "When enabled, the user can choose if they want the page in Desktop or "
-    "Mobile mode.";
-
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
 const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[] =
@@ -299,9 +294,9 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
-const char kEnableGroupingForPasswordManagerName[] =
+const char kPasswordsGroupingName[] =
     "Enable password grouping for the Password Manager";
-const char kEnableGroupingForPasswordManagerDescription[] =
+const char kPasswordsGroupingDescription[] =
     "Group passwords into the same affiliated group in the Password Manager "
     "for the Saved Passwords section";
 
@@ -404,6 +399,11 @@ const char kIOSEnablePasswordManagerBrandingUpdateName[] =
     "Enable new Google Password Manager branding";
 const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
     "Updates icons, strings, and views for Google Password Manager.";
+
+const char kIOSNewPostRestoreExperienceName[] = "New Post Restore Experience";
+const char kIOSNewPostRestoreExperienceDescription[] =
+    "When enabled, a prompt will be presented after a device restore to "
+    "allow the user to sign in again.";
 
 const char kIOSPasswordUISplitName[] = "Password Manager UI Split";
 const char kIOSPasswordUISplitDescription[] =

@@ -727,8 +727,12 @@ class AutofillMetrics {
     // state entry.
     ZIP_OR_STATE_REQUIREMENT_FULFILLED = 24,
     ZIP_OR_STATE_REQUIREMENT_VIOLATED = 25,
+    // If required by |CountryData|, the form must contain a either an address
+    // line 1 or a house number.
+    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_FULFILLED = 26,
+    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED = 27,
     // Must be set to the last entry.
-    kMaxValue = ZIP_OR_STATE_REQUIREMENT_VIOLATED,
+    kMaxValue = LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED,
   };
 
   // Represents the status of the field type requirements that are specific to
@@ -1599,7 +1603,6 @@ class AutofillMetrics {
 
   // Logs the user decision for importing a new profile with auto complemented
   // country.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogNewProfileWithComplementedCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
@@ -1613,7 +1616,6 @@ class AutofillMetrics {
   static void LogNewProfileEditedType(ServerFieldType edited_type);
 
   // Logs that the auto complemented country was edited in a save prompt.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogNewProfileEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile save.
@@ -1625,7 +1627,6 @@ class AutofillMetrics {
 
   // Logs the user decision for updating an exiting profile with auto
   // complemented country.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogProfileUpdateWithComplementedCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
@@ -1646,7 +1647,6 @@ class AutofillMetrics {
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
 
   // Logs that the auto complemented country was edited in an update prompt.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogProfileUpdateEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile update.

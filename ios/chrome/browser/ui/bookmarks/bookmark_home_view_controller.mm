@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/prefs/pref_service.h"
@@ -894,8 +895,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   DCHECK(self.sharedState.editingFolderNode);
   self.sharedState.addingNewFolder = NO;
   if (newName.length > 0) {
-    self.sharedState.bookmarkModel->SetTitle(self.sharedState.editingFolderNode,
-                                             base::SysNSStringToUTF16(newName));
+    self.sharedState.bookmarkModel->SetTitle(
+        self.sharedState.editingFolderNode, base::SysNSStringToUTF16(newName),
+        bookmarks::metrics::BookmarkEditSource::kUser);
   }
   self.sharedState.editingFolderNode = nullptr;
   self.sharedState.editingFolderCell = nil;
@@ -984,18 +986,18 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           weakSelf.spinnerView.alpha = 0.0;
         }
         completion:^(BOOL finished) {
-          BookmarkHomeViewController* strongSelf = weakSelf;
-          if (!strongSelf)
+          BookmarkHomeViewController* innerStrongSelf = weakSelf;
+          if (!innerStrongSelf)
             return;
 
           // By the time completion block is called, the backgroundView could be
           // another view, like the empty view background. Only clear the
           // background if it is still the spinner.
-          if (strongSelf.sharedState.tableView.backgroundView ==
-              strongSelf.spinnerView) {
-            strongSelf.sharedState.tableView.backgroundView = nil;
+          if (innerStrongSelf.sharedState.tableView.backgroundView ==
+              innerStrongSelf.spinnerView) {
+            innerStrongSelf.sharedState.tableView.backgroundView = nil;
           }
-          strongSelf.spinnerView = nil;
+          innerStrongSelf.spinnerView = nil;
         }];
     [strongSelf loadBookmarkViews];
     [strongSelf.sharedState.tableView reloadData];
@@ -1760,8 +1762,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                              return;
                            if ([strongSelf isIncognitoForced])
                              return;
-                           auto nodes = [strongSelf editNodes];
-                           [strongSelf openAllURLs:GetUrlsToOpen(nodes)
+                           auto editNodes = [strongSelf editNodes];
+                           [strongSelf openAllURLs:GetUrlsToOpen(editNodes)
                                        inIncognito:NO
                                             newTab:NO];
                          }
@@ -1776,8 +1778,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                              return;
                            if (![strongSelf isIncognitoAvailable])
                              return;
-                           auto nodes = [strongSelf editNodes];
-                           [strongSelf openAllURLs:GetUrlsToOpen(nodes)
+                           auto editNodes = [strongSelf editNodes];
+                           [strongSelf openAllURLs:GetUrlsToOpen(editNodes)
                                        inIncognito:YES
                                             newTab:NO];
                          }
@@ -2361,24 +2363,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       [menuElements addObject:[actionFactory actionToCopyURL:nodeURL]];
 
       UIAction* editAction = [actionFactory actionToEditWithBlock:^{
-        BookmarkHomeViewController* strongSelf = weakSelf;
-        if (!strongSelf)
+        BookmarkHomeViewController* innerStrongSelf = weakSelf;
+        if (!innerStrongSelf)
           return;
         const bookmarks::BookmarkNode* nodeFromId =
-            bookmark_utils_ios::FindNodeById(strongSelf.bookmarks, nodeId);
+            bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks, nodeId);
         if (nodeFromId) {
-          [strongSelf editNode:nodeFromId];
+          [innerStrongSelf editNode:nodeFromId];
         }
       }];
       [menuElements addObject:editAction];
 
       [menuElements
           addObject:[actionFactory actionToShareWithBlock:^{
-            BookmarkHomeViewController* strongSelf = weakSelf;
-            if (!strongSelf)
+            BookmarkHomeViewController* innerStrongSelf = weakSelf;
+            if (!innerStrongSelf)
               return;
             const bookmarks::BookmarkNode* nodeFromId =
-                bookmark_utils_ios::FindNodeById(strongSelf.bookmarks, nodeId);
+                bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks,
+                                                 nodeId);
             if (nodeFromId) {
               [weakSelf
                    shareURL:nodeURL
@@ -2388,14 +2391,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           }]];
 
       UIAction* deleteAction = [actionFactory actionToDeleteWithBlock:^{
-        BookmarkHomeViewController* strongSelf = weakSelf;
-        if (!strongSelf)
+        BookmarkHomeViewController* innerStrongSelf = weakSelf;
+        if (!innerStrongSelf)
           return;
         const bookmarks::BookmarkNode* nodeFromId =
-            bookmark_utils_ios::FindNodeById(strongSelf.bookmarks, nodeId);
+            bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks, nodeId);
         if (nodeFromId) {
           std::set<const BookmarkNode*> nodes{nodeFromId};
-          [strongSelf handleSelectNodesForDeletion:nodes];
+          [innerStrongSelf handleSelectNodesForDeletion:nodes];
           base::RecordAction(
               base::UserMetricsAction("MobileBookmarkManagerEntryDeleted"));
         }
@@ -2426,24 +2429,24 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           [[NSMutableArray alloc] init];
 
       UIAction* editAction = [actionFactory actionToEditWithBlock:^{
-        BookmarkHomeViewController* strongSelf = weakSelf;
-        if (!strongSelf)
+        BookmarkHomeViewController* innerStrongSelf = weakSelf;
+        if (!innerStrongSelf)
           return;
         const bookmarks::BookmarkNode* nodeFromId =
-            bookmark_utils_ios::FindNodeById(strongSelf.bookmarks, nodeId);
+            bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks, nodeId);
         if (nodeFromId) {
-          [strongSelf editNode:nodeFromId];
+          [innerStrongSelf editNode:nodeFromId];
         }
       }];
       UIAction* moveAction = [actionFactory actionToMoveFolderWithBlock:^{
-        BookmarkHomeViewController* strongSelf = weakSelf;
-        if (!strongSelf)
+        BookmarkHomeViewController* innerStrongSelf = weakSelf;
+        if (!innerStrongSelf)
           return;
         const bookmarks::BookmarkNode* nodeFromId =
-            bookmark_utils_ios::FindNodeById(strongSelf.bookmarks, nodeId);
+            bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks, nodeId);
         if (nodeFromId) {
           std::set<const BookmarkNode*> nodes{nodeFromId};
-          [strongSelf moveNodes:nodes];
+          [innerStrongSelf moveNodes:nodes];
         }
       }];
 

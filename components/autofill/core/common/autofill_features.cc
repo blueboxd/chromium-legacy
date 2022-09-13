@@ -99,13 +99,6 @@ const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL{
 const base::Feature kAutofillInferCountryCallingCode{
     "AutofillInferCountryCallingCode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, whenever a form without a country field is parsed, the profile's
-// country code is complemented with the predicted country code, used to
-// determine the address requirements.
-// TODO(crbug.com/1297032): Cleanup when launched.
-const base::Feature kAutofillComplementCountryCodeOnImport{
-    "AutofillComplementCountryCodeOnImport", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
 // TODO(crbug.com/1311937): Cleanup when launched.
@@ -567,6 +560,19 @@ const base::Feature kAutofillUseConsistentPopupSettingsIcons{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to use the newest, parameterized sectioning algorithm.
+// Use together with `kAutofillRefillByFormRendererId`.
+// TODO(crbug.com/1153539): Remove the feature when the experiment is completed.
+const base::Feature kAutofillUseParameterizedSectioning{
+    "AutofillUseParameterizedSectioning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to use form renderer IDs to find the form which contains the
+// field that was last interacted with in
+// `AutofillAgent::TriggerRefillIfNeeded()`.
+// TODO(crbug.com/1360988): Remove the feature when the experiment is completed.
+const base::Feature kAutofillRefillByFormRendererId{
+    "AutofillRefillByFormRendererId", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Introduces various visual improvements of the Autofill suggestion UI that is
 // also used for the password manager.

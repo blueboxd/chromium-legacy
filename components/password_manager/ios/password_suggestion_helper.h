@@ -25,8 +25,8 @@ struct FillData;
 }  // namespace password_manager
 
 namespace web {
-class WebState;
 class WebFrame;
+class WebState;
 }  // namespace web
 
 // A protocol implemented by a delegate of PasswordSuggestionHelper.
@@ -67,7 +67,6 @@ class WebFrame;
 // of other parameters.
 - (void)checkIfSuggestionsAvailableForForm:
             (FormSuggestionProviderQuery*)formQuery
-                               isMainFrame:(BOOL)isMainFrame
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion;

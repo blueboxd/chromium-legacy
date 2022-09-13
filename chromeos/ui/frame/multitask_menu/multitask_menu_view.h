@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,8 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) MultitaskMenuView
 
  private:
   // Callbacks for the buttons in the multitask menu view.
-  void SplitButtonPressed(SnapDirection snap);
-  void PartialButtonPressed(SnapDirection snap);
+  void SplitButtonPressed(bool left_top);
+  void PartialButtonPressed(bool left_top);
   void FullScreenButtonPressed();
   void FloatButtonPressed();
 

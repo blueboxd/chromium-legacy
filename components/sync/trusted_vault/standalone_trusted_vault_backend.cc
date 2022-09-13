@@ -13,6 +13,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
@@ -29,16 +30,18 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
+#include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
 
 namespace {
 
-constexpr int kCurrentLocalTrustedVaultVersion = 1;
+constexpr int kCurrentLocalTrustedVaultVersion = 2;
 constexpr int kCurrentDeviceRegistrationVersion = 1;
 constexpr base::TimeDelta kVerifyDeviceRegistrationDelay = base::Seconds(10);
 
@@ -142,6 +145,19 @@ void UpgradeToVersion1(sync_pb::LocalTrustedVault* local_trusted_vault) {
   local_trusted_vault->set_data_version(1);
 }
 
+// Version 1 may contain `keys_are_stale` accidentally set to true, upgrade to
+// version 2 resets it to false.
+void UpgradeToVersion2(sync_pb::LocalTrustedVault* local_trusted_vault) {
+  DCHECK(local_trusted_vault);
+  DCHECK_EQ(local_trusted_vault->data_version(), 1);
+
+  for (sync_pb::LocalTrustedVaultPerUser& per_user_vault :
+       *local_trusted_vault->mutable_user()) {
+    per_user_vault.set_keys_are_stale(false);
+  }
+  local_trusted_vault->set_data_version(2);
+}
+
 void RecordVerifyRegistrationStatus(
     TrustedVaultDownloadKeysStatusForUMA status) {
   base::UmaHistogramEnumeration(
@@ -230,7 +246,16 @@ void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
     WriteToDisk(data_, file_path_);
   }
 
-  DCHECK_EQ(data_.data_version(), kCurrentLocalTrustedVaultVersion);
+  if (base::FeatureList::IsEnabled(kSyncTrustedVaultResetKeysAreStale) &&
+      data_.data_version() == 1) {
+    UpgradeToVersion2(&data_);
+    WriteToDisk(data_, file_path_);
+  }
+
+  // TODO(crbug.com/1362513): DCHECK against kCurrentLocalTrustedVaultVersion
+  // once kSyncTrustedVaultResetKeysAreStale is removed and version 2 is
+  // guaranteed.
+  DCHECK_GE(data_.data_version(), 1);
 }
 
 void StandaloneTrustedVaultBackend::FetchKeys(
@@ -619,6 +644,16 @@ void StandaloneTrustedVaultBackend::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
 }
 
+void StandaloneTrustedVaultBackend::OnAuthErrorResolvedForAccount(
+    const CoreAccountInfo& account_info) {
+  if (!base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling) ||
+      account_info != primary_account_) {
+    return;
+  }
+  degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
+}
+
 absl::optional<TrustedVaultDeviceRegistrationStateForUMA>
 StandaloneTrustedVaultBackend::MaybeRegisterDevice(
     bool has_persistent_auth_error_for_uma) {
@@ -878,7 +913,12 @@ void StandaloneTrustedVaultBackend::OnTrustedRecoveryMethodAdded(
   ongoing_add_recovery_method_request_ = nullptr;
 
   std::move(cb).Run();
-  delegate_->NotifyRecoverabilityDegradedChanged();
+  if (base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
+    degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
+  } else {
+    delegate_->NotifyRecoverabilityDegradedChanged();
+  }
 }
 
 void StandaloneTrustedVaultBackend::AbandonConnectionRequest() {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,9 @@ SplitButtonView::SplitButtonView(
     views::Button::PressedCallback secondary_callback,
     bool is_portrait_mode)
     : type_(type) {
+  // Left button should stay on the left side for RTL languages.
+  SetMirrored(false);
+
   SetOrientation(is_portrait_mode ? views::BoxLayout::Orientation::kVertical
                                   : views::BoxLayout::Orientation::kHorizontal);
   SetPreferredSize(is_portrait_mode ? kMultitaskButtonPortraitSize

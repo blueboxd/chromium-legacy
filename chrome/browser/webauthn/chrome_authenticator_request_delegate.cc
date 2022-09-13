@@ -86,7 +86,7 @@ bool IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
   const base::Value::List& permit_attestation =
-      prefs->GetValueList(prefs::kSecurityKeyPermitAttestation);
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
   const std::string& (base::Value::*get_string)() const =
       &base::Value::GetString;
   return base::Contains(permit_attestation, relying_party_id, get_string);
@@ -638,7 +638,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 
 void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     const url::Origin& origin,
-    device::FidoRequestType request_type,
+    device::CableRequestType request_type,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
     device::FidoDiscoveryFactory* discovery_factory) {
   phone_names_.clear();
@@ -663,6 +663,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
             dialog_model_->experiment_server_link_title_);
       }
     }
+
+    g_observer->ConfiguringCable(request_type);
   }
 
 #if BUILDFLAG(IS_LINUX)
@@ -727,7 +729,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   const bool non_extension_cablev2_enabled =
       (!cable_extension_permitted ||
        (!cable_extension_provided &&
-        request_type == device::FidoRequestType::kGetAssertion) ||
+        request_type == device::CableRequestType::kGetAssertion) ||
        base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere));
 
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/cloud_upload/cloud_upload_dialog.h"
 
-#include "ash/public/cpp/new_window_delegate.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/open_with_browser.h"
 #include "chrome/browser/ui/webui/chromeos/cloud_upload/cloud_upload_handler.h"
 #include "chrome/common/webui_url_constants.h"
@@ -16,13 +18,33 @@
 namespace chromeos::cloud_upload {
 namespace {
 
+using file_manager::file_tasks::kDriveTaskResultMetricName;
+using file_manager::file_tasks::OfficeTaskResult;
+
+void OnUploadCompleted(const UploadType upload_type, const GURL& url) {
+  switch (upload_type) {
+    case UploadType::kOneDrive:
+      LOG(ERROR) << "Opening in Office not implemented yet";
+      break;
+    case UploadType::kDrive:
+      UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
+                                OfficeTaskResult::MOVED);
+      file_manager::util::OpenNewTabForHostedOfficeFile(url);
+      break;
+  }
+}
+
 void OnUploadActionReceived(Profile* profile,
                             const storage::FileSystemURL& file_url,
+                            const UploadType upload_type,
                             const std::string& action) {
   if (action == kUserActionUpload) {
     CloudUploadHandler::UploadToCloud(
-        profile, file_url,
-        base::BindOnce(&file_manager::util::OpenNewTabForHostedOfficeFile));
+        profile, file_url, upload_type,
+        base::BindOnce(&OnUploadCompleted, upload_type));
+  } else if (action == kUserActionCancel) {
+    UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
+                              OfficeTaskResult::CANCELLED);
   }
 }
 
@@ -31,7 +53,8 @@ void OnUploadActionReceived(Profile* profile,
 // static
 bool CloudUploadDialog::Show(
     Profile* profile,
-    const std::vector<storage::FileSystemURL>& file_urls) {
+    const std::vector<storage::FileSystemURL>& file_urls,
+    UploadType upload_type) {
   // Allow no more than one upload dialog at a time. In the case of multiple
   // upload requests, they should either be handled simultaneously or queued.
   if (SystemWebDialogDelegate::HasInstance(
@@ -46,7 +69,8 @@ bool CloudUploadDialog::Show(
   // The pointer is managed by an instance of `views::WebDialogView` and removed
   // in `SystemWebDialogDelegate::OnDialogClosed`.
   CloudUploadDialog* dialog = new CloudUploadDialog(
-      file_url, base::BindOnce(&OnUploadActionReceived, profile, file_url));
+      file_url, upload_type,
+      base::BindOnce(&OnUploadActionReceived, profile, file_url, upload_type));
 
   dialog->ShowSystemDialog();
   return true;
@@ -60,10 +84,12 @@ void CloudUploadDialog::OnDialogClosed(const std::string& json_retval) {
 }
 
 CloudUploadDialog::CloudUploadDialog(const storage::FileSystemURL& file_url,
+                                     const UploadType upload_type,
                                      UploadRequestCallback callback)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUICloudUploadURL),
                               std::u16string() /* title */),
       file_url_(file_url),
+      upload_type_(upload_type),
       callback_(std::move(callback)) {}
 
 CloudUploadDialog::~CloudUploadDialog() = default;
@@ -71,6 +97,13 @@ CloudUploadDialog::~CloudUploadDialog() = default;
 std::string CloudUploadDialog::GetDialogArgs() const {
   base::DictionaryValue args;
   args.SetKey("fileName", base::Value(file_url_.path().BaseName().value()));
+  switch (upload_type_) {
+    case UploadType::kOneDrive:
+      args.SetKey("uploadType", base::Value("OneDrive"));
+      break;
+    case UploadType::kDrive:
+      args.SetKey("uploadType", base::Value("Drive"));
+  }
   std::string json;
   base::JSONWriter::Write(args, &json);
   return json;

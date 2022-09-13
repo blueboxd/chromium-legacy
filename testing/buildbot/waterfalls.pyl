@@ -1389,7 +1389,7 @@
           'isolate_profile_data',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12d4e',
+          'xcode_14_main',
           'xctest',
         ],
         'test_suites': {
@@ -4515,6 +4515,38 @@
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
+      'Android FYI Release (Samsung A13)': {
+        'browser_config': 'android-chromium',
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'mixins': [
+          'has_native_resultdb_integration',
+          'gpu-swarming-pool',
+          'samsung_a13',
+          's_generic',
+          'limited_capacity_bot',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_android_gtests',
+          'gpu_telemetry_tests': 'gpu_common_android_telemetry_tests',
+        },
+      },
+      'Android FYI Release (Samsung A23)': {
+        'browser_config': 'android-chromium',
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'mixins': [
+          'has_native_resultdb_integration',
+          'gpu-swarming-pool',
+          'samsung_a23',
+          's_generic',
+          'limited_capacity_bot',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_android_gtests',
+          'gpu_telemetry_tests': 'gpu_common_android_telemetry_tests',
+        },
+      },
       'ChromeOS FYI Release (amd64-generic)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -6803,6 +6835,17 @@
           'isolated_scripts': 'chrome_finch_smoke_tests',
         },
       },
+      'win-chrome-reclient': {
+        'additional_compile_targets': [
+           # same build target as win-chrome even if it doesn't run the tests
+          'base_unittests',
+          'chrome',
+          'chrome_official_builder',
+          'chrome_sizes',
+          'variations_smoke_tests',
+        ],
+        # no tests, stay compile only.
+      },
       'win-finch-smoke-chrome': {
         'mixins': [
           'chrome-finch-swarming-pool',
@@ -6871,6 +6914,14 @@
     'mixins': ['chromium-tester-service-account'],
     'machines': {
       # Should be kept in sync with v8_linux_blink_rel in tryserver.v8
+      'linux-blink-optional-highdpi-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
+        },
+      },
       'linux-blink-rel': {
         'mixins': [
           'linux-bionic',
@@ -6922,6 +6973,14 @@
           ],
           'hard_timeout': 900,
         },
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'mac11.0-blink-rel': {
+        'mixins': [
+          'mac_11_x64',
+        ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },

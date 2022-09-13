@@ -1570,8 +1570,7 @@ if (!is_android) {
       "//third_party/shell-encryption:serialization_proto",
       "//third_party/widevine/cdm:widevine_test_license_server",
       "//tools/media_engagement_preload:make_dafsa_runtime",
-      "//ui/webui/resources/js:modulize_local_runtime_data",
-      "//ui/webui/resources/js/cr:modulize_runtime_data",
+      "//ui/webui/resources/js:modulize_runtime_data",
     ]
 
     if (!is_component_build) {
@@ -2432,7 +2431,7 @@ if (!is_android) {
       deps += [ "//components/permissions/prediction_service" ]
     }
 
-    # If this target is used on Android in the future, these browser/speech/*
+    #If this target is used on Android in the future, these browser / speech/*
     # files will probably not be applicable.
     sources += [
       "../browser/speech/extension_api/tts_extension_apitest.cc",
@@ -2726,7 +2725,6 @@ if (!is_android) {
           "//ash/webui/personalization_app:browser_tests_js",
           "//ash/webui/system_apps:browser_tests",
           "//ash/webui/system_extensions_internals_ui:browser_tests_js",
-          "//chrome/browser/resources/gaia_auth_host:browser_tests",
           "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
           "//chromeos/ash/components/human_presence:browser_tests_js",
         ]
@@ -4178,6 +4176,7 @@ if (!is_android) {
         "//chrome/browser/ash:arc_test_support",
         "//chrome/browser/ash/crosapi",
         "//chrome/browser/ash/crosapi:test_support",
+        "//chrome/browser/ash/login/oobe_quick_start/connectivity:test_support",
         "//chrome/browser/ash/system_extensions:browser_tests",
         "//chrome/browser/ash/system_web_apps/types:types",
         "//chrome/browser/ash/wilco_dtc_supportd:mojo_utils",
@@ -5245,6 +5244,7 @@ test("unit_tests") {
     "../browser/enterprise/reporting/report_scheduler_unittest.cc",
     "../browser/enterprise/util/managed_browser_utils_unittest.cc",
     "../browser/external_protocol/external_protocol_handler_unittest.cc",
+    "../browser/favicon/favicon_utils_unittest.cc",
     "../browser/favicon/large_icon_service_factory_unittest.cc",
     "../browser/file_select_helper_unittest.cc",
     "../browser/file_system_access/chrome_file_system_access_permission_context_unittest.cc",
@@ -5256,6 +5256,7 @@ test("unit_tests") {
     "../browser/history_clusters/history_clusters_tab_helper_unittest.cc",
     "../browser/idle/idle_detection_permission_context_unittest.cc",
     "../browser/internal_auth_unittest.cc",
+    "../browser/k_anonymity_service/k_anonymity_trust_token_getter_unittest.cc",
     "../browser/language/language_model_manager_factory_unittest.cc",
     "../browser/language/url_language_histogram_factory_unittest.cc",
     "../browser/logging_chrome_unittest.cc",
@@ -5351,6 +5352,7 @@ test("unit_tests") {
     "../browser/permissions/contextual_notification_permission_ui_selector_unittest.cc",
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
+    "../browser/permissions/notification_permission_review_service_unittest.cc",
     "../browser/permissions/notifications_engagement_service_unittest.cc",
     "../browser/permissions/permission_context_base_permissions_policy_unittest.cc",
     "../browser/permissions/permission_revocation_request_unittests.cc",
@@ -6746,7 +6748,6 @@ test("unit_tests") {
       "../browser/ui/hid/hid_chooser_controller_unittest.cc",
       "../browser/ui/intent_picker_tab_helper_unittest.cc",
       "../browser/ui/media_router/cast_modes_with_media_sources_unittest.cc",
-      "../browser/ui/media_router/media_cast_mode_unittest.cc",
       "../browser/ui/media_router/media_router_ui_helper_unittest.cc",
       "../browser/ui/media_router/media_router_ui_service_factory_unittest.cc",
       "../browser/ui/media_router/query_result_manager_unittest.cc",
@@ -6865,7 +6866,6 @@ test("unit_tests") {
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/recent_site_settings_helper_unittest.cc",
       "../browser/ui/webui/settings/reset_settings_handler_unittest.cc",
-      "../browser/ui/webui/settings/review_notification_permissions_helper_unittest.cc",
       "../browser/ui/webui/settings/safety_check_handler_unittest.cc",
       "../browser/ui/webui/settings/settings_clear_browsing_data_handler_unittest.cc",
       "../browser/ui/webui/settings/settings_cookies_view_handler_unittest.cc",

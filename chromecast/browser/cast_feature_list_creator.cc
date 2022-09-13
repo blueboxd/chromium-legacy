@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,9 +47,9 @@ void CastFeatureListCreator::CreatePrefServiceAndFeatureList(
       pref_registry.get(), process_type);
 
   const base::Value::Dict& features_dict =
-      pref_service_->GetValueDict(prefs::kLatestDCSFeatures);
+      pref_service_->GetDict(prefs::kLatestDCSFeatures);
   const base::Value::List& experiment_ids =
-      pref_service_->GetValueList(prefs::kActiveDCSExperiments);
+      pref_service_->GetList(prefs::kActiveDCSExperiments);
   auto* command_line = base::CommandLine::ForCurrentProcess();
   InitializeFeatureList(
       features_dict, experiment_ids,

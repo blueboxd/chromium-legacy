@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ bool KeepFullscreenForUrlChecker::ShouldExitFullscreenForUrl(GURL window_url) {
 }
 
 void KeepFullscreenForUrlChecker::OnPrefChanged() {
-  const auto& url_allow_list = pref_service_->GetValueList(
+  const auto& url_allow_list = pref_service_->GetList(
       prefs::kKeepFullscreenWithoutNotificationUrlAllowList);
   if (url_allow_list.size() == 0) {
     url_matcher_ = nullptr;

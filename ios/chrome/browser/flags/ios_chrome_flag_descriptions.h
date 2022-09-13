@@ -174,11 +174,6 @@ extern const char kDefaultBrowserFullscreenPromoExperimentDescription[];
 extern const char kDefaultBrowserIntentsShowSettingsName[];
 extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 
-// Title and description for the flag that is used to let the user choose the
-// default mode (Mobile/Desktop) they would like to use when requesting a page.
-extern const char kAddSettingForDefaultPageModeName[];
-extern const char kAddSettingForDefaultPageModeDescription[];
-
 // Title and description for the flag to control the delay (in minutes) for
 // polling for the existence of Gaia cookies for google.com.
 extern const char kDelayThresholdMinutesToUpdateGaiaCookieName[];
@@ -277,8 +272,8 @@ extern const char kEnableFullscreenAPIDescription[];
 
 // Title and description for the flag to enable password grouping for the
 // Password Manager.
-extern const char kEnableGroupingForPasswordManagerName[];
-extern const char kEnableGroupingForPasswordManagerDescription[];
+extern const char kPasswordsGroupingName[];
+extern const char kPasswordsGroupingDescription[];
 
 // Title and description for the flag to enable open in download
 extern const char kEnableOpenInDownloadName[];
@@ -362,6 +357,11 @@ extern const char kIOS3PIntentsInIncognitoDescription[];
 // branding.
 extern const char kIOSEnablePasswordManagerBrandingUpdateName[];
 extern const char kIOSEnablePasswordManagerBrandingUpdateDescription[];
+
+// Title and description for the flag to enable the new iOS post-restore
+// sign-in prompt.
+extern const char kIOSNewPostRestoreExperienceName[];
+extern const char kIOSNewPostRestoreExperienceDescription[];
 
 // Title and description for the flag to split password settings and password
 // management into two separate UIs.

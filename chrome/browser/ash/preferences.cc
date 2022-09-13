@@ -462,6 +462,13 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ::prefs::kHatsPersonalizationWallpaperSurveyIsSelected, false);
 
+  // MediaApp HaTS prefs for Pdf and Photos experiences.
+  registry->RegisterInt64Pref(::prefs::kHatsMediaAppPdfCycleEndTs, 0);
+  registry->RegisterBooleanPref(::prefs::kHatsMediaAppPdfIsSelected, false);
+  registry->RegisterInt64Pref(::prefs::kHatsPhotosExperienceCycleEndTs, 0);
+  registry->RegisterBooleanPref(::prefs::kHatsPhotosExperienceIsSelected,
+                                false);
+
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
   registry->RegisterBooleanPref(
@@ -1096,7 +1103,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
         user_->IsChild()) {
       const base::Value::Dict& value =
-          prefs_->GetValueDict(::prefs::kParentAccessCodeConfig);
+          prefs_->GetDict(::prefs::kParentAccessCodeConfig);
       known_user.SetPath(user_->GetAccountId(),
                          ::prefs::kKnownUserParentAccessCodeConfig,
                          base::Value(value.Clone()));

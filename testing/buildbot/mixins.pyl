@@ -901,7 +901,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-11.5.2|Mac-12.4',
+        'os': 'Mac-12.4',
         'display_attached': '1',
       },
     },
@@ -1158,6 +1158,27 @@
       },
     },
   },
+  's_generic': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'S',
+      },
+    },
+  },
+  'samsung_a13': {
+    'swarming': {
+      'dimensions': {
+        'device_type': 'a13',
+      },
+    },
+  },
+  'samsung_a23': {
+    'swarming': {
+      'dimensions': {
+        'device_type': 'a23',
+      },
+    },
+  },
   'skia_gold_test': {
     '$mixin_append': {
       'args': [
@@ -1366,36 +1387,18 @@
       },
     },
   },
-  # xcode 12.4 gm seed
-  'xcode_12d4e': {
-    '$mixin_append': {
-      'args': [
-        '--xcode-build-version',
-        '12d4e'
-      ],
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'xcode_ios_12d4e',
-            'path': 'Xcode.app',
-          },
-        ],
-      },
-
-    },
-  },
   # Default Xcode 14 beta.
   'xcode_14_beta': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a5294gwp'
+        '14a309'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a5294gwp',
+          'name': 'xcode_ios_14a309',
           'path': 'Xcode.app',
         },
       ],
@@ -1406,13 +1409,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a5294gwp'
+        '14a309'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a5294gwp',
+          'name': 'xcode_ios_14a309',
           'path': 'Xcode.app',
         },
       ],

@@ -75,12 +75,12 @@ void PromosManager::Init() {
 
   DCHECK(local_state_);
 
-  active_promos_ = ActivePromos(
-      local_state_->GetValueList(prefs::kIosPromosManagerActivePromos));
-  single_display_active_promos_ = ActivePromos(local_state_->GetValueList(
-      prefs::kIosPromosManagerSingleDisplayActivePromos));
+  active_promos_ =
+      ActivePromos(local_state_->GetList(prefs::kIosPromosManagerActivePromos));
+  single_display_active_promos_ = ActivePromos(
+      local_state_->GetList(prefs::kIosPromosManagerSingleDisplayActivePromos));
   impression_history_ = ImpressionHistory(
-      local_state_->GetValueList(prefs::kIosPromosManagerImpressions));
+      local_state_->GetList(prefs::kIosPromosManagerImpressions));
 }
 
 // Impression history should grow in sorted order. Given this happens on the
@@ -127,17 +127,13 @@ absl::optional<promos_manager::Promo> PromosManager::NextPromoForDisplay()
   all_active_promos.insert(single_display_active_promos_.begin(),
                            single_display_active_promos_.end());
 
-  absl::optional<std::vector<promos_manager::Promo>>
-      least_recently_shown_promos =
-          LeastRecentlyShown(all_active_promos, impression_history_);
+  std::vector<promos_manager::Promo> least_recently_shown_promos =
+      LeastRecentlyShown(all_active_promos, impression_history_);
 
-  if (!least_recently_shown_promos.has_value())
+  if (least_recently_shown_promos.empty())
     return absl::nullopt;
 
-  std::vector<promos_manager::Promo> sorted_promos =
-      least_recently_shown_promos.value();
-
-  for (promos_manager::Promo promo : sorted_promos)
+  for (promos_manager::Promo promo : least_recently_shown_promos)
     if (CanShowPromo(promo, impression_history_))
       return promo;
 

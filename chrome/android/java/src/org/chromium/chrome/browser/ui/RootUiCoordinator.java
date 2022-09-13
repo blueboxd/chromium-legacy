@@ -798,7 +798,9 @@ public class RootUiCoordinator
         new OneShotCallback<>(mProfileSupplier, this::initHistoryClustersCoordinator);
 
         if (RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
-                    getPrimaryDisplaySizeInInches(), Profile.getLastUsedRegularProfile())) {
+                    getPrimaryDisplaySizeInInches(), Profile.getLastUsedRegularProfile())
+                || RequestDesktopUtils.maybeDisableGlobalSetting(
+                        Profile.getLastUsedRegularProfile())) {
             // TODO(crbug.com/1350274): Remove this explicit load when this bug is addressed.
             if (mActivityTabProvider != null && mActivityTabProvider.get() != null) {
                 mActivityTabProvider.get().loadIfNeeded(
@@ -1154,8 +1156,9 @@ public class RootUiCoordinator
                     AdaptiveToolbarButtonVariant.VOICE, voiceToolbarButtonController);
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
-            mContextualPageActionController = new ContextualPageActionController(
-                    mProfileSupplier, mActivityTabProvider, adaptiveToolbarButtonController);
+            mContextualPageActionController = new ContextualPageActionController(mProfileSupplier,
+                    mActivityTabProvider, mActivityLifecycleDispatcher, mActivity.getResources(),
+                    adaptiveToolbarButtonController);
             mButtonDataProviders =
                     Arrays.asList(mIdentityDiscController, adaptiveToolbarButtonController);
 

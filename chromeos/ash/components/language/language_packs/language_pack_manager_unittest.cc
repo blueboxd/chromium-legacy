@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,15 +13,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::chromeos::language_packs::LanguagePackManager;
 using ::dlcservice::DlcState;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::WithArg;
 
-namespace chromeos {
-namespace language_packs {
+namespace ash::language_packs {
 
 namespace {
 
@@ -359,5 +357,4 @@ TEST_F(LanguagePackManagerTest, InstallBasePackFailureTestFailure) {
   EXPECT_NE(pack_result_.pack_state, PackResult::INSTALLED);
 }
 
-}  // namespace language_packs
-}  // namespace chromeos
+}  // namespace ash::language_packs

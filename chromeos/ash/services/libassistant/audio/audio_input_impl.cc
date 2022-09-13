@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -477,6 +477,14 @@ absl::optional<bool> AudioInputImpl::IsUsingDeadStreamDetectionForTesting()
   if (!open_audio_stream_)
     return absl::nullopt;
   return open_audio_stream_->has_dead_stream_detection();
+}
+
+void AudioInputImpl::OnCaptureDataArrivedForTesting() {
+  OnCaptureDataArrived();
+}
+
+AudioInputStream* AudioInputImpl::GetOpenAudioStreamForTesting() {
+  return open_audio_stream_ ? open_audio_stream_.get() : nullptr;
 }
 
 void AudioInputImpl::StartRecording() {

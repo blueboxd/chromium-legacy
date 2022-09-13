@@ -40,9 +40,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.build.annotations.UsedByReflection;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -1196,10 +1196,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         Integer value = site.getContentSetting(browserContextHandle, contentSettingsType);
 
         CharSequence[] descriptions = new String[2];
-        descriptions[0] =
-                getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.ALLOW));
-        descriptions[1] =
-                getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.BLOCK));
+        descriptions[0] = getString(ContentSettingsResources.getSiteSummary(
+                ContentSettingValues.ALLOW, contentSettingsType));
+        descriptions[1] = getString(ContentSettingsResources.getSiteSummary(
+                ContentSettingValues.BLOCK, contentSettingsType));
 
         return new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
                 .setPositiveButton(R.string.cancel, null)

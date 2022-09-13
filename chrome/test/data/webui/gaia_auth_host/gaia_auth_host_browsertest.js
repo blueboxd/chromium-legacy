@@ -26,6 +26,8 @@ var GaiaAuthHostBrowserTest = class extends testing.Test {
 };
 
 [['PasswordChangeAuthenticator', 'password_change_authenticator_test.js'],
+ ['SamlPasswordAttributes', 'saml_password_attributes_test.js'],
+ ['SamlTimestamps', 'saml_timestamps_test.js'],
  ['SamlUsernameAutofill', 'saml_username_autofill_test.js'],
 ].forEach(test => registerTest(...test));
 

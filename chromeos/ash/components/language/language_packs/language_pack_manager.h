@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/strings/strcat.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
-namespace chromeos::language_packs {
+namespace ash::language_packs {
 
 // All Language Pack IDs are listed here.
 constexpr char kHandwritingFeatureId[] = "LP_ID_HANDWRITING";
@@ -171,6 +171,6 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   base::ObserverList<Observer> observers_;
 };
 
-}  // namespace chromeos::language_packs
+}  // namespace ash::language_packs
 
 #endif  // CHROMEOS_ASH_COMPONENTS_LANGUAGE_LANGUAGE_PACKS_LANGUAGE_PACK_MANAGER_H_

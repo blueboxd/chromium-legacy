@@ -2957,56 +2957,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.GpuMemoryBufferVideoFramePool.OddOffset.Mappable"
-    enum="Boolean" expires_after="2023-01-22">
-  <owner>magchen@chromium.org</owner>
-  <owner>ccameron@chromium.org</owner>
-  <summary>
-    Record whether the input VideoFrame in GpuMemoryBufferVideoFramePool with an
-    odd offset is mappable. It's already a hardware frame if not mappable.
-    Emitted on VideoFrame arrival.
-  </summary>
-</histogram>
-
-<histogram
-    name="Media.GpuMemoryBufferVideoFramePool.Offset{GMBVideoPixelFormat}"
-    enum="OddOffset" expires_after="2022-09-17">
-  <owner>magchen@chromium.org</owner>
-  <owner>ccameron@chromium.org</owner>
-  <summary>
-    Record whether the input VideoFrame in GpuMemoryBufferVideoFramePool has a
-    odd offset. Emitted on VideoFrame arrival.
-  </summary>
-  <token key="GMBVideoPixelFormat">
-    <variant name=""/>
-    <variant name=".I420"/>
-    <variant name=".I420A"/>
-    <variant name=".NV12"/>
-    <variant name=".UNKNOWN"/>
-    <variant name=".YUV420P10"/>
-    <variant name=".YV12"/>
-  </token>
-</histogram>
-
-<histogram name="Media.GpuMemoryBufferVideoFramePool.Size{GMBVideoPixelFormat}"
-    enum="OddSize" expires_after="2022-09-17">
-  <owner>magchen@chromium.org</owner>
-  <owner>ccameron@chromium.org</owner>
-  <summary>
-    Record whether the input VideoFrame in GpuMemoryBufferVideoFramePool has a
-    odd size. Emitted on VideoFrame arrival.
-  </summary>
-  <token key="GMBVideoPixelFormat">
-    <variant name=""/>
-    <variant name=".I420"/>
-    <variant name=".I420A"/>
-    <variant name=".NV12"/>
-    <variant name=".UNKNOWN"/>
-    <variant name=".YUV420P10"/>
-    <variant name=".YV12"/>
-  </token>
-</histogram>
-
 <histogram name="Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat"
     enum="VideoPixelFormatUnion" expires_after="2023-01-22">
   <owner>magchen@chromium.org</owner>
@@ -4684,6 +4634,18 @@ chromium-metrics-reviews@google.com.
   <summary>Size of HTML5 media (when known), in MB.</summary>
 </histogram>
 
+<histogram name="Media.Ui.GetDisplayMedia.BasicFlow.UserInteraction"
+    enum="MediaUiGetDisplayMediaBasicFlowUserInteraction"
+    expires_after="2023-09-09">
+  <owner>eladalon@chromium.org</owner>
+  <owner>fbeaufort@chromium.org</owner>
+  <summary>
+    Records the result of the user's interaction with the media picker dialog
+    which is displayed following a call to getDisplayMedia that results in the
+    basic flow (preferCurrentTab either unspecified or is false).
+  </summary>
+</histogram>
+
 <histogram name="Media.Ui.GetDisplayMedia.DisplayCapturePolicyResult"
     enum="DisplayCapturePolicyResult" expires_after="2023-02-26">
   <owner>eladalon@chromium.org</owner>
@@ -4694,14 +4656,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Ui.GetDisplayMedia.UserInteraction"
-    enum="GetDisplayMediaUserInteraction" expires_after="2023-02-19">
+<histogram name="Media.Ui.GetDisplayMedia.PreferCurrentTabFlow.UserInteraction"
+    enum="MediaUiGetDisplayMediaPreferCurrentTabFlowUserInteraction"
+    expires_after="2023-09-09">
   <owner>eladalon@chromium.org</owner>
-  <owner>guidou@chromium.org</owner>
-  <owner>agpalak@chromium.org</owner>
+  <owner>fbeaufort@chromium.org</owner>
   <summary>
     Records the result of the user's interaction with the media picker dialog
-    which is displayed following a call to getDisplayMedia.
+    which is displayed following a call to getDisplayMedia where
+    preferCurrentTab was specified.
   </summary>
 </histogram>
 

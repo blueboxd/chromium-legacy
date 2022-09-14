@@ -5,12 +5,12 @@
 #import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
 
 #import "base/strings/sys_string_conversions.h"
-#include "ios/web/js_messaging/web_frame_impl.h"
+#import "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/js_messaging/web_view_web_state_map.h"
-#include "ios/web/public/browser_state.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/js_messaging/java_script_feature_util.h"
-#include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_view/wk_security_origin_util.h"
 
@@ -100,7 +100,7 @@ void WebFramesManagerJavaScriptFeature::FrameAvailableMessageReceived(
   WebState* web_state = WebViewWebStateMap::FromBrowserState(browser_state_)
                             ->GetWebStateForWebView(message.webView);
   if (!web_state) {
-    // Ignore this message if |message.webView| is no longer associated with a
+    // Ignore this message if `message.webView` is no longer associated with a
     // WebState.
     return;
   }
@@ -119,10 +119,10 @@ void WebFramesManagerJavaScriptFeature::FrameAvailableMessageReceived(
     return;
   }
 
-  // Validate |frame_id| is a proper hex string.
+  // Validate `frame_id` is a proper hex string.
   for (const char& c : frame_id) {
     if (!base::IsHexDigit(c)) {
-      // Ignore frame if |frame_id| is malformed.
+      // Ignore frame if `frame_id` is malformed.
       return;
     }
   }
@@ -143,7 +143,7 @@ void WebFramesManagerJavaScriptFeature::FrameUnavailableMessageReceived(
   WebState* web_state = WebViewWebStateMap::FromBrowserState(browser_state_)
                             ->GetWebStateForWebView(message.webView);
   if (!web_state) {
-    // Ignore this message if |message.webView| is no longer associated with a
+    // Ignore this message if `message.webView` is no longer associated with a
     // WebState.
     return;
   }

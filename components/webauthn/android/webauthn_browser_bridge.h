@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,10 @@ class WebAuthnBrowserBridge {
       const base::android::JavaParamRef<jobjectArray>& credentials,
       const base::android::JavaParamRef<jobject>& jframe_host,
       const base::android::JavaParamRef<jobject>& jcallback) const;
+
+  void CancelRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jframe_host) const;
 
  private:
   // Java object that owns this WebAuthnBrowserBridge.

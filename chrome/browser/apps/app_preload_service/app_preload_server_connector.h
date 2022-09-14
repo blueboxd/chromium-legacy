@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include "base/callback_forward.h"
 
 namespace apps {
+
+class DeviceInfoManager;
 
 using GetInitialAppsCallback = base::OnceCallback<void()>;
 
@@ -22,7 +24,8 @@ class AppPreloadServerConnector {
       delete;
   ~AppPreloadServerConnector();
 
-  void GetAppsForFirstLogin(GetInitialAppsCallback callback);
+  void GetAppsForFirstLogin(const DeviceInfoManager& device_info,
+                            GetInitialAppsCallback callback);
 };
 
 }  // namespace apps

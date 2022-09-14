@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,6 +191,11 @@ const base::Feature kAllowUndamagedNonrootRenderPassToSkip{
 //   one.
 const base::Feature kAggressiveFrameCulling{"AggressiveFrameCulling",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, do not rely on surface garbage collection to happen
+// periodically, but trigger it eagerly, to avoid missing calls.
+const base::Feature kEagerSurfaceGarbageCollection{
+    "EagerSurfaceGarbageCollecton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAdpfEnabled() {
   // TODO(crbug.com/1157620): Limit this to correct android version.

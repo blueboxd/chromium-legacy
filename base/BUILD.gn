@@ -420,6 +420,8 @@ mixed_component("base") {
     "memory/ptr_util.h",
     "memory/raw_ptr.cc",
     "memory/raw_ptr.h",
+    "memory/raw_ptr_asan_bound_arg_tracker.cc",
+    "memory/raw_ptr_asan_bound_arg_tracker.h",
     "memory/raw_ptr_asan_service.cc",
     "memory/raw_ptr_asan_service.h",
     "memory/raw_ptr_exclusion.h",
@@ -1035,6 +1037,8 @@ mixed_component("base") {
 
     if (!is_nacl && !is_apple) {
       sources += [
+        "profiler/stack_base_address_posix.cc",
+        "profiler/stack_base_address_posix.h",
         "profiler/stack_copier_signal.cc",
         "profiler/stack_copier_signal.h",
         "profiler/stack_sampler_posix.cc",
@@ -3612,6 +3616,7 @@ test("base_unittests") {
     ]
     if (!is_nacl && !is_apple) {
       sources += [
+        "profiler/stack_base_address_posix_unittest.cc",
         "profiler/stack_copier_signal_unittest.cc",
         "profiler/thread_delegate_posix_unittest.cc",
       ]

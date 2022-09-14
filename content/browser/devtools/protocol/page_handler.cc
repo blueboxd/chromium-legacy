@@ -1309,9 +1309,6 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kRendererProcessCrashed:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           RendererProcessCrashed;
-    case Reason::kSchedulerTrackedFeatureUsed:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          SchedulerTrackedFeatureUsed;
     case Reason::kConflictingBrowsingInstance:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           ConflictingBrowsingInstance;
@@ -1720,7 +1717,6 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kJavaScriptExecution:
     case Reason::kRendererProcessKilled:
     case Reason::kRendererProcessCrashed:
-    case Reason::kSchedulerTrackedFeatureUsed:
     case Reason::kConflictingBrowsingInstance:
     case Reason::kCacheFlushed:
     case Reason::kServiceWorkerVersionActivation:
@@ -1954,17 +1950,18 @@ void PageHandler::DidActivatePrerender(const NavigationRequest& nav_request) {
 void PageHandler::DidCancelPrerender(const GURL& prerendering_url,
                                      const std::string& initiating_frame_id,
                                      PrerenderHost::FinalStatus status,
-                                     const std::string& reason_details) {
+                                     const std::string& disallowed_api_method) {
   has_dispatched_stored_prerender_activation_ = false;
   if (!enabled_)
     return;
   DCHECK_NE(status, PrerenderHost::FinalStatus::kActivated);
-  Maybe<std::string> opt_reason = reason_details.empty()
-                                      ? Maybe<std::string>()
-                                      : Maybe<std::string>(reason_details);
-  frontend_->PrerenderAttemptCompleted(
-      initiating_frame_id, prerendering_url.spec(),
-      PrerenderFinalStatusToProtocol(status), std::move(opt_reason));
+  Maybe<std::string> opt_disallowed_api_method =
+      disallowed_api_method.empty() ? Maybe<std::string>()
+                                    : Maybe<std::string>(disallowed_api_method);
+  frontend_->PrerenderAttemptCompleted(initiating_frame_id,
+                                       prerendering_url.spec(),
+                                       PrerenderFinalStatusToProtocol(status),
+                                       std::move(opt_disallowed_api_method));
 }
 
 bool PageHandler::ShouldBypassCSP() {

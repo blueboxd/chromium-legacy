@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,10 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerMojoService
       const account_manager::AccountKey& account_key,
       const GoogleServiceAuthError& error,
       const std::vector<account_manager::Account>& known_accounts);
+
+  // Notifies observers that the account addition / re-authentication dialog was
+  // closed (either successfully, or the user cancelled the flow).
+  void NotifySigninDialogClosed();
 
   void FlushMojoForTesting();
   int GetNumPendingAccessTokenRequests() const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,12 @@ class TestUtils {
                                           ContentSettingsType content_type,
                                           bool include_incognito,
                                           RuleMetaData* metadata = nullptr);
+
+  static base::Time GetLastModified(
+      const content_settings::ProviderInterface* provider,
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType type);
 
   // This wrapper exists only to make
   // HostContentSettingsMap::GetContentSettingValueAndPatterns public for use in

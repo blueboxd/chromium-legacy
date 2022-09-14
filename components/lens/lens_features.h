@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,9 @@ extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
 
 // Enables the side panel for Lens features on Chrome where supported.
 extern const base::FeatureParam<bool> kEnableSidePanelForLens;
+
+// The base URL for Lens.
+extern const base::FeatureParam<std::string> kHomepageURLForLens;
 
 // Enable Lens HTML redirect fix.
 extern const base::FeatureParam<bool> kEnableLensHtmlRedirectFix;
@@ -133,8 +136,11 @@ extern bool UseRegionSearchMenuItemAltText3();
 // relevant Lens context menu strings.
 extern bool UseGoogleAsVisualSearchProvider();
 
-// Returns whether the Lens side panel is enabled.
+// Returns whether the Lens side panel is enabled for image search.
 extern bool IsLensSidePanelEnabled();
+
+// Returns whether the Lens side panel is enabled for region search.
+extern bool IsLensSidePanelEnabledForRegionSearch();
 
 // Returns whether to send images to Lens Standalone as PNG
 extern bool GetSendImagesAsPng();

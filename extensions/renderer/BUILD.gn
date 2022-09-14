@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,10 +13,6 @@ source_set("renderer") {
     "activity_log_converter_strategy.h",
     "api/automation/automation_api_helper.cc",
     "api/automation/automation_api_helper.h",
-    "api/automation/automation_api_util.cc",
-    "api/automation/automation_api_util.h",
-    "api/automation/automation_ax_tree_wrapper.cc",
-    "api/automation/automation_ax_tree_wrapper.h",
     "api/automation/automation_internal_custom_bindings.cc",
     "api/automation/automation_internal_custom_bindings.h",
     "api/automation/automation_position.cc",

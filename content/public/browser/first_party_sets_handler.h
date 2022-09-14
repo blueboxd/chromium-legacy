@@ -5,9 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FIRST_PARTY_SETS_HANDLER_H_
 #define CONTENT_PUBLIC_BROWSER_FIRST_PARTY_SETS_HANDLER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "content/common/content_export.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -17,6 +20,8 @@ class FirstPartySetEntry;
 }
 
 namespace content {
+
+class BrowserContext;
 
 // The FirstPartySetsHandler class allows an embedder to provide
 // First-Party Sets inputs from custom sources.
@@ -81,6 +86,9 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   // FirstPartySets instance. `sets_file` is expected to contain a sequence of
   // newline-delimited JSON records. Each record is a set declaration in the
   // format specified here: https://github.com/privacycg/first-party-sets.
+  // `version` is the version of the sets file used for comparison. If the
+  // file changed between browser runs, those files must have different
+  // associated `base::Version`.
   //
   // Embedder should call this method as early as possible during browser
   // startup if First-Party Sets are enabled, since no First-Party Sets queries
@@ -89,7 +97,8 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   // `ContentBrowserClient::IsFrstpartySetsEnabled` returns false.
   //
   // Must be called at most once.
-  virtual void SetPublicFirstPartySets(base::File sets_file) = 0;
+  virtual void SetPublicFirstPartySets(const base::Version& version,
+                                       base::File sets_file) = 0;
 
   // Resets the state on the instance for testing.
   virtual void ResetForTesting() = 0;
@@ -104,6 +113,24 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   virtual void GetCustomizationForPolicy(
       const base::Value::Dict& policy,
       base::OnceCallback<void(PolicyCustomization)> callback) = 0;
+
+  // Clear site state of sites that have a FPS membership change for the browser
+  // context represented by `browser_context_id`. Sites joining FPSs for the
+  // first time will not be cleared.
+  //
+  // `browser_context_getter` is needed to get a BrowsingDataRemover to handle
+  // the clearing work. `policy_customization` should be the return value from
+  // `GetCustomizationForPolicy` if an Overrides enterprise policy is provided,
+  // or null if one is not provided. `callback` will be invoked once the
+  // clearing is done. If non-null, `policy_customization` must live until
+  // callback is called.
+  //
+  // Embedder must call this before First-Party Sets queries can be answered.
+  virtual void ClearSiteDataOnChangedSetsForContext(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+      const std::string& browser_context_id,
+      const PolicyCustomization* policy_customization,
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace content

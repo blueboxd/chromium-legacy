@@ -11,6 +11,13 @@ symbolset("arrow_clockwise") {
   ]
 }
 
+symbolset("checkerboard_shield") {
+  sources = [
+    "cherckerboard_shield.symbolset/Contents.json",
+    "cherckerboard_shield.symbolset/checkerboard.shield.cr.svg",
+  ]
+}
+
 symbolset("incognito") {
   sources = [
     "incognito.symbolset/Contents.json",
@@ -112,5 +119,12 @@ symbolset("language") {
   sources = [
     "language.symbolset/Contents.json",
     "language.symbolset/language.cr.svg",
+  ]
+}
+
+symbolset("camera_lens") {
+  sources = [
+    "camera_lens.symbolset/Contents.json",
+    "camera_lens.symbolset/camera.lens.cr.svg",
   ]
 }

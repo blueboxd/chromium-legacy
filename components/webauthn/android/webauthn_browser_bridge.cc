@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,4 +107,14 @@ void WebAuthnBrowserBridge::OnCredentialsDetailsListReceived(
       base::BindOnce(
           &OnWebAuthnCredentialSelected,
           base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
+}
+
+void WebAuthnBrowserBridge::CancelRequest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jframe_host) const {
+  auto* client = components::WebAuthnClientAndroid::GetClient();
+  auto* render_frame_host =
+      content::RenderFrameHost::FromJavaRenderFrameHost(jframe_host);
+  DCHECK(render_frame_host);
+  client->CancelWebAuthnRequest(render_frame_host);
 }

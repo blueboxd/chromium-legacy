@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,6 @@ const base::Feature kActivateMetricsReportingEnabledPolicyAndroid{
 
 const base::Feature kDmTokenDeletion{"DmTokenDeletion",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPolicyScopeDetectionMac{"PolicyScopeDetectionMac",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 

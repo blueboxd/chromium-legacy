@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class InstallIsolatedAppFromCommandLineBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DCHECK(command_line != nullptr);
 
-    command_line->AppendSwitchASCII("install-isolated-apps-at-startup",
+    command_line->AppendSwitchASCII("install-isolated-app-at-startup",
                                     GetAppUrl().spec());
   }
 

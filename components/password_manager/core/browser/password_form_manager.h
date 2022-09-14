@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -404,6 +404,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // True until server predictions received or waiting for them timed out.
   bool waiting_for_server_predictions_ = false;
+
+  // Closure to call when server predictions are received.
+  base::OnceClosure server_predictions_closure_;
 
   // Controls whether to wait or not server before filling. It is used in tests.
   static bool wait_for_server_predictions_for_filling_;

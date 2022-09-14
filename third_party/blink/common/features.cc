@@ -94,6 +94,10 @@ const base::Feature kBackForwardCacheDedicatedWorker{
 const base::Feature kBackForwardCacheSendNotRestoredReasons{
     "BackForwardCacheSendNotRestoredReasons",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool>
+    kBackForwardCacheSendNotRestoredReasonsRequiresOriginTrial = {
+        &kBackForwardCacheSendNotRestoredReasons, "requires_origin_trial",
+        false};
 
 // Accumulates the fetch requests for resources while parsing chunks of HTML so
 // they can be evaluated, prioritized and processed as a group rather than as
@@ -342,6 +346,9 @@ const base::Feature kPrerender2 {
 const base::Feature kSameSiteCrossOriginForSpeculationRulesPrerender{
     "SameSiteCrossOriginForSpeculationRulesPrerender",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPrerender2SequentialPrerendering{
+    "Prerender2SequentialPrerendering", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kPrerender2MaxNumOfRunningSpeculationRules[] =
     "max_num_of_running_speculation_rules";
@@ -1340,7 +1347,7 @@ void ClearUnthrottledNestedTimeoutOverrideCacheForTesting() {
 const base::Feature kMaxUnthrottledTimeoutNestingLevel{
     "MaxUnthrottledTimeoutNestingLevel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kMaxUnthrottledTimeoutNestingLevelParam{
-    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 100};
+    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 10};
 bool IsMaxUnthrottledTimeoutNestingLevelEnabled() {
   auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
   if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)

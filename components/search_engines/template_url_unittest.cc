@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2221,4 +2221,42 @@ TEST_F(TemplateURLTest, PathWildcard) {
                               search_terms_args, search_terms_data_,
                               &generated_url);
   EXPECT_EQ("https://www.google.com/search?q=foo", generated_url.spec());
+}
+
+TEST_F(TemplateURLTest, SideImageSearchParams) {
+  TemplateURLData data;
+  data.side_image_search_param = "sideimagesearch";
+  TemplateURL url(data);
+
+  // Adds query param with provided version to URL.
+  GURL result =
+      url.GenerateSideImageSearchURL(GURL("http://foo.com/?q=123"), "1");
+  EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=1", result.spec());
+
+  // Does not add query param if the provided URL already has that param and
+  // version.
+  result = url.GenerateSideImageSearchURL(
+      GURL("http://foo.com/?q=123&sideimagesearch=1"), "1");
+  EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=1", result.spec());
+
+  // Updates version if the version on the query param does not match.
+  result = url.GenerateSideImageSearchURL(
+      GURL("http://foo.com/?q=123&sideimagesearch=2"), "1");
+  EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=1", result.spec());
+
+  // Does nothing if the URL does not have the param.
+  result = url.RemoveSideImageSearchParamFromURL(GURL("http://foo.com/?q=123"));
+  EXPECT_EQ("http://foo.com/?q=123", result.spec());
+
+  // Removes the param if the provided URL has it.
+  result = url.RemoveSideImageSearchParamFromURL(
+      GURL("http://foo.com/?q=123&sideimagesearch=1"));
+  EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=", result.spec());
+
+  // Removes the first instance of the query param that exist in the URL. This
+  // should not happen but just asserting for expected behavior.
+  result = url.RemoveSideImageSearchParamFromURL(
+      GURL("http://foo.com/?q=123&sideimagesearch=1&sideimagesearch=2"));
+  EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=&sideimagesearch=2",
+            result.spec());
 }

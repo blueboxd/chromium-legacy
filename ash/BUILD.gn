@@ -988,6 +988,8 @@ component("ash") {
     "style/ash_color_provider_source.h",
     "style/close_button.cc",
     "style/close_button.h",
+    "style/color_util.cc",
+    "style/color_util.h",
     "style/dark_light_mode_controller_impl.cc",
     "style/dark_light_mode_controller_impl.h",
     "style/dark_light_mode_nudge.cc",
@@ -3445,8 +3447,6 @@ static_library("test_support") {
     "system/geolocation/test_geolocation_url_loader_factory.h",
     "system/tray/system_nudge_label.cc",
     "system/tray/system_nudge_label.h",
-    "test/layer_animation_stopped_waiter.cc",
-    "test/layer_animation_stopped_waiter.h",
     "utility/haptics_tracking_test_input_controller.cc",
     "utility/haptics_tracking_test_input_controller.h",
 

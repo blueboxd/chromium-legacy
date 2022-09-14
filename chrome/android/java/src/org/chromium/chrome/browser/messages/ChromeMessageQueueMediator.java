@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.chrome.features.start_surface.StartSurface.StateObserver;
 import org.chromium.components.messages.ManagedMessageDispatcher;
 import org.chromium.components.messages.MessageQueueDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -60,54 +59,8 @@ public class ChromeMessageQueueMediator implements MessageQueueDelegate, UrlFocu
     private Handler mQueueHandler;
     private final Supplier<StartSurface> mStartSurfaceSupplier;
 
-    private final LayoutStateObserver mLayoutStateObserver = new LayoutStateObserver() {
-        private int mToken = TokenHolder.INVALID_TOKEN;
-        // This observer only handles the cases switching between Start surface homepage and grid
-        // tab switcher surface.
-        private final StartSurface.StateObserver mStateObserver = new StateObserver() {
-            @Override
-            public void onStateChanged(
-                    int startSurfaceState, boolean shouldShowTabSwitcherToolbar) {
-                if (mLayoutStateProvider.getActiveLayoutType() != LayoutType.TAB_SWITCHER) return;
-                if (isStartSurfaceShowing() && mToken != TokenHolder.INVALID_TOKEN) {
-                    resumeQueue(mToken);
-                    mToken = TokenHolder.INVALID_TOKEN;
-                } else if (!isStartSurfaceShowing() && mToken == TokenHolder.INVALID_TOKEN) {
-                    mToken = suspendQueue();
-                }
-            }
-        };
-
-        @Override
-        public void onFinishedShowing(int layoutType) {
-            if (isTokenValid(mToken) && layoutType == LayoutType.BROWSING) {
-                resumeQueue(mToken);
-                mToken = TokenHolder.INVALID_TOKEN;
-            }
-            if (layoutType != LayoutType.TAB_SWITCHER && mStartSurfaceSupplier.hasValue()) {
-                mStartSurfaceSupplier.get().removeStateChangeObserver(mStateObserver);
-            }
-        }
-        // Suspend the queue until browsing mode is visible.
-        @Override
-        public void onStartedShowing(@LayoutType int layoutType, boolean showToolbar) {
-            // TODO(https://crbug.com/1315679): remove #isStartSurfaceShowing and use
-            //  `layoutType != LayoutType.StartSurface` after StartSurface is
-            //  decoupled from "LayoutType.TabSwitcher".
-            if (!isTokenValid(mToken) && layoutType != LayoutType.BROWSING) {
-                if (layoutType == LayoutType.TAB_SWITCHER) { // This might be start surface.
-                    if (!isStartSurfaceShowing()) {
-                        mToken = suspendQueue();
-                    }
-                    if (mStartSurfaceSupplier.hasValue()) {
-                        mStartSurfaceSupplier.get().addStateChangeObserver(mStateObserver);
-                    }
-                } else {
-                    mToken = suspendQueue();
-                }
-            }
-        }
-    };
+    private final LayoutAndStartSurfaceObserver mLayoutAndStartSurfaceObserver =
+            new LayoutAndStartSurfaceObserver();
 
     private ModalDialogManagerObserver mModalDialogManagerObserver =
             new ModalDialogManagerObserver() {
@@ -188,6 +141,9 @@ public class ChromeMessageQueueMediator implements MessageQueueDelegate, UrlFocu
         mActivityLifecycleDispatcher = null;
         mCallbackController.destroy();
         mBrowserControlsManager.removeObserver(mBrowserControlsObserver);
+        if (mStartSurfaceSupplier.hasValue()) {
+            mStartSurfaceSupplier.get().removeStateChangeObserver(mLayoutAndStartSurfaceObserver);
+        }
         setLayoutStateProvider(null);
         setModalDialogManager(null);
         mActivityTabProvider = null;
@@ -248,7 +204,7 @@ public class ChromeMessageQueueMediator implements MessageQueueDelegate, UrlFocu
      */
     private void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
         if (mLayoutStateProvider != null) {
-            mLayoutStateProvider.removeObserver(mLayoutStateObserver);
+            mLayoutStateProvider.removeObserver(mLayoutAndStartSurfaceObserver);
         }
         mLayoutStateProvider = layoutStateProvider;
         if (layoutStateProvider == null) return;
@@ -258,7 +214,7 @@ public class ChromeMessageQueueMediator implements MessageQueueDelegate, UrlFocu
         if (mQueueController == null) {
             throw new IllegalStateException("setLayoutStateProvider() is called after destroy()");
         }
-        mLayoutStateProvider.addObserver(mLayoutStateObserver);
+        mLayoutStateProvider.addObserver(mLayoutAndStartSurfaceObserver);
     }
 
     private void setModalDialogManager(ModalDialogManager modalDialogManager) {
@@ -315,6 +271,52 @@ public class ChromeMessageQueueMediator implements MessageQueueDelegate, UrlFocu
         @VisibleForTesting
         Runnable getRunnableForTesting() {
             return mRunOnControlsFullyVisible;
+        }
+    }
+
+    class LayoutAndStartSurfaceObserver implements StartSurface.StateObserver, LayoutStateObserver {
+        private int mToken = TokenHolder.INVALID_TOKEN;
+        // This observer only handles the cases switching between Start surface homepage and grid
+        // tab switcher surface.
+        @Override
+        public void onStateChanged(int startSurfaceState, boolean shouldShowTabSwitcherToolbar) {
+            if (mLayoutStateProvider.getActiveLayoutType() != LayoutType.TAB_SWITCHER) return;
+            if (isStartSurfaceShowing() && isTokenValid(mToken)) {
+                resumeQueue(mToken);
+                mToken = TokenHolder.INVALID_TOKEN;
+            } else if (!isStartSurfaceShowing() && !isTokenValid(mToken)) {
+                mToken = suspendQueue();
+            }
+        }
+
+        @Override
+        public void onFinishedShowing(int layoutType) {
+            if (isTokenValid(mToken) && layoutType == LayoutType.BROWSING) {
+                resumeQueue(mToken);
+                mToken = TokenHolder.INVALID_TOKEN;
+            }
+            if (layoutType != LayoutType.TAB_SWITCHER && mStartSurfaceSupplier.hasValue()) {
+                mStartSurfaceSupplier.get().removeStateChangeObserver(this);
+            }
+        }
+        // Suspend the queue until browsing mode is visible.
+        @Override
+        public void onStartedShowing(@LayoutType int layoutType, boolean showToolbar) {
+            // TODO(https://crbug.com/1315679): remove #isStartSurfaceShowing and use
+            //  `layoutType != LayoutType.StartSurface` after StartSurface is
+            //  decoupled from "LayoutType.TabSwitcher".
+            if (!isTokenValid(mToken) && layoutType != LayoutType.BROWSING) {
+                if (layoutType == LayoutType.TAB_SWITCHER) { // This might be start surface.
+                    if (!isStartSurfaceShowing()) {
+                        mToken = suspendQueue();
+                    }
+                    if (mStartSurfaceSupplier.hasValue()) {
+                        mStartSurfaceSupplier.get().addStateChangeObserver(this);
+                    }
+                } else {
+                    mToken = suspendQueue();
+                }
+            }
         }
     }
 

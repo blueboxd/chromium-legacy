@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ bool PolicyErrorMap::HasFatalError(const std::string& policy) {
   });
 }
 
-std::u16string PolicyErrorMap::GetErrors(const std::string& policy) {
+std::u16string PolicyErrorMap::GetErrorMessages(const std::string& policy) {
   CheckReadyAndConvert();
   std::pair<const_iterator, const_iterator> range = map_.equal_range(policy);
   std::vector<base::StringPiece16> list;
@@ -180,7 +180,7 @@ std::u16string PolicyErrorMap::GetErrors(const std::string& policy) {
   return base::JoinString(list, u"\n");
 }
 
-std::vector<PolicyErrorMap::Data> PolicyErrorMap::GetErrorsMetadata(
+std::vector<PolicyErrorMap::Data> PolicyErrorMap::GetErrors(
     const std::string& policy) {
   CheckReadyAndConvert();
   std::pair<const_iterator, const_iterator> range = map_.equal_range(policy);

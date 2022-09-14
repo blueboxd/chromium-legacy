@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,10 @@ void MetadataWriter::AddUmaFeatures(const UMAFeature features[],
 
     for (size_t j = 0; j < feature.enum_ids_size; j++) {
       uma_feature->add_enum_ids(feature.accepted_enum_ids[j]);
+    }
+
+    for (size_t j = 0; j < feature.default_values_size; j++) {
+      uma_feature->add_default_values(feature.default_values[j]);
     }
   }
 }

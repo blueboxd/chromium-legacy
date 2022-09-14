@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,7 +271,7 @@ const base::Feature kAutofillEnableLabelPrecedenceForTurkishAddresses{
 // Surname.
 // TODO(crbug.com/1277480): Remove once launched.
 const base::Feature kAutofillEnableNameSurenameParsing{
-    "AutofillEnableNameSurenameParsing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillEnableNameSurenameParsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, the address profile deduplication logic runs after the browser
 // startup, once per chrome version.
@@ -465,7 +465,7 @@ const base::Feature kAutofillRemoveInaccessibleProfileValuesOnStartup{
 // TODO(crbug.com/1298424): Cleanup when launched.
 const base::Feature kAutofillRemoveInvalidPhoneNumberOnImport{
     "AutofillRemoveInvalidPhoneNumberOnImport",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether or not overall prediction are retrieved from the cache.
 const base::Feature kAutofillRetrieveOverallPredictionsFromCache{

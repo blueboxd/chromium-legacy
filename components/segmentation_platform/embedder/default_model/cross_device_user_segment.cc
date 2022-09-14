@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,24 +60,34 @@ constexpr std::pair<float, int> kDiscreteMappings[] = {
 
 // InputFeatures.
 
+constexpr std::array<float, 1> kCrossDeviceFeatureDefaultValue{0};
+
 constexpr std::array<MetadataWriter::UMAFeature, 4>
     kCrossDeviceUserUMAFeatures = {
         MetadataWriter::UMAFeature::FromValueHistogram(
             "Sync.DeviceCount2",
             28,
-            proto::Aggregation::LATEST_OR_DEFAULT),
+            proto::Aggregation::LATEST_OR_DEFAULT,
+            kCrossDeviceFeatureDefaultValue.size(),
+            kCrossDeviceFeatureDefaultValue.data()),
         MetadataWriter::UMAFeature::FromValueHistogram(
             "Sync.DeviceCount2.Phone",
             28,
-            proto::Aggregation::LATEST_OR_DEFAULT),
+            proto::Aggregation::LATEST_OR_DEFAULT,
+            kCrossDeviceFeatureDefaultValue.size(),
+            kCrossDeviceFeatureDefaultValue.data()),
         MetadataWriter::UMAFeature::FromValueHistogram(
             "Sync.DeviceCount2.Desktop",
             28,
-            proto::Aggregation::LATEST_OR_DEFAULT),
+            proto::Aggregation::LATEST_OR_DEFAULT,
+            kCrossDeviceFeatureDefaultValue.size(),
+            kCrossDeviceFeatureDefaultValue.data()),
         MetadataWriter::UMAFeature::FromValueHistogram(
             "Sync.DeviceCount2.Tablet",
             28,
-            proto::Aggregation::LATEST_OR_DEFAULT)};
+            proto::Aggregation::LATEST_OR_DEFAULT,
+            kCrossDeviceFeatureDefaultValue.size(),
+            kCrossDeviceFeatureDefaultValue.data())};
 
 // Any updates to these strings need to also update the field trials allowlist
 // in go/segmentation-field-trials-map.

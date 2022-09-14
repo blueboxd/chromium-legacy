@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,8 +200,6 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
   // as the |tracker_| instance variable that it supplies to them is used in
   // their destruction process.
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
-      const Mailbox& mailbox);
-  std::unique_ptr<GLTextureImageRepresentation> ProduceRGBEmulationGLTexture(
       const Mailbox& mailbox);
   std::unique_ptr<GLTexturePassthroughImageRepresentation>
   ProduceGLTexturePassthrough(const Mailbox& mailbox);

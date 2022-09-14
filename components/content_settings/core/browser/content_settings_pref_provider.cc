@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,20 +248,6 @@ bool PrefProvider::SetWebsiteSetting(
                            .expiration = constraints.expiration,
                            .session_model = constraints.session_model});
   return true;
-}
-
-base::Time PrefProvider::GetWebsiteSettingLastModified(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(prefs_);
-
-  if (!supports_type(content_type))
-    return base::Time();
-
-  return GetPref(content_type)
-      ->GetWebsiteSettingLastModified(primary_pattern, secondary_pattern);
 }
 
 bool PrefProvider::UpdateLastVisitTime(

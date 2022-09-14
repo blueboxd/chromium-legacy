@@ -754,6 +754,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_UNPIN_FOLDER_BUTTON_LABEL);
   SET_STRING("RENAME_BUTTON_LABEL", IDS_FILE_BROWSER_RENAME_BUTTON_LABEL);
   SET_STRING("SAVE_LABEL", IDS_FILE_BROWSER_SAVE_LABEL);
+  SET_STRING("SCANNING_LABEL", IDS_FILE_BROWSER_SCANNING_LABEL);
   SET_STRING("SEARCH_DRIVE_HTML", IDS_FILE_BROWSER_SEARCH_DRIVE_HTML);
   SET_STRING("SEARCH_NO_MATCHING_FILES_HTML",
              IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES_HTML);
@@ -1026,7 +1027,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
             crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->Set("PLUGIN_VM_ENABLED",
             plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
-  dict->Set("FILES_SWA", true);
   dict->Set("FILES_TRASH_ENABLED",
             base::FeatureList::IsEnabled(chromeos::features::kFilesTrash));
   dict->Set("DRIVE_DSS_PIN_ENABLED",

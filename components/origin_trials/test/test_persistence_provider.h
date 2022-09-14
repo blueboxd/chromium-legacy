@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,8 @@ class TestPersistenceProvider : public OriginTrialsPersistenceProvider {
       const url::Origin& origin) const override;
   void SavePersistentTrialTokens(
       const url::Origin& origin,
-      const base::flat_set<origin_trials::PersistedTrialToken> tokens) override;
+      const base::flat_set<origin_trials::PersistedTrialToken>& tokens)
+      override;
 
  private:
   std::map<url::Origin, base::flat_set<origin_trials::PersistedTrialToken>>

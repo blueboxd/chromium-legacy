@@ -1659,9 +1659,7 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-a
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-overflow-scroll.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/forced-break-tree-dump-only.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/page-break-avoid.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.html [ Skip ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/width-overflow.html [ Failure ]
@@ -1883,6 +1881,8 @@ crbug.com/1321114 paint/markers/suggestion-marker-basic.html [ Failure ]
 crbug.com/1205953 external/wpt/css/css-will-change/will-change-fixpos-cb-position-1.html [ Failure ]
 crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
 
+# lab color space not yet implemented
+crbug.com/1358565 external/wpt/css/css-images/gradient/gradient-eval-003.html [ Failure ]
 # color() function not implemented
 crbug.com/1068610 external/wpt/css/css-color/predefined-008.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/predefined-005.html [ Failure ]
@@ -1985,8 +1985,6 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-040.xht [ Failur
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-041.xht [ Failure ]
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failure ]
 crbug.com/1158554 external/wpt/css/css-conditional/at-supports-046.html [ Failure ]
-crbug.com/1255685 external/wpt/css/css-conditional/at-supports-font-format-001.html [ Failure ]
-crbug.com/1255685 external/wpt/css/css-conditional/at-supports-font-tech-001.html [ Failure ]
 
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
@@ -2421,6 +2419,7 @@ crbug.com/377696 printing/setPrinting.html [ Failure ]
 crbug.com/1311165 printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
 crbug.com/1121942 printing/fixedpos-in-multicol.html [ Failure ]
 crbug.com/1121942 printing/monolithic-at-page-block-end-horizontal-tb.html [ Failure ]
+crbug.com/1121942 printing/page-break-avoid.html [ Failure ]
 
 crbug.com/1204498 external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure Pass ]
 crbug.com/1223681 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure Pass Timeout ]
@@ -5172,8 +5171,6 @@ crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-tim
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-descriptors-writing-mode-rl.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-descriptors.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-quirks-mode.html [ Failure ]
-crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-writing-mode-rl.html [ Failure ]
-crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-frame-size-changed.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-inline-orientation.html [ Failure ]
 crbug.com/1279648 [ Mac12 ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-iframe.html [ Failure ]
@@ -7112,9 +7109,10 @@ crbug.com/1356118 [ Linux ] external/wpt/html/anonymous-iframe/local-storage-ini
 crbug.com/1356118 [ Linux ] virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 crbug.com/1356118 [ Linux ] virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/local-storage-initial-empty-document.tentative.https.window.html [ Failure Pass ]
 
-# Temporaruly disable to land IndexedDB frontend changes
-crbug.com/1296584 http/tests/devtools/indexeddb/database-names.js [ Skip ]
-crbug.com/1296584 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]
+# Sheriff 2022-08-30
+crbug.com/1357621 [ Linux ] external/wpt/webauthn/getcredential-abort.https.html [ Failure Pass Timeout ]
+crbug.com/1357917 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default.html [ Failure Pass ]
+crbug.com/1357917 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-default-writing-mode-rl.html [ Failure Pass ]
 
 crbug.com/1358051 external/wpt/longtask-timing/containerTypes.html [ Failure Pass ]
 
@@ -7139,6 +7137,11 @@ crbug.com/1356664 [ Debug Linux ] virtual/no-alloc-direct-call/fast/canvas/disco
 
 # Disable scrolling flake on win
 crbug.com/1359541 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-custom-scrollbar.html [ Failure Pass Timeout ]
+
+# Disable devtool flake on Mac11,12,10.15
+crbug.com/1363259 [ Mac11 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
+crbug.com/1363259 [ Mac12 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
+crbug.com/1363259 [ Mac10.15 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]

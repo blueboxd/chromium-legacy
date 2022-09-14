@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6682,33 +6682,8 @@ GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
   DCHECK(mailbox.IsSharedImage());
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, GL_NONE,
+  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id,
                                                              mailbox_data);
-  if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::OrderingBarrier();
-  CheckGLError();
-  return client_id;
-}
-
-GLuint
-GLES2Implementation::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-    const GLbyte* mailbox_data,
-    GLenum internalformat) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG(
-      "[" << GetLogPrefix()
-          << "] CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM("
-          << static_cast<const void*>(mailbox_data) << ", " << internalformat
-          << ")");
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
-  DCHECK(mailbox.Verify())
-      << "CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM was "
-         "passed an invalid mailbox.";
-  DCHECK(mailbox.IsSharedImage());
-  GLuint client_id;
-  GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(
-      client_id, internalformat, mailbox_data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::OrderingBarrier();
   CheckGLError();

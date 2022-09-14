@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,6 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // take a ref on the mailbox, releasing it when the representation is
   // destroyed.
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
-      const Mailbox& mailbox,
-      MemoryTypeTracker* ref);
-  std::unique_ptr<GLTextureImageRepresentation> ProduceRGBEmulationGLTexture(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
   std::unique_ptr<GLTexturePassthroughImageRepresentation>

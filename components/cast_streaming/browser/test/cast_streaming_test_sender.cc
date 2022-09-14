@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,9 @@ class CastStreamingTestSender::SenderObserver final
 
 CastStreamingTestSender::CastStreamingTestSender()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      environment_(&openscreen::Clock::now, &task_runner_) {}
+      environment_(&openscreen::Clock::now,
+                   &task_runner_,
+                   openscreen::IPEndpoint::kAnyV6()) {}
 
 CastStreamingTestSender::~CastStreamingTestSender() = default;
 

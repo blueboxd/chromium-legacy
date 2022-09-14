@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -403,7 +403,7 @@ TEST_F(SegmentSelectorTest,
   InitializeMetadataForSegment(segment_id1, mapping1, 3);
 
   // Set up a selected segment in prefs.
-  SelectedSegment from_history(segment_id0);
+  SelectedSegment from_history(segment_id0, 3);
   auto prefs_moved = std::make_unique<TestSegmentationResultPrefs>();
   prefs_ = prefs_moved.get();
   prefs_->selection = from_history;
@@ -460,9 +460,10 @@ TEST_F(SegmentSelectorTest, UpdateSelectedSegment) {
   ASSERT_EQ(segment_id2, prefs_->selection->segment_id);
 
   // Update the selected segment to |segment_id|.
-  segment_selector_->UpdateSelectedSegment(segment_id);
+  segment_selector_->UpdateSelectedSegment(segment_id, 3);
   ASSERT_TRUE(prefs_->selection.has_value());
   ASSERT_EQ(segment_id, prefs_->selection->segment_id);
+  EXPECT_EQ(3, *prefs_->selection->rank);
 }
 
 TEST_F(SegmentSelectorTest, SubsegmentRecording) {
@@ -503,7 +504,7 @@ TEST_F(SegmentSelectorTest, SubsegmentRecording) {
       config_->segmentation_key + kSubsegmentDiscreteMappingSuffix);
 
   // Set up a selected segment in prefs.
-  SelectedSegment from_history(segment_id0);
+  SelectedSegment from_history(segment_id0, 0);
   auto prefs_moved = std::make_unique<TestSegmentationResultPrefs>();
   prefs_ = prefs_moved.get();
   prefs_->selection = from_history;

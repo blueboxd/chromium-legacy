@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,10 +89,8 @@ std::string WidevineKeySystemInfo::GetBaseKeySystemName() const {
 bool WidevineKeySystemInfo::IsSupportedKeySystem(
     const std::string& key_system) const {
 #if BUILDFLAG(IS_WIN)
-  if (key_system == kWidevineExperimentKeySystem &&
-      base::FeatureList::IsEnabled(
-          media::kHardwareSecureDecryptionExperiment)) {
-    return true;
+  if (is_experimental_) {
+    return key_system == kWidevineExperimentKeySystem;
   }
 #endif  // BUILDFLAG(IS_WIN)
 

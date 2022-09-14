@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,8 @@ export function categoryTestSuite(category) {
 
     test('category group elements should be rendered.', () => {
       const numGroups =
-          emojiPicker.categoriesData.filter(item => item.category === category)
+          emojiPicker.categoriesData
+              .filter(item => item.category === category && !item.searchOnly)
               .length;
       const numRenderedGroups =
           emojiPicker.shadowRoot
@@ -143,7 +144,7 @@ export function categoryTestSuite(category) {
               categoryGroupSelector(category));
 
           const data = emojiPicker.categoriesData.filter(
-              item => item.category === category);
+              item => item.category === category && !item.searchOnly);
           const groupElements = emojiPicker.categoriesGroupElements.filter(
               item => item.category === category);
 

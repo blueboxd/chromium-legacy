@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.messages;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -249,5 +250,39 @@ public class ChromeMessageQueueMediatorTest {
         verify(mMessageDispatcher).resume(EXPECTED_TOKEN);
         Assert.assertEquals("mUrlFocusToken should be invalidated.", TokenHolder.INVALID_TOKEN,
                 mMediator.getUrlFocusTokenForTesting());
+    }
+
+    /**
+     * Test observers are removed when mediator is destroyed on tab switcher mode.
+     */
+    @Test
+    public void testDestroyOnTabSwitcher() {
+        final ArgumentCaptor<LayoutStateObserver> observer =
+                ArgumentCaptor.forClass(LayoutStateObserver.class);
+        final ArgumentCaptor<StartSurface.StateObserver> stateObserver =
+                ArgumentCaptor.forClass(StartSurface.StateObserver.class);
+        doNothing().when(mLayoutStateProvider).addObserver(observer.capture());
+        doNothing().when(mStartSurface).addStateChangeObserver(stateObserver.capture());
+        initMediator();
+        observer.getValue().onStartedShowing(LayoutType.TAB_SWITCHER, false);
+        mMediator.destroy();
+        verify(mLayoutStateProvider).removeObserver(observer.getValue());
+        verify(mStartSurface).removeStateChangeObserver(stateObserver.getValue());
+    }
+
+    /**
+     * Test observers are removed when mediator is destroyed on browsing mode.
+     */
+    @Test
+    public void testDestroyOnBrowsing() {
+        final ArgumentCaptor<LayoutStateObserver> observer =
+                ArgumentCaptor.forClass(LayoutStateObserver.class);
+        final ArgumentCaptor<StartSurface.StateObserver> stateObserver =
+                ArgumentCaptor.forClass(StartSurface.StateObserver.class);
+        doNothing().when(mLayoutStateProvider).addObserver(observer.capture());
+        initMediator();
+        mMediator.destroy();
+        verify(mLayoutStateProvider).removeObserver(observer.getValue());
+        verify(mStartSurface, never()).addStateChangeObserver(any());
     }
 }

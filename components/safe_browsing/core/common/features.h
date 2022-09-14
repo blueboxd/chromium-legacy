@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,6 +182,9 @@ extern const base::Feature kVisualFeaturesSizes;
 
 // Controls whether we send visual features in CSPP pings.
 extern const base::Feature kVisualFeaturesInCsppPings;
+
+// Controls whether we send visual features in password reuse pings.
+extern const base::Feature kVisualFeaturesForReusePings;
 
 base::Value::List GetFeatureStatusList();
 

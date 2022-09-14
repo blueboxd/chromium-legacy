@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,24 @@ class ScreenAIService : public mojom::ScreenAIService,
   void BindMainContentExtractor(
       mojo::PendingReceiver<mojom::Screen2xMainContentExtractor>
           main_content_extractor) override;
+
+  // Calls |init_function_| and returns the result.
+  // Library function calls are isloated to have specific compiler directives.
+  bool CallLibraryInitFunction();
+
+  // Calls |annotate_function_| and returns the result.
+  // Library function calls are isloated to have specific compiler directives.
+  bool CallLibraryAnnotateFunction(const SkBitmap& image,
+                                   char*& annotation_proto,
+                                   uint32_t& annotation_proto_length);
+
+  // Calls |extract_main_content_function_| and returns the result.
+  // Library function calls are isloated to have specific compiler directives.
+  bool CallLibraryExtractMainContentFunction(
+      const char* serialized_snapshot,
+      const uint32_t serialized_snapshot_length,
+      int32_t*& node_ids,
+      uint32_t& nodes_count);
 
   // Initializes the pipelines.
   // `models_folder` is a null terminated string pointing to the folder that

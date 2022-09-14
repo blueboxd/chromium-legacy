@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
@@ -73,7 +74,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -310,11 +310,14 @@ namespace {
   self.feedMetricsRecorder.followDelegate = self;
 
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
+  self.headerController.isGoogleDefaultSearchEngine =
+      [self isGoogleDefaultSearchEngine];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.headerController.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
-                     FakeboxFocuser>>(self.browser->GetCommandDispatcher());
+                     FakeboxFocuser, LensCommands>>(
+          self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self;
   self.headerController.delegate = self.ntpMediator;
 
@@ -345,9 +348,6 @@ namespace {
 
   self.contentSuggestionsCoordinator =
       [self createContentSuggestionsCoordinator];
-
-  self.headerController.promoCanShow =
-      [self.contentSuggestionsCoordinator notificationPromo]->CanShow();
 
   // Fetches feed header and conditionally fetches feed. Feed can only be
   // visible if feed header is visible.

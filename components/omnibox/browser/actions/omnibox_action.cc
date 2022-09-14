@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,5 +123,6 @@ void OmniboxAction::OpenURL(OmniboxAction::ExecutionContext& context,
            /*match_type=*/AutocompleteMatchType::URL_WHAT_YOU_TYPED,
            context.match_selection_timestamp_,
            /*destination_url_entered_without_scheme=*/false, u"",
-           AutocompleteMatch(), AutocompleteMatch());
+           AutocompleteMatch(), AutocompleteMatch(),
+           IDNA2008DeviationCharacter::kNone);
 }

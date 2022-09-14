@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,18 @@ ContentSetting TestUtils::GetContentSetting(const ProviderInterface* provider,
   return ValueToContentSetting(
       GetContentSettingValue(provider, primary_url, secondary_url, content_type,
                              include_incognito, metadata));
+}
+
+// static
+base::Time TestUtils::GetLastModified(
+    const content_settings::ProviderInterface* provider,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType type) {
+  content_settings::RuleMetaData metadata;
+  content_settings::TestUtils::GetContentSetting(
+      provider, primary_url, secondary_url, type, false, &metadata);
+  return metadata.last_modified;
 }
 
 // static

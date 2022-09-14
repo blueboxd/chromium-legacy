@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,10 +95,6 @@ class OriginIdentifierValueMap {
   const base::Value* GetValue(const GURL& primary_url,
                               const GURL& secondary_url,
                               ContentSettingsType content_type) const;
-
-  base::Time GetLastModified(const ContentSettingsPattern& primary_pattern,
-                             const ContentSettingsPattern& secondary_pattern,
-                             ContentSettingsType content_type) const;
 
   // Sets the |value| for the given |primary_pattern|, |secondary_pattern|,
   // |content_type| tuple. The caller can also store a

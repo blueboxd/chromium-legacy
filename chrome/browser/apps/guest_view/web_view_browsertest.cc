@@ -3316,37 +3316,37 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ConsoleMessage) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/download", "guest-loaded");
-  auto* guest_web_contents =
-      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
-  ASSERT_TRUE(guest_web_contents);
+  auto* guest_view_base =
+      GetGuestViewManager()->WaitForSingleGuestViewCreated();
+  ASSERT_TRUE(guest_view_base);
 
+  auto* guest_render_frame_host = guest_view_base->GetGuestMainFrame();
   std::unique_ptr<content::DownloadTestObserver> completion_observer(
       new content::DownloadTestObserverTerminal(
-          guest_web_contents->GetBrowserContext()->GetDownloadManager(), 1,
+          guest_render_frame_host->GetBrowserContext()->GetDownloadManager(), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.
-  content::WebContentsDelegate* delegate = guest_web_contents->GetDelegate();
   std::unique_ptr<MockDownloadWebContentsDelegate> mock_delegate(
-      new MockDownloadWebContentsDelegate(delegate));
-  guest_web_contents->SetDelegate(mock_delegate.get());
+      new MockDownloadWebContentsDelegate(guest_view_base));
+  guest_view_base->web_contents()->SetDelegate(mock_delegate.get());
 
   // Start test.
   // 1. Guest requests a download that its embedder denies.
-  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+  EXPECT_TRUE(content::ExecuteScript(guest_render_frame_host,
                                      "startDownload('download-link-1')"));
   mock_delegate->WaitForCanDownload(false);  // Expect to not allow.
   mock_delegate->Reset();
 
   // 2. Guest requests a download that its embedder allows.
-  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+  EXPECT_TRUE(content::ExecuteScript(guest_render_frame_host,
                                      "startDownload('download-link-2')"));
   mock_delegate->WaitForCanDownload(true);  // Expect to allow.
   mock_delegate->Reset();
 
   // 3. Guest requests a download that its embedder ignores, this implies deny.
-  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+  EXPECT_TRUE(content::ExecuteScript(guest_render_frame_host,
                                      "startDownload('download-link-3')"));
   mock_delegate->WaitForCanDownload(false);  // Expect to not allow.
   completion_observer->WaitForFinished();
@@ -4272,9 +4272,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_WebViewInBackgroundPage) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
   LoadAppWithGuest("web_view/simple");
 
-  ASSERT_TRUE(GetGuestWebContents());
+  ASSERT_TRUE(GetGuestView());
   extensions::WebViewGuest* guest =
-      extensions::WebViewGuest::FromWebContents(GetGuestWebContents());
+      extensions::WebViewGuest::FromGuestViewBase(GetGuestView());
   ASSERT_TRUE(guest->allow_transparency());
   ASSERT_TRUE(guest->allow_scaling());
 }
@@ -4817,17 +4817,16 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
   content::RenderFrameSubmissionObserver embedder_frame_observer(
       embedder_contents);
 
-  std::vector<content::WebContents*> guest_web_contents_list;
+  std::vector<content::RenderFrameHost*> guest_rfh_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
-  GetGuestViewManager()->DeprecatedGetGuestWebContentsList(
-      &guest_web_contents_list);
-  ASSERT_EQ(1u, guest_web_contents_list.size());
+  GetGuestViewManager()->GetGuestRenderFrameHostList(&guest_rfh_list);
+  ASSERT_EQ(1u, guest_rfh_list.size());
 
-  content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
+  content::RenderFrameHost* guest_rfh = guest_rfh_list[0];
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_rfh);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
-  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+  gfx::Rect guest_rect = guest_rfh->GetView()->GetViewBounds();
 
   guest_rect.set_x(guest_rect.x() - embedder_rect.x());
   guest_rect.set_y(guest_rect.y() - embedder_rect.y());
@@ -4866,7 +4865,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
   // Send scroll gesture to guest and verify embedder scrolls.
   // Perform a scroll gesture of the same magnitude, but in the opposite
   // direction and centered over the GuestView this time.
-  guest_rect = guest_contents->GetContainerBounds();
+  guest_rect = guest_rfh->GetView()->GetViewBounds();
   embedder_rect = embedder_contents->GetContainerBounds();
   guest_rect.set_x(guest_rect.x() - embedder_rect.x());
   guest_rect.set_y(guest_rect.y() - embedder_rect.y());

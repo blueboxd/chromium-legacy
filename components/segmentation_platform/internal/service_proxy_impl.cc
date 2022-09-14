@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <memory>
 #include <sstream>
 
-#include "base/callback_helpers.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
@@ -161,7 +160,7 @@ void ServiceProxyImpl::SetSelectedSegment(const std::string& segmentation_key,
   }
   if (segment_id != SegmentId::OPTIMIZATION_TARGET_UNKNOWN) {
     auto& selector = segment_selectors_->at(segmentation_key);
-    selector->UpdateSelectedSegment(segment_id);
+    selector->UpdateSelectedSegment(segment_id, 0);
   }
 }
 

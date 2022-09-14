@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -267,6 +267,26 @@ INSTANTIATE_TEST_SUITE_P(
                             .multi_word_suggestions = true,
                             .personal_info_suggestions = true,
                             .diacritic_suggestions = true}},
+        {"DocsWithFullPath",
+         /* url=*/
+         "https://docs.google.com/document/d/"
+         "1lDx4FoCA30OOXc0O93ax52u-12k9xp4a08pk1V3msNc/edit",
+         /* app_id=*/"",
+         /* arc_package_name=*/"",
+         EnabledSuggestions{.emoji_suggestions = false,
+                            .multi_word_suggestions = false,
+                            .personal_info_suggestions = false,
+                            .diacritic_suggestions = false}},
+        {"SlidesWithFullPath",
+         /* url=*/
+         "https://docs.google.com/presentation/d/"
+         "1sIuJA8CW9PthDMlJ9YLo7J2txlfQsauWVtZP44IDWn4/edit?parameters=1312312",
+         /* app_id=*/"",
+         /* arc_package_name=*/"",
+         EnabledSuggestions{.emoji_suggestions = false,
+                            .multi_word_suggestions = false,
+                            .personal_info_suggestions = false,
+                            .diacritic_suggestions = false}},
         {"SystemTextApp",
          /* url=*/"chrome-extension://mmfbcljfglbokpmkimbfghdkjmjhdgbg",
          /* app_id=*/"mmfbcljfglbokpmkimbfghdkjmjhdgbg",
@@ -274,7 +294,7 @@ INSTANTIATE_TEST_SUITE_P(
          EnabledSuggestions{.emoji_suggestions = true,
                             .multi_word_suggestions = true,
                             .personal_info_suggestions = true,
-                            .diacritic_suggestions = true}},
+                            .diacritic_suggestions = false}},
         {"ChromeSSHApp",
          /* url=*/"chrome-extension://iodihamcpbpeioajjeobimgagajmlibd",
          /* app_id=*/"iodihamcpbpeioajjeobimgagajmlibd",

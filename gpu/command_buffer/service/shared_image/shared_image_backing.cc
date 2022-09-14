@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,11 +102,6 @@ bool SharedImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   return false;
 }
 
-bool SharedImageBacking::ReadbackToMemory(SkPixmap& pixmap) {
-  NOTREACHED();
-  return false;
-}
-
 bool SharedImageBacking::PresentSwapChain() {
   return false;
 }
@@ -136,12 +131,6 @@ void SharedImageBacking::OnMemoryDump(
 std::unique_ptr<GLTextureImageRepresentation>
 SharedImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker) {
-  return nullptr;
-}
-
-std::unique_ptr<GLTextureImageRepresentation>
-SharedImageBacking::ProduceRGBEmulationGLTexture(SharedImageManager* manager,
-                                                 MemoryTypeTracker* tracker) {
   return nullptr;
 }
 
@@ -199,7 +188,7 @@ SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
 }
 #endif
 
-void SharedImageBacking::SetNotRefCounted() {
+void SharedImageBacking::SetNotReferencedCounted() {
   DCHECK(!HasAnyRefs());
   is_ref_counted_ = false;
 }

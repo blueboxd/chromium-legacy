@@ -749,29 +749,12 @@ if (is_android) {
 } else if (is_fuchsia) {
   group("telemetry_gpu_integration_test_fuchsia") {
     testonly = true
-    data = [
-      "//content/test/gpu/run_gpu_integration_test_fuchsia.py",
-      "//content/test/gpu/fuchsia_util.py",
-    ]
+    data = [ "//content/test/gpu/run_gpu_integration_test_fuchsia.py" ]
     data_deps = [
+      "//content/test:fuchsia_telemetry_test_data",
       "//content/test:telemetry_gpu_integration_test_support",
       "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
-
-    # TODO(crbug.com/1310086): Move WebEngine-specific cases in //fuchsia_web.
-    if (fuchsia_browser_type == "web_engine_shell") {
-      data += [
-        "$root_gen_dir/package_metadata/cast_streaming_shell.meta",
-        "$root_gen_dir/package_metadata/web_engine_shell.meta",
-        "$root_gen_dir/package_metadata/web_engine_with_webui.meta",
-      ]
-      data_deps += [
-        "//fuchsia_web/shell",
-        "//fuchsia_web/webengine:web_engine_with_webui_installer",
-      ]
-    }
-    data += [ "$root_gen_dir/package_metadata/chrome.meta" ]
-    data_deps += [ "//chrome/app:chrome_fuchsia" ]
   }
 } else {
   group("telemetry_gpu_integration_test") {
@@ -3197,7 +3180,7 @@ if (!is_android) {
           "../browser/chromeos/extensions/wm/wm_desks_private_apitest.cc",
           "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest_chromeos.cc",
           "../browser/extensions/api/crash_report_private/crash_report_private_apitest.cc",
-          "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
+          "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_ash_apitest.cc",
           "../browser/extensions/api/enterprise_networking_attributes/enterprise_networking_attributes_ash_apitest.cc",
           "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
           "../browser/extensions/api/file_manager/file_browser_handler_api_ash_test.cc",
@@ -3313,6 +3296,7 @@ if (!is_android) {
         "../browser/ui/views/certificate_selector_dialog_browsertest.cc",
         "../browser/ui/views/collected_cookies_views_browsertest.cc",
         "../browser/ui/views/commerce/ntp_discount_consent_dialog_view_browsertest.cc",
+        "../browser/ui/views/commerce/price_tracking_icon_view_browsertest.cc",
         "../browser/ui/views/desktop_capture/desktop_media_picker_views_browsertest.cc",
         "../browser/ui/views/extensions/extension_install_blocked_dialog_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc",
@@ -3610,6 +3594,8 @@ if (!is_android) {
         "../browser/ash/dbus/proxy_resolution_service_provider_browsertest.cc",
         "../browser/ash/display/display_prefs_browsertest.cc",
         "../browser/ash/display/quirks_browsertest.cc",
+        "../browser/ash/drive/drive_integration_service_browser_test_base.cc",
+        "../browser/ash/drive/drive_integration_service_browser_test_base.h",
         "../browser/ash/drive/drive_integration_service_browsertest.cc",
         "../browser/ash/file_manager/external_filesystem_apitest.cc",
         "../browser/ash/file_manager/file_manager_browsertest.cc",
@@ -3950,6 +3936,7 @@ if (!is_android) {
         "../browser/ui/app_list/chrome_app_list_item_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ui/app_list/search/files/drive_search_browsertest.cc",
+        "../browser/ui/app_list/search/files/file_suggest_keyed_service_browsertest.cc",
         "../browser/ui/app_list/search/help_app_search_browsertest.cc",
         "../browser/ui/app_list/search/test/app_list_search_test_helper.cc",
         "../browser/ui/app_list/search/test/app_list_search_test_helper.h",
@@ -4259,6 +4246,7 @@ if (!is_android) {
         "//chromeos/login/login_state:test_support",
         "//chromeos/process_proxy",
         "//chromeos/services/machine_learning/public/cpp:stub",
+        "//chromeos/services/network_config:network_config",
         "//chromeos/services/tts",
         "//chromeos/system",
         "//chromeos/ui/base",
@@ -4743,6 +4731,7 @@ if (is_chromeos_lacros) {
       "../browser/chromeos/extensions/login_screen/login_screen_storage/login_screen_storage_apitest.cc",
       "../browser/chromeos/extensions/wallpaper_apitest.cc",
       "../browser/chromeos/tablet_mode/tablet_mode_page_behavior_browsertest.cc",
+      "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_lacros_apitest.cc",
       "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       "../browser/extensions/api/preference/preference_api_lacros_browsertest.cc",
       "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,9 @@ CSVPasswordToCredentialUIEntry(const CSVPassword& csv_password,
 
   base::expected<GURL, std::string> url = csv_password.GetURL();
 
+  if (csv_password.GetParseStatus() != CSVPassword::Status::kOK)
+    return MakeError(ImportEntry::Status::UNKNOWN_ERROR);
+
   if (csv_password.GetPassword().empty())
     return MakeError(ImportEntry::Status::MISSING_PASSWORD);
 
@@ -121,9 +124,6 @@ CSVPasswordToCredentialUIEntry(const CSVPassword& csv_password,
 
   if (csv_password.GetUsername().length() > 1000)
     return MakeError(ImportEntry::Status::LONG_USERNAME);
-
-  if (csv_password.GetParseStatus() != CSVPassword::Status::kOK)
-    return MakeError(ImportEntry::Status::UNKNOWN_ERROR);
 
   DCHECK(url.has_value());
   return password_manager::CredentialUIEntry(csv_password, store);

@@ -19,6 +19,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_database_helper.h"
 #include "content/browser/first_party_sets/first_party_sets_loader.h"
@@ -31,6 +32,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
+
+class BrowserContext;
 
 // Class FirstPartySetsHandlerImpl is a singleton, it allows an embedder to
 // provide First-Party Sets inputs from custom sources, then parses/merges the
@@ -81,11 +84,18 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
 
   // FirstPartySetsHandler
   bool IsEnabled() const override;
-  void SetPublicFirstPartySets(base::File sets_file) override;
+  void SetPublicFirstPartySets(const base::Version& version,
+                               base::File sets_file) override;
   void ResetForTesting() override;
   void GetCustomizationForPolicy(
       const base::Value::Dict& policy,
       base::OnceCallback<void(PolicyCustomization)> callback) override;
+  // TODO(shuuran@chromium.org): Implement the code to clear site state.
+  void ClearSiteDataOnChangedSetsForContext(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+      const std::string& browser_context_id,
+      const PolicyCustomization* policy_customization,
+      base::OnceClosure callback) override;
 
   // Sets whether FPS is enabled (for testing).
   void SetEnabledForTesting(bool enabled) {
@@ -99,8 +109,8 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   }
 
   void GetPersistedPublicSetsForTesting(
-      base::OnceCallback<void(FirstPartySetsHandlerImpl::FlattenedSets)>
-          callback);
+      base::OnceCallback<void(
+          absl::optional<FirstPartySetsHandlerImpl::FlattenedSets>)> callback);
 
   // Computes information needed by the FirstPartySetsAccessDelegate in order
   // to update the browser's list of First-Party Sets to respect a profile's
@@ -131,9 +141,6 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   // Must be called after the list has been initialized.
   net::PublicSets GetSetsSync() const;
 
-  // TODO(shuuran@chromium.org): Implement the code to clear site state.
-  void ClearSiteDataOnChangedSets() const;
-
   // Parses the policy and computes the PolicyCustomization that represents the
   // changes needed to apply `policy` to `sets_`.
   PolicyCustomization GetCustomizationForPolicyInternal(
@@ -147,6 +154,10 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   // This is nullopt until all of the required inputs have been received.
   absl::optional<net::PublicSets> public_sets_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // The version of the public First-Party Sets. This is nullopt until the
+  // `SetPublicFirstPartySets()` is called.
+  absl::optional<base::Version> version_;
 
   bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_);
   bool embedder_will_provide_public_sets_ GUARDED_BY_CONTEXT(sequence_checker_);

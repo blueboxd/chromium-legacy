@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2021 The Chromium Authors. All rights reserved.
-     Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file. -->
+<!--
+Copyright 2021 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 
 <resources>
 
@@ -9,6 +11,8 @@
     <dimen name="message_banner_radius">12dp</dimen>
     <dimen name="message_banner_vertical_padding">12dp</dimen>
     <dimen name="message_banner_elevation">6dp</dimen>
+    <!-- For messages below the front messages, used in stacking animation. -->
+    <dimen name="message_banner_back_elevation">5dp</dimen>
     <!-- Min width to ensure the min touchable size. -->
     <dimen name="message_banner_button_width">44dp</dimen>
     <dimen name="message_primary_button_max_width">100dp</dimen>

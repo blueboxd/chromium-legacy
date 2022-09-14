@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,29 +148,6 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
                   "representation from an incompatible mailbox.";
-    return nullptr;
-  }
-
-  return representation;
-}
-
-std::unique_ptr<GLTextureImageRepresentation>
-SharedImageManager::ProduceRGBEmulationGLTexture(const Mailbox& mailbox,
-                                                 MemoryTypeTracker* tracker) {
-  CALLED_ON_VALID_THREAD();
-
-  AutoLock autolock(this);
-  auto found = images_.find(mailbox);
-  if (found == images_.end()) {
-    LOG(ERROR) << "SharedImageManager::ProduceRGBEmulationGLTexture: Trying to "
-                  "produce a representation from a non-existent mailbox.";
-    return nullptr;
-  }
-
-  auto representation = (*found)->ProduceRGBEmulationGLTexture(this, tracker);
-  if (!representation) {
-    LOG(ERROR) << "SharedImageManager::ProduceRGBEmulationGLTexture: Trying to "
-                  "produce a representation from an incompatible mailbox.";
     return nullptr;
   }
 

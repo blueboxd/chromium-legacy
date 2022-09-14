@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -583,6 +583,12 @@ void AccountManagerFacadeImpl::OnAuthErrorChanged(
 
   for (auto& observer : observer_list_) {
     observer.OnAuthErrorChanged(maybe_account_key.value(), maybe_error.value());
+  }
+}
+
+void AccountManagerFacadeImpl::OnSigninDialogClosed() {
+  for (auto& observer : observer_list_) {
+    observer.OnSigninDialogClosed();
   }
 }
 

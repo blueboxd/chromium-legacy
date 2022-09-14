@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,10 @@ class GuestView : public GuestViewBase {
 
   static T* FromWebContents(const content::WebContents* contents) {
     return AsDerivedGuest(GuestViewBase::FromWebContents(contents));
+  }
+
+  static T* FromGuestViewBase(GuestViewBase* guest_view_base) {
+    return AsDerivedGuest(guest_view_base);
   }
 
   static T* FromFrameID(int render_process_id, int render_frame_id) {

@@ -4,16 +4,17 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/bind.h"
-#include "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/bind.h"
+#import "base/ios/ios_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -21,12 +22,13 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey/chrome_xcui_actions.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/element_selector.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/http_request.h"
+#import "net/test/embedded_test_server/http_response.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -201,11 +203,11 @@ void FocusFakebox() {
                                    IDS_IOS_CONTENT_CONTEXT_COPYIMAGE)]
       performAction:grey_tap()];
 
-  GREYCondition* copyCondition = [GREYCondition
-      conditionWithName:@"Image copied condition"
-                  block:^BOOL {
-                    return [UIPasteboard.generalPasteboard hasImages];
-                  }];
+  GREYCondition* copyCondition =
+      [GREYCondition conditionWithName:@"Image copied condition"
+                                 block:^BOOL {
+                                   return [ChromeEarlGrey pasteboardHasImages];
+                                 }];
   // Wait for copy to happen or timeout after 5 seconds.
   GREYAssertTrue([copyCondition waitWithTimeout:5], @"Copying image failed");
 }
@@ -336,6 +338,10 @@ void FocusFakebox() {
 // text in the clipboard and is starting a search.
 - (void)testOmniboxKeyboardAccessoryPasteTextToSearch {
   if (@available(iOS 16, *)) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{kOmniboxKeyboardPasteButton}
+                                    disabled:{}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
     FocusFakebox();
     NSString* textToSearch = @"TextToCopy";
     [ChromeEarlGrey copyTextToPasteboard:textToSearch];
@@ -353,6 +359,10 @@ void FocusFakebox() {
 // link in the clipboard and is visiting the link.
 - (void)testOmniboxKeyboardAccessoryPasteURLToSearch {
   if (@available(iOS 16, *)) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{kOmniboxKeyboardPasteButton}
+                                    disabled:{}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
     FocusFakebox();
     NSString* URL =
         base::SysUTF8ToNSString(self.testServer->GetURL(kPage1URL).spec());
@@ -369,6 +379,10 @@ void FocusFakebox() {
 // image in the clipboard and is starting an image search.
 - (void)testOmniboxKeyboardAccessoryPasteImageToSearch {
   if (@available(iOS 16, *)) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{kOmniboxKeyboardPasteButton}
+                                    disabled:{}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
     [self copyImageIntoClipboard];
 
     // Wait for the context menu to dismiss, so the omnibox can be tapped.

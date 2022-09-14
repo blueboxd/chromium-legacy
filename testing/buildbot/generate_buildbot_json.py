@@ -548,7 +548,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
           |test_config| is for.
     """
     substituted_array = []
-    for arg in test_config.get('args', []):
+    original_args = test_config.get('args', [])
+    for arg in original_args:
       if arg.startswith(magic_substitutions.MAGIC_SUBSTITUTION_PREFIX):
         function = arg.replace(
             magic_substitutions.MAGIC_SUBSTITUTION_PREFIX, '')
@@ -561,7 +562,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
               'Magic substitution function %s does not exist' % function)
       else:
         substituted_array.append(arg)
-    if substituted_array:
+    if substituted_array != original_args:
       test_config['args'] = self.maybe_fixup_args_array(substituted_array)
 
   def dictionary_merge(self, a, b, path=None, update=True):
@@ -1593,16 +1594,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         bot_names.add(l[l.rindex('/') + 1:l.rindex('"')])
     return bot_names
 
-  def get_builders_that_do_not_actually_exist(self):
-    # Some of the bots on the chromium.fyi waterfall in particular
-    # are defined only to be mirrored into trybots, and don't actually
-    # exist on any of the waterfalls or consoles.
-    return [
-        # chromium.fyi
-        'linux-blink-optional-highdpi-rel-dummy',
-        'mac11.0-blink-rel-dummy',
-    ]
-
   def get_internal_waterfalls(self):
     # Similar to get_builders_that_do_not_actually_exist above, but for
     # waterfalls defined in internal configs.
@@ -1623,7 +1614,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
     # All bots should exist.
     bot_names = self.get_valid_bot_names()
-    builders_that_dont_exist = self.get_builders_that_do_not_actually_exist()
     if bot_names is not None:
       internal_waterfalls = self.get_internal_waterfalls()
       for waterfall in self.waterfalls:
@@ -1631,8 +1621,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         if waterfall['name'] in internal_waterfalls:
           continue  # pragma: no cover
         for bot_name in waterfall['machines']:
-          if bot_name in builders_that_dont_exist:
-            continue  # pragma: no cover
           if bot_name not in bot_names:
             if waterfall['name'] in [
                 'client.v8.chromium', 'client.v8.fyi', 'tryserver.v8'
@@ -1697,7 +1685,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         if removal not in all_bots:
           missing_bots.add(removal)
 
-    missing_bots = missing_bots - set(builders_that_dont_exist)
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))

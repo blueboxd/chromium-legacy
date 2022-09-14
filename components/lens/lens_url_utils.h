@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,8 @@ extern GURL AppendOrReplaceQueryParametersForLensRequest(
 // GURL is unavailable to append to.
 extern std::string GetQueryParametersForLensRequest(
     lens::EntryPoint ep,
-    lens::RenderingEnvironment re,
-    bool is_side_panel_request);
-
+    bool is_side_panel_request,
+    bool is_full_screen_region_search_request);
 }  // namespace lens
 
 #endif  // COMPONENTS_LENS_LENS_URL_UTILS_H_

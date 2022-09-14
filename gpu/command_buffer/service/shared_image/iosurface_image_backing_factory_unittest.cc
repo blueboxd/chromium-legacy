@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
     backing_factory_ = std::make_unique<GLImageBackingFactory>(
         preferences, workarounds, context_state_->feature_info(),
         &image_factory_,
-        /*progress_reporter=*/nullptr);
+        /*progress_reporter=*/nullptr, /*for_shared_memory_gmbs=*/false);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =

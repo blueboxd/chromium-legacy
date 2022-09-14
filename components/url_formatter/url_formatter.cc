@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -840,8 +840,8 @@ std::u16string MaybeRemoveDiacritics(const std::u16string& host) {
   return g_idn_spoof_checker.Get().MaybeRemoveDiacritics(host);
 }
 
-bool HasDeviationCharacters(base::StringPiece16 url_text) {
-  return g_idn_spoof_checker.Get().HasDeviationCharacters(url_text);
+IDNA2008DeviationCharacter GetDeviationCharacter(base::StringPiece16 hostname) {
+  return g_idn_spoof_checker.Get().GetDeviationCharacter(hostname);
 }
 
 }  // namespace url_formatter

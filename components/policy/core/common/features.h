@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,10 +38,6 @@ POLICY_EXPORT extern const base::Feature
 // Causes the DMToken to be deleted (rather than invalidated) when a browser is
 // deleted from CBCM.
 POLICY_EXPORT extern const base::Feature kDmTokenDeletion;
-
-// Allow mac to detect policy scope with a private API. The feature is limited
-// in the policy component only.
-extern const base::Feature kPolicyScopeDetectionMac;
 
 }  // namespace features
 }  // namespace policy

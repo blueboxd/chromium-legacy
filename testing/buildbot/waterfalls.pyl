@@ -591,7 +591,8 @@
           'all',
         ],
       },
-      'Android x64 Builder (dbg)': {
+      'Android x64 Builder (dbg)': {},
+      'Android x64 Builder All Targets (dbg)': {
         'additional_compile_targets': [
           'all',
         ],
@@ -2837,6 +2838,11 @@
           'all'
         ],
       },
+      'Comparison Mac arm64 on arm64 (reclient)': {
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'Comparison Simple Chrome (reclient)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -2887,6 +2893,17 @@
           'all'
         ],
       },
+      'Linux Builder (py2 less)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+        'test_suites': {
+          'scripts': 'chromium_linux_scripts',
+        }
+      },
       'Linux CFI (reclient shadow)': {
         'mixins': [
           'linux-bionic',
@@ -2926,6 +2943,16 @@
         'args': [
           '--test-launcher-print-test-stdio=always',
         ],
+      },
+      'Linux Tests (py2 less)': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+        },
       },
       'Linux Viz': {
         'mixins': [
@@ -3658,14 +3685,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-blink-optional-highdpi-rel-dummy': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
-        },
-      },
       'linux-blink-v8-sandbox-future-rel': {
         'mixins': [
           'linux-bionic',
@@ -3939,14 +3958,6 @@
           'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
-      },
-      'mac11.0-blink-rel-dummy': {
-        'mixins': [
-          'mac_11_x64',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
       },
       'win-annotator-rel': {
         'test_suites': {
@@ -6558,7 +6569,6 @@
           'components/mirroring:mirroring_tests',
           'components/mirroring:mirroring_unittests',
           'components/openscreen_platform',
-          'third_party/openscreen/src/cast/cast_core/api',
         ],
       },
       'chromium_mac_debug': {

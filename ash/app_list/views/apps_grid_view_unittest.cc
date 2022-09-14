@@ -57,7 +57,6 @@
 #include "ash/shell.h"
 #include "ash/style/system_shadow.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/layer_animation_stopped_waiter.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -73,6 +72,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -1737,7 +1737,7 @@ TEST_P(AppsGridViewDragTest, DragIconAnimatesAfterDragToFolder) {
   ASSERT_TRUE(drag_icon_layer->GetAnimator()->is_animating());
   EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
 
-  LayerAnimationStoppedWaiter animation_waiter;
+  ui::LayerAnimationStoppedWaiter animation_waiter;
   animation_waiter.Wait(drag_icon_layer);
   EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
   EXPECT_EQ(1, GetHapticTickEventsCount());
@@ -1767,7 +1767,7 @@ TEST_P(AppsGridViewDragTest, DragIconHiddenImmediatelyWhenGridHides) {
   auto* helper = GetAppListTestHelper();
   if (is_productivity_launcher_enabled_) {
     // Wait for page switch animation.
-    LayerAnimationStoppedWaiter().Wait(
+    ui::LayerAnimationStoppedWaiter().Wait(
         helper->GetBubbleAppsPage()->GetPageAnimationLayerForTest());
     ASSERT_FALSE(helper->GetBubbleAppsPage()->GetVisible());
     ASSERT_TRUE(helper->GetBubbleSearchPage()->GetVisible());
@@ -1803,7 +1803,7 @@ TEST_P(AppsGridViewDragTest, DragIconAnimatesAfterDragToCreateFolder) {
   ASSERT_TRUE(drag_icon_layer->GetAnimator()->is_animating());
   EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
 
-  LayerAnimationStoppedWaiter animation_waiter;
+  ui::LayerAnimationStoppedWaiter animation_waiter;
   animation_waiter.Wait(drag_icon_layer);
   EXPECT_EQ(is_productivity_launcher_enabled_,
             GetAppListTestHelper()->IsInFolderView());
@@ -1840,7 +1840,7 @@ TEST_P(AppsGridViewDragTest, FolderNotOpenedIfGridHidesDuringIconDrop) {
   auto* helper = GetAppListTestHelper();
   if (is_productivity_launcher_enabled_) {
     // Wait for page switch animation.
-    LayerAnimationStoppedWaiter().Wait(
+    ui::LayerAnimationStoppedWaiter().Wait(
         helper->GetBubbleAppsPage()->GetPageAnimationLayerForTest());
     ASSERT_FALSE(helper->GetBubbleAppsPage()->GetVisible());
     ASSERT_TRUE(helper->GetBubbleSearchPage()->GetVisible());
@@ -2058,7 +2058,7 @@ TEST_P(AppsGridViewDragTest, DragIconAnimatesAfterDragToAnotherFolder) {
   ASSERT_TRUE(drag_icon_layer->GetAnimator()->is_animating());
   EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
 
-  LayerAnimationStoppedWaiter animation_waiter;
+  ui::LayerAnimationStoppedWaiter animation_waiter;
   animation_waiter.Wait(drag_icon_layer);
   EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
 }
@@ -3257,29 +3257,34 @@ TEST_P(AppsGridViewTabletTest, ControlShiftArrowFailsToFolderAcrossPages) {
               test_api_->GetViewAtIndex(moved_view_index));
     EXPECT_EQ(0, GetPaginationModel()->selected_page());
   }
-  // The last item on the col is selected, try moving right and test that that
-  // fails as well.
-  GridIndex moved_view_index(0, GetTilesPerPage(0) - 1);
-  AppListItemView* attempted_folder_view =
-      test_api_->GetViewAtIndex(moved_view_index);
 
-  SimulateKeyPress(is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT,
-                   ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  {
+    // The last item on the col is selected, try moving right and test that that
+    // fails as well.
+    GridIndex moved_view_index(0, GetTilesPerPage(0) - 1);
+    AppListItemView* attempted_folder_view =
+        test_api_->GetViewAtIndex(moved_view_index);
 
-  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+    SimulateKeyPress(is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT,
+                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
 
-  // Move to the second page and test that foldering up to a new page fails.
-  SimulateKeyPress(ui::VKEY_DOWN);
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
 
-  // Select the first item on the second page.
-  moved_view_index = GridIndex(1, 0);
-  attempted_folder_view = test_api_->GetViewAtIndex(moved_view_index);
+    // Move to the second page and test that foldering up to a new page fails.
+    SimulateKeyPress(ui::VKEY_DOWN);
 
-  // Try to folder left to the previous page, it  should fail.
-  SimulateKeyPress(is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT,
-                   ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    // Select the first item on the second page.
+    moved_view_index = GridIndex(1, 0);
+    attempted_folder_view = test_api_->GetViewAtIndex(moved_view_index);
 
-  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+    // Try to folder left to the previous page, it  should fail.
+    SimulateKeyPress(is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT,
+                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
+  }
 
   // For every item on the first row of the second page, test that foldering to
   // the next page fails.
@@ -5982,7 +5987,7 @@ TEST_F(AppsGridViewBubbleTest, AppIconSubtitutesPulsingBlockView) {
   EXPECT_TRUE(item_view->layer()->GetAnimator()->is_animating());
   EXPECT_EQ(1.0f, item_view->layer()->GetTargetOpacity());
 
-  LayerAnimationStoppedWaiter animation_waiter;
+  ui::LayerAnimationStoppedWaiter animation_waiter;
   animation_waiter.Wait(item_view->layer());
 
   // The new item should be placed at the first placeholder bounds.

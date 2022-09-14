@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,8 @@ const char DefaultSearchManager::kSuggestionsURLPostParams[] =
 const char DefaultSearchManager::kImageURLPostParams[] =
     "image_url_post_params";
 const char DefaultSearchManager::kSideSearchParam[] = "side_search_param";
+const char DefaultSearchManager::kSideImageSearchParam[] =
+    "side_image_search_param";
 
 const char DefaultSearchManager::kSafeForAutoReplace[] = "safe_for_autoreplace";
 const char DefaultSearchManager::kInputEncodings[] = "input_encodings";

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,8 @@ std::unique_ptr<media::Renderer> WebEngineMediaRendererFactory::CreateRenderer(
               base::Unretained(this), media_task_runner,
               std::move(request_overlay_info_cb), target_color_space,
               gpu_factories),
-          /*drop_frames=*/true, media_log_, std::move(gmb_pool)));
+          /*drop_frames=*/true, media_log_, std::move(gmb_pool),
+          media::GetNextMediaPlayerLoggingID()));
 
   return std::make_unique<media::RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));

@@ -353,10 +353,16 @@ bool FirstPartySetsHandlerImpl::IsEnabled() const {
   return enabled_;
 }
 
-void FirstPartySetsHandlerImpl::SetPublicFirstPartySets(base::File sets_file) {
+void FirstPartySetsHandlerImpl::SetPublicFirstPartySets(
+    const base::Version& version,
+    base::File sets_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(enabled_);
   DCHECK(embedder_will_provide_public_sets_);
+
+  // TODO(crbug.com/1219656): Use this value to compute sets diff and then
+  // persisting to DB if valid.
+  version_ = version;
   sets_loader_->SetComponentSets(std::move(sets_file));
 }
 
@@ -380,10 +386,13 @@ void FirstPartySetsHandlerImpl::ResetForTesting() {
 }
 
 void FirstPartySetsHandlerImpl::GetPersistedPublicSetsForTesting(
-    base::OnceCallback<void(FirstPartySetsHandlerImpl::FlattenedSets)>
-        callback) {
+    base::OnceCallback<void(
+        absl::optional<FirstPartySetsHandlerImpl::FlattenedSets>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!db_helper_.is_null());
+  if (db_helper_.is_null()) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
   db_helper_
       .AsyncCall(&FirstPartySetsHandlerDatabaseHelper::GetPersistedPublicSets)
       .Then(std::move(callback));
@@ -394,11 +403,8 @@ void FirstPartySetsHandlerImpl::SetCompleteSets(net::PublicSets public_sets) {
   DCHECK(!public_sets_.has_value());
   public_sets_ = std::move(public_sets);
 
-    ClearSiteDataOnChangedSets();
-
-    if (IsEnabled()) {
-      InvokePendingQueries();
-    }
+  if (IsEnabled())
+    InvokePendingQueries();
 }
 
 void FirstPartySetsHandlerImpl::SetDatabase(
@@ -432,16 +438,22 @@ net::PublicSets FirstPartySetsHandlerImpl::GetSetsSync() const {
   return public_sets_->Clone();
 }
 
-void FirstPartySetsHandlerImpl::ClearSiteDataOnChangedSets() const {
+void FirstPartySetsHandlerImpl::ClearSiteDataOnChangedSetsForContext(
+    base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+    const std::string& browser_context_id,
+    const PolicyCustomization* policy_customization,
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(public_sets_.has_value());
+  DCHECK(!browser_context_id.empty());
 
   if (!db_helper_.is_null()) {
-    // TODO(shuuran@chromium.org): Implement site state clearing.
+    // TODO(crbug.com/1219656): Call site state clearing.
     db_helper_
         .AsyncCall(&FirstPartySetsHandlerDatabaseHelper::PersistPublicSets)
         .WithArgs(public_sets_->entries());
   }
+  std::move(callback).Run();
 }
 
 FirstPartySetsHandler::PolicyCustomization

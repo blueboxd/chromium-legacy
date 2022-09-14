@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 #define COMPONENTS_NAVIGATION_METRICS_NAVIGATION_METRICS_H_
 
 #include <string>
+
+#include "components/url_formatter/spoof_checks/idna_metrics.h"
 
 class GURL;
 
@@ -64,7 +66,8 @@ void RecordOmniboxURLNavigation(const GURL& url);
 
 // Records metrics about deviation characters in `hostname`. `hostname` can
 // be punycode or unicode and can have subdomains.
-void RecordIDNA2008Metrics(const std::u16string& hostname);
+IDNA2008DeviationCharacter RecordIDNA2008Metrics(
+    const std::u16string& hostname);
 
 }  // namespace navigation_metrics
 

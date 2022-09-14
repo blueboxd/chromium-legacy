@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ TEST_F(SegmentationUkmHelperTest, TestTrainingDataCollectionReporting) {
   std::vector<int> output_indexes = {2, 3};
 
   SelectedSegment selected_segment(
-      proto::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
+      proto::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB, 10);
   selected_segment.selection_time = base::Time::Now() - base::Seconds(10);
   SegmentationUkmHelper::GetInstance()->RecordTrainingData(
       proto::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB, 101, input_tensors,

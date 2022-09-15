@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b1f56b4a8a7cf9f707f7966104278777f9994b13',
+  'v8_revision': '3ae6859800b0b41e70896d8b7e4886689933a7c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -313,7 +313,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'd14da8e682e244127db32490365d1c094243e5f3',
+  'pdfium_revision': '4da7fd57f192eedf8c89f7e1dd2c8fbed71358c8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -476,7 +476,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ffmpeg
   # and whatever else without interference from each other.
-  'ffmpeg_revision': '880df5ede50a8534c8116d0d50e4bc4f3ef08a06',
+  'ffmpeg_revision': 'd2d6dbd621167546b70f91e89f941e9f71dc420c',
 
   # If you change this, also update the libc++ revision in
   # //buildtools/deps_revisions.gni.
@@ -1409,7 +1409,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'df35d6c42da4fa2759e4cfb592afe33817993b89',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '8dcdafc6d4a2f9f8ea8104f26eca5d123eefcb7f',
+    Var('aomedia_git') + '/aom.git' + '@' +  '0024de569b423861b7e3a7159ab6d242cee388a3',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1671,7 +1671,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '65dc7b383985eb4f63cd3e752136db8d9b4be8c0',
 
   'src/third_party/sqlite/src':
-    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'e6b63421941617bf5ccac6b4a62d7a7b4a2c3fef',
+    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + '5fb64c1a111a36e7530a8d2132e6ce0c46607942',
 
   'src/third_party/sqlite4java': {
       'packages': [
@@ -1754,7 +1754,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c4eb1df3f306c0ee3e43ba2446eb3616e42d6855',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'dc5cf31cad576376abd3aa6306169453cfd85ba5',
+    Var('webrtc_git') + '/src.git' + '@' + '42be4ae879ed6870dfc5ca554d11062b536da717',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1827,7 +1827,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@22eb9de9eb80f46bc29976636c16289b7d327ced',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a97288f58fb791b3f7353375a160998adc2da707',
     'condition': 'checkout_src_internal',
   },
 

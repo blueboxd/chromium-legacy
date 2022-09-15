@@ -890,7 +890,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (!base::FeatureList::IsEnabled(features::kAccessCodeCastUI)) {
       return nullptr;
     }
-    if (!media_router::GetAccessCodeCastEnabledPref(profile->GetPrefs())) {
+    if (!media_router::GetAccessCodeCastEnabledPref(profile)) {
       return nullptr;
     }
     return &NewWebUI<media_router::AccessCodeCastUI>;
@@ -932,13 +932,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenStartReauthHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled()) {
+    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
+        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenStartReauthUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenNetworkHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled()) {
+    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
+        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenNetworkUI>;

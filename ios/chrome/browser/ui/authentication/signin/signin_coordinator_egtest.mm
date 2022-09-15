@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -179,13 +180,6 @@ void ExpectSyncConsentHistogram(
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.features_enabled.push_back(signin::kEnableUnicornAccountSupport);
-  if ([self
-          isRunningTest:@selector(testUserSignedOutWhenClearingBrowsingData)]) {
-    config.features_disabled.push_back(switches::kEnableCbdSignOut);
-  } else if ([self isRunningTest:@selector
-                   (testUserSignedInWhenClearingBrowsingData)]) {
-    config.features_enabled.push_back(switches::kEnableCbdSignOut);
-  }
   return config;
 }
 
@@ -1075,7 +1069,28 @@ void ExpectSyncConsentHistogram(
 // Tests that a user in the `ConsentLevel::kSignin` state will be signed out
 // after clearing their browsing history if |kEnableCbdSignOut| feature is
 // enabled.
-- (void)testUserSignedInWhenClearingBrowsingData {
+// TODO(crbug.com/1363372): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testUserSignedInWhenClearingBrowsingData \
+  DISABLED_testUserSignedInWhenClearingBrowsingData
+#else
+#define MAYBE_testUserSignedInWhenClearingBrowsingData \
+  testUserSignedInWhenClearingBrowsingData
+#endif
+- (void)MAYBE_testUserSignedInWhenClearingBrowsingData {
+  // Reload with forced kEnableCbdSignOut enabled.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.features_enabled.push_back(switches::kEnableCbdSignOut);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Remove closed tab history to make sure the sign-in promo is always visible
+  // in recent tabs.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+
   FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [self signInOpenCBDAndClearDataWithFakeIdentity:fakeIdentity];
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
@@ -1084,7 +1099,28 @@ void ExpectSyncConsentHistogram(
 // Tests that a user in the `ConsentLevel::kSignin` state will be signed out
 // after clearing their browsing history if |kEnableCbdSignOut| feature is
 // disabled.
-- (void)testUserSignedOutWhenClearingBrowsingData {
+// TODO(crbug.com/1363372): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testUserSignedOutWhenClearingBrowsingData \
+  DISABLED_testUserSignedOutWhenClearingBrowsingData
+#else
+#define MAYBE_testUserSignedOutWhenClearingBrowsingData \
+  testUserSignedOutWhenClearingBrowsingData
+#endif
+- (void)MAYBE_testUserSignedOutWhenClearingBrowsingData {
+  // Reload with forced kEnableCbdSignOut disabled.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.features_disabled.push_back(switches::kEnableCbdSignOut);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Remove closed tab history to make sure the sign-in promo is always visible
+  // in recent tabs.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+
   FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [self signInOpenCBDAndClearDataWithFakeIdentity:fakeIdentity];
   [SigninEarlGrey verifySignedOut];

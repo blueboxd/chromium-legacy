@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -652,6 +652,11 @@ extern const char kSyncInvalidationsWalletAndOfferDescription[];
 // Title and description for the flag to enable TFLite for language detection.
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
+
+// Title and description for the flag to compute both TFLite and CLD3 detection
+// and ignore TFLite one.
+extern const char kTFLiteLanguageDetectionIgnoreName[];
+extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 
 // Title and description for the flag to enable the toolbar container
 // implementation.

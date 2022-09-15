@@ -47,6 +47,7 @@
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -226,6 +227,8 @@ View::View() {
 }
 
 View::~View() {
+  life_cycle_state_ = LifeCycleState::kDestroying;
+
   if (parent_)
     parent_->RemoveChildView(this);
 
@@ -1196,7 +1199,8 @@ void View::Paint(const PaintInfo& parent_paint_info) {
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
 
-      clip_path_in_parent.transform(to_parent_recording_space.matrix().asM33());
+      clip_path_in_parent.transform(
+          gfx::TransformToFlattenedSkMatrix(to_parent_recording_space));
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }

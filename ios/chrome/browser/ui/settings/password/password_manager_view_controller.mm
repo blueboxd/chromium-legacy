@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -600,10 +600,12 @@ bool ShouldShowSettingsUI() {
   }
 
   // Export passwords button.
-  [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-  _exportPasswordsItem = [self exportPasswordsItem];
-  [model addItem:_exportPasswordsItem
-      toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+  if (ShouldShowSettingsUI()) {
+    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+    _exportPasswordsItem = [self exportPasswordsItem];
+    [model addItem:_exportPasswordsItem
+        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+  }
 
   // Add the descriptive text at the top of the screen. Do this at the end to
   // ensure the section to which it's being attached already exists.
@@ -1729,6 +1731,10 @@ bool ShouldShowSettingsUI() {
 }
 
 - (void)setExportPasswordsButtonEnabled:(BOOL)enabled {
+  // Will be nil when settings content in this UI is disabled.
+  if (!_exportPasswordsItem)
+    return;
+
   if (enabled) {
     DCHECK(_exportReady && !self.editing);
     _exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];

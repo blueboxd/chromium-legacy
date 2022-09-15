@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
   return prefs;
 }
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 class PrivacySafeBrowsingMediatorTest : public PlatformTest {
  public:

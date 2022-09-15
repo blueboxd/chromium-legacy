@@ -4692,6 +4692,11 @@ const char kArcNativeBridgeToggleName[] =
 const char kArcNativeBridgeToggleDescription[] =
     "Toggle between native bridge implementations for ARC.";
 
+const char kArcNearbyShareFuseBoxName[] = "ARC Nearby Sharing through FuseBox";
+const char kArcNearbyShareFuseBoxDescription[] =
+    "When enabled, files shared through ARC Nearby Sharing will be shared "
+    "through the ChromeOS FuseBox Service.";
+
 const char kArcRightClickLongPressName[] =
     "Enable ARC right click long press compatibility feature.";
 const char kArcRightClickLongPressDescription[] =
@@ -4997,6 +5002,11 @@ const char kCameraAppDocScanDlcName[] = "Camera App Doc Scan DLC";
 const char kCameraAppDocScanDlcDescription[] =
     "Enables this flag to allow downloading document scanning feature via DLC "
     "and use it in the camera app";
+
+const char kCameraAppMultiPageDocScanName[] = "Camera App Multi-Page Doc Scan";
+const char kCameraAppMultiPageDocScanDescription[] =
+    "Enables this flag to show multi-page UI for document scanning featrue in "
+    "the camera app";
 
 const char kCompactBubbleLauncherName[] = "Make bubble launcher more compact";
 
@@ -5312,16 +5322,6 @@ const char kDeprecateAssistantStylusFeaturesDescription[] =
     "Deprecates the stylus features associated with the Assistant \"what's on "
     "my screen\" feature which is already deprecated.";
 
-const char kDisableQuickAnswersV2TranslationName[] =
-    "Disable Quick Answers Translation";
-const char kDisableQuickAnswersV2TranslationDescription[] =
-    "Disable translation services of the Quick Answers.";
-
-const char kQuickAnswersForMoreLocalesName[] =
-    "Enable Quick Answers for more locales";
-const char kQuickAnswersForMoreLocalesDescription[] =
-    "Enable Quick Answers for more locales.";
-
 const char kEapGtcWifiAuthenticationName[] = "EAP-GTC WiFi Authentication";
 const char kEapGtcWifiAuthenticationDescription[] =
     "Allows configuration of WiFi networks using EAP-GTC authentication";
@@ -5436,6 +5436,12 @@ const char kFilesAppExperimentalDescription[] =
 const char kFilesExtractArchiveName[] = "Extract archive in Files app";
 const char kFilesExtractArchiveDescription[] =
     "Enable the simplified archive extraction feature in Files app";
+
+const char kFilesInlineSyncStatusName[] =
+    "Enable inline sync status in Files app.";
+const char kFilesInlineSyncStatusDescription[] =
+    "Enable displaying the sync status of each file next to its name in Files "
+    "app.";
 
 const char kFilesSinglePartitionFormatName[] =
     "Enable Partitioning of Removable Disks.";
@@ -5686,6 +5692,10 @@ const char kEnableHardwareMirrorModeName[] = "Enable Hardware Mirror Mode";
 const char kEnableHardwareMirrorModeDescription[] =
     "Enables hardware support when multiple displays are set to mirror mode.";
 
+const char kHindiInscriptLayoutName[] = "Hindi Inscript Layout on CrOS";
+const char kHindiInscriptLayoutDescription[] =
+    "Enables Hindi Inscript Layout on ChromeOS.";
+
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
@@ -5729,13 +5739,6 @@ const char kMultilingualTypingDescription[] =
 const char kNearbySharingArcName[] = "ARC Nearby Sharing";
 const char kNearbySharingArcDescription[] =
     "Enables Nearby Sharing from ARC apps.";
-
-const char kNearbySharingBackgroundScanningName[] =
-    "Nearby Sharing Background Scanning";
-const char kNearbySharingBackgroundScanningDescription[] =
-    "Enables background scanning for Nearby Share, allowing devices to "
-    "persistently scan and present a notification when a nearby device is "
-    "attempting to share.";
 
 const char kNearbySharingOnePageOnboardingName[] =
     "Nearby Sharing one-page Onboarding.";
@@ -6281,6 +6284,16 @@ const char kOneGroupPerRendererName[] =
     "Use one cgroup for each foreground renderer";
 const char kOneGroupPerRendererDescription[] =
     "Places each Chrome foreground renderer into its own cgroup";
+
+const char kDisableQuickAnswersV2TranslationName[] =
+    "Disable Quick Answers Translation";
+const char kDisableQuickAnswersV2TranslationDescription[] =
+    "Disable translation services of the Quick Answers.";
+
+const char kQuickAnswersForMoreLocalesName[] =
+    "Enable Quick Answers for more locales";
+const char kQuickAnswersForMoreLocalesDescription[] =
+    "Enable Quick Answers for more locales.";
 
 const char kSyncChromeOSExplicitPassphraseSharingName[] =
     "Sync passphrase sharing";

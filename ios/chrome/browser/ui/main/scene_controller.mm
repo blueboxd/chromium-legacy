@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/callback_helpers.h"
+#import "base/feature_list.h"
 #import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -150,6 +151,13 @@
 #endif
 
 namespace {
+
+// Feature to control whether Search Intents (Widgets, Application
+// Shortcuts menu) forcibly open a new tab, rather than reusing an
+// existing NTP. See http://crbug.com/1363375 for details.
+const base::Feature kForceNewTabForIntentSearch(
+    "ForceNewTabForIntentSearch",
+    base::FEATURE_ENABLED_BY_DEFAULT);
 
 // A rough estimate of the expected duration of a view controller transition
 // animation. It's used to temporarily disable mutally exclusive chrome
@@ -499,54 +507,6 @@ bool IsSigninForcedByPolicy() {
   MoveTabToBrowser(tabID, interface.browser, /*destination_tab_index=*/0);
 }
 
-// TODO(crbug.com/1173160): Split and move to the StartSurfaceSceneAgent after
-// refactoring the scene states.
-- (void)handleShowStartSurfaceIfNecessary {
-  if (!ShouldShowStartSurfaceForSceneState(self.sceneState)) {
-    return;
-  }
-
-  // Do not show the Start Surface no matter whether it is enabled or not when
-  // the Tab grid is active by design.
-  if (self.mainCoordinator.isTabGridActive) {
-    return;
-  }
-
-  // If there is no active tab, a NTP will be added, and since there is no
-  // recent tab, there is not need to mark `modifytVisibleNTPForStartSurface`.
-  // Keep showing the last active NTP tab no matter whether the Start Surface is
-  // enabled or not by design.
-  // Note that currentWebState could only be nullptr when the Tab grid is active
-  // for now.
-  web::WebState* currentWebState =
-      self.mainInterface.browser->GetWebStateList()->GetActiveWebState();
-  if (!currentWebState || IsURLNtp(currentWebState->GetVisibleURL())) {
-    return;
-  }
-
-  base::RecordAction(base::UserMetricsAction("IOS.StartSurface.Show"));
-  self.sceneState.modifytVisibleNTPForStartSurface = YES;
-  Browser* browser = self.currentInterface.browser;
-  StartSurfaceRecentTabBrowserAgent::FromBrowser(browser)->SaveMostRecentTab();
-
-  // Activate the existing NTP tab for the Start surface.
-  WebStateList* webStateList = browser->GetWebStateList();
-  for (int i = 0; i < webStateList->count(); i++) {
-    if (IsURLNtp(webStateList->GetWebStateAt(i)->GetVisibleURL())) {
-      webStateList->ActivateWebStateAt(i);
-      return;
-    }
-  }
-
-  // Open a new NTP tab if there is no existing NTP tab for the Start Surface.
-  OpenNewTabCommand* command =
-      [OpenNewTabCommand commandWithIncognito:self.currentInterface.incognito];
-  command.userInitiated = NO;
-  id<ApplicationCommands> applicationHandler =
-      HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
-  [applicationHandler openURLInNewTab:command];
-}
-
 - (void)recordWindowCreationForSceneState:(SceneState*)sceneState {
   // Don't record window creation for single-window environments
   if (!base::ios::IsMultipleScenesSupported())
@@ -743,10 +703,6 @@ bool IsSigninForcedByPolicy() {
           browser->GetCommandDispatcher(), ApplicationCommands);
       [applicationHandler openURLInNewTab:command];
       [self finishActivatingBrowserDismissingTabSwitcher:YES];
-    }
-
-    if (!IsStartSurfaceSplashStartupEnabled()) {
-      [self handleShowStartSurfaceIfNecessary];
     }
   }
 
@@ -1026,14 +982,6 @@ bool IsSigninForcedByPolicy() {
   } else {
     browser = self.mainInterface.browser;
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
-  }
-
-  // Call this right after `setCurrentInterfaceForMode:` to ensure the
-  // currentInterface is set in case a new tab needs to be opened. Since this is
-  // synchronous with `setActivePage:` above, then the user should not see the
-  // last tab if the Start Surface is opened.
-  if (!IsStartSurfaceSplashStartupEnabled()) {
-    [self handleShowStartSurfaceIfNecessary];
   }
 
   // Figure out what UI to show initially.
@@ -2789,10 +2737,15 @@ bool IsSigninForcedByPolicy() {
   web::WebState* currentWebState =
       targetInterface.browser->GetWebStateList()->GetActiveWebState();
 
+  BOOL alwaysInsertNewTab =
+      base::FeatureList::IsEnabled(kForceNewTabForIntentSearch) &&
+      (self.startupParameters.postOpeningAction == FOCUS_OMNIBOX);
+
   // Don't call loadWithParams for chrome://newtab when it's already loaded.
   // Note that it's safe to use -GetVisibleURL here, as it doesn't matter if the
   // NTP hasn't finished loading.
-  if (currentWebState && IsURLNtp(currentWebState->GetVisibleURL()) &&
+  if (!alwaysInsertNewTab && currentWebState &&
+      IsURLNtp(currentWebState->GetVisibleURL()) &&
       IsURLNtp(urlLoadParams.web_params.url)) {
     if (tabOpenedCompletion) {
       tabOpenedCompletion();
@@ -2800,12 +2753,6 @@ bool IsSigninForcedByPolicy() {
     return;
   }
 
-  // With kBrowserContainerContainsNTP enabled paired with a restored NTP
-  // session, the NTP may appear committed when it is still loading.  For the
-  // time being, always load within a new tab when this feature is enabled.
-  // TODO(crbug.com/931284): Revert this change when fixed.
-  BOOL alwaysInsertNewTab =
-      base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
   // If the current tab isn't an NTP, open a new tab.  Be sure to use
   // -GetLastCommittedURL incase the NTP is still loading.
   if (alwaysInsertNewTab ||

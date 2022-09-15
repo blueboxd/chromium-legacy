@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/feature_list.h"
-
-// Feature flag to enable NTP UI pending loader blocker.
-extern const base::Feature kBlockNewTabPagePendingLoad;
 
 // Feature flag to enable feed background refresh.
 // Use IsFeedBackgroundRefreshEnabled() instead of this constant directly.

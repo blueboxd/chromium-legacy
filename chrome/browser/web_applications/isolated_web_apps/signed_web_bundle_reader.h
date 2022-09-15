@@ -12,13 +12,19 @@
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
 #include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_integrity_block.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
 #include "components/web_package/shared_file.h"
 #include "net/base/net_errors.h"
 #include "services/data_decoder/public/cpp/safe_web_bundle_parser.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 struct ResourceRequest;
+}
+
+namespace web_package {
+class Ed25519PublicKey;
 }
 
 namespace web_app {
@@ -35,6 +41,11 @@ namespace web_app {
 // can be determined by either waiting for the callback passed to
 // `CreateAndStartReading` to run or by querying `GetState`.
 //
+// URLs passed to `ReadResponse` will be simplified to remove username,
+// password, and fragment before looking up the corresponding response inside
+// the Signed Web Bundle. This is the same behavior as with unsigned Web
+// Bundles (see `content::WebBundleReader`).
+//
 // Internally, this class wraps a `data_decoder::SafeWebBundleParser` with
 // support for automatic reconnection in case it disconnects while parsing
 // responses. The `SafeWebBundleParser` might disconnect, for example, if one of
@@ -43,41 +54,78 @@ namespace web_app {
 class SignedWebBundleReader {
  public:
   // Callers of this class can decide whether parsing the Signed Web Bundle
-  // should continue or stop after the integrity block has been read.
-  enum class IntegrityVerificationAction {
-    kAbort,
-    kContinueAndVerifyIntegrity,
-
-  // On ChromeOS, we only verify integrity at install-time. On other OSes, we
-  // verify integrity once per session, so skipping integrity verification is
-  // not an option for other OSes.
+  // should continue or stop after the integrity block has been read by passing
+  // an appropriate instance of this class to the
+  // `integrity_block_result_callback`. If a caller decides that parsing should
+  // stop, then metadata will not be read and the `read_error_callback` will run
+  // with an `AbortedByCaller` error.
+  class IntegrityVerificationAction {
+   public:
+    enum class Type {
+      kAbort,
+      kContinueAndVerifyIntegrity,
 #if BUILDFLAG(IS_CHROMEOS)
-    kContinueAndSkipIntegrityVerification,
+      // On ChromeOS, we only verify integrity at install-time. On other OSes,
+      // we verify integrity once per session, so skipping integrity
+      // verification is not an option for other OSes.
+      kContinueAndSkipIntegrityVerification,
 #endif
+    };
+
+    static IntegrityVerificationAction Abort(const std::string& abort_message);
+    static IntegrityVerificationAction ContinueAndVerifyIntegrity();
+#if BUILDFLAG(IS_CHROMEOS)
+    static IntegrityVerificationAction ContinueAndSkipIntegrityVerification();
+#endif
+
+    IntegrityVerificationAction(const IntegrityVerificationAction&);
+    ~IntegrityVerificationAction();
+
+    Type type() { return type_; }
+
+    // Will CHECK if `type()` != `Type::kAbort`.
+    std::string abort_message() { return *abort_message_; }
+
+   private:
+    IntegrityVerificationAction(Type type,
+                                absl::optional<std::string> abort_message);
+
+    const Type type_;
+    const absl::optional<std::string> abort_message_;
   };
 
-  // TODO(crbug.com/1315947): This is where information about the integrity
-  // block should be passed back to the caller, e.g. which public keys it
-  // contains, so that the caller can make a decision on whether they want to
-  // continue with integrity verification and metadata parsing, or just want to
-  // abort.
   using IntegrityBlockReadResultCallback = base::OnceCallback<void(
-      /* TODO(crbug.com/1315947): pass information about integrity block here */
+      const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
       base::OnceCallback<void(IntegrityVerificationAction)> callback)>;
 
-  using ReadError =
-      absl::variant<web_package::mojom::BundleIntegrityBlockParseErrorPtr,
-                    // TODO(crbug.com/1315947): Add type for a signature
-                    // verification error here once it is implemented.
-                    web_package::mojom::BundleMetadataParseErrorPtr>;
+  // This error will be passed to `read_error_callback` if parsing is aborted by
+  // the caller as part of `integrity_block_result_callback`.
+  struct AbortedByCaller {
+    std::string message;
+  };
+
+  using ReadError = absl::variant<
+      // Triggered when the integrity block of the Signed Web Bundle does not
+      // exist or parsing it fails.
+      web_package::mojom::BundleIntegrityBlockParseErrorPtr,
+      // Triggered when the caller aborts parsing as part of
+      // `integrity_block_result_callback`.
+      AbortedByCaller,
+      // TODO(crbug.com/1315947): Add type for a signature
+      // verification error here once it is implemented.
+
+      // Triggered when metadata parsing fails.
+      web_package::mojom::BundleMetadataParseErrorPtr>;
   using ReadErrorCallback =
       base::OnceCallback<void(absl::optional<ReadError> result)>;
 
   // Create a new instance of this class and start reading the Signed Web
   // Bundle. This will invoke `integrity_block_result_callback` after reading
-  // the integrity block, which must then, based on the information contained in
-  // the integrity block, determine whether reading should continue with
-  // integrity verification and metadata reading, or abort altogether.
+  // the integrity block, which must then, based on the public keys contained in
+  // the integrity block, determine whether this class should continue with
+  // signature verification and metadata reading, or abort altogether.
+  // In any case, `read_error_callback` will be called once reading integrity
+  // block and metadata has either succeeded, was aborted, or failed.
   static std::unique_ptr<SignedWebBundleReader> CreateAndStartReading(
       const base::FilePath& web_bundle_path,
       IntegrityBlockReadResultCallback integrity_block_result_callback,
@@ -115,22 +163,43 @@ class SignedWebBundleReader {
   // in the metadata. Will CHECK if `GetState()` != `kInitialized`.
   std::vector<GURL> GetEntries() const;
 
+  struct ReadResponseError {
+    enum class Type {
+      kParserInternalError,
+      kFormatError,
+      kResponseNotFound,
+    };
+
+    static ReadResponseError FromBundleParseError(
+        web_package::mojom::BundleResponseParseErrorPtr error);
+    static ReadResponseError ForParserInternalError(const std::string& message);
+    static ReadResponseError ForResponseNotFound(const std::string& message);
+
+    Type type;
+    std::string message;
+
+   private:
+    ReadResponseError(Type type, const std::string& message)
+        : type(type), message(message) {}
+  };
+
   // Reads the status code and headers, as well as the length and offset of the
-  // response body within the Web Bundle. Will CHECK if `GetState()` !=
-  // `kInitialized`.
+  // response body within the Web Bundle. The URL will be simplified
+  // (credentials and fragment and removed, this is consistent with
+  // `content::WebBundleReader`) before matching it to a response. Will CHECK if
+  // `GetState()` != `kInitialized`.
   using ResponseCallback = base::OnceCallback<void(
       base::expected<web_package::mojom::BundleResponsePtr,
-                     web_package::mojom::BundleResponseParseErrorPtr>)>;
+                     ReadResponseError>)>;
   void ReadResponse(const network::ResourceRequest& resource_request,
                     ResponseCallback callback);
 
   // Reads the response body given a `response` read with `ReadResponse`. Will
   // CHECK if `GetState()` != `kInitialized`.
-  using ReadResponseBodyCallback =
-      base::OnceCallback<void(net::Error net_error)>;
+  using ResponseBodyCallback = base::OnceCallback<void(net::Error net_error)>;
   void ReadResponseBody(web_package::mojom::BundleResponsePtr response,
                         mojo::ScopedDataPipeProducerHandle producer_handle,
-                        ReadResponseBodyCallback callback);
+                        ResponseBodyCallback callback);
 
   base::WeakPtr<SignedWebBundleReader> AsWeakPtr();
 
@@ -209,9 +278,7 @@ class SignedWebBundleReader {
   scoped_refptr<web_package::SharedFile> file_;
 
   // Integrity Block
-  uint64_t integrity_block_size_;
-  //  TODO(crbug.com/1315947): More properties from the integrity block will
-  //  follow here once we support verification of the integrity.
+  absl::optional<SignedWebBundleIntegrityBlock> integrity_block_;
 
   // Metadata
   GURL primary_url_;

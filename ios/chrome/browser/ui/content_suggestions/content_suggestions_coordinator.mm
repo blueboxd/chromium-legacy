@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,10 +208,7 @@
 #pragma mark - ContentSuggestionsViewControllerAudience
 
 - (void)viewDidDisappear {
-  if (IsStartSurfaceSplashStartupEnabled()) {
-    NewTabPageTabHelper::FromWebState(self.webState)
-        ->SetShowStartSurface(false);
-  }
+  NewTabPageTabHelper::FromWebState(self.webState)->SetShowStartSurface(false);
   // Start no longer showing
   self.contentSuggestionsMediator.showingStartSurface = NO;
   DiscoverFeedServiceFactory::GetForBrowserState(
@@ -350,12 +347,8 @@
 - (void)configureStartSurfaceIfNeeded {
   SceneState* scene =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  if (IsStartSurfaceSplashStartupEnabled()) {
-    if (!NewTabPageTabHelper::FromWebState(self.webState)
-             ->ShouldShowStartSurface()) {
-      return;
-    }
-  } else if (!scene.modifytVisibleNTPForStartSurface) {
+  if (!NewTabPageTabHelper::FromWebState(self.webState)
+           ->ShouldShowStartSurface()) {
     return;
   }
 
@@ -389,9 +382,6 @@
   if (ShouldHideShortcutsForStartSurface()) {
     base::RecordAction(
         base::UserMetricsAction("IOS.StartSurface.HideShortcuts"));
-  }
-  if (!IsStartSurfaceSplashStartupEnabled()) {
-    scene.modifytVisibleNTPForStartSurface = NO;
   }
 }
 

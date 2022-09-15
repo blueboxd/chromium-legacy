@@ -88,6 +88,7 @@
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
@@ -1944,11 +1945,21 @@ void RenderViewContextMenu::AppendSearchProvider() {
       return;
     }
 
-    menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_SEARCHWEBFOR,
-        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-                                   default_provider->short_name(),
-                                   printable_selection_text));
+    // If we couldn't obtain a valid helper from current WebContents, this item
+    // should not be appended in this context.
+    SideSearchTabContentsHelper* helper =
+        SideSearchTabContentsHelper::FromWebContents(embedder_web_contents_);
+
+    Browser* browser =
+        chrome::FindBrowserWithWebContents(embedder_web_contents_);
+    if (!side_search::IsSearchWebInSidePanelSupported(browser) ||
+        (helper && helper->CanShowSidePanelFromContextMenuSearch())) {
+      menu_model_.AddItem(
+          IDC_CONTENT_CONTEXT_SEARCHWEBFOR,
+          l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+                                     default_provider->short_name(),
+                                     printable_selection_text));
+    }
   } else {
     if ((selection_navigation_url_ != params_.link_url) &&
         ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
@@ -2021,16 +2032,6 @@ void RenderViewContextMenu::AppendOtherEditableItems() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   menu_model_.AddItemWithStringId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
                                   IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
-  ash::ClipboardHistoryController* clipboard_history_controller =
-      ash::ClipboardHistoryController::Get();
-  if (clipboard_history_controller &&
-      clipboard_history_controller->ShouldShowNewFeatureBadge()) {
-    menu_model_.SetIsNewFeatureAt(
-        menu_model_.GetIndexOfCommandId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU)
-            .value(),
-        true);
-    clipboard_history_controller->MarkNewFeatureBadgeShown();
-  }
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -2845,7 +2846,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       source_web_contents_->SelectAll();
       break;
 
-    case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFOR: {
+      if (side_search::IsSearchWebInSidePanelSupported(
+              chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
+        ExecSearchWebInSidePanel(selection_navigation_url_);
+        break;
+      }
+      ABSL_FALLTHROUGH_INTENDED;
+    }
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       auto disposition = ui::DispositionFromEventFlags(
           event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -3650,6 +3658,13 @@ void RenderViewContextMenu::ExecSearchWebForImage() {
   core_tab_helper->SearchByImage(render_frame_host, params().src_url);
 }
 
+void RenderViewContextMenu::ExecSearchWebInSidePanel(const GURL& url) {
+  SideSearchTabContentsHelper* helper =
+      SideSearchTabContentsHelper::FromWebContents(embedder_web_contents_);
+  DCHECK(helper);
+  helper->OpenSidePanelFromContextMenuSearch(url);
+}
+
 void RenderViewContextMenu::ExecLoadImage() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
@@ -3776,12 +3791,14 @@ void RenderViewContextMenu::ExecTranslate() {
 }
 
 void RenderViewContextMenu::ExecPartialTranslate() {
-  // TODO(crbug/1314825): When the PartialTranslateManager is added this call
-  // will be updated to use language information from the page. The view state
-  // will also depend on the Partial Translate response, rather than being
-  // hardcoded to 'waiting'.
-  GetBrowser()->window()->StartPartialTranslate("fr", "en",
-                                                params_.selection_text);
+  std::string source_language;
+  std::string target_language;
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(embedder_web_contents_);
+  chrome_translate_client->GetTranslateLanguages(
+      embedder_web_contents_, &source_language, &target_language);
+  GetBrowser()->window()->StartPartialTranslate(
+      source_language, target_language, params_.selection_text);
 }
 
 void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {

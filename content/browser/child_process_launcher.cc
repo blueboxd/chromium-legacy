@@ -21,6 +21,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/child_process_binding_types.h"
+#endif
+
 #if BUILDFLAG(IS_MAC)
 #include "content/browser/child_process_task_port_provider_mac.h"
 #endif
@@ -108,6 +112,10 @@ ChildProcessLauncher::ChildProcessLauncher(
 {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+#if BUILDFLAG(IS_WIN)
+  should_launch_elevated_ = delegate->ShouldLaunchElevated();
+#endif
+
   helper_ = base::MakeRefCounted<ChildProcessLauncherHelper>(
       child_process_id, std::move(command_line), std::move(delegate),
       weak_factory_.GetWeakPtr(), terminate_on_shutdown,
@@ -188,7 +196,9 @@ ChildProcessTerminationInfo ChildProcessLauncher::GetChildTerminationInfo(
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  auto cpu_usage = GetCPUUsage(process_.process.Handle());
+  base::TimeDelta cpu_usage;
+  if (!should_launch_elevated_)
+    cpu_usage = GetCPUUsage(process_.process.Handle());
 #endif
 
   termination_info_ = helper_->GetTerminationInfo(process_, known_dead);
@@ -227,6 +237,11 @@ bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
 }
 
 #if BUILDFLAG(IS_ANDROID)
+base::android::ChildBindingState
+ChildProcessLauncher::GetEffectiveChildBindingState() {
+  return helper_->GetEffectiveChildBindingState();
+}
+
 void ChildProcessLauncher::DumpProcessStack() {
   base::Process to_pass = process_.process.Duplicate();
   GetProcessLauncherTaskRunner()->PostTask(

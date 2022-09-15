@@ -78,17 +78,11 @@ preprocess_if_expr("preprocess_src") {
 
     # Used by security interstitials and ios inspect UI
     "util.js",
+    "util.m.js",
     "webui_resource_test.js",
     "webview_manager.js",
   ]
 
-  if (is_chromeos_ash) {
-    in_files += [
-      "post_message_api_client.js",
-      "post_message_api_request_handler.js",
-      "post_message_api_server.js",
-    ]
-  }
   if (is_chromeos) {
     in_files += [ "os_about.js" ]
   }
@@ -96,8 +90,6 @@ preprocess_if_expr("preprocess_src") {
   # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
   if (is_chromeos_ash) {
     in_files += [
-      "cr.js",
-      "i18n_template_no_process.js",
       "list_property_update_behavior.js",
       "promise_resolver.js",
     ]
@@ -123,17 +115,7 @@ preprocess_if_expr("preprocess_generated") {
     "assert.m.js",
     "load_time_data.js",
     "promise_resolver.m.js",
-    "util.m.js",
   ]
-
-  if (is_chromeos_ash) {
-    in_files += [
-      "i18n_template_no_process.m.js",
-      "post_message_api_server.m.js",
-      "post_message_api_request_handler.m.js",
-      "post_message_api_client.m.js",
-    ]
-  }
 }
 
 group("closure_compile") {
@@ -144,7 +126,6 @@ js_type_check("js_resources") {
   uses_legacy_modules = true
   deps = [
     ":assert",
-    ":cr",
     ":load_time_data",
     ":promise_resolver",
     ":util",
@@ -156,10 +137,7 @@ js_type_check("js_resources") {
   }
 
   if (is_chromeos_ash) {
-    deps += [
-      ":action_link",
-      ":i18n_template_no_process",
-    ]
+    deps += [ ":action_link" ]
   }
 }
 
@@ -169,20 +147,6 @@ if (is_chromeos_ash) {
 }
 
 js_library("assert") {
-}
-
-js_library("cr") {
-  deps = [
-    ":assert",
-    ":promise_resolver",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-if (is_chromeos_ash) {
-  js_library("i18n_template_no_process") {
-    deps = [ ":load_time_data" ]
-  }
 }
 
 js_library("load_time_data") {
@@ -195,7 +159,7 @@ js_library("promise_resolver") {
 }
 
 js_library("util") {
-  deps = [ ":cr" ]
+  deps = [ ":assert" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
@@ -212,16 +176,7 @@ js_modulizer("modulize") {
   input_files = [
     "assert.js",
     "promise_resolver.js",
-    "util.js",
   ]
-  if (is_chromeos_ash) {
-    input_files += [
-      "i18n_template_no_process.js",
-      "post_message_api_server.js",
-      "post_message_api_request_handler.js",
-      "post_message_api_client.js",
-    ]
-  }
 
   namespace_rewrites =
       [ "Polymer.ArraySplice.calculateSplices|calculateSplices" ]
@@ -257,14 +212,6 @@ js_type_check("js_resources_modules") {
     ":static_types",
     ":util.m",
   ]
-
-  if (is_chromeos_ash) {
-    deps += [
-      ":i18n_template_no_process.m",
-      ":post_message_api_client.m",
-      ":post_message_api_server.m",
-    ]
-  }
 }
 
 js_library("assert.m") {
@@ -303,34 +250,6 @@ js_library("plural_string_proxy") {
   deps = [ ":cr.m" ]
 }
 
-if (is_chromeos_ash) {
-  js_library("i18n_template_no_process.m") {
-    sources =
-        [ "$root_gen_dir/ui/webui/resources/js/i18n_template_no_process.m.js" ]
-    deps = [ ":load_time_data" ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("post_message_api_server.m") {
-    sources =
-        [ "$root_gen_dir/ui/webui/resources/js/post_message_api_server.m.js" ]
-    deps = [ ":post_message_api_request_handler.m" ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("post_message_api_client.m") {
-    sources =
-        [ "$root_gen_dir/ui/webui/resources/js/post_message_api_client.m.js" ]
-    deps = [ ":post_message_api_request_handler.m" ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("post_message_api_request_handler.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/post_message_api_request_handler.m.js" ]
-    extra_deps = [ ":modulize" ]
-  }
-}
-
 js_library("promise_resolver.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/js/promise_resolver.m.js" ]
   deps = [ ":assert.m" ]
@@ -342,11 +261,9 @@ js_library("static_types") {
 }
 
 js_library("util.m") {
-  sources = [ "$root_gen_dir/ui/webui/resources/js/util.m.js" ]
   deps = [
     ":assert.m",
     ":cr.m",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
-  extra_deps = [ ":modulize" ]
 }

@@ -52,7 +52,7 @@
 
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
-#include "ui/linux/linux_ui_factory.h"  // nogncheck
+#include "ui/linux/linux_ui_factory.h"
 #include "ui/linux/linux_ui_getter.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -108,13 +108,18 @@ class ThemeScoper {
 class LinuxUiGetterImpl : public ui::LinuxUiGetter {
  public:
   explicit LinuxUiGetterImpl(bool use_system_theme)
-      : linux_ui_(use_system_theme ? ui::LinuxUi::instance() : nullptr) {}
+      : linux_ui_theme_(use_system_theme ? ui::GetDefaultLinuxUiTheme()
+                                         : nullptr) {}
   ~LinuxUiGetterImpl() override = default;
-  ui::LinuxUi* GetForWindow(aura::Window* window) override { return linux_ui_; }
-  ui::LinuxUi* GetForProfile(Profile* profile) override { return linux_ui_; }
+  ui::LinuxUiTheme* GetForWindow(aura::Window* window) override {
+    return linux_ui_theme_;
+  }
+  ui::LinuxUiTheme* GetForProfile(Profile* profile) override {
+    return linux_ui_theme_;
+  }
 
  private:
-  ui::LinuxUi* const linux_ui_;
+  ui::LinuxUiTheme* const linux_ui_theme_;
 };
 #endif
 
@@ -242,10 +247,8 @@ class ColorProviderTest
     // this to reflect test params and propagate any updates.
     native_theme_ = ui::NativeTheme::GetInstanceForNativeUi();
 #if BUILDFLAG(IS_LINUX)
-    if (system_theme == SystemTheme::kCustom) {
-      const auto* linux_ui = ui::GetDefaultLinuxUi();
-      native_theme_ = linux_ui->GetNativeTheme();
-    }
+    if (system_theme == SystemTheme::kCustom)
+      native_theme_ = ui::GetDefaultLinuxUiTheme()->GetNativeTheme();
 #endif
     original_forced_colors_ = native_theme_->InForcedColorsMode();
     original_preferred_contrast_ = native_theme_->GetPreferredContrast();

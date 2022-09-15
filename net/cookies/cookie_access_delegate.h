@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ class NET_EXPORT CookieAccessDelegate {
   // not both, and not neither.
   [[nodiscard]] virtual absl::optional<
       base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>>
-  FindFirstPartySetOwners(
+  FindFirstPartySetEntries(
       const base::flat_set<net::SchemefulSite>& sites,
       base::OnceCallback<
           void(base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>)>

@@ -312,6 +312,11 @@ const base::Feature kCalendarModelDebugMode{"CalendarModelDebugMode",
 const base::Feature kCameraAppDocScanDlc{"CameraAppDocScanDlc",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables to show multi-page UI when for document scanning feature in the
+// camera app.
+const base::Feature kCameraAppMultiPageDocScan{
+    "CameraAppMultiPageDocScan", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
 const base::Feature kCameraPrivacySwitchNotifications{
@@ -340,11 +345,6 @@ const base::Feature kCellularUseSecondEuicc{"CellularUseSecondEuicc",
 // cryptohome.
 const base::Feature kCheckPasswordsAgainstCryptohomeHelper{
     "CheckPasswordsAgainstCryptohomeHelper", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, a blue new nudge will show on the context menu option for
-// clipboard history.
-const base::Feature kClipboardHistoryContextMenuNudge{
-    "ClipboardHistoryContextMenuNudge", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the clipboard nudge shown prefs will be reset at the start of
 // each new user session.
@@ -757,6 +757,10 @@ const base::Feature kFilesAppExperimental{"FilesAppExperimental",
 const base::Feature kFilesExtractArchive{"FilesExtractArchive",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable inline sync status in Files app.
+const base::Feature kFilesInlineSyncStatus{"FilesInlineSyncStatus",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables partitioning of removable disks in file manager.
 const base::Feature kFilesSinglePartitionFormat{
     "FilesSinglePartitionFormat", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -807,9 +811,9 @@ const base::Feature kGlanceables{"Glanceables",
 const base::Feature kGuestOsFiles{"GuestOsFiles",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Gaia reauth endpoint with deleted user customization page.
+// Enables the Gaia reauth endpoint.
 const base::Feature kGaiaReauthEndpoint{"GaiaReauthEndpoint",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls gamepad vibration in Exo.
 const base::Feature kGamepadVibration{"ExoGamepadVibration",
@@ -884,6 +888,10 @@ const base::Feature kHideArcMediaNotifications{
 // preferences, or policy).
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, add Hindi Inscript keyboard layout.
+const base::Feature kHindiInscriptLayout{"HindiInscriptLayout",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables in-progress downloads notification suppression with the productivity
 // feature that aims to reduce context switching by enabling users to collect
@@ -1213,10 +1221,6 @@ const base::Feature kOsSettingsAppNotificationsPage{
 
 const base::Feature kOverviewButton{"OverviewButton",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the option to snap windows by thirds for split view.
-const base::Feature kPartialSplit{"PartialSplit",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a notification warning users that their Thunderbolt device is not
 // supported on their CrOS device.
@@ -1907,10 +1911,6 @@ bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
   return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
 }
 
-bool IsClipboardHistoryContextMenuNudgeEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
-}
-
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
 }
@@ -2327,10 +2327,6 @@ bool IsOobeRemoveShutdownButtonEnabled() {
 
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
-}
-
-bool IsPartialSplitEnabled() {
-  return base::FeatureList::IsEnabled(kPartialSplit);
 }
 
 bool IsPcieBillboardNotificationEnabled() {

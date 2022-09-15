@@ -25,6 +25,11 @@ const base::Feature kDocumentsProviderUnknownSizeFeature{
 const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether files shared to ARC Nearby Share are shared through the
+// FuseBox filesystem, instead of creating a temporary copy.
+const base::Feature kEnableArcNearbyShareFuseBox{
+    "ArcNearbyShareFuseBox", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
 // MDS/L1TF vulnerabilities. When this feature is disabled, crosvm does per-vCPU
 // core scheduling which is more secure.
@@ -142,10 +147,6 @@ const base::Feature kOutOfProcessVideoDecoding{
 // will be disabled.
 const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls ARC right click long press compatibility feature.
-const base::Feature kRightClickLongPress{"ArcRightClickLongPress",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.

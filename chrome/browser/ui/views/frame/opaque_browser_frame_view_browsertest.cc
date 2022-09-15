@@ -38,6 +38,7 @@
 
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/linux_ui_factory.h"
 #include "ui/linux/linux_ui_getter.h"
 
 class FakeLinuxUiGetter : public ui::LinuxUiGetter {
@@ -45,12 +46,12 @@ class FakeLinuxUiGetter : public ui::LinuxUiGetter {
   explicit FakeLinuxUiGetter(bool use_system_theme)
       : use_system_theme_(use_system_theme) {}
 
-  ui::LinuxUi* GetForWindow(aura::Window* window) override {
+  ui::LinuxUiTheme* GetForWindow(aura::Window* window) override {
     return GetForProfile(nullptr);
   }
 
-  ui::LinuxUi* GetForProfile(Profile* profile) override {
-    return use_system_theme_ ? ui::LinuxUi::instance() : nullptr;
+  ui::LinuxUiTheme* GetForProfile(Profile* profile) override {
+    return use_system_theme_ ? ui::GetDefaultLinuxUiTheme() : nullptr;
   }
 
  private:

@@ -17,6 +17,66 @@
 
 namespace ash {
 
+namespace {
+
+bool IsTilingWindowManagerAccelerator(base::StringPiece accelerator_name) {
+  // List of tiling window manager accelerator names.
+  static const base::NoDestructor<base::flat_set<std::string>>
+      kTilingWMaccelerators({
+          // Move window
+          "Alt Shift ArrowLeft",
+          "Alt Shift ArrowRight",
+          "Alt Shift ArrowUp",
+          "Alt Shift ArrowDown",
+          "Alt Shift KeyJ",
+          "Alt Shift KeyK",
+          "Alt Shift KeyL",
+          "Alt Shift Semicolon",
+          // Move focus
+          "Alt ArrowLeft",
+          "Alt ArrowRight",
+          "Alt ArrowUp",
+          "Alt ArrowDown",
+          "Alt KeyJ",
+          "Alt KeyK",
+          "Alt KeyL",
+          "Alt Semicolon",
+          // Toggle fullscreen
+          "Alt KeyF",
+          // Split window vertically
+          "Alt KeyV",
+          // Split window horizontally
+          "Alt KeyH",
+          // Switch to workspace
+          "Alt Digit0",
+          "Alt Digit1",
+          "Alt Digit2",
+          "Alt Digit3",
+          "Alt Digit4",
+          "Alt Digit5",
+          "Alt Digit6",
+          "Alt Digit7",
+          "Alt Digit8",
+          "Alt Digit9",
+          // Move to workspace
+          "Alt Shift Digit0",
+          "Alt Shift Digit1",
+          "Alt Shift Digit2",
+          "Alt Shift Digit3",
+          "Alt Shift Digit4",
+          "Alt Shift Digit5",
+          "Alt Shift Digit6",
+          "Alt Shift Digit7",
+          "Alt Shift Digit8",
+          "Alt Shift Digit9",
+          // Close window
+          "Alt Shift KeyQ",
+      });
+  return base::Contains(*kTilingWMaccelerators, accelerator_name);
+}
+
+}  // namespace
+
 // static
 CrosWindowManagementContext& CrosWindowManagementContext::Get(
     Profile* profile) {
@@ -75,14 +135,19 @@ void CrosWindowManagementContext::OnKeyEvent(ui::KeyEvent* event) {
   // their accelerators. For prototyping, the accelerator name is a string
   // consisting of the modifiers pressed (Alt and/or Control) and the DOM key
   // that was pressed. We skip any events without modifiers. For example:
-  // +--------------------+------------------------------------------------+
-  // |    Keys pressed    |               Accelerator Name                 |
-  // +--------------------+------------------------------------------------+
-  // | `Ctrl + a`         | `"Control a"`                                  |
-  // | `Ctrl + Alt + b`   | `"Control AltLeft b"`                          |
-  // | `Ctrl + Shift + a` | `"Control A"`                                  |
-  // | `Shift + a`        | Skipped (Neither Control nor Alt were pressed) |
-  // +--------------------+------------------------------------------------+
+  // +----------------------+------------------------------------------------+
+  // |    Keys pressed      |               Accelerator Name                 |
+  // +----------------------+------------------------------------------------+
+  // | `Ctrl + a`           | `"Control KeyA"`                               |
+  // | `Ctrl + Alt + b`     | `"Control Alt KeyB"`                           |
+  // | `Ctrl + Shift + a`   | `"Control Shift KeyA"`                         |
+  // | `Ctrl + Alt + Shift` | Skipped (Only modifiers)                       |
+  // | `Shift + a`          | Skipped (Neither Control nor Alt were pressed) |
+  // +--------------------+--------------------------------------------------+
+  // Ignore modifier-only accelerators.
+  if (ui::KeycodeConverter::IsDomKeyForModifier(event->GetDomKey())) {
+    return;
+  }
   std::vector<std::string> keys;
   if (event->IsControlDown()) {
     keys.push_back(
@@ -92,17 +157,16 @@ void CrosWindowManagementContext::OnKeyEvent(ui::KeyEvent* event) {
     keys.push_back(ui::KeycodeConverter::DomKeyToKeyString(ui::DomKey::ALT));
   }
 
-  // No modifiers pressed.
-  if (keys.size() == 0)
-    return;
-
-  // Only modifiers pressed.
-  const std::string key =
-      ui::KeycodeConverter::DomKeyToKeyString(event->GetDomKey());
-  if (base::Contains(keys, key)) {
+  // We only support accelerators that use at least one of `Control` or `Alt`.
+  if (keys.size() == 0) {
     return;
   }
-  keys.push_back(key);
+
+  if (event->IsShiftDown()) {
+    keys.push_back(ui::KeycodeConverter::DomKeyToKeyString(ui::DomKey::SHIFT));
+  }
+
+  keys.push_back(event->GetCodeString());
 
   blink::mojom::AcceleratorEventPtr event_ptr =
       blink::mojom::AcceleratorEvent::New();
@@ -111,6 +175,17 @@ void CrosWindowManagementContext::OnKeyEvent(ui::KeyEvent* event) {
                         : blink::mojom::AcceleratorEvent::Type::kUp;
   event_ptr->accelerator_name = base::JoinString(keys, " ");
   event_ptr->repeat = event->is_repeat();
+
+  // If the accelerator is for the tiling window manager, then mark the event
+  // as handled to avoid conflicts with other system shortcuts. Eventually,
+  // System Extensions will integrate with the shortcut manager and won't need
+  // this, but this improves the experience at the prototype stage.
+  // TODO(b/238578914): Remove once System Extensions can register their
+  // accelerators.
+  if (!system_extensions_registry_->GetIds().empty() &&
+      IsTilingWindowManagerAccelerator(event_ptr->accelerator_name)) {
+    event->SetHandled();
+  }
 
   GetCrosWindowManagementInstances(base::BindRepeating(
       [](const blink::mojom::AcceleratorEventPtr& event_ptr,

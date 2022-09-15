@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,6 +255,10 @@ UIColor* DimColorIncognito() {
 
 - (CrURL*)destinationUrl {
   return [[CrURL alloc] initWithGURL:_match.destination_url];
+}
+
+- (const AutocompleteMatch&)autocompleteMatch {
+  return _match;
 }
 
 #pragma mark tail suggest

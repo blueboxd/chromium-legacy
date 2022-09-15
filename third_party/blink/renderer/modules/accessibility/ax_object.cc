@@ -748,7 +748,8 @@ bool AXObject::IsRoot() const {
 }
 
 void AXObject::SetParent(AXObject* new_parent) const {
-#if DCHECK_IS_ON()
+// TODO(crbug.com/1353205): Re-enable DCHECK for all platforms.
+#if DCHECK_IS_ON() && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!new_parent && !IsRoot()) {
     std::ostringstream message;
     message << "Parent cannot be null, except at the root. "
@@ -1307,6 +1308,17 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
     SerializeLiveRegionAttributes(node_data);
 
   SerializeOtherScreenReaderAttributes(node_data);
+
+  if (accessibility_mode.has_mode(ui::AXMode::kPDF))
+    return;
+
+  // Return early. The following attributes are unnecessary for ignored nodes.
+  // Exception: focusable ignored nodes are fully serialized, so that reasonable
+  // verbalizations can be made if they actually receive focus.
+  if (AccessibilityIsIgnored() &&
+      !node_data->HasState(ax::mojom::blink::State::kFocusable)) {
+    return;
+  }
 }
 
 void AXObject::SerializeBoundingBoxAttributes(ui::AXNodeData& dst) const {
@@ -1351,6 +1363,17 @@ void AXObject::PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
 
   if (!container_transform.IsIdentity())
     bounds.transform = std::make_unique<gfx::Transform>(container_transform);
+}
+
+void AXObject::MarkAllImageAXObjectsDirty(
+    ax::mojom::blink::Action event_from_action) {
+  if (RoleValue() == ax::mojom::blink::Role::kImage) {
+    AXObjectCache().MarkAXObjectDirtyWithCleanLayoutAndEvent(
+        this, ax::mojom::blink::EventFrom::kNone, event_from_action);
+  }
+
+  for (auto& child : UnignoredChildren())
+    child->MarkAllImageAXObjectsDirty(event_from_action);
 }
 
 void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {

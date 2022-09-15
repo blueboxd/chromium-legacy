@@ -35,6 +35,26 @@
 
 namespace blink {
 
+namespace {
+
+bool IsInPreOrder(const HeapVector<NGLogicalOOFNodeForFragmentation>& nodes) {
+  return std::is_sorted(nodes.begin(), nodes.end(),
+                        [](const NGLogicalOOFNodeForFragmentation& a,
+                           const NGLogicalOOFNodeForFragmentation& b) {
+                          return a.box->IsBeforeInPreOrder(*b.box);
+                        });
+}
+
+void SortInPreOrder(HeapVector<NGLogicalOOFNodeForFragmentation>* nodes) {
+  std::sort(nodes->begin(), nodes->end(),
+            [](const NGLogicalOOFNodeForFragmentation& a,
+               const NGLogicalOOFNodeForFragmentation& b) {
+              return a.box->IsBeforeInPreOrder(*b.box);
+            });
+}
+
+}  // namespace
+
 // static
 absl::optional<LogicalSize>
 NGOutOfFlowLayoutPart::InitialContainingBlockFixedSize(NGBlockNode container) {
@@ -1113,25 +1133,33 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
           .block_size;
 
   NGLogicalAnchorQueryForFragmentation stitched_anchor_queries;
+  stitched_anchor_queries.Update(container_builder_->Children(), *descendants,
+                                 *container_builder_->Node().GetLayoutBox(),
+                                 container_builder_->GetWritingDirection());
+
+  // |descendants| are sorted by fragmentainers, and then by the layout order,
+  // which is pre-order of the box tree. When fragments are pushed to later
+  // fragmentainers by overflow, |descendants| need to be re-sorted by the
+  // pre-order. Note that both |SortInPreOrder| and |IsInPreOrder| are not
+  // cheap, limit only when needed.
+  if (stitched_anchor_queries.HasAnchorsOnOutOfFlowObjects() &&
+      !IsInPreOrder(*descendants)) {
+    SortInPreOrder(descendants);
+  }
+
   HeapVector<HeapVector<NodeToLayout>> descendants_to_layout;
   ClearCollectionScope<HeapVector<HeapVector<NodeToLayout>>>
       descendants_to_layout_scope(&descendants_to_layout);
   while (descendants->size() > 0) {
     ComputeInlineContainingBlocksForFragmentainer(*descendants);
 
-    // Update anchor queries for the CSS Anchor Positioning.
-    stitched_anchor_queries.Update(container_builder_->Children(), *descendants,
-                                   *container_builder_->Node().GetLayoutBox(),
-                                   container_builder_->GetWritingDirection());
-
     // When there are anchor queries, each containing block should be laid out
     // separately. This loop chunks |descendants| by their containing blocks, if
     // they have anchor queries.
     base::span<NGLogicalOOFNodeForFragmentation> descendants_span =
         base::make_span(*descendants);
-    bool has_new_descendants_span;
-    do {
-      has_new_descendants_span = false;
+    for (;;) {
+      bool has_new_descendants_span = false;
       // The CSS containing block of the last descendant, to group |descendants|
       // by the CSS containing block.
       const LayoutObject* last_css_containing_block = nullptr;
@@ -1168,7 +1196,7 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
         //
         // Note |descendant.containing_block.fragment| is |ContainingBlock|, not
         // the CSS containing block.
-        if (!stitched_anchor_queries.IsEmpty()) {
+        if (stitched_anchor_queries.ShouldLayoutByContainingBlock()) {
           const LayoutObject* css_containing_block =
               descendant.box->Container();
           DCHECK(css_containing_block);
@@ -1176,7 +1204,9 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
             // Chunking the layout of OOFs by the containing blocks is done only
             // if it has anchor query, for the performance reasons to minimize
             // the number of rebuilding fragmentainer fragments.
-            if (last_css_containing_block && stitched_anchor_query) {
+            if (last_css_containing_block &&
+                (stitched_anchor_query ||
+                 stitched_anchor_queries.HasAnchorsOnOutOfFlowObjects())) {
               has_new_descendants_span = true;
               descendants_span = descendants_span.subspan(
                   &descendant - descendants_span.data());
@@ -1260,7 +1290,17 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
           descendants_to_layout.resize(index + 2);
       }
       descendants_to_layout.Shrink(0);
-    } while (has_new_descendants_span);
+
+      // When laying out OOFs by containing blocks, and there are more
+      // containing blocks, update anchor queries and layout OOFs in the next
+      // containing block.
+      if (!has_new_descendants_span)
+        break;
+      stitched_anchor_queries.Update(container_builder_->Children(),
+                                     descendants_span,
+                                     *container_builder_->Node().GetLayoutBox(),
+                                     container_builder_->GetWritingDirection());
+    }
 
     // Sweep any descendants that might have been bubbled up from the fragment
     // to the |container_builder_|. This happens when we have nested absolute

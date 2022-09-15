@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,12 +180,7 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
-  // TODO(crbug.com/931280): This should be 1, but for the time being will be 2
-  // to work around an NTP bug.
-  int mainTabCount = 1;
-  if ([ChromeEarlGrey isBlockNewTabPagePendingLoadEnabled])
-    mainTabCount = 2;
-  [ChromeEarlGrey waitForMainTabCount:mainTabCount];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that BVC properly handles open URL. When BVC is showing a non-NTP

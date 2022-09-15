@@ -248,7 +248,6 @@ source_set("wayland") {
     "//skia",
     "//third_party/libsync",
     "//third_party/re2",
-    "//third_party/wayland:wayland_util",
     "//third_party/wayland-protocols:alpha_compositing_protocol",
     "//third_party/wayland-protocols:content_type_protocol",
     "//third_party/wayland-protocols:cursor_shapes_protocol",
@@ -346,7 +345,7 @@ source_set("wayland") {
     ]
   }
 
-  if (use_system_libwayland) {
+  if (use_system_libwayland_client) {
     defines += [ "USE_LIBWAYLAND_STUBS" ]
     deps += [ "//third_party/wayland:wayland_stubs" ]
   } else {

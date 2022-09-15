@@ -522,8 +522,47 @@ class HoldingSpaceTrayTestBase : public AshTestBase {
 class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
  public:
   HoldingSpaceTrayTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kHoldingSpacePredictability, false);
+    scoped_feature_list_.InitWithFeatures(
+        {}, {
+                features::kHoldingSpacePredictability,
+                features::kHoldingSpaceSuggestions,
+            });
+  }
+
+  // Verifies that the user's preferences and the suggestion section's visual
+  // appearance match a test's current scenario.
+  void VerifySuggestionsSectionState(bool expanded, bool item_present) {
+    AccountId account_id = AccountId::FromUserEmail(kTestUser);
+    auto* prefs = GetSessionControllerClient()->GetUserPrefService(account_id);
+    ASSERT_TRUE(prefs);
+
+    const auto expected_chevron_skia =
+        gfx::ImageSkiaOperations::CreateRotatedImage(
+            gfx::CreateVectorIcon(
+                kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
+                AshColorProvider::Get()->GetContentLayerColor(
+                    AshColorProvider::ContentLayerType::kIconColorSecondary)),
+            expanded ? SkBitmapOperations::ROTATION_270_CW
+                     : SkBitmapOperations::ROTATION_90_CW);
+
+    // Changes to the section's expanded state should be stored persistently.
+    EXPECT_EQ(holding_space_prefs::IsSuggestionsExpanded(prefs), expanded);
+
+    // The section header should be visible as long as suggestions are
+    // available.
+    EXPECT_EQ(IsViewVisible(test_api()->GetSuggestionsSectionHeader()),
+              item_present);
+
+    // The section header's chevron icon should indicate whether the section is
+    // expanded or collapsed.
+    EXPECT_TRUE(gfx::BitmapsAreEqual(
+        *test_api()->GetSuggestionsSectionChevronIcon()->GetImage().bitmap(),
+        *expected_chevron_skia.bitmap()));
+
+    // The section content should be visible as long as suggestions are
+    // available and the section is expanded.
+    EXPECT_EQ(test_api()->GetSuggestionsSectionContainer()->GetVisible(),
+              expanded && item_present);
   }
 
  private:
@@ -1149,56 +1188,63 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   // Focus the suggestions section header.
   auto* suggestions_section_header = test_api()->GetSuggestionsSectionHeader();
   ASSERT_TRUE(suggestions_section_header);
-  EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
-
-  // Cache `prefs` and expected chevron icons in preparation for verifying that
-  // activating the section header toggles whether the section is expanded.
-  AccountId account_id = AccountId::FromUserEmail(kTestUser);
-  auto* prefs = GetSessionControllerClient()->GetUserPrefService(account_id);
-  ASSERT_TRUE(prefs);
-
-  const auto chevron_expanded_skia =
-      gfx::ImageSkiaOperations::CreateRotatedImage(
-          gfx::CreateVectorIcon(
-              kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
-              AshColorProvider::Get()->GetContentLayerColor(
-                  AshColorProvider::ContentLayerType::kIconColorSecondary)),
-          SkBitmapOperations::ROTATION_270_CW);
-
-  const auto chevron_collapsed_skia =
-      gfx::ImageSkiaOperations::CreateRotatedImage(
-          gfx::CreateVectorIcon(
-              kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
-              AshColorProvider::Get()->GetContentLayerColor(
-                  AshColorProvider::ContentLayerType::kIconColorSecondary)),
-          SkBitmapOperations::ROTATION_90_CW);
 
   // Verify that the section starts out expanded.
-  EXPECT_TRUE(holding_space_prefs::IsSuggestionsExpanded(prefs));
-  EXPECT_TRUE(gfx::BitmapsAreEqual(
-      *test_api()->GetSuggestionsSectionChevronIcon()->GetImage().bitmap(),
-      *chevron_expanded_skia.bitmap()));
+  {
+    SCOPED_TRACE("Initially expanded.");
+    VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/true);
+  }
 
-  // Press ENTER and expect an attempt to collapse the suggestions section.
+  // Press ENTER and expect the section to collapse.
+  EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  {
+    SCOPED_TRACE("First collapse.");
+    VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
+  }
 
-  // Verify that the section is not expanded.
-  EXPECT_FALSE(holding_space_prefs::IsSuggestionsExpanded(prefs));
-  EXPECT_TRUE(gfx::BitmapsAreEqual(
-      *test_api()->GetSuggestionsSectionChevronIcon()->GetImage().bitmap(),
-      *chevron_collapsed_skia.bitmap()));
-
-  // Press ENTER and expect an attempt to expand the section.
+  // Press ENTER and expect the section to expand.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  {
+    SCOPED_TRACE("First expand.");
+    VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/true);
+  }
 
-  // Verify that the section is expanded.
-  EXPECT_TRUE(holding_space_prefs::IsSuggestionsExpanded(prefs));
-  EXPECT_TRUE(gfx::BitmapsAreEqual(
-      *test_api()->GetSuggestionsSectionChevronIcon()->GetImage().bitmap(),
-      *chevron_expanded_skia.bitmap()));
+  // Remove the section's item and expect the section header to stop showing.
+  RemoveAllItems();
+  {
+    SCOPED_TRACE("Item removed (expanded).");
+    VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/false);
+  }
 
-  // TODO(crbug/1358331): Verify effect of expanding/collapsing on visibility of
-  // item chips once implemented.
+  // Add a suggested item and expect the section header to show again.
+  AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
+          base::FilePath("/tmp/fake2"));
+  {
+    SCOPED_TRACE("Item added (expanded).");
+    VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/true);
+  }
+
+  // Verify that removing and adding an item works with the section collapsed.
+  EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  {
+    SCOPED_TRACE("Second collapse.");
+    VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
+  }
+
+  RemoveAllItems();
+  {
+    SCOPED_TRACE("Item removed (collapsed).");
+    VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/false);
+  }
+
+  AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
+          base::FilePath("/tmp/fake3"));
+  {
+    SCOPED_TRACE("Item added (collapsed).");
+    VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
+  }
 }
 
 // User should be able to open the Downloads folder in the Files app by pressing
@@ -3282,6 +3328,103 @@ TEST_P(
   EXPECT_TRUE(test_api()->IsShowingInShelf());
   EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
   EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+}
+
+class HoldingSpaceTraySuggestionsFeatureTest
+    : public HoldingSpaceTrayTestBase,
+      public ::testing::WithParamInterface<std::tuple<
+          /*predictability_enabled=*/bool,
+          /*suggestions_enabled=*/bool>> {
+ public:
+  HoldingSpaceTraySuggestionsFeatureTest() {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    (IsHoldingSpacePredictabilityEnabled() ? enabled_features
+                                           : disabled_features)
+        .push_back(features::kHoldingSpacePredictability);
+
+    (IsHoldingSpaceSuggestionsEnabled() ? enabled_features : disabled_features)
+        .push_back(features::kHoldingSpaceSuggestions);
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  bool IsHoldingSpacePredictabilityEnabled() const {
+    return std::get<0>(GetParam());
+  }
+
+  bool IsHoldingSpaceSuggestionsEnabled() const {
+    return std::get<1>(GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HoldingSpaceTraySuggestionsFeatureTest,
+                         ::testing::Combine(
+                             /*predictability_enabled=*/testing::Bool(),
+                             /*suggestions_enabled=*/testing::Bool()));
+
+TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
+       PinnedFilesPlaceholderShowsAfterPinUnpin) {
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+
+  // The tray button should be shown because the user has previously added an
+  // item to their holding space.
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
+
+  // Pin an item, then clear the model. Whether the placeholder shows should
+  // depend on the state of the predictability flag.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake"));
+  MarkTimeOfFirstPin();
+  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
+
+  RemoveAllItems();
+  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->PinnedFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
+  EXPECT_EQ(test_api()->IsShowingInShelf(),
+            IsHoldingSpacePredictabilityEnabled());
+
+  // Add a downloaded file. Now the pinned placeholder should show if either
+  // the predictability or suggestions flags are enabled.
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"));
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->PinnedFilesBubbleShown(),
+            IsHoldingSpaceSuggestionsEnabled() ||
+                IsHoldingSpacePredictabilityEnabled());
+
+  if (test_api()->PinnedFilesBubbleShown()) {
+    views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+    ASSERT_TRUE(pinned_files_bubble);
+    views::View* files_app_chip =
+        pinned_files_bubble->GetViewByID(kHoldingSpaceFilesAppChipId);
+    EXPECT_EQ(files_app_chip != nullptr,
+              IsHoldingSpaceSuggestionsEnabled() ||
+                  IsHoldingSpacePredictabilityEnabled());
+  }
+}
+
+TEST_P(HoldingSpaceTraySuggestionsFeatureTest, TrayDoesNotShowUntilFirstAdd) {
+  StartSession(/*pre_mark_time_of_first_add=*/false);
+
+  // For the suggestions changes, the tray should still not show by default
+  // in the shelf. If the predictability feature is enabled, it should show
+  // no matter what.
+  EXPECT_EQ(test_api()->IsShowingInShelf(),
+            IsHoldingSpacePredictabilityEnabled());
+
+  MarkTimeOfFirstAdd();
+
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
 }
 
 // Base class for tests of the holding space icon parameterized by a boolean for

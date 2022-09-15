@@ -54,10 +54,9 @@ DesktopMediaPickerController::Params MakeDesktopPickerParams(
   DesktopMediaPickerController::Params params;
   // Value of |web_contents| comes from the UI, and typically corresponds to
   // the active tab.
-  if (web_contents) {
-    params.web_contents = web_contents->GetWeakPtr();
+  params.web_contents = web_contents;
+  if (web_contents)
     params.context = web_contents->GetTopLevelNativeWindow();
-  }
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
   params.select_only_screen = true;
@@ -128,6 +127,11 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GetIssueManager()->AddIssue(issue);
+}
+
+void MediaRouterMojoImpl::ClearTopIssueForSink(const MediaSink::Id& sink_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GetIssueManager()->ClearTopIssueForSink(sink_id);
 }
 
 void MediaRouterMojoImpl::OnSinksReceived(

@@ -14,7 +14,6 @@ image_loader_static_js_files = [
 static_js_files = [
   # Background:
   "file_manager/background/js/app_window_wrapper.js",
-  "file_manager/background/js/app_windows.js",
   "file_manager/background/js/crostini.js",
   "file_manager/background/js/drive_sync_handler.js",
   "file_manager/background/js/entry_location_impl.js",
@@ -23,7 +22,6 @@ static_js_files = [
   "file_manager/background/js/file_operation_manager.js",
   "file_manager/background/js/file_operation_util.js",
   "file_manager/background/js/launcher.js",
-  "file_manager/background/js/main_background.js",
   "file_manager/background/js/metadata_proxy.js",
   "file_manager/background/js/metrics_start.js",
 
@@ -82,7 +80,6 @@ static_js_files = [
   "file_manager/externs/background/file_manager_base.js",
   "file_manager/externs/background/file_operation_manager.js",
   "file_manager/externs/background/progress_center.js",
-  "file_manager/externs/background_window.js",
   "file_manager/externs/banner.js",
   "file_manager/externs/command_handler_deps.js",
   "file_manager/externs/directory_change_event.js",
@@ -91,6 +88,7 @@ static_js_files = [
   "file_manager/externs/entry_location.js",
   "file_manager/externs/exif_entry.js",
   "file_manager/externs/files_app_entry_interfaces.js",
+  "file_manager/externs/foreground_window.js",
   "file_manager/externs/metadata_worker_window.js",
   "file_manager/externs/progress_center_panel.js",
   "file_manager/externs/volume_info.js",
@@ -260,10 +258,14 @@ ts_files = [
   "file_manager/state/file_key.ts",
   "file_manager/widgets/xf_breadcrumb.ts",
   "file_manager/containers/breadcrumb_container.ts",
+  "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
 ]
 
 # HTML template files that are used to generate the ".html.ts"
-ts_templates = [ "file_manager/widgets/xf_breadcrumb.html" ]
+ts_templates = [
+  "file_manager/widgets/xf_breadcrumb.html",
+  "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
+]
 
 ts_test_files = [
   # Lib:
@@ -276,6 +278,7 @@ ts_test_files = [
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
+  "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
 ]
 
 ts_generated_templates = []

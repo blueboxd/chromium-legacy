@@ -2684,6 +2684,9 @@ extern const char kArcKeyboardShortcutHelperIntegrationDescription[];
 extern const char kArcNativeBridgeToggleName[];
 extern const char kArcNativeBridgeToggleDescription[];
 
+extern const char kArcNearbyShareFuseBoxName[];
+extern const char kArcNearbyShareFuseBoxDescription[];
+
 extern const char kArcRightClickLongPressName[];
 extern const char kArcRightClickLongPressDescription[];
 
@@ -2861,6 +2864,9 @@ extern const char kBruschettaAlphaMigrateDescription[];
 extern const char kCameraAppDocScanDlcName[];
 extern const char kCameraAppDocScanDlcDescription[];
 
+extern const char kCameraAppMultiPageDocScanName[];
+extern const char kCameraAppMultiPageDocScanDescription[];
+
 extern const char kCompactBubbleLauncherName[];
 extern const char kCompactBubbleLauncherDescription[];
 
@@ -3025,12 +3031,6 @@ extern const char kEnableZramWritebackDescription[];
 extern const char kDeprecateAssistantStylusFeaturesName[];
 extern const char kDeprecateAssistantStylusFeaturesDescription[];
 
-extern const char kDisableQuickAnswersV2TranslationName[];
-extern const char kDisableQuickAnswersV2TranslationDescription[];
-
-extern const char kQuickAnswersForMoreLocalesName[];
-extern const char kQuickAnswersForMoreLocalesDescription[];
-
 extern const char kEapGtcWifiAuthenticationName[];
 extern const char kEapGtcWifiAuthenticationDescription[];
 
@@ -3099,6 +3099,9 @@ extern const char kFilesAppExperimentalDescription[];
 
 extern const char kFilesExtractArchiveName[];
 extern const char kFilesExtractArchiveDescription[];
+
+extern const char kFilesInlineSyncStatusName[];
+extern const char kFilesInlineSyncStatusDescription[];
 
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];
@@ -3188,6 +3191,9 @@ extern const char kVirtualKeyboardNewHeaderDescription[];
 extern const char kCrosLanguageSettingsImeOptionsInSettingsName[];
 extern const char kCrosLanguageSettingsImeOptionsInSettingsDescription[];
 
+extern const char kHindiInscriptLayoutName[];
+extern const char kHindiInscriptLayoutDescription[];
+
 extern const char kImeSystemEmojiPickerName[];
 extern const char kImeSystemEmojiPickerDescription[];
 
@@ -3273,9 +3279,6 @@ extern const char kMultilingualTypingDescription[];
 
 extern const char kNearbySharingArcName[];
 extern const char kNearbySharingArcDescription[];
-
-extern const char kNearbySharingBackgroundScanningName[];
-extern const char kNearbySharingBackgroundScanningDescription[];
 
 extern const char kNearbySharingOnePageOnboardingName[];
 extern const char kNearbySharingOnePageOnboardingDescription[];
@@ -3598,6 +3601,12 @@ extern const char kMessagesPreinstallDescription[];
 
 extern const char kOneGroupPerRendererName[];
 extern const char kOneGroupPerRendererDescription[];
+
+extern const char kDisableQuickAnswersV2TranslationName[];
+extern const char kDisableQuickAnswersV2TranslationDescription[];
+
+extern const char kQuickAnswersForMoreLocalesName[];
+extern const char kQuickAnswersForMoreLocalesDescription[];
 
 extern const char kSyncChromeOSExplicitPassphraseSharingName[];
 extern const char kSyncChromeOSExplicitPassphraseSharingDescription[];

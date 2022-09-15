@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,15 +29,12 @@
 @property(nonatomic, weak) id<IOSChromeFirstRunVariationsSeedManagerDelegate>
     delegate;
 
-// The fetched seed response.
-@property(nonatomic, readonly) IOSChromeSeedResponse* seed;
-
 // Starts fetching the initial seed from the variations server.
 - (void)startSeedFetch;
 
-// Resets the seed response; called by the variations service after the seed is
-// imported into Chrome Prefs.
-- (void)clearSeed;
+// Returns the seed response and resets it; called by the variations service to
+// import the seed into Chrome Prefs.
+- (IOSChromeSeedResponse*)popSeed;
 
 @end
 

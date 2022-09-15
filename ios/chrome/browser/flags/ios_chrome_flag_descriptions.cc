@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -723,6 +723,12 @@ const char kStartSurfaceDescription[] =
 const char kTFLiteLanguageDetectionName[] = "TFLite-based Language Detection";
 const char kTFLiteLanguageDetectionDescription[] =
     "Uses TFLite for language detection in place of CLD3";
+
+const char kTFLiteLanguageDetectionIgnoreName[] =
+    "Ignore TFLite-based Language Detection";
+const char kTFLiteLanguageDetectionIgnoreDescription[] =
+    "Computes the TFLite language detection but ignore the result and uses the "
+    "CLD3 detection instead.";
 
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =

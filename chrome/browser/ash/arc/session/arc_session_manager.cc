@@ -813,6 +813,7 @@ void ArcSessionManager::ShutdownSession() {
       VLOG(1) << "Skipping session shutdown because state is: " << state_;
       break;
     case State::CHECKING_REQUIREMENTS:
+    case State::READY:
       // We need to kill the mini-container that might be running here.
       arc_session_runner_->RequestStop();
       // While RequestStop is asynchronous, ArcSessionManager is agnostic to the
@@ -911,9 +912,18 @@ void ArcSessionManager::RequestEnable() {
 
   if (IsDlcRequired())
     arc_dlc_installer_->RequestEnable();
-  // |directly_started_| flag must be preserved during the internal ARC restart.
-  // So set it only when ARC is externally requested to start.
-  directly_started_ = RequestEnableImpl();
+  // |skipped_terms_of_service_negotiation_| flag must be preserved during the
+  // internal ARC restart. So set it only when ARC is externally requested to
+  // start.
+  skipped_terms_of_service_negotiation_ = RequestEnableImpl();
+}
+
+void ArcSessionManager::AllowActivation() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  activation_is_allowed_ = true;
+  if (state_ == State::READY)
+    StartArcForRegularBoot();
 }
 
 bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
@@ -1006,15 +1016,17 @@ bool ArcSessionManager::RequestEnableImpl() {
   // In Public Session mode ARC should be started silently without user
   // interaction. If opt-in verification is disabled, skip negotiation, too.
   // This is for testing purpose.
-  const bool start_arc_directly = signed_in || ShouldArcAlwaysStart() ||
-                                  IsRobotOrOfflineDemoAccountMode() ||
-                                  IsArcOptInVerificationDisabled();
+  const bool should_start_arc_without_user_interaction =
+      ShouldArcAlwaysStart() || IsRobotOrOfflineDemoAccountMode() ||
+      IsArcOptInVerificationDisabled();
+  const bool skip_terms_of_service_negotiation =
+      signed_in || should_start_arc_without_user_interaction;
   // When ARC is blocked because of filesystem compatibility, do not proceed
   // to starting ARC nor follow further state transitions.
   if (IsArcBlockedDueToIncompatibleFileSystem(profile_)) {
     // If the next step was the ToS negotiation, show a notification instead.
     // Otherwise, be silent now. Users are notified when clicking ARC app icons.
-    if (!start_arc_directly && g_ui_enabled)
+    if (!skip_terms_of_service_negotiation && g_ui_enabled)
       arc::ShowArcMigrationGuideNotification(profile_);
     return false;
   }
@@ -1047,17 +1059,15 @@ bool ArcSessionManager::RequestEnableImpl() {
         profile_, profile_->GetPrefs());
   }
 
-  if (start_arc_directly) {
-    StartArc();
-    // Check Android management in parallel.
-    // Note: StartBackgroundRequirementManagementChecks() may call
-    // OnBackgroundRequirementChecksDone() synchronously (or asynchronously). In
-    // the callback, Google Play Store enabled preference can be set to false if
-    // Android management is enabled, and it triggers RequestDisable() via
-    // ArcPlayStoreEnabledPreferenceHandler.
-    // Thus, StartArc() should be called so that disabling should work even
-    // if synchronous call case.
-    StartBackgroundRequirementChecks();
+  if (should_start_arc_without_user_interaction)
+    AllowActivation();
+
+  if (skip_terms_of_service_negotiation) {
+    state_ = State::READY;
+    if (activation_is_allowed_)
+      StartArcForRegularBoot();
+    else
+      VLOG(1) << "Activation is not allowed yet. Not starting ARC for now.";
     return true;
   }
 
@@ -1078,7 +1088,7 @@ void ArcSessionManager::RequestDisable(bool remove_arc_data) {
 
   VLOG(1) << "Disabling ARC.";
 
-  directly_started_ = false;
+  skipped_terms_of_service_negotiation_ = false;
   enable_requested_ = false;
   SetArcEnabledStateMetric(false);
   scoped_opt_in_tracker_.reset();
@@ -1271,7 +1281,8 @@ void ArcSessionManager::OnBackgroundRequirementChecksDone(
 
 void ArcSessionManager::StartArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(state_ == State::STOPPED || state_ == State::CHECKING_REQUIREMENTS)
+  DCHECK(state_ == State::STOPPED || state_ == State::CHECKING_REQUIREMENTS ||
+         state_ == State::READY)
       << state_;
   state_ = State::ACTIVE;
 
@@ -1330,6 +1341,24 @@ void ArcSessionManager::StartArc() {
       profile_->GetProfilePolicyConnector()->IsManaged();
 
   arc_session_runner_->RequestUpgrade(std::move(params));
+}
+
+void ArcSessionManager::StartArcForRegularBoot() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::READY);
+  DCHECK(activation_is_allowed_);
+
+  VLOG(1) << "Starting ARC for a regular boot.";
+  StartArc();
+  // Check Android management in parallel.
+  // Note: StartBackgroundRequirementManagementChecks() may call
+  // OnBackgroundRequirementChecksDone() synchronously (or asynchronously). In
+  // the callback, Google Play Store enabled preference can be set to false if
+  // Android management is enabled, and it triggers RequestDisable() via
+  // ArcPlayStoreEnabledPreferenceHandler.
+  // Thus, StartArc() should be called so that disabling should work even
+  // if synchronous call case.
+  StartBackgroundRequirementChecks();
 }
 
 void ArcSessionManager::RequestStopOnLowDiskSpace() {
@@ -1640,6 +1669,7 @@ std::ostream& operator<<(std::ostream& os,
     MAP_STATE(STOPPED);
     MAP_STATE(CHECKING_REQUIREMENTS);
     MAP_STATE(REMOVING_DATA_DIR);
+    MAP_STATE(READY);
     MAP_STATE(ACTIVE);
     MAP_STATE(STOPPING);
   }

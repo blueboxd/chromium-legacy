@@ -13,10 +13,13 @@
 
 namespace web_app {
 
-// TODO(crbug.com/1315947): Pass information about the integrity block to this
-// function.
 absl::optional<std::string> IsolatedWebAppValidator::ValidateIntegrityBlock(
-    web_package::SignedWebBundleId web_bundle_id) {
+    web_package::SignedWebBundleId web_bundle_id,
+    const std::vector<web_package::Ed25519PublicKey>& public_key_stack) {
+  if (public_key_stack.empty()) {
+    return "The Isolated Web App must have at least one signature.";
+  }
+
   // TODO: Check whether we trust the public keys contained in the integrity
   // block here.
   return absl::nullopt;
@@ -51,6 +54,16 @@ absl::optional<std::string> IsolatedWebAppValidator::ValidateMetadata(
           "Invalid metadata: The URL of an exchange contains the wrong Signed "
           "Web Bundle ID: %s",
           entry_web_bundle_id->id().c_str());
+    }
+    if (entry.has_ref()) {
+      return base::StringPrintf(
+          "Invalid metadata: The URL of an exchange is invalid: URLs must not "
+          "have a fragment part.");
+    }
+    if (entry.has_query()) {
+      return base::StringPrintf(
+          "Invalid metadata: The URL of an exchange is invalid: URLs must not "
+          "have a query part.");
     }
   }
 

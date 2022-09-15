@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,12 +188,12 @@ void ChromeIOSTranslateClient::DidFinishNavigation(
 void ChromeIOSTranslateClient::WasShown(web::WebState* web_state) {
   if (translate_metrics_logger_)
     translate_metrics_logger_->OnForegroundChange(true);
-};
+}
 
 void ChromeIOSTranslateClient::WasHidden(web::WebState* web_state) {
   if (translate_metrics_logger_)
     translate_metrics_logger_->OnForegroundChange(false);
-};
+}
 
 void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);

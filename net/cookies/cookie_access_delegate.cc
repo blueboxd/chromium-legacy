@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ CookieAccessDelegate::FirstPartySetifyPartitionKey(
   }
 
   absl::optional<base::flat_map<net::SchemefulSite, FirstPartySetEntry>>
-      maybe_entries = delegate->FindFirstPartySetOwners(
+      maybe_entries = delegate->FindFirstPartySetEntries(
           {cookie_partition_key.site()},
           base::BindOnce(&CreateCookiePartitionKeyFromFirstPartySetEntry,
                          cookie_partition_key)

@@ -570,7 +570,9 @@ enum class PasswordNoteAction {
   // Note changed from non-empty to empty from the password edit dialog in
   // settings.
   kNoteRemovedInEditDialog = 3,
-  kMaxValue = kNoteRemovedInEditDialog,
+  // Note did not change.
+  kNoteNotChanged = 4,
+  kMaxValue = kNoteNotChanged,
 };
 
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
@@ -622,7 +624,9 @@ enum class PasswordViewPageInteractions {
   // The password view page is closed while the edit dialog is closed after
   // an authentication timeout.
   kTimedOutInViewPage = 10,
-  kMaxValue = kTimedOutInViewPage,
+  // The credential is requested by typing the URL.
+  kCredentialRequestedByUrl = 11,
+  kMaxValue = kCredentialRequestedByUrl,
 };
 
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(

@@ -5,9 +5,11 @@
 
 """Compare the artifacts from two builds."""
 
+from __future__ import division
 from __future__ import print_function
 
 import ast
+import binascii
 import difflib
 import glob
 import json
@@ -102,7 +104,7 @@ def diff_binary(first_filepath, second_filepath, file_len):
   """Returns a compact binary diff if the diff is small enough."""
   BLOCK_SIZE = 8192
   CHUNK_SIZE = 32
-  NUM_CHUNKS_IN_BLOCK = BLOCK_SIZE / CHUNK_SIZE
+  NUM_CHUNKS_IN_BLOCK = BLOCK_SIZE // CHUNK_SIZE
   MAX_STREAMS = 10
   num_diffs = 0
   streams = []
@@ -135,12 +137,27 @@ def diff_binary(first_filepath, second_filepath, file_len):
   result = '%d out of %d bytes are different (%.2f%%)' % (
         num_diffs, file_len, 100.0 * num_diffs / file_len)
   if streams:
-    encode = lambda text: ''.join(i if 31 < ord(i) < 127 else '.' for i in text)
-    for offset, lhs_data, rhs_data in streams:
-      lhs_line = '%s \'%s\'' % (lhs_data.encode('hex'), encode(lhs_data))
-      rhs_line = '%s \'%s\'' % (rhs_data.encode('hex'), encode(rhs_data))
-      diff = list(difflib.Differ().compare([lhs_line], [rhs_line]))[-1][2:-1]
-      result += '\n  0x%-8x: %s\n              %s\n              %s' % (
+
+    if sys.version_info.major == 2:
+      encode = lambda text: ''.join(
+          i if 31 < ord(i) < 127 else '.' for i in text)
+
+      for offset, lhs_data, rhs_data in streams:
+        lhs_line = '%s \'%s\'' % (lhs_data.encode('hex'), encode(lhs_data))
+        rhs_line = '%s \'%s\'' % (rhs_data.encode('hex'), encode(rhs_data))
+        diff = list(difflib.Differ().compare([lhs_line], [rhs_line]))[-1][2:-1]
+        result += '\n  0x%-8x: %s\n              %s\n              %s' % (
+            offset, lhs_line, rhs_line, diff)
+
+    else:
+      encode = lambda text: ''.join(
+          chr(i) if 31 < i < 127 else '.' for i in text)
+
+      for offset, lhs_data, rhs_data in streams:
+        lhs_line = '%s \'%s\'' % (lhs_data.hex(), encode(lhs_data))
+        rhs_line = '%s \'%s\'' % (rhs_data.hex(), encode(rhs_data))
+        diff = list(difflib.Differ().compare([lhs_line], [rhs_line]))[-1][2:-1]
+        result += '\n  0x%-8x: %s\n              %s\n              %s' % (
             offset, lhs_line, rhs_line, diff)
   return result
 
@@ -294,7 +311,7 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
     print('%s isn\'t a valid directory.' % second_dir, file=sys.stderr)
     return 1
 
-  epoch_hex = struct.pack('<I', int(time.time())).encode('hex')
+  epoch_hex = binascii.hexlify(struct.pack('<I', int(time.time()))).decode()
   print('Epoch: %s' % ' '.join(epoch_hex[i:i + 2]
                                for i in range(0, len(epoch_hex), 2)))
 

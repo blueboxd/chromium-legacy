@@ -15729,6 +15729,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LensUnifiedSidePanel.RemoveLensEntry_SearchEngineChanged">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    Search engine selection changed, so removing lens entry from the side panel.
+  </description>
+</action>
+
 <action name="LensUnifiedSidePanel.ResultLinkClick">
   <owner>stanfield@google.com</owner>
   <owner>benwgold@google.com</owner>
@@ -24533,6 +24544,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.Gaia.HashedPasswordSaved">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user's hashed gaia password is saved.
+  </description>
+</action>
+
 <action name="PasswordProtection.Gmail.ChangePasswordButtonClicked">
   <owner>nwokedi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -24592,6 +24611,14 @@ should be able to be added at any place in this file.
   <description>
     Reported when a user clicks on the change password button for a
     Non-Gaia-Enterprise account.
+  </description>
+</action>
+
+<action name="PasswordProtection.NonGaiaEnterprise.HashedPasswordSaved">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user's hashed non-gaia-enterprise password is saved.
   </description>
 </action>
 
@@ -34163,6 +34190,7 @@ should be able to be added at any place in this file.
       label="For DownloadPageScreenshot feature."/>
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
+  <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
   <suffix name="FeatureNotificationGuideDefaultBrowserNotificationShown"
       label="For feature notification guide default browser notification
              feature."/>

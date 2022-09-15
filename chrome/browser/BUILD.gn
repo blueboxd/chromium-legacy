@@ -1449,19 +1449,13 @@ static_library("browser") {
     "profiles/profile_io_data.h",
     "profiles/profile_key.cc",
     "profiles/profile_key.h",
-    "profiles/profile_keyed_service_factory.cc",
-    "profiles/profile_keyed_service_factory.h",
     "profiles/profile_manager.cc",
     "profiles/profile_manager.h",
     "profiles/profile_manager_observer.h",
     "profiles/profile_metrics.cc",
     "profiles/profile_metrics.h",
-    "profiles/profile_selections.cc",
-    "profiles/profile_selections.h",
     "profiles/profiles_state.cc",
     "profiles/profiles_state.h",
-    "profiles/refcounted_profile_keyed_service_factory.cc",
-    "profiles/refcounted_profile_keyed_service_factory.h",
     "profiles/renderer_updater.cc",
     "profiles/renderer_updater.h",
     "profiles/renderer_updater_factory.cc",
@@ -3036,6 +3030,8 @@ static_library("browser") {
       "fast_checkout/fast_checkout_client_impl.h",
       "fast_checkout/fast_checkout_external_action_delegate.cc",
       "fast_checkout/fast_checkout_external_action_delegate.h",
+      "fast_checkout/fast_checkout_tab_helper.cc",
+      "fast_checkout/fast_checkout_tab_helper.h",
       "fast_checkout/fast_checkout_util.cc",
       "fast_checkout/fast_checkout_util.h",
       "feature_guide/notifications/android/feature_notification_guide_bridge.cc",
@@ -3394,6 +3390,7 @@ static_library("browser") {
       "//components/cdm/browser",
       "//components/commerce/core:commerce_subscription_db_content_proto",
       "//components/commerce/core:feature_list",
+      "//components/commerce/core:heuristics_provider",
       "//components/commerce/core:merchant_signal_db_proto",
       "//components/commerce/core:proto",
       "//components/component_updater/android:native_background_task_update_scheduler",
@@ -5653,6 +5650,7 @@ static_library("browser") {
       "//components/arc/common",
       "//components/reporting/metrics:metrics_data_collection",
       "//extensions/browser/updater",
+      "//ui/chromeos/strings:strings_grit",
       "//ui/chromeos/styles:cros_styles_views",
       "//ui/platform_window",
     ]
@@ -6345,10 +6343,6 @@ static_library("browser") {
       "enterprise/chrome_browser_main_extra_parts_enterprise.h",
       "enterprise/connectors/analysis/content_analysis_sdk_manager.cc",
       "enterprise/connectors/analysis/content_analysis_sdk_manager.h",
-      "enterprise/connectors/analysis/fake_content_analysis_sdk_client.cc",
-      "enterprise/connectors/analysis/fake_content_analysis_sdk_client.h",
-      "enterprise/connectors/analysis/fake_content_analysis_sdk_manager.cc",
-      "enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h",
       "enterprise/connectors/analysis/local_binary_upload_service.cc",
       "enterprise/connectors/analysis/local_binary_upload_service.h",
       "enterprise/connectors/analysis/local_binary_upload_service_factory.cc",
@@ -6392,7 +6386,8 @@ static_library("browser") {
       "//components/device_signals/core/browser",
       "//components/device_signals/core/common",
     ]
-    public_deps += [ "//third_party/content_analysis_sdk:liblcasdk" ]
+    public_deps +=
+        [ "//chrome/browser/enterprise/connectors/analysis:sdk_manager" ]
 
     if (is_win) {
       deps += [
@@ -8229,6 +8224,8 @@ static_library("test_support") {
       "autofill/mock_password_accessory_controller.h",
       "download/android/mock_download_controller.cc",
       "download/android/mock_download_controller.h",
+      "fast_checkout/mock_fast_checkout_capabilities_fetcher.cc",
+      "fast_checkout/mock_fast_checkout_capabilities_fetcher.h",
     ]
     deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {

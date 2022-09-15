@@ -100,6 +100,20 @@ class GlanceablesTest : public AshTestBase {
         std::make_unique<FakeAmbientBackendControllerImpl>());
   }
 
+  google_apis::calendar::CalendarEvent CreateTestEvent() {
+    base::Time start_time;
+    EXPECT_TRUE(base::Time::FromString("11 Jan 2022 18:00 GMT", &start_time));
+    google_apis::calendar::DateTime start_date_time;
+    start_date_time.set_date_time(start_time);
+
+    google_apis::calendar::CalendarEvent event;
+    event.set_summary("Test event 123");
+    event.set_start_time(start_date_time);
+    event.set_html_link("https://www.google.com/calendar/event?eid=qwerty");
+    return event;
+  }
+
+  // Event summaries in this method are valid for now == 10 Jan 2022 13:00 GMT.
   void SimulateCalendarEventsFetched() {
     auto fetched_events = std::make_unique<google_apis::calendar::EventList>();
     fetched_events->set_time_zone("Greenwich Mean Time");
@@ -113,11 +127,23 @@ class GlanceablesTest : public AshTestBase {
         "id_2", "Past event, today", "10 Jan 2022 10:00 GMT",
         "10 Jan 2022 11:00 GMT"));
     fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
-        "id_3", "Ongoing event, started in the past", "10 Jan 2022 10:00 GMT",
+        "id_3", "Ongoing event, started >1.5hrs ago", "10 Jan 2022 10:00 GMT",
         "10 Jan 2022 14:00 GMT"));
     fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
         "id_4", "Future event, later today", "10 Jan 2022 21:30 GMT",
         "10 Jan 2022 22:30 GMT"));
+    fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_5", "Ongoing event, started <1.5hrs ago (xyz)",
+        "10 Jan 2022 12:00 GMT", "10 Jan 2022 14:00 GMT"));
+    fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_6", "All-day event", "10 Jan 2022 21:00 GMT",
+        "11 Jan 2022 21:00 GMT"));
+    fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_7", "Ongoing event, started <1.5hrs ago (abc)",
+        "10 Jan 2022 12:00 GMT", "10 Jan 2022 14:00 GMT"));
+    fetched_events->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_8", "Future event, later today (same start time, but longer)",
+        "10 Jan 2022 21:30 GMT", "10 Jan 2022 22:40 GMT"));
     Shell::Get()->system_tray_model()->calendar_model()->OnEventsFetched(
         calendar_utils::GetStartOfMonthUTC(base::Time::Now()),
         google_apis::ApiErrorCode::HTTP_SUCCESS, fetched_events.get());
@@ -151,14 +177,6 @@ class GlanceablesTest : public AshTestBase {
     return GetUpNextView()->event_item_views_;
   }
 
-  views::Label* GetEventTitleLabelAt(size_t index) {
-    return GetEventItemViews().at(index)->event_title_label_;
-  }
-
-  views::Label* GetEventTimeLabelAt(size_t index) {
-    return GetEventItemViews().at(index)->event_time_label_;
-  }
-
   views::Label* GetNoEventsLabel() { return GetUpNextView()->no_events_label_; }
 
   views::Label* GetRestoreSessionLabel() {
@@ -167,6 +185,14 @@ class GlanceablesTest : public AshTestBase {
 
   GlanceablesRestoreView* GetRestoreView() {
     return controller_->view_->restore_view_;
+  }
+
+  views::ImageButton* GetRestoreViewImageButton() {
+    return GetRestoreView()->image_button_;
+  }
+
+  PillButton* GetRestoreViewPillButton() {
+    return GetRestoreView()->pill_button_;
   }
 
  protected:
@@ -260,7 +286,7 @@ TEST_F(GlanceablesTest, WeatherViewShowsWeather) {
   EXPECT_EQ(u"72° F", GetWeatherTemperature()->GetText());
 }
 
-TEST_F(GlanceablesTest, UpNextViewRendersCorrectly) {
+TEST_F(GlanceablesTest, UpNextViewFiltersAndSortsEvents) {
   ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
   base::subtle::ScopedTimeClockOverrides time_override(
       []() {
@@ -275,40 +301,16 @@ TEST_F(GlanceablesTest, UpNextViewRendersCorrectly) {
 
   // Events list contains rendered event items inside.
   const auto& items = GetEventItemViews();
-  EXPECT_EQ(items.size(), 2u);
+  EXPECT_EQ(items.size(), 4u);
 
-  EXPECT_EQ(GetEventTitleLabelAt(0)->GetText(),
-            u"Ongoing event, started in the past");
-  EXPECT_EQ(GetEventTimeLabelAt(0)->GetText(), u"10:00 AM");
-
-  EXPECT_EQ(GetEventTitleLabelAt(1)->GetText(), u"Future event, later today");
-  EXPECT_EQ(GetEventTimeLabelAt(1)->GetText(), u"9:30 PM");
-}
-
-TEST_F(GlanceablesTest, UpNextViewRendersCorrectlyIn24HrClockFormat) {
-  Shell::Get()->system_tray_model()->SetUse24HourClock(true);
-  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
-  base::subtle::ScopedTimeClockOverrides time_override(
-      []() {
-        base::Time now;
-        EXPECT_TRUE(base::Time::FromString("10 Jan 2022 13:00 GMT", &now));
-        return now;
-      },
-      nullptr, nullptr);
-
-  controller_->CreateUi();
-  SimulateCalendarEventsFetched();
-
-  // Events list contains rendered event items inside.
-  const auto& items = GetEventItemViews();
-  EXPECT_EQ(items.size(), 2u);
-
-  EXPECT_EQ(GetEventTitleLabelAt(0)->GetText(),
-            u"Ongoing event, started in the past");
-  EXPECT_EQ(GetEventTimeLabelAt(0)->GetText(), u"10:00");
-
-  EXPECT_EQ(GetEventTitleLabelAt(1)->GetText(), u"Future event, later today");
-  EXPECT_EQ(GetEventTimeLabelAt(1)->GetText(), u"21:30");
+  EXPECT_EQ(items[0]->event_title_label_for_test()->GetText(),
+            u"Ongoing event, started <1.5hrs ago (abc)");
+  EXPECT_EQ(items[1]->event_title_label_for_test()->GetText(),
+            u"Ongoing event, started <1.5hrs ago (xyz)");
+  EXPECT_EQ(items[2]->event_title_label_for_test()->GetText(),
+            u"Future event, later today (same start time, but longer)");
+  EXPECT_EQ(items[3]->event_title_label_for_test()->GetText(),
+            u"Future event, later today");
 }
 
 TEST_F(GlanceablesTest, UpNextViewShowsNoEventsLabel) {
@@ -331,23 +333,29 @@ TEST_F(GlanceablesTest, UpNextViewShowsNoEventsLabel) {
   EXPECT_EQ(GetNoEventsLabel()->GetText(), u"No events today");
 }
 
-TEST_F(GlanceablesTest, UpNextViewOpensCalendarEvent) {
-  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
-  base::subtle::ScopedTimeClockOverrides time_override(
-      []() {
-        base::Time now;
-        EXPECT_TRUE(base::Time::FromString("10 Jan 2022 13:00 GMT", &now));
-        return now;
-      },
-      nullptr, nullptr);
-
-  controller_->CreateUi();
-  SimulateCalendarEventsFetched();
+TEST_F(GlanceablesTest, UpNextEventItemViewOpensCalendarEvent) {
+  GlanceablesUpNextEventItemView view(CreateTestEvent());
 
   EXPECT_EQ(GetSystemTrayClient()->show_calendar_event_count(), 0);
-  GetEventItemViews()[1]->AcceleratorPressed(
-      ui::Accelerator(ui::KeyboardCode::VKEY_SPACE, 0));
+  view.AcceleratorPressed(ui::Accelerator(ui::KeyboardCode::VKEY_SPACE, 0));
   EXPECT_EQ(GetSystemTrayClient()->show_calendar_event_count(), 1);
+}
+
+TEST_F(GlanceablesTest, UpNextEventItemViewRendersCorrectlyIn12HrClockFormat) {
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
+  GlanceablesUpNextEventItemView view(CreateTestEvent());
+
+  EXPECT_EQ(view.event_title_label_for_test()->GetText(), u"Test event 123");
+  EXPECT_EQ(view.event_time_label_for_test()->GetText(), u"6:00 PM");
+}
+
+TEST_F(GlanceablesTest, UpNextEventItemViewRendersCorrectlyIn24HrClockFormat) {
+  Shell::Get()->system_tray_model()->SetUse24HourClock(true);
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
+  GlanceablesUpNextEventItemView view(CreateTestEvent());
+
+  EXPECT_EQ(view.event_title_label_for_test()->GetText(), u"Test event 123");
+  EXPECT_EQ(view.event_time_label_for_test()->GetText(), u"18:00");
 }
 
 TEST_F(GlanceablesTest, UpNextEventItemViewRendersCorrectlyWithoutEventTitle) {
@@ -381,9 +389,12 @@ TEST_F(GlanceablesTest, RestoreViewRendersScreenshot) {
   GlanceablesRestoreView* restore_view = GetRestoreView();
   ASSERT_TRUE(restore_view);
 
-  // Wait for `image_util::DecodeImageFile` callback to run.
+  // Wait for GlanceablesRestoreView `image_util::DecodeImageFile` callback.
   base::RunLoop().RunUntilIdle();
-  gfx::ImageSkia image = restore_view->GetImage(views::Button::STATE_NORMAL);
+  views::ImageButton* image_button = GetRestoreViewImageButton();
+  ASSERT_TRUE(image_button);
+  ASSERT_FALSE(GetRestoreViewPillButton());
+  gfx::ImageSkia image = image_button->GetImage(views::Button::STATE_NORMAL);
   EXPECT_FALSE(image.isNull());
   EXPECT_GT(image.width(), 0);
   EXPECT_GT(image.height(), 0);
@@ -392,15 +403,21 @@ TEST_F(GlanceablesTest, RestoreViewRendersScreenshot) {
 
 TEST_F(GlanceablesTest, ClickOnSessionRestore) {
   controller_->CreateUi();
-
   GlanceablesRestoreView* restore_view = GetRestoreView();
   ASSERT_TRUE(restore_view);
+
+  // Wait for GlanceablesRestoreView `image_util::DecodeImageFile` callback.
+  base::RunLoop().RunUntilIdle();
+
+  PillButton* restore_button = GetRestoreViewPillButton();
+  ASSERT_TRUE(restore_button);
   ASSERT_EQ(0, GetTestDelegate()->restore_session_count());
 
-  // Click on the restore view (which is a button).
-  views::test::ButtonTestApi(restore_view).NotifyClick(ui::test::TestEvent());
+  // Click on the "Restore" button.
+  views::test::ButtonTestApi(restore_button).NotifyClick(ui::test::TestEvent());
 
   EXPECT_EQ(1, GetTestDelegate()->restore_session_count());
+  EXPECT_FALSE(controller_->IsShowing());
 }
 
 TEST_F(GlanceablesTest, DismissesOnlyOnAppWindowOpen) {

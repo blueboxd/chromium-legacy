@@ -57,6 +57,7 @@ crbug.com/1204961 [ Mac10.14 ] external/wpt/websockets/stream/tentative/construc
 # Flaking on WebKit Linux MSAN
 crbug.com/1207373 [ Linux ] external/wpt/uievents/order-of-events/mouse-events/mousemove-across.html [ Failure Pass ]
 crbug.com/1339285 [ Linux ] fast/loader/iframe-window-open-stealing-focus.html [ Failure Pass Timeout ]
+crbug.com/1339285 [ Win ] fast/loader/iframe-window-open-stealing-focus.html [ Failure Pass Timeout ]
 crbug.com/1339285 [ Mac ] fast/loader/iframe-window-open-stealing-focus.html [ Pass Timeout ]
 
 # WPT Test harness doesn't deal with finding an about:blank ref test
@@ -1654,7 +1655,6 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-a
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-overflow-scroll.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.html [ Skip ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/width-overflow.html [ Failure ]
 
@@ -1697,17 +1697,12 @@ crbug.com/1294155 external/wpt/css/css-break/flexbox/single-line-column-flex-fra
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
 crbug.com/1294155 paint/invalidation/outline/outline-change-vertical-rl.html [ Failure ]
-crbug.com/1294155 paint/invalidation/svg/relative-sized-document-scrollbars.svg [ Failure ]
 crbug.com/1294155 printing/fixed-positioned-overflow-scroll.html [ Failure ]
 crbug.com/1294155 printing/multi-page-background.html [ Failure ]
 crbug.com/1294155 [ Win ] printing/vertical-rl.html [ Failure ]
 crbug.com/1294155 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
-crbug.com/1294155 svg/custom/mixed-percent-size-zoom.svg [ Failure ]
-crbug.com/1294155 svg/custom/percent-size-zoom.svg [ Failure ]
 crbug.com/1294155 [ Linux ] svg/text/caret-in-svg-text.xhtml [ Failure ]
 crbug.com/1294155 [ Win ] svg/text/caret-in-svg-text.xhtml [ Failure ]
-crbug.com/1294155 svg/zoom/page/zoom-coords-viewattr-01-b.svg [ Failure ]
-crbug.com/1294155 svg/zoom/page/zoom-foreign-content.svg [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -7057,7 +7052,6 @@ crbug.com/1352248 virtual/disable-frequency-capping-for-overlay-popup-detection/
 crbug.com/1352545 [ Linux ] external/wpt/html/cross-origin-opener-policy/coop-sandbox-redirects-cuts-opener.https.html [ Failure Pass ]
 crbug.com/1352545 [ Linux ] external/wpt/html/interaction/focus/chrome-object-tab-focus-bug.html [ Failure Pass ]
 crbug.com/1352566 [ Mac ] external/wpt/html/browsers/browsing-the-web/history-traversal/event-order/before-load-hash-twice.html [ Failure Pass ]
-crbug.com/1352576 [ Linux ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Pass ]
 crbug.com/1352607 external/wpt/css/css-transitions/transition-base-response-002.html [ Failure Pass ]
 
 # Sheriff 2022-08-17
@@ -7136,6 +7130,10 @@ crbug.com/1359541 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/scr
 crbug.com/1363259 [ Mac11 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
 crbug.com/1363259 [ Mac12 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
 crbug.com/1363259 [ Mac10.15 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
+
+# Disable media security policy test on Linux (dbg, ASAN) and Mac12 (dbg)
+crbug.com/1349180 [ Linux ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Timeout Pass ]
+crbug.com/1349180 [ Debug Mac12 ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Timeout Pass ]
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]

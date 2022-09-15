@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,9 @@ void ScrollLongPageToTop(const GURL& url) {
 
 // Tests that the content offset of the webview scroll view is {0, 0} after a
 // load.
-- (void)testZeroContentOffsetAfterLoad {
+// // TODO(crbug.com/1363701): Investigate flakiness on
+// ios-simulator-full-config bots.
+- (void)DISABLED_testZeroContentOffsetAfterLoad {
   // Set up the file-based server to load the tall page.
   const GURL baseURL = _server.GetURL(kLongPage1);
   [ShellEarlGrey loadURL:baseURL];

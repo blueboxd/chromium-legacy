@@ -12,6 +12,7 @@ GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/performance_manager/public/features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "content/public/common/content_features.h"');
@@ -20,8 +21,6 @@ GEN('#include "content/public/test/browser_test.h"');
 GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
 GEN('#endif');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 elements. */
 var CrSettingsBrowserTest = class extends PolymerTest {
@@ -87,6 +86,10 @@ TEST_F('CrSettingsBasicPageTest', 'DISABLED_BasicPage', function() {
 
 TEST_F('CrSettingsBasicPageTest', 'PrivacyGuidePromo', function() {
   runMochaSuite('PrivacyGuidePromo');
+});
+
+TEST_F('CrSettingsBasicPageTest', 'Performance', function() {
+  runMochaSuite('SettingsBasicPagePerformance');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -418,6 +421,26 @@ GEN('#define MAYBE_SiteDetails SiteDetails');
 GEN('#endif');
 
 TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_SiteDetails', function() {
+  mocha.run();
+});
+
+var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/performance_page_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'performance_manager::features::kHighEfficiencyModeAvailable',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsPerformancePageTest', 'All', function() {
   mocha.run();
 });
 

@@ -4887,6 +4887,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kDiacriticsOnPhysicalKeyboardLongpress)},
+    {"enable-cros-hindi-inscript-layout",
+     flag_descriptions::kHindiInscriptLayoutName,
+     flag_descriptions::kHindiInscriptLayoutDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHindiInscriptLayout)},
     {"enable-cros-ime-assist-emoji-enhanced",
      flag_descriptions::kImeAssistEmojiEnhancedName,
      flag_descriptions::kImeAssistEmojiEnhancedDescription, kOsCrOS,
@@ -5077,10 +5081,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
      flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
-    {"arc-right-click-long-press",
-     flag_descriptions::kArcRightClickLongPressName,
-     flag_descriptions::kArcRightClickLongPressDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kRightClickLongPress)},
     {"arc-rt-vcpu-dual-core", flag_descriptions::kArcRtVcpuDualCoreName,
      flag_descriptions::kArcRtVcpuDualCoreDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kRtVcpuDualCore)},
@@ -5159,6 +5159,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"camera-app-doc-scan-dlc", flag_descriptions::kCameraAppDocScanDlcName,
      flag_descriptions::kCameraAppDocScanDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCameraAppDocScanDlc)},
+    {"camera-app-multi-page-doc-scan",
+     flag_descriptions::kCameraAppMultiPageDocScanName,
+     flag_descriptions::kCameraAppMultiPageDocScanDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCameraAppMultiPageDocScan)},
     {"crostini-gpu-support", flag_descriptions::kCrostiniGpuSupportName,
      flag_descriptions::kCrostiniGpuSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniGpuSupport)},
@@ -5186,6 +5190,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-extract-archive", flag_descriptions::kFilesExtractArchiveName,
      flag_descriptions::kFilesExtractArchiveDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesExtractArchive)},
+    {"files-inline-sync-status", flag_descriptions::kFilesInlineSyncStatusName,
+     flag_descriptions::kFilesInlineSyncStatusDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesInlineSyncStatus)},
     {"files-filters-in-recents-v2", flag_descriptions::kFiltersInRecentsV2Name,
      flag_descriptions::kFiltersInRecentsV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecentsV2)},
@@ -6396,17 +6403,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeprecateAssistantStylusFeaturesName,
      flag_descriptions::kDeprecateAssistantStylusFeaturesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDeprecateAssistantStylusFeatures)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS)
     {"disable-quick-answers-v2-translation",
      flag_descriptions::kDisableQuickAnswersV2TranslationName,
-     flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
+     flag_descriptions::kDisableQuickAnswersV2TranslationDescription,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableQuickAnswersV2Translation)},
 
     {"quick-answers-for-more-locales",
      flag_descriptions::kQuickAnswersForMoreLocalesName,
-     flag_descriptions::kQuickAnswersForMoreLocalesDescription, kOsCrOS,
+     flag_descriptions::kQuickAnswersForMoreLocalesDescription,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersForMoreLocales)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_ANDROID)
     {"ntp-tiles-title-wrap-around",
@@ -7419,10 +7430,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
      flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
-    {"nearby-sharing-background-scanning",
-     flag_descriptions::kNearbySharingBackgroundScanningName,
-     flag_descriptions::kNearbySharingBackgroundScanningDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingBackgroundScanning)},
     {"nearby-sharing-one-page-onboarding",
      flag_descriptions::kNearbySharingOnePageOnboardingName,
      flag_descriptions::kNearbySharingOnePageOnboardingDescription, kOsCrOS,
@@ -7856,7 +7863,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"deferred-font-shaping", flag_descriptions::kDeferredFontShapingName,
      flag_descriptions::kDeferredFontShapingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kDeferredFontShaping)},
+     FEATURE_VALUE_TYPE(blink::features::kDeferredShaping)},
 
     {"permission-predictions", flag_descriptions::kPermissionPredictionsName,
      flag_descriptions::kPermissionPredictionsDescription, kOsAll,
@@ -8297,7 +8304,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"partial-split", flag_descriptions::kPartialSplit,
      flag_descriptions::kPartialSplitDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kPartialSplit)},
+     FEATURE_VALUE_TYPE(chromeos::wm::features::kPartialSplit)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -9378,6 +9385,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"webauthn-conditional-ui", flag_descriptions::kWebAuthnConditionalUIName,
      flag_descriptions::kWebAuthnConditionalUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAuthConditionalUI)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"arc-nearby-share-fuse-box", flag_descriptions::kArcNearbyShareFuseBoxName,
+     flag_descriptions::kArcNearbyShareFuseBoxDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShareFuseBox)}
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -86,7 +86,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
@@ -149,7 +149,7 @@ const size_t kWasmWireBytesLimit = 1 << 12;
 void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
                                                v8::Local<v8::Value> data) {
   DCHECK(IsMainThread());
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = message->GetIsolate();
 
   if (isolate->GetEnteredOrMicrotaskContext().IsEmpty())
     return;
@@ -192,7 +192,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
 void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
                                            v8::Local<v8::Value> data) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = message->GetIsolate();
 
   // During the frame teardown, there may not be a valid context.
   ScriptState* script_state = ScriptState::Current(isolate);
@@ -354,7 +354,7 @@ static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                                   v8::Local<v8::Value> data) {
   // FIXME: We should modify V8 to pass in more contextual information (context,
   // property, and object).
-  BindingSecurity::FailedAccessCheckFor(v8::Isolate::GetCurrent(),
+  BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
                                         WrapperTypeInfo::Unwrap(data), holder);
 }
 
@@ -819,9 +819,18 @@ void V8Initializer::InitializeMainThread(
 
   ThreadScheduler* scheduler = ThreadScheduler::Current();
 
+  V8PerIsolateData::V8ContextSnapshotMode snapshot_mode =
+      GetV8ContextSnapshotMode();
+  v8::CreateHistogramCallback create_histogram_callback = nullptr;
+  v8::AddHistogramSampleCallback add_histogram_sample_callback = nullptr;
+  // We don't log histograms when taking a snapshot.
+  if (snapshot_mode != V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot) {
+    create_histogram_callback = CreateHistogram;
+    add_histogram_sample_callback = AddHistogramSample;
+  }
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler->V8TaskRunner(), GetV8ContextSnapshotMode(), CreateHistogram,
-      AddHistogramSample);
+      scheduler->V8TaskRunner(), snapshot_mode, create_histogram_callback,
+      add_histogram_sample_callback);
   scheduler->SetV8Isolate(isolate);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer

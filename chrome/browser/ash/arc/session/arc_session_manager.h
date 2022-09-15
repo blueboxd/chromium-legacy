@@ -78,6 +78,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   //   State is ACTIVE, instead.
   // REMOVING_DATA_DIR: When ARC is disabled, the data directory is removed.
   //   While removing is processed, ARC cannot be started. This is the state.
+  // READY: ARC is ready to run, but not running yet. This state is skipped on
+  //   the first boot case.
   // ACTIVE: ARC is running.
   // STOPPING: ARC is being shut down.
   //
@@ -93,11 +95,13 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   //     and the auth token is successfully fetched.
   //
   // In the second (or later) boot case:
-  //   STOPPED -> ACTIVE: when arc.enabled preference is checked that it is
-  //     true. Practically, this is when the primary Profile gets ready.
+  //   STOPPED -> READY: when arc.enabled preference is checked that it is true.
+  //     Practically, this is when the primary Profile gets ready.
+  //   READY -> ACTIVE: when activation is allowed.
   //
   // In the disabling case:
   //   CHECKING_REQUIREMENTS -> STOPPED
+  //   READY -> STOPPED
   //   ACTIVE -> STOPPING -> (maybe REMOVING_DATA_DIR ->) STOPPED
   //   STOPPING: Eventually change the state to STOPPED. Do nothing
   //     immediately.
@@ -111,6 +115,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     STOPPED,
     CHECKING_REQUIREMENTS,
     REMOVING_DATA_DIR,
+    READY,
     ACTIVE,
     STOPPING,
   };
@@ -182,6 +187,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // enabled or disabled. Please see also TODO of
   // SetArcPlayStoreEnabledForProfile().
   void RequestEnable();
+
+  // Allows changing the state from READY to ACTIVE. If the state is already
+  // READY, calling this method changes the state to ACTIVE.
+  void AllowActivation();
 
   // Requests to disable ARC session. This stops ARC instance, or quits Terms
   // Of Service negotiation if it is the middle of the process (e.g. closing
@@ -271,9 +280,13 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // negotiation, because the user had accepted already or policy does not
   // require ToS acceptance. Returns false in other cases, including one when
   // ARC is not currently running.
-  bool is_directly_started() const { return directly_started_; }
-  void set_directly_started_for_testing(bool directly_started) {
-    directly_started_ = directly_started;
+  bool skipped_terms_of_service_negotiation() const {
+    return skipped_terms_of_service_negotiation_;
+  }
+  void set_skipped_terms_of_service_negotiation_for_testing(
+      bool skipped_terms_of_service_negotiation) {
+    skipped_terms_of_service_negotiation_ =
+        skipped_terms_of_service_negotiation;
   }
 
   // Injectors for testing.
@@ -369,6 +382,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // ACTIVE.
   void StartArc();
 
+  // Calls StartArc() and starts background requirement checks.
+  void StartArcForRegularBoot();
+
   // Requests to stop ARC instance. This resets two persistent flags:
   // kArcSignedIn and kArcTermsAccepted, so that, in next enabling,
   // it is started from Terms of Service negotiation.
@@ -434,7 +450,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;
-  bool directly_started_ = false;
+  bool skipped_terms_of_service_negotiation_ = false;
+  bool activation_is_allowed_ = false;
   base::OneShotTimer arc_sign_in_timer_;
 
   std::unique_ptr<ArcSupportHost> support_host_;

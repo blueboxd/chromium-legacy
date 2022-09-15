@@ -81,35 +81,38 @@
     display: none;
   }
 
-  :host([is-rich-suggestion]) #contents {
+  :host([is-rich-suggestion]) #contents,
+  :host([is-rich-suggestion]) #description {
     width: 100%;
   }
 
-  :host([is-rich-suggestion]) #description {
+  /* Deemphasizes description for entities with images. */
+  :host([is-entity-suggestion][has-image]) #description {
     font-size: .875em;
-    width: 100%;
   }
 
   .match {
     font-weight: 500;
   }
 
-  :host([is-rich-suggestion]) #description,
+  /* Uses a dimmed color for description for entities. */
+  :host([is-entity-suggestion]) #description,
   .dim {
-    color: var(--color-real-box-results-foreground-dimmed);
+    color: var(--color-realbox-results-foreground-dimmed);
   }
 
-  :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)):host([is-rich-suggestion]) #description,
+  /* Uses a dimmed color for description for entities. */
+  :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)):host([is-entity-suggestion]) #description,
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .dim {
-    color: var(--color-real-box-results-dim-selected);
+    color: var(--color-realbox-results-dim-selected);
   }
 
   .url {
-    color: var(--color-real-box-results-url);
+    color: var(--color-realbox-results-url);
   }
 
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .url {
-    color: var(--color-real-box-results-url-selected);
+    color: var(--color-realbox-results-url-selected);
   }
 
   #remove {
@@ -123,7 +126,7 @@
 
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) #remove {
     --cr-icon-button-fill-color:
-        var(--color-real-box-results-icon-selected);
+        var(--color-realbox-results-icon-selected);
     opacity: 1;
   }
 

@@ -245,6 +245,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "arc-nearby-share-fuse-box",
+    "owners": ["tsergeant", "phshah", "cros-sharesheet@google.com"],
+    "expiry_milestone": 111
+  },
+  {
     "name": "arc-right-click-long-press",
     "owners": [ "yhanada", "mduggan" ],
     "expiry_milestone": 102
@@ -827,6 +832,11 @@
     "name": "camera-app-doc-scan-dlc",
     "owners": [ "wtlee" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "camera-app-multi-page-doc-scan",
+    "owners": [ "chuhsuan" ],
+    "expiry_milestone": 111
   },
   {
     "name": "canvas-2d-layers",
@@ -1846,6 +1856,11 @@
     "name": "enable-cros-diacritics-on-physical-keyboard-longpress",
     "owners": ["jhtin", "essential-inputs-team@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "enable-cros-hindi-inscript-layout",
+    "owners": [ "jshin", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 117
   },
   {
     "name": "enable-cros-ime-assist-emoji-enhanced",
@@ -3005,6 +3020,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "enable-tflite-language-detection-ignore",
+    "owners": [ "mcrouse", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-throttle-display-none-and-visibility-hidden-cross-origin-iframes",
     "owners": [ "wjmaclean@chromium.org", "alexmos@chromium.org", "creis@chromium.org" ],
     "expiry_milestone": 110
@@ -3549,6 +3569,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "files-inline-sync-status",
+    "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "msalomao" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "files-single-partition-format",
     "owners": [ "austinct", "petermarshall" ],
     "expiry_milestone": 104
@@ -4072,7 +4097,7 @@
   {
     "name": "ios-shared-highlighting-v2",
     "owners": ["tmartino", "cheickcisse@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 109
   },
   {
     "name": "ios-synthetic-crash-reports",
@@ -4534,11 +4559,6 @@
     "name": "nearby-sharing-arc",
     "owners": [ "phshah", "alanding", "cros-sharesheet@google.com", "arc-app-dev@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "nearby-sharing-background-scanning",
-    "owners": [ "hansenmichael@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 103
   },
   {
     "name": "nearby-sharing-one-page-onboarding",

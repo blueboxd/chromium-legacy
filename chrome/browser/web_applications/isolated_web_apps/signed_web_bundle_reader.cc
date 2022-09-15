@@ -12,10 +12,13 @@
 #include "base/check_is_test.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_integrity_block.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/base/url_util.h"
@@ -118,7 +121,7 @@ void SignedWebBundleReader::OnFileDuplicated(
 void SignedWebBundleReader::OnIntegrityBlockParsed(
     IntegrityBlockReadResultCallback integrity_block_result_callback,
     ReadErrorCallback read_error_callback,
-    web_package::mojom::BundleIntegrityBlockPtr integrity_block,
+    web_package::mojom::BundleIntegrityBlockPtr raw_integrity_block,
     web_package::mojom::BundleIntegrityBlockParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitializing);
@@ -128,19 +131,26 @@ void SignedWebBundleReader::OnIntegrityBlockParsed(
     return;
   }
 
-  if (integrity_block->size == 0) {
-    FulfillWithError(std::move(read_error_callback),
-                     web_package::mojom::BundleIntegrityBlockParseError::New(
-                         web_package::mojom::BundleParseErrorType::kFormatError,
-                         "The Web Bundle must contain an integrity block."));
+  auto integrity_block =
+      SignedWebBundleIntegrityBlock::Create(std::move(raw_integrity_block));
+  if (!integrity_block.has_value()) {
+    FulfillWithError(
+        std::move(read_error_callback),
+        web_package::mojom::BundleIntegrityBlockParseError::New(
+            web_package::mojom::BundleParseErrorType::kFormatError,
+            base::StringPrintf("Error while parsing the Signed Web Bundle's "
+                               "integrity block: %s",
+                               integrity_block.error().c_str())));
     return;
   }
+  integrity_block_ = std::move(*integrity_block);
 
-  integrity_block_size_ = integrity_block->size;
   std::move(integrity_block_result_callback)
-      .Run(base::BindOnce(
-          &SignedWebBundleReader::OnShouldContinueParsingAfterIntegrityBlock,
-          weak_ptr_factory_.GetWeakPtr(), std::move(read_error_callback)));
+      .Run(integrity_block_->GetPublicKeyStack(),
+           base::BindOnce(&SignedWebBundleReader::
+                              OnShouldContinueParsingAfterIntegrityBlock,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          std::move(read_error_callback)));
 }
 
 void SignedWebBundleReader::OnShouldContinueParsingAfterIntegrityBlock(
@@ -149,14 +159,17 @@ void SignedWebBundleReader::OnShouldContinueParsingAfterIntegrityBlock(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitializing);
 
-  switch (action) {
-    case IntegrityVerificationAction::kAbort:
+  switch (action.type()) {
+    case IntegrityVerificationAction::Type::kAbort:
+      FulfillWithError(std::move(callback),
+                       AbortedByCaller({.message = action.abort_message()}));
       return;
-    case IntegrityVerificationAction::kContinueAndVerifyIntegrity:
+    case IntegrityVerificationAction::Type::kContinueAndVerifyIntegrity:
       VerifyIntegrity(std::move(callback));
       return;
 #if BUILDFLAG(IS_CHROMEOS)
-    case IntegrityVerificationAction::kContinueAndSkipIntegrityVerification:
+    case IntegrityVerificationAction::Type::
+        kContinueAndSkipIntegrityVerification:
       ReadMetadata(std::move(callback));
       return;
 #endif
@@ -186,7 +199,7 @@ void SignedWebBundleReader::ReadMetadata(ReadErrorCallback callback) {
   CHECK_EQ(state_, State::kInitializing);
 
   parser_->ParseMetadata(
-      /*offset=*/base::checked_cast<int64_t>(integrity_block_size_),
+      /*offset=*/base::checked_cast<int64_t>(integrity_block_->size_in_bytes()),
       base::BindOnce(&SignedWebBundleReader::OnMetadataParsed,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -259,24 +272,17 @@ void SignedWebBundleReader::ReadResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitialized);
 
-  // TODO(crbug.com/1315947): Decide and document the exact behavior of Isolated
-  // Web Apps with regards to query parameters. Currently, query parameters and
-  // fragment are stripped from all requests when looking up an exchange in the
-  // Web Bundle.
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  auto entry_it =
-      entries_.find(resource_request.url.ReplaceComponents(replacements));
-
+  const GURL& url = net::SimplifyUrlForRequest(resource_request.url);
+  auto entry_it = entries_.find(url);
   if (entry_it == entries_.end()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
-            base::unexpected(web_package::mojom::BundleResponseParseError::New(
-                web_package::mojom::BundleParseErrorType::kParserInternalError,
-                "URL not found inside the Web Bundle."))));
+            base::unexpected(ReadResponseError::ForResponseNotFound(
+                base::StringPrintf("The Web Bundle does not contain a response "
+                                   "for the provided URL: %s",
+                                   url.spec().c_str())))));
     return;
   }
 
@@ -312,7 +318,8 @@ void SignedWebBundleReader::OnResponseParsed(
   CHECK_EQ(state_, State::kInitialized);
 
   if (error) {
-    std::move(callback).Run(base::unexpected(std::move(error)));
+    std::move(callback).Run(base::unexpected(
+        ReadResponseError::FromBundleParseError(std::move(error))));
   } else {
     std::move(callback).Run(std::move(response));
   }
@@ -321,7 +328,7 @@ void SignedWebBundleReader::OnResponseParsed(
 void SignedWebBundleReader::ReadResponseBody(
     web_package::mojom::BundleResponsePtr response,
     mojo::ScopedDataPipeProducerHandle producer_handle,
-    ReadResponseBodyCallback callback) {
+    ResponseBodyCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitialized);
 
@@ -409,12 +416,11 @@ void SignedWebBundleReader::DidReconnect(absl::optional<std::string> error) {
     for (auto& [response_location, response_callback] : read_tasks) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::BindOnce(std::move(response_callback),
-                         base::unexpected(
-                             web_package::mojom::BundleResponseParseError::New(
-                                 web_package::mojom::BundleParseErrorType::
-                                     kParserInternalError,
-                                 *error))));
+          base::BindOnce(
+              std::move(response_callback),
+              base::unexpected(
+                  ReadResponseError::ForParserInternalError(base::StringPrintf(
+                      "Unable to open file: %s", error->c_str())))));
     }
     return;
   }
@@ -430,5 +436,72 @@ void SignedWebBundleReader::DidReconnect(absl::optional<std::string> error) {
                          std::move(response_callback));
   }
 }
+
+// static
+SignedWebBundleReader::ReadResponseError
+SignedWebBundleReader::ReadResponseError::FromBundleParseError(
+    web_package::mojom::BundleResponseParseErrorPtr error) {
+  switch (error->type) {
+    case web_package::mojom::BundleParseErrorType::kVersionError:
+      // A `kVersionError` error can only be triggered while parsing
+      // the integrity block or metadata, not while parsing a response.
+      NOTREACHED();
+      [[fallthrough]];
+    case web_package::mojom::BundleParseErrorType::kParserInternalError:
+      return ForParserInternalError(error->message);
+    case web_package::mojom::BundleParseErrorType::kFormatError:
+      return ReadResponseError(Type::kFormatError, error->message);
+  }
+}
+
+// static
+SignedWebBundleReader::ReadResponseError
+SignedWebBundleReader::ReadResponseError::ForParserInternalError(
+    const std::string& message) {
+  return ReadResponseError(Type::kParserInternalError, message);
+}
+
+// static
+SignedWebBundleReader::ReadResponseError
+SignedWebBundleReader::ReadResponseError::ForResponseNotFound(
+    const std::string& message) {
+  return ReadResponseError(Type::kResponseNotFound, message);
+}
+
+// static
+SignedWebBundleReader::IntegrityVerificationAction
+SignedWebBundleReader::IntegrityVerificationAction::Abort(
+    const std::string& abort_message) {
+  return IntegrityVerificationAction(Type::kAbort, abort_message);
+}
+
+// static
+SignedWebBundleReader::IntegrityVerificationAction SignedWebBundleReader::
+    IntegrityVerificationAction::ContinueAndVerifyIntegrity() {
+  return IntegrityVerificationAction(Type::kContinueAndVerifyIntegrity,
+                                     absl::nullopt);
+}
+
+#if BUILDFLAG(IS_CHROMEOS)
+
+// static
+SignedWebBundleReader::IntegrityVerificationAction SignedWebBundleReader::
+    IntegrityVerificationAction::ContinueAndSkipIntegrityVerification() {
+  return IntegrityVerificationAction(
+      Type::kContinueAndSkipIntegrityVerification, absl::nullopt);
+}
+
+#endif
+
+SignedWebBundleReader::IntegrityVerificationAction::IntegrityVerificationAction(
+    Type type,
+    absl::optional<std::string> abort_message)
+    : type_(type), abort_message_(abort_message) {}
+
+SignedWebBundleReader::IntegrityVerificationAction::IntegrityVerificationAction(
+    const IntegrityVerificationAction&) = default;
+
+SignedWebBundleReader::IntegrityVerificationAction::
+    ~IntegrityVerificationAction() = default;
 
 }  // namespace web_app

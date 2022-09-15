@@ -547,22 +547,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Audio.Capture.Win.{AudioProcessingMode}EffectType"
-    enum="AudioEffectType" expires_after="2022-10-22">
-  <owner>henrika@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Audio effect types detected on audio input streams using the
-    {AudioProcessingMode} audio processing mode. Emitted when the audio input
-    stream is closed but only on Windows platforms. Only uploaded for the case
-    when analog AGC is enabled, i.e., for WebRTC-based audio input streams.
-  </summary>
-  <token key="AudioProcessingMode">
-    <variant name="Default"/>
-    <variant name="Raw"/>
-  </token>
-</histogram>
-
 <histogram name="Media.Audio.CoreAudioDispatchOverrideInitResult"
     enum="CoreAudioDispatchOverrideInitResult" expires_after="2022-10-01">
   <owner>guidou@chromium.org</owner>
@@ -5962,6 +5946,33 @@ chromium-metrics-reviews@google.com.
   <summary>
     Duration in milliseconds taken to successfully open a cast channel. Recorded
     when one opening channel attempt succeeds.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.PendingUserAuthLatency" units="s"
+    expires_after="2023-08-20">
+  <owner>ahmedmoussa@google.com</owner>
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    In some scenarios casting doesn't start until the user approves it on the
+    receiver side. This histogram records the time it takes between requesting
+    to start casting and receiving a response from the receiver that it is now
+    waiting for user approval.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.UserPromptWhenLaunchingCast"
+    enum="MediaRouterUserPromptWhenLaunchingCast" expires_after="2023-08-20">
+  <owner>ahmedmoussa@google.com</owner>
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    This histogram is recorded whenever the user attempts to start casting and a
+    receiver-side prompt is shown, and when the user disapproves it. The other
+    two cases, when the user approves it or when it times out, are not recorded.
+    As both these cases can be received without a prompt before it and this
+    should not be recorded.
   </summary>
 </histogram>
 

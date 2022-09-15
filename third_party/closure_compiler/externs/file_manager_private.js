@@ -764,6 +764,8 @@ chrome.fileManagerPrivate.DlpMetadata;
 
 /** @enum {string} */
 chrome.fileManagerPrivate.DlpLevel = {
+  REPORT: 'report',
+  WARN: 'warn',
   BLOCK: 'block',
   ALLOW: 'allow',
 };
@@ -1549,13 +1551,6 @@ chrome.fileManagerPrivate.pollDriveHostedFilePinStates = function() {};
  * Opens the page to manage currently syncing folders.
  */
 chrome.fileManagerPrivate.openManageSyncSettings = function() {};
-
-/**
- * Returns color via `callback` for Files app foreground window frame.
- * @param {function(string): void} callback |color| String containing the color
- *     of the title bar.
- */
-chrome.fileManagerPrivate.getFrameColor = function(callback) {};
 
 /**
  * Parses the supplied .trashinfo files and returns the successfully parsed

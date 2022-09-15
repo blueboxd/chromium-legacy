@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // Custom symbol names.
+extern NSString* const kPrivacySymbol;
 extern NSString* const kSyncDisabledSymbol;
 extern NSString* const kSafetyCheckSymbol;
 
@@ -15,7 +16,6 @@ extern NSString* const kSafetyCheckSymbol;
 extern NSString* const kSyncErrorSymbol;
 extern NSString* const kSyncEnabledSymbol;
 extern NSString* const kDefaultBrowserSymbol;
-extern NSString* const kPrivacySecuritySymbol;
 extern NSString* const kDiscoverSymbol;
 
 // Returns a SF symbol named `symbol_name` configured for the Settings root

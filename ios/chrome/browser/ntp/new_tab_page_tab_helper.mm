@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,6 @@ namespace {
 // `url::kAboutScheme`, there's no host value, only a path.  Use this value for
 // matching the NTP.
 const char kAboutNewTabPath[] = "//newtab/";
-
-// Maximum number of seconds for `ignore_load_requests_` to be set to YES.
-static const size_t kMaximumIgnoreLoadRequestsTime = 10;
 
 }  // namespace
 
@@ -75,12 +72,6 @@ void NewTabPageTabHelper::SetDelegate(
   if (active_) {
     UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
-
-    // If about://newtab is currently loading but has not yet committed, block
-    // loads until it does commit.
-    if (!IsNTPURL(web_state_->GetLastCommittedURL())) {
-      EnableIgnoreLoadRequests();
-    }
   }
 }
 
@@ -153,7 +144,6 @@ CGFloat NewTabPageTabHelper::ScrollPositionFromSavedState() {
 void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
   SetActive(false);
-  DisableIgnoreLoadRequests();
 }
 
 void NewTabPageTabHelper::DidStartNavigation(
@@ -176,7 +166,6 @@ void NewTabPageTabHelper::DidFinishNavigation(
   }
 
   UpdateItem(web_state_->GetNavigationManager()->GetLastCommittedItem());
-  DisableIgnoreLoadRequests();
   SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
 }
 
@@ -194,29 +183,6 @@ void NewTabPageTabHelper::DidStopLoading(web::WebState* web_state) {
 }
 
 #pragma mark - Private
-
-void NewTabPageTabHelper::EnableIgnoreLoadRequests() {
-  if (!base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad))
-    return;
-
-  ignore_load_requests_ = YES;
-
-  // `ignore_load_requests_timer_` is deleted when the tab helper is deleted, so
-  // it's safe to use Unretained here.
-  ignore_load_requests_timer_.reset(new base::OneShotTimer());
-  ignore_load_requests_timer_->Start(
-      FROM_HERE, base::Seconds(kMaximumIgnoreLoadRequestsTime),
-      base::BindOnce(&NewTabPageTabHelper::DisableIgnoreLoadRequests,
-                     base::Unretained(this)));
-}
-
-void NewTabPageTabHelper::DisableIgnoreLoadRequests() {
-  if (ignore_load_requests_timer_) {
-    ignore_load_requests_timer_->Stop();
-    ignore_load_requests_timer_.reset();
-  }
-  ignore_load_requests_ = NO;
-}
 
 void NewTabPageTabHelper::SetActive(bool active) {
   bool was_active = active_;

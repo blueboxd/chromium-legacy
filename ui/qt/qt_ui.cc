@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/nav_button_provider.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/qt/qt_interface.h"
@@ -491,7 +492,8 @@ absl::optional<SkColor> QtUi::GetColor(int id, bool use_custom_frame) const {
   }
 }
 
-std::unique_ptr<ui::LinuxUi> CreateQtUi(ui::LinuxUi* fallback_linux_ui) {
+std::unique_ptr<ui::LinuxUiAndTheme> CreateQtUi(
+    ui::LinuxUi* fallback_linux_ui) {
   return std::make_unique<QtUi>(fallback_linux_ui);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,10 +80,8 @@ const char kExcessNTPTabsRemoved[] = "IOS.NTP.ExcessRemovedTabCount";
   }
   if (level >= SceneActivationLevelForegroundInactive &&
       self.previousActivationLevel < SceneActivationLevelForegroundInactive) {
-    if (IsStartSurfaceSplashStartupEnabled()) {
-      [self logBackgroundDurationMetricForActivationLevel:level];
-      [self showStartSurfaceIfNecessary];
-    }
+    [self logBackgroundDurationMetricForActivationLevel:level];
+    [self showStartSurfaceIfNecessary];
   }
   self.previousActivationLevel = level;
 }

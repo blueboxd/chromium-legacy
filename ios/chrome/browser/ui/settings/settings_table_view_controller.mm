@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,9 @@ NSString* const kSettingsDebugImageName = @"settings_debug";
 NSString* const kSettingsArticleSuggestionsImageName =
     @"settings_article_suggestions";
 NSString* const kDefaultBrowserWorldImageName = @"default_browser_world";
+
+// The size of trailing symbol icons for unsafe state.
+NSInteger kTrailingSymbolImagePointSize = 18;
 
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 NSString* kDevViewSourceKey = @"DevViewSource";
@@ -1019,8 +1022,12 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   }
   // Check if an issue state should be shown for updates.
   if (!IsAppUpToDate() && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage* unSafeIconImage =
+        UseSymbols()
+            ? DefaultSymbolTemplateWithPointSize(kWarningFillSymbol,
+                                                 kTrailingSymbolImagePointSize)
+            : [[UIImage imageNamed:@"settings_unsafe_state"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _safetyCheckItem.trailingImage = unSafeIconImage;
     _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
   }
@@ -1040,8 +1047,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     return [self detailItemWithType:SettingsItemTypePrivacy
                                text:title
                          detailText:nil
-                             symbol:DefaultSettingsRootSymbol(
-                                        kPrivacySecuritySymbol)
+                             symbol:CustomSettingsRootSymbol(kPrivacySymbol)
               symbolBackgroundColor:[UIColor colorNamed:kBlue500Color]
             accessibilityIdentifier:kSettingsPrivacyCellId];
   }
@@ -1762,8 +1768,12 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 // issue for any of the checks.
 - (void)setSafetyCheckIssueStateUnsafe:(BOOL)isUnsafe {
   if (isUnsafe && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage* unSafeIconImage =
+        UseSymbols()
+            ? DefaultSymbolTemplateWithPointSize(kWarningFillSymbol,
+                                                 kTrailingSymbolImagePointSize)
+            : [[UIImage imageNamed:@"settings_unsafe_state"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _safetyCheckItem.trailingImage = unSafeIconImage;
     _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
   } else {

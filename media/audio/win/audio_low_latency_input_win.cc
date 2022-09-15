@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -649,15 +649,13 @@ void WASAPIAudioInputStream::Close() {
     base::UmaHistogramBoolean("Media.Audio.RawProcessingSupportedWin",
                               raw_processing_supported_);
 
+    // These UMAs are deprecated but keep adding the information as text logs
+    // for debugging purposes.
     for (auto const& type : default_effect_types_) {
-      base::UmaHistogramSparse("Media.Audio.Capture.Win.DefaultEffectType",
-                               type);
       SendLogMessage("%s => (Media.Audio.Capture.Win.DefaultEffectType=%s)",
                      __func__, EffectTypeToString(type));
     }
-
     for (auto const& type : raw_effect_types_) {
-      base::UmaHistogramSparse("Media.Audio.Capture.Win.RawEffectType", type);
       SendLogMessage("%s => (Media.Audio.Capture.Win.RawEffectType=%s)",
                      __func__, EffectTypeToString(type));
     }

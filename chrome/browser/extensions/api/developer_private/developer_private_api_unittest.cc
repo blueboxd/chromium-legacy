@@ -1129,8 +1129,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   scoped_refptr<ExtensionFunction> function(
       new api::DeveloperPrivateRequestFileSourceFunction());
   base::ListValue file_source_args;
-  file_source_args.Append(
-      base::Value::FromUniquePtrValue(properties.ToValue()));
+  file_source_args.Append(base::Value(properties.ToValue()));
   EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
 
   const base::Value& response_value = (*function->GetResultList())[0];
@@ -2053,11 +2052,11 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://a.example.com",
+      "site": "a.example.com",
     }, {
       "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://b.example.com",
+      "site": "b.example.com",
     }]
   }, {
     "etldPlusOne": "google.ca",
@@ -2065,7 +2064,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://google.ca",
+      "site": "google.ca",
     }]
   }])"));
 }
@@ -2084,6 +2083,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
           .AddPermission("http://www.google.com/")
           .AddPermission("http://images.google.com/")
           .AddPermission("https://example.com/")
+          .AddPermission("*://localhost/")
           .Build();
 
   scoped_refptr<const Extension> extension_2 =
@@ -2091,6 +2091,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
           .AddPermission("https://mail.google.com/")
           .AddPermission("http://www.google.com/")
           .AddPermission("http://www.asdf.com/")
+          .AddPermission("http://localhost:8080/")
           .Build();
   AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
   AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
@@ -2109,7 +2110,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://www.asdf.com",
+      "site": "www.asdf.com",
     }]
   }, {
     "etldPlusOne": "example.com",
@@ -2117,7 +2118,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }, {
     "etldPlusOne": "google.com",
@@ -2125,19 +2126,27 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://images.google.com",
+      "site": "images.google.com",
     }, {
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "http://www.google.com/*",
+      "site": "mail.google.com",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 2,
+      "site": "www.google.com",
     }, {
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://*.google.com/*",
-    }, {
+      "site": "*.google.com",
+    },]
+  }, {
+    "etldPlusOne": "localhost",
+    "numExtensions": 2,
+    "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
-      "numExtensions": 1,
-      "site": "https://mail.google.com/*",
+      "numExtensions": 2,
+      "site": "localhost",
     }]
   }])"));
 }
@@ -2147,6 +2156,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
   PermissionsManager* manager = PermissionsManager::Get(browser_context());
   manager->AddUserPermittedSite(
       url::Origin::Create(GURL("http://images.google.ca")));
+  manager->AddUserRestrictedSite(url::Origin::Create(GURL("https://yahoo.ca")));
 
   scoped_refptr<const Extension> extension_1 =
       ExtensionBuilder("specific_hosts")
@@ -2177,7 +2187,11 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 3,
-      "site": "http://www.example.com/*",
+      "site": "www.example.com",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 2,
+      "site": "*.example.com",
     }]
   }, {
     "etldPlusOne": "google.ca",
@@ -2185,11 +2199,23 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://images.google.ca",
+      "site": "images.google.ca",
     }, {
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://*.google.ca/*",
+      "site": "*.google.ca",
+    }]
+  }, {
+    "etldPlusOne": "yahoo.ca",
+    "numExtensions": 1,
+    "sites": [{
+      "siteSet": "USER_RESTRICTED",
+      "numExtensions": 0,
+      "site": "yahoo.ca",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 1,
+      "site": "*.yahoo.ca",
     }]
   }])"));
 }
@@ -2228,7 +2254,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }])");
 
@@ -2242,7 +2268,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }])");
 
@@ -2253,7 +2279,11 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "sites": [{
       "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://example.com/*",
+      "site": "example.com",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 1,
+      "site": "*.example.com",
     }]
   }])");
 }

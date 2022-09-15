@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,14 +98,6 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   // Enable or disable the tab helper.
   void SetActive(bool active);
-
-  // Sets the `ignore_load_requests_` flag to YES and starts the ignore load
-  // timer.
-  void EnableIgnoreLoadRequests();
-
-  // Sets the `ignore_load_requests_` flag to NO and stops the ignore load
-  // timer.
-  void DisableIgnoreLoadRequests();
 
   // Used to present and dismiss the NTP.
   __weak id<NewTabPageTabHelperDelegate> delegate_ = nil;

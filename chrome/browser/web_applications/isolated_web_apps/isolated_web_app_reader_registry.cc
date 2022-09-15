@@ -27,8 +27,8 @@ inline constexpr bool always_false_v __attribute__((unused)) = false;
 }  // namespace
 
 IsolatedWebAppReaderRegistry::IsolatedWebAppReaderRegistry(
-    const IsolatedWebAppValidator& validator)
-    : validator_(validator) {}
+    std::unique_ptr<IsolatedWebAppValidator> validator)
+    : validator_(std::move(validator)) {}
 
 IsolatedWebAppReaderRegistry::~IsolatedWebAppReaderRegistry() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -82,39 +82,27 @@ void IsolatedWebAppReaderRegistry::ReadResponse(
 void IsolatedWebAppReaderRegistry::OnIntegrityBlockRead(
     const base::FilePath& web_bundle_path,
     const web_package::SignedWebBundleId& web_bundle_id,
-    // TODO(crbug.com/1315947): Add information about the integrity block here
+    const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
     base::OnceCallback<void(SignedWebBundleReader::IntegrityVerificationAction)>
         integrity_callback) {
-  // TODO(crbug.com/1315947): Pass information about the Integrity Block to
-  // `ValidateIntegrityBlock`.
-  if (auto error = validator_.ValidateIntegrityBlock(web_bundle_id);
+  if (auto error =
+          validator_->ValidateIntegrityBlock(web_bundle_id, public_key_stack);
       error.has_value()) {
-    auto cache_entry_it = reader_cache_.find(web_bundle_path);
-    DCHECK(cache_entry_it != reader_cache_.end());
-    DCHECK_EQ(cache_entry_it->second.state, CacheEntry::State::kPending);
-
-    // Get all pending callbacks and set the pending callbacks of the cache
-    // entry to an empty vector.
-    std::vector<std::pair<network::ResourceRequest, ReadResponseCallback>>
-        pending_requests;
-    cache_entry_it->second.pending_requests.swap(pending_requests);
-    for (auto& [resource_request, callback] : pending_requests) {
-      std::move(callback).Run(base::unexpected(*error));
-    }
-    reader_cache_.erase(cache_entry_it);
+    // Aborting parsing will trigger a call to `OnIntegrityBlockAndMetadataRead`
+    // with a `SignedWebBundleReader::AbortedByCaller` error.
     std::move(integrity_callback)
-        .Run(SignedWebBundleReader::IntegrityVerificationAction::kAbort);
+        .Run(SignedWebBundleReader::IntegrityVerificationAction::Abort(*error));
     return;
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
   std::move(integrity_callback)
       .Run(SignedWebBundleReader::IntegrityVerificationAction::
-               kContinueAndSkipIntegrityVerification);
+               ContinueAndSkipIntegrityVerification());
 #else
   std::move(integrity_callback)
       .Run(SignedWebBundleReader::IntegrityVerificationAction::
-               kContinueAndVerifyIntegrity);
+               ContinueAndVerifyIntegrity());
 #endif
 }
 
@@ -144,6 +132,11 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
             return base::StringPrintf("Failed to parse integrity block: %s",
                                       error->message.c_str());
           } else if constexpr (std::is_same_v<
+                                   T, SignedWebBundleReader::AbortedByCaller>) {
+            return base::StringPrintf(
+                "Public keys of the Isolated Web App are untrusted: %s",
+                error.message.c_str());
+          } else if constexpr (std::is_same_v<
                                    T, web_package::mojom::
                                           BundleMetadataParseErrorPtr>) {
             return base::StringPrintf("Failed to parse metadata: %s",
@@ -156,18 +149,20 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
         },
         *read_error);
     for (auto& [resource_request, callback] : pending_requests) {
-      std::move(callback).Run(base::unexpected(error_message));
+      std::move(callback).Run(
+          base::unexpected(ReadResponseError::ForOtherError(error_message)));
     }
     reader_cache_.erase(cache_entry_it);
     return;
   }
 
-  if (auto error = validator_.ValidateMetadata(
+  if (auto error = validator_->ValidateMetadata(
           web_bundle_id, cache_entry_it->second.reader->GetPrimaryURL(),
           cache_entry_it->second.reader->GetEntries());
       error.has_value()) {
     for (auto& [resource_request, callback] : pending_requests) {
-      std::move(callback).Run(base::unexpected(*error));
+      std::move(callback).Run(
+          base::unexpected(ReadResponseError::ForOtherError(*error)));
     }
     reader_cache_.erase(cache_entry_it);
     return;
@@ -185,9 +180,27 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
 
 void IsolatedWebAppReaderRegistry::DoReadResponse(
     SignedWebBundleReader& reader,
-    const network::ResourceRequest& resource_request,
+    network::ResourceRequest resource_request,
     ReadResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Remove query parameters from the request URL, if it has any.
+  // Resources within Signed Web Bundles used for Isolated Web Apps never have
+  // username, password, or fragment, just like resources within Signed Web
+  // Bundles and normal Web Bundles. Removing these from request URLs is done by
+  // the `SignedWebBundleReader`. However, in addition, resources in Signed Web
+  // Bundles used for Isolated Web Apps can also never have query parameters,
+  // which we need to remove here.
+  //
+  // Conceptually, we treat the resources in Signed Web Bundles for Isolated Web
+  // Apps more like files served by a file server (which also strips query
+  // parameters before looking up the file), and not like HTTP exchanges as they
+  // are used for Signed Exchanges (SXG).
+  if (resource_request.url.has_query()) {
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    resource_request.url = resource_request.url.ReplaceComponents(replacements);
+  }
 
   reader.ReadResponse(
       resource_request,
@@ -201,13 +214,22 @@ void IsolatedWebAppReaderRegistry::OnResponseRead(
     SignedWebBundleReader& reader,
     ReadResponseCallback callback,
     base::expected<web_package::mojom::BundleResponsePtr,
-                   web_package::mojom::BundleResponseParseErrorPtr>
-        response_head) {
+                   SignedWebBundleReader::ReadResponseError> response_head) {
   if (!response_head.has_value()) {
-    std::move(callback).Run(base::unexpected(
-        base::StringPrintf("Failed to parse response head: %s",
-                           response_head.error()->message.c_str())));
-    return;
+    switch (response_head.error().type) {
+      case SignedWebBundleReader::ReadResponseError::Type::kParserInternalError:
+      case SignedWebBundleReader::ReadResponseError::Type::kFormatError:
+        std::move(callback).Run(
+            base::unexpected(ReadResponseError::ForOtherError(
+                base::StringPrintf("Failed to parse response head: %s",
+                                   response_head.error().message.c_str()))));
+        return;
+      case SignedWebBundleReader::ReadResponseError::Type::kResponseNotFound:
+        std::move(callback).Run(
+            base::unexpected(ReadResponseError::ForResponseNotFound(
+                response_head.error().message)));
+        return;
+    }
   }
   // Since `this` owns `reader`, we only pass a weak reference to it to the
   // `Response` object. If `this` deletes `reader`, it makes sense that the

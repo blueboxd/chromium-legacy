@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,15 +90,15 @@ void TailoredSecurityTabHelper::DidFinishNavigation(
   if (!sameDocumentNavigation) {
     UpdateFocusAndURL(true, navigation_context->GetUrl());
   }
-};
+}
 
 void TailoredSecurityTabHelper::WasShown(web::WebState* web_state) {
   UpdateFocusAndURL(true, last_url_);
-};
+}
 
 void TailoredSecurityTabHelper::WasHidden(web::WebState* web_state) {
   UpdateFocusAndURL(false, last_url_);
-};
+}
 
 void TailoredSecurityTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);

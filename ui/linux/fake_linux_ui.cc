@@ -84,7 +84,7 @@ gfx::Image FakeLinuxUi::GetIconForContentType(const std::string& content_type,
   return gfx::Image();
 }
 
-LinuxUi::WindowFrameAction FakeLinuxUi::GetWindowFrameAction(
+LinuxUiTheme::WindowFrameAction FakeLinuxUi::GetWindowFrameAction(
     WindowFrameActionSource source) {
   return WindowFrameAction::kNone;
 }

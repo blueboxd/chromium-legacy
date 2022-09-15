@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,9 +232,9 @@
   self.returnDelegate = [[ForwardingReturnDelegate alloc] init];
   self.returnDelegate.acceptDelegate = _editView.get();
 
-  coordinator.pedalExtractor.matchPreviewDelegate = self.mediator;
-  coordinator.pedalExtractor.acceptDelegate = self.returnDelegate;
-  self.viewController.returnKeyDelegate = coordinator.pedalExtractor;
+  coordinator.popupMatchPreviewDelegate = self.mediator;
+  coordinator.acceptReturnDelegate = self.returnDelegate;
+  self.viewController.returnKeyDelegate = coordinator.popupReturnDelegate;
 
   return coordinator;
 }

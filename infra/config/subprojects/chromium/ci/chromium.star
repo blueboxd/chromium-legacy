@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium builder group."""
@@ -152,8 +152,8 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "ci",
-            short_name = "off-x64",
+            category = "ci|x64",
+            short_name = "off",
         ),
     ],
     cores = 32,
@@ -169,7 +169,6 @@ ci.builder(
         category = "lacros",
         short_name = "rel",
     ),
-    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -213,7 +212,6 @@ ci.builder(
         category = "lacros",
         short_name = "arm",
     ),
-    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

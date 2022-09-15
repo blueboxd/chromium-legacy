@@ -189,7 +189,6 @@
                   '|chromeos/ash/services/assistant/'\
                   '|chromeos/ash/services/libassistant/'\
                   '|chromeos/services/assistant/'\
-                  '|chromeos/services/libassistant/'\
                   '|chrome/browser/ash/wallpaper_handlers/'\
                   '|chrome/browser/ash/web_applications/personalization_app/'\
                   '|chrome/browser/resources/settings/chromeos/ambient_mode_page/'\
@@ -1402,6 +1401,7 @@
                   '|ash/services/device_sync/'\
                   '|ash/services/multidevice_setup/'\
                   '|ash/services/secure_channel/'\
+                  '|ash/webui/common/resources/multidevice_setup/'\
                   '|chrome/browser/ash/cryptauth/'\
                   '|chrome/browser/ash/device_sync/'\
                   '|chrome/browser/ash/multidevice_setup/'\
@@ -1410,8 +1410,7 @@
                   '|chrome/browser/resources/settings/chromeos/multidevice_page/'\
                   '|chrome/browser/ui/webui/chromeos/multidevice_setup/'\
                   '|chrome/browser/ui/webui/settings/ash/multidevice'\
-                  '|chrome/test/data/webui/multidevice_setup/'\
-                  '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
+                  '|chrome/test/data/webui/multidevice_setup/'
     },
     'multipaste': {
      'filepath': 'ash/clipboard/',

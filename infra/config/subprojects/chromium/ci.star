@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -116,15 +116,17 @@ consoles.console_view(
     category = category,
     short_name = short_name,
 ) for name, category, short_name in (
-    ("fuchsia-fyi-arm64-size", "fuchsia ci", "a64-size"),
+    ("fuchsia-arm64", "fuchsia|arm64", "chrome"),
+    ("fuchsia-builder-perf-fyi", "fuchsia|arm64", "perf-bld"),
+    ("fuchsia-builder-perf-x64", "fuchsia|x64", "perf-bld"),
+    ("fuchsia-fyi-arm64-size", "fuchsia|arm64", "size"),
     ("fuchsia-fyi-astro", "hardware", "ast"),
     ("fuchsia-fyi-atlas", "hardware", "atl"),
-    ("fuchsia-fyi-sherlock", "hardware", "slk"),
-    ("fuchsia-builder-perf-fyi", "fuchsia ci", "builder-perf"),
-    ("fuchsia-perf-fyi", "hardware", "ast-perf"),
-    ("fuchsia-perf-atlas-fyi", "hardware", "atl-perf"),
-    ("fuchsia-perf-sherlock-fyi", "hardware", "slk-perf"),
-    ("fuchsia-x64", "fuchsia ci", "x64-chrome"),
+    ("fuchsia-fyi-sherlock", "hardware", "sher"),
+    ("fuchsia-perf-atlas-fyi", "hardware|perf", "atl"),
+    ("fuchsia-perf-fyi", "hardware|perf", "ast"),
+    ("fuchsia-perf-sherlock-fyi", "hardware|perf", "sher"),
+    ("fuchsia-x64", "fuchsia|x64", "chrome"),
 )]
 
 exec("./ci/chromium.star")

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -289,9 +289,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Register pref storing whether the Incognito interstitial for third-party
   // intents is enabled.
-  if (base::FeatureList::IsEnabled(kIOS3PIntentsInIncognito)) {
-    registry->RegisterBooleanPref(prefs::kIncognitoInterstitialEnabled, false);
-  }
+  registry->RegisterBooleanPref(prefs::kIncognitoInterstitialEnabled, false);
 
   // Register pref used to determine whether the User Policy notification was
   // already shown.

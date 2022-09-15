@@ -140,6 +140,19 @@ export async function getDlpBlockedComponents(sourceUrl) {
 }
 
 /**
+ * Retrieves Data Leak Prevention (DLP) restriction details.
+ * @param {string} sourceUrl Source URL of the file for which to retrieve the
+ *     details.
+ * @return {!Promise<!Array<!chrome.fileManagerPrivate.DlpRestrictionDetails>>}
+ *     list of DlpRestrictionDetails containing summarized restriction
+ * information about the file.
+ */
+export async function getDlpRestrictionDetails(sourceUrl) {
+  return promisify(
+      chrome.fileManagerPrivate.getDlpRestrictionDetails, sourceUrl);
+}
+
+/**
  * Lists Guest OSs which support having their files mounted.
  * @return {!Promise<!Array<!chrome.fileManagerPrivate.MountableGuest>>}
  */
@@ -216,19 +229,6 @@ export async function getDirectory(directory, filename, options) {
 export async function getEntry(directory, filename, isFile, options) {
   const getEntry = isFile ? getFile : getDirectory;
   return getEntry(directory, filename, options);
-}
-
-/**
- * Returns the color to be used by frames of each foreground window.
- * @returns {Promise<!string>}
- */
-export async function getFrameColor() {
-  try {
-    return await promisify(chrome.fileManagerPrivate.getFrameColor);
-  } catch (e) {
-    console.error('Failed to get frame color.', e);
-    return '#ffffff';
-  }
 }
 
 /**

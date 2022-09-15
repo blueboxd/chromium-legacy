@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.chromiumos builder group."""
@@ -299,7 +299,8 @@ try_.builder(
     ],
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
-    check_for_flakiness = True,
+    # TODO(sshrimp): Re-enable when there's less traffic on the test bots
+    check_for_flakiness = False,
     cores = 16,
     ssd = True,
     goma_jobs = goma.jobs.J300,
@@ -308,6 +309,7 @@ try_.builder(
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 50,
     },
 )
 

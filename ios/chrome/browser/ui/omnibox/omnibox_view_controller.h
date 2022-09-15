@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,9 +40,9 @@ class OmniboxTextChangeDelegate;
 
 @end
 
-@interface OmniboxViewController : UIViewController<EditViewAnimatee,
-                                                    LocationBarOffsetProvider,
-                                                    OmniboxConsumer>
+@interface OmniboxViewController : UIViewController <EditViewAnimatee,
+                                                     LocationBarOffsetProvider,
+                                                     OmniboxConsumer>
 
 // The textfield used by this view controller.
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* textField;

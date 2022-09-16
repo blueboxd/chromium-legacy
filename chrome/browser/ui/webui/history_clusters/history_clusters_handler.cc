@@ -309,6 +309,12 @@ void HistoryClustersHandler::SetSidePanelUIEmbedder(
   history_clusters_side_panel_embedder_ = side_panel_embedder;
 }
 
+void HistoryClustersHandler::SetQuery(const std::string& query) {
+  if (page_) {
+    page_->OnQueryChangedByUser(query);
+  }
+}
+
 void HistoryClustersHandler::OpenHistoryCluster(
     const GURL& url,
     ui::mojom::ClickModifiersPtr click_modifiers) {
@@ -421,11 +427,6 @@ void HistoryClustersHandler::RemoveVisits(
 
 void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
     std::vector<mojom::URLVisitPtr> visits) {
-  // Sometimes WebUI passes an empty vector, and TabStripModel::AddToNewGroup
-  // requires a non-empty vector (Fixes https://crbug.com/1339140)
-  if (visits.empty()) {
-    return;
-  }
   const auto* browser = chrome::FindTabbedBrowser(profile_, false);
   if (!browser) {
     return;
@@ -460,6 +461,11 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
     if (tab_index != TabStripModel::kNoTab) {
       tab_indices.push_back(tab_index);
     }
+  }
+  // Sometimes tab_indices is empty, and TabStripModel::AddToNewGroup
+  // requires a non-empty vector (Fixes https://crbug.com/1339140)
+  if (tab_indices.empty()) {
+    return;
   }
   model->AddToNewGroup(tab_indices);
 }

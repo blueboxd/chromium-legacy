@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,6 +58,7 @@
       'android-official': 'android_official_optimize_reclient',
       'fuchsia-official': 'fuchsia_official_optimize_goma',
       'lacros-arm-archive-rel': 'chromeos_arm-generic_lacros_rel_reclient',
+      'lacros-arm64-archive-rel': 'chromeos_arm64-generic_lacros_rel_reclient',
       'lacros64-archive-rel': 'chromeos_amd64-generic_lacros_rel',
       'linux-archive-dbg': 'debug_bot_reclient',
       'linux-archive-rel': 'release_bot_reclient',
@@ -421,7 +422,7 @@
       'ios-reclient': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
-      'ios-simulator-cronet': 'ios_cronet_xctest',
+      'ios-simulator-cronet': 'ios_cronet_xctest_reclient',
       'ios-simulator-cronet (reclient shadow)': 'ios_cronet_xctest_reclient',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_xctest',
       'ios-webkit-tot': 'ios_simulator_debug_static_bot_xctest',
@@ -669,6 +670,7 @@
       'chromecast-linux-builder-perf': 'cast_binary_size',
       'chromeos-amd64-generic-lacros-builder-perf': 'chromeos_amd64-generic_lacros_official',
       'chromeos-arm-generic-lacros-builder-perf': 'chromeos_arm-generic_lacros_official',
+      'chromeos-arm64-generic-lacros-builder-perf': 'chromeos_arm64-generic_lacros_official',
       'linux-builder-perf': 'official_goma_linux_perf',
       'linux-builder-perf-pgo': 'official_goma_linux_perf_pgo',
       'linux-builder-perf-rel': 'official_goma_linux_perf',
@@ -2210,6 +2212,7 @@
 
     'chromeos_eve_include_unwind_tables_official_dchecks': [
       'chromeos_device', 'eve', 'include_unwind_tables', 'official', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_jacuzzi_dchecks': [
@@ -3747,6 +3750,10 @@
 
     'also_build_lacros_chrome': {
       'gn_args': 'also_build_lacros_chrome=true',
+    },
+
+    'also_build_lacros_chrome_for_architecture_amd64': {
+      'gn_args': 'also_build_lacros_chrome_for_architecture="amd64"',
     },
 
     'amd64-generic': {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,8 +99,9 @@ void TCPClientSocketBrokered::DidCompleteConnect(
     int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
-  std::move(callback).Run(result);
   is_connect_in_progress_ = false;
+  // The callback may delete {this}.
+  std::move(callback).Run(result);
 }
 
 void TCPClientSocketBrokered ::DidCompleteCreate(

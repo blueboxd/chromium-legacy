@@ -45,7 +45,9 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/branding_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/events/base_event_utils.h"
@@ -2774,7 +2776,6 @@ INSTANTIATE_TEST_SUITE_P(
 // Tests how the suggestions section is updated during item addition and
 // removal.
 TEST_P(HoldingSpaceTraySuggestionsSectionTest, SuggestionsSection) {
-  MarkTimeOfFirstPin();
   StartSession();
 
   // Add an item to the suggestions section and verify that the pinned files
@@ -2815,15 +2816,12 @@ TEST_P(HoldingSpaceTraySuggestionsSectionTest, SuggestionsSection) {
   EXPECT_EQ(item_1->id(),
             HoldingSpaceItemView::Cast(suggestions[0])->item()->id());
 
-  // Remove the other item and verify that the pinned files bubble is hidden.
+  // Remove the other item and verify that the suggestions section is empty.
   model()->RemoveItem(item_1->id());
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
-
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-  EXPECT_FALSE(test_api()->PinnedFilesBubbleShown());
 }
 
 // Base class for tests of the holding space downloads section parameterized by
@@ -3271,6 +3269,18 @@ class HoldingSpaceTrayPredictableFeatureTest
         IsHoldingSpacePredictabilityEnabled());
   }
 
+  // Convenience function for verifying that when there are no previewable items
+  // in the holding space, the default tray icon is shown if and only if the
+  // feature flag is enabled.
+  void ExpectDefaultTrayVisibility() {
+    EXPECT_EQ(test_api()->IsShowingInShelf(),
+              IsHoldingSpacePredictabilityEnabled());
+    if (test_api()->IsShowingInShelf()) {
+      EXPECT_TRUE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+      EXPECT_FALSE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+    }
+  }
+
   bool IsHoldingSpacePredictabilityEnabled() const { return GetParam(); }
 
  private:
@@ -3287,9 +3297,7 @@ TEST_P(HoldingSpaceTrayPredictableFeatureTest,
        AlwaysShowHoldingSpaceTrayButtonWhenFeatureFlagIsEnabled) {
   StartSession(/*pre_mark_time_of_first_add=*/false);
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
-
-  EXPECT_EQ(test_api()->IsShowingInShelf(),
-            IsHoldingSpacePredictabilityEnabled());
+  ExpectDefaultTrayVisibility();
 }
 
 // If the predictable feature flag is enabled, then the holding space button
@@ -3298,10 +3306,7 @@ TEST_P(HoldingSpaceTrayPredictableFeatureTest,
        ShowDefaultIconWhenFeatureFlagIsEnabled) {
   StartSession(/*pre_mark_time_of_first_add=*/false);
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
-
-  // The tray button should be shown if the feature flag is enabled.
-  EXPECT_EQ(test_api()->IsShowingInShelf(),
-            IsHoldingSpacePredictabilityEnabled());
+  ExpectDefaultTrayVisibility();
 
   // Add a download item.
   AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake"));
@@ -3330,6 +3335,49 @@ TEST_P(
   EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 }
 
+TEST_P(HoldingSpaceTrayPredictableFeatureTest,
+       TrayPreviewsNotShownForSuggestions) {
+  MarkTimeOfFirstPin();
+  StartSession();
+  EnableTrayIconPreviews();
+  {
+    SCOPED_TRACE("Initial state.");
+    ExpectDefaultTrayVisibility();
+  }
+
+  // Add suggestions. The tray button should remain hidden.
+  AddItem(HoldingSpaceItem::Type::kDriveSuggestion,
+          base::FilePath("/tmp/fake_1"));
+  {
+    SCOPED_TRACE("Drive suggestion.");
+    ExpectDefaultTrayVisibility();
+  }
+
+  AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
+          base::FilePath("/tmp/fake_2"));
+  {
+    SCOPED_TRACE("Local suggestion.");
+    ExpectDefaultTrayVisibility();
+  }
+
+  // Add a previewable item and verify that the tray shows the preview icon.
+  auto* const item =
+      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_3"));
+  GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+
+  // Remove the previewable item. The tray button should return to its default
+  // icon and visibility.
+  model()->RemoveItem(item->id());
+  GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
+  {
+    SCOPED_TRACE("Previewable item removed.");
+    ExpectDefaultTrayVisibility();
+  }
+}
+
 class HoldingSpaceTraySuggestionsFeatureTest
     : public HoldingSpaceTrayTestBase,
       public ::testing::WithParamInterface<std::tuple<
@@ -3356,6 +3404,23 @@ class HoldingSpaceTraySuggestionsFeatureTest
 
   bool IsHoldingSpaceSuggestionsEnabled() const {
     return std::get<1>(GetParam());
+  }
+
+  bool IsGoogleChromeBranded() const {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  bool GSuiteIconsAreVisibleWhenSuggestionsFeatureIsEnabled(
+      const views::View* pinned_files_bubble) const {
+    bool has_icons = pinned_files_bubble->GetViewByID(
+        kHoldingSpacePinnedFilesSectionPlaceholderGSuiteIconsId);
+    bool should_have_icons =
+        IsHoldingSpaceSuggestionsEnabled() && IsGoogleChromeBranded();
+    return has_icons == should_have_icons;
   }
 
  private:
@@ -3405,11 +3470,17 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
   if (test_api()->PinnedFilesBubbleShown()) {
     views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
     ASSERT_TRUE(pinned_files_bubble);
-    views::View* files_app_chip =
+
+    // If the suggestions feature is enabled, then the placeholder with the G
+    // Suite icons should be showing. If it is disabled but the predictability
+    // feature is enabled, then the files app chip should be showing. Otherwise,
+    // The placeholder shouldn't be showing at all.
+    bool has_files_app_chip =
         pinned_files_bubble->GetViewByID(kHoldingSpaceFilesAppChipId);
-    EXPECT_EQ(files_app_chip != nullptr,
-              IsHoldingSpaceSuggestionsEnabled() ||
-                  IsHoldingSpacePredictabilityEnabled());
+    EXPECT_EQ(has_files_app_chip, IsHoldingSpacePredictabilityEnabled() &&
+                                      !IsHoldingSpaceSuggestionsEnabled());
+    EXPECT_TRUE(GSuiteIconsAreVisibleWhenSuggestionsFeatureIsEnabled(
+        pinned_files_bubble));
   }
 }
 
@@ -3425,6 +3496,44 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest, TrayDoesNotShowUntilFirstAdd) {
   MarkTimeOfFirstAdd();
 
   EXPECT_TRUE(test_api()->IsShowingInShelf());
+}
+
+// Until the user has pinned an item, a placeholder should exist in the pinned
+// files bubble which contains a prompt to pin files and, in chrome branded
+// builds, G Suite icons.
+TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
+       PlaceholderContainsGSuitePrompt) {
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+
+  // Show the bubble. Only the pinned files bubble should be visible.
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+
+  // The new suggestions placeholder text and icons should exist in the bubble.
+  views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+  ASSERT_TRUE(pinned_files_bubble);
+
+  views::Label* suggestions_placeholder_label =
+      static_cast<views::Label*>(pinned_files_bubble->GetViewByID(
+          kHoldingSpacePinnedFilesSectionPlaceholderLabelId));
+  ASSERT_TRUE(suggestions_placeholder_label);
+
+  // TODO(https://crbug.com/1363339): Replace the placeholder text below when
+  // the final string is added.
+  std::u16string expected_text =
+      IsHoldingSpaceSuggestionsEnabled()
+          ? u"[i18n]You can pin important files here, from the Files app, as "
+            u"well as from Google Slides, Docs, and Drive."
+          : l10n_util::GetStringUTF16(
+                IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT);
+  EXPECT_EQ(suggestions_placeholder_label->GetText(), expected_text);
+
+  bool has_files_app_chip =
+      pinned_files_bubble->GetViewByID(kHoldingSpaceFilesAppChipId);
+  EXPECT_NE(has_files_app_chip, IsHoldingSpaceSuggestionsEnabled());
+  EXPECT_TRUE(GSuiteIconsAreVisibleWhenSuggestionsFeatureIsEnabled(
+      pinned_files_bubble));
 }
 
 // Base class for tests of the holding space icon parameterized by a boolean for

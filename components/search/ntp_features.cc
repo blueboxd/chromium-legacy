@@ -159,6 +159,10 @@ const base::Feature kNtpFeedModule{"NtpFeedModule",
 const base::Feature kNtpRecipeTasksModule{"NtpRecipeTasksModule",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the scrim is removed.
+const base::Feature kNtpRemoveScrim{"NtpRemoveScrim",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, SafeBrowsing module will be shown to a target user.
 const base::Feature kNtpSafeBrowsingModule{"NtpSafeBrowsingModule",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -167,6 +171,8 @@ const base::Feature kNtpSafeBrowsingModule{"NtpSafeBrowsingModule",
 const base::Feature kNtpShortcuts{"NtpShortcuts",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+const char kNtpModulesEligibleForHappinessTrackingSurveyParam[] =
+    "NtpModulesEligibleForHappinessTrackingSurveyParam";
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
 const char kNtpModulesOrderParam[] = "NtpModulesOrderParam";

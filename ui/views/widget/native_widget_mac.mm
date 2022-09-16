@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -528,6 +528,22 @@ void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
 void NativeWidgetMac::StackAtTop() {
   if (GetNSWindowMojo())
     GetNSWindowMojo()->StackAtTop();
+}
+
+bool NativeWidgetMac::IsStackedAbove(gfx::NativeView native_view) {
+  // -[NSApplication orderedWindows] are ordered front-to-back.
+  NSWindow* first = GetNativeWindow().GetNativeNSWindow();
+  NSWindow* second = [native_view.GetNativeNSView() window];
+
+  for (NSWindow* window in [NSApp orderedWindows]) {
+    if (window == second)
+      return !first;
+
+    if (window == first)
+      first = nil;
+  }
+
+  return false;
 }
 
 void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {

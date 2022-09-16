@@ -183,6 +183,18 @@ apps::IntentFilters CreateIntentFilterForPluginVm(
   return intent_filters;
 }
 
+apps::LaunchResult ConvertPluginVmResultToLaunchResult(
+    plugin_vm::LaunchPluginVmAppResult plugin_vm_result) {
+  switch (plugin_vm_result) {
+    case plugin_vm::LaunchPluginVmAppResult::SUCCESS:
+      return apps::LaunchResult(apps::State::SUCCESS);
+    case plugin_vm::LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED:
+      return apps::LaunchResult(apps::State::FAILED_DIRECTORY_NOT_SHARED);
+    case plugin_vm::LaunchPluginVmAppResult::FAILED:
+      return apps::LaunchResult(apps::State::FAILED);
+  }
+}
+
 }  // namespace
 
 namespace apps {
@@ -297,7 +309,7 @@ void PluginVmApps::LaunchAppWithIntent(const std::string& app_id,
                                        IntentPtr intent,
                                        LaunchSource launch_source,
                                        WindowInfoPtr window_info,
-                                       LaunchAppWithIntentCallback callback) {
+                                       LaunchCallback callback) {
   // Retrieve URLs from the files in the intent.
   std::vector<plugin_vm::LaunchArg> args;
   if (intent && intent->files.size() > 0) {
@@ -312,11 +324,15 @@ void PluginVmApps::LaunchAppWithIntent(const std::string& app_id,
   plugin_vm::LaunchPluginVmApp(
       profile_, app_id, args,
       base::BindOnce(
-          [](LaunchAppWithIntentCallback callback,
-             plugin_vm::LaunchPluginVmAppResult result,
+          [](LaunchCallback callback,
+             plugin_vm::LaunchPluginVmAppResult plugin_vm_result,
              const std::string& failure_reason) {
+            if (plugin_vm_result !=
+                plugin_vm::LaunchPluginVmAppResult::SUCCESS) {
+              LOG(ERROR) << "Plugin VM launch error: " << failure_reason;
+            }
             std::move(callback).Run(
-                result == plugin_vm::LaunchPluginVmAppResult::SUCCESS);
+                ConvertPluginVmResultToLaunchResult(plugin_vm_result));
           },
           std::move(callback)));
 }

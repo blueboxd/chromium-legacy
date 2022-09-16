@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,6 @@ class DiagnosticsReporter {
                            const clang::CXXBaseSpecifier* base_spec);
   void TraceMethodForStackAllocatedClass(RecordInfo* parent,
                                          clang::CXXMethodDecl* trace);
-  void UsingDefaultMalloc(RecordInfo* info);
 
   void NoteManualDispatchMethod(clang::CXXMethodDecl* dispatch);
   void NoteBaseRequiresTracing(BasePoint* base);
@@ -144,7 +143,6 @@ class DiagnosticsReporter {
   unsigned diag_manual_dispatch_method_note_;
   unsigned diag_iterator_to_gc_managed_collection_note_;
   unsigned diag_trace_method_of_stack_allocated_parent_;
-  unsigned diag_using_default_malloc_;
   unsigned diag_member_in_stack_allocated_class_;
   unsigned diag_member_on_stack_;
 

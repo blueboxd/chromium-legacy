@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1206,8 +1206,8 @@ void PDFiumEngine::OnMultipleClick(int click_count,
     start_index++;
 
   int end_index = char_index;
-  int total = pages_[page_index]->GetCharCount();
-  while (end_index++ <= total) {
+  const int total = pages_[page_index]->GetCharCount();
+  for (; end_index < total; ++end_index) {
     char16_t cur = pages_[page_index]->GetCharAtIndex(end_index);
     if (FindMultipleClickBoundary(is_double_click, cur))
       break;
@@ -1652,8 +1652,8 @@ bool PDFiumEngine::ExtendSelection(int page_index, int char_index) {
     }
 
     int count = pages_[page_index]->GetCharCount();
-    selection_.push_back(
-        PDFiumRange(pages_[page_index].get(), count, count - char_index));
+    selection_.emplace_back(pages_[page_index].get(), count - 1,
+                            char_index - count);
   }
 
   return true;

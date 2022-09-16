@@ -204,7 +204,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ash/ime_bridge.h"
-#include "ui/base/ime/ash/ime_engine_handler_interface.h"
+#include "ui/base/ime/ash/text_input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -4493,8 +4493,7 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     if (overview_info.has_value()) {
       auto it = overview_info->find(window);
       if (it != overview_info->end()) {
-        window_info.overview_info =
-            std::make_unique<api::autotest_private::OverviewInfo>();
+        window_info.overview_info.emplace();
         window_info.overview_info->bounds =
             ToBoundsDictionary(it->second.bounds_in_screen);
         window_info.overview_info->is_dragged = it->second.is_dragged;
@@ -6099,8 +6098,7 @@ AutotestPrivateIsInputMethodReadyForTestingFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateIsInputMethodReadyForTestingFunction::Run() {
-  ui::IMEEngineHandlerInterface* engine =
-      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  ui::TextInputMethod* engine = ui::IMEBridge::Get()->GetCurrentEngineHandler();
   return RespondNow(
       WithArguments(engine && engine->IsReadyForTesting()));  // IN-TEST
 }

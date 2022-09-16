@@ -54,6 +54,7 @@ extern const base::Feature kNtpPhotosModuleSplitSvgOptInArtWork;
 extern const base::Feature kNtpFeedModule;
 extern const base::Feature kNtpOneGoogleBar;
 extern const base::Feature kNtpRecipeTasksModule;
+extern const base::Feature kNtpRemoveScrim;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpShortcuts;
 
@@ -85,6 +86,8 @@ extern const char kNtpDriveModuleCacheMaxAgeSParam[];
 extern const char kNtpDriveModuleExperimentGroupParam[];
 // Parameter determining the type of middle slot promo data to render.
 extern const char kNtpMiddleSlotPromoDismissalParam[];
+// Parameter determining the modules that are eligigle for HATS.
+extern const char kNtpModulesEligibleForHappinessTrackingSurveyParam[];
 // Parameter determining the type of Photos data to render.
 extern const char kNtpPhotosModuleDataParam[];
 // Parameter determining the art work in opt-in card.

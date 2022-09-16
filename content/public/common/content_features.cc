@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -902,10 +902,6 @@ const base::Feature kSignedExchangeReportingForDistributors{
 // https://www.chromestatus.com/feature/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether to send a ping to the inner URL upon navigation or not.
-const base::Feature kSignedHTTPExchangePingValidity{
-    "SignedHTTPExchangePingValidity", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Delays RenderProcessHost shutdown by a few seconds to allow the subframe's
 // process to be potentially reused. This aims to reduce process churn in

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -574,6 +574,28 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
   EXPECT_FALSE(widget1->IsActive());
   EXPECT_EQ(nullptr, widget1->GetFocusManager()->GetFocusedView());
+}
+
+TEST_F(WidgetTestInteractive, ZOrderCheckBetweenTopWindows) {
+  WidgetAutoclosePtr w1(CreateTopLevelPlatformWidget());
+  WidgetAutoclosePtr w2(CreateTopLevelPlatformWidget());
+  WidgetAutoclosePtr w3(CreateTopLevelPlatformWidget());
+
+  ShowSync(w1.get());
+  ShowSync(w2.get());
+  ShowSync(w3.get());
+
+  EXPECT_FALSE(w1->AsWidget()->IsStackedAbove(w2->AsWidget()->GetNativeView()));
+  EXPECT_FALSE(w2->AsWidget()->IsStackedAbove(w3->AsWidget()->GetNativeView()));
+  EXPECT_FALSE(w1->AsWidget()->IsStackedAbove(w3->AsWidget()->GetNativeView()));
+  EXPECT_TRUE(w2->AsWidget()->IsStackedAbove(w1->AsWidget()->GetNativeView()));
+  EXPECT_TRUE(w3->AsWidget()->IsStackedAbove(w2->AsWidget()->GetNativeView()));
+  EXPECT_TRUE(w3->AsWidget()->IsStackedAbove(w1->AsWidget()->GetNativeView()));
+
+  w2->AsWidget()->StackAboveWidget(w1->AsWidget());
+  EXPECT_TRUE(w2->AsWidget()->IsStackedAbove(w1->AsWidget()->GetNativeView()));
+  w1->AsWidget()->StackAboveWidget(w2->AsWidget());
+  EXPECT_FALSE(w2->AsWidget()->IsStackedAbove(w1->AsWidget()->GetNativeView()));
 }
 
 // Test z-order of child widgets relative to their parent.

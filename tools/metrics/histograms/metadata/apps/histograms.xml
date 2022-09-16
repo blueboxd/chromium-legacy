@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -86,8 +86,6 @@ chromium-metrics-reviews@google.com.
   <variant name=".ShelfButton" summary="ShelfButton"/>
   <variant name=".SuggestedAppFullscreen"
       summary="Suggested App, Fullscreen Launcher"/>
-  <variant name=".SuggestedAppPeeking"
-      summary="Suggested App, Peeking Launcher"/>
 </variants>
 
 <variants name="HomeLauncherVisibility">

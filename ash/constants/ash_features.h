@@ -558,6 +558,8 @@ extern const base::Feature kQsRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickDim;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kVCBackgroundBlur;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickSettingsNetworkRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickUnlockFingerprint;
@@ -912,6 +914,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMADarkModeDisabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStartAssistantAudioDecoderOnDemandEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsImeTrayHideVoiceButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemTrayShadowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
@@ -924,6 +927,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUploadOfficeToCloudEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseAuthFactorsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseLoginShelfWidgetEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseStorkSmdsServerAddressEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsVCBackgroundBlurEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWallpaperFastRefreshEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWallpaperFullScreenPreviewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)

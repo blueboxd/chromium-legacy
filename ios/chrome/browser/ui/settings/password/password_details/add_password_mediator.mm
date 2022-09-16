@@ -9,7 +9,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/cancelable_task_tracker.h"
 #import "base/task/sequenced_task_runner.h"
-#import "base/task/task_runner_util.h"
 #import "base/task/thread_pool.h"
 #import "components/password_manager/core/browser/form_parsing/form_parser.h"
 #import "components/password_manager/core/browser/password_form.h"
@@ -122,11 +121,16 @@ bool CheckForDuplicates(
   DCHECK([self isURLValid]);
 
   password_manager::CredentialUIEntry credential;
-  credential.url = self.URL;
-  credential.signon_realm = password_manager::GetSignonRealm(credential.url);
+  std::string signonRealm = password_manager::GetSignonRealm(self.URL);
+  credential.signon_realm = signonRealm;
   credential.username = SysNSStringToUTF16(username);
   credential.password = SysNSStringToUTF16(password);
   credential.stored_in = {password_manager::PasswordForm::Store::kProfileStore};
+
+  password_manager::CredentialFacet facet;
+  facet.url = self.URL;
+  facet.signon_realm = signonRealm;
+  credential.facets.push_back(std::move(facet));
 
   _manager->GetSavedPasswordsPresenter()->AddCredential(credential);
   [self.delegate setUpdatedPassword:credential];

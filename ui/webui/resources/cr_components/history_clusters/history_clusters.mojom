@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,4 +231,7 @@ interface Page {
 
   // Called when History is deleted from a different tab.
   OnHistoryDeleted();
+
+  // Called when the user needs to set `query` for the existing WebUI surface.
+  OnQueryChangedByUser(string query);
 };

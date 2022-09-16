@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -974,14 +974,11 @@ class _Generator(object):
         )
         (c.Eblock('}')
           .Sblock('else {')
-          .Append('auto temp = std::make_unique<%(cpp_type)s>();')
-          .Append('if (!%%(cpp_type)s::Populate(%s)) {' % self._GenerateArgs(
-            ('%(src_var)s', 'temp.get()')))
+          .Append('%(cpp_type)s temp;')
+          .Append('if (!%%(cpp_type)s::Populate(%s))' % self._GenerateArgs(
+              ('%(src_var)s', '&temp')))
           .Append('  return %(failure_value)s;')
-        )
-        (c.Append('}')
-          .Append('else')
-         .Append('  %(dst_var)s = std::move(temp);')
+          .Append('%(dst_var)s = std::move(temp);')
           .Eblock('}')
         )
       else:
@@ -1000,7 +997,7 @@ class _Generator(object):
       assert not underlying_type.is_serializable_function, \
           'Serializable functions should have been handled above.'
       if is_ptr: # Non-serializable functions are just represented as dicts.
-        c.Append('%(dst_var)s = std::make_unique<base::Value::Dict>();')
+        c.Append('%(dst_var)s.emplace();')
     elif underlying_type.property_type == PropertyType.ANY:
       c.Append('%(dst_var)s = %(src_var)s.Clone();')
     elif underlying_type.property_type == PropertyType.ARRAY:
@@ -1042,9 +1039,9 @@ class _Generator(object):
       c.Eblock('}')
     elif underlying_type.property_type == PropertyType.CHOICES:
       if is_ptr:
-        (c.Append('auto temp = std::make_unique<%(cpp_type)s>();')
+        (c.Append('%(cpp_type)s temp;')
           .Append('if (!%%(cpp_type)s::Populate(%s))' % self._GenerateArgs(
-            ('%(src_var)s', 'temp.get()')))
+              ('%(src_var)s', '&temp')))
           .Append('  return %(failure_value)s;')
           .Append('%(dst_var)s = std::move(temp);')
         )
@@ -1067,11 +1064,7 @@ class _Generator(object):
       (c.Eblock('}')
         .Sblock('else {')
       )
-      if is_ptr:
-        c.Append('%(dst_var)s = std::make_unique<std::vector<uint8_t>>('
-                 '%(src_var)s.GetBlob());')
-      else:
-        c.Append('%(dst_var)s = %(src_var)s.GetBlob();')
+      c.Append('%(dst_var)s = %(src_var)s.GetBlob();')
       c.Eblock('}')
     else:
       raise NotImplementedError(type_)

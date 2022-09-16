@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -769,6 +769,11 @@ void RenderFrameHostManager::UnloadOldFrame(
   // RenderFrameHost should not be trying to commit a navigation.
   old_render_frame_host->ResetNavigationRequests();
 
+  if (base::FeatureList::IsEnabled(blink::features::kPendingBeaconAPI) &&
+      blink::features::kPendingBeaconAPIForcesSendingOnNavigation.Get()) {
+    old_render_frame_host->SendAllPendingBeaconsOnNavigation();
+  }
+
   NavigationEntryImpl* last_committed_entry =
       GetNavigationController().GetLastCommittedEntry();
   BackForwardCacheMetrics* old_page_back_forward_cache_metrics =
@@ -959,7 +964,7 @@ bool RenderFrameHostManager::HasPendingCommitForCrossDocumentNavigation()
     return true;
   if (speculative_render_frame_host_) {
     return speculative_render_frame_host_
-               ->HasPendingCommitForCrossDocumentNavigation();
+        ->HasPendingCommitForCrossDocumentNavigation();
   }
   return false;
 }
@@ -3206,7 +3211,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       // iframes are normally considered to have the same origin as their
       // parents, so this seems reasonable.
       return parent->GetSiteInstance()->GetCompatibleSandboxedSiteInstance(
-          request->GetNavigationId());
+          url_info, parent->GetLastCommittedOrigin());
     }
     AppendReason(reason,
                  "GetSiteInstanceForNavigationRequest => parent-instance"

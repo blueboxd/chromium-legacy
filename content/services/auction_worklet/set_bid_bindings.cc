@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,9 @@ bool IsAllowedAdUrl(const GURL& url,
 
 mojom::BidderWorkletBidPtr SetBidBindings::TakeBid() {
   DCHECK(has_bid());
+  // Set `bid_duration` here instead of in SetBid(), so it can include the
+  // entire script execution time.
+  bid_->bid_duration = base::TimeTicks::Now() - start_;
   return std::move(bid_);
 }
 
@@ -102,15 +105,16 @@ void SetBidBindings::SetBid(const v8::FunctionCallbackInfo<v8::Value>& args) {
       static_cast<SetBidBindings*>(v8::External::Cast(*args.Data())->Value());
   AuctionV8Helper* v8_helper = bindings->v8_helper_;
 
-  if (args.Length() < 1 || args[0].IsEmpty()) {
-    args.GetIsolate()->ThrowException(
-        v8::Exception::TypeError(v8_helper->CreateStringFromLiteral(
-            "setBid requires 1 object parameter")));
-    return;
+  v8::Local<v8::Value> argument_value;
+  // Treat no arguments as an undefined argument, which should clear the bid.
+  if (args.Length() < 1) {
+    argument_value = v8::Undefined(v8_helper->isolate());
+  } else {
+    argument_value = args[0];
   }
 
   std::vector<std::string> errors;
-  if (!bindings->SetBid(args[0], /*error_prefix=*/"", errors)) {
+  if (!bindings->SetBid(argument_value, /*error_prefix=*/"", errors)) {
     DCHECK_EQ(1u, errors.size());
     // Remove the trailing period from the error message.
     std::string error_msg = errors[0].substr(0, errors[0].length() - 1);
@@ -130,6 +134,10 @@ bool SetBidBindings::SetBid(v8::Local<v8::Value> generate_bid_result,
   DCHECK(ads_ && ad_components_)
       << "ReInitialize() must be called before each use";
 
+  // Undefined and null are interpreted as choosing not to bid.
+  if (generate_bid_result->IsNullOrUndefined())
+    return true;
+
   if (!generate_bid_result->IsObject()) {
     errors_out.push_back(base::StrCat({error_prefix, "bid not an object."}));
     return false;
@@ -137,11 +145,28 @@ bool SetBidBindings::SetBid(v8::Local<v8::Value> generate_bid_result,
 
   gin::Dictionary result_dict(isolate, generate_bid_result.As<v8::Object>());
 
-  v8::Local<v8::Value> ad_object;
   double bid;
+  if (!result_dict.Get("bid", &bid)) {
+    errors_out.push_back(base::StrCat(
+        {error_prefix, "returned object must have numeric bid field."}));
+    return false;
+  }
+
+  if (!std::isfinite(bid)) {
+    // Bids should not be infinite or NaN.
+    errors_out.push_back(base::StringPrintf("%sbid of %lf is not a valid bid.",
+                                            error_prefix.c_str(), bid));
+    return false;
+  }
+  if (bid <= 0.0) {
+    // Not an error, just no bid.
+    return true;
+  }
+
+  v8::Local<v8::Value> ad_object;
   std::string render_url_string;
   // Parse and validate values.
-  if (!result_dict.Get("ad", &ad_object) || !result_dict.Get("bid", &bid) ||
+  if (!result_dict.Get("ad", &ad_object) ||
       !result_dict.Get("render", &render_url_string)) {
     errors_out.push_back(
         base::StrCat({error_prefix, "bid has incorrect structure."}));
@@ -172,17 +197,6 @@ bool SetBidBindings::SetBid(v8::Local<v8::Value> generate_bid_result,
                         "set to true. Bid dropped from component auction."}));
       return false;
     }
-  }
-
-  if (!std::isfinite(bid) || bid < 0.0) {
-    // Bids should not be infinite or NaN.
-    errors_out.push_back(base::StringPrintf("%sbid of %lf is not a valid bid.",
-                                            error_prefix.c_str(), bid));
-    return false;
-  }
-  if (bid <= 0.0) {
-    // Not an error, just no bid.
-    return false;
   }
 
   GURL render_url(render_url_string);
@@ -238,10 +252,14 @@ bool SetBidBindings::SetBid(v8::Local<v8::Value> generate_bid_result,
     }
   }
 
-  bid_ = mojom::BidderWorkletBid::New(
-      std::move(ad_json), bid, std::move(render_url),
-      std::move(ad_component_urls),
-      /*bid_duration=*/base::TimeTicks::Now() - start_);
+  // `bid_duration` needs to include the entire time the bid script took to run,
+  // including the time from the last setBid() call to when the bidder worklet
+  // timed out, if the worklet did time out. So `bid_duration` is calculated
+  // when ownership of the bid is taken by the caller, instead of here.
+  bid_ = mojom::BidderWorkletBid::New(std::move(ad_json), bid,
+                                      std::move(render_url),
+                                      std::move(ad_component_urls),
+                                      /*bid_duration=*/base::TimeDelta());
   return true;
 }
 

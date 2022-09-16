@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,6 +223,8 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
         absl::optional<double> set_priority,
+        base::flat_map<std::string, mojom::PrioritySignalsDoublePtr>
+            update_priority_signals_overrides,
         PrivateAggregationRequests pa_requests,
         std::vector<std::string> error_msgs)>;
     using ReportWinCallbackInternal =
@@ -280,9 +282,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
 
     void PostErrorBidCallbackToUserThread(
         GenerateBidCallbackInternal callback,
-        std::vector<std::string> error_msgs = std::vector<std::string>(),
-        absl::optional<GURL> debug_loss_report_url = absl::nullopt,
-        PrivateAggregationRequests private_aggregation_requests = {});
+        std::vector<std::string> error_msgs = std::vector<std::string>());
 
     static void PostResumeToUserThread(
         base::WeakPtr<BidderWorklet> parent,
@@ -354,6 +354,8 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,
       absl::optional<double> set_priority,
+      base::flat_map<std::string, mojom::PrioritySignalsDoublePtr>
+          update_priority_signals_overrides,
       PrivateAggregationRequests pa_requests,
       std::vector<std::string> error_msgs);
 

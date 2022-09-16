@@ -10,6 +10,8 @@
 #include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_store_backend_error.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 class GURL;
 
@@ -29,8 +31,11 @@ class AffiliationService : public KeyedService {
       base::OnceCallback<void(const AffiliatedFacets& /* results */,
                               bool /* success */)>;
 
-  using PasswordFormsCallback =
-      base::OnceCallback<void(std::vector<std::unique_ptr<PasswordForm>>)>;
+  using PasswordFormsOrErrorCallback = base::OnceCallback<void(
+      absl::variant<std::vector<std::unique_ptr<PasswordForm>>,
+                    PasswordStoreBackendError>)>;
+
+  using GroupsCallback = base::OnceCallback<void(std::vector<GroupedFacets>)>;
 
   // Prefetches change password URLs for sites requested. Receives a callback to
   // run when the prefetch finishes.
@@ -95,6 +100,10 @@ class AffiliationService : public KeyedService {
   // |facet_uris|.
   virtual void TrimUnusedCache(std::vector<FacetURI> facet_uris) = 0;
 
+  // Retrieves all stored facet groups from the cache. This information can be
+  // used to group passwords together.
+  virtual void GetAllGroups(GroupsCallback callback) const = 0;
+
   // Retrieves affiliation and branding information about the Android
   // credentials in |forms|, sets |affiliated_web_realm|, |app_display_name| and
   // |app_icon_url| of forms, and invokes |result_callback|.
@@ -105,7 +114,7 @@ class AffiliationService : public KeyedService {
   virtual void InjectAffiliationAndBrandingInformation(
       std::vector<std::unique_ptr<PasswordForm>> forms,
       AffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
-      PasswordFormsCallback result_callback) = 0;
+      PasswordFormsOrErrorCallback result_callback) = 0;
 };
 
 }  // namespace password_manager

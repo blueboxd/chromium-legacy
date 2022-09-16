@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,17 +165,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   ~BrowserAccessibilityManager() override;
 
   static ui::AXTreeUpdate GetEmptyDocument();
-
-  enum RetargetEventType {
-    RetargetEventTypeGenerated = 0,
-    RetargetEventTypeBlinkGeneral,
-    RetargetEventTypeBlinkHover,
-  };
-
-  // Return |node| by default, but some platforms want to update the target node
-  // based on the event type.
-  virtual BrowserAccessibility* RetargetForEvents(BrowserAccessibility* node,
-                                                  RetargetEventType type) const;
 
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node,
@@ -545,6 +534,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Detaches this instance from its parent manager. Useful during
   // deconstruction.
   void DetachFromParentManager();
+
+  // Wrapper for converting the AXNode* returned by RetargetForEvents
+  // to a BrowserAccessibility*. This is often needed.
+  BrowserAccessibility* RetargetBrowserAccessibilityForEvents(
+      BrowserAccessibility* node,
+      RetargetEventType type) const;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,

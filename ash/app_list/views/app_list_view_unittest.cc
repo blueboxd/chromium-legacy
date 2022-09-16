@@ -265,7 +265,7 @@ class AppListViewTest : public views::ViewsTestBase {
 
  protected:
   void Show(bool is_side_shelf = false) {
-    view_->Show(AppListViewState::kPeeking, is_side_shelf);
+    view_->Show(AppListViewState::kFullscreenAllApps, is_side_shelf);
   }
 
   void Initialize(bool is_tablet_mode) {
@@ -783,7 +783,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   void Show() {
-    view_->Show(AppListViewState::kPeeking, /*is_side_shelf=*/false);
+    view_->Show(AppListViewState::kFullscreenAllApps, /*is_side_shelf=*/false);
   }
 
   SearchResultTileItemListView* GetSearchResultTileItemListView() {
@@ -1100,39 +1100,9 @@ class AppListViewPeekingFocusTest : public AppListViewFocusTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewPeekingFocusTest, testing::Bool());
-
 // Tests that the initial focus is on search box.
 TEST_F(AppListViewFocusTest, InitialFocus) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-}
-
-// Tests the linear focus traversal in PEEKING state.
-TEST_P(AppListViewPeekingFocusTest, LinearFocusTraversalInPeekingState) {
-  Show();
-  SetAppListState(ash::AppListViewState::kPeeking);
-
-  std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
-  for (auto* v : GetAllSuggestions())
-    forward_view_list.push_back(v);
-  forward_view_list.push_back(search_box_view()->search_box());
-  std::vector<views::View*> backward_view_list = forward_view_list;
-  std::reverse(backward_view_list.begin(), backward_view_list.end());
-
-  // Test traversal triggered by tab.
-  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
-
-  // Test traversal triggered by shift+tab.
-  TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
-
-  // Test traversal triggered by right.
-  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
-                     ui::VKEY_RIGHT, false);
-
-  // Test traversal triggered by left.
-  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
-                     ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state.
@@ -1143,7 +1113,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
     return;
 
   Show();
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -1176,8 +1145,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
 TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   Show();
 
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
@@ -1217,7 +1185,6 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
     return;
 
   Show();
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -1252,8 +1219,7 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
 TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   Show();
 
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
@@ -1294,8 +1260,7 @@ TEST_F(AppListViewPeekingFocusTest,
        VerticalFocusTraversalInSecondPageOfFolder) {
   Show();
 
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
@@ -1551,8 +1516,7 @@ TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
 TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
   Show();
 
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
 
@@ -1578,8 +1542,7 @@ TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
 TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOrEscapeOnFolderName) {
   Show();
 
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
@@ -1605,7 +1568,6 @@ TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOrEscapeOnFolderName) {
 TEST_F(AppListViewFocusTest, SelectionHighlightFollowsChangingPage) {
   // Move the focus to the first app in the grid.
   Show();
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
   const views::ViewModelT<AppListItemView>* view_model =
       apps_grid_view()->view_model();
   AppListItemView* first_item_view = view_model->view_at(0);
@@ -1632,7 +1594,6 @@ TEST_F(AppListViewFocusTest, SelectionHighlightFollowsChangingPage) {
 TEST_F(AppListViewFocusTest, SelectionDoesNotShowInFolderIfNotSelected) {
   // Open a folder without making the view selected.
   Show();
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
   const gfx::Point folder_item_view_bounds =
       folder_item_view()->bounds().CenterPoint();
   ui::GestureEvent tap(folder_item_view_bounds.x(), folder_item_view_bounds.y(),
@@ -1659,7 +1620,6 @@ TEST_F(AppListViewFocusTest, SelectionDoesNotShowInFolderIfNotSelected) {
 TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
   // Open a folder without making the view selected.
   Show();
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
 
   folder_item_view()->RequestFocus();
   ASSERT_TRUE(apps_grid_view()->IsSelectedView(folder_item_view()));
@@ -1685,13 +1645,13 @@ TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
   EXPECT_EQ(folder_item_view(), focused_view());
 }
 
-// Tests that opening the app list opens in peeking mode by default.
-TEST_F(AppListViewPeekingTest, ShowPeekingByDefault) {
+// Tests that opening the app list opens in fullscreen mode by default.
+TEST_F(AppListViewPeekingTest, ShowFullscreenByDefault) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
 
-  ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
 // Tests that in side shelf mode, the app list opens in fullscreen by default
@@ -1721,7 +1681,7 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
 }
 
 // Tests that setting empty text in the search box does not change the state.
-TEST_F(AppListViewPeekingTest, EmptySearchTextStillPeeking) {
+TEST_F(AppListViewPeekingTest, EmptySearchTextStaysAtFullscreenAllApps) {
   Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1729,7 +1689,7 @@ TEST_F(AppListViewPeekingTest, EmptySearchTextStillPeeking) {
   Show();
   search_box->SetText(std::u16string());
 
-  ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
 TEST_F(AppListViewPeekingTest,
@@ -1738,7 +1698,7 @@ TEST_F(AppListViewPeekingTest,
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  EXPECT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
+  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 
   EXPECT_EQ(0, delegate_->dismiss_count());
   view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, -30),
@@ -1751,7 +1711,7 @@ TEST_F(AppListViewPeekingTest, DownwardGestureScrollDismissesPeekingLauncher) {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  EXPECT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
+  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 
   EXPECT_EQ(0, delegate_->dismiss_count());
   view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, -30), ui::ET_SCROLL);
@@ -1762,7 +1722,6 @@ TEST_F(AppListViewPeekingTest, DownwardGestureScrollDismissesPeekingLauncher) {
 TEST_F(AppListViewPeekingTest, TypingFullscreenToFullscreenSearch) {
   Initialize(false /*is_tablet_mode*/);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1789,20 +1748,9 @@ TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
   EXPECT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
 }
 
-// Tests that pressing escape when in peeking closes the app list.
-TEST_F(AppListViewPeekingTest, EscapeKeyPeekingToClosed) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(1, delegate_->dismiss_count());
-}
-
-// Tests that pressing escape when in fullscreen changes the state to closed.
+// Tests that pressing escape when in fullscreen closes the app list.
 TEST_F(AppListViewPeekingTest, EscapeKeyFullscreenToClosed) {
   Initialize(false /*is_tablet_mode*/);
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1836,11 +1784,10 @@ TEST_P(AppListViewTabletTest, EscapeKeyTabletModeStayFullscreen) {
 TEST_F(AppListViewPeekingTest, EscapeKeyFullscreenSearchToFullscreen) {
   Initialize(false /*is_tablet_mode*/);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-
   SetTextInSearchBox(u"https://youtu.be/dQw4w9WgXcQ");
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  ASSERT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
 
+  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
@@ -1878,22 +1825,11 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-// Tests that opening in peeking mode sets the correct height.
-TEST_F(AppListViewPeekingTest, OpenInPeekingCorrectHeight) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-  view_->SetState(AppListViewState::kPeeking);
-  ASSERT_EQ(view_->GetHeightForState(AppListViewState::kPeeking),
-            view_->GetCurrentAppListHeight());
-}
-
 // Tests that opening in fullscreen mode sets the correct height.
 TEST_F(AppListViewPeekingTest, OpenInFullscreenCorrectHeight) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   const int y = view_->GetWidget()->GetWindowBoundsInScreen().y();
   ASSERT_EQ(0, y);
 }
@@ -1913,7 +1849,6 @@ TEST_F(AppListViewPeekingTest, SetStateFailsWhenClosing) {
 TEST_F(AppListViewPeekingTest, AppsGridViewVisibilityOnReopening) {
   Initialize(false /*is_tablet_mode*/);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
 
   view_->SetState(ash::AppListViewState::kFullscreenSearch);
@@ -1923,37 +1858,7 @@ TEST_F(AppListViewPeekingTest, AppsGridViewVisibilityOnReopening) {
   // Close the app-list and re-show to fullscreen all apps.
   view_->SetState(ash::AppListViewState::kClosed);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
-}
-
-// Tests that going into a folder view, then setting the AppListState to PEEKING
-// hides the folder view.
-TEST_F(AppListViewPeekingTest, FolderViewToPeeking) {
-  Initialize(false /*is_tablet_mode*/);
-  AppListTestModel* model = delegate_->GetTestModel();
-  model->PopulateApps(kInitialItems);
-  const std::string folder_id =
-      model->MergeItems(model->top_level_item_list()->item_at(0)->id(),
-                        model->top_level_item_list()->item_at(1)->id());
-  model->FindFolderItem(folder_id);
-  Show();
-  AppsGridViewTestApi test_api(view_->app_list_main_view()
-                                   ->contents_view()
-                                   ->apps_container_view()
-                                   ->apps_grid_view());
-  test_api.PressItemAt(0);
-  EXPECT_TRUE(view_->app_list_main_view()
-                  ->contents_view()
-                  ->apps_container_view()
-                  ->IsInFolderView());
-
-  view_->SetState(ash::AppListViewState::kPeeking);
-
-  EXPECT_FALSE(view_->app_list_main_view()
-                   ->contents_view()
-                   ->apps_container_view()
-                   ->IsInFolderView());
 }
 
 // Tests that a tap or click in an empty region of the AppsGridView closes the
@@ -1964,7 +1869,6 @@ TEST_F(AppListViewPeekingTest, TapAndClickWithinAppsGridView) {
   // region to click.
   delegate_->GetTestModel()->PopulateApps(6);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   AppsGridView* apps_grid_view = view_->app_list_main_view()
                                      ->contents_view()
@@ -2302,14 +2206,12 @@ TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
   model->PopulateApps(kAppListItemNum);
 
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   apps_grid_view()->pagination_model()->SelectPage(1, false /* animate */);
 
   // Close and re-open the app list to ensure the current page doesn't persist.
   view_->SetState(ash::AppListViewState::kClosed);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
 }
@@ -2394,9 +2296,7 @@ TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToAppList) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
-  // First we're in the fullscreen app list
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-  // Then we go to search by entering text
+  // Enter search view by entering text
   SetTextInSearchBox(u"search query");
   // From there we launch the Assistant UI
   contents_view()->ShowEmbeddedAssistantUI(true);
@@ -3215,7 +3115,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfSize()) / 16;
@@ -3236,7 +3135,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfSize()) / 16;
@@ -3257,7 +3155,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   // Horizontal margin should be set so apps grid doesn't go over the max size.
   const int expected_horizontal_margin =
@@ -3281,7 +3178,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfSize()) / 16;
@@ -3302,7 +3198,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   // Horizontal margin should be set so apps grid doesn't go over the max size.
   const int expected_horizontal_margin =
@@ -3326,7 +3221,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfSize()) / 16;
@@ -3347,7 +3241,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfSize()) / 16;
@@ -3372,7 +3265,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   // Horizontal margin should be set so apps grid doesn't go over the max size.
   const int expected_horizontal_margin =
@@ -3399,7 +3291,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   // The horizontal margin is selected so the page switcher fits the margin
   // space (note that 650 / 12, which is how the margin is normally calculated
@@ -3422,7 +3313,6 @@ TEST_F(LegacyLauncherAppListViewLayoutTest,
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   int expected_vertical_margin = (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
@@ -3448,8 +3338,7 @@ TEST_F(AppListViewPeekingFocusTest, PageSwitchingNotRecordingMetric) {
   Show();
 
   histogram_tester.ExpectTotalCount("Apps.AppListPageSwitcherSource", 0);
-  // Transition to kFullscreenAllApps state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  // Open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
   ASSERT_TRUE(contents_view()->apps_container_view()->IsInFolderView());

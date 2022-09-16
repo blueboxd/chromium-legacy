@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -464,6 +464,12 @@ void DesktopWindowTreeHostPlatform::StackAbove(aura::Window* window) {
 
 void DesktopWindowTreeHostPlatform::StackAtTop() {
   platform_window()->StackAtTop();
+}
+
+bool DesktopWindowTreeHostPlatform::IsStackedAbove(aura::Window* window) {
+  // TODO(https://crbug.com/1363218) Implement Window layer check
+  NOTREACHED();
+  return false;
 }
 
 void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {

@@ -77,6 +77,10 @@ extern const base::Feature kDownloadBubble;
 // kDownloadBubble is already enabled.
 extern const base::Feature kDownloadBubbleV2;
 
+// The kill switch for download tailored warnings. The main control is on the
+// server-side.
+extern const base::Feature kDownloadTailoredWarnings;
+
 // Enables Enhanced Safe Browsing.
 extern const base::Feature kEnhancedProtection;
 
@@ -117,6 +121,9 @@ extern const base::Feature kLogAccountEnhancedProtectionStateInProtegoPings;
 
 // Enable omitting non-user gesture from referrer chain.
 extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
+
+// Bypass RealTime URL Lookup allowlist for enterprise users.
+extern const base::Feature kRealTimeUrlLookupForEnterpriseAllowlistBypass;
 
 // Controls whether Client Safe Browsing Reports are sent with a GAIA-tied token
 // for Enhanced Safe Browsing users

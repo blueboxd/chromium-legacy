@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -766,7 +766,8 @@ export class DirectoryModel extends EventTarget {
         return;
       }
       const newDirContents = this.createDirectoryContents_(
-          this.currentFileListContext_, assert(this.getCurrentDirEntry()));
+          this.currentFileListContext_, assert(this.getCurrentDirEntry()),
+          this.lastSearchQuery_);
       this.clearAndScan_(newDirContents, callback);
     });
   }

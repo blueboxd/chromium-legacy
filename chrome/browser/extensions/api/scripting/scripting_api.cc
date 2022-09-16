@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_runner_util.h"
 #include "base/types/optional_util.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -1045,7 +1046,8 @@ ScriptingGetRegisteredContentScriptsFunction::Run() {
       api::scripting::GetRegisteredContentScripts::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const api::scripting::ContentScriptFilter* filter = params->filter.get();
+  const absl::optional<api::scripting::ContentScriptFilter>& filter =
+      params->filter;
   std::set<std::string> id_filter;
   if (filter && filter->ids) {
     id_filter.insert(std::make_move_iterator(filter->ids->begin()),
@@ -1085,7 +1087,7 @@ ScriptingUnregisterContentScriptsFunction::Run() {
   auto params(api::scripting::UnregisterContentScripts::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::unique_ptr<api::scripting::ContentScriptFilter>& filter = params->filter;
+  absl::optional<api::scripting::ContentScriptFilter>& filter = params->filter;
   std::set<std::string> ids_to_remove;
 
   ExtensionUserScriptLoader* loader =

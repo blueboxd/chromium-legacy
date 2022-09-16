@@ -2350,16 +2350,29 @@ const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
          std::size(kOmniboxAssistantVoiceSearchNoMultiAccountCheck), nullptr},
 };
 
-const FeatureEntry::FeatureParam kOmniboxModernizeVisualUpdateExcludeTablets[] =
-    {{"enable_modernize_visual_update_on_tablet", "false"}};
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "true"}};
+
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "false"}};
 
 const FeatureEntry::FeatureParam kOmniboxModernizeVisualUpdateIncludeTablets[] =
     {{"enable_modernize_visual_update_on_tablet", "true"}};
 
 const FeatureEntry::FeatureVariation kOmniboxModernizeVisualUpdateVariations[] =
     {
-        {"(exclude tablet)", kOmniboxModernizeVisualUpdateExcludeTablets,
-         std::size(kOmniboxModernizeVisualUpdateExcludeTablets), nullptr},
+        {"(active color omnibox, exclude tablet)",
+         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox,
+         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox),
+         nullptr},
+        {"(no active color omnibox, exclude tablet)",
+         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox,
+         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox),
+         nullptr},
         {"(include tablet)", kOmniboxModernizeVisualUpdateIncludeTablets,
          std::size(kOmniboxModernizeVisualUpdateIncludeTablets), nullptr},
 };
@@ -3097,6 +3110,72 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
      std::size(kQuickDim10sQuickLock130sThresholdMinus40), nullptr},
     {"Dim10sLock130sWithFeedback", kQuickDim10sQuickLock130sFeedback,
      std::size(kQuickDim10sQuickLock130sFeedback), nullptr},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample4[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "4"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample8[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample16[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "16"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample4[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "4"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample8[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample16[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "16"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample4[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "4"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample8[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample16[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "16"},
+};
+
+const FeatureEntry::FeatureVariation kVCBackgroundBlurVariations[] = {
+    {"Scale15Sample4", kVCBackgroundBlurScale15Sample4,
+     std::size(kVCBackgroundBlurScale15Sample4), nullptr},
+    {"Scale15Sample8", kVCBackgroundBlurScale15Sample8,
+     std::size(kVCBackgroundBlurScale15Sample8), nullptr},
+    {"Scale15Sample16", kVCBackgroundBlurScale15Sample16,
+     std::size(kVCBackgroundBlurScale15Sample16), nullptr},
+    {"Scale25Sample4", kVCBackgroundBlurScale25Sample4,
+     std::size(kVCBackgroundBlurScale25Sample4), nullptr},
+    {"Scale25Sample8", kVCBackgroundBlurScale25Sample8,
+     std::size(kVCBackgroundBlurScale25Sample8), nullptr},
+    {"Scale25Sample16", kVCBackgroundBlurScale25Sample16,
+     std::size(kVCBackgroundBlurScale25Sample16), nullptr},
+    {"Scale35Sample4", kVCBackgroundBlurScale35Sample4,
+     std::size(kVCBackgroundBlurScale35Sample4), nullptr},
+    {"Scale35Sample8", kVCBackgroundBlurScale35Sample8,
+     std::size(kVCBackgroundBlurScale35Sample8), nullptr},
+    {"Scale35Sample16", kVCBackgroundBlurScale35Sample16,
+     std::size(kVCBackgroundBlurScale35Sample16), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -4391,6 +4470,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
+    {"text-based-audio-descriptions",
+     flag_descriptions::kTextBasedAudioDescriptionName,
+     flag_descriptions::kTextBasedAudioDescriptionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kTextBasedAudioDescription)},
     {"bypass-app-banner-engagement-checks",
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
@@ -4429,10 +4512,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsLaunchHandlerName,
      flag_descriptions::kDesktopPWAsLaunchHandlerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kWebAppEnableLaunchHandler)},
-    {"enable-desktop-pwas-manifest-id",
-     flag_descriptions::kDesktopPWAsManifestIdName,
-     flag_descriptions::kDesktopPWAsManifestIdDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableManifestId)},
     {"enable-desktop-pwas-sub-apps", flag_descriptions::kDesktopPWAsSubAppsName,
      flag_descriptions::kDesktopPWAsSubAppsDescription,
      kOsWin | kOsLinux | kOsLacros | kOsMac | kOsCrOS | kOsFuchsia,
@@ -7547,6 +7626,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLauncherHideContinueSectionName,
      flag_descriptions::kLauncherHideContinueSectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLauncherHideContinueSection)},
+    {"quick-gesture-show-launcher",
+     flag_descriptions::kQuickActionShowBubbleLauncherName,
+     flag_descriptions::kQuickActionShowBubbleLauncherDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kQuickActionShowBubbleLauncher)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -8332,6 +8415,13 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kUnifiedPasswordManagerAndroid,
          kUnifiedPasswordManagerAndroidVariations,
          "UnifiedPasswordManagerAndroid")},
+
+    {"google-mobile-services-passwords-error-messages",
+     flag_descriptions::kUnifiedPasswordManagerErrorMessagesName,
+     flag_descriptions::kUnifiedPasswordManagerErrorMessagesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUnifiedPasswordManagerErrorMessages)},
 #endif
 
     {"extension-workflow-justification",
@@ -8728,6 +8818,14 @@ const FeatureEntry kFeatureEntries[] = {
                                     "QuickDim")},
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"vc-background-blur", flag_descriptions::kVCBackgroundBlurName,
+     flag_descriptions::kVCBackgroundBlurDescription, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kVCBackgroundBlur,
+                                    kVCBackgroundBlurVariations,
+                                    "VCBackgroundBlur")},
+#endif
+
 #if BUILDFLAG(IS_WIN)
     {"pervasive-system-accent-color",
      flag_descriptions::kPervasiveSystemAccentColorName,
@@ -8808,12 +8906,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnableVirtualCardManagementInDesktopSettingsPage)},
-
-    {"leak-detection-unauthenticated",
-     flag_descriptions::kLeakDetectionUnauthenticated,
-     flag_descriptions::kLeakDetectionUnauthenticatedDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kLeakDetectionUnauthenticated)},
 
     {"origin-agent-cluster-default",
      flag_descriptions::kOriginAgentClusterDefaultName,
@@ -9390,6 +9482,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-nearby-share-fuse-box", flag_descriptions::kArcNearbyShareFuseBoxName,
      flag_descriptions::kArcNearbyShareFuseBoxDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShareFuseBox)}
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+    {"android-permissions-cache",
+     flag_descriptions::kAndroidPermissionsCacheName,
+     flag_descriptions::kAndroidPermissionsCacheDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(::features::kAndroidPermissionsCache)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/check.h"
 #include "base/containers/circular_deque.h"
@@ -90,7 +89,7 @@ FirstPartySetsManager::ComputeMetadata(
     EnqueuePendingQuery(base::BindOnce(
         &FirstPartySetsManager::ComputeMetadataAndInvoke,
         weak_factory_.GetWeakPtr(), site, base::OptionalFromPtr(top_frame_site),
-        party_context, fps_context_config, std::move(callback),
+        party_context, fps_context_config.Clone(), std::move(callback),
         base::ElapsedTimer()));
     return absl::nullopt;
   }
@@ -171,10 +170,10 @@ FirstPartySetsManager::FindEntries(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!sets_.has_value()) {
-    EnqueuePendingQuery(
-        base::BindOnce(&FirstPartySetsManager::FindEntriesAndInvoke,
-                       weak_factory_.GetWeakPtr(), sites, fps_context_config,
-                       std::move(callback), base::ElapsedTimer()));
+    EnqueuePendingQuery(base::BindOnce(
+        &FirstPartySetsManager::FindEntriesAndInvoke,
+        weak_factory_.GetWeakPtr(), sites, fps_context_config.Clone(),
+        std::move(callback), base::ElapsedTimer()));
     return absl::nullopt;
   }
 
@@ -201,16 +200,7 @@ FirstPartySetsManager::EntriesResult FirstPartySetsManager::FindEntriesInternal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
 
-  std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>>
-      sites_to_entries;
-  for (const net::SchemefulSite& site : sites) {
-    const absl::optional<net::FirstPartySetEntry> entry =
-        FindEntry(site, fps_context_config);
-    if (entry.has_value()) {
-      sites_to_entries.emplace_back(site, entry.value());
-    }
-  }
-  return sites_to_entries;
+  return sets_->FindEntries(sites, &fps_context_config);
 }
 
 void FirstPartySetsManager::InvokePendingQueries() {

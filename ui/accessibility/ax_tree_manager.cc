@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,11 @@ AXTreeManager::AXTreeManager(const AXTreeID& tree_id,
 void AXTreeManager::FireFocusEvent(AXNode* node) {
   if (g_focus_change_callback_for_testing.Get())
     g_focus_change_callback_for_testing.Get().Run();
+}
+
+AXNode* AXTreeManager::RetargetForEvents(AXNode* node,
+                                         RetargetEventType type) const {
+  return node;
 }
 
 void AXTreeManager::Initialize(const ui::AXTreeUpdate& initial_tree) {

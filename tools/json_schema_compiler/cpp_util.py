@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,7 +13,7 @@ import posixpath
 import re
 
 CHROMIUM_LICENSE = (
-"""// Copyright %d The Chromium Authors. All rights reserved.
+"""// Copyright %d The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.""" % datetime.now().year
 )
@@ -112,9 +112,13 @@ def ShouldUseAbslOptional(type_):
 
   if type_.property_type in (PropertyType.ANY,
                              PropertyType.ARRAY,
+                             PropertyType.BINARY,
                              PropertyType.BOOLEAN,
+                             PropertyType.CHOICES,
                              PropertyType.DOUBLE,
+                             PropertyType.FUNCTION,
                              PropertyType.INTEGER,
+                             PropertyType.OBJECT,
                              PropertyType.STRING):
     return True
 

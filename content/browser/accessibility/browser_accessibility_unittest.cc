@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include "ui/accessibility/ax_node_position.h"
 
 namespace content {
+
+using RetargetEventType = ui::AXTreeManager::RetargetEventType;
 
 class BrowserAccessibilityTest : public ::testing::Test {
  public:
@@ -82,9 +84,9 @@ TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
 #if !BUILDFLAG(IS_ANDROID)
   EXPECT_TRUE(text_obj->CanFireEvents());
 #endif
-  BrowserAccessibility* retarget = manager->RetargetForEvents(
-      text_obj, BrowserAccessibilityManager::RetargetEventType::
-                    RetargetEventTypeBlinkHover);
+  BrowserAccessibility* retarget =
+      manager->RetargetBrowserAccessibilityForEvents(
+          text_obj, RetargetEventType::RetargetEventTypeBlinkHover);
   EXPECT_TRUE(retarget->CanFireEvents());
 
   manager.reset();

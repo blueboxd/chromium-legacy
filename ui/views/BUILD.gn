@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1334,6 +1334,7 @@ test("views_unittests") {
       "cocoa/cocoa_mouse_capture_unittest.mm",
       "cocoa/drag_drop_client_mac_unittest.mm",
       "cocoa/fullscreen_controller_unittest.cc",
+      "cocoa/immersive_mode_controller_unittest.mm",
       "controls/menu/menu_closure_animation_mac_unittest.cc",
       "controls/menu/menu_runner_cocoa_unittest.mm",
       "controls/native/native_view_host_mac_unittest.mm",

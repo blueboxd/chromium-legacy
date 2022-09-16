@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1224,7 +1224,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
       </body>
       )HTML");
 
-  BrowserAccessibility* target = FindNode(ax::mojom::Role::kPopUpButton, "One");
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kComboBoxSelect, "One");
   ASSERT_NE(nullptr, target);
 
   EXPECT_EQ(0U, target->PlatformChildCount());

@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2152,8 +2152,6 @@ source_set("browser") {
     "web_package/signed_exchange_signature_verifier.h",
     "web_package/signed_exchange_utils.cc",
     "web_package/signed_exchange_utils.h",
-    "web_package/signed_exchange_validity_pinger.cc",
-    "web_package/signed_exchange_validity_pinger.h",
     "web_package/subresource_web_bundle_navigation_info.cc",
     "web_package/subresource_web_bundle_navigation_info.h",
     "web_package/web_bundle_blob_data_source.cc",

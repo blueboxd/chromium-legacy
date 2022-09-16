@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,18 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/win/windows_types.h"
+#include "ui/wm/core/native_cursor_manager_delegate.h"
 
 namespace views {
 
 namespace {
+
 constexpr int kDefaultCursorSize = 32;
+
 }  // namespace
 
 DesktopNativeCursorManagerWin::DesktopNativeCursorManagerWin() = default;

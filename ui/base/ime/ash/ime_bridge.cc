@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,32 +17,30 @@ IMEBridge::IMEBridge()
 
 IMEBridge::~IMEBridge() = default;
 
-IMEInputContextHandlerInterface* IMEBridge::GetInputContextHandler() const {
+TextInputTarget* IMEBridge::GetInputContextHandler() const {
   return input_context_handler_;
 }
 
-void IMEBridge::SetInputContextHandler(
-    IMEInputContextHandlerInterface* handler) {
+void IMEBridge::SetInputContextHandler(TextInputTarget* handler) {
   input_context_handler_ = handler;
   for (auto& observer : observers_)
     observer.OnInputContextHandlerChanged();
 }
 
-void IMEBridge::SetCurrentEngineHandler(IMEEngineHandlerInterface* handler) {
+void IMEBridge::SetCurrentEngineHandler(TextInputMethod* handler) {
   engine_handler_ = handler;
 }
 
-IMEEngineHandlerInterface* IMEBridge::GetCurrentEngineHandler() const {
+TextInputMethod* IMEBridge::GetCurrentEngineHandler() const {
   return engine_handler_;
 }
 
 void IMEBridge::SetCurrentInputContext(
-    const IMEEngineHandlerInterface::InputContext& input_context) {
+    const TextInputMethod::InputContext& input_context) {
   current_input_context_ = input_context;
 }
 
-const IMEEngineHandlerInterface::InputContext&
-IMEBridge::GetCurrentInputContext() const {
+const TextInputMethod::InputContext& IMEBridge::GetCurrentInputContext() const {
   return current_input_context_;
 }
 

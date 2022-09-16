@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8735,6 +8735,17 @@ bool RenderFrameHostImpl::ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
   DCHECK_NE(old_frame_host, this);
   DCHECK_NE(old_frame_host->GetSiteInstance(), GetSiteInstance());
   return true;
+}
+
+void RenderFrameHostImpl::SendAllPendingBeaconsOnNavigation() {
+  if (auto* pending_beacon_host =
+          PendingBeaconHost::GetForCurrentDocument(this)) {
+    pending_beacon_host->SendAllOnNavigation();
+  }
+  // TODO(crbug.com/1293679): Address FencedFrame.
+  for (auto& child : children_) {
+    child->current_frame_host()->SendAllPendingBeaconsOnNavigation();
+  }
 }
 
 void RenderFrameHostImpl::CommitNavigation(

@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -60,8 +61,8 @@ namespace ash {
 namespace {
 
 using ReloadKeyCallback =
-    base::OnceCallback<void(const scoped_refptr<PublicKey>& public_key,
-                            const scoped_refptr<PrivateKey>& private_key)>;
+    base::OnceCallback<void(scoped_refptr<PublicKey> public_key,
+                            scoped_refptr<PrivateKey> private_key)>;
 
 bool IsOwnerInTests(const std::string& user_id) {
   if (user_id.empty() ||
@@ -719,9 +720,8 @@ void OwnerSettingsServiceAsh::OnPostKeypairLoadedActions() {
 }
 
 void OwnerSettingsServiceAsh::ReloadKeypairImpl(
-    base::OnceCallback<void(const scoped_refptr<PublicKey>& public_key,
-                            const scoped_refptr<PrivateKey>& private_key)>
-        callback) {
+    base::OnceCallback<void(scoped_refptr<PublicKey> public_key,
+                            scoped_refptr<PrivateKey> private_key)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // The profile may not be fully created yet: abort, and wait till it is. The

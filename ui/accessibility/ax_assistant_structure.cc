@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,8 +123,9 @@ std::u16string GetText(const AXNode* node) {
 
     switch (node->GetRole()) {
       case ax::mojom::Role::kComboBoxMenuButton:
-      case ax::mojom::Role::kTextFieldWithComboBox:
+      case ax::mojom::Role::kComboBoxSelect:
       case ax::mojom::Role::kPopUpButton:
+      case ax::mojom::Role::kTextFieldWithComboBox:
       case ax::mojom::Role::kTextField:
         return value;
       default:

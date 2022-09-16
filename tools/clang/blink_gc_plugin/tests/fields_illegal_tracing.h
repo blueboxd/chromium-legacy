@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,12 @@ namespace bar {
 // check that (only) std::unique_ptr<> is reported
 // as an illegal smart pointer type.
 template<typename T> class unique_ptr {
-  DISALLOW_NEW();
+public:
+    ~unique_ptr() { }
+    operator T*() const { return 0; }
+    T* operator->() { return 0; }
 
- public:
-  ~unique_ptr() {}
-  operator T*() const { return 0; }
-  T* operator->() { return 0; }
-
-  void Trace(Visitor* visitor) const {}
+    void Trace(Visitor* visitor) const {}
 };
 
 }

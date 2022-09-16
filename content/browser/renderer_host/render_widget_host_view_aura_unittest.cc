@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,10 +123,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/core/window_util.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/base/ime/input_method.h"
-#endif
 
 #if BUILDFLAG(IS_WIN)
 #include "ui/base/view_prop.h"

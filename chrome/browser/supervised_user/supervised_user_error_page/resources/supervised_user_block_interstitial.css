@@ -2,6 +2,11 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
+/* This is the stylesheet for the interstitial when the
+   "WebFilterInterstitialRefresh" flag is disabled.
+   TODO(b/243916175): update this file to only include the flag-on styling, and
+   remove interstitial-refresh-enabled. */
+
 body {
   --avatar-stroke-color: var(--google-gray-50);
   --custodian-name-color: #333333;

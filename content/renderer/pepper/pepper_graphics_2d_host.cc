@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -723,10 +723,9 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     *release_callback =
         base::BindOnce(&ReleaseTextureCallback, this->AsWeakPtr(),
                        main_thread_context_, size, gpu_mailbox);
-    *transferable_resource = viz::TransferableResource::MakeGL(
+    *transferable_resource = viz::TransferableResource::MakeGpu(
         std::move(gpu_mailbox), GL_LINEAR, texture_target,
-        std::move(out_sync_token), size, overlays_supported);
-    transferable_resource->format = format;
+        std::move(out_sync_token), size, format, overlays_supported);
     composited_output_modified_ = false;
     return true;
   }

@@ -21,6 +21,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -194,7 +195,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     protected ColorDrawable mToolbarBackground;
 
     /** The omnibox background (white with a shadow). */
-    private Drawable mLocationBarBackground;
+    private GradientDrawable mLocationBarBackground;
     private Drawable mActiveLocationBarBackground;
 
     protected boolean mForceDrawLocationBarBackground;
@@ -353,8 +354,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      * @param context The activity {@link Context}.
      * @return The drawable for the modern location bar background.
      */
-    public static Drawable createModernLocationBarBackground(Context context) {
-        Drawable drawable = context.getDrawable(
+    public static GradientDrawable createModernLocationBarBackground(Context context) {
+        GradientDrawable drawable = (GradientDrawable) context.getDrawable(
                 R.drawable.modern_toolbar_text_box_background_with_primary_color);
         drawable.mutate();
         final int tint = ChromeColors.getSurfaceColor(context, R.dimen.toolbar_text_box_elevation);
@@ -377,6 +378,20 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         }
     }
 
+    private void updateModernLocationBarCorners() {
+        if (!mShouldShowModernizeVisualUpdate
+                || !OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+            return;
+        }
+        int nonFocusedRadius = getResources().getDimensionPixelSize(
+                R.dimen.modern_toolbar_background_corner_radius);
+        int focusedRadius = getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_bg_round_corner_radius);
+        int radius = (int) MathUtils.interpolate(
+                nonFocusedRadius, focusedRadius, mUrlFocusChangeFraction);
+        mLocationBarBackground.setCornerRadius(radius);
+    }
+
     /**
      * Get the corresponding location bar color for a toolbar color.
      * @param toolbarColor The color of the toolbar.
@@ -392,10 +407,29 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     private int getToolbarDefaultColor() {
         if (mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus()) {
-            return isIncognito() ? mLocationBar.getSuggestionsIncognitoBackgroundColor()
-                                 : mLocationBar.getSuggestionsStandardBackgroundColor();
+            return mLocationBar.getDropdownBackgroundColor(isIncognito());
         }
         return ChromeColors.getDefaultThemeColor(getContext(), isIncognito());
+    }
+
+    /**
+     * Get the corresponding default location bar color for a toolbar color.
+     * If location bar has focus, return the Omnibox suggestion background color.
+     * If location bar does not have focus, return {@link getLocationBarColorForToolbarColor(int
+     * toolbarColor)}.
+     * @param toolbarColor The color of the toolbar.
+     * @return The default location bar color.
+     */
+    private int getLocationBarDefaultColorForToolbarColor(int toolbarColor) {
+        if (mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus()) {
+            if (OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+                // Omnibox has same background as the Omnibox suggestion.
+                return mLocationBar.getSuggestionBackgroundColor(isIncognito());
+            }
+            // Omnibox has same background as the toolbar.
+            return getToolbarDefaultColor();
+        }
+        return getLocationBarColorForToolbarColor(toolbarColor);
     }
 
     private void inflateTabSwitchingResources() {
@@ -558,6 +592,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @VisibleForTesting
     public ColorDrawable getBackgroundDrawable() {
         return mToolbarBackground;
+    }
+
+    @VisibleForTesting
+    void setLocationBarBackgroundDrawableForTesting(GradientDrawable background) {
+        mLocationBarBackground = background;
     }
 
     @SuppressLint("RtlHardcoded")
@@ -1033,7 +1072,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             // this only runs when you focus the omnibox on a web page.
             if (!isLocationBarShownInNTP() && mTabSwitcherState == STATIC_TAB) {
                 int defaultColor = getToolbarDefaultColor();
-                int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
+                int defaultLocationBarColor =
+                        getLocationBarDefaultColorForToolbarColor(defaultColor);
                 int primaryColor = getToolbarDataProvider().getPrimaryColor();
                 int themedLocationBarColor = getLocationBarColorForToolbarColor(primaryColor);
 
@@ -1042,6 +1082,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
                 updateModernLocationBarColor(ColorUtils.getColorWithOverlay(
                         themedLocationBarColor, defaultLocationBarColor, mUrlFocusChangeFraction));
+
+                updateModernLocationBarCorners();
             }
         }
 

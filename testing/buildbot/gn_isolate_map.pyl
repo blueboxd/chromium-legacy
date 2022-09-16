@@ -1,4 +1,4 @@
-## Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1463,6 +1463,10 @@
   },
   "performance_test_suite_android_clank_monochrome_bundle": {
     "label": "//chrome/test:performance_test_suite_android_clank_monochrome_bundle",
+    "type": "generated_script",
+  },
+  "performance_test_suite_android_clank_trichrome_chrome_google_64_32_bundle": {
+    "label": "//chrome/test:performance_test_suite_android_clank_trichrome_chrome_google_64_32_bundle",
     "type": "generated_script",
   },
   "performance_test_suite_android_clank_trichrome_bundle": {

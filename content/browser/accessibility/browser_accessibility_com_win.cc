@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1708,7 +1708,7 @@ void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
   // list popup is not part of the tree when its parent is collapsed but events
   // should be fired anyway.
   if (owner()->IsChildOfLeaf() &&
-      !owner()->GetCollapsedMenuListPopUpButtonAncestor()) {
+      !owner()->GetCollapsedMenuListSelectAncestor()) {
     return;
   }
 

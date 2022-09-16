@@ -347,10 +347,10 @@ void MailboxToSurfaceBridgeImpl::WaitSyncToken(
 }
 
 void MailboxToSurfaceBridgeImpl::WaitForClientGpuFence(
-    gfx::GpuFence* gpu_fence) {
+    gfx::GpuFence& gpu_fence) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsConnected());
-  GLuint id = gl_->CreateClientGpuFenceCHROMIUM(gpu_fence->AsClientGpuFence());
+  GLuint id = gl_->CreateClientGpuFenceCHROMIUM(gpu_fence.AsClientGpuFence());
   gl_->WaitGpuFenceCHROMIUM(id);
   gl_->DestroyGpuFenceCHROMIUM(id);
 }
@@ -491,7 +491,7 @@ void MailboxToSurfaceBridgeImpl::DrawQuad(unsigned int texture_handle,
   gl_->Clear(GL_COLOR_BUFFER_BIT);
 
   float uv_transform_floats[16];
-  uv_transform.matrix().getColMajor(uv_transform_floats);
+  uv_transform.GetColMajorF(uv_transform_floats);
   gl_->UniformMatrix4fv(uniform_uv_transform_handle_, 1, GL_FALSE,
                         &uv_transform_floats[0]);
 

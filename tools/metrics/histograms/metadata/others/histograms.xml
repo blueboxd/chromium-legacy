@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -4293,6 +4293,49 @@ chromium-metrics-reviews@google.com.
     The amount of time crash_sender takes to run when invoked directly on Chrome
     OS. Used to make an informed decision about a timeout.
   </summary>
+</histogram>
+
+<histogram name="Crypto.TPMDuration.{Operation}{SignatureAlgorithm}" units="ms"
+    expires_after="2023-02-12">
+  <owner>kristianm@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Collected on Windows at startup. Records status for various TPM operations
+    that Chrome artificially triggers on startup for measurement purposes. Note
+    that if new key creation fails, wrapped key creation and message signing
+    will not take place.
+  </summary>
+  <token key="Operation">
+    <variant name="MessageSigning"/>
+    <variant name="NewKeyCreation"/>
+    <variant name="WrappedKeyCreation"/>
+  </token>
+  <token key="SignatureAlgorithm">
+    <variant name="ECDSA"/>
+    <variant name="RSA"/>
+  </token>
+</histogram>
+
+<histogram name="Crypto.TPMOperation.{Operation}{SignatureAlgorithm}"
+    enum="BooleanSuccess" expires_after="2023-02-12">
+  <owner>kristianm@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Collected on Windows at startup. Records status for various TPM actions that
+    Chrome artificially triggers on startup for measurement purposes. Note that
+    if new key creation fails, wrapped key creation and message signing will not
+    take place.
+  </summary>
+  <token key="Operation">
+    <variant name="MessageSigning"/>
+    <variant name="MessageVerify"/>
+    <variant name="NewKeyCreation"/>
+    <variant name="WrappedKeyCreation"/>
+  </token>
+  <token key="SignatureAlgorithm">
+    <variant name="ECDSA"/>
+    <variant name="RSA"/>
+  </token>
 </histogram>
 
 <histogram name="Crypto.TPMSupport2" enum="TPMSupport"
@@ -12501,23 +12544,6 @@ should be kept until we remove incident reporting. -->
     Signed Exchange signature verification is performed, and emitted only for
     Signed Exchanges within the validity period.
   </summary>
-</histogram>
-
-<histogram name="SignedExchange.ValidityPingDuration" units="ms"
-    expires_after="2022-10-22">
-  <owner>ksakamoto@chromium.org</owner>
-  <owner>webpackage-dev@chromium.org</owner>
-  <summary>
-    The amount of time elapsed to ping the original publisher of the Signed
-    Exchanges.
-  </summary>
-</histogram>
-
-<histogram name="SignedExchange.ValidityPingResult"
-    enum="SignedExchangeValidityPingResult" expires_after="2022-10-22">
-  <owner>ksakamoto@chromium.org</owner>
-  <owner>webpackage-dev@chromium.org</owner>
-  <summary>Reports the result of the Signed Exchange validity ping.</summary>
 </histogram>
 
 <histogram name="SiteIsolatedCodeCache.JS.Behaviour"

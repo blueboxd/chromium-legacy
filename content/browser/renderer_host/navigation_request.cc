@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1319,7 +1319,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
     std::unique_ptr<SubresourceWebBundleNavigationInfo>
         subresource_web_bundle_navigation_info,
     int http_response_code) {
-  TRACE_EVENT0("navigation", "NavigationRequest::CreateForCommit");
+  TRACE_EVENT0("navigation", "NavigationRequest::CreateForSynchronousRendererCommit");
   // TODO(clamy): Improve the *NavigationParams and *CommitParams to avoid
   // copying so many parameters here.
   blink::mojom::CommonNavigationParamsPtr common_params =

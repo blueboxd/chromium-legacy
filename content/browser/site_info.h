@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,10 +152,6 @@ class CONTENT_EXPORT SiteInfo {
   // the original SiteInfo, minus any OAC opt-in request.
   SiteInfo GetNonOriginKeyedEquivalentForMetrics(
       const IsolationContext& isolation_context) const;
-
-  // Returns a copy of `this` but with `is_sandboxed_` set to true, and
-  // `unique_sandbox_id_` set to `document_unique_id`.
-  SiteInfo SandboxedClone(int document_unique_id) const;
 
   // Returns the site URL associated with all of the documents and workers in
   // this principal, as described above.

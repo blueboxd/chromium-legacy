@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "content/public/browser/first_party_sets_handler.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/public_sets.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +40,6 @@ namespace content {
 
 namespace {
 
-using PolicyCustomization = FirstPartySetsHandlerImpl::PolicyCustomization;
 using FlattenedSets = FirstPartySetsHandlerImpl::FlattenedSets;
 using SingleSet = FirstPartySetParser::SingleSet;
 using ParseErrorType = FirstPartySetsHandler::ParseErrorType;
@@ -130,20 +130,6 @@ GetPersistedPublicSetsAndWait() {
   FirstPartySetsHandlerImpl::GetInstance()->GetPersistedPublicSetsForTesting(
       future.GetCallback());
   return future.Get();
-}
-
-base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> FindEntries(
-    const net::PublicSets& public_sets,
-    const base::flat_set<net::SchemefulSite>& sites) {
-  std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>> results;
-  for (const net::SchemefulSite& site : sites) {
-    if (absl::optional<net::FirstPartySetEntry> entry =
-            public_sets.FindEntry(site, /*config=*/nullptr);
-        entry.has_value()) {
-      results.emplace_back(site, *entry);
-    }
-  }
-  return results;
 }
 
 }  // namespace
@@ -289,7 +275,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyDBPath) {
           R"("associatedSites": ["https://associatedsite1.test"]})"));
 
   EXPECT_THAT(
-      FindEntries(GetSetsAndWait(), {example, associated}),
+      GetSetsAndWait().FindEntries({example, associated}, /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
                             example, net::SiteType::kPrimary, absl::nullopt)),
@@ -313,17 +299,18 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
   FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
                                                  LocalSetDeclaration());
-  ASSERT_THAT(FindEntries(GetSetsAndWait(), {foo, associated}),
-              UnorderedElementsAre(
-                  Pair(foo, net::FirstPartySetEntry(
-                                foo, net::SiteType::kPrimary, absl::nullopt)),
-                  Pair(associated, net::FirstPartySetEntry(
-                                       foo, net::SiteType::kAssociated, 0))));
+  ASSERT_THAT(
+      GetSetsAndWait().FindEntries({foo, associated}, /*config=*/nullptr),
+      UnorderedElementsAre(
+          Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
+                                            absl::nullopt)),
+          Pair(associated,
+               net::FirstPartySetEntry(foo, net::SiteType::kAssociated, 0))));
 
   FirstPartySetsHandlerImpl::GetInstance()
       ->ClearSiteDataOnChangedSetsForContext(
           base::BindRepeating(&FakeBrowserContextGetter), "profile",
-          /*policy_customization=*/nullptr, base::DoNothing());
+          /*context_config=*/nullptr, base::DoNothing());
 
   env().RunUntilIdle();
 
@@ -352,17 +339,18 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
   FirstPartySetsHandlerImpl::GetInstance()->Init(
       /*user_data_dir=*/{}, LocalSetDeclaration());
-  ASSERT_THAT(FindEntries(GetSetsAndWait(), {foo, associated}),
-              UnorderedElementsAre(
-                  Pair(foo, net::FirstPartySetEntry(
-                                foo, net::SiteType::kPrimary, absl::nullopt)),
-                  Pair(associated, net::FirstPartySetEntry(
-                                       foo, net::SiteType::kAssociated, 0))));
+  ASSERT_THAT(
+      GetSetsAndWait().FindEntries({foo, associated}, /*config=*/nullptr),
+      UnorderedElementsAre(
+          Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
+                                            absl::nullopt)),
+          Pair(associated,
+               net::FirstPartySetEntry(foo, net::SiteType::kAssociated, 0))));
 
   FirstPartySetsHandlerImpl::GetInstance()
       ->ClearSiteDataOnChangedSetsForContext(
           base::BindRepeating(&FakeBrowserContextGetter), "profile",
-          /*policy_customization=*/nullptr, base::DoNothing());
+          /*context_config=*/nullptr, base::DoNothing());
 
   env().RunUntilIdle();
 
@@ -387,7 +375,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
                                                  LocalSetDeclaration());
   EXPECT_THAT(
-      FindEntries(GetSetsAndWait(), {example, associated}),
+      GetSetsAndWait().FindEntries({example, associated}, /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
                             example, net::SiteType::kPrimary, absl::nullopt)),
@@ -397,10 +385,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   env().RunUntilIdle();
 
   EXPECT_THAT(
-      FindEntries(FirstPartySetsHandlerImpl::GetInstance()
-                      ->GetSets(base::NullCallback())
-                      .value(),
-                  {example, associated}),
+      FirstPartySetsHandlerImpl::GetInstance()
+          ->GetSets(base::NullCallback())
+          .value()
+          .FindEntries({example, associated}, /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
                             example, net::SiteType::kPrimary, absl::nullopt)),
@@ -433,7 +421,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       base::Version(), WritePublicSetsFile(input));
 
   EXPECT_THAT(
-      FindEntries(future.Get(), {example, associated}),
+      future.Get().FindEntries({example, associated}, /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
                             example, net::SiteType::kPrimary, absl::nullopt)),
@@ -441,10 +429,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                example, net::SiteType::kAssociated, 0))));
 
   EXPECT_THAT(
-      FindEntries(FirstPartySetsHandlerImpl::GetInstance()
-                      ->GetSets(base::NullCallback())
-                      .value(),
-                  {example, associated}),
+      FirstPartySetsHandlerImpl::GetInstance()
+          ->GetSets(base::NullCallback())
+          .value()
+          .FindEntries({example, associated}, /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
                             example, net::SiteType::kPrimary, absl::nullopt)),
@@ -486,30 +474,31 @@ class FirstPartySetsHandlerGetCustomizationForPolicyTest
     FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
         base::Version(), WritePublicSetsFile(input));
 
-    ASSERT_THAT(
-        FindEntries(GetSetsAndWait(), {primary1, associated1, associated2}),
-        SizeIs(3));
+    ASSERT_THAT(GetSetsAndWait().FindEntries(
+                    {primary1, associated1, associated2}, /*config=*/nullptr),
+                SizeIs(3));
   }
 
  protected:
-  base::OnceCallback<void(PolicyCustomization)> GetCustomizationCallback() {
+  base::OnceCallback<void(net::FirstPartySetsContextConfig)>
+  GetConfigCallback() {
     return future_.GetCallback();
   }
 
-  PolicyCustomization GetCustomization() { return future_.Take(); }
+  net::FirstPartySetsContextConfig GetConfig() { return future_.Take(); }
 
  private:
-  base::test::TestFuture<FirstPartySetsHandler::PolicyCustomization> future_;
+  base::test::TestFuture<net::FirstPartySetsContextConfig> future_;
 };
 
 TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
        DefaultOverridesPolicy_DefaultCustomizations) {
   base::Value policy = base::JSONReader::Read(R"({})").value();
   FirstPartySetsHandlerImpl::GetInstance()->GetCustomizationForPolicy(
-      policy.GetDict(), GetCustomizationCallback());
+      policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
-  EXPECT_THAT(GetCustomization(), PolicyCustomization());
+  EXPECT_EQ(GetConfig(), net::FirstPartySetsContextConfig());
 }
 
 TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
@@ -520,10 +509,10 @@ TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
   })")
                            .value();
   FirstPartySetsHandlerImpl::GetInstance()->GetCustomizationForPolicy(
-      policy.GetDict(), GetCustomizationCallback());
+      policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
-  EXPECT_THAT(GetCustomization(), PolicyCustomization());
+  EXPECT_EQ(GetConfig(), net::FirstPartySetsContextConfig());
 }
 
 TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
@@ -546,11 +535,11 @@ TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
             )")
                            .value();
   FirstPartySetsHandlerImpl::GetInstance()->GetCustomizationForPolicy(
-      policy.GetDict(), GetCustomizationCallback());
+      policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
   EXPECT_THAT(
-      GetCustomization(),
+      GetConfig().customizations(),
       UnorderedElementsAre(
           Pair(SerializesTo("https://primary1.test"),
                Optional(net::FirstPartySetEntry(
@@ -575,19 +564,19 @@ TEST_F(FirstPartySetsHandlerGetCustomizationForPolicyTest,
 }
 
 TEST(FirstPartySetsProfilePolicyCustomizations, EmptyPolicySetLists) {
-  EXPECT_THAT(FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
-                  net::PublicSets(
-                      /*entries=*/MakeFlattenedSetsFromMap(
-                          {{"https://primary1.test",
-                            {"https://associatedsite1.test"}}}),
-                      /*aliases=*/{}),
-                  MakeParsedPolicyFromMap({}, {})),
-              FirstPartySetsHandlerImpl::PolicyCustomization());
+  EXPECT_EQ(FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
+                net::PublicSets(
+                    /*entries=*/MakeFlattenedSetsFromMap(
+                        {{"https://primary1.test",
+                          {"https://associatedsite1.test"}}}),
+                    /*aliases=*/{}),
+                MakeParsedPolicyFromMap({}, {})),
+            net::FirstPartySetsContextConfig());
 }
 
 TEST(FirstPartySetsProfilePolicyCustomizations,
      Replacements_NoIntersection_NoRemoval) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -598,7 +587,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
               /*replacements=*/{{"https://primary2.test",
                                  {"https://associatedsite2.test"}}},
               /*additions=*/{}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite2.test"),
                        Optional(net::FirstPartySetEntry(
@@ -614,7 +603,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 // from its previous set.
 TEST(FirstPartySetsProfilePolicyCustomizations,
      Replacements_ReplacesExistingAssociatedSite_RemovedFromFormerSet) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -626,7 +615,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
               /*replacements=*/{{"https://primary2.test",
                                  {"https://associatedsite1b.test"}}},
               /*additions=*/{}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite1b.test"),
                        Optional(net::FirstPartySetEntry(
@@ -642,7 +631,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 // former associated sites are removed since they are now unowned.
 TEST(FirstPartySetsProfilePolicyCustomizations,
      Replacements_ReplacesExistingPrimary_RemovesFormerAssociatedSites) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -655,7 +644,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
                                  {"https://associatedsite2.test"}}},
               /*additions=*/{}));
   EXPECT_THAT(
-      customization,
+      config.customizations(),
       UnorderedElementsAre(
           Pair(SerializesTo("https://associatedsite2.test"),
                Optional(net::FirstPartySetEntry(
@@ -673,7 +662,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 // any leftover singletons are deleted.
 TEST(FirstPartySetsProfilePolicyCustomizations,
      Replacements_ReplacesExistingAssociatedSite_RemovesSingletons) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -684,7 +673,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
               /*replacements=*/{{"https://primary3.test",
                                  {"https://associatedsite1.test"}}},
               /*additions=*/{}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite1.test"),
                        Optional(net::FirstPartySetEntry(
@@ -701,7 +690,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 // gets added in without updating the existing set.
 TEST(FirstPartySetsProfilePolicyCustomizations,
      Additions_NoIntersection_AddsWithoutUpdating) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -712,7 +701,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
               /*replacements=*/{},
               /*additions=*/{{"https://primary2.test",
                               {"https://associatedsite2.test"}}}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite2.test"),
                        Optional(net::FirstPartySetEntry(
@@ -730,7 +719,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 TEST(
     FirstPartySetsProfilePolicyCustomizations,
     Additions_PolicyPrimaryIsExistingAssociatedSite_PolicySetAbsorbsExistingSet) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -743,7 +732,7 @@ TEST(
                               {"https://associatedsite2a.test",
                                "https://associatedsite2b.test"}}}));
   EXPECT_THAT(
-      customization,
+      config.customizations(),
       UnorderedElementsAre(
           Pair(SerializesTo("https://primary1.test"),
                Optional(net::FirstPartySetEntry(
@@ -769,7 +758,7 @@ TEST(
 TEST(
     FirstPartySetsProfilePolicyCustomizations,
     Additions_PolicyPrimaryIsExistingPrimary_PolicySetAbsorbsExistingAssociatedSites) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -781,7 +770,7 @@ TEST(
               /*replacements=*/{},
               /*additions=*/{{"https://primary1.test",
                               {"https://associatedsite2.test"}}}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite2.test"),
                        Optional(net::FirstPartySetEntry(
@@ -852,7 +841,8 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
                               net::FirstPartySetEntry(
                                   primary42, net::SiteType::kAssociated,
                                   absl::nullopt)}}),
-              })),
+              }))
+          .customizations(),
       UnorderedElementsAre(
           Pair(associated_site0,
                absl::make_optional(net::FirstPartySetEntry(
@@ -931,7 +921,8 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
                               net::FirstPartySetEntry(
                                   primary42, net::SiteType::kAssociated,
                                   absl::nullopt)}}),
-              })),
+              }))
+          .customizations(),
       UnorderedElementsAre(
           Pair(associated_site0,
                absl::make_optional(net::FirstPartySetEntry(
@@ -962,7 +953,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
 // Existing set overlaps with both replacement and addition set.
 TEST(FirstPartySetsProfilePolicyCustomizations,
      ReplacementsAndAdditions_SetListsOverlapWithSameExistingSet) {
-  PolicyCustomization customization =
+  net::FirstPartySetsContextConfig config =
       FirstPartySetsHandlerImpl::ComputeEnterpriseCustomizations(
           net::PublicSets(
               /*entries=*/MakeFlattenedSetsFromMap(
@@ -975,7 +966,7 @@ TEST(FirstPartySetsProfilePolicyCustomizations,
                                  {"https://associatedsite1.test"}}},
               /*additions=*/{{"https://primary1.test",
                               {"https://new-associatedsite1.test"}}}));
-  EXPECT_THAT(customization,
+  EXPECT_THAT(config.customizations(),
               UnorderedElementsAre(
                   Pair(SerializesTo("https://associatedsite1.test"),
                        Optional(net::FirstPartySetEntry(

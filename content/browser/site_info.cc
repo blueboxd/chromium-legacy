@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -476,16 +476,6 @@ SiteInfo SiteInfo::GetNonOriginKeyedEquivalentForMetrics(
       non_oac_site_info.site_url_ = non_oac_site_info.process_lock_url_;
   }
   return non_oac_site_info;
-}
-
-SiteInfo SiteInfo::SandboxedClone(int document_unique_id) const {
-  SiteInfo sandboxed_copy(*this);
-  sandboxed_copy.is_sandboxed_ = true;
-  if (features::kIsolateSandboxedIframesGroupingParam.Get() ==
-      features::IsolateSandboxedIframesGrouping::kPerDocument) {
-    sandboxed_copy.unique_sandbox_id_ = document_unique_id;
-  }
-  return sandboxed_copy;
 }
 
 SiteInfo& SiteInfo::operator=(const SiteInfo& rhs) = default;

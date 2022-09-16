@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1392,6 +1392,11 @@ ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
 bool ContentBrowserClient::OpenExternally(RenderFrameHost* opener,
                                           const GURL& url,
                                           WindowOpenDisposition disposition) {
+  return false;
+}
+
+bool ContentBrowserClient::ShouldSendOutermostOriginToRenderer(
+    const url::Origin& outermost_origin) {
   return false;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,8 +110,8 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
 
     Widget::InitParams init_params;
     init_params.type = full_screen ? Widget::InitParams::TYPE_WINDOW
-                                   : is_menu ? Widget::InitParams::TYPE_MENU
-                                             : Widget::InitParams::TYPE_POPUP;
+                       : is_menu   ? Widget::InitParams::TYPE_MENU
+                                   : Widget::InitParams::TYPE_POPUP;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // Evaluate if the window needs shadow.
@@ -376,6 +376,9 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
 
   host_->RemoveObserver(this);
+  // |drag_drop_client_| holds a raw_ptr on |desktop_window_tree_host_|, so we
+  // need to destroy it first.
+  drag_drop_client_.reset();
   // WindowEventDispatcher owns |desktop_window_tree_host_|.
   desktop_window_tree_host_ = nullptr;
   // Delete host after resetting `desktop_window_tree_host_` and
@@ -871,6 +874,11 @@ void DesktopNativeWidgetAura::StackAbove(gfx::NativeView native_view) {
 void DesktopNativeWidgetAura::StackAtTop() {
   if (desktop_window_tree_host_)
     desktop_window_tree_host_->StackAtTop();
+}
+
+bool DesktopNativeWidgetAura::IsStackedAbove(gfx::NativeView native_view) {
+  return desktop_window_tree_host_ &&
+         desktop_window_tree_host_->IsStackedAbove(native_view);
 }
 
 void DesktopNativeWidgetAura::SetShape(

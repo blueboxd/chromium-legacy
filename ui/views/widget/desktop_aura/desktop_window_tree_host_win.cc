@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,8 +232,10 @@ std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
 
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostWin::CreateDragDropClient() {
-  drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND(), this);
-  return base::WrapUnique(drag_drop_client_.get());
+  auto res =
+      std::make_unique<DesktopDragDropClientWin>(window(), GetHWND(), this);
+  drag_drop_client_ = res->GetWeakPtr();
+  return std::move(res);
 }
 
 void DesktopWindowTreeHostWin::Close() {
@@ -443,6 +445,38 @@ ui::ZOrderLevel DesktopWindowTreeHostWin::GetZOrderLevel() const {
   // kFloatingWindow as a reasonable equivalent.
   return window_always_on_top ? ui::ZOrderLevel::kFloatingWindow
                               : ui::ZOrderLevel::kNormal;
+}
+
+bool DesktopWindowTreeHostWin::IsStackedAbove(aura::Window* window) {
+  HWND above = GetHWND();
+  HWND below = window->GetHost()->GetAcceleratedWidget();
+
+  // Child windows are always above their parent windows.
+  // Check to see if HWNDs have a Parent-Child relationship.
+  if (IsChild(below, above))
+    return true;
+
+  if (IsChild(above, below))
+    return false;
+
+  // Check all HWNDs with lower z order than current HWND
+  // to see if it matches or is a parent to the "below" HWND.
+  bool result = false;
+  HWND parent = above;
+  while (parent && parent != GetDesktopWindow()) {
+    HWND next = parent;
+    while (next) {
+      // GW_HWNDNEXT retrieves the next HWND below z order level.
+      next = GetWindow(next, GW_HWNDNEXT);
+      if (next == below || IsChild(next, below)) {
+        result = true;
+        break;
+      }
+    }
+    parent = GetAncestor(parent, GA_PARENT);
+  }
+
+  return result;
 }
 
 void DesktopWindowTreeHostWin::SetVisibleOnAllWorkspaces(bool always_visible) {

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1201,4 +1201,44 @@ testcase.recentsRespondToTimezoneChangeForGridView = async () => {
         `Expected group heading to be "${targetDate}", got "${
             groupHeadingAfter.text}"`);
   });
+};
+
+
+/**
+ * Tests the search term will be respected when switching between different
+ * filter buttons.
+ */
+testcase.recentsRespectSearchWhenSwitchingFilter = async () => {
+  // tall.txt
+  const txtFile1 =
+      ENTRIES.tallText.cloneWithModifiedDate(getDateWithDayDiff(4));
+  // utf8.txt
+  const txtFile2 =
+      ENTRIES.utf8Text.cloneWithModifiedDate(getDateWithDayDiff(5));
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, txtFile1, txtFile2], []);
+  // Before search, 3 files shows in the Recent tab.
+  await navigateToRecent(appId);
+  const files =
+      TestEntryInfo.getExpectedRows([ENTRIES.beautiful, txtFile1, txtFile2]);
+  await remoteCall.waitForFiles(appId, files);
+
+  // Search term "tall".
+  await remoteCall.waitAndClickElement(appId, '#search-button');
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box [type="search"]', 'focus']));
+  await remoteCall.inputText(appId, '#search-box [type="search"]', 'tall');
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box [type="search"]', 'input']));
+
+  // Check only tall.txt should show.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([txtFile1]));
+
+  // Switch to "Document" filter.
+  await navigateToRecent(appId, RecentFilterType.DOCUMENT);
+
+  // Check there is still only tall.txt in the file list (no utf8.txt).
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([txtFile1]));
 };

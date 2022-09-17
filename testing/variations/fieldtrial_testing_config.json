@@ -1242,6 +1242,26 @@
             ]
         }
     ],
+    "AutofillImprovedLabelForInference": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillImprovedLabelForInference"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillKeyboardAccessory": [
         {
             "platforms": [
@@ -1386,6 +1406,31 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillRefillModifiedCreditCardExpirationDates"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillRefinedPhoneNumberTypes": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WithoutPhoneNumberSeparators",
+                    "enable_features": [
+                        "AutofillEnableSupportForPhoneNumberTrunkTypes",
+                        "AutofillInferCountryCallingCode"
+                    ],
+                    "disable_features": [
+                        "AutofillConsiderPhoneNumberSeparatorsValidLabels"
                     ]
                 }
             ]
@@ -2070,6 +2115,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CWPCollectsETM"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CacheBaseEntitySpecificsInMetadata": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CacheBaseEntitySpecificsInMetadata"
                     ]
                 }
             ]
@@ -2911,6 +2977,29 @@
                     "enable_features": [
                         "AggressiveFrameCulling",
                         "EagerSurfaceGarbageCollection"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ConsolidateMetricsServiceInitialLogLogic": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux",
+                "chromeos",
+                "chromeos_lacros",
+                "android",
+                "ios",
+                "android_webview",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ConsolidateMetricsServiceInitialLogLogic"
                     ]
                 }
             ]
@@ -7083,21 +7172,6 @@
             ]
         }
     ],
-    "OneGroupPerRenderer": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OneGroupPerRenderer"
-                    ]
-                }
-            ]
-        }
-    ],
     "OneTimeGeolocationPermission": [
         {
             "platforms": [
@@ -7830,24 +7904,6 @@
             ]
         }
     ],
-    "PlatformHEVCDecoderSupport": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PlatformHEVCDecoderSupport"
-                    ]
-                }
-            ]
-        }
-    ],
     "PrecompileInlineScripts": [
         {
             "platforms": [
@@ -8162,7 +8218,6 @@
                         "InterestGroupStorage",
                         "NoncedPartitionedCookies",
                         "PrivacySandboxAdsAPIs",
-                        "PrivacySandboxSettings3",
                         "SharedStorageAPI"
                     ]
                 }
@@ -9895,24 +9950,6 @@
                     },
                     "enable_features": [
                         "TabStripImprovements"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabSwitchMetrics2": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabSwitchMetrics2"
                     ]
                 }
             ]

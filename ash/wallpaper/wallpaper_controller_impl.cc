@@ -1376,9 +1376,14 @@ bool WallpaperControllerImpl::SetThirdPartyWallpaper(
   bool allowed_to_show_wallpaper = IsActiveUser(account_id);
 
   if (allowed_to_set_wallpaper) {
-    SaveAndSetWallpaper(account_id, IsEphemeralUser(account_id), file_name,
-                        /*file_path=*/"", WallpaperType::kCustomized, layout,
-                        allowed_to_show_wallpaper, image);
+    SaveAndSetWallpaperWithCompletion(
+        account_id, IsEphemeralUser(account_id), file_name,
+        /*file_path=*/"", WallpaperType::kCustomized, layout,
+        allowed_to_show_wallpaper, image,
+        base::BindOnce(
+
+            &WallpaperControllerImpl::SaveWallpaperToDriveFsAndSyncInfo,
+            weak_factory_.GetWeakPtr(), account_id));
   }
   return allowed_to_set_wallpaper && allowed_to_show_wallpaper;
 }
@@ -2849,7 +2854,7 @@ void WallpaperControllerImpl::RepaintWallpaper() {
 
 void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
     const AccountId& account_id,
-    WallpaperInfo info) {
+    const WallpaperInfo& info) {
   if (!CanSetUserWallpaper(account_id))
     return;
   // We don't sync for background users because we don't want to update the
@@ -3217,7 +3222,7 @@ void WallpaperControllerImpl::WallpaperSavedToDriveFS(
 
 void WallpaperControllerImpl::HandleCustomWallpaperInfoSyncedIn(
     const AccountId& account_id,
-    WallpaperInfo info) {
+    const WallpaperInfo& info) {
   base::FilePath drivefs_path =
       wallpaper_controller_client_->GetWallpaperPathFromDriveFs(account_id);
   if (drivefs_path.empty())

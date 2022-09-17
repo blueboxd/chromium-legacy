@@ -1150,7 +1150,7 @@ int GetMaxUnthrottledTimeoutNestingLevel() {
 }
 
 const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables reporting and web-exposure (respectively) of the time the first frame
 // of an animated image was painted.
@@ -1177,8 +1177,9 @@ const base::Feature kPrefetchAndroidFonts{"PrefetchAndroidFonts",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// TODO(https://crbug.com/1276864): Delete this flag.
 const base::Feature kBackForwardCacheAppBanner{
-    "BackForwardCacheAppBanner", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BackForwardCacheAppBanner", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBackForwardCacheEnabledForNonPluginEmbed{
     "BackForwardCacheEnabledForNonPluginEmbed",
@@ -1427,6 +1428,12 @@ const base::Feature kWebRtcMetronome{"WebRtcMetronome",
 
 const base::Feature kSyncAccessHandleAllSyncSurface{
     "SyncAccessHandleAllSyncSurface", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNoCentralWebCacheLimitControl{
+    "NoCentralWebCacheLimitControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRunTextInputUpdatePostLifecycle{
+    "RunTextInputUpdatePostLifecycle", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

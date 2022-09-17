@@ -220,7 +220,7 @@ void AuditsIssue::ReportNavigatorUserAgentAccess(
 
   // Try to get only the script name quickly.
   std::unique_ptr<SourceLocation> location;
-  String script_url = GetCurrentScriptUrl();
+  String script_url = GetCurrentScriptUrl(execution_context->GetIsolate());
   if (!script_url.IsEmpty()) {
     location =
         std::make_unique<SourceLocation>(script_url, String(), 1, 0, nullptr);
@@ -502,10 +502,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kInsecurePrivateNetworkSubresourceRequest:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           InsecurePrivateNetworkSubresourceRequest;
-      break;
-    case DeprecationIssueType::kLegacyConstraintGoogIPv6:
-      type =
-          protocol::Audits::DeprecationIssueTypeEnum::LegacyConstraintGoogIPv6;
       break;
     case DeprecationIssueType::kLocalCSSFileExtensionRejected:
       type = protocol::Audits::DeprecationIssueTypeEnum::

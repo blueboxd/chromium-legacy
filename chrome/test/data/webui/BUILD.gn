@@ -115,6 +115,7 @@ if (include_js_tests) {
       "settings/privacy_sandbox_browsertest.js",
       "settings/settings_idle_load_browsertest.js",
       "text_defaults_browsertest.js",
+      "webui_resource_async_browsertest.js",
       "whats_new/whats_new_browsertest.js",
     ]
 
@@ -297,6 +298,7 @@ if (include_js_tests) {
     extra_js_files = [
       "../../../renderer/resources/extensions/notifications_custom_bindings.js",
       "../../../renderer/resources/extensions/notifications_test_util.js",
+      "//ui/webui/resources/js/cr.js",
     ]
   }
 }
@@ -444,7 +446,6 @@ ts_library("build_ts") {
     "color_provider_css_colors_test.ts",
     "color_provider_css_colors_test_chromeos.ts",
     "cr_focus_row_mixin_test.ts",
-    "resources/list_property_update_mixin_tests.ts",
     "text_defaults_test.ts",
     "test_store_ts.ts",
   ]
@@ -591,6 +592,7 @@ generate_grd("build_grd") {
       "chromeos/personalization_app:build_grdp",
       "chromeos/print_management:build_grdp",
       "chromeos/shortcut_customization:build_grdp",
+      "settings/chromeos:build_grdp",
       "//ui/file_manager:build_tests_gen_grdp",
       "//ui/file_manager:build_tests_grdp",
     ]
@@ -600,6 +602,7 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/shortcut_customization/resources.grdp",
       "$target_gen_dir/chromeos/print_management/resources.grdp",
       "$target_gen_dir/chromeos/manage_mirrorsync/resources.grdp",
+      "$target_gen_dir/settings/chromeos/resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_gen_resources.grdp",
     ]

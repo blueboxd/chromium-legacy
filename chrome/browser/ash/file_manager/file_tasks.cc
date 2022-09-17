@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -98,6 +99,7 @@ namespace file_tasks {
 const char kActionIdView[] = "view";
 const char kActionIdSend[] = "send";
 const char kActionIdSendMultiple[] = "send_multiple";
+const char kActionIdQuickOffice[] = "qo_documents";
 const char kActionIdWebDriveOfficeWord[] = "open-web-drive-office-word";
 const char kActionIdWebDriveOfficeExcel[] = "open-web-drive-office-excel";
 const char kActionIdWebDriveOfficePowerPoint[] =
@@ -212,8 +214,8 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
 void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
                             std::vector<FullTaskDescriptor>* tasks) {
   const auto task_for_app = [&](const std::string& app_id) {
-    return std::find_if(tasks->begin(), tasks->end(), [&](const auto& task) {
-      return task.task_descriptor.app_id == app_id;
+    return base::ranges::find(*tasks, app_id, [](const auto& task) {
+      return task.task_descriptor.app_id;
     });
   };
 
@@ -340,19 +342,17 @@ void PostProcessFoundTasks(
   disabled_actions.emplace("view-pdf");
 #endif  // !BUILDFLAG(ENABLE_PDF)
 
-  if (!ash::features::IsFilesWebDriveOfficeEnabled()) {
+  if (!ash::features::IsUploadOfficeToCloudEnabled()) {
     disabled_actions.emplace(kActionIdWebDriveOfficeWord);
     disabled_actions.emplace(kActionIdWebDriveOfficeExcel);
     disabled_actions.emplace(kActionIdWebDriveOfficePowerPoint);
-  }
-  // Hack around the fact that App Service will only return one task for each
-  // app. We want both tasks to be available, so add the office task if the
-  // WebDrive task is available.
-  // TODO(petermarshall): Find a better way to enable both tasks.
-  if (ash::features::IsUploadOfficeToCloudEnabled()) {
-    auto it = std::find_if(
-        result_list->begin(), result_list->end(),
-        [](const FullTaskDescriptor& task) {
+  } else {
+    // Hack around the fact that App Service will only return one task for each
+    // app. We want both tasks to be available, so add the office task if the
+    // WebDrive task is available.
+    // TODO(petermarshall): Find a better way to enable both tasks.
+    auto it =
+        base::ranges::find_if(*result_list, [](const FullTaskDescriptor& task) {
           if (!IsFilesAppId(task.task_descriptor.app_id)) {
             return false;
           }
@@ -436,11 +436,7 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
     UMA_HISTOGRAM_ENUMERATION(kDriveErrorMetricName,
                               OfficeDriveErrors::OFFLINE);
     // TODO(petermarshall): Quick Office vs. other default handler.
-    UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
-                              OfficeTaskResult::FALLBACK_QUICKOFFICE);
-    // TODO(petermarshall): Launch QuickOffice or other fallback and return
-    // true.
-    return false;
+    return LaunchQuickOffice(profile, file_urls);
   }
 
   drive::DriveIntegrationService* integration_service =
@@ -459,17 +455,16 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
     } else {
       // We need to move the file to Drive first. This flow will eventually
       // open the file in the browser, too.
-      return chromeos::cloud_upload::CloudUploadDialog::Show(
-          profile, file_urls, chromeos::cloud_upload::UploadType::kDrive);
+      // TODO(b/247038054) Add user preference to decide whether or not the
+      // dialog should be shown.
+      return chromeos::cloud_upload::UploadAndOpen(
+          profile, file_urls, chromeos::cloud_upload::UploadType::kDrive,
+          /*show_dialog=*/false);
     }
   } else {
     UMA_HISTOGRAM_ENUMERATION(kDriveErrorMetricName,
                               OfficeDriveErrors::DRIVEFS_INTERFACE);
-    UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
-                              OfficeTaskResult::FALLBACK_QUICKOFFICE);
-    // TODO(petermarshall): Launch QuickOffice or other fallback and return
-    // true.
-    return false;
+    return LaunchQuickOffice(profile, file_urls);
   }
 }
 
@@ -508,22 +503,27 @@ bool FileIsOnODFS(const FileSystemURL& url, Profile* profile) {
 const char kOpenWebActionId[] = "OPEN_WEB";
 
 // Pre-condition: |url| is for a file which is on ODFS already.
-void OpenODFSUrl(const FileSystemURL& url) {
+void OpenODFSUrl(const FileSystemURL& url, Profile* profile) {
+  std::vector<storage::FileSystemURL> files;
+  files.push_back(url);
   ash::file_system_provider::util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
     LOG(ERROR) << "Path not in FSP";
-    // TODO(petermarshall): Launch QuickOffice or other fallback
+    LaunchQuickOffice(profile, files);
     return;
   }
 
   parser.file_system()->ExecuteAction(
       {parser.file_path()}, kOpenWebActionId,
-      base::BindOnce([](base::File::Error result) {
-        if (result != base::File::Error::FILE_OK) {
-          LOG(ERROR) << "Error executing action: " << result;
-          // TODO(petermarshall): Launch QuickOffice or other fallback.
-        }
-      }));
+      base::BindOnce(
+          [](Profile* profile, std::vector<storage::FileSystemURL> files,
+             base::File::Error result) {
+            if (result != base::File::Error::FILE_OK) {
+              LOG(ERROR) << "Error executing action: " << result;
+              LaunchQuickOffice(profile, files);
+            }
+          },
+          profile, files));
 }
 
 bool ExecuteOpenInOfficeTask(Profile* profile,
@@ -532,29 +532,28 @@ bool ExecuteOpenInOfficeTask(Profile* profile,
   bool offline = drive::util::GetDriveConnectionStatus(profile) !=
                  drive::util::DRIVE_CONNECTED;
   if (offline) {
-    // TODO(petermarshall): Launch QuickOffice or other fallback and return
-    // true.
+    return LaunchQuickOffice(profile, file_urls);
     // TODO(petermarshall): UMAs.
-    return false;
   }
 
   if (ODFSMounted(profile)) {
     if (FileIsOnODFS(file_urls.front(), profile)) {
-      OpenODFSUrl(file_urls.front());
+      OpenODFSUrl(file_urls.front(), profile);
       LOG(ERROR) << "File is on ODFS";
       return true;
     } else {
       // We need to move the file to ODFS first. This flow will eventually open
       // the file in the browser, too.
+      // TODO(b/247038054) Add user preference to decide whether or not the
+      // dialog should be shown.
       LOG(ERROR) << "File can be moved to ODFS";
-      return chromeos::cloud_upload::CloudUploadDialog::Show(
-          profile, file_urls, chromeos::cloud_upload::UploadType::kOneDrive);
+      return chromeos::cloud_upload::UploadAndOpen(
+          profile, file_urls, chromeos::cloud_upload::UploadType::kOneDrive,
+          /*show_dialog=*/false);
     }
   } else {
-    // TODO(petermarshall): Launch QuickOffice or other fallback and return
-    // true.
     LOG(ERROR) << "ODFS not available/mounted";
-    return false;
+    return LaunchQuickOffice(profile, file_urls);
   }
 }
 
@@ -922,6 +921,30 @@ bool ExecuteFileTask(Profile* profile,
   }
   NOTREACHED();
   return false;
+}
+
+bool LaunchQuickOffice(Profile* profile,
+                       const std::vector<FileSystemURL>& file_urls) {
+  UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
+                            OfficeTaskResult::FALLBACK_QUICKOFFICE);
+
+  const TaskDescriptor quick_office_task(
+      extension_misc::kQuickOfficeComponentExtensionId, TASK_TYPE_FILE_HANDLER,
+      kActionIdQuickOffice);
+
+  const bool result = file_tasks::ExecuteFileTask(
+      profile, quick_office_task, file_urls,
+      base::BindOnce(
+          [](extensions::api::file_manager_private::TaskResult result,
+             std::string error_message) {
+            if (!error_message.empty()) {
+              LOG(ERROR) << "Fallback to QuickOffice for opening office file "
+                            "with error message: "
+                         << error_message << " and result: " << result;
+            }
+          }));
+
+  return result;
 }
 
 void FindExtensionAndAppTasks(

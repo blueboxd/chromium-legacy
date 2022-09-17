@@ -705,6 +705,10 @@
       status: "experimental",
     },
     {
+      name: "CSSLhUnit",
+      status: "experimental",
+    },
+    {
       name: "CSSLogical",
       status: "experimental",
     },
@@ -1287,7 +1291,8 @@
     },
     {
       name: "FormRelAttribute",
-      status: "experimental",
+      status: "stable",
+      base_feature: "FormRelAttribute",
     },
     {
       name: "FractionalScrollOffsets",
@@ -1972,7 +1977,9 @@
     // See https://crbug.com/1324111
     {
       name: "PermissionsPolicyUnload",
-      status: "experimental"
+      origin_trial_feature_name: "PermissionsPolicyUnload",
+      status: "experimental",
+      base_feature: "PermissionsPolicyUnload",
     },
     {
       name: "PermissionsRequestRevoke",

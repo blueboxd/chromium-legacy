@@ -126,7 +126,7 @@ crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/lo
 # The -3 variant additionally exposes a bug, but even once that's fixed the test is too slow.
 crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-1.html [ Skip Timeout ]
 crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-2.html [ Skip Timeout ]
-crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Skip Failure Timeout ]
+crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Failure Skip Timeout ]
 crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-1.html [ Skip Timeout ]
 crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-2.html [ Skip Timeout ]
 crbug.com/1357443 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-3.html [ Skip Timeout ]
@@ -1282,12 +1282,6 @@ crbug.com/1315275 external/wpt/css/css-contain/content-visibility/content-visibi
 
 crbug.com/722287 crbug.com/886585 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-safe-001.html [ Failure ]
 crbug.com/599828 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-fallback-align-content-001.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-img-002.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-003.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-004.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-img-002.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
-crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 
 # [css-ui]
 # The `input-security` property not implemented yet.
@@ -1703,8 +1697,6 @@ crbug.com/1294155 printing/fixed-positioned-overflow-scroll.html [ Failure ]
 crbug.com/1294155 printing/multi-page-background.html [ Failure ]
 crbug.com/1294155 [ Win ] printing/vertical-rl.html [ Failure ]
 crbug.com/1294155 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
-crbug.com/1294155 [ Linux ] svg/text/caret-in-svg-text.xhtml [ Failure ]
-crbug.com/1294155 [ Win ] svg/text/caret-in-svg-text.xhtml [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -2035,6 +2027,8 @@ crbug.com/248894 external/wpt/css/css-text/text-justify/text-justify-none-001.ht
 crbug.com/248894 external/wpt/css/css-typed-om/the-stylepropertymap/properties/text-indent.html [ Failure ]
 crbug.com/248894 external/wpt/css/css-typed-om/the-stylepropertymap/properties/text-justify.html [ Failure ]
 crbug.com/248894 external/wpt/web-animations/responsive/textIndent.html [ Failure ]
+
+crbug.com/1364304 external/wpt/css/css-variables/css-variable-change-style-001.html [ Failure Pass ]
 
 # ====== Style team owned tests to here ======
 
@@ -3099,8 +3093,6 @@ crbug.com/1350027 [ Mac ] external/wpt/css/css-values/ic-unit-002.html [ Failure
 crbug.com/1350027 [ Mac ] external/wpt/css/css-values/ic-unit-003.html [ Failure ]
 crbug.com/1350027 [ Mac ] external/wpt/css/css-values/ic-unit-009.html [ Failure ]
 crbug.com/1350027 [ Mac ] external/wpt/css/css-values/ic-unit-010.html [ Failure ]
-crbug.com/937104 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
-crbug.com/937104 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
 
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 crbug.com/1108711 external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
@@ -4540,8 +4532,8 @@ crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Fai
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Failure Pass Timeout ]
 
 # User Activation
-crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
-crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
+crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.html [ Failure Timeout ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.html [ Failure ]
 
 # S13N Sheriff 2018-7-11
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
@@ -5912,7 +5904,7 @@ crbug.com/1213322 [ Mac ] external/wpt/html/browsers/the-window-object/named-acc
 crbug.com/1210687 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Pass Timeout ]
 crbug.com/1210687 [ Mac ] http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 crbug.com/1210687 [ Mac10.15 ] storage/websql/sql-error-codes.html [ Pass Timeout ]
-crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
+crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-crossorigin.sub.html [ Pass Timeout ]
 
 # Sheriff 2021-06-02
 crbug.com/1215575 [ Mac11 ] fast/peerconnection/RTCPeerConnection-applyConstraints-remoteVideoTrack.html [ Pass Timeout ]
@@ -6804,11 +6796,14 @@ crbug.com/1318561 [ Linux ] external/wpt/x-frame-options/get-decode-split.html [
 # Temp disable MST transfer tests until Browser feature can be enabled in tests
 crbug.com/1288839 external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html [ Skip ]
 crbug.com/1288839 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html [ Skip ]
+crbug.com/1288839 external/wpt/mediacapture-streams/MediaStreamTrack-iframe-audio-transfer.https.html [ Skip ]
+crbug.com/1288839 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-iframe-audio-transfer.https.html [ Skip ]
 crbug.com/1288839 external/wpt/mediacapture-streams/MediaStreamTrack-transfer-video.https.html [ Skip ]
 crbug.com/1288839 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-transfer-video.https.html [ Skip ]
 crbug.com/1288839 external/wpt/mediacapture-streams/MediaStreamTrack-transfer.https.html [ Skip ]
 # Explicit PASS expectation for the virtual suite, to stop it inheriting "Skip".
 crbug.com/1288839 virtual/mediastreamtrack-transfer/external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html [ Pass ]
+crbug.com/1288839 virtual/mediastreamtrack-transfer/external/wpt/mediacapture-streams/MediaStreamTrack-iframe-audio-transfer.https.html [ Pass ]
 
 # Sheriff 2022-04-22
 crbug.com/1318695 http/tests/devtools/elements/highlight/highlight-multiple-css-grid.js [ Failure Pass ]
@@ -7135,14 +7130,18 @@ crbug.com/1363259 [ Mac12 ] http/tests/devtools/network/network-initiator.js [ F
 crbug.com/1363259 [ Mac10.15 ] http/tests/devtools/network/network-initiator.js [ Failure Pass ]
 
 # Disable media security policy test on Linux (dbg, ASAN) and Mac12 (dbg)
-crbug.com/1349180 [ Linux ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Timeout Pass ]
-crbug.com/1349180 [ Debug Mac12 ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Timeout Pass ]
+crbug.com/1349180 [ Linux ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Pass Timeout ]
+crbug.com/1349180 [ Debug Mac12 ] external/wpt/content-security-policy/media-src/media-src-7_2_2.sub.html [ Failure Pass Timeout ]
 
 # Disable flakes on mac builders
-crbug.com/1363708 [ Mac12 ] http/tests/media/gc-while-network-loading.html [ Timeout Pass ]
+crbug.com/1363708 [ Mac12 ] http/tests/media/gc-while-network-loading.html [ Pass Timeout ]
 crbug.com/1363683 [ Mac12 ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Failure Pass ]
 crbug.com/1364129 [ Mac10.15 ] editing/pasteboard/data-transfer-items-image-png.html [ Failure Pass ]
 crbug.com/1364129 [ Mac11 ] editing/pasteboard/data-transfer-items-image-png.html [ Failure Pass ]
+
+# Disable DOM web flake on debug linux and mac
+crbug.com/1353578 [ Debug Linux ] fast/dom/gc-image-element-2.html [ Failure Pass ]
+crbug.com/1353578 [ Debug Mac ] fast/dom/gc-image-element-2.html [ Failure Pass ]
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]

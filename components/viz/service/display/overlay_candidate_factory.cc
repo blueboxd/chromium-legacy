@@ -95,12 +95,11 @@ OverlayCandidate::CandidateStatus GetReasonForTransformNotAxisAligned(
 
   // The transform has a shear component if the x and y sub-vectors are not
   // perpendicular (have a non-zero dot product).
-  const auto& matrix = transform.matrix();
-  gfx::Vector2dF x_part(matrix.rc(0, 0), matrix.rc(1, 0));
-  gfx::Vector2dF y_part(matrix.rc(0, 1), matrix.rc(1, 1));
+  gfx::Vector2dF x_part(transform.rc(0, 0), transform.rc(1, 0));
+  gfx::Vector2dF y_part(transform.rc(0, 1), transform.rc(1, 1));
   // Normalize to avoid numerical issues.
-  x_part.Scale(1.f / x_part.Length());
-  y_part.Scale(1.f / y_part.Length());
+  x_part.InvScale(x_part.Length());
+  y_part.InvScale(y_part.Length());
   if (std::abs(gfx::DotProduct(x_part, y_part)) > kEpsilon)
     return OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dShear;
 
@@ -290,7 +289,13 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
 
   if (resource_id != kInvalidResourceId) {
     candidate.format = resource_provider_->GetBufferFormat(resource_id);
-    candidate.color_space = resource_provider_->GetColorSpace(resource_id);
+    // TODO(b/181974042): We should probably also propagate the
+    // resource_provider_->GetSamplerColorSpace() -- while the display
+    // controller is not expected to use the GPU sampler, some hardware can do
+    // per-plane color management. We just don't have the API for it yet (at
+    // least on ChromeOS).
+    candidate.color_space =
+        resource_provider_->GetOverlayColorSpace(resource_id);
     candidate.hdr_metadata = resource_provider_->GetHDRMetadata(resource_id);
 
     if (!base::Contains(kOverlayFormats, candidate.format))
@@ -575,8 +580,7 @@ void OverlayCandidateFactory::AssignDamage(const DrawQuad* quad,
 
     if (!quad->rect.IsEmpty()) {
       // Normalize damage to be in UVs.
-      transformed_damage.Scale(1.0f / quad->rect.width(),
-                               1.0f / quad->rect.height());
+      transformed_damage.InvScale(quad->rect.width(), quad->rect.height());
     }
 
     // The normalization above is not enough if the |uv_rect| is not 0,0-1x1.

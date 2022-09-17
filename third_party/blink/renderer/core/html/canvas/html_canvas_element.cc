@@ -832,10 +832,10 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
-        gfx::RectF(r), Color(),
+        gfx::RectF(r), Color::kWhite,
         PaintAutoDarkMode(ComputedStyleRef(),
                           DarkModeFilter::ElementRole::kBackground),
-        SkBlendMode::kClear);
+        SkBlendMode::kSrc);
     // Place the icon near the upper left, like the missing image icon
     // for image elements. Offset it a bit from the upper corner.
     gfx::SizeF icon_size(broken_canvas->Size());
@@ -1101,8 +1101,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             WrapPersistent(callback), nullptr, nullptr));
+                   WTF::BindOnce(&V8BlobCallback::InvokeAndReportException,
+                                 WrapPersistent(callback), nullptr, nullptr));
     return;
   }
 
@@ -1139,8 +1139,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             WrapPersistent(callback), nullptr, nullptr));
+                   WTF::BindOnce(&V8BlobCallback::InvokeAndReportException,
+                                 WrapPersistent(callback), nullptr, nullptr));
   }
 }
 
@@ -1642,7 +1642,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
     NoAllocDirectCallHost* nadc_host =
         context_ ? context_->AsNoAllocDirectCallHost() : nullptr;
     if (nadc_host) {
-      nadc_host->PostDeferrableAction(WTF::Bind(
+      nadc_host->PostDeferrableAction(WTF::BindOnce(
           [](intptr_t delta_bytes) {
             v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
                 delta_bytes);

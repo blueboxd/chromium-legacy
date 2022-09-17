@@ -178,6 +178,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "apn-revamp",
+    "owners": [ "gordonseto@google.com", "cros-connectivity@google.com" ],
+    "expiry_milestone": 113
+  },
+  {
     "name": "app-management-app-details",
     "owners": [ "ajlinker" ],
     "expiry_milestone": 112
@@ -909,11 +914,6 @@
     // This flag does not expire because it allows some test cases that host a local SM-DP+ server
     // on a network without an external connection to the internet to be able to install eSIM.
     "expiry_milestone": -1
-  },
-  {
-    "name": "cellular-custom-apn-profiles",
-    "owners": [ "eariassoto@google.com", "gordonseto@google.com", "cros-connectivity@google.com" ],
-    "expiry_milestone": 110
   },
   {
     "name": "cellular-use-second-euicc",
@@ -2000,6 +2000,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-default-calculator-web-app",
+    "owners": [ "zafzal@google.com", "calculator-eng@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "enable-delegated-compositing",
     "owners": [ "petermcneeley" ],
     "expiry_milestone": 110
@@ -2170,9 +2175,14 @@
     "expiry_milestone": 120
   },
   {
+    "name": "enable-experimental-accessibility-dictation-more-commands",
+    "owners": [ "jeevam","akihiroota"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-experimental-accessibility-dictation-with-pumpkin",
     "owners": [ "akihiroota"],
-    "expiry_milestone": 107
+    "expiry_milestone": 109
   },
   {
     "name": "enable-experimental-accessibility-google-tts-language-packs",
@@ -2295,12 +2305,12 @@
   {
     "name": "enable-fre-default-browser-screen-testing",
     "owners": [ "alionadangla", "gambard" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 110
   },
   {
     "name": "enable-fre-ui-module-ios-with-options",
     "owners": [ "gambard", "veronguyen", "vincb", "ginnyhuang" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 110
   },
   {
     "name": "enable-fullscreen-api",
@@ -2693,7 +2703,7 @@
   {
     "name": "enable-password-manager-branding-update",
     "owners": [ "alionadangla", "bwwilliams", "bling-flags@google.com"],
-    "expiry_milestone": 105
+    "expiry_milestone": 110
   },
   {
     "name": "enable-payment-request-basic-card",
@@ -3582,11 +3592,6 @@
     "name": "files-trash",
     "owners": [ "benreich", "joelhockey", "noel", "simmonsjosh@google.com" ],
     "expiry_milestone": 115
-  },
-  {
-    "name": "files-web-drive-office",
-    "owners": [ "jboulic", "petermarshall", "simmonsjosh@google.com" ],
-    "expiry_milestone": 120
   },
   {
     "name": "fill-on-account-select",
@@ -5018,6 +5023,16 @@
     "name": "omnibox-rich-autocompletion-show-additional-text",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "omnibox-search-client-prefetch",
+    "owners": ["ryansturm", "chrome-brapp-loading@google.com"],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "omnibox-search-prefetch",
+    "owners": ["ryansturm", "chrome-brapp-loading@google.com"],
+    "expiry_milestone": 120
   },
   {
     "name": "omnibox-short-bookmark-suggestions",

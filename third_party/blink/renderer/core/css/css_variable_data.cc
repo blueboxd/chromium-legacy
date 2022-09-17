@@ -41,6 +41,9 @@ static bool IsFontUnitToken(CSSParserToken token) {
     case CSSPrimitiveValue::UnitType::kChs:
     case CSSPrimitiveValue::UnitType::kExs:
     case CSSPrimitiveValue::UnitType::kIcs:
+    // TODO(crbug.com/937104): This probably needs to be a separate
+    // IsLhUnitToken().
+    case CSSPrimitiveValue::UnitType::kLhs:
       return true;
     default:
       return false;
@@ -56,9 +59,7 @@ void CSSVariableData::AppendBackingStrings(Vector<String>& output) const {
   if (num_backing_strings_ == 1) {
     output.push_back(backing_string_);
   } else {
-    for (wtf_size_t i = 0; i < num_backing_strings_; ++i) {
-      output.push_back(backing_strings_[i]);
-    }
+    output.Append(backing_strings_.get(), num_backing_strings_);
   }
 }
 

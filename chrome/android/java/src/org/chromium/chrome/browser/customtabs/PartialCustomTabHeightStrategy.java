@@ -33,10 +33,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsAnimationControlListenerCompat;
+import androidx.core.view.WindowInsetsAnimationControllerCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
@@ -176,6 +179,10 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     // The current height used to trigger onResizedCallback when it is resized.
     // Used in 'window-above-navbar' version only.
     private int mHeight;
+
+    // Class used to control show / hide nav bar.
+    private NavBarTransitionController mNavbarTransitionController =
+            new NavBarTransitionController();
 
     public PartialCustomTabHeightStrategy(Activity activity, @Px int initialHeight,
             Integer navigationBarColor, Integer navigationBarDividerColor, boolean isFixedHeight,
@@ -515,7 +522,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             mShadowOffset = mActivity.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_shadow_offset);
         }
-        setTopMargins(mShadowOffset, getHandleHeight());
+        setTopMargins(mShadowOffset, getHandleHeight() + mShadowOffset);
         mToolbarCoordinator.requestLayout();
     }
 
@@ -556,20 +563,18 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         WindowManager.LayoutParams attrs = window.getAttributes();
         if (attrs.y == y) return;
 
+        // If the tab is not resizable then dragging it higher than the initial height will not be
+        // allowed. The tab can still be dragged down in order to be closed.
+        if (isFixedHeight() && y < initialY()) return;
+
         attrs.y = y;
         window.setAttributes(attrs);
         if (mFinishRunnable != null) return;
 
-        int initialY = initialY();
-
-        // If the tab is not resizable then dragging it higher than the initial height will not be
-        // allowed. The tab can still be dragged down in order to be closed.
-        if (isFixedHeight() && y < initialY) return;
-
         // Starting dragging from INITIAL_HEIGHT state, we can hide the spinner if the tab:
         // 1) reaches full height
         // 2) is dragged below the initial height
-        if (mStatus == HeightStatus.INITIAL_HEIGHT && (y <= topY || y > initialY)
+        if (mStatus == HeightStatus.INITIAL_HEIGHT && (y <= topY || y > initialY())
                 && isSpinnerVisible()) {
             hideSpinnerView();
             if (y <= topY) {
@@ -675,7 +680,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
             // Toolbar should not be hidden by spinner screen.
             ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(MATCH_PARENT, 0);
-            int topMargin = mToolbarView.getHeight() + mShadowOffset;
+            int topMargin = mToolbarView.getHeight();
             // See the comment below for why we add handle height.
             if (!mWindowAboveNavbar) topMargin += getHandleHeight();
             lp.setMargins(0, topMargin, 0, 0);
@@ -829,6 +834,12 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             // Can we remove the slow fade-out animation?
             controller.hide(WindowInsetsCompat.Type.navigationBars());
         }
+
+        // Take over the control of insets animation after the #show / #hide. This call needs to
+        // happen after the #show / #hide call to work correctly.
+        mNavbarTransitionController.setShow(show);
+        controller.controlWindowInsetsAnimation(WindowInsetsCompat.Type.navigationBars(),
+                /*durationMillis*/ 1, null, null, mNavbarTransitionController);
     }
 
     // TODO(jinsukkim): Explore the way to use androidx.window.WindowManager or
@@ -1000,7 +1011,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         if (mPreFullscreenAttrs == null || !mWindowAboveNavbar) return;
         mActivity.getWindow().setAttributes(mPreFullscreenAttrs);
         mPreFullscreenAttrs = null;
-        setTopMargins(mShadowOffset, getHandleHeight());
+        setTopMargins(mShadowOffset, getHandleHeight() + mShadowOffset);
     }
 
     @Override
@@ -1036,5 +1047,26 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // Pass null for context because we don't depend on the GestureDetector inside as we invoke
         // MotionEvents directly in the tests.
         return new PartialCustomTabHandleStrategy(null, this::isFullHeight, () -> mStatus, this);
+    }
+
+    // Reusable class used to control nav bar transitioning, to make the transition instant.
+    private static class NavBarTransitionController
+            implements WindowInsetsAnimationControlListenerCompat {
+        private boolean mShown;
+
+        void setShow(boolean show) {
+            mShown = show;
+        }
+
+        @Override
+        public void onReady(@NonNull WindowInsetsAnimationControllerCompat controller, int types) {
+            controller.finish(mShown);
+        }
+
+        @Override
+        public void onFinished(WindowInsetsAnimationControllerCompat controller) {}
+
+        @Override
+        public void onCancelled(WindowInsetsAnimationControllerCompat controller) {}
     }
 }

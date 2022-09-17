@@ -779,8 +779,8 @@ void WebGLRenderingContextBase::MakeXrCompatibleAsync() {
   if (XRSystem* xr = GetXrSystemFromHost(Host())) {
     // The promise will be completed on the callback.
     xr->MakeXrCompatibleAsync(
-        WTF::Bind(&WebGLRenderingContextBase::OnMakeXrCompatibleFinished,
-                  WrapWeakPersistent(this)));
+        WTF::BindOnce(&WebGLRenderingContextBase::OnMakeXrCompatibleFinished,
+                      WrapWeakPersistent(this)));
   } else {
     xr_compatible_ = false;
     CompleteXrCompatiblePromiseIfPending(DOMExceptionCode::kAbortError);
@@ -1117,6 +1117,7 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   bool want_depth_buffer = attrs.depth;
   bool want_stencil_buffer = attrs.stencil;
   bool want_antialiasing = attrs.antialias;
+  bool desynchronized = attrs.desynchronized;
   DrawingBuffer::PreserveDrawingBuffer preserve = attrs.preserve_drawing_buffer
                                                       ? DrawingBuffer::kPreserve
                                                       : DrawingBuffer::kDiscard;
@@ -1143,13 +1144,13 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
 
   bool using_swap_chain =
       context_provider->GetCapabilities().shared_image_swap_chain &&
-      attrs.desynchronized;
+      desynchronized;
 
   return DrawingBuffer::Create(
       std::move(context_provider), graphics_info, using_swap_chain, this,
       ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
-      want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
-      web_gl_version, chromium_image_usage, Host()->FilterQuality(),
+      want_depth_buffer, want_stencil_buffer, want_antialiasing, desynchronized,
+      preserve, web_gl_version, chromium_image_usage, Host()->FilterQuality(),
       drawing_buffer_color_space_, pixel_format_deprecated_,
       PowerPreferenceToGpuPreference(attrs.power_preference));
 }
@@ -7170,8 +7171,9 @@ void WebGLRenderingContextBase::LoseContextImpl(
     // a reference to the DrawingBuffer until this function is done executing.
     task_runner_->PostTask(
         FROM_HERE,
-        WTF::Bind(&WebGLRenderingContextBase::HoldReferenceToDrawingBuffer,
-                  WrapWeakPersistent(this), WTF::RetainedRef(drawing_buffer_)));
+        WTF::BindOnce(&WebGLRenderingContextBase::HoldReferenceToDrawingBuffer,
+                      WrapWeakPersistent(this),
+                      WTF::RetainedRef(drawing_buffer_)));
   }
 
   // Always destroy the context, regardless of context loss mode. This will
@@ -8147,7 +8149,7 @@ void WebGLRenderingContextBase::PrintGLErrorToConsole(const String& message) {
 
 void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
   blink::ExecutionContext* context = Host()->GetTopExecutionContext();
-  PostDeferrableAction(WTF::Bind(
+  PostDeferrableAction(WTF::BindOnce(
       [](blink::ExecutionContext* context, const String& message) {
         if (context && !context->IsContextDestroyed()) {
           context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -8160,7 +8162,7 @@ void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
 
 void WebGLRenderingContextBase::NotifyWebGLErrorOrWarning(
     const String& message) {
-  PostDeferrableAction(WTF::Bind(
+  PostDeferrableAction(WTF::BindOnce(
       [](HTMLCanvasElement* canvas, const String& message) {
         probe::DidFireWebGLErrorOrWarning(canvas, message);
       },
@@ -8168,7 +8170,7 @@ void WebGLRenderingContextBase::NotifyWebGLErrorOrWarning(
 }
 
 void WebGLRenderingContextBase::NotifyWebGLError(const String& error_type) {
-  PostDeferrableAction(WTF::Bind(
+  PostDeferrableAction(WTF::BindOnce(
       [](HTMLCanvasElement* canvas, const String& error_type) {
         probe::DidFireWebGLError(canvas, error_type);
       },
@@ -8176,7 +8178,7 @@ void WebGLRenderingContextBase::NotifyWebGLError(const String& error_type) {
 }
 
 void WebGLRenderingContextBase::NotifyWebGLWarning() {
-  PostDeferrableAction(WTF::Bind(
+  PostDeferrableAction(WTF::BindOnce(
       [](HTMLCanvasElement* canvas) { probe::DidFireWebGLWarning(canvas); },
       WrapPersistent(canvas())));
 }

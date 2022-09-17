@@ -2372,6 +2372,18 @@ const char kSupportSearchSuggestionForPrerender2Description[] =
     "Allows Prerender2 to prerender search suggestions provided by the default "
     "search engine. Requires chrome://flags/#enable-prerender2 to be enabled";
 
+const char kEnableOmniboxSearchPrefetchName[] = "Omnibox prefetch Search";
+const char kEnableOmniboxSearchPrefetchDescription[] =
+    "Allows omnibox to prefetch likely search suggestions provided by the "
+    "Default Search Engine";
+
+const char kEnableOmniboxClientSearchPrefetchName[] =
+    "Omnibox client prefetch Search";
+const char kEnableOmniboxClientSearchPrefetchDescription[] =
+    "Allows omnibox to prefetch search suggestions provided by the Default "
+    "Search Engine that the client thinks are likely to be navigated. Requires "
+    "chrome://flags/#omnibox-search-prefetch";
+
 const char kPrivacyGuide2Name[] = "Privacy Guide V2";
 const char kPrivacyGuide2Description[] =
     "Enables UI updates for Privacy Guide.";
@@ -4902,10 +4914,11 @@ const char kCellularBypassESimInstallationConnectivityCheckDescription[] =
     "Bypass the non-cellular internet connectivity check during eSIM "
     "installation.";
 
-const char kCellularCustomAPNProfilesName[] = "Register Custom APN Profiles";
-const char kCellularCustomAPNProfilesDescription[] =
-    "If enabled, the Settings UI will allow the user to create, edit, and "
-    "delete custom APN profiles for a Cellular network.";
+const char kApnRevampName[] = "APN Revamp";
+const char kApnRevampDescription[] =
+    "Enables the ChromeOS APN Revamp, which updates cellular network APN "
+    "system UI and related "
+    "infrastructure.";
 
 const char kCellularUseSecondEuiccName[] = "Use second Euicc";
 const char kCellularUseSecondEuiccDescription[] =
@@ -5414,6 +5427,11 @@ const char kExperimentalAccessibilityDictationWithPumpkinDescription[] =
     "Enables the pumpkin semantic parser for the accessibility dictation "
     "feature.";
 
+const char kExperimentalAccessibilityDictationMoreCommandsName[] =
+    "Additional experimental accessibility dictation commands.";
+const char kExperimentalAccessibilityDictationMoreCommandsDescription[] =
+    "Enables experimental dictation commands.";
+
 const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[] =
     "Experimental accessibility Google TTS Langauge Packs.";
 const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[] =
@@ -5460,11 +5478,6 @@ const char kFilesSinglePartitionFormatDescription[] =
 const char kFilesTrashName[] = "Enable Files Trash.";
 const char kFilesTrashDescription[] =
     "Enable trash for My files volume in Files App.";
-
-const char kFilesWebDriveOfficeName[] =
-    "Enable Files App Web Drive Office support.";
-const char kFilesWebDriveOfficeDescription[] =
-    "Enable opening Office files located in Files app Drive in Web Drive.";
 
 const char kFloatWindow[] = "CrOS Labs: Float current active window";
 const char kFloatWindowDescription[] =
@@ -6226,6 +6239,11 @@ const char kCrosPrivacyHubFutureName[] =
     "Enable ChromeOS Privacy Hub future features";
 const char kCrosPrivacyHubFutureDescription[] =
     "Enables ChromeOS Privacy Hub future features.";
+
+const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
+const char kDefaultCalculatorWebAppDescription[] =
+    "Enable default installing of the calculator PWA instead of the deprecated "
+    "chrome app.";
 
 const char kDeprecateLowUsageCodecsName[] = "Deprecates low usage media codecs";
 const char kDeprecateLowUsageCodecsDescription[] =

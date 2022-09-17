@@ -228,8 +228,8 @@ gfx::CALayerResult FromTileQuad(DisplayResourceProvider* resource_provider,
     return gfx::kCALayerFailedTileNotCandidate;
   ca_layer_overlay->contents_resource_id = resource_id;
   ca_layer_overlay->contents_rect = quad->tex_coord_rect;
-  ca_layer_overlay->contents_rect.Scale(1.f / quad->texture_size.width(),
-                                        1.f / quad->texture_size.height());
+  ca_layer_overlay->contents_rect.InvScale(quad->texture_size.width(),
+                                           quad->texture_size.height());
   ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
   return gfx::kCALayerSuccess;
 }
@@ -457,7 +457,7 @@ void CALayerOverlayProcessor::PutForcedOverlayContentIntoUnderlays(
 
       // Put HDR videos into an underlay.
       if (enable_hdr_underlays_) {
-        if (resource_provider->GetColorSpace(texture_quad->resource_id())
+        if (resource_provider->GetOverlayColorSpace(texture_quad->resource_id())
                 .IsHDR())
           force_quad_to_overlay = true;
       }

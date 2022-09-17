@@ -7,6 +7,8 @@
 
 #include "chrome/browser/ash/net/network_portal_web_dialog.h"
 
+class Profile;
+
 namespace ash {
 
 class NetworkPortalSigninController : public NetworkPortalWebDialog::Delegate {
@@ -21,20 +23,23 @@ class NetworkPortalSigninController : public NetworkPortalWebDialog::Delegate {
   virtual base::WeakPtr<NetworkPortalSigninController> GetWeakPtr();
 
   // Shows the signin UI.
-  virtual void ShowSignin();
+  void ShowSignin();
 
   // Closes the signin UI if appropriate.
-  virtual void CloseSignin();
+  void CloseSignin();
 
   // Returns whether the sigin UI is show.
-  virtual bool DialogIsShown();
+  bool DialogIsShown();
 
   // NetworkPortalWebDialog::Delegate
   void OnDialogDestroyed(const NetworkPortalWebDialog* dialog) override;
 
- private:
-  void ShowDialog();
+ protected:
+  // May be overridden in tests.
+  virtual void ShowDialog(Profile* profile, const GURL& url);
+  virtual void ShowTab(Profile* profile, const GURL& url);
 
+ private:
   NetworkPortalWebDialog* dialog_ = nullptr;
   base::WeakPtrFactory<NetworkPortalWebDialog::Delegate>
       web_dialog_weak_factory_{this};

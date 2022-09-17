@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,9 @@ class AutofillClientImpl
   bool IsFastCheckoutSupported() override;
   bool IsFastCheckoutTriggerForm(const autofill::FormData& form,
                                  const autofill::FormFieldData& field) override;
+  bool FastCheckoutScriptSupportsConsentlessExecution(
+      const url::Origin& origin) override;
+  bool FastCheckoutClientSupportsConsentlessExecution() override;
   bool ShowFastCheckout(
       base::WeakPtr<autofill::FastCheckoutDelegate> delegate) override;
   void HideFastCheckout() override;

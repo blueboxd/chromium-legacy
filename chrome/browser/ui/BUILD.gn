@@ -465,6 +465,7 @@ static_library("ui") {
     "//components/crx_file",
     "//components/custom_handlers",
     "//components/device_event_log",
+    "//components/device_reauth",
     "//components/dom_distiller/content/browser",
     "//components/domain_reliability",
     "//components/download/content/factory",
@@ -2716,6 +2717,8 @@ static_library("ui") {
       "webui/chromeos/login/cookie_waiter.h",
       "webui/chromeos/login/core_oobe_handler.cc",
       "webui/chromeos/login/core_oobe_handler.h",
+      "webui/chromeos/login/cryptohome_recovery_screen_handler.cc",
+      "webui/chromeos/login/cryptohome_recovery_screen_handler.h",
       "webui/chromeos/login/debug/debug_overlay_handler.cc",
       "webui/chromeos/login/debug/debug_overlay_handler.h",
       "webui/chromeos/login/demo_preferences_screen_handler.cc",
@@ -3656,6 +3659,10 @@ static_library("ui") {
 
   if (is_win || is_mac) {
     sources += [
+      "passwords/bubble_controllers/biometric_authentication_for_filling_bubble_controller.cc",
+      "passwords/bubble_controllers/biometric_authentication_for_filling_bubble_controller.h",
+      "views/passwords/biometric_authentication_for_filling_bubble_view.cc",
+      "views/passwords/biometric_authentication_for_filling_bubble_view.h",
       "webui/settings/native_certificates_handler.cc",
       "webui/settings/native_certificates_handler.h",
     ]

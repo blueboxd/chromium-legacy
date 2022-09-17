@@ -153,13 +153,10 @@ void OneDriveUploadHandler::OnDestinationDirectoryCreated(
     return;
   }
 
-  // Source URLs.
   std::vector<FileSystemURL> source_urls{source_url_};
-
-  // TODO (b/242685159) Change copy to move.
   std::unique_ptr<file_manager::io_task::IOTask> task =
       std::make_unique<file_manager::io_task::CopyOrMoveIOTask>(
-          file_manager::io_task::OperationType::kCopy, std::move(source_urls),
+          file_manager::io_task::OperationType::kMove, std::move(source_urls),
           std::move(destination_folder_url), profile_, file_system_context_,
           /*show_notification=*/false);
 
@@ -187,8 +184,9 @@ void OneDriveUploadHandler::OnIOTaskStatus(
       DCHECK_EQ(status.outputs.size(), 1);
       file_manager::util::ShowItemInFolder(
           profile_, status.outputs[0].url.path(),
-          base::BindOnce(&LogErrorOnShowItemInFolder));
-      OnEndUpload(status.outputs[0].url);
+          base::BindOnce(&OneDriveUploadHandler::OnShowItemInFolder,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         status.outputs[0].url));
       return;
     case file_manager::io_task::State::kCancelled:
       OnEndUpload(FileSystemURL(), "Move error: kCancelled");
@@ -200,6 +198,13 @@ void OneDriveUploadHandler::OnIOTaskStatus(
       OnEndUpload(FileSystemURL(), "Move error: kNeedPassword");
       return;
   }
+}
+
+void OneDriveUploadHandler::OnShowItemInFolder(
+    const FileSystemURL uploaded_file_url,
+    platform_util::OpenOperationResult result) {
+  LogErrorOnShowItemInFolder(result);
+  OnEndUpload(uploaded_file_url);
 }
 
 }  // namespace chromeos::cloud_upload

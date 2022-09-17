@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -20,6 +19,7 @@
 #include "ash/components/smbfs/smbfs_host.h"
 #include "ash/components/smbfs/smbfs_mounter.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -1931,12 +1931,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
   }
 
-  if (options.enable_web_drive_office) {
-    enabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
-  } else {
-    disabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
-  }
-
   if (options.enable_mirrorsync) {
     enabled_features.push_back(chromeos::features::kDriveFsMirroring);
   } else {
@@ -2831,6 +2825,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setTrashEnabled") {
+    absl::optional<bool> enabled = value.FindBool("enabled");
+    ASSERT_TRUE(enabled.has_value());
+    profile()->GetPrefs()->SetBoolean(ash::prefs::kFilesAppTrashEnabled,
+                                      enabled.value());
+    return;
+  }
+
   if (name == "setPdfPreviewEnabled") {
     absl::optional<bool> enabled = value.FindBool("enabled");
     ASSERT_TRUE(enabled.has_value());
@@ -3339,13 +3341,8 @@ FileManagerBrowserTestBase::GetLastOpenWindowWebContents() {
       }
 
       // Ignore known WebContents.
-      bool found =
-          std::find_if(swa_web_contents_.begin(), swa_web_contents_.end(),
-                       [web_contents](const auto& pair) {
-                         return pair.second == web_contents;
-                       }) != swa_web_contents_.end();
-
-      if (!found) {
+      if (!base::Contains(swa_web_contents_, web_contents,
+                          &IdToWebContents::value_type::second)) {
         return web_contents;
       }
     }

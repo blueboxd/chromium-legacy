@@ -50,8 +50,7 @@
       <span hidden="[[!isOneOf_(uiState_, 'ui-state-update')]]">
         [[i18nDynamic(locale, 'updateOfflineMessageBody')]]
       </span>
-      <span hidden="[[!isOneOf_(uiState_,
-          'ui-state-signin', 'ui-state-supervised')]]">
+      <span hidden="[[!isOneOf_(uiState_, 'ui-state-signin')]]">
         [[i18nDynamic(locale, 'signinOfflineMessageBody')]]
       </span>
       <span hidden="[[!isOneOf_(uiState_, 'ui-state-kiosk-mode')]]">
@@ -63,7 +62,6 @@
           hidden="[[!isOneOf_(uiState_,
               'ui-state-update',
               'ui-state-signin',
-              'ui-state-supervised',
               'ui-state-kiosk-mode')]]">
       </span>
     </div>
@@ -74,7 +72,6 @@
           hidden="[[!isOneOf_(uiState_,
               'ui-state-update',
               'ui-state-signin',
-              'ui-state-supervised',
               'ui-state-kiosk-mode')]]">
       </span>
     </div>
@@ -86,20 +83,15 @@
       <span id="signin-proxy-message-text"
           hidden="[[!isOneOf_(uiState_,
               'ui-state-signin',
-              'ui-state-supervised',
               'ui-state-kiosk-mode')]]">
       </span>
     </div>
     <span hidden="[[!isOneOf_(uiState_,'ui-state-auto-enrollment-error')]]">
       [[i18nDynamic(locale, 'autoEnrollmentOfflineMessageBody')]]
     </span>
-    <div hidden="[[!isOneOf_(uiState_, 'ui-state-rollback-error')]]">
-      [[i18nDynamic(locale, 'rollbackErrorMessageBody')]]
-    </div>
     <div id="guestSessionText" hidden="[[!isOneOf_(uiState_,
         'ui-state-update',
         'ui-state-signin',
-        'ui-state-supervised',
         'ui-state-kiosk-mode')]]">
       <span id="error-guest-signin" hidden="[[!guestSessionAllowed_]]">
       </span>
@@ -123,7 +115,6 @@
       <div hidden="[[!isOneOf_(uiState_,
           'ui-state-update',
           'ui-state-signin',
-          'ui-state-supervised',
           'ui-state-kiosk-mode',
           'ui-state-auto-enrollment-error')]]" class="scrollable">
         <network-select-login id="offline-network-control"
@@ -156,11 +147,6 @@
         on-click="continueButtonClicked"
         text-key="continueButton"
         hidden="[[!isOneOf_(errorState_, 'kiosk-online')]]">
-    </oobe-text-button>
-    <oobe-text-button id="okButton"
-        on-click="okButtonClicked"
-        text-key="okButton"
-        hidden="[[!isOneOf_(uiState_, 'ui-state-rollback-error')]]">
     </oobe-text-button>
   </div>
 </oobe-adaptive-dialog>

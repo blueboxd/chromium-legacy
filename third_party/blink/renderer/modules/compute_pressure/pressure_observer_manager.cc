@@ -62,11 +62,11 @@ ScriptPromise PressureObserverManager::AddObserver(
         GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
     pressure_service_->BindObserver(
         receiver_.BindNewPipeAndPassRemote(std::move(task_runner)),
-        resolver->WrapCallbackInScriptScope(WTF::Bind(
+        resolver->WrapCallbackInScriptScope(WTF::BindOnce(
             &PressureObserverManager::DidBindObserver, WrapWeakPersistent(this),
             source, WrapPersistent(observer))));
-    receiver_.set_disconnect_handler(
-        WTF::Bind(&PressureObserverManager::Reset, WrapWeakPersistent(this)));
+    receiver_.set_disconnect_handler(WTF::BindOnce(
+        &PressureObserverManager::Reset, WrapWeakPersistent(this)));
   } else {
     // Already connected to the browser process, just change the quantization
     // options if necessary.
@@ -74,7 +74,7 @@ ScriptPromise PressureObserverManager::AddObserver(
         observer->normalized_options()->cpuUtilizationThresholds());
     pressure_service_->SetQuantization(
         std::move(mojo_options),
-        resolver->WrapCallbackInScriptScope(WTF::Bind(
+        resolver->WrapCallbackInScriptScope(WTF::BindOnce(
             &PressureObserverManager::DidSetQuantization,
             WrapWeakPersistent(this), source, WrapPersistent(observer))));
   }
@@ -129,6 +129,10 @@ void PressureObserverManager::OnUpdate(
   CopyToVector(registered_observers_[source_index], observers);
   for (const auto& observer : observers)
     observer->OnUpdate(state.Clone());
+
+  // Last reported state is saved for next registered observer
+  // if next upcoming state is filtered by the browser.
+  last_reported_state_ = state.Clone();
 }
 
 void PressureObserverManager::Trace(blink::Visitor* visitor) const {
@@ -153,8 +157,8 @@ void PressureObserverManager::EnsureServiceConnection() {
   GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       pressure_service_.BindNewPipeAndPassReceiver(task_runner));
   pressure_service_.set_disconnect_handler(
-      WTF::Bind(&PressureObserverManager::OnServiceConnectionError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&PressureObserverManager::OnServiceConnectionError,
+                    WrapWeakPersistent(this)));
 }
 
 void PressureObserverManager::OnServiceConnectionError() {
@@ -203,7 +207,7 @@ void PressureObserverManager::DidBindObserver(
           observer->normalized_options()->cpuUtilizationThresholds());
       pressure_service_->SetQuantization(
           std::move(mojo_options),
-          resolver->WrapCallbackInScriptScope(WTF::Bind(
+          resolver->WrapCallbackInScriptScope(WTF::BindOnce(
               &PressureObserverManager::DidSetQuantization,
               WrapWeakPersistent(this), source, WrapPersistent(observer))));
       break;
@@ -240,12 +244,16 @@ void PressureObserverManager::DidSetQuantization(
 
   switch (status) {
     case mojom::blink::SetQuantizationStatus::kChanged:
-      // Clear registered observers, then do same steps as kUnchanged.
+      // Clear registered observers, and register latest observer.
       registered_observers_[source_index].clear();
-      [[fallthrough]];
+      registered_observers_[source_index].insert(observer);
+      resolver->Resolve();
+      break;
     case mojom::blink::SetQuantizationStatus::kUnchanged:
       registered_observers_[source_index].insert(observer);
       resolver->Resolve();
+      if (last_reported_state_)
+        observer->OnUpdate(last_reported_state_.Clone());
       break;
   }
 }

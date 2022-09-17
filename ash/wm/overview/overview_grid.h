@@ -12,9 +12,9 @@
 
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
+#include "ash/style/rounded_label_widget.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button_container.h"
 #include "ash/wm/overview/overview_session.h"
-#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
@@ -343,9 +343,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Commits any on-going name changes if any.
   void CommitNameChanges();
 
-  // Shows the grid of the desks templates. Creates the widget if needed. If
-  // `was_zero_state` is true then we will expand the desks bar.
-  void ShowDesksTemplatesGrid(bool was_zero_state);
+  // Shows the grid of the desks templates. Creates the widget if needed. The
+  // desks bar will be expanded if it isn't already.
+  void ShowDesksTemplatesGrid();
 
   // Hides the grid of desks templates and reshow the overview items. Updates
   // the templates button if we are not exiting overview.

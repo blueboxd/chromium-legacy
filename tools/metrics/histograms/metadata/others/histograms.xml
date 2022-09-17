@@ -3808,11 +3808,38 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.ReportsDeletedInDataClearOperation"
     units="conversions" expires_after="2023-02-12">
+  <obsolete>
+    Replaced with Conversions.EventReportsDeletedInDataClearOperation due to
+    introduction of Conversions.AggregatableReportsDeletedInDataClearOperation,
+    09/2022.
+  </obsolete>
   <owner>johnidel@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
     Records the number of conversion reports deleted per clearing operation.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.ReportsDeletedInDataClearOperation.Aggregatable"
+    units="conversions" expires_after="2023-02-12">
+  <owner>johnidel@chromium.org</owner>
+  <owner>tquintanilla@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the number of aggregatable attribution reports deleted per clearing
+    operation.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.ReportsDeletedInDataClearOperation.Event"
+    units="conversions" expires_after="2023-02-12">
+  <owner>johnidel@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records the number of event-level attribution reports deleted per clearing
+    operation.
   </summary>
 </histogram>
 
@@ -14009,6 +14036,17 @@ should be kept until we use this API.  -->
   <summary>
     Records state of the Background Tracing system, from when scenarios are
     attempted to be activated until they're completed (successfully or failed)
+  </summary>
+</histogram>
+
+<histogram name="Tracing.Background.UploadingTraceSizeInKB" units="KB"
+    expires_after="2023-01-15">
+  <owner>oksamyt@chromium.org</owner>
+  <owner>tracing@chromium.org</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    The size, in kilobytes, of a trace about to be uploaded. Values can range
+    from 1KB to 100MB.
   </summary>
 </histogram>
 

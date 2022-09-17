@@ -634,6 +634,13 @@ cr.define('cr.ui.login.debug', function() {
             screen.setShouldShowConfirmationDialog(true);
           },
         },
+        {
+          id: 'rollback-error',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(3);
+          },
+        },
       ],
     },
     {
@@ -1542,6 +1549,10 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
       ],
+    },
+    {
+      id: 'cryptohome-recovery',
+      kind: ScreenKind.NORMAL,
     },
   ];
 

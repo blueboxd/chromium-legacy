@@ -1178,6 +1178,9 @@ TEST_F(HoldingSpaceTrayTest, PlaceholderHiddenAfterFilesAppChipPressed) {
 TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   StartSession();
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("HoldingSpace.Suggestions.Action.All", 0);
+
   // Add a suggested item.
   AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
           base::FilePath("/tmp/fake1"));
@@ -1200,6 +1203,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   // Press ENTER and expect the section to collapse.
   EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 1);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 0);
   {
     SCOPED_TRACE("First collapse.");
     VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
@@ -1207,6 +1216,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
 
   // Press ENTER and expect the section to expand.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 1);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 1);
   {
     SCOPED_TRACE("First expand.");
     VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/true);
@@ -1230,6 +1245,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   // Verify that removing and adding an item works with the section collapsed.
   EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 2);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 1);
   {
     SCOPED_TRACE("Second collapse.");
     VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
@@ -3378,6 +3399,27 @@ TEST_P(HoldingSpaceTrayPredictableFeatureTest,
   }
 }
 
+// If the predictable feature flag is enabled and the user has no items in the
+// screen captures or downloads sections, then show a placeholder.
+TEST_P(HoldingSpaceTrayPredictableFeatureTest,
+       ShowRecentFilesPlaceholderWhenNoScreenCapturesOrDownloadsExist) {
+  StartSession();
+
+  // Assert we have no items to display in the recent files holding space
+  // sections.
+  ASSERT_EQ(model()->items().size(), 0u);
+
+  test_api()->Show();
+  ASSERT_TRUE(test_api()->IsShowing());
+
+  // Expect that the recent files bubble and its placeholder are shown if the
+  // feature is enabled.
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
+  EXPECT_EQ(test_api()->RecentFilesPlaceholderShown(),
+            IsHoldingSpacePredictabilityEnabled());
+}
+
 class HoldingSpaceTraySuggestionsFeatureTest
     : public HoldingSpaceTrayTestBase,
       public ::testing::WithParamInterface<std::tuple<
@@ -3451,7 +3493,8 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
 
   RemoveAllItems();
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
   EXPECT_EQ(test_api()->PinnedFilesBubbleShown(),
             IsHoldingSpacePredictabilityEnabled());
   EXPECT_EQ(test_api()->IsShowingInShelf(),
@@ -3505,12 +3548,15 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
        PlaceholderContainsGSuitePrompt) {
   StartSession(/*pre_mark_time_of_first_add=*/true);
 
-  // Show the bubble. Only the pinned files bubble should be visible.
+  // Show the bubble. Only the pinned files bubble should be visible if the
+  // predictable flag is off, otherwise both should be shown.
   test_api()->Show();
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
 
-  // The new suggestions placeholder text and icons should exist in the bubble.
+  // The new suggestions placeholder text and icons should exist in the pinned
+  // files bubble.
   views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
   ASSERT_TRUE(pinned_files_bubble);
 
@@ -3534,6 +3580,37 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
   EXPECT_NE(has_files_app_chip, IsHoldingSpaceSuggestionsEnabled());
   EXPECT_TRUE(GSuiteIconsAreVisibleWhenSuggestionsFeatureIsEnabled(
       pinned_files_bubble));
+}
+
+// Base class for tests of the holding space accessibility text parameterized by
+// a boolean for the kHoldingSpaceRebrand feature flag.
+class HoldingSpaceTrayAccessibilityTest
+    : public HoldingSpaceTrayTestBase,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  HoldingSpaceTrayAccessibilityTest() {
+    scoped_feature_list_.InitWithFeatureState(features::kHoldingSpaceRebrand,
+                                              IsHoldingSpaceRebrandEnabled());
+  }
+
+  bool IsHoldingSpaceRebrandEnabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HoldingSpaceTrayAccessibilityTest,
+                         ::testing::Bool());
+
+TEST_P(HoldingSpaceTrayAccessibilityTest, CheckTrayAccessibilityText) {
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+  GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
+  EXPECT_EQ(
+      GetTray()->GetAccessibleNameForTray(),
+      IsHoldingSpaceRebrandEnabled()
+          ? u"Quick Files: recent screen captures, downloads, and pinned files"
+          : u"Tote: recent screen captures, downloads, and pinned files");
 }
 
 // Base class for tests of the holding space icon parameterized by a boolean for

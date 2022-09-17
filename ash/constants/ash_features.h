@@ -147,7 +147,7 @@ extern const base::Feature kCaptureModeDemoTools;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularBypassESimInstallationConnectivityCheck;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCellularCustomAPNProfiles;
+extern const base::Feature kApnRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseSecondEuicc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -171,6 +171,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrosPrivacyHubDogfood;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrosPrivacyHubFuture;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCrossDeviceAttestationCertificateGeneration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniBullseyeUpgrade;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -329,7 +331,6 @@ extern const base::Feature kFilesInlineSyncStatus;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesTrash;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesWebDriveOffice;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFiltersInRecentsV2;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFirmwareUpdaterApp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFloatingWorkspace;
@@ -723,6 +724,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsApnRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAppNotificationsPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcFuseBoxFileSharingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcInputOverlayEnabled();
@@ -753,6 +755,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubDogfoodEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubFutureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubMVPEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosNextWMPEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsCrossDeviceAttestationCertificateGenerationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDesksCloseAllEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowUIEnabled();

@@ -241,23 +241,6 @@ enum class UserAgentStringType {
   kMaxValue = kOverriden
 };
 
-// Corresponds to the "FencedFrameCreationOutcome" histogram enumeration type in
-// tools/metrics/histograms/enums.xml.
-//
-// PLEASE DO NOT REORDER, REMOVE, OR CHANGE THE MEANING OF THESE VALUES.
-enum class FencedFrameCreationOutcome {
-  kSuccessDefault = 0,  // creates/navigates in default mode
-  kSuccessOpaque = 1,   // creates/navigates in opaque ads mode
-  kSandboxFlagsNotSet = 2,
-  kIncompatibleMode = 3,
-  kInsecureContext = 4,
-  kIncompatibleURLDefault = 5,
-  kIncompatibleURLOpaque = 6,
-  kResponseHeaderNotOptIn = 7,  // HTTP response header Supports-Loading-Mode is
-                                // not opted-in with 'fenced-frame'
-  kMaxValue = kResponseHeaderNotOptIn
-};
-
 // Returns the net load flags to use based on the navigation type.
 // TODO(clamy): Remove the blink code that sets the caching flags.
 void UpdateLoadFlagsWithCacheFlags(int* load_flags,
@@ -1768,19 +1751,19 @@ NavigationRequest::NavigationRequest(
         begin_params_->impression.has_value());
 
     if (begin_params_->is_form_submission) {
-      if (commit_params_->is_browser_initiated &&
-          !commit_params_->post_content_type.empty()) {
-        // This is a form resubmit, so make sure to set the Content-Type header.
+      // During form resubmit, `commit_params_->post_content_type` is populated
+      // from the history. Use it.
+      if (!commit_params_->post_content_type.empty()) {
         headers.SetHeaderIfMissing(net::HttpRequestHeaders::kContentType,
                                    commit_params_->post_content_type);
-      } else if (!commit_params_->is_browser_initiated) {
-        // Save the Content-Type in case the form is resubmitted. This will get
-        // sent back to the renderer in the CommitNavigation IPC. The renderer
-        // will then send it back with the post body so that we can access it
-        // along with the body in FrameNavigationEntry::page_state_.
-        headers.GetHeader(net::HttpRequestHeaders::kContentType,
-                          &commit_params_->post_content_type);
       }
+
+      // Save the Content-Type in case the form is resubmitted. This will get
+      // sent back to the renderer in the CommitNavigation IPC. The renderer
+      // will then send it back with the post body so that we can access it
+      // along with the body in FrameNavigationEntry::page_state_.
+      headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                        &commit_params_->post_content_type);
     }
   }
 
@@ -3687,9 +3670,8 @@ void NavigationRequest::OnResponseStarted(
         url.SchemeIs(url::kDataScheme));
   if (should_enforce_fenced_frame_opt_in &&
       !IsOptedInFencedFrame(*response_head_->headers)) {
-    base::UmaHistogramEnumeration(
-        "Blink.FencedFrame.CreationOrNavigationOutcome",
-        FencedFrameCreationOutcome::kResponseHeaderNotOptIn);
+    blink::RecordFencedFrameCreationOutcome(
+        blink::FencedFrameCreationOutcome::kResponseHeaderNotOptIn);
     AddDeferredConsoleMessage(
         blink::mojom::ConsoleMessageLevel::kError,
         "Supports-Loading-Mode HTTP response header 'fenced-frame' is required "

@@ -138,7 +138,7 @@ bool ManualPasswordGenerationEnabled(
 
 bool ShowAllSavedPasswordsContextMenuEnabled(
     password_manager::PasswordManagerDriver* driver) {
-  password_manager::PasswordManager* password_manager =
+  password_manager::PasswordManagerInterface* password_manager =
       driver ? driver->GetPasswordManager() : nullptr;
   if (!password_manager)
     return false;
@@ -407,6 +407,14 @@ bool IsBiometricAuthenticationForFillingEnabled(
          client->GetPrefs() &&
          client->GetPrefs()->GetBoolean(
              password_manager::prefs::kBiometricAuthenticationBeforeFilling);
+}
+
+bool ShouldBiometricAuthenticationForFillingToggleBeVisible(
+    const PrefService* local_state) {
+  return local_state->GetBoolean(
+             password_manager::prefs::kHadBiometricsAvailable) &&
+         base::FeatureList::IsEnabled(
+             password_manager::features::kBiometricAuthenticationForFilling);
 }
 #endif
 

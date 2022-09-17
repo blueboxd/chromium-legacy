@@ -1323,6 +1323,12 @@ extern const char kOmniboxTriggerForPrerender2Description[];
 extern const char kSupportSearchSuggestionForPrerender2Name[];
 extern const char kSupportSearchSuggestionForPrerender2Description[];
 
+extern const char kEnableOmniboxSearchPrefetchName[];
+extern const char kEnableOmniboxSearchPrefetchDescription[];
+
+extern const char kEnableOmniboxClientSearchPrefetchName[];
+extern const char kEnableOmniboxClientSearchPrefetchDescription[];
+
 extern const char kPrivacyGuide2Name[];
 extern const char kPrivacyGuide2Description[];
 
@@ -2804,8 +2810,8 @@ extern const char kCategoricalSearchDescription[];
 extern const char kCellularBypassESimInstallationConnectivityCheckName[];
 extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
 
-extern const char kCellularCustomAPNProfilesName[];
-extern const char kCellularCustomAPNProfilesDescription[];
+extern const char kApnRevampName[];
+extern const char kApnRevampDescription[];
 
 extern const char kCellularUseSecondEuiccName[];
 extern const char kCellularUseSecondEuiccDescription[];
@@ -3091,6 +3097,9 @@ extern const char kExoLockNotificationDescription[];
 extern const char kExperimentalAccessibilityDictationWithPumpkinName[];
 extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];
 
+extern const char kExperimentalAccessibilityDictationMoreCommandsName[];
+extern const char kExperimentalAccessibilityDictationMoreCommandsDescription[];
+
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[];
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];
 
@@ -3117,9 +3126,6 @@ extern const char kFilesSinglePartitionFormatDescription[];
 
 extern const char kFilesTrashName[];
 extern const char kFilesTrashDescription[];
-
-extern const char kFilesWebDriveOfficeName[];
-extern const char kFilesWebDriveOfficeDescription[];
 
 extern const char kFiltersInRecentsV2Name[];
 extern const char kFiltersInRecentsV2Description[];
@@ -3571,6 +3577,9 @@ extern const char kCrOSEnforceSystemAecNsDescription[];
 
 extern const char kCrOSEnforceSystemAecNsAgcName[];
 extern const char kCrOSEnforceSystemAecNsAgcDescription[];
+
+extern const char kDefaultCalculatorWebAppName[];
+extern const char kDefaultCalculatorWebAppDescription[];
 
 extern const char kDeprecateLowUsageCodecsName[];
 extern const char kDeprecateLowUsageCodecsDescription[];

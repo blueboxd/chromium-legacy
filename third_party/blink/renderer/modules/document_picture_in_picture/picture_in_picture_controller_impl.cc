@@ -174,9 +174,9 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       video_bounds,
-      WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-                WrapPersistent(this), WrapPersistent(video_element),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
+                    WrapPersistent(this), WrapPersistent(video_element),
+                    WrapPersistent(resolver)));
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -265,8 +265,8 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
     return;
 
   video_picture_in_picture_session_->Stop(
-      WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::BindOnce(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
+                    WrapPersistent(this), WrapPersistent(resolver)));
   session_observer_receiver_.reset();
 }
 
@@ -507,7 +507,7 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
 
   open_document_pip_task_ = PostCancellableTask(
       *opener.GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
-      WTF::Bind(
+      WTF::BindOnce(
           &PictureInPictureControllerImpl::ResolveOpenDocumentPictureInPicture,
           WrapPersistent(this)));
 }

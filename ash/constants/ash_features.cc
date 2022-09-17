@@ -333,8 +333,7 @@ const base::Feature kCellularBypassESimInstallationConnectivityCheck{
     "CellularBypassESimInstallationConnectivityCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCellularCustomAPNProfiles{
-    "CellularCustomAPNProfiles", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kApnRevamp{"ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, use second the Euicc that is exposed by Hermes in Cellular Setup
 // and Settings.
@@ -376,6 +375,12 @@ const base::Feature kCrosPrivacyHubDogfood{"CrosPrivacyHubDogfood",
 // Enables future features for Privacy Hub for ChromeOS.
 const base::Feature kCrosPrivacyHubFuture{"CrosPrivacyHubFuture",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables generation of attestation certificates used by Cross Device features,
+// including Eche and Phone Hub.
+const base::Feature kCrossDeviceAttestationCertificateGeneration{
+    "CrossDeviceAttestationCertificateGeneration",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
@@ -768,10 +773,6 @@ const base::Feature kFilesSinglePartitionFormat{
 // Enable files app trash.
 const base::Feature kFilesTrash{"FilesTrash",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables opening Office files located in Files app Drive in Web Drive.
-const base::Feature kFilesWebDriveOffice{"FilesWebDriveOffice",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables filters in Files app Recents view V2.
 const base::Feature kFiltersInRecentsV2{"FiltersInRecentsV2",
@@ -1372,7 +1373,7 @@ const base::Feature kVCBackgroundBlur{"VCBackgroundBlur",
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
 const base::Feature kQuickSettingsNetworkRevamp{
-    "QuickSettingsNetworkRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "QuickSettingsNetworkRevamp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
@@ -1840,6 +1841,10 @@ bool IsAppNotificationsPageEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppNotificationsPage);
 }
 
+bool IsApnRevampEnabled() {
+  return base::FeatureList::IsEnabled(kApnRevamp);
+}
+
 bool IsArcFuseBoxFileSharingEnabled() {
   return IsFileManagerFuseBoxEnabled() &&
          base::FeatureList::IsEnabled(kArcFuseBoxFileSharing);
@@ -1921,6 +1926,11 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryReorderEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryReorder);
+}
+
+bool IsCrossDeviceAttestationCertificateGenerationEnabled() {
+  return base::FeatureList::IsEnabled(
+      kCrossDeviceAttestationCertificateGeneration);
 }
 
 bool IsDesksCloseAllEnabled() {
@@ -2065,10 +2075,6 @@ bool IsFileManagerFuseBoxEnabled() {
 
 bool IsFileManagerFuseBoxDebugEnabled() {
   return base::FeatureList::IsEnabled(kFuseBoxDebug);
-}
-
-bool IsFilesWebDriveOfficeEnabled() {
-  return base::FeatureList::IsEnabled(kFilesWebDriveOffice);
 }
 
 bool IsFirmwareUpdaterAppEnabled() {

@@ -245,11 +245,8 @@ class WindowCloseObserver : public aura::WindowObserver {
     }
 
     // Show the library, this should highlight the newly saved item.
-    OverviewGrid* overview_grid =
-        overview_session->GetGridWithRootWindow(root_window_);
-    overview_session->ShowDesksTemplatesGrids(
-        overview_grid->desks_bar_view()->IsZeroState(), saved_desk_guid_,
-        saved_desk_name_, root_window_);
+    overview_session->ShowDesksTemplatesGrids(saved_desk_guid_,
+                                              saved_desk_name_, root_window_);
 
     // Remove the current desk, this will be done without animation.
     if (remove_desk) {
@@ -318,8 +315,6 @@ SavedDeskPresenter::SavedDeskPresenter(OverviewSession* overview_session)
 
   auto* desk_model = GetDeskModel();
   desk_model_observation_.Observe(desk_model);
-  GetAllEntries(base::GUID(), /*saved_desk_name=*/u"",
-                Shell::GetPrimaryRootWindow());
 
   should_show_templates_ui_ =
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
@@ -511,9 +506,9 @@ void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
     // Populate `SavedDeskLibraryView` with the desk template entries.
     if (SavedDeskLibraryView* library_view =
             overview_grid->GetSavedDeskLibraryView()) {
-      library_view->PopulateGridUI(result.entries,
-                                   overview_grid->GetGridEffectiveBounds(),
-                                   /*last_saved_desk_uuid=*/item_to_focus);
+      library_view->AddOrUpdateEntries(result.entries, item_to_focus,
+                                       /*animate=*/false);
+
       SavedDeskItemView* item_view =
           library_view->GetItemForUUID(item_to_focus);
       if (!item_view)
@@ -647,8 +642,6 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
   OverviewGrid* overview_grid =
       overview_session_->GetGridWithRootWindow(root_window);
   DCHECK(overview_grid);
-  DCHECK(overview_grid->desks_bar_view());
-  const bool is_zero_state = overview_grid->desks_bar_view()->IsZeroState();
 
   if (auto* library_view = overview_grid->GetSavedDeskLibraryView()) {
     // TODO(dandersson): Rework literally all of this. This path is only taken
@@ -658,7 +651,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
     if (!was_update) {
       // Shows the grid if it was hidden. This will not call `GetAllEntries`.
-      overview_session_->ShowDesksTemplatesGrids(is_zero_state, base::GUID(),
+      overview_session_->ShowDesksTemplatesGrids(base::GUID(),
                                                  /*saved_desk_name=*/u"",
                                                  root_window);
       if (SavedDeskItemView* item_view =
@@ -673,8 +666,8 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
   } else if (desk_template->type() != DeskTemplateType::kSaveAndRecall) {
     // This will update the templates button and save as desks button too. This
     // will call `GetAllEntries`.
-    overview_session_->ShowDesksTemplatesGrids(
-        is_zero_state, desk_template->uuid(), saved_desk_name, root_window);
+    overview_session_->ShowDesksTemplatesGrids(desk_template->uuid(),
+                                               saved_desk_name, root_window);
   }
 
   if (!was_update) {
@@ -726,9 +719,8 @@ void SavedDeskPresenter::AddOrUpdateUIEntries(
 
   for (auto& overview_grid : overview_session_->grid_list()) {
     if (auto* library_view = overview_grid->GetSavedDeskLibraryView()) {
-      library_view->AddOrUpdateTemplates(
-          new_entries, /*initializing_grid_view=*/false,
-          /*last_saved_template_uuid=*/base::GUID());
+      library_view->AddOrUpdateEntries(new_entries, /*order_first_uuid=*/{},
+                                       /*animate=*/true);
     }
   }
 
@@ -746,7 +738,7 @@ void SavedDeskPresenter::RemoveUIEntries(const std::vector<base::GUID>& uuids) {
   for (auto& overview_grid : overview_session_->grid_list()) {
     // Remove the entries from `SavedDeskLibraryView`.
     if (auto* library_view = overview_grid->GetSavedDeskLibraryView())
-      library_view->DeleteTemplates(uuids, /*delete_animation=*/true);
+      library_view->DeleteEntries(uuids, /*delete_animation=*/true);
   }
 
   if (on_update_ui_closure_for_testing_)

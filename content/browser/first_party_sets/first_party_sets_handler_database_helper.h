@@ -16,6 +16,10 @@
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace base {
+class Version;
+}  // namespace base
+
 namespace net {
 class SchemefulSite;
 class FirstPartySetEntry;
@@ -82,10 +86,12 @@ class CONTENT_EXPORT FirstPartySetsHandlerDatabaseHelper {
   void UpdateClearStatusForContext(const std::string& browser_context_id);
 
   // Wraps FirstPartySetsDatabase::SetPublicSets.
-  void PersistPublicSets(const FlattenedSets& sets);
+  void PersistPublicSets(const std::string& browser_context_id,
+                         const base::Version& version,
+                         const FlattenedSets& sets);
 
   // Wraps FirstPartySetsDatabase::GetPublicSets.
-  FlattenedSets GetPersistedPublicSets();
+  FlattenedSets GetPersistedPublicSets(const std::string& browser_context_id);
 
  private:
   std::unique_ptr<FirstPartySetsDatabase> db_

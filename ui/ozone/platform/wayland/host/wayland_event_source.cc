@@ -444,7 +444,6 @@ void WaylandEventSource::OnTouchPressEvent(
   PointerDetails details(EventPointerType::kTouch, id);
   TouchEvent event(ET_TOUCH_PRESSED, location, location, timestamp, details,
                    keyboard_modifiers_);
-  DCHECK_EQ(dispatch_policy, wl::EventDispatchPolicy::kOnFrame);
   touch_frames_.push_back(
       std::make_unique<FrameData>(event, base::NullCallback()));
 }
@@ -681,6 +680,17 @@ void WaylandEventSource::OnPointerStylusToolChanged(
       .type = pointer_type,
       .tilt = gfx::Vector2dF(),
       .force = std::numeric_limits<float>::quiet_NaN()};
+}
+
+void WaylandEventSource::OnPointerStylusForceChanged(float force) {
+  DCHECK(last_pointer_stylus_tool_.has_value());
+  last_pointer_stylus_tool_->force = force;
+}
+
+void WaylandEventSource::OnPointerStylusTiltChanged(
+    const gfx::Vector2dF& tilt) {
+  DCHECK(last_pointer_stylus_tool_.has_value());
+  last_pointer_stylus_tool_->tilt = tilt;
 }
 
 const WaylandWindow* WaylandEventSource::GetPointerTarget() const {

@@ -495,8 +495,8 @@ LocalFrameMojoHandler::GetDevicePosture() {
 
   device_posture_provider_service_->AddListenerAndGetCurrentPosture(
       device_posture_receiver_.BindNewPipeAndPassRemote(task_runner),
-      WTF::Bind(&LocalFrameMojoHandler::OnPostureChanged,
-                WrapPersistent(this)));
+      WTF::BindOnce(&LocalFrameMojoHandler::OnPostureChanged,
+                    WrapPersistent(this)));
   return current_device_posture_;
 }
 
@@ -1028,7 +1028,7 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
       mojom::blink::UserActivationOption::kDoNotActivate,
       mojom::blink::EvaluationTiming::kSynchronous,
       mojom::blink::LoadEventBlockingOption::kDoNotBlock,
-      WTF::Bind(
+      WTF::BindOnce(
           [](JavaScriptExecuteRequestInIsolatedWorldCallback callback,
              absl::optional<base::Value> value, base::TimeTicks start_time) {
             std::move(callback).Run(value ? std::move(*value) : base::Value());
@@ -1269,26 +1269,6 @@ void LocalFrameMojoHandler::ClosePage(
       false /* need_unload_info_for_new_document */);
 
   std::move(completion_callback).Run();
-}
-
-void LocalFrameMojoHandler::GetFullPageSize(
-    mojom::blink::LocalMainFrame::GetFullPageSizeCallback callback) {
-  // PageZoomFactor takes CSS pixels to device/physical pixels. It includes
-  // both browser ctrl+/- zoom as well as the device scale factor for screen
-  // density. Note: we don't account for pinch-zoom, even though it scales a
-  // CSS pixel, since "device pixels" coming from Blink are also unscaled by
-  // pinch-zoom.
-  float css_to_physical = frame_->PageZoomFactor();
-  float physical_to_css = 1.f / css_to_physical;
-  gfx::Size full_page_size =
-      frame_->View()->GetScrollableArea()->ContentsSize();
-
-  // `content_size` is in physical pixels. Normlisation is needed to convert it
-  // to CSS pixels. Details: https://crbug.com/1181313
-  gfx::Size css_full_page_size =
-      gfx::ScaleToFlooredSize(full_page_size, physical_to_css);
-  std::move(callback).Run(
-      gfx::Size(css_full_page_size.width(), css_full_page_size.height()));
 }
 
 void LocalFrameMojoHandler::PluginActionAt(

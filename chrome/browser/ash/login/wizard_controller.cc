@@ -63,6 +63,7 @@
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
+#include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/device_disabled_screen.h"
@@ -137,6 +138,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/cryptohome_recovery_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
@@ -513,11 +515,12 @@ void WizardController::AdvanceToScreenAfterHIDDetection(
   }
 
   first_screen_for_testing_ = actual_first_screen;
-  AdvanceToScreen(actual_first_screen);
 
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen == ash::OOBE_SCREEN_UNKNOWN) {
     ShowWrongHWIDScreen();
+  } else {
+    AdvanceToScreen(actual_first_screen);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -591,7 +594,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
-      oobe_ui->GetView<EulaScreenHandler>(),
+      oobe_ui->GetView<EulaScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
@@ -605,7 +608,6 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ResetScreen>(
       oobe_ui->GetView<ResetScreenHandler>()->AsWeakPtr(),
-      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DemoSetupScreen>(
@@ -818,6 +820,13 @@ WizardController::CreateScreens() {
       oobe_ui->GetView<ThemeSelectionScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnThemeSelectionScreenExit,
                           weak_factory_.GetWeakPtr())));
+
+  if (chromeos::features::IsCryptohomeRecoveryFlowUIEnabled()) {
+    append(std::make_unique<CryptohomeRecoveryScreen>(
+        oobe_ui->GetView<CryptohomeRecoveryScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnCryptohomeRecoveryScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
   return result;
 }
 
@@ -1063,6 +1072,14 @@ void WizardController::ShowLacrosDataBackwardMigrationScreen() {
 void WizardController::ShowGuestTosScreen() {
   DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
   SetCurrentScreen(GetScreen(GuestTosScreenView::kScreenId));
+}
+
+void WizardController::ShowCryptohomeRecoveryScreen(
+    const AccountId& account_id) {
+  DCHECK(chromeos::features::IsCryptohomeRecoveryFlowUIEnabled());
+  CryptohomeRecoveryScreen* screen = GetScreen<CryptohomeRecoveryScreen>();
+  screen->Configure(account_id);
+  SetCurrentScreen(GetScreen(CryptohomeRecoveryScreenView::kScreenId));
 }
 
 void WizardController::OnActiveDirectoryPasswordChangeScreenExit() {
@@ -1319,6 +1336,10 @@ void WizardController::OnThemeSelectionScreenExit(
   OnScreenExit(ThemeSelectionScreenView::kScreenId,
                ThemeSelectionScreen::GetResultString(result));
   ShowMarketingOptInScreen();
+}
+
+void WizardController::OnCryptohomeRecoveryScreenExit() {
+  NOTREACHED();
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -2003,8 +2024,6 @@ void WizardController::PerformPostEulaActions() {
 
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.
-  NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
-      NetworkStateHandler::kDefaultCheckPortalList);
   GetAutoEnrollmentController()->Start();
   network_portal_detector::GetInstance()->Enable();
 }

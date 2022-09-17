@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,6 +244,15 @@ bool AutofillClientImpl::IsFastCheckoutSupported() {
 bool AutofillClientImpl::IsFastCheckoutTriggerForm(
     const autofill::FormData& form,
     const autofill::FormFieldData& field) {
+  return false;
+}
+
+bool AutofillClientImpl::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool AutofillClientImpl::FastCheckoutClientSupportsConsentlessExecution() {
   return false;
 }
 

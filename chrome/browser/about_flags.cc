@@ -50,6 +50,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_params.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/sharing/features.h"
@@ -728,6 +729,18 @@ const FeatureEntry::FeatureVariation
         {"ignore prefetched request",
          kSearchSuggestionPrerenderIgnoringPrefetch,
          std::size(kSearchSuggestionPrerenderIgnoringPrefetch), nullptr}};
+
+const FeatureEntry::FeatureParam kSearchPrefetchWithoutHoldback[] = {
+    {"prefetch_holdback", "false"}};
+const FeatureEntry::FeatureParam kSearchPrefetchWithHoldback[] = {
+    {"prefetch_holdback", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kSearchPrefetchServicePrefetchingVariations[] = {
+        {"without holdback", kSearchPrefetchWithoutHoldback,
+         std::size(kSearchPrefetchWithoutHoldback), nullptr},
+        {"with holdback", kSearchPrefetchWithHoldback,
+         std::size(kSearchPrefetchWithHoldback), nullptr}};
 
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
@@ -3427,6 +3440,16 @@ const FeatureEntry::FeatureVariation kPasswordNotesAuthValidityVariations[] = {
      nullptr},
 };
 
+#if BUILDFLAG(IS_ANDROID)
+// The variations of --fast-checkout.
+const FeatureEntry::FeatureParam kFastCheckoutConsentlessExecution[] = {
+    {features::kFastCheckoutConsentlessExecutionParam.name, "true"}};
+
+const FeatureEntry::FeatureVariation kFastCheckoutVariations[] = {
+    {"Consentless-only execution.", kFastCheckoutConsentlessExecution,
+     std::size(kFastCheckoutConsentlessExecution), nullptr}};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3822,10 +3845,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kCellularBypassESimInstallationConnectivityCheck)},
-    {"cellular-custom-apn-profiles",
-     flag_descriptions::kCellularCustomAPNProfilesName,
-     flag_descriptions::kCellularCustomAPNProfilesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCellularCustomAPNProfiles)},
+    {"apn-revamp", flag_descriptions::kApnRevampName,
+     flag_descriptions::kApnRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kApnRevamp)},
     {"cellular-use-second-euicc",
      flag_descriptions::kCellularUseSecondEuiccName,
      flag_descriptions::kCellularUseSecondEuiccDescription, kOsCrOS,
@@ -3874,6 +3896,10 @@ const FeatureEntry kFeatureEntries[] = {
         kOsCrOS,
         FEATURE_VALUE_TYPE(ash::features::kEnableBackgroundBlur),
     },
+    {"enable-default-calculator-web-app",
+     flag_descriptions::kDefaultCalculatorWebAppName,
+     flag_descriptions::kDefaultCalculatorWebAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(web_app::kDefaultCalculatorWebApp)},
     {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
      flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
@@ -5062,6 +5088,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kExperimentalAccessibilityDictationWithPumpkin)},
+
+    {"enable-experimental-accessibility-dictation-more-commands",
+     flag_descriptions::kExperimentalAccessibilityDictationMoreCommandsName,
+     flag_descriptions::
+         kExperimentalAccessibilityDictationMoreCommandsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityDictationMoreCommands)},
+
     {"enable-experimental-accessibility-google-tts-language-packs",
      flag_descriptions::kExperimentalAccessibilityGoogleTtsLanguagePacksName,
      flag_descriptions::
@@ -5283,9 +5318,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-trash", flag_descriptions::kFilesTrashName,
      flag_descriptions::kFilesTrashDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTrash)},
-    {"files-web-drive-office", flag_descriptions::kFilesWebDriveOfficeName,
-     flag_descriptions::kFilesWebDriveOfficeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesWebDriveOffice)},
     {"force-spectre-v2-mitigation",
      flag_descriptions::kForceSpectreVariant2MitigationName,
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
@@ -7980,6 +8012,17 @@ const FeatureEntry kFeatureEntries[] = {
          kSearchSuggsetionPrerenderTypeVariations,
          "SearchSuggestionPrerender")},
 
+    {"omnibox-search-prefetch",
+     flag_descriptions::kEnableOmniboxSearchPrefetchName,
+     flag_descriptions::kEnableOmniboxSearchPrefetchDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kSearchPrefetchServicePrefetching,
+                                    kSearchPrefetchServicePrefetchingVariations,
+                                    "SearchSuggestionPrefetch")},
+    {"omnibox-search-client-prefetch",
+     flag_descriptions::kEnableOmniboxClientSearchPrefetchName,
+     flag_descriptions::kEnableOmniboxClientSearchPrefetchDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSearchNavigationPrefetch)},
+
     {"chrome-labs", flag_descriptions::kChromeLabsName,
      flag_descriptions::kChromeLabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeLabs)},
@@ -8325,7 +8368,9 @@ const FeatureEntry kFeatureEntries[] = {
          "TouchToFillPasswordSubmission")},
     {"fast-checkout", flag_descriptions::kFastCheckoutName,
      flag_descriptions::kFastCheckoutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kFastCheckout)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFastCheckout,
+                                    kFastCheckoutVariations,
+                                    "FastCheckoutVariations")},
     {"force-enable-fast-checkout-capabilities",
      flag_descriptions::kForceEnableFastCheckoutCapabilitiesName,
      flag_descriptions::kForceEnableFastCheckoutCapabilitiesDescription,

@@ -510,11 +510,17 @@ crbug.com/1045599 external/wpt/css/css-grid/abspos/descendant-static-position-00
 crbug.com/1045599 external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-002.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-img-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-004.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-003.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-002.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-img-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-004.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
+crbug.com/1192763 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-002-b.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-horiz-007.html [ Failure ]
@@ -1213,6 +1219,9 @@ crbug.com/1145970 inspector-protocol/css/css-get-styles-for-node.js [ Skip ]
 crbug.com/1145970 inspector-protocol/css/container-queries/* [ Skip ]
 crbug.com/1145970 inspector-protocol/dom/container-queries/* [ Skip ]
 crbug.com/1145970 inspector-protocol/overlay/overlay-container-query.js [ Skip ]
+
+### scroll-animations
+crbug.com/1317765 external/wpt/scroll-animations/css/view-timeline-inset-animation.html [ Skip ]
 
 ### virtual/controls-refresh-hc/
 virtual/controls-refresh-hc/* [ Skip ]
@@ -2149,3 +2158,5 @@ crbug.com/1339051 virtual/document-transition/wpt_internal/document-transition/o
 crbug.com/1339051 virtual/document-transition/wpt_internal/document-transition/web-animations-api.html [ Failure ]
 crbug.com/1339051 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-canvasFilter.tentative.https.html [ Failure ]
 crbug.com/1339051 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Failure ]
+
+svg/text/caret-in-svg-text.xhtml [ Failure ]

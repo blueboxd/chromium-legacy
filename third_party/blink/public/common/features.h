@@ -838,6 +838,15 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMetronome;
 // If enabled, all of FileSystemAccessSyncAccessHandle methods are synchronous.
 BLINK_COMMON_EXPORT extern const base::Feature kSyncAccessHandleAllSyncSurface;
 
+// Disables centralized browser-side management of web cache memory limits.
+//
+// TODO(crbug.com/1340565): Remove once the data is available.
+BLINK_COMMON_EXPORT extern const base::Feature kNoCentralWebCacheLimitControl;
+
+// If enabled, IME updates are computed at the end of a lifecycle update rather
+// than the beginning.
+BLINK_COMMON_EXPORT extern const base::Feature kRunTextInputUpdatePostLifecycle;
+
 }  // namespace features
 }  // namespace blink
 

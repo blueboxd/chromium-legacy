@@ -14,6 +14,7 @@
 #include "components/segmentation_platform/embedder/default_model/cross_device_user_segment.h"
 #include "components/segmentation_platform/embedder/default_model/feed_user_segment.h"
 #include "components/segmentation_platform/embedder/default_model/low_user_engagement_model.h"
+#include "components/segmentation_platform/embedder/default_model/resume_heavy_user_model.h"
 #include "components/segmentation_platform/embedder/default_model/shopping_user_model.h"
 #include "components/segmentation_platform/internal/config_parser.h"
 #include "components/segmentation_platform/public/config.h"
@@ -62,6 +63,9 @@ constexpr int kShoppingUserDefaultUnknownSelectionTTLDays = 7;
 
 constexpr int kCrossDeviceUserSegmentSelectionTTLDays = 7;
 constexpr int kCrossDeviceUserSegmentUnknownSelectionTTLDays = 7;
+
+constexpr int kResumeHeavyUserSegmentSelectionTTLDays = 14;
+constexpr int kResumeHeavyUserSegmentUnknownSelectionTTLDays = 14;
 
 constexpr char kVariationsParamNameSegmentSelectionTTLDays[] =
     "segment_selection_ttl_days";
@@ -309,6 +313,25 @@ std::unique_ptr<ModelProvider> GetFeedUserSegmentDefautlModel() {
   return std::make_unique<FeedUserSegment>();
 }
 
+std::unique_ptr<Config> GetConfigForResumeHeavyUserSegment() {
+  auto config = std::make_unique<Config>();
+  config->segmentation_key = kResumeHeavyUserKey;
+  config->segmentation_uma_name = kResumeHeavyUserUmaName;
+  config->AddSegmentId(SegmentId::RESUME_HEAVY_USER_SEGMENT,
+                       std::make_unique<ResumeHeavyUserModel>());
+  config->segment_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kResumeHeavyUserSegmentFeature,
+          kVariationsParamNameSegmentSelectionTTLDays,
+          kResumeHeavyUserSegmentSelectionTTLDays));
+  config->unknown_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kResumeHeavyUserSegmentFeature,
+          kVariationsParamNameUnknownSelectionTTLDays,
+          kResumeHeavyUserSegmentUnknownSelectionTTLDays));
+  return config;
+}
+
 std::unique_ptr<Config> GetConfigForFeedSegments() {
   auto config = std::make_unique<Config>();
   config->segmentation_key = kFeedUserSegmentationKey;
@@ -374,19 +397,6 @@ std::unique_ptr<Config> GetConfigForCrossDeviceSegments() {
   return config;
 }
 
-void AppendConfigsFromExperiments(
-    std::vector<std::unique_ptr<Config>>& out_configs) {
-  // TODO(crbug.com/1346389): Add logic to find segmentation param from field
-  // trials.
-  std::vector<std::string> params;
-  for (const std::string& param : params) {
-    auto config = ParseConfigFromString(param);
-    if (config) {
-      out_configs.push_back(std::move(config));
-    }
-  }
-}
-
 }  // namespace
 
 std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig(
@@ -430,8 +440,36 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig(
 
   configs.emplace_back(GetConfigForCrossDeviceSegments());
 
+  if (base::FeatureList::IsEnabled(features::kResumeHeavyUserSegmentFeature)) {
+    configs.emplace_back(GetConfigForResumeHeavyUserSegment());
+  }
+
   AppendConfigsFromExperiments(configs);
   return configs;
+}
+
+void AppendConfigsFromExperiments(
+    std::vector<std::unique_ptr<Config>>& out_configs) {
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  std::vector<std::string> param_values;
+
+  for (const auto& active_group : active_groups) {
+    base::FieldTrialParams params;
+    if (base::GetFieldTrialParams(active_group.trial_name, &params)) {
+      const auto& it = params.find("segmentation_platform_add_config_param");
+      if (it == params.end())
+        continue;
+      param_values.push_back(it->second);
+    }
+  }
+
+  for (const std::string& param : param_values) {
+    auto config = ParseConfigFromString(param);
+    if (config) {
+      out_configs.push_back(std::move(config));
+    }
+  }
 }
 
 FieldTrialRegisterImpl::FieldTrialRegisterImpl() = default;

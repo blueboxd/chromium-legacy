@@ -22,6 +22,9 @@ try_.defaults.set(
     os = os.WINDOWS_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -231,6 +234,10 @@ try_.builder(
     name = "win-fieldtrial-rel",
     os = os.WINDOWS_DEFAULT,
     mirrors = ["ci/win-fieldtrial-rel"],
+)
+
+try_.builder(
+    name = "win-perfetto-rel",
 )
 
 try_.gpu.optional_tests_builder(

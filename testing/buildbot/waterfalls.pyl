@@ -1016,6 +1016,23 @@
           'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
         }
       },
+      'android-nougat-x86-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'nougat-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_nougat_emulator_gtests',
+          'junit_tests': 'chromium_junit_tests',
+          'isolated_scripts': 'nougat_isolated_scripts',
+          'scripts': 'chromium_android_scripts',
+        },
+      },
       'android-pie-arm64-coverage-experimental-rel': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1240,23 +1257,6 @@
         'test_suites': {
           'gtest_tests': 'android_marshmallow_emulator_gtests',
           'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
-          'scripts': 'chromium_android_scripts',
-        },
-      },
-      'android-nougat-x86-rel': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'isolate_profile_data',
-          'nougat-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_nougat_emulator_gtests',
-          'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'nougat_isolated_scripts',
           'scripts': 'chromium_android_scripts',
         },
       },
@@ -3174,12 +3174,12 @@
       'android-code-coverage': {
         'mixins': [
           'has_native_resultdb_integration',
-          'bullhead',
           'isolate_profile_data',
-          'marshmallow',
+          'pie_fleet',
+          'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'android_marshmallow_coverage_gtests',
+          'gtest_tests': 'android_pie_coverage_gtests',
           'junit_tests': 'chromium_junit_tests',
         },
         'os_type': 'android',
@@ -3210,6 +3210,20 @@
           'gtest_tests': 'fieldtrial_android_tests',
         },
       },
+
+      'android-perfetto-rel': {
+        'additional_compile_targets': [ 'chrome' ],
+        'mixins': [
+          'pie-x86-emulator',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'perfetto_gtests',
+        },
+      },
+
       'chromeos-amd64-generic-rel (goma cache silo)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -3958,6 +3972,15 @@
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
+      'mac-perfetto-rel': {
+        'additional_compile_targets': [ 'chrome' ],
+        'mixins': [
+          'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'perfetto_gtests',
+        },
+      },
       'mac-upload-perfetto': {
         'additional_compile_targets': [ 'trace_processor_shell' ],
         'test_suites': {
@@ -4002,6 +4025,15 @@
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
           'isolated_scripts': 'fieldtrial_isolated_scripts',
+        },
+      },
+      'win-perfetto-rel': {
+        'additional_compile_targets': [ 'chrome' ],
+        'mixins': [
+          'win10',
+        ],
+        'test_suites': {
+          'gtest_tests': 'perfetto_gtests',
         },
       },
       'win-upload-perfetto': {

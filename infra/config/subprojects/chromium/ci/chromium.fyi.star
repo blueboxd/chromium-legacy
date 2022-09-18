@@ -19,6 +19,9 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -746,11 +749,37 @@ ci.builder(
 )
 
 ci.builder(
+    name = "android-perfetto-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "android",
+    ),
+    schedule = "triggered",
+    triggered_by = [],
+    os = os.LINUX_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
     name = "linux-perfetto-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
     os = os.LINUX_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
+    name = "mac-perfetto-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    schedule = "triggered",
+    triggered_by = [],
+    os = os.MAC_DEFAULT,
     goma_backend = None,
     reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -964,6 +993,19 @@ ci.builder(
     os = os.WINDOWS_ANY,
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
+    name = "win-perfetto-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+    ),
+    schedule = "triggered",
+    triggered_by = [],
+    os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 

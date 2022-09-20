@@ -660,8 +660,8 @@ bool AppListControllerImpl::GoHome(int64_t display_id) {
   // home screen).
   std::vector<aura::Window*> foreground_windows;
   if (split_view_active) {
-    foreground_windows = {split_view_controller->left_window(),
-                          split_view_controller->right_window()};
+    foreground_windows = {split_view_controller->primary_window(),
+                          split_view_controller->secondary_window()};
     base::EraseIf(foreground_windows,
                   [](aura::Window* window) { return !window; });
   } else if (!windows.empty() && !WindowState::Get(windows[0])->IsMinimized()) {
@@ -1025,8 +1025,8 @@ void AppListControllerImpl::OnUiVisibilityChanged(
           IgnoreResult(close_assistant_ui_runner_.Release());
         }
 
-        Show(GetDisplayIdToShowAppListOn(), kAssistantEntryPoint,
-             base::TimeTicks());
+        Show(GetDisplayIdToShowAppListOn(),
+             AppListShowSource::kAssistantEntryPoint, base::TimeTicks());
       }
       if (ShouldShowAppListBubble()) {
         bubble_presenter_->ShowEmbeddedAssistantUI();
@@ -1897,7 +1897,7 @@ void AppListControllerImpl::ShowHomeScreen() {
   // transition.
   absl::optional<AppListShowSource> show_source;
   if (!GetTopVisibleWindow())
-    show_source = kTabletMode;
+    show_source = AppListShowSource::kTabletMode;
 
   Show(GetDisplayIdToShowAppListOn(), show_source, base::TimeTicks());
   UpdateHomeScreenVisibility();

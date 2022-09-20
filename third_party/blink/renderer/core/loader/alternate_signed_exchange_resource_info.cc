@@ -121,7 +121,7 @@ AlternateSignedExchangeResourceInfo::CreateIfValid(
       alternative_resources_it->value.emplace_back(std::move(alt_resource));
     }
   }
-  if (alternative_resources.IsEmpty())
+  if (alternative_resources.empty())
     return nullptr;
   return std::make_unique<AlternateSignedExchangeResourceInfo>(
       std::move(alternative_resources));
@@ -168,7 +168,7 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
   if (it == alternative_resources_.end())
     return nullptr;
   const Vector<std::unique_ptr<Entry>>& entries = it->value;
-  DCHECK(!entries.IsEmpty());
+  DCHECK(!entries.empty());
   if (entries[0]->variants().IsNull())
     return entries[0].get();
 

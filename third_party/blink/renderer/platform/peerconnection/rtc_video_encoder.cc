@@ -857,7 +857,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   // buffers. Returning an error in Encode() is not fatal and WebRTC will just
   // continue. If this is a key frame, WebRTC will request a key frame again.
   // Besides, webrtc will drop a frame if Encode() blocks too long.
-  if (!use_native_input_ && input_buffers_free_.IsEmpty() &&
+  if (!use_native_input_ && input_buffers_free_.empty() &&
       output_buffers_free_count_ == 0) {
     DVLOG(2) << "Run out of input and output buffers. Drop the frame.";
     encode_event.Set(WEBRTC_VIDEO_CODEC_ERROR);
@@ -875,7 +875,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
     return;
   }
 
-  if (!input_buffers_free_.IsEmpty())
+  if (!input_buffers_free_.empty())
     EncodeOneFrame();
 }
 
@@ -1058,7 +1058,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   absl::optional<std::vector<gfx::Size>> expected_resolutions;
   if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
-    while (!pending_frames_.IsEmpty()) {
+    while (!pending_frames_.empty()) {
       auto& front_frame = pending_frames_.front();
       const bool end_of_picture = !metadata.vp9 || metadata.vp9->end_of_picture;
       if (front_frame.media_timestamp_ == metadata.timestamp) {
@@ -1290,7 +1290,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   DVLOG(3) << "Impl::EncodeOneFrame()";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(input_next_frame_);
-  DCHECK(!input_buffers_free_.IsEmpty());
+  DCHECK(!input_buffers_free_.empty());
 
   // EncodeOneFrame() may re-enter InputBufferReleased() if VEA::Encode() fails,
   // we receive a VEA::NotifyError(), and the media::VideoFrame we pass to
@@ -1460,7 +1460,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
                "RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput");
   DVLOG(3) << "Impl::EncodeOneFrameWithNativeInput()";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(input_buffers_.IsEmpty() && input_buffers_free_.IsEmpty());
+  DCHECK(input_buffers_.empty() && input_buffers_free_.empty());
   DCHECK(input_next_frame_);
 
   const webrtc::VideoFrame* next_frame = input_next_frame_;

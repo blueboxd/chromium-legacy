@@ -228,7 +228,7 @@ void CSSStyleSheet::DidMutate(Mutation mutation) {
   Document* document = OwnerDocument();
   if (!document || !document->IsActive())
     return;
-  if (!custom_element_tag_names_.IsEmpty()) {
+  if (!custom_element_tag_names_.empty()) {
     document->GetStyleEngine().ScheduleCustomElementInvalidations(
         custom_element_tag_names_);
   }
@@ -237,7 +237,7 @@ void CSSStyleSheet::DidMutate(Mutation mutation) {
     document->GetStyleEngine().SetNeedsActiveStyleUpdate(
         ownerNode()->GetTreeScope());
     invalidate_matched_properties_cache = true;
-  } else if (!adopted_tree_scopes_.IsEmpty()) {
+  } else if (!adopted_tree_scopes_.empty()) {
     for (auto tree_scope : adopted_tree_scopes_) {
       // It is currently required that adopted sheets can not be moved between
       // documents.
@@ -322,7 +322,7 @@ CSSRule* CSSStyleSheet::item(unsigned index) {
   if (index >= rule_count)
     return nullptr;
 
-  if (child_rule_cssom_wrappers_.IsEmpty())
+  if (child_rule_cssom_wrappers_.empty())
     child_rule_cssom_wrappers_.Grow(rule_count);
   DCHECK_EQ(child_rule_cssom_wrappers_.size(), rule_count);
 
@@ -356,7 +356,7 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
     return 0;
   }
 
-  DCHECK(child_rule_cssom_wrappers_.IsEmpty() ||
+  DCHECK(child_rule_cssom_wrappers_.empty() ||
          child_rule_cssom_wrappers_.size() == contents_->RuleCount());
 
   if (index > length()) {
@@ -396,7 +396,7 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
           "Failed to insert the rule.");
     return 0;
   }
-  if (!child_rule_cssom_wrappers_.IsEmpty())
+  if (!child_rule_cssom_wrappers_.empty())
     child_rule_cssom_wrappers_.insert(index, Member<CSSRule>(nullptr));
 
   return index;
@@ -410,7 +410,7 @@ void CSSStyleSheet::deleteRule(unsigned index,
     return;
   }
 
-  DCHECK(child_rule_cssom_wrappers_.IsEmpty() ||
+  DCHECK(child_rule_cssom_wrappers_.empty() ||
          child_rule_cssom_wrappers_.size() == contents_->RuleCount());
 
   if (index >= length()) {
@@ -435,7 +435,7 @@ void CSSStyleSheet::deleteRule(unsigned index,
     return;
   }
 
-  if (!child_rule_cssom_wrappers_.IsEmpty()) {
+  if (!child_rule_cssom_wrappers_.empty()) {
     if (child_rule_cssom_wrappers_[index])
       child_rule_cssom_wrappers_[index]->SetParentStyleSheet(nullptr);
     child_rule_cssom_wrappers_.EraseAt(index);

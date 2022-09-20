@@ -120,7 +120,7 @@ void PendingBeaconDispatcher::PageVisibilityChanged() {
 }
 
 void PendingBeaconDispatcher::ScheduleDispatchBeacons() {
-  if (pending_beacons_.IsEmpty()) {
+  if (pending_beacons_.empty()) {
     return;
   }
 
@@ -152,7 +152,7 @@ void PendingBeaconDispatcher::ScheduleDispatchBeacons() {
 }
 
 void PendingBeaconDispatcher::ScheduleDispatchNextBundledBeacons() {
-  if (background_timeout_descending_beacons_.IsEmpty()) {
+  if (background_timeout_descending_beacons_.empty()) {
     return;
   }
 

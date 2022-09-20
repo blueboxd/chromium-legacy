@@ -804,10 +804,10 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
   for (; parent_element; parent_element = parent_element->parentElement())
     elem_stack.push_back(parent_element);
 
-  if (elem_stack.IsEmpty())
+  if (elem_stack.empty())
     return;
 
-  for (; !elem_stack.IsEmpty(); elem_stack.pop_back()) {
+  for (; !elem_stack.empty(); elem_stack.pop_back()) {
     Element* element = elem_stack.back();
     // According to https://dom.spec.whatwg.org/#locate-a-namespace, a namespace
     // from the element name should have higher priority. So we check xmlns
@@ -1638,7 +1638,7 @@ void XMLDocumentParser::ResumeParsing() {
   parser_paused_ = false;
 
   // First, execute any pending callbacks
-  while (!pending_callbacks_.IsEmpty()) {
+  while (!pending_callbacks_.empty()) {
     callback_ = pending_callbacks_.TakeFirst();
     callback_->Call(this);
 
@@ -1663,7 +1663,7 @@ void XMLDocumentParser::ResumeParsing() {
 
   // Finally, if finish() has been called and write() didn't result
   // in any further callbacks being queued, call end()
-  if (finish_called_ && pending_callbacks_.IsEmpty())
+  if (finish_called_ && pending_callbacks_.empty())
     end();
 }
 

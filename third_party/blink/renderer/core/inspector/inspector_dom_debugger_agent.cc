@@ -319,7 +319,7 @@ void InspectorDOMDebuggerAgent::DidRemoveDOMNode(Node* node) {
           InspectorDOMAgent::InnerFirstChild(child_node, include_whitespace));
       stack.push_back(
           InspectorDOMAgent::InnerNextSibling(child_node, include_whitespace));
-    } while (!stack.IsEmpty());
+    } while (!stack.empty());
   }
 }
 
@@ -812,7 +812,7 @@ void InspectorDOMDebuggerAgent::DidAddBreakpoint() {
 }
 
 void InspectorDOMDebuggerAgent::DidRemoveBreakpoint() {
-  if (!dom_breakpoints_.IsEmpty())
+  if (!dom_breakpoints_.empty())
     return;
   if (!csp_violation_breakpoints_.IsEmpty())
     return;

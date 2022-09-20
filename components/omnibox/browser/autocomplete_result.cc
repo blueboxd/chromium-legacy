@@ -819,6 +819,7 @@ void AutocompleteResult::Reset() {
 
 void AutocompleteResult::Swap(AutocompleteResult* other) {
   matches_.swap(other->matches_);
+  suggestion_groups_map_.swap(other->suggestion_groups_map_);
 #if BUILDFLAG(IS_ANDROID)
   java_result_.Reset();
   other->java_result_.Reset();
@@ -830,6 +831,7 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& other) {
     return;
 
   matches_ = other.matches_;
+  suggestion_groups_map_ = other.suggestion_groups_map_;
 #if BUILDFLAG(IS_ANDROID)
   java_result_.Reset();
 #endif
@@ -982,7 +984,9 @@ std::u16string AutocompleteResult::GetHeaderForSuggestionGroup(
     omnibox::GroupId suggestion_group_id) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
-  return base::UTF8ToUTF16(it->second.group_config.header_text());
+  return it->second.group_config.has_header_text()
+             ? base::UTF8ToUTF16(it->second.group_config.header_text())
+             : u"";
 }
 
 bool AutocompleteResult::IsSuggestionGroupHidden(

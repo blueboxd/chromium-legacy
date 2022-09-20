@@ -261,7 +261,7 @@ void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
 
 void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
     HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates) {
-  DCHECK(candidates->IsEmpty());
+  DCHECK(candidates->empty());
   std::swap(oof_positioned_candidates_, *candidates);
 }
 
@@ -277,13 +277,13 @@ void NGContainerFragmentBuilder::AddMulticolWithPendingOOFs(
 
 void NGContainerFragmentBuilder::SwapMulticolsWithPendingOOFs(
     MulticolCollection* multicols_with_pending_oofs) {
-  DCHECK(multicols_with_pending_oofs->IsEmpty());
+  DCHECK(multicols_with_pending_oofs->empty());
   std::swap(multicols_with_pending_oofs_, *multicols_with_pending_oofs);
 }
 
 void NGContainerFragmentBuilder::SwapOutOfFlowFragmentainerDescendants(
     HeapVector<NGLogicalOOFNodeForFragmentation>* descendants) {
-  DCHECK(descendants->IsEmpty());
+  DCHECK(descendants->empty());
   std::swap(oof_positioned_fragmentainer_descendants_, *descendants);
 }
 
@@ -313,7 +313,7 @@ void NGContainerFragmentBuilder::TransferOutOfFlowCandidates(
 
 void NGContainerFragmentBuilder::
     MoveOutOfFlowDescendantCandidatesToDescendants() {
-  DCHECK(oof_positioned_descendants_.IsEmpty());
+  DCHECK(oof_positioned_descendants_.empty());
   std::swap(oof_positioned_candidates_, oof_positioned_descendants_);
 
   if (!layout_object_->IsInline())
@@ -433,13 +433,13 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
   NGFragmentedOutOfFlowData* oof_data = fragment.FragmentedOutOfFlowData();
   if (!oof_data)
     return;
-  DCHECK(!oof_data->multicols_with_pending_oofs.IsEmpty() ||
-         !oof_data->oof_positioned_fragmentainer_descendants.IsEmpty());
+  DCHECK(!oof_data->multicols_with_pending_oofs.empty() ||
+         !oof_data->oof_positioned_fragmentainer_descendants.empty());
   const NGPhysicalBoxFragment* box_fragment =
       DynamicTo<NGPhysicalBoxFragment>(&fragment);
   bool is_column_spanner = box_fragment && box_fragment->IsColumnSpanAll();
 
-  if (!oof_data->multicols_with_pending_oofs.IsEmpty()) {
+  if (!oof_data->multicols_with_pending_oofs.empty()) {
     const auto& multicols_with_pending_oofs =
         oof_data->multicols_with_pending_oofs;
     for (auto& multicol : multicols_with_pending_oofs) {
@@ -519,7 +519,7 @@ void NGContainerFragmentBuilder::PropagateOOFFragmentainerDescendants(
     const NGContainingBlock<LogicalOffset>* fixedpos_containing_block,
     HeapVector<NGLogicalOOFNodeForFragmentation>* out_list) {
   NGFragmentedOutOfFlowData* oof_data = fragment.FragmentedOutOfFlowData();
-  if (!oof_data || oof_data->oof_positioned_fragmentainer_descendants.IsEmpty())
+  if (!oof_data || oof_data->oof_positioned_fragmentainer_descendants.empty())
     return;
 
   const WritingModeConverter converter(GetWritingDirection(), fragment.Size());

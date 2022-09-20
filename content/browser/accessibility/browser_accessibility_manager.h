@@ -166,17 +166,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
-  enum RetargetEventType {
-    RetargetEventTypeGenerated = 0,
-    RetargetEventTypeBlinkGeneral,
-    RetargetEventTypeBlinkHover,
-  };
-
-  // Return |node| by default, but some platforms want to update the target node
-  // based on the event type.
-  virtual BrowserAccessibility* RetargetForEvents(BrowserAccessibility* node,
-                                                  RetargetEventType type) const;
-
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node,
                               int action_request_id) {}
@@ -475,10 +464,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager
                               ui::AXNodeID node_id) const override;
   ui::AXNode* GetNode(const ui::AXNodeID node_id) const override;
 
+  // AXPlatformTreeManager overrides.
   ui::AXPlatformNode* GetPlatformNodeFromTree(
       const ui::AXNodeID node_id) const override;
   ui::AXPlatformNode* GetPlatformNodeFromTree(const ui::AXNode&) const override;
   ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
+  ui::AXPlatformNodeDelegate* RootDelegate() const override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
@@ -545,6 +536,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Detaches this instance from its parent manager. Useful during
   // deconstruction.
   void DetachFromParentManager();
+
+  // Wrapper for converting the AXNode* returned by RetargetForEvents
+  // to a BrowserAccessibility*. This is often needed.
+  BrowserAccessibility* RetargetBrowserAccessibilityForEvents(
+      BrowserAccessibility* node,
+      RetargetEventType type) const;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,

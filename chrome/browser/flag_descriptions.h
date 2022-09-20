@@ -215,6 +215,9 @@ extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
 extern const char kAutofillEnableMerchantOptOutErrorDialogName[];
 extern const char kAutofillEnableMerchantOptOutErrorDialogDescription[];
 
+extern const char kAutofillEnableCardArtImageName[];
+extern const char kAutofillEnableCardArtImageDescription[];
+
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
 
@@ -1229,6 +1232,9 @@ extern const char kPageInfoboutThisPageDescriptionPlaceholderDescription[];
 
 extern const char kPageInfoboutThisPagePersistentEntryName[];
 extern const char kPageInfoboutThisPagePersistentEntryDescription[];
+
+extern const char kPageInfoCookiesSubpageName[];
+extern const char kPageInfoCookiesSubpageDescription[];
 
 extern const char kPageInfoMoreAboutThisPageName[];
 extern const char kPageInfoMoreAboutThisPageDescription[];

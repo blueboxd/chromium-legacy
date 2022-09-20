@@ -245,7 +245,7 @@ class RuleMap {
  public:
   void Add(const AtomicString& key, const RuleData& rule_data);
   base::span<const RuleData> Find(const AtomicString& key) const {
-    DCHECK(buckets.IsEmpty() || compacted);
+    DCHECK(buckets.empty() || compacted);
     auto it = buckets.find(key);
     if (it == buckets.end()) {
       return {};
@@ -253,7 +253,7 @@ class RuleMap {
       return GetRulesFromExtent(it->value);
     }
   }
-  bool IsEmpty() const { return backing.IsEmpty(); }
+  bool IsEmpty() const { return backing.empty(); }
   bool IsCompacted() const { return compacted; }
 
   void Compact();
@@ -447,7 +447,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   }
 
   bool HasSlottedRules() const {
-    return !slotted_pseudo_element_rules_.IsEmpty();
+    return !slotted_pseudo_element_rules_.empty();
   }
 
   bool HasBucketForStyleAttribute() const { return has_bucket_for_style_attr_; }

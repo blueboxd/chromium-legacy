@@ -158,6 +158,7 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
+#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
@@ -900,9 +901,6 @@ void PopulateChromeWebUIFrameBinders(
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
       TabStripUI,
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      ash::ColorInternalsUI,
-#endif
       NewTabPageUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -993,7 +991,7 @@ void PopulateChromeWebUIFrameBinders(
         shopping_list::mojom::ShoppingListHandlerFactory, ReadingListUI>(map);
   }
 
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel)) {
+  if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         side_panel::mojom::CustomizeChromePageHandler, CustomizeChromeUI>(map);
   }
@@ -1343,6 +1341,10 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
   if (base::FeatureList::IsEnabled(ash::features::kFaceMLApp)) {
     registry.ForWebUI<ash::FaceMLAppUI>()
         .Add<ash::mojom::face_ml_app::PageHandlerFactory>();
+  }
+  if (base::FeatureList::IsEnabled(ash::features::kJelly)) {
+    registry.ForWebUI<ash::ColorInternalsUI>()
+        .Add<color_change_listener::mojom::PageHandler>();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

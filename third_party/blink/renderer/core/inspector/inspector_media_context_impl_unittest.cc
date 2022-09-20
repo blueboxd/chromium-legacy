@@ -39,10 +39,10 @@ TEST_F(InspectorMediaContextImplTest, CanCreatePlayerAndAddEvents) {
   auto id = impl->CreatePlayer();
   auto* players = impl->GetPlayersForTesting();
   EXPECT_EQ(players->size(), 1u);
-  EXPECT_TRUE(players->at(id)->errors.IsEmpty());
-  EXPECT_TRUE(players->at(id)->events.IsEmpty());
-  EXPECT_TRUE(players->at(id)->messages.IsEmpty());
-  EXPECT_TRUE(players->at(id)->properties.IsEmpty());
+  EXPECT_TRUE(players->at(id)->errors.empty());
+  EXPECT_TRUE(players->at(id)->events.empty());
+  EXPECT_TRUE(players->at(id)->messages.empty());
+  EXPECT_TRUE(players->at(id)->properties.empty());
 
   impl->NotifyPlayerEvents(id, MakeEvents(10));
   EXPECT_EQ(players->at(id)->events.size(), wtf_size_t{10});

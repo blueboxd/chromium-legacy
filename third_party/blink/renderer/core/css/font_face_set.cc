@@ -65,7 +65,7 @@ FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
 }
 
 void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
-  if (!InActiveContext() || non_css_connected_faces_.IsEmpty())
+  if (!InActiveContext() || non_css_connected_faces_.empty())
     return;
   FontSelector* font_selector = GetFontSelector();
   FontFaceCache* font_face_cache = font_selector->GetFontFaceCache();
@@ -146,7 +146,7 @@ void FontFaceSet::AddToLoadingFonts(FontFace* font_face) {
 
 void FontFaceSet::RemoveFromLoadingFonts(FontFace* font_face) {
   loading_fonts_.erase(font_face);
-  if (loading_fonts_.IsEmpty())
+  if (loading_fonts_.empty())
     HandlePendingEventsAndPromisesSoon();
 }
 
@@ -246,7 +246,7 @@ void FontFaceSet::FireDoneEvent() {
     done_event = FontFaceSetLoadEvent::CreateForFontFaces(
         event_type_names::kLoadingdone, loaded_fonts_);
     loaded_fonts_.clear();
-    if (!failed_fonts_.IsEmpty()) {
+    if (!failed_fonts_.empty()) {
       error_event = FontFaceSetLoadEvent::CreateForFontFaces(
           event_type_names::kLoadingerror, failed_fonts_);
       failed_fonts_.clear();
@@ -262,7 +262,7 @@ void FontFaceSet::FireDoneEvent() {
 }
 
 bool FontFaceSet::ShouldSignalReady() const {
-  if (!loading_fonts_.IsEmpty())
+  if (!loading_fonts_.empty())
     return false;
   return is_loading_ || ready_->GetState() == ReadyProperty::kPending;
 }

@@ -257,7 +257,7 @@ WindowPerformance::CreateNavigationTimingInstance() {
     return nullptr;
   HeapVector<Member<PerformanceServerTiming>> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.IsEmpty())
+  if (!server_timing.empty())
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
@@ -447,7 +447,7 @@ void WindowPerformance::ReportEventTimings(
     base::TimeTicks presentation_timestamp) {
   DCHECK(pending_presentation_promise_count_);
   --pending_presentation_promise_count_;
-  if (events_data_.IsEmpty())
+  if (events_data_.empty())
     return;
 
   if (!DomWindow() || !DomWindow()->document())
@@ -456,7 +456,7 @@ void WindowPerformance::ReportEventTimings(
       InteractiveDetector::From(*(DomWindow()->document()));
   DOMHighResTimeStamp end_time =
       MonotonicTimeToDOMHighResTimeStamp(presentation_timestamp);
-  while (!events_data_.IsEmpty()) {
+  while (!events_data_.empty()) {
     auto event_data = events_data_.front();
     PerformanceEventTiming* entry = event_data->GetEventTiming();
     uint64_t entry_frame_index = event_data->GetFrameIndex();

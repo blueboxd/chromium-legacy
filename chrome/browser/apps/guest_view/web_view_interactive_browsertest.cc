@@ -432,22 +432,20 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
   void PopupTestHelper(const gfx::Point& padding) {
     PopupCreatedObserver popup_observer;
     popup_observer.Init();
+    ASSERT_TRUE(embedder_web_contents());
     // Press alt+DOWN to open popup.
     bool alt = true;
-    content::SimulateKeyPress(DeprecatedGuestWebContents(),
-                              ui::DomKey::ARROW_DOWN, ui::DomCode::ARROW_DOWN,
-                              ui::VKEY_DOWN, false, false, alt, false);
+    content::SimulateKeyPress(embedder_web_contents(), ui::DomKey::ARROW_DOWN,
+                              ui::DomCode::ARROW_DOWN, ui::VKEY_DOWN, false,
+                              false, alt, false);
     popup_observer.Wait();
 
     content::RenderWidgetHost* popup_rwh =
         popup_observer.last_render_widget_host();
     gfx::Rect popup_bounds = popup_rwh->GetView()->GetViewBounds();
 
-    content::RenderViewHost* embedder_rvh = GetFirstAppWindowWebContents()
-                                                ->GetPrimaryMainFrame()
-                                                ->GetRenderViewHost();
     gfx::Rect embedder_bounds =
-        embedder_rvh->GetWidget()->GetView()->GetViewBounds();
+        embedder_web_contents()->GetRenderWidgetHostView()->GetViewBounds();
     gfx::Vector2d diff = popup_bounds.origin() - embedder_bounds.origin();
     LOG(INFO) << "DIFF: x = " << diff.x() << ", y = " << diff.y();
 
@@ -463,7 +461,7 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
     EXPECT_LE(std::abs(diff.y() - top_spacing), threshold_px);
 
     // Close the popup.
-    content::SimulateKeyPress(DeprecatedGuestWebContents(), ui::DomKey::ESCAPE,
+    content::SimulateKeyPress(embedder_web_contents(), ui::DomKey::ESCAPE,
                               ui::DomCode::ESCAPE, ui::VKEY_ESCAPE, false,
                               false, false, false);
   }
@@ -474,13 +472,19 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
     content::WebContents* embedder_web_contents =
         GetFirstAppWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
-    ASSERT_TRUE(DeprecatedGuestWebContents());
+    ASSERT_TRUE(GetGuestView());
+
     // Click the guest to request fullscreen.
     ExtensionTestMessageListener passed_listener("FULLSCREEN_STEP_PASSED");
     passed_listener.set_failure_message("TEST_FAILED");
-    content::SimulateMouseClickAt(DeprecatedGuestWebContents(), 0,
-                                  blink::WebMouseEvent::Button::kLeft,
-                                  gfx::Point(20, 20));
+
+    WaitForHitTestData(GetGuestRenderFrameHost());
+
+    content::SimulateMouseClickAt(
+        embedder_web_contents, 0, blink::WebMouseEvent::Button::kLeft,
+        GetGuestRenderFrameHost()->GetView()->TransformPointToRootCoordSpace(
+            gfx::Point(20, 20)));
+
     ASSERT_TRUE(passed_listener.WaitUntilSatisfied());
   }
 
@@ -915,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_NewWindow_OpenInNewTab) {
 IN_PROC_BROWSER_TEST_F(DISABLED_WebViewPopupInteractiveTest,
                        PopupPositioningBasic) {
   TestHelper("testBasic", "web_view/popup_positioning", NO_TEST_SERVER);
-  ASSERT_TRUE(DeprecatedGuestWebContents());
+  ASSERT_TRUE(GetGuestView());
   PopupTestHelper(gfx::Point());
 
   // TODO(lazyboy): Move the embedder window to a random location and
@@ -930,7 +934,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebViewPopupInteractiveTest,
 IN_PROC_BROWSER_TEST_F(DISABLED_WebViewPopupInteractiveTest,
                        PopupPositioningMoved) {
   TestHelper("testMoved", "web_view/popup_positioning", NO_TEST_SERVER);
-  ASSERT_TRUE(DeprecatedGuestWebContents());
+  ASSERT_TRUE(GetGuestView());
   PopupTestHelper(gfx::Point(20, 0));
 }
 
@@ -982,17 +986,8 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
              NO_TEST_SERVER);
 }
 
-// These tests are flaky on some platforms:
-// http://crbug.com/468660
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_FullscreenAllow_EmbedderHasPermission \
-  FullscreenAllow_EmbedderHasPermission
-#else
-#define MAYBE_FullscreenAllow_EmbedderHasPermission \
-  DISABLED_FullscreenAllow_EmbedderHasPermission
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_FullscreenAllow_EmbedderHasPermission) {
+                       FullscreenAllow_EmbedderHasPermission) {
 #if BUILDFLAG(IS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
@@ -1001,41 +996,20 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        "web_view/fullscreen/embedder_has_permission");
 }
 
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_FullscreenDeny_EmbedderHasPermission \
-  FullscreenDeny_EmbedderHasPermission
-#else
-#define MAYBE_FullscreenDeny_EmbedderHasPermission \
-  DISABLED_FullscreenDeny_EmbedderHasPermission
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_FullscreenDeny_EmbedderHasPermission) {
+                       FullscreenDeny_EmbedderHasPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_permission");
 }
 
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_FullscreenAllow_EmbedderHasNoPermission \
-  FullscreenAllow_EmbedderHasNoPermission
-#else
-#define MAYBE_FullscreenAllow_EmbedderHasNoPermission \
-  DISABLED_FullscreenAllow_EmbedderHasNoPermission
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_FullscreenAllow_EmbedderHasNoPermission) {
+                       FullscreenAllow_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenAllow",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
 
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_FullscreenDeny_EmbedderHasNoPermission \
-  FullscreenDeny_EmbedderHasNoPermission
-#else
-#define MAYBE_FullscreenDeny_EmbedderHasNoPermission \
-  DISABLED_FullscreenDeny_EmbedderHasNoPermission
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_FullscreenDeny_EmbedderHasNoPermission) {
+                       FullscreenDeny_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
@@ -1258,22 +1232,21 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {
   SetupTest("web_view/text_selection",
             "/extensions/platform_apps/web_view/text_selection/guest.html");
-  ASSERT_TRUE(DeprecatedGuestWebContents());
+  ASSERT_TRUE(GetGuestView());
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetPlatformAppWindow()));
 
   // Wait until guest sees a context menu.
   ExtensionTestMessageListener ctx_listener("MSG_CONTEXTMENU");
   ContextMenuWaiter menu_observer;
-  SimulateRWHMouseClick(
-      DeprecatedGuestWebContents()->GetRenderViewHost()->GetWidget(),
-      blink::WebMouseEvent::Button::kRight, 20, 20);
+  SimulateRWHMouseClick(GetGuestRenderFrameHost()->GetRenderWidgetHost(),
+                        blink::WebMouseEvent::Button::kRight, 20, 20);
   menu_observer.WaitForMenuOpenAndClose();
   ASSERT_TRUE(ctx_listener.WaitUntilSatisfied());
 
   // Now verify that the selection text propagates properly to RWHV.
   content::RenderWidgetHostView* guest_rwhv =
-      DeprecatedGuestWebContents()->GetRenderWidgetHostView();
+      GetGuestRenderFrameHost()->GetView();
   ASSERT_TRUE(guest_rwhv);
   std::string selected_text = base::UTF16ToUTF8(guest_rwhv->GetSelectedText());
   ASSERT_GE(selected_text.size(), 10u);

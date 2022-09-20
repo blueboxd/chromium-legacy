@@ -13,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_persistence_manager.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_persistent_storage.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
@@ -42,18 +42,20 @@ constexpr char kTestSystemExtensionManifest[] = R"({
    "name": "Sample System Web Extension",
    "service_worker_url": "/sw.js",
    "short_name": "Sample SWX",
-   "type": "echo"
+   "type": "window-management"
 }
 )";
 
 constexpr char kTestSystemExtensionIndexURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/html/index.html";
+    "chrome-untrusted://system-extension-window-management-01020304/html/"
+    "index.html";
 
 constexpr char kTestSystemExtensionWrongURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/html/wrong.html";
+    "chrome-untrusted://system-extension-window-management-01020304/html/"
+    "wrong.html";
 
 constexpr char kTestSystemExtensionEmptyPathURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/";
+    "chrome-untrusted://system-extension-window-management-01020304/";
 
 base::FilePath GetBasicSystemExtensionDir() {
   base::FilePath test_dir;
@@ -227,8 +229,8 @@ class SystemExtensionsBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(registry.GetById(kTestSystemExtensionId));
 
     // Test we persisted the System Extension.
-    absl::optional<SystemExtensionPersistenceInfo> persistence_info =
-        provider.persistence_manager().Get(kTestSystemExtensionId);
+    absl::optional<SystemExtensionPersistedInfo> persistence_info =
+        provider.persistent_storage().Get(kTestSystemExtensionId);
     ASSERT_TRUE(persistence_info);
     EXPECT_EQ(kTestSystemExtensionManifest,
               persistence_info->manifest.DebugString());
@@ -265,8 +267,8 @@ class SystemExtensionsBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(registry.GetById(kTestSystemExtensionId));
 
     // Tests that the System Extension is no longer in persistent storage.
-    absl::optional<SystemExtensionPersistenceInfo> persistence_info =
-        provider.persistence_manager().Get(kTestSystemExtensionId);
+    absl::optional<SystemExtensionPersistedInfo> persistence_info =
+        provider.persistent_storage().Get(kTestSystemExtensionId);
     EXPECT_FALSE(persistence_info);
 
     // Test that navigating to the System Extension's resources fails.

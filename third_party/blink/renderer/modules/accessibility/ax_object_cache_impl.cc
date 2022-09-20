@@ -2275,7 +2275,7 @@ void AXObjectCacheImpl::ChildrenChangedOnAncestorOf(AXObject* obj) {
   // descendants change, no ChildrenChanged() processing is necessary, because
   // #root has no children.
   if (!obj->LastKnownIsIncludedInTreeValue() &&
-      obj->CachedChildrenIncludingIgnored().IsEmpty()) {
+      obj->CachedChildrenIncludingIgnored().empty()) {
     return;
   }
 
@@ -2453,7 +2453,7 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
   for (auto agent : agents_)
     agent->AXReadyCallback(document);
 
-  // TODO(chrishtr) Accessibility serializations should happen now, on the
+  // TODO(chrishtr): Accessibility serializations should happen now, on the
   // condition that enough time has passed since the last serialization.
 }
 
@@ -2509,8 +2509,8 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEventsImpl(
 #if DCHECK_IS_ON()
     DCHECK_LE(++loop_counter, 100) << "Probable infinite loop detected.";
 #endif
-  } while (!nodes_with_pending_children_changed_.IsEmpty() ||
-           !GetInvalidatedIds(document).IsEmpty());
+  } while (!nodes_with_pending_children_changed_.empty() ||
+           !GetInvalidatedIds(document).empty());
 
   // Send events to RenderAccessibilityImpl, which serializes them and then
   // sends the serialized events and dirty objects to the browser process.
@@ -2520,12 +2520,12 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEventsImpl(
 bool AXObjectCacheImpl::IsDirty() const {
   if (tree_updates_paused_)
     return false;
-  return !tree_update_callback_queue_main_.IsEmpty() ||
-         !tree_update_callback_queue_popup_.IsEmpty() ||
-         !notifications_to_post_main_.IsEmpty() ||
-         !notifications_to_post_popup_.IsEmpty() ||
-         !invalidated_ids_main_.IsEmpty() ||
-         !invalidated_ids_popup_.IsEmpty() || relation_cache_->IsDirty();
+  return !tree_update_callback_queue_main_.empty() ||
+         !tree_update_callback_queue_popup_.empty() ||
+         !notifications_to_post_main_.empty() ||
+         !notifications_to_post_popup_.empty() ||
+         !invalidated_ids_main_.empty() || !invalidated_ids_popup_.empty() ||
+         relation_cache_->IsDirty();
 }
 
 void AXObjectCacheImpl::EmbeddingTokenChanged(HTMLFrameOwnerElement* element) {
@@ -3839,7 +3839,7 @@ AXObject* AXObjectCacheImpl::GetActiveAriaModalDialog() const {
 }
 
 void AXObjectCacheImpl::SerializeLocationChanges() {
-  if (changed_bounds_ids_.IsEmpty())
+  if (changed_bounds_ids_.empty())
     return;
   Vector<mojom::blink::LocationChangesPtr> changes;
   changes.ReserveCapacity(changed_bounds_ids_.size());
@@ -3862,7 +3862,7 @@ void AXObjectCacheImpl::SerializeLocationChanges() {
     }
   }
   changed_bounds_ids_.clear();
-  if (!changes.IsEmpty()) {
+  if (!changes.empty()) {
     GetOrCreateRemoteRenderAccessibilityHost()->HandleAXLocationChanges(
         std::move(changes));
   }
@@ -3977,7 +3977,7 @@ void AXObjectCacheImpl::HandleTextMarkerDataAddedWithCleanLayout(Node* node) {
       DocumentMarker::kSuggestion | DocumentMarker::kTextFragment |
       DocumentMarker::kCustomHighlight);
   if (!marker_controller.MarkersFor(*text_node, non_spelling_or_grammar_markers)
-           .IsEmpty()) {
+           .empty()) {
     ChildrenChangedWithCleanLayout(node);
     return;
   }
@@ -3991,7 +3991,7 @@ void AXObjectCacheImpl::HandleTextMarkerDataAddedWithCleanLayout(Node* node) {
       DocumentMarker::DocumentMarker::kGrammar);
   bool has_spelling_or_grammar_markers =
       !marker_controller.MarkersFor(*text_node, spelling_and_grammar_markers)
-           .IsEmpty();
+           .empty();
   if (has_spelling_or_grammar_markers) {
     if (nodes_with_spelling_or_grammar_markers_.insert(node).is_new_entry)
       ChildrenChangedWithCleanLayout(node);

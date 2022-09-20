@@ -645,7 +645,7 @@ std::unique_ptr<protocol::Network::TrustTokenParams> BuildTrustTokenParams(
           .setRefreshPolicy(GetTrustTokenRefreshPolicy(params.refresh_policy))
           .build();
 
-  if (!params.issuers.IsEmpty()) {
+  if (!params.issuers.empty()) {
     auto issuers = std::make_unique<protocol::Array<protocol::String>>();
     for (const auto& issuer : params.issuers) {
       issuers->push_back(issuer->ToString());
@@ -2026,7 +2026,7 @@ Response InspectorNetworkAgent::setAcceptedEncodings(
   }
   // If invoked with an empty list, it means none of the encodings should be
   // accepted. See InspectorNetworkAgent::PrepareRequest.
-  if (accepted_encodings.IsEmpty())
+  if (accepted_encodings.empty())
     accepted_encodings.insert("none");
 
   // Set the inspector state.

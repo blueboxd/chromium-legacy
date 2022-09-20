@@ -359,6 +359,7 @@ static_library("test_support") {
       "//components/crx_file",
       "//components/keep_alive_registry",
       "//components/pref_registry",
+      "//components/services/app_service/public/cpp:test_support",
       "//components/storage_monitor",
       "//components/storage_monitor:test_support",
       "//components/ukm:test_support",
@@ -859,6 +860,7 @@ if (is_android) {
 
     sources = [
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
+      "../browser/android/historical_tab_saver_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/autofill/android/save_update_address_profile_flow_manager_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
@@ -2404,6 +2406,7 @@ if (!is_android) {
     }
 
     if (is_chromeos_ash) {
+      data += [ "//chrome/browser/resources/chromeos/arc_support/i18n_template_no_process.js" ]
       sources += [
         "../browser/media/webrtc/get_display_media_set_browsertest.cc",
         "../browser/sessions/tab_restore_service_browsertest.cc",
@@ -2497,6 +2500,7 @@ if (!is_android) {
     if (is_linux) {
       sources += [
         "../browser/chrome_main_process_singleton_browsertest.cc",
+        "../browser/headless/headless_mode_browsertest_linux.cc",
         "../browser/process_singleton_browsertest.cc",
       ]
     }
@@ -6798,7 +6802,6 @@ test("unit_tests") {
       "../browser/ui/tabs/existing_window_sub_menu_model_unittest.cc",
       "../browser/ui/tabs/pinned_tab_codec_unittest.cc",
       "../browser/ui/tabs/pinned_tab_service_unittest.cc",
-      "../browser/ui/tabs/saved_tab_groups/saved_tab_group_model_unittest.cc",
       "../browser/ui/tabs/tab_menu_model_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_unittest.cc",
@@ -7115,6 +7118,7 @@ test("unit_tests") {
       "//services/metrics/public/cpp:ukm_builders",
       "//services/network:test_support",
       "//third_party/libaddressinput",
+      "//third_party/lzma_sdk/google:unit_tests",
       "//third_party/zxcvbn-cpp",
       "//ui/base/idle:test_support",
       "//ui/color",

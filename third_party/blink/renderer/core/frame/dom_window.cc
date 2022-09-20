@@ -195,7 +195,7 @@ void DOMWindow::postMessage(v8::Isolate* isolate,
       WebFeature::kWindowProxyCrossOriginAccessFromOtherPagePostMessage);
   WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
   options->setTargetOrigin(target_origin);
-  if (!transfer.IsEmpty())
+  if (!transfer.empty())
     options->setTransfer(transfer);
   postMessage(isolate, message, options, exception_state);
 }
@@ -567,7 +567,7 @@ void DOMWindow::InstallCoopAccessMonitor(
 // Check if the accessing context would be able to access this window if COOP
 // was enforced. If this isn't a report is sent.
 void DOMWindow::ReportCoopAccess(const char* property_name) {
-  if (coop_access_monitor_.IsEmpty())  // Fast early return. Very likely true.
+  if (coop_access_monitor_.empty())  // Fast early return. Very likely true.
     return;
 
   v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
@@ -856,21 +856,18 @@ BlinkTransferableMessage
 DOMWindow::PostedMessage::ToBlinkTransferableMessage() && {
   BlinkTransferableMessage result;
 
-  // Message data and cluster ID (optional).
   result.message = std::move(data);
-  if (result.message->IsLockedToAgentCluster())
-    result.locked_agent_cluster_id = source->GetAgentClusterID();
+  result.sender_agent_cluster_id = source->GetAgentClusterID();
+  result.locked_to_sender_agent_cluster =
+      result.message->IsLockedToAgentCluster();
 
-  // Ports
   result.ports = std::move(channels);
 
-  // User activation
   if (user_activation) {
     result.user_activation = mojom::blink::UserActivationSnapshot::New(
         user_activation->hasBeenActive(), user_activation->isActive());
   }
 
-  // Capability delegation
   result.delegated_capability = delegated_capability;
 
   return result;

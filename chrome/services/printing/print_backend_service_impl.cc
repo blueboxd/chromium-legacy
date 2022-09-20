@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -394,10 +395,20 @@ PrintBackendServiceImpl::PrintBackendServiceImpl(
 
 PrintBackendServiceImpl::~PrintBackendServiceImpl() = default;
 
+void PrintBackendServiceImpl::InitCommon(const std::string& locale) {
+  context_delegate_.SetAppLocale(locale);
+}
+
 void PrintBackendServiceImpl::Init(const std::string& locale) {
+  // Test classes should not invoke this base initialization method, as process
+  // initialization is very different for test frameworks.  Test classes
+  // will also provide their own test version of a `PrintBackend`.
+  // Common initialization for production and testing should instead reside in
+  // `InitCommon()`.
   InitializeProcessForPrinting();
   print_backend_ = PrintBackend::CreateInstance(locale);
-  context_delegate_.SetAppLocale(locale);
+
+  InitCommon(locale);
 }
 
 // TODO(crbug.com/1225111)  Do nothing, this is just to assist an idle timeout
@@ -406,13 +417,7 @@ void PrintBackendServiceImpl::Poke() {}
 
 void PrintBackendServiceImpl::EnumeratePrinters(
     mojom::PrintBackendService::EnumeratePrintersCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(
-        mojom::PrinterListResult::NewResultCode(mojom::ResultCode::kFailed));
-    return;
-  }
-
+  DCHECK(print_backend_);
   PrinterList printer_list;
   mojom::ResultCode result = print_backend_->EnumeratePrinters(printer_list);
   if (result != mojom::ResultCode::kSuccess) {
@@ -425,12 +430,7 @@ void PrintBackendServiceImpl::EnumeratePrinters(
 
 void PrintBackendServiceImpl::GetDefaultPrinterName(
     mojom::PrintBackendService::GetDefaultPrinterNameCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::DefaultPrinterNameResult::NewResultCode(
-        mojom::ResultCode::kFailed));
-    return;
-  }
+  DCHECK(print_backend_);
   std::string default_printer;
   mojom::ResultCode result =
       print_backend_->GetDefaultPrinterName(default_printer);
@@ -447,14 +447,7 @@ void PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
         callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(
-        mojom::PrinterSemanticCapsAndDefaultsResult::NewResultCode(
-            mojom::ResultCode::kFailed));
-    return;
-  }
-
+  DCHECK(print_backend_);
   crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
       print_backend_->GetPrinterDriverInfo(printer_name));
 
@@ -475,13 +468,7 @@ void PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
 void PrintBackendServiceImpl::FetchCapabilities(
     const std::string& printer_name,
     mojom::PrintBackendService::FetchCapabilitiesCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::PrinterCapsAndInfoResult::NewResultCode(
-        mojom::ResultCode::kFailed));
-    return;
-  }
-
+  DCHECK(print_backend_);
   crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
       print_backend_->GetPrinterDriverInfo(printer_name));
 
@@ -528,12 +515,7 @@ void PrintBackendServiceImpl::FetchCapabilities(
 
 void PrintBackendServiceImpl::UseDefaultSettings(
     mojom::PrintBackendService::UseDefaultSettingsCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(
-        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
-    return;
-  }
+  DCHECK(print_backend_);
 
   // Use a one-time `PrintingContext` to get the print settings.
   std::unique_ptr<PrintingContext> context =
@@ -588,20 +570,10 @@ void PrintBackendServiceImpl::AskUserForSettings(
 void PrintBackendServiceImpl::UpdatePrintSettings(
     base::Value::Dict job_settings,
     mojom::PrintBackendService::UpdatePrintSettingsCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(
-        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
-    return;
-  }
+  DCHECK(print_backend_);
 
   const std::string* printer_name = job_settings.FindString(kSettingDeviceName);
-  if (!printer_name) {
-    DLOG(ERROR) << "Job settings is missing printer name";
-    std::move(callback).Run(
-        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
-    return;
-  }
+  DCHECK(printer_name);
 
   crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
       print_backend_->GetPrinterDriverInfo(*printer_name));
@@ -643,11 +615,7 @@ void PrintBackendServiceImpl::StartPrinting(
     mojom::PrintTargetType target_type,
     const PrintSettings& settings,
     mojom::PrintBackendService::StartPrintingCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
+  DCHECK(print_backend_);
 
 #if BUILDFLAG(IS_CHROMEOS) && defined(USE_CUPS)
   CupsConnectionPool* connection_pool = CupsConnectionPool::GetInstance();
@@ -697,19 +665,9 @@ void PrintBackendServiceImpl::RenderPrintedPage(
     const gfx::Rect& page_content_rect,
     float shrink_factor,
     mojom::PrintBackendService::RenderPrintedPageCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
-
+  DCHECK(print_backend_);
   DocumentHelper* document_helper = GetDocumentHelper(document_cookie);
-  if (!document_helper) {
-    DLOG(ERROR) << "Unrecognized document " << document_cookie
-                << " for printing page " << page_index;
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
+  DCHECK(document_helper);
 
   // Safe to use `base::Unretained(this)` because `this` outlives the async
   // call and callback.  The entire service process goes away when `this`
@@ -729,18 +687,9 @@ void PrintBackendServiceImpl::RenderPrintedDocument(
     mojom::MetafileDataType data_type,
     base::ReadOnlySharedMemoryRegion serialized_document,
     mojom::PrintBackendService::RenderPrintedDocumentCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
-
+  DCHECK(print_backend_);
   DocumentHelper* document_helper = GetDocumentHelper(document_cookie);
-  if (!document_helper) {
-    DLOG(ERROR) << "Unrecognized document " << document_cookie << " to be done";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
+  DCHECK(document_helper);
 
   // Safe to use `base::Unretained(this)` because `this` outlives the async
   // call and callback.  The entire service process goes away when `this`
@@ -756,18 +705,9 @@ void PrintBackendServiceImpl::RenderPrintedDocument(
 void PrintBackendServiceImpl::DocumentDone(
     int document_cookie,
     mojom::PrintBackendService::DocumentDoneCallback callback) {
-  if (!print_backend_) {
-    DLOG(ERROR) << "Print backend instance needs initialization for locale.";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
-
+  DCHECK(print_backend_);
   DocumentHelper* document_helper = GetDocumentHelper(document_cookie);
-  if (!document_helper) {
-    DLOG(ERROR) << "Unrecognized document " << document_cookie << " to be done";
-    std::move(callback).Run(mojom::ResultCode::kFailed);
-    return;
-  }
+  DCHECK(document_helper);
 
   // Safe to use `base::Unretained(this)` because `this` outlives the async
   // call and callback.  The entire service process goes away when `this`

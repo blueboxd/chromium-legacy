@@ -487,7 +487,7 @@ mojom::blink::ResourceTimingInfoPtr Performance::GenerateResourceTiming(
   result->allow_timing_details = final_response.TimingAllowPassed();
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
-  if (!redirect_chain.IsEmpty()) {
+  if (!redirect_chain.empty()) {
     result->allow_redirect_details = result->allow_timing_details;
 
     // TODO(https://crbug.com/817691): is |last_chained_timing| being null a bug
@@ -518,7 +518,7 @@ mojom::blink::ResourceTimingInfoPtr Performance::GenerateResourceTiming(
     result->server_timing =
         PerformanceServerTiming::ParseServerTimingToMojo(info);
   }
-  if (!result->server_timing.IsEmpty()) {
+  if (!result->server_timing.empty()) {
     UseCounter::Count(&context_for_use_counter,
                       WebFeature::kPerformanceServerTiming);
   }
@@ -964,7 +964,7 @@ bool Performance::HasObserverFor(
 }
 
 void Performance::ActivateObserver(PerformanceObserver& observer) {
-  if (active_observers_.IsEmpty())
+  if (active_observers_.empty())
     deliver_observations_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   if (suspended_observers_.Contains(&observer))

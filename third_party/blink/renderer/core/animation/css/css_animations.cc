@@ -112,7 +112,7 @@ StringKeyframeVector ProcessKeyframesRule(
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
     const Vector<double>& offsets = style_keyframe->Keys();
-    DCHECK(!offsets.IsEmpty());
+    DCHECK(!offsets.empty());
     keyframe->SetOffset(offsets[0]);
     keyframe->SetEasing(default_timing_function);
     const CSSPropertyValueSet& properties = style_keyframe->Properties();
@@ -356,7 +356,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // 6.3 For each property in animated properties that is not present in some
   //     other keyframe with offset 0, add the computed value of that property
   //     for element to the keyframe.
-  StringKeyframe* start_keyframe = keyframes.IsEmpty() ? nullptr : keyframes[0];
+  StringKeyframe* start_keyframe = keyframes.empty() ? nullptr : keyframes[0];
   if (NeedsBoundaryKeyframe(start_keyframe, 0, animated_properties,
                             start_properties, default_timing_function)) {
     start_keyframe = MakeGarbageCollected<StringKeyframe>();
@@ -504,7 +504,7 @@ void CSSAnimations::CalculateViewTimelineUpdate(CSSAnimationUpdate& update,
   const CSSAnimations::TimelineData* timeline_data =
       GetTimelineData(animating_element);
 
-  if (names.IsEmpty() && (!timeline_data || timeline_data->IsEmpty()))
+  if (names.empty() && (!timeline_data || timeline_data->IsEmpty()))
     return;
 
   CSSViewTimelineMap changed_timelines;
@@ -521,9 +521,9 @@ void CSSAnimations::CalculateViewTimelineUpdate(CSSAnimationUpdate& update,
     const AtomicString& name = names[i];
     if (name.IsEmpty())
       continue;
-    TimelineAxis axis = axes.IsEmpty() ? TimelineAxis::kBlock
-                                       : axes[std::min(i, axes.size() - 1)];
-    const TimelineInset& inset = insets.IsEmpty()
+    TimelineAxis axis = axes.empty() ? TimelineAxis::kBlock
+                                     : axes[std::min(i, axes.size() - 1)];
+    const TimelineInset& inset = insets.empty()
                                      ? TimelineInset()
                                      : insets[std::min(i, insets.size() - 1)];
     CSSViewTimeline* existing_timeline =
@@ -1406,7 +1406,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
   HashSet<PropertyHandle> suppressed_transitions;
 
-  if (!pending_update_.NewTransitions().IsEmpty()) {
+  if (!pending_update_.NewTransitions().empty()) {
     element->GetDocument()
         .GetDocumentAnimations()
         .IncrementTrasitionGeneration();
@@ -1462,7 +1462,7 @@ CSSAnimations::CreateCancelledTransitionsSet(
     ElementAnimations* element_animations,
     CSSAnimationUpdate& update) {
   HeapHashSet<Member<const Animation>> cancelled_transitions;
-  if (!update.CancelledTransitions().IsEmpty()) {
+  if (!update.CancelledTransitions().empty()) {
     DCHECK(element_animations);
     const TransitionMap& transition_map =
         element_animations->CssAnimations().transitions_;
@@ -1969,8 +1969,7 @@ void CSSAnimations::CalculateAnimationActiveInterpolations(
   EffectStack* effect_stack =
       element_animations ? &element_animations->GetEffectStack() : nullptr;
 
-  if (update.NewAnimations().IsEmpty() &&
-      update.SuppressedAnimations().IsEmpty()) {
+  if (update.NewAnimations().empty() && update.SuppressedAnimations().empty()) {
     AdoptActiveAnimationInterpolations(effect_stack, update, nullptr, nullptr);
     return;
   }
@@ -1996,8 +1995,8 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
       element_animations ? &element_animations->GetEffectStack() : nullptr;
 
   ActiveInterpolationsMap active_interpolations_for_transitions;
-  if (update.NewTransitions().IsEmpty() &&
-      update.CancelledTransitions().IsEmpty()) {
+  if (update.NewTransitions().empty() &&
+      update.CancelledTransitions().empty()) {
     active_interpolations_for_transitions = EffectStack::ActiveInterpolations(
         effect_stack, nullptr, nullptr, KeyframeEffect::kTransitionPriority,
         IsCSSPropertyHandle);
@@ -2018,8 +2017,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
       update.ActiveInterpolationsForAnimations();
   // Properties being animated by animations don't get values from transitions
   // applied.
-  if (!animations.IsEmpty() &&
-      !active_interpolations_for_transitions.IsEmpty()) {
+  if (!animations.empty() && !active_interpolations_for_transitions.empty()) {
     for (const auto& entry : animations)
       active_interpolations_for_transitions.erase(entry.key);
   }
@@ -2228,7 +2226,7 @@ void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) const {
 const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
-  if (properties.IsEmpty()) {
+  if (properties.empty()) {
     for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.

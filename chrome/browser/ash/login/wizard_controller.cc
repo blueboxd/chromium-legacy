@@ -659,7 +659,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LacrosDataMigrationScreen>(
-      oobe_ui->GetView<LacrosDataMigrationScreenHandler>()));
+      oobe_ui->GetView<LacrosDataMigrationScreenHandler>()->AsWeakPtr()));
   append(std::make_unique<LacrosDataBackwardMigrationScreen>(
       oobe_ui->GetView<LacrosDataBackwardMigrationScreenHandler>()
           ->AsWeakPtr()));
@@ -1700,7 +1700,7 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
   switch (result) {
     case DemoSetupScreen::Result::COMPLETED:
       PerformOOBECompletedActions();
-      ShowLoginScreen();
+      SwitchWebUItoMojo();
       break;
     case DemoSetupScreen::Result::CANCELED:
       ShowWelcomeScreen();

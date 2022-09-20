@@ -80,16 +80,6 @@ class CORE_EXPORT RuleFeatureSet {
     return metadata_.max_direct_adjacent_selectors;
   }
 
-  bool HasSelectorForAttribute(const AtomicString& attribute_name) const {
-    DCHECK(!attribute_name.IsEmpty());
-    return attribute_invalidation_sets_.Contains(attribute_name);
-  }
-
-  bool HasSelectorForClass(const AtomicString& class_value) const {
-    DCHECK(!class_value.IsEmpty());
-    return class_invalidation_sets_.Contains(class_value);
-  }
-
   bool HasSelectorForId(const AtomicString& id_value) const {
     return id_invalidation_sets_.Contains(id_value);
   }
@@ -150,20 +140,20 @@ class CORE_EXPORT RuleFeatureSet {
       CSSSelector::PseudoType pseudo_type) const;
 
   inline bool NeedsHasInvalidationForClassChange() const {
-    return !classes_in_has_argument_.IsEmpty();
+    return !classes_in_has_argument_.empty();
   }
   inline bool NeedsHasInvalidationForAttributeChange() const {
-    return !attributes_in_has_argument_.IsEmpty();
+    return !attributes_in_has_argument_.empty();
   }
   inline bool NeedsHasInvalidationForIdChange() const {
-    return !ids_in_has_argument_.IsEmpty();
+    return !ids_in_has_argument_.empty();
   }
   inline bool NeedsHasInvalidationForPseudoStateChange() const {
-    return !pseudos_in_has_argument_.IsEmpty();
+    return !pseudos_in_has_argument_.empty();
   }
   inline bool NeedsHasInvalidationForInsertionOrRemoval() const {
     return not_pseudo_in_has_argument_ || universal_in_has_argument_ ||
-           !tag_names_in_has_argument_.IsEmpty() ||
+           !tag_names_in_has_argument_.empty() ||
            NeedsHasInvalidationForClassChange() ||
            NeedsHasInvalidationForAttributeChange() ||
            NeedsHasInvalidationForIdChange() ||
@@ -271,20 +261,20 @@ class CORE_EXPORT RuleFeatureSet {
     bool HasIdClassOrAttribute() const;
 
     void NarrowToClass(const AtomicString& class_name) {
-      if (Size() == 1 && (!ids.IsEmpty() || !classes.IsEmpty()))
+      if (Size() == 1 && (!ids.empty() || !classes.empty()))
         return;
       ClearFeatures();
       classes.push_back(class_name);
     }
     void NarrowToAttribute(const AtomicString& attribute) {
       if (Size() == 1 &&
-          (!ids.IsEmpty() || !classes.IsEmpty() || !attributes.IsEmpty()))
+          (!ids.empty() || !classes.empty() || !attributes.empty()))
         return;
       ClearFeatures();
       attributes.push_back(attribute);
     }
     void NarrowToId(const AtomicString& id) {
-      if (Size() == 1 && !ids.IsEmpty())
+      if (Size() == 1 && !ids.empty())
         return;
       ClearFeatures();
       ids.push_back(id);

@@ -357,7 +357,7 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
 void NGBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
   DCHECK(is_new_fc_);
   DCHECK_NE(FragmentBlockSize(), kIndefiniteSize);
-  DCHECK(oof_positioned_descendants_.IsEmpty());
+  DCHECK(oof_positioned_descendants_.empty());
 
   if (delta == LayoutUnit())
     return;
@@ -407,7 +407,7 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
     return;
 
   const NGBlockBreakToken* token = child_box_fragment->BreakToken();
-  if (token && !token->IsRepeated()) {
+  if (IsResumingLayout(token)) {
     // Figure out if this child break is in the same flow as this parent. If
     // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
     // it's also not.

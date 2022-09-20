@@ -203,7 +203,7 @@ void Resource::CheckResourceIntegrity() {
   }
 
   // No integrity attributes to check? Then we're passing.
-  if (IntegrityMetadata().IsEmpty()) {
+  if (IntegrityMetadata().empty()) {
     integrity_disposition_ = ResourceIntegrityDisposition::kPassed;
     return;
   }
@@ -283,7 +283,7 @@ void Resource::ClearData() {
 
 void Resource::TriggerNotificationForFinishObservers(
     base::SingleThreadTaskRunner* task_runner) {
-  if (finish_observers_.IsEmpty())
+  if (finish_observers_.empty())
     return;
 
   auto* new_collections =
@@ -382,7 +382,7 @@ AtomicString Resource::HttpContentType() const {
 
 bool Resource::MustRefetchDueToIntegrityMetadata(
     const FetchParameters& params) const {
-  if (params.IntegrityMetadata().IsEmpty())
+  if (params.IntegrityMetadata().empty())
     return false;
 
   return !IntegrityMetadata::SetsEqual(IntegrityMetadata(),
@@ -488,7 +488,7 @@ size_t Resource::RedirectChainSize() const {
 }
 
 void Resource::SetRevalidatingRequest(const ResourceRequestHead& request) {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   SECURITY_CHECK(!is_unused_preload_);
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
@@ -537,11 +537,11 @@ String Resource::ReasonNotDeletable() const {
   if (HasClientsOrObservers()) {
     builder.Append("hasClients(");
     builder.AppendNumber(clients_.size());
-    if (!clients_awaiting_callback_.IsEmpty()) {
+    if (!clients_awaiting_callback_.empty()) {
       builder.Append(", AwaitingCallback=");
       builder.AppendNumber(clients_awaiting_callback_.size());
     }
-    if (!finished_clients_.IsEmpty()) {
+    if (!finished_clients_.empty()) {
       builder.Append(", Finished=");
       builder.AppendNumber(finished_clients_.size());
     }
@@ -627,7 +627,7 @@ void Resource::RemoveClient(ResourceClient* client) {
   else
     clients_.erase(client);
 
-  if (clients_awaiting_callback_.IsEmpty() &&
+  if (clients_awaiting_callback_.empty() &&
       async_finish_pending_clients_task_.IsActive()) {
     async_finish_pending_clients_task_.Cancel();
   }
@@ -724,11 +724,11 @@ void Resource::FinishPendingClients() {
   // It is still possible for the above loop to finish a new client
   // synchronously. If there's no client waiting we should deschedule.
   bool scheduled = async_finish_pending_clients_task_.IsActive();
-  if (scheduled && clients_awaiting_callback_.IsEmpty())
+  if (scheduled && clients_awaiting_callback_.empty())
     async_finish_pending_clients_task_.Cancel();
 
   // Prevent the case when there are clients waiting but no callback scheduled.
-  DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
+  DCHECK(clients_awaiting_callback_.empty() || scheduled);
 }
 
 Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
@@ -926,7 +926,7 @@ void Resource::ClearRangeRequestHeader() {
 
 void Resource::RevalidationSucceeded(
     const ResourceResponse& validating_response) {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   SECURITY_CHECK(
       EqualIgnoringFragmentIdentifier(validating_response.CurrentRequestUrl(),
                                       GetResponse().CurrentRequestUrl()));
@@ -950,7 +950,7 @@ void Resource::RevalidationSucceeded(
 }
 
 void Resource::RevalidationFailed() {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   ClearData();
   integrity_disposition_ = ResourceIntegrityDisposition::kNotChecked;
   integrity_report_info_.Clear();
@@ -1065,7 +1065,7 @@ bool Resource::CanUseCacheValidator() const {
     return false;
 
   // Do not revalidate Resource with redirects. https://crbug.com/613971
-  if (!RedirectChain().IsEmpty())
+  if (!RedirectChain().empty())
     return false;
 
   return GetResponse().HasCacheValidatorFields() ||

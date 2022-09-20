@@ -636,7 +636,7 @@ ServiceWorkerContainer::CreateReadyProperty() {
 void ServiceWorkerContainer::EnableClientMessageQueue() {
   dom_content_loaded_observer_ = nullptr;
   if (is_client_message_queue_enabled_) {
-    DCHECK(queued_messages_.IsEmpty());
+    DCHECK(queued_messages_.empty());
     return;
   }
   is_client_message_queue_enabled_ = true;
@@ -673,9 +673,9 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     }
   }
   if (!event) {
-    if (!msg.locked_agent_cluster_id ||
+    if (!msg.locked_to_sender_agent_cluster ||
         GetExecutionContext()->IsSameAgentCluster(
-            *msg.locked_agent_cluster_id)) {
+            msg.sender_agent_cluster_id)) {
       event = MessageEvent::Create(
           ports, std::move(msg.message),
           GetExecutionContext()->GetSecurityOrigin()->ToString(),

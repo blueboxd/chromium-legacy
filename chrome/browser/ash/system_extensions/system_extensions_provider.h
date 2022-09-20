@@ -15,7 +15,7 @@ class Profile;
 
 namespace ash {
 
-class SystemExtensionsPersistenceManager;
+class SystemExtensionsPersistentStorage;
 class SystemExtensionsServiceWorkerManager;
 
 // Manages the installation, storage, and execution of System Extensions.
@@ -25,15 +25,6 @@ class SystemExtensionsProvider : public KeyedService {
   // System Extensions is enabled for the profile i.e. if
   // IsSystemExtensionsEnabled() returns true.
   static SystemExtensionsProvider& Get(Profile* profile);
-
-  // TODO(crbug.com/1272371): Remove when APIs can be accessed in a less hacky
-  // way.
-  // If true, System Extension APIs will be bound on all service workers. This
-  // is being added temporarily for development. Use in conjunction with e.g
-  // --enable-blink-features=BlinkExtensionChromeOS,
-  //                         BlinkExtensionChromeOSWindowManagement
-  // to use regular service workers to test your System Extension APIs.
-  static bool IsDebugMode();
 
   explicit SystemExtensionsProvider(Profile* profile);
   SystemExtensionsProvider(const SystemExtensionsProvider&) = delete;
@@ -50,8 +41,8 @@ class SystemExtensionsProvider : public KeyedService {
     return *service_worker_manager_;
   }
 
-  SystemExtensionsPersistenceManager& persistence_manager() {
-    return *persistence_manager_;
+  SystemExtensionsPersistentStorage& persistent_storage() {
+    return *persistent_storage_;
   }
 
   SystemExtensionsInstallManager& install_manager() {
@@ -69,7 +60,7 @@ class SystemExtensionsProvider : public KeyedService {
  private:
   std::unique_ptr<SystemExtensionsRegistryManager> registry_manager_;
   std::unique_ptr<SystemExtensionsServiceWorkerManager> service_worker_manager_;
-  std::unique_ptr<SystemExtensionsPersistenceManager> persistence_manager_;
+  std::unique_ptr<SystemExtensionsPersistentStorage> persistent_storage_;
   std::unique_ptr<SystemExtensionsInstallManager> install_manager_;
 };
 

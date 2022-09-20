@@ -204,8 +204,8 @@ void HistoryClustersService::UpdateClusters() {
     return;
   update_clusters_task_ =
       std::make_unique<HistoryClustersServiceTaskUpdateClusters>(
-          incomplete_visit_context_annotations_, backend_.get(),
-          history_service_, base::DoNothing());
+          weak_ptr_factory_.GetWeakPtr(), incomplete_visit_context_annotations_,
+          backend_.get(), history_service_, base::DoNothing());
 }
 
 absl::optional<history::ClusterKeywordData>
@@ -264,6 +264,22 @@ void HistoryClustersService::ClearKeywordCache() {
   short_keyword_cache_.clear();
   short_keyword_cache_.clear();
   cache_keyword_query_task_.reset();
+}
+
+void HistoryClustersService::PrintKeywordBagStateToLogMessage() const {
+  NotifyDebugMessage("-- Printing Short-Time Keyword Bag --");
+  NotifyDebugMessage("Timestamp: " +
+                     base::TimeToISO8601(short_keyword_cache_timestamp_));
+  NotifyDebugMessage(GetDebugJSONForKeywordMap(short_keyword_cache_));
+  NotifyDebugMessage(GetDebugJSONForUrlKeywordSet(short_url_keywords_cache_));
+
+  NotifyDebugMessage("-- Printing All-Time Keyword Bag --");
+  NotifyDebugMessage("Timestamp: " +
+                     base::TimeToISO8601(all_keywords_cache_timestamp_));
+  NotifyDebugMessage(GetDebugJSONForKeywordMap(all_keywords_cache_));
+  NotifyDebugMessage(GetDebugJSONForUrlKeywordSet(all_url_keywords_cache_));
+
+  NotifyDebugMessage("-- Printing Keyword Bags Done --");
 }
 
 void HistoryClustersService::StartKeywordCacheRefresh() {

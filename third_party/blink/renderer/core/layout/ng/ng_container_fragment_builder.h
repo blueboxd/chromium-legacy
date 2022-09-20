@@ -204,19 +204,19 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGMulticolWithPendingOOFs<LogicalOffset>* multicol = nullptr);
 
   bool HasOutOfFlowPositionedCandidates() const {
-    return !oof_positioned_candidates_.IsEmpty();
+    return !oof_positioned_candidates_.empty();
   }
 
   bool HasOutOfFlowPositionedDescendants() const {
-    return !oof_positioned_descendants_.IsEmpty();
+    return !oof_positioned_descendants_.empty();
   }
 
   bool HasOutOfFlowFragmentainerDescendants() const {
-    return !oof_positioned_fragmentainer_descendants_.IsEmpty();
+    return !oof_positioned_fragmentainer_descendants_.empty();
   }
 
   bool HasMulticolsWithPendingOOFs() const {
-    return !multicols_with_pending_oofs_.IsEmpty();
+    return !multicols_with_pending_oofs_.empty();
   }
 
   HeapVector<NGLogicalOutOfFlowPositionedNode>*

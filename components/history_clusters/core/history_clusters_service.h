@@ -197,6 +197,10 @@ class HistoryClustersService : public base::SupportsUserData,
   // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
   void ClearKeywordCache();
 
+  // Prints the keyword bag state to the log messages. For example, a button on
+  // chrome://history-clusters-internals triggers this.
+  void PrintKeywordBagStateToLogMessage() const;
+
  private:
   friend class HistoryClustersServiceTestApi;
 
@@ -228,7 +232,7 @@ class HistoryClustersService : public base::SupportsUserData,
   // database once completed (if persistence is enabled).
   IncompleteVisitMap incomplete_visit_context_annotations_;
 
-  // The backend used for clustering. This can be nullptr.
+  // The backend used for clustering. Never nullptr.
   std::unique_ptr<ClusteringBackend> backend_;
 
   // In-memory cache of keywords match clusters, so we can query this

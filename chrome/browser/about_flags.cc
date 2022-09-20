@@ -7419,6 +7419,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
+    {"page-info-cookies-subpage",
+     flag_descriptions::kPageInfoCookiesSubpageName,
+     flag_descriptions::kPageInfoCookiesSubpageDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoCookiesSubpage)},
+
     {"page-info-hide-site-settings",
      flag_descriptions::kPageInfoHideSiteSettingsName,
      flag_descriptions::kPageInfoHideSiteSettingsDescription, kOsDesktop,
@@ -9526,7 +9531,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"arc-nearby-share-fuse-box", flag_descriptions::kArcNearbyShareFuseBoxName,
      flag_descriptions::kArcNearbyShareFuseBoxDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShareFuseBox)}
+     FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShareFuseBox)},
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -9535,6 +9540,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidPermissionsCacheDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(::features::kAndroidPermissionsCache)},
 #endif
+
+    {"autofill-enable-card-art-image",
+     flag_descriptions::kAutofillEnableCardArtImageName,
+     flag_descriptions::kAutofillEnableCardArtImageDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableCardArtImage)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
@@ -9670,10 +9680,9 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
            channel != version_info::Channel::UNKNOWN;
   }
 
-  // Only show glanceables flag for canary/unknown channels.
+  // Skip glanceables flag on stable channel.
   if (!strcmp(kWelcomeScreenInternalName, entry.internal_name)) {
-    return channel != version_info::Channel::CANARY &&
-           channel != version_info::Channel::UNKNOWN;
+    return channel == version_info::Channel::STABLE;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

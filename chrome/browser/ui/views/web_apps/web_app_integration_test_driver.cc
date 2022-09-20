@@ -1009,7 +1009,8 @@ void WebAppIntegrationTestDriver::InstallOmniboxIcon(InstallableSite site) {
 
 void WebAppIntegrationTestDriver::InstallPolicyApp(Site site,
                                                    ShortcutOptions shortcut,
-                                                   WindowOptions window) {
+                                                   WindowOptions window,
+                                                   InstallMode mode) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   base::Value container = base::Value(window == WindowOptions::kWindowed
@@ -1017,7 +1018,8 @@ void WebAppIntegrationTestDriver::InstallPolicyApp(Site site,
                                           : kDefaultLaunchContainerTabValue);
   InstallPolicyAppInternal(
       site, std::move(container),
-      /*create_shortcut=*/shortcut == ShortcutOptions::kWithShortcut);
+      /*create_shortcut=*/shortcut == ShortcutOptions::kWithShortcut,
+      /*install_as_shortcut=*/mode == InstallMode::kWebShortcut);
   AfterStateChangeAction();
 }
 
@@ -1080,8 +1082,9 @@ void WebAppIntegrationTestDriver::RemoveRunOnOsLoginPolicy(Site site) {
     return;
   GURL url = GetAppStartURL(site);
   {
-    ListPrefUpdate updateList(profile()->GetPrefs(), prefs::kWebAppSettings);
-    updateList->GetList().EraseIf([&](const base::Value& item) {
+    ScopedListPrefUpdate update_list(profile()->GetPrefs(),
+                                     prefs::kWebAppSettings);
+    update_list->EraseIf([&](const base::Value& item) {
       return *item.GetDict().FindString(kManifestId) == url.spec();
     });
   }
@@ -1816,13 +1819,12 @@ void WebAppIntegrationTestDriver::UninstallPolicyApp(Site site) {
           run_loop.Quit();
       }));
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          prefs::kWebAppInstallForceList);
-    size_t removed_count =
-        update->GetList().EraseIf([&](const base::Value& item) {
-          const base::Value* url_value = item.GetDict().Find(kUrlKey);
-          return url_value && url_value->GetString() == url.spec();
-        });
+    ScopedListPrefUpdate update(profile()->GetPrefs(),
+                                prefs::kWebAppInstallForceList);
+    size_t removed_count = update->EraseIf([&](const base::Value& item) {
+      const base::Value* url_value = item.GetDict().Find(kUrlKey);
+      return url_value && url_value->GetString() == url.spec();
+    });
     ASSERT_GT(removed_count, 0U);
   }
   run_loop.Run();
@@ -2730,7 +2732,8 @@ base::FilePath WebAppIntegrationTestDriver::GetShortcutPath(
 void WebAppIntegrationTestDriver::InstallPolicyAppInternal(
     Site site,
     base::Value default_launch_container,
-    const bool create_shortcut) {
+    const bool create_shortcut,
+    const bool install_as_shortcut) {
   GURL url = GetAppStartURL(site);
   WebAppTestInstallWithOsHooksObserver observer(profile());
   observer.BeginListening();
@@ -2739,9 +2742,10 @@ void WebAppIntegrationTestDriver::InstallPolicyAppInternal(
     item.Set(kUrlKey, url.spec());
     item.Set(kDefaultLaunchContainerKey, std::move(default_launch_container));
     item.Set(kCreateDesktopShortcutKey, create_shortcut);
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          prefs::kWebAppInstallForceList);
-    update->GetList().Append(std::move(item));
+    item.Set(kInstallAsShortcut, install_as_shortcut);
+    ScopedListPrefUpdate update(profile()->GetPrefs(),
+                                prefs::kWebAppInstallForceList);
+    update->Append(std::move(item));
   }
   active_app_id_ = observer.Wait();
   AppReadinessWaiter(profile(), active_app_id_).Await();
@@ -2751,8 +2755,8 @@ void WebAppIntegrationTestDriver::ApplyRunOnOsLoginPolicy(Site site,
                                                           const char* policy) {
   GURL url = GetAppStartURL(site);
   {
-    ListPrefUpdate update(profile()->GetPrefs(), prefs::kWebAppSettings);
-    base::Value::List& update_list = update->GetList();
+    ScopedListPrefUpdate update(profile()->GetPrefs(), prefs::kWebAppSettings);
+    base::Value::List& update_list = update.Get();
     update_list.EraseIf([&](const base::Value& item) {
       return *item.GetDict().FindString(kManifestId) == url.spec();
     });
@@ -2785,13 +2789,12 @@ void WebAppIntegrationTestDriver::UninstallPolicyAppById(const AppId& id) {
       }));
   std::string url_spec = provider()->registrar().GetAppStartUrl(id).spec();
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          prefs::kWebAppInstallForceList);
-    size_t removed_count =
-        update->GetList().EraseIf([&](const base::Value& item) {
-          const base::Value* url_value = item.GetDict().Find(kUrlKey);
-          return url_value && url_value->GetString() == url_spec;
-        });
+    ScopedListPrefUpdate update(profile()->GetPrefs(),
+                                prefs::kWebAppInstallForceList);
+    size_t removed_count = update->EraseIf([&](const base::Value& item) {
+      const base::Value* url_value = item.GetDict().Find(kUrlKey);
+      return url_value && url_value->GetString() == url_spec;
+    });
     ASSERT_GT(removed_count, 0U);
   }
   run_loop.Run();

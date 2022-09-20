@@ -733,7 +733,7 @@ void LocalFrameMojoHandler::SaveImageAt(const gfx::Point& window_point) {
 
 void LocalFrameMojoHandler::ReportBlinkFeatureUsage(
     const Vector<mojom::blink::WebFeature>& features) {
-  DCHECK(!features.IsEmpty());
+  DCHECK(!features.empty());
 
   // Assimilate all features used/performed by the browser into UseCounter.
   auto* document = GetDocument();
@@ -1344,7 +1344,7 @@ void LocalFrameMojoHandler::OnPortalActivated(
   DOMWindowPortalHost::portalHost(*dom_window)->OnPortalActivated();
   frame_->GetPage()->SetInsidePortal(false);
 
-  DCHECK(!data.locked_agent_cluster_id)
+  DCHECK(!data.locked_to_sender_agent_cluster)
       << "portal activation is always cross-agent-cluster and should be "
          "diagnosed early";
   MessagePortArray* ports =

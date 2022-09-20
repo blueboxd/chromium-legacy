@@ -262,7 +262,7 @@ String RemotePlayback::state() const {
 }
 
 bool RemotePlayback::HasPendingActivity() const {
-  return HasEventListeners() || !availability_callbacks_.IsEmpty() ||
+  return HasEventListeners() || !availability_callbacks_.empty() ||
          prompt_promise_resolver_;
 }
 
@@ -272,7 +272,7 @@ void RemotePlayback::PromptInternal() {
 
   PresentationController* controller =
       PresentationController::FromContext(GetExecutionContext());
-  if (controller && !availability_urls_.IsEmpty()) {
+  if (controller && !availability_urls_.empty()) {
     controller->GetPresentationService()->StartPresentation(
         availability_urls_,
         WTF::BindOnce(&RemotePlayback::HandlePresentationResponse,
@@ -339,7 +339,7 @@ bool RemotePlayback::CancelWatchAvailabilityInternal(int id) {
   if (iter == availability_callbacks_.end())
     return false;
   availability_callbacks_.erase(iter);
-  if (availability_callbacks_.IsEmpty())
+  if (availability_callbacks_.empty())
     StopListeningForAvailability();
 
   return true;
@@ -440,7 +440,7 @@ void RemotePlayback::SourceChanged(const WebURL& source,
     return;
 
   KURL current_url =
-      availability_urls_.IsEmpty() ? KURL() : availability_urls_[0];
+      availability_urls_.empty() ? KURL() : availability_urls_[0];
   KURL new_url = GetAvailabilityUrl(source, is_source_supported);
 
   if (new_url == current_url)
@@ -641,7 +641,7 @@ void RemotePlayback::MaybeStartListeningForAvailability() {
   if (is_listening_)
     return;
 
-  if (availability_urls_.IsEmpty() || availability_callbacks_.IsEmpty())
+  if (availability_urls_.empty() || availability_callbacks_.empty())
     return;
 
   PresentationController* controller =

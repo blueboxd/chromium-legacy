@@ -1802,7 +1802,7 @@ HTMLInputElement::FilteredDataListOptions() const {
   if (Multiple() && type() == input_type_names::kEmail) {
     Vector<String> emails;
     editor_value.Split(',', true, emails);
-    if (!emails.IsEmpty())
+    if (!emails.empty())
       editor_value = emails.back().StripWhiteSpace();
   }
 
@@ -2265,6 +2265,12 @@ void HTMLInputElement::MaybeReportPiiMetrics() {
   }
 }
 
+// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-mutable
+bool HTMLInputElement::isMutable() {
+  return !IsDisabledFormControl() &&
+         !(input_type_->SupportsReadOnly() && IsReadOnly());
+}
+
 // Show a browser picker for this input element.
 // https://html.spec.whatwg.org/multipage/input.html#dom-input-showpicker
 void HTMLInputElement::showPicker(ExceptionState& exception_state) {
@@ -2285,7 +2291,7 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
     }
   }
 
-  if (IsDisabledOrReadOnly()) {
+  if (!isMutable()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "HTMLInputElement::showPicker() cannot be used on immutable controls.");

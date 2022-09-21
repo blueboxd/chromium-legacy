@@ -744,13 +744,13 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
     case FinalStatus::kAudioOutputDeviceRequested:
     case FinalStatus::kMixedContent:
     case FinalStatus::kTriggerBackgrounded:
-    case FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
     case FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
     case FinalStatus::kMemoryLimitExceeded:
     case FinalStatus::kFailToGetMemoryUsage:
     case FinalStatus::kDataSaverEnabled:
     case FinalStatus::kHasEffectiveUrl:
     case FinalStatus::kActivatedBeforeStarted:
+    case FinalStatus::kInactivePageRestriction:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as

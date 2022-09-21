@@ -37,13 +37,13 @@
 namespace blink {
 
 class ContainerNode;
+class CSSSelector;
 struct InvalidationLists;
 class QualifiedName;
-class RuleData;
 class StyleScope;
 
-// Summarizes and indexes the contents of RuleData objects. It creates
-// invalidation sets from rule data and makes them available via several
+// Summarizes and indexes the contents of CSS selectors. It creates
+// invalidation sets from them and makes them available via several
 // CollectInvalidationSetForFoo methods which use the indices to quickly gather
 // the relevant InvalidationSets for a particular DOM mutation.
 class CORE_EXPORT RuleFeatureSet {
@@ -59,12 +59,15 @@ class CORE_EXPORT RuleFeatureSet {
   bool operator!=(const RuleFeatureSet& o) const { return !(*this == o); }
 
   // Methods for updating the data in this object.
-  void Add(const RuleFeatureSet&);
+  void Merge(const RuleFeatureSet&);
   void Clear();
 
   enum SelectorPreMatch { kSelectorNeverMatches, kSelectorMayMatch };
 
-  SelectorPreMatch CollectFeaturesFromRuleData(const RuleData*,
+  // Creates invalidation sets for the given CSS selector. This is done as part
+  // of creating the RuleSet for the style sheet, i.e., before matching or
+  // mutation begins.
+  SelectorPreMatch CollectFeaturesFromSelector(const CSSSelector&,
                                                const StyleScope*);
 
   // Methods for accessing the data in this object.
@@ -193,13 +196,12 @@ class CORE_EXPORT RuleFeatureSet {
   // See InvalidationSet::ToString for more information.
   String ToString() const;
 
- protected:
+ private:
   enum PositionType { kSubject, kAncestor };
   InvalidationSet* InvalidationSetForSimpleSelector(const CSSSelector&,
                                                     InvalidationType,
                                                     PositionType);
 
- private:
   // Each map entry is either a DescendantInvalidationSet or
   // SiblingInvalidationSet.
   // When both are needed, we store the SiblingInvalidationSet, and use it to
@@ -228,10 +230,10 @@ class CORE_EXPORT RuleFeatureSet {
     bool invalidates_parts = false;
   };
 
-  SelectorPreMatch CollectFeaturesFromSelector(
+  SelectorPreMatch CollectMetadataFromSelector(
       const CSSSelector&,
-      FeatureMetadata&,
-      unsigned max_direct_adjacent_selectors);
+      unsigned max_direct_adjacent_selectors,
+      FeatureMetadata&);
 
   InvalidationSet& EnsureClassInvalidationSet(const AtomicString& class_name,
                                               InvalidationType,
@@ -251,7 +253,7 @@ class CORE_EXPORT RuleFeatureSet {
   DescendantInvalidationSet& EnsureTypeRuleInvalidationSet();
   DescendantInvalidationSet& EnsurePartInvalidationSet();
 
-  void UpdateInvalidationSets(const RuleData*, const StyleScope*);
+  void UpdateInvalidationSets(const CSSSelector&, const StyleScope*);
 
   struct InvalidationSetFeatures {
     DISALLOW_NEW();
@@ -668,33 +670,49 @@ class CORE_EXPORT RuleFeatureSet {
       CSSSelector::RelationType previous_combinator,
       AddFeaturesMethodForLogicalCombinationInHas);
 
-  static InvalidationSet& EnsureMutableInvalidationSet(
-      scoped_refptr<InvalidationSet>&,
-      InvalidationType,
-      PositionType);
-
-  InvalidationSet& EnsureInvalidationSet(InvalidationSetMap&,
-                                         const AtomicString& key,
-                                         InvalidationType,
-                                         PositionType);
-  InvalidationSet& EnsureInvalidationSet(PseudoTypeInvalidationSetMap&,
-                                         CSSSelector::PseudoType key,
-                                         InvalidationType,
-                                         PositionType);
-
-  // Adds an InvalidationSet to this RuleFeatureSet.
+  // Make sure that the pointer in “invalidation_set” has a single,
+  // reference that can be modified safely. (This is done through
+  // copy-on-write, if needed, so that it can be modified without
+  // disturbing unrelated invalidation sets that shared the pointer.)
+  // If invalidation_set is nullptr, a new one is created. If an existing
+  // InvalidationSet is used as base, it is extended to the right type
+  // (descendant, sibling, self -- n-th sibling is treated as sibling)
+  // if needed.
   //
-  // A copy-on-write mechanism is used: if we don't already have an invalidation
-  // set for |key|, we simply retain the incoming invalidation set without
-  // copying any data. If another AddInvalidationSet call takes place with the
-  // same key, we copy the existing InvalidationSet (if necessary) before
-  // combining it with the incoming InvalidationSet.
-  void AddInvalidationSet(InvalidationSetMap&,
-                          const AtomicString& key,
-                          scoped_refptr<InvalidationSet>);
-  void AddInvalidationSet(PseudoTypeInvalidationSetMap&,
-                          CSSSelector::PseudoType key,
-                          scoped_refptr<InvalidationSet>);
+  // The return value is the invalidation set to be modified. This is
+  // identical to the new value of invalidation_set in all cases _except_
+  // if the existing invalidation was a sibling invalidation set and
+  // you requested a descendant invalidation set -- if so, it it a reference
+  // to the DescendantInvalidationSet embedded within that set.
+  // In other words, you must ignore the value of invalidation_set
+  // after this function, since it is not what you requested.
+  static InvalidationSet& EnsureMutableInvalidationSet(
+      InvalidationType type,
+      PositionType position,
+      scoped_refptr<InvalidationSet>& invalidation_set);
+
+  static InvalidationSet& EnsureInvalidationSet(InvalidationSetMap&,
+                                                const AtomicString& key,
+                                                InvalidationType,
+                                                PositionType);
+  static InvalidationSet& EnsureInvalidationSet(PseudoTypeInvalidationSetMap&,
+                                                CSSSelector::PseudoType key,
+                                                InvalidationType,
+                                                PositionType);
+
+  // Adds an InvalidationSet to this RuleFeatureSet, combining with any
+  // data that may already be there. (That data may come from a previous
+  // call to EnsureInvalidationSet(), or from another MergeInvalidationSet().)
+  //
+  // Copy-on-write is used to get correct merging in face of shared
+  // InvalidationSets between keys; see comments on
+  // EnsureMutableInvalidationSet() for more details.
+  void MergeInvalidationSet(InvalidationSetMap&,
+                            const AtomicString& key,
+                            scoped_refptr<InvalidationSet>);
+  void MergeInvalidationSet(PseudoTypeInvalidationSetMap&,
+                            CSSSelector::PseudoType key,
+                            scoped_refptr<InvalidationSet>);
 
   FeatureMetadata metadata_;
   InvalidationSetMap class_invalidation_sets_;

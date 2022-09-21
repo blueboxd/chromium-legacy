@@ -20,6 +20,7 @@ const StopEvent = chrome.speechRecognitionPrivate.SpeechRecognitionStopEvent;
 const SpeechRecognitionType =
     chrome.speechRecognitionPrivate.SpeechRecognitionType;
 const PrefObject = chrome.settingsPrivate.PrefObject;
+const PumpkinData = chrome.accessibilityPrivate.PumpkinData;
 
 /** Main class for the Chrome OS dictation feature. */
 export class Dictation {
@@ -179,8 +180,8 @@ export class Dictation {
     chrome.accessibilityPrivate.isFeatureEnabled(pumpkinFeature, enabled => {
       this.isPumpkinEnabled_ = enabled;
       if (enabled) {
-        chrome.accessibilityPrivate.installPumpkinForDictation(success => {
-          this.onPumpkinInstalled_(success);
+        chrome.accessibilityPrivate.installPumpkinForDictation(data => {
+          this.onPumpkinInstalled_(data);
         });
       }
     });
@@ -536,11 +537,11 @@ export class Dictation {
   }
 
   /**
-   * @param {boolean} success
+   * @param {PumpkinData} data
    * @private
    */
-  onPumpkinInstalled_(success) {
-    if (!this.isPumpkinEnabled_) {
+  onPumpkinInstalled_(data) {
+    if (!this.isPumpkinEnabled_ || !data) {
       return;
     }
 
@@ -603,5 +604,5 @@ Dictation.Timeouts = {
   NO_SPEECH_NETWORK_MS: 10 * 1000,
   NO_SPEECH_ONDEVICE_MS: 20 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
-  NO_FOCUSED_IME_MS: 500,
+  NO_FOCUSED_IME_MS: 1000,
 };

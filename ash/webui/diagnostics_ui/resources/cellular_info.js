@@ -3,33 +3,48 @@
 // found in the LICENSE file.
 
 import './data_point.js';
-import './diagnostics_shared_css.js';
+import './diagnostics_shared.css.js';
 
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LockType, Network, RoamingState} from './diagnostics_types.js';
+import {getTemplate} from './cellular_info.html.js';
 import {getLockType, getSignalStrength} from './diagnostics_utils.js';
+import {LockType, Network, RoamingState} from './network_health_provider.mojom-webui.js';
 
 /**
  * @fileoverview
  * 'cellular-info' is responsible for displaying data points related
  * to a Cellular network.
  */
-Polymer({
-  is: 'cellular-info',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const CellularInfoElementBase = mixinBehaviors([I18nBehavior], PolymerElement);
 
-  behaviors: [I18nBehavior],
+/** @polymer */
+export class CellularInfoElement extends CellularInfoElementBase {
+  static get is() {
+    return 'cellular-info';
+  }
 
-  properties: {
-    /** @type {!Network} */
-    network: {
-      type: Object,
-    },
-  },
+  static get template() {
+    return getTemplate();
+  }
+
+  static get properties() {
+    return {
+      /** @type {!Network} */
+      network: {
+        type: Object,
+      },
+
+    };
+  }
 
   /**
    * Get correct display text for known cellular network technology.
@@ -67,7 +82,7 @@ Polymer({
         assertNotReached();
         return '';
     }
-  },
+  }
 
   /**
    * @protected
@@ -94,7 +109,7 @@ Polymer({
 
     assertNotReached();
     return '';
-  },
+  }
 
   /**
    * @protected
@@ -109,7 +124,7 @@ Polymer({
     return (simLocked && lockType !== LockType.kNone) ?
         this.i18n('networkSimLockedText', getLockType(lockType)) :
         this.i18n('networkSimUnlockedText');
-  },
+  }
 
   /**
    * @protected
@@ -121,5 +136,7 @@ Polymer({
           this.network.typeProperties.cellular.signalStrength);
     }
     return '';
-  },
-});
+  }
+}
+
+customElements.define(CellularInfoElement.is, CellularInfoElement);

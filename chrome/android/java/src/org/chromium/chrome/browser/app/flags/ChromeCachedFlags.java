@@ -116,6 +116,8 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sQueryTilesOnStart);
                 add(ChromeFeatureList.sReadLater);
                 add(ChromeFeatureList.sStartSurfaceAndroid);
+                add(ChromeFeatureList.sStartSurfaceDisabledFeedImprovement);
+                add(ChromeFeatureList.sStartSurfaceReturnTime);
                 add(ChromeFeatureList.sStartSurfaceRefactor);
                 add(ChromeFeatureList.sStoreHoursAndroid);
                 add(ChromeFeatureList.sSwapPixelFormatToFixConvertFromTranslucent);
@@ -123,6 +125,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sTabGroupsAndroid);
                 add(ChromeFeatureList.sTabGroupsContinuationAndroid);
                 add(ChromeFeatureList.sTabGroupsForTablets);
+                add(ChromeFeatureList.sTabSelectionEditorV2);
                 add(ChromeFeatureList.sTabStripImprovements);
                 add(ChromeFeatureList.sTabToGTSAnimation);
                 add(ChromeFeatureList.sToolbarUseHardwareBitmapDraw);

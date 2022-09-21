@@ -307,38 +307,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "fuchsia-fyi-x64-reviver",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["fuchsia_x64"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = "fuchsia",
-        ),
-        build_gs_bucket = "chromium-fuchsia-archive",
-    ),
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|x64",
-            short_name = "rev",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "rev",
-        ),
-    ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.builder(
     name = "fuchsia-fyi-x64-wst",
     console_view_entry = [
         consoles.console_view_entry(
@@ -2084,23 +2052,6 @@ fyi_ios_builder(
 )
 
 fyi_ios_builder(
-    name = "ios-simulator-cronet (reclient shadow)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builder_spec = builder_config.copy_from(
-        "ci/ios-simulator-cronet",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "cronet",
-        short_name = "rec",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    builderless = True,
-    goma_backend = None,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 40,
-)
-
-fyi_ios_builder(
     name = "ios-m1-simulator-cronet",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -2140,6 +2091,9 @@ fyi_ios_builder(
     schedule = "0 1-23/6 * * *",
     triggered_by = [],
     xcode = xcode.x13wk,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(
@@ -2151,6 +2105,9 @@ fyi_ios_builder(
         ),
     ],
     os = os.MAC_12,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(
@@ -2176,6 +2133,9 @@ fyi_ios_builder(
         ),
     ],
     os = os.MAC_12,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(
@@ -2296,6 +2256,9 @@ fyi_mac_builder(
     ),
     cores = None,
     os = None,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_mac_builder(

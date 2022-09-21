@@ -559,8 +559,8 @@ class UpdateRequiredScreenPolicyPresentTest : public OobeBaseTest {
     proto.mutable_device_minimum_version()->set_value(policy_value);
   }
 
-  void SetAndRefreshMinimumChromeVersionPolicy(const base::Value& value) {
-    SetMinimumChromeVersionPolicy(value);
+  void SetAndRefreshMinimumChromeVersionPolicy(const base::Value::Dict& value) {
+    SetMinimumChromeVersionPolicy(base::Value(value.Clone()));
     policy_helper_.RefreshDevicePolicy();
   }
 

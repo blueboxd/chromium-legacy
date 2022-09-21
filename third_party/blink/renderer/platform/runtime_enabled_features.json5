@@ -297,6 +297,10 @@
       origin_trial_feature_name: "AutoDarkMode",
     },
     {
+      name: "AutoDisableAccessibilityV2",
+      public: true,
+    },
+    {
       // TODO(crbug.com/1185950): Remove this flag when the feature is fully
       // launched and released to stable with no issues.
       name: "AutoExpandDetailsElement",
@@ -923,6 +927,11 @@
       name: "DelegatedInkTrails",
       status: "stable",
     },
+    // https://github.com/w3c/resource-timing/pull/343
+    {
+      name: "DeliveryType",
+      status: "experimental",
+    },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
@@ -1489,6 +1498,7 @@
     {
       name: "LayoutNGPrinting",
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation","LayoutNGView"],
+      status: "test",
     },
     {
       name: "LayoutNGSubgrid",
@@ -2408,11 +2418,8 @@
     },
     {
       name: "SoftNavigationHeuristics",
-      status: "test",
-    },
-    {
-      name: "SoftNavigationHeuristicsLogging",
       status: "experimental",
+      depends_on: ["NavigationId"],
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate

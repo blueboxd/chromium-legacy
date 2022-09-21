@@ -1648,6 +1648,10 @@ const char kTabAudioMutingDescription[] =
     "When enabled, the audio indicators in the tab strip double as tab audio "
     "mute controls.";
 
+const char kTabSelectionEditorV2Name[] = "Tab selection editor V2";
+const char kTabSelectionEditorV2Description[] =
+    "Enable improved bulk tab editing capabilities.";
+
 const char kTabSwitcherOnReturnName[] = "Tab switcher on return";
 const char kTabSwitcherOnReturnDescription[] =
     "Enable tab switcher on return after specified time has elapsed";
@@ -4007,6 +4011,11 @@ const char kSiteDataImprovementsName[] = "Site data improvements";
 const char kSiteDataImprovementsDescription[] =
     "Improved 'All sites' and 'Site settings' pages on Android.";
 
+const char kStartSurfaceDisabledFeedImprovementName[] =
+    "Start Surface Disabled Feed Improvement";
+const char kStartSurfaceDisabledFeedImprovementDescription[] =
+    "Enable improving Start surface when Feed is disabled";
+
 const char kStartSurfaceRefactorName[] = "Start Surface Refactor";
 const char kStartSurfaceRefactorDescription[] =
     "Enable splitting Tab switcher from Start surface";
@@ -4331,15 +4340,6 @@ const char kNtpRealboxMatchSearchboxThemeDescription[] =
 const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
 const char kNtpRealboxPedalsDescription[] =
     "Shows pedals in the NTP Realbox when enabled.";
-
-const char kNtpRealboxSuggestionAnswersName[] =
-    "NTP Realbox Suggestion Answers";
-const char kNtpRealboxSuggestionAnswersDescription[] =
-    "Shows suggestion answers in the NTP Realbox when enabled.";
-
-const char kNtpRealboxTailSuggestName[] = "NTP Realbox Tail Suggest";
-const char kNtpRealboxTailSuggestDescription[] =
-    "Properly formats the tail suggestions to match the Omnibox";
 
 const char kNtpRealboxUseGoogleGIconName[] = "NTP Realbox Google G Icon";
 const char kNtpRealboxUseGoogleGIconDescription[] =
@@ -5479,6 +5479,9 @@ const char kFilesInlineSyncStatusName[] =
 const char kFilesInlineSyncStatusDescription[] =
     "Enable displaying the sync status of each file next to its name in Files "
     "app.";
+
+const char kFilesSearchV2Name[] = "V2 generation of file search.";
+const char kFilesSearchV2Description[] = "Enable V2 generation of file search.";
 
 const char kFilesSinglePartitionFormatName[] =
     "Enable Partitioning of Removable Disks.";

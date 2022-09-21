@@ -6,22 +6,24 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './data_point.js';
 import './diagnostics_card.js';
-import './diagnostics_shared_css.js';
-import './icons.js';
+import './diagnostics_shared.css.js';
+import './icons.html.js';
 import './percent_bar_chart.js';
 import './routine_section.js';
 import './strings.m.js';
 
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BatteryChargeStatus, BatteryChargeStatusObserverInterface, BatteryChargeStatusObserverReceiver, BatteryHealth, BatteryHealthObserverInterface, BatteryHealthObserverReceiver, BatteryInfo, BatteryState, ExternalPowerSource, RoutineType, SystemDataProviderInterface} from './diagnostics_types.js';
+import {getTemplate} from './battery_status_card.html.js';
 import {getDiagnosticsIcon} from './diagnostics_utils.js';
 import {getSystemDataProvider} from './mojo_interface_provider.js';
 import {mojoString16ToString} from './mojo_utils.js';
 import {TestSuiteStatus} from './routine_list_executor.js';
+import {BatteryChargeStatus, BatteryChargeStatusObserverInterface, BatteryChargeStatusObserverReceiver, BatteryHealth, BatteryHealthObserverInterface, BatteryHealthObserverReceiver, BatteryInfo, BatteryState, ExternalPowerSource, SystemDataProviderInterface} from './system_data_provider.mojom-webui.js';
+import {RoutineType} from './system_routine_controller.mojom-webui.js';
 
 const BATTERY_ICON_PREFIX = 'battery-';
 
@@ -45,107 +47,127 @@ function calculatePowerPercentage(chargeNow, chargeFull) {
  * @fileoverview
  * 'battery-status-card' shows information about battery status.
  */
-Polymer({
-  is: 'battery-status-card',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const BatteryStatusCardElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
 
-  behaviors: [I18nBehavior],
+/** @polymer */
+export class BatteryStatusCardElement extends BatteryStatusCardElementBase {
+  static get is() {
+    return 'battery-status-card';
+  }
 
-  /**
-   * @private {?SystemDataProviderInterface}
-   */
-  systemDataProvider_: null,
+  static get template() {
+    return getTemplate();
+  }
 
-  /**
-   * Receiver responsible for observing battery charge status.
-   * @private {?BatteryChargeStatusObserverReceiver}
-   */
-  batteryChargeStatusObserverReceiver_: null,
+  static get properties() {
+    return {
+      /** @private {!BatteryChargeStatus} */
+      batteryChargeStatus_: {
+        type: Object,
+      },
 
-  /**
-   * Receiver responsible for observing battery health.
-   * @private {
-   *  ?BatteryHealthObserverReceiver}
-   */
-  batteryHealthObserverReceiver_: null,
+      /** @private {!BatteryHealth} */
+      batteryHealth_: {
+        type: Object,
+      },
 
-  properties: {
-    /** @private {!BatteryChargeStatus} */
-    batteryChargeStatus_: {
-      type: Object,
-    },
+      /** @private {!BatteryInfo} */
+      batteryInfo_: {
+        type: Object,
+      },
 
-    /** @private {!BatteryHealth} */
-    batteryHealth_: {
-      type: Object,
-    },
+      /** @private {!Array<!RoutineType>} */
+      routines_: {
+        type: Array,
+        computed:
+            'getCurrentPowerRoutines_(batteryChargeStatus_.powerAdapterStatus)',
+      },
 
-    /** @private {!BatteryInfo} */
-    batteryInfo_: {
-      type: Object,
-    },
+      /** @protected {string} */
+      powerTimeString_: {
+        type: String,
+        computed: 'getPowerTimeString_(batteryChargeStatus_.powerTime)',
+      },
 
-    /** @private {!Array<!RoutineType>} */
-    routines_: {
-      type: Array,
-      computed:
-          'getCurrentPowerRoutines_(batteryChargeStatus_.powerAdapterStatus)',
-    },
+      /** @type {!TestSuiteStatus} */
+      testSuiteStatus: {
+        type: Number,
+        value: TestSuiteStatus.NOT_RUNNING,
+        notify: true,
+      },
 
-    /** @protected {string} */
-    powerTimeString_: {
-      type: String,
-      computed: 'getPowerTimeString_(batteryChargeStatus_.powerTime)',
-    },
+      /** @type {string} */
+      batteryIcon: {
+        type: String,
+        computed: 'getBatteryIcon_(batteryChargeStatus_.powerAdapterStatus,' +
+            'batteryChargeStatus_.chargeNowMilliampHours,' +
+            'batteryHealth_.chargeFullNowMilliampHours)',
+      },
 
-    /** @type {!TestSuiteStatus} */
-    testSuiteStatus: {
-      type: Number,
-      value: TestSuiteStatus.kNotRunning,
-      notify: true,
-    },
+      /** @type {string} */
+      iconClass: {
+        type: String,
+        computed:
+            'updateIconClassList_(batteryChargeStatus_.powerAdapterStatus)',
+      },
 
-    /** @type {string} */
-    batteryIcon: {
-      type: String,
-      computed: 'getBatteryIcon_(batteryChargeStatus_.powerAdapterStatus,' +
-          'batteryChargeStatus_.chargeNowMilliampHours,' +
-          'batteryHealth_.chargeFullNowMilliampHours)',
-    },
+      /** @type {boolean} */
+      isActive: {
+        type: Boolean,
+      },
 
-    /** @type {string} */
-    iconClass: {
-      type: String,
-      computed: 'updateIconClassList_(batteryChargeStatus_.powerAdapterStatus)',
-    },
-
-    /** @type {boolean} */
-    isActive: {
-      type: Boolean,
-    },
-  },
+    };
+  }
 
   /** @override */
-  created() {
+  constructor() {
+    super();
+
+    /**
+     * @private {?SystemDataProviderInterface}
+     */
+    this.systemDataProvider_ = null;
+
+    /**
+     * Receiver responsible for observing battery charge status.
+     * @private {?BatteryChargeStatusObserverReceiver}
+     */
+    this.batteryChargeStatusObserverReceiver_ = null;
+
+    /**
+     * Receiver responsible for observing battery health.
+     * @private {
+     *  ?BatteryHealthObserverReceiver}
+     */
+    this.batteryHealthObserverReceiver_ = null;
+
     this.systemDataProvider_ = getSystemDataProvider();
     this.fetchBatteryInfo_();
     this.observeBatteryChargeStatus_();
     this.observeBatteryHealth_();
-  },
+  }
 
   /** @override */
-  detached() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
     this.batteryChargeStatusObserverReceiver_.$.close();
     this.batteryHealthObserverReceiver_.$.close();
-  },
+  }
 
   /** @private */
   fetchBatteryInfo_() {
     this.systemDataProvider_.getBatteryInfo().then((result) => {
       this.onBatteryInfoReceived_(result.batteryInfo);
     });
-  },
+  }
 
   /**
    * @param {!BatteryInfo} batteryInfo
@@ -153,7 +175,7 @@ Polymer({
    */
   onBatteryInfoReceived_(batteryInfo) {
     this.batteryInfo_ = batteryInfo;
-  },
+  }
 
   /** @private */
   observeBatteryChargeStatus_() {
@@ -166,7 +188,7 @@ Polymer({
 
     this.systemDataProvider_.observeBatteryChargeStatus(
         this.batteryChargeStatusObserverReceiver_.$.bindNewPipeAndPassRemote());
-  },
+  }
 
   /**
    * Implements BatteryChargeStatusObserver.onBatteryChargeStatusUpdated()
@@ -174,7 +196,7 @@ Polymer({
    */
   onBatteryChargeStatusUpdated(batteryChargeStatus) {
     this.batteryChargeStatus_ = batteryChargeStatus;
-  },
+  }
 
   /** @private */
   observeBatteryHealth_() {
@@ -186,7 +208,7 @@ Polymer({
 
     this.systemDataProvider_.observeBatteryHealth(
         this.batteryHealthObserverReceiver_.$.bindNewPipeAndPassRemote());
-  },
+  }
 
   /**
    * Get an array of currently relevant routines based on power adaptor status
@@ -198,7 +220,7 @@ Polymer({
     return powerAdapterStatus === ExternalPowerSource.kDisconnected ?
         [RoutineType.kBatteryDischarge] :
         [RoutineType.kBatteryCharge];
-  },
+  }
 
   /**
    * Get power time string from battery status.
@@ -224,7 +246,7 @@ Polymer({
     return charging ?
         loadTimeData.getStringF('batteryChargingStatusText', timeValue) :
         loadTimeData.getStringF('batteryDischargingStatusText', timeValue);
-  },
+  }
 
   /**
    * Implements BatteryHealthObserver.onBatteryHealthUpdated()
@@ -232,13 +254,13 @@ Polymer({
    */
   onBatteryHealthUpdated(batteryHealth) {
     this.batteryHealth_ = batteryHealth;
-  },
+  }
 
   /** @protected */
   getDesignedFullCharge_() {
     return loadTimeData.getStringF(
         'batteryChipText', this.batteryHealth_.chargeFullDesignMilliampHours);
-  },
+  }
 
   /** @protected */
   getBatteryHealth_() {
@@ -246,13 +268,13 @@ Polymer({
     const batteryWearPercentage =
         Math.min(this.batteryHealth_.batteryWearPercentage, MAX_PERCENTAGE);
     return loadTimeData.getStringF('batteryHealthText', batteryWearPercentage);
-  },
+  }
 
   /** @protected */
   getCurrentNow_() {
     return loadTimeData.getStringF(
         'currentNowText', this.batteryChargeStatus_.currentNowMilliamps);
-  },
+  }
 
   /** @protected */
   getRunTestsButtonText_() {
@@ -261,7 +283,7 @@ Polymer({
                 ExternalPowerSource.kDisconnected ?
             'runBatteryDischargeTestText' :
             'runBatteryChargeTestText');
-  },
+  }
 
   /** @protected */
   getRunTestsAdditionalMessage() {
@@ -281,13 +303,13 @@ Polymer({
     return percentage >= disableRunButtonThreshold ?
         loadTimeData.getString('batteryChargeTestFullMessage') :
         '';
-  },
+  }
 
   /** @protected */
   getEstimateRuntimeInMinutes_() {
     // Power routines will always last <= 1 minute.
     return 1;
-  },
+  }
 
   /**
    * Use the current battery percentage to determine which icon to show the
@@ -336,7 +358,7 @@ Polymer({
     }
 
     assertNotReached();
-  },
+  }
 
   /**
    * @protected
@@ -352,7 +374,7 @@ Polymer({
     }
 
     return this.getBatteryIconForChargePercentage_();
-  },
+  }
 
   /**
    * Use the power adapter status to determine if we need to overwrite the value
@@ -367,5 +389,7 @@ Polymer({
                 ExternalPowerSource.kAc) ?
         'remove-stroke' :
         '';
-  },
-});
+  }
+}
+
+customElements.define(BatteryStatusCardElement.is, BatteryStatusCardElement);

@@ -2385,6 +2385,7 @@ if (!is_android) {
         # lacros_chrome_browsertests as well.
         "../browser/accessibility/live_caption_controller_browsertest.cc",
         "../browser/accessibility/live_caption_speech_recognition_host_browsertest.cc",
+        "../browser/accessibility/live_caption_unavailability_notifier_browsertest.cc",
 
         # These tests also run on Lacros, as part of
         # lacros_chrome_browsertests_run_in_series below.
@@ -2646,7 +2647,7 @@ if (!is_android) {
     }
 
     if (is_cfm) {
-      sources += [ "../browser/ui/webui/chromeos/chromebox_for_meetings/network_settings_dialog_browsertest.cc" ]
+      sources += [ "../browser/ui/webui/ash/chromebox_for_meetings/network_settings_dialog_browsertest.cc" ]
     }
 
     if (!is_chromeos_ash) {
@@ -3921,6 +3922,8 @@ if (!is_android) {
         "../browser/chromeos/tablet_mode/tablet_mode_page_behavior_browsertest.cc",
         "../browser/device_api/device_attribute_api_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
+        "../browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.cc",
+        "../browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.h",
         "../browser/enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator_browsertest.cc",
         "../browser/feedback/show_feedback_page_browsertest.cc",
         "../browser/metrics/chromeos_family_link_user_metrics_provider_browsertest.cc",
@@ -4849,6 +4852,7 @@ if (is_chromeos_lacros) {
       "data/media/",
       "data/policy/test_certs/",
       "data/webapps_integration/",
+      "data/web_app_badging/",
       "data/web_app_shortcuts/",
       "data/web_apps/",
       "data/web_share_target/",
@@ -7423,7 +7427,6 @@ test("unit_tests") {
       "//ash/assistant/util",
       "//ash/components/arc",
       "//ash/components/arc:arc_test_support",
-      "//ash/components/multidevice:test_support",
       "//ash/components/proximity_auth",
       "//ash/components/proximity_auth:test_support",
       "//ash/public/cpp:test_support",
@@ -7510,6 +7513,7 @@ test("unit_tests") {
       "//chromeos/ash/components/feature_usage",
       "//chromeos/ash/components/login/auth:test_support",
       "//chromeos/ash/components/login/session",
+      "//chromeos/ash/components/multidevice:test_support",
       "//chromeos/ash/components/string_matching",
       "//chromeos/ash/components/sync_wifi",
       "//chromeos/ash/services/assistant/public/cpp",
@@ -8678,6 +8682,7 @@ test("unit_tests") {
       "//components/media_router/browser:test_support",
       "//components/media_router/common:test_support",
       "//components/user_education/views",
+      "//components/user_education/views:test_support",
       "//components/user_notes/model:unit_tests",
       "//components/web_modal:test_support",
       "//content/test:test_support",
@@ -8814,6 +8819,7 @@ test("unit_tests") {
       "../browser/ui/views/user_education/browser_feature_promo_controller_unittest.cc",
       "../browser/ui/views/user_education/help_bubble_view_timeout_unittest.cc",
       "../browser/ui/views/user_education/tip_marquee_view_unittest.cc",
+      "../browser/ui/views/user_education/views_tutorial_unittest.cc",
       "../browser/ui/window_name_prompt/window_name_prompt_unittest.cc",
     ]
     if (is_linux) {
@@ -9611,6 +9617,7 @@ if (!is_android) {
         "../browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h",
         "../browser/ui/views/certificate_selector_browsertest.cc",
         "../browser/ui/views/commander_frontend_views_browsertest.cc",
+        "../browser/ui/views/commerce/price_tracking_icon_view_interactive_uitest.cc",
         "../browser/ui/views/constrained_window_views_browsertest.cc",
         "../browser/ui/views/content_setting_bubble_contents_interactive_uitest.cc",
         "../browser/ui/views/exclusive_access_bubble_views_interactive_uitest.cc",
@@ -9670,6 +9677,7 @@ if (!is_android) {
         "interaction/webui_interaction_test_util_interactive_uitest.cc",
       ]
       deps += [
+        "//components/commerce/core:feature_list",
         "//components/live_caption:utils",
         "//components/optimization_guide/core:test_support",
         "//components/optimization_guide/proto:optimization_guide_proto",
@@ -11037,8 +11045,35 @@ if (is_chromeos_ash) {
   }
 }
 
-# This target is for Ash-side browser testing.
 if (is_chromeos_ash) {
+  # This target is for Ash-side crosapi testing.
+  test("ash_crosapi_tests") {
+    use_xvfb = use_xvfb_in_this_config
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    sources = [
+      "../browser/ash/crosapi/test/crosapi_test_base.cc",
+      "../browser/ash/crosapi/test/crosapi_test_base.h",
+    ]
+    deps = [
+      ":browser_tests_runner",
+      "//ash/constants",
+      "//base",
+      "//base/test:test_support",
+      "//chrome",
+      "//chromeos/crosapi/cpp:crosapi_constants",
+      "//chromeos/crosapi/mojom",
+      "//mojo/core/embedder",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/platform",
+      "//mojo/public/cpp/system",
+      "//testing/gtest",
+    ]
+  }
+
+  # This target is for Ash-side crosapi browser testing.
+  # TODO(crbug.com/1357441): Remove this build set when all tests are migrated into
+  # "ash_crosapi_tests" above.
   test("ash_crosapi_browsertests") {
     use_xvfb = use_xvfb_in_this_config
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

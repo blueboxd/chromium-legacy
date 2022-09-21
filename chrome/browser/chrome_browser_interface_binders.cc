@@ -96,6 +96,7 @@
 #include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router.h"
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
 #endif
@@ -351,7 +352,7 @@
 #endif
 
 #if BUILDFLAG(PLATFORM_CFM)
-#include "chrome/browser/ui/webui/chromeos/chromebox_for_meetings/network_settings_dialog.h"
+#include "chrome/browser/ui/webui/ash/chromebox_for_meetings/network_settings_dialog.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -650,9 +651,16 @@ void BindScreenAIAnnotator(
   // TODO(https://crbug.com/1278249): After user settings are added, add extra
   // checking here to ensure the service is bound only when user has explicitly
   // requested it.
-  ScreenAIServiceRouterFactory::GetForBrowserContext(
-      frame_host->GetProcess()->GetBrowserContext())
+
+  content::BrowserContext* browser_context =
+      frame_host->GetProcess()->GetBrowserContext();
+  screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(browser_context)
       ->BindScreenAIAnnotator(std::move(receiver));
+
+  // Annotator function of ScreenAI service requires AXScreenAIAnnotator to be
+  // ready to receive accessibility tree data.
+  screen_ai::AXScreenAIAnnotatorFactory::EnsureExistsForBrowserContext(
+      browser_context);
 }
 
 void BindScreen2xMainContentExtractor(
@@ -662,7 +670,7 @@ void BindScreen2xMainContentExtractor(
   // TODO(https://crbug.com/1278249): After user settings are added, add extra
   // checking here to ensure the service is bound only when user has explicitly
   // requested it.
-  ScreenAIServiceRouterFactory::GetForBrowserContext(
+  screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
       frame_host->GetProcess()->GetBrowserContext())
       ->BindMainContentExtractor(std::move(receiver));
 }
@@ -942,7 +950,8 @@ void PopulateChromeWebUIFrameBinders(
       >(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      help_bubble::mojom::HelpBubbleHandlerFactory, InternalsUI>(map);
+      help_bubble::mojom::HelpBubbleHandlerFactory, InternalsUI,
+      settings::SettingsUI>(map);
 
 #if !defined(OFFICIAL_BUILD)
   RegisterWebUIControllerInterfaceBinder<foo::mojom::FooHandler, NewTabPageUI>(
@@ -1104,7 +1113,7 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::network_config::mojom::CrosNetworkConfig,
 #if BUILDFLAG(PLATFORM_CFM)
-      chromeos::cfm::NetworkSettingsDialogUi,
+      ash::cfm::NetworkSettingsDialogUi,
 #endif  // BUILDFLAG(PLATFORM_CFM)
       chromeos::InternetConfigDialogUI, chromeos::InternetDetailDialogUI,
       chromeos::NetworkUI, chromeos::OobeUI, chromeos::settings::OSSettingsUI,
@@ -1346,6 +1355,8 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
     registry.ForWebUI<ash::ColorInternalsUI>()
         .Add<color_change_listener::mojom::PageHandler>();
   }
+  registry.ForWebUI<ash::file_manager::FileManagerUI>()
+      .Add<color_change_listener::mojom::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // --- Section 2: chrome-untrusted:// WebUIs:

@@ -35,7 +35,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="SBClientDownload.CheckDownloadStats"
-    enum="SBClientDownloadCheckDownloadStats" expires_after="2023-01-15">
+    enum="SBClientDownloadCheckDownloadStats" expires_after="2023-03-19">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DeepScanTrigger" enum="SBDeepScanTriggers"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -73,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DeepScanType" enum="SBDeepScanType"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>domfc@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -214,6 +214,7 @@ chromium-metrics-reviews@google.com.
     <variant name="Document" summary="Office document"/>
     <variant name="None" summary="executable"/>
     <variant name="Rar"/>
+    <variant name="SevenZip"/>
     <variant name="Zip"/>
   </token>
 </histogram>
@@ -239,6 +240,7 @@ chromium-metrics-reviews@google.com.
     <variant name="Document" summary="Office document"/>
     <variant name="None" summary="executable"/>
     <variant name="Rar"/>
+    <variant name="SevenZip"/>
     <variant name="Zip"/>
   </token>
 </histogram>
@@ -293,7 +295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.EncryptedZipUsesAes" enum="BooleanZipHasAES"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -331,6 +333,7 @@ chromium-metrics-reviews@google.com.
     <variant name=".Document" summary="Office documents"/>
     <variant name=".Executable" summary="executables"/>
     <variant name=".Rar"/>
+    <variant name=".SevenZip"/>
     <variant name=".Zip"/>
   </token>
 </histogram>
@@ -442,7 +445,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.SavePackageFileCount" units="files"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>domfc@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -458,6 +461,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records how often users in a population consented to deep scanning are
     actually prompted for deep scanning.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.TailoredWarning.HasVaidEmailForAccountInfo"
+    enum="BooleanValid" expires_after="2023-03-16">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records whether Chrome can find a valid email to be added in the tailored
+    warning string. Logged each time Safe Browsing asks Chrome to show the
+    account info in the warining. Ideally invalid email should be rare, because
+    Safe Browsing should take the user's signed-in status into account when
+    generating tailored verdicts.
   </summary>
 </histogram>
 
@@ -552,6 +568,7 @@ chromium-metrics-reviews@google.com.
   <token key="ArchiveType">
     <variant name="Dmg"/>
     <variant name="Rar"/>
+    <variant name="SevenZip"/>
     <variant name="Zip"/>
   </token>
 </histogram>
@@ -706,7 +723,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.LocalModelDetectsPhishing"
-    enum="BooleanIsPhishing" expires_after="2023-01-15">
+    enum="BooleanIsPhishing" expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -746,7 +763,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.ModelDynamicUpdateSuccess"
-    enum="BooleanSuccess" expires_after="2023-01-15">
+    enum="BooleanSuccess" expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -766,7 +783,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.NetworkRequestDuration" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -776,7 +793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.NetworkResult"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-01-15">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -795,7 +812,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.PhishingDetectorResult"
-    enum="ClientSidePhishingResult" expires_after="2023-01-15">
+    enum="ClientSidePhishingResult" expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -855,7 +872,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.ServerModelDetectsPhishing"
-    enum="BooleanIsPhishing" expires_after="2023-01-15">
+    enum="BooleanIsPhishing" expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

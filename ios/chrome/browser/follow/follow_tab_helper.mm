@@ -17,7 +17,6 @@
 #import "components/history/core/browser/history_types.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_action_state.h"
@@ -28,6 +27,7 @@
 #import "ios/chrome/browser/follow/follow_service_factory.h"
 #import "ios/chrome/browser/follow/follow_util.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
@@ -74,12 +74,14 @@ void FollowTabHelper::SetFollowMenuUpdater(
     id<FollowMenuUpdater> follow_menu_updater) {
   DCHECK(web_state_);
   follow_menu_updater_ = follow_menu_updater;
-  if (should_update_follow_item_ && !web_state_->IsLoading()) {
-    // If the page has finished loading check if the Follow menu item should be
-    // updated, if not it will be updated once the page finishes loading.
+}
+
+void FollowTabHelper::UpdateFollowMenuItem() {
+  if (should_update_follow_item_) {
     FollowJavaScriptFeature::GetInstance()->GetWebPageURLs(
-        web_state_, base::BindOnce(&FollowTabHelper::UpdateFollowMenuItem,
-                                   weak_ptr_factory_.GetWeakPtr()));
+        web_state_,
+        base::BindOnce(&FollowTabHelper::UpdateFollowMenuItemWithURL,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -146,7 +148,7 @@ void FollowTabHelper::OnSuccessfulPageLoad(const GURL& url,
 
   // Update follow menu option if needed.
   if (follow_menu_updater_ && should_update_follow_item_) {
-    UpdateFollowMenuItem(web_page_urls);
+    UpdateFollowMenuItemWithURL(web_page_urls);
   }
 
   // Show follow in-product help (IPH) if eligible.
@@ -234,7 +236,7 @@ void FollowTabHelper::OnDailyVisitQueryResult(
   }
 }
 
-void FollowTabHelper::UpdateFollowMenuItem(WebPageURLs* web_page_urls) {
+void FollowTabHelper::UpdateFollowMenuItemWithURL(WebPageURLs* web_page_urls) {
   DCHECK(web_state_);
 
   web::WebFrame* web_frame = web::GetMainFrame(web_state_);

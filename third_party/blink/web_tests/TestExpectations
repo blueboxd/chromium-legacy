@@ -1269,8 +1269,6 @@ crbug.com/910725 external/wpt/css/css-tables/tentative/paint/overflow-hidden-tab
 
 # [css-contain]
 
-crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
-crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
@@ -1281,7 +1279,6 @@ crbug.com/1315275 external/wpt/css/css-contain/content-visibility/content-visibi
 # [css-align]
 
 crbug.com/722287 crbug.com/886585 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-safe-001.html [ Failure ]
-crbug.com/599828 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-fallback-align-content-001.html [ Failure ]
 
 # [css-ui]
 # The `input-security` property not implemented yet.
@@ -1381,10 +1378,7 @@ crbug.com/606208 external/wpt/css/css-flexbox/order/order-abs-children-painting-
 crbug.com/370604 external/wpt/css/css-flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
 
 # We haven't implemented last baseline alignment.
-crbug.com/886585 external/wpt/css/css-flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
-crbug.com/886585 external/wpt/css/css-flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/886585 external/wpt/css/css-flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
-crbug.com/886585 external/wpt/css/css-flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
 crbug.com/886585 external/wpt/css/css-flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 
 # [css-lists]
@@ -1642,22 +1636,6 @@ crbug.com/1078927 fragmentation/border-spacing-break-before-unbreakable-row.html
 crbug.com/1078927 fragmentation/no-repeating-table-header-after-sections.html [ Failure ]
 crbug.com/1352931 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
-### Tests failing with LayoutNGPrinting enabled:
-crbug.com/1121942 virtual/layout_ng_printing/printing/block-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-but-static-headers-and-footers.html [ Crash Failure ]
-crbug.com/1121942 [ Debug Mac11 ] virtual/layout_ng_printing/printing/fixed-positioned-child-shouldnt-print.html [ Crash Failure Pass ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-clipped.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-overflow-scroll.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.html [ Skip ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/width-overflow.html [ Failure ]
-
-# Tests passing with LayoutNGPrinting enabled:
-virtual/layout_ng_printing/printing/fixedpos-in-multicol.html [ Pass ]
-virtual/layout_ng_printing/printing/monolithic-at-page-block-end-horizontal-tb.html [ Pass ]
-
 ### TablesNG
 # crbug.com/958381
 
@@ -1693,9 +1671,6 @@ crbug.com/1294155 external/wpt/css/css-break/flexbox/single-line-column-flex-fra
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
 crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
 crbug.com/1294155 paint/invalidation/outline/outline-change-vertical-rl.html [ Failure ]
-crbug.com/1294155 printing/fixed-positioned-overflow-scroll.html [ Failure ]
-crbug.com/1294155 printing/multi-page-background.html [ Failure ]
-crbug.com/1294155 [ Win ] printing/vertical-rl.html [ Failure ]
 crbug.com/1294155 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
@@ -2400,11 +2375,17 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
 
-crbug.com/377696 printing/setPrinting.html [ Failure ]
-crbug.com/1311165 printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
-crbug.com/1121942 printing/fixedpos-in-multicol.html [ Failure ]
-crbug.com/1121942 printing/monolithic-at-page-block-end-horizontal-tb.html [ Failure ]
+crbug.com/1121942 printing/block-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
+crbug.com/1311165 printing/fixed-positioned-but-static-headers-and-footers.html [ Crash Failure ]
+crbug.com/1121942 [ Debug Mac11 ] printing/fixed-positioned-child-shouldnt-print.html [ Crash Failure Pass ]
+crbug.com/1121942 printing/fixed-positioned-headers-and-footers-clipped.html [ Crash Failure ]
+crbug.com/1121942 printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Crash Failure ]
+crbug.com/1121942 printing/fixed-positioned-overflow-scroll.html [ Crash Failure ]
+crbug.com/1121942 printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
+crbug.com/1121942 printing/multi-page-background.html [ Failure ]
 crbug.com/1121942 printing/page-break-avoid.html [ Failure ]
+crbug.com/377696 printing/setPrinting.html [ Failure ]
+crbug.com/1121942 printing/width-overflow.html [ Failure ]
 
 crbug.com/1204498 external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure Pass ]
 crbug.com/1223681 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure Pass Timeout ]
@@ -3970,30 +3951,6 @@ crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baselin
 crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Skip ]
 crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Skip ]
 crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Skip ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-img-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-img-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-last-baseline-003.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-rtl-last-baseline-004.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-last-baseline-003.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-vertWM-last-baseline-004.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-img-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-img-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-last-baseline-003.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-rtl-last-baseline-004.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-last-baseline-001.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-last-baseline-002.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-last-baseline-003.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-last-baseline-004.html [ Failure ]
 
 # Baseline Content-Alignment is not implemented yet for CSS Grid Layout
 crbug.com/764235 external/wpt/css/css-grid/alignment/grid-item-content-baseline-001.html [ Skip ]
@@ -7102,6 +7059,7 @@ virtual/plz-dedicated-worker/external/wpt/resource-timing/no-entries-for-cross-o
 
 # Disable step failure trigger flaky tests
 crbug.com/1351571 [ Mac12-arm64 ] http/tests/devtools/persistence/automapping-bind-committed-network-sourcecode.js [ Failure Pass Timeout ]
+crbug.com/1351571 [ Mac11-arm64 ] http/tests/devtools/persistence/automapping-bind-committed-network-sourcecode.js [ Failure Pass Timeout ]
 crbug.com/1358333 [ Mac10.15 ] external/wpt/webmessaging/event.origin.sub.htm [ Failure Pass ]
 
 # Sheriff 2022-08-31
@@ -7137,6 +7095,12 @@ crbug.com/1364129 [ Mac11 ] editing/pasteboard/data-transfer-items-image-png.htm
 # Disable DOM web flake on debug linux and mac
 crbug.com/1353578 [ Debug Linux ] fast/dom/gc-image-element-2.html [ Failure Pass ]
 crbug.com/1353578 [ Debug Mac ] fast/dom/gc-image-element-2.html [ Failure Pass ]
+
+# Disable web test flakes on linux (Debug Leak)
+crbug.com/1349576 [ Debug Linux ] external/wpt/pointerevents/pointerevent_mouse_capture_change_hover.html [ Failure Pass ]
+crbug.com/1358312 [ Linux ] external/wpt/touch-events/single-touch-vertical-rl.html [ Failure Pass ]
+crbug.com/1267596 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Timeout Pass ]
+crbug.com/1318592 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Timeout Pass ]
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]

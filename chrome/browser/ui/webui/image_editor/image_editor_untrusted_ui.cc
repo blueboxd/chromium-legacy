@@ -77,8 +77,6 @@ ImageEditorUntrustedUI::ImageEditorUntrustedUI(content::WebUI* web_ui)
           profile->GetUserData(image_editor::ScreenshotCapturedData::kDataKey));
   if (screenshot_data) {
     screenshot_filepath_ = screenshot_data->screenshot_filepath;
-    profile->SetUserData(image_editor::ScreenshotCapturedData::kDataKey,
-                         nullptr);
   }
 
   CreateAndAddImageEditorUntrustedDataSource(web_ui);
@@ -198,6 +196,29 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_BUTTON_DOWNLOAD_IMAGE},
       {"Button-Copy-Image",
        IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_BUTTON_COPY},
+      {"Title", IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TITLE},
+      {"Button-Clear",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_BUTTON_TEXT_CLEAR},
+      {"Tooltip-Align-Left",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_LEFT},
+      {"Tooltip-Align-Center",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_CENTER},
+      {"Tooltip-Align-Right",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_RIGHT},
+      {"Tooltip-Shadow-None",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_NONE},
+      {"Tooltip-Shadow-Small",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_SMALL},
+      {"Tooltip-Shadow-Large",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_LARGE},
+      {"Tooltip-Font-Default",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_DEFAULT},
+      {"Tooltip-Font-Monospace",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_MONOSPACE},
+      {"Tooltip-Font-Italic",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_ITALIC},
+      {"Tooltip-Font-Outline",
+       IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_OUTLINE},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 }

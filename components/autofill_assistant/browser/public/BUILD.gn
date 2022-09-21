@@ -14,6 +14,7 @@ static_library("public") {
     "autofill_assistant.h",
     "autofill_assistant_factory.h",
     "external_action_delegate.h",
+    "headless_onboarding_result.h",
     "headless_script_controller.h",
     "prefs.cc",
     "prefs.h",
@@ -124,6 +125,7 @@ source_set("unit_tests") {
     "autofill_assistant_unittest.cc",
     "password_change/save_password_leak_detection_delegate_unittest.cc",
     "password_change/website_login_manager_impl_unittest.cc",
+    "prefs_unittest.cc",
   ]
   deps = [
     ":password_change",

@@ -12,8 +12,6 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos_ash)
@@ -82,9 +80,6 @@ source_set("chromeos") {
     "//ash/components/arc/media_session",
     "//ash/components/arc/mojom",
     "//ash/components/fwupd",
-    "//ash/components/multidevice",
-    "//ash/components/multidevice:stub_multidevice_util",
-    "//ash/components/multidevice/logging",
     "//ash/components/peripheral_notification",
     "//ash/components/phonehub",
     "//ash/components/phonehub/proto",
@@ -150,6 +145,7 @@ source_set("chromeos") {
     "//ash/webui/personalization_app/proto",
     "//ash/webui/print_management",
     "//ash/webui/print_management/mojom",
+    "//ash/webui/print_management/resources:resources_grit",
     "//ash/webui/projector_app",
     "//ash/webui/resources:color_internals_resources_grit",
     "//ash/webui/resources:connectivity_diagnostics_resources_grit",
@@ -166,7 +162,6 @@ source_set("chromeos") {
     "//ash/webui/resources:os_feedback_resources_grit",
     "//ash/webui/resources:os_feedback_untrusted_resources_grit",
     "//ash/webui/resources:personalization_app_resources_grit",
-    "//ash/webui/resources:print_management_resources_grit",
     "//ash/webui/resources:projector_app_bundle_resources_grit",
     "//ash/webui/resources:projector_app_trusted_resources_grit",
     "//ash/webui/resources:projector_app_untrusted_resources_grit",
@@ -324,6 +319,9 @@ source_set("chromeos") {
     "//chromeos/ash/components/login/auth",
     "//chromeos/ash/components/login/session",
     "//chromeos/ash/components/memory",
+    "//chromeos/ash/components/multidevice",
+    "//chromeos/ash/components/multidevice:stub_multidevice_util",
+    "//chromeos/ash/components/multidevice/logging",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/network/portal_detector",
     "//chromeos/ash/components/scanning",
@@ -335,6 +333,7 @@ source_set("chromeos") {
     "//chromeos/ash/services/cros_healthd/private/cpp",
     "//chromeos/ash/services/cros_healthd/public/cpp",
     "//chromeos/ash/services/cros_healthd/public/mojom",
+    "//chromeos/ash/services/rollback_network_config/public/mojom",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
     "//chromeos/components/certificate_provider:certificate_provider",
     "//chromeos/components/disks:prefs",
@@ -369,7 +368,6 @@ source_set("chromeos") {
     "//chromeos/services/network_config:in_process_instance",
     "//chromeos/services/network_config/public/cpp:cpp",
     "//chromeos/services/network_health/public/mojom",
-    "//chromeos/services/rollback_network_config/public/mojom",
     "//chromeos/startup:constants",
     "//chromeos/system",
     "//chromeos/ui/base",
@@ -2271,6 +2269,8 @@ source_set("unit_tests") {
     "../ash/printing/oauth2/authorization_zones_manager_unittest.cc",
     "../ash/printing/oauth2/http_exchange_unittest.cc",
     "../ash/printing/oauth2/ipp_endpoint_token_fetcher_unittest.cc",
+    "../ash/printing/oauth2/mock_authorization_zones_manager.cc",
+    "../ash/printing/oauth2/mock_authorization_zones_manager.h",
     "../ash/printing/oauth2/profile_auth_servers_sync_bridge_unittest.cc",
     "../ash/printing/oauth2/test_authorization_server.cc",
     "../ash/printing/oauth2/test_authorization_server.h",
@@ -2282,6 +2282,7 @@ source_set("unit_tests") {
     "../ash/printing/print_management/printing_manager_unittest.cc",
     "../ash/printing/print_servers_manager_unittest.cc",
     "../ash/printing/print_servers_provider_unittest.cc",
+    "../ash/printing/printer_authenticator_unittest.cc",
     "../ash/printing/printer_event_tracker_unittest.cc",
     "../ash/printing/printers_map_unittest.cc",
     "../ash/printing/printers_sync_bridge_unittest.cc",
@@ -2488,7 +2489,6 @@ source_set("unit_tests") {
     "//ash:test_support",
     "//ash/components/arc:arc_test_support",
     "//ash/components/arc:notification_test_support",
-    "//ash/components/multidevice:test_support",
     "//ash/components/phonehub:test_support",
     "//ash/components/proximity_auth",
     "//ash/components/proximity_auth:test_support",
@@ -2560,6 +2560,7 @@ source_set("unit_tests") {
     "//chromeos/ash/components/disks:test_support",
     "//chromeos/ash/components/install_attributes:test_support",
     "//chromeos/ash/components/login/auth",
+    "//chromeos/ash/components/multidevice:test_support",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/network:test_support",
     "//chromeos/ash/components/network/portal_detector:test_support",
@@ -2702,101 +2703,4 @@ proto_library("lock_unlock_event_proto") {
 proto_library("user_event_reporter_testing_record_proto") {
   sources =
       [ "../ash/policy/reporting/user_event_reporter_testing_record.proto" ]
-}
-
-fuzzer_test("smb_url_fuzzer") {
-  sources = [
-    "../ash/smb_client/smb_constants.cc",
-    "../ash/smb_client/smb_constants.h",
-    "../ash/smb_client/smb_url.cc",
-    "../ash/smb_client/smb_url.h",
-    "../ash/smb_client/smb_url_fuzzer.cc",
-  ]
-
-  deps = [
-    "//base:i18n",
-    "//base/test:test_support",
-    "//url",
-  ]
-
-  dict = "../ash/smb_client/fuzzer_data/smb_url_fuzzer.dict"
-
-  seed_corpus = "../ash/smb_client/fuzzer_data/smb_url_corpus"
-}
-
-fuzzer_test("zeroconf_printer_detector_fuzzer") {
-  sources = [ "../ash/printing/zeroconf_printer_detector_fuzzer.cc" ]
-  deps = [
-    "//base/test:test_support",
-    "//chrome/browser",
-    "//chrome/browser/ash:ash",
-    "//chrome/browser/chromeos",
-    "//components/exo/wayland:weston_test",
-  ]
-}
-
-if (use_libfuzzer) {
-  fuzzer_test("policy_fuzzer") {
-    sources = [ "../ash/policy/fuzzer/policy_fuzzer.cc" ]
-
-    deps = [
-      ":policy_fuzzer_proto",
-      "//ash/components/tpm",
-      "//base/test:test_support",
-      "//chrome/browser",
-      "//chrome/browser/ash",
-      "//chrome/browser/chromeos",
-      "//components:components_tests_pak",
-      "//components/exo/wayland:weston_test",
-      "//components/policy/core/browser:internal",
-      "//third_party/libprotobuf-mutator",
-      "//ui/resources:ui_test_pak",
-    ]
-  }
-
-  fuzzable_proto_library("policy_fuzzer_proto") {
-    sources = [ "../ash/policy/fuzzer/policy_fuzzer.proto" ]
-
-    import_dirs = [
-      # Add the fuzzable (full-protobuf) .pb.h files into include directories.
-      # This item should come first, so that regular (lite-protobuf) .pb.h
-      # analogs don't get included, as this would cause compilation issues due
-      # to missing symbols.
-      "//components/policy/proto/fuzzer",
-
-      # For imports of proto files from the source tree.
-      "//components/policy/proto",
-
-      # For imports of autogenerated proto files.
-      "$root_gen_dir/components/policy/proto",
-    ]
-
-    proto_deps = [ "//components/policy/proto/fuzzer" ]
-
-    link_deps = [ "//components/policy/proto/fuzzer" ]
-  }
-
-  fuzzer_test("policy_single_install_event_log_fuzzer") {
-    sources = [ "../ash/policy/reporting/single_install_event_log_fuzzer.cc" ]
-
-    deps = [
-      "//base",
-      "//chrome/browser",
-      "//chrome/browser/ash:ash",
-      "//chrome/browser/chromeos",
-      "//components/exo/wayland:weston_test",
-    ]
-  }
-
-  fuzzer_test("policy_remote_commands_fuzzer") {
-    sources = [ "../ash/policy/remote_commands/remote_commands_fuzzer.cc" ]
-
-    deps = [
-      "//base",
-      "//chrome/browser",
-      "//chrome/browser/ash",
-      "//chrome/browser/chromeos",
-      "//components/exo/wayland:weston_test",
-    ]
-  }
 }

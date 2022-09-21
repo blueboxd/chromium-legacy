@@ -42,14 +42,13 @@ defaults.set(
     omit_python2 = False,
 )
 
-def target_builder(*, name, dimensions):
+def target_builder(*, name):
     return {
         "builder_id": {
             "project": "chromium",
             "bucket": "ci",
             "builder": name,
         },
-        "dimensions": {k: str(v) for k, v in dimensions.items()},
     }
 
 builder(
@@ -66,18 +65,38 @@ builder(
         "target_builders": [
             target_builder(
                 name = "android-marshmallow-x86-rel",
-                dimensions = {
-                    "builderless": 1,
-                    "cpu": cpu.X86_64,
-                    "free_space": free_space.standard,
-                    "os": os.LINUX_DEFAULT.dimension,
-                    "ssd": "0",
-                },
             ),
         ],
     },
     # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
     schedule = "0 1,4,7,10,13 * * *",
+)
+
+# A coordinator of slightly aggressive scheduling with effectively unlimited
+# test bot capacity for fuchsia.
+builder(
+    name = "fuchsia-coordinator",
+    executable = "recipe:chromium_polymorphic/launcher",
+    os = os.LINUX_DEFAULT,
+    pool = "luci.chromium.ci",
+    properties = {
+        "runner_builder": {
+            "project": "chromium",
+            "bucket": "reviver",
+            "builder": "runner",
+        },
+        "target_builders": [
+            target_builder(
+                name = "fuchsia-fyi-x64-rel",
+            ),
+            target_builder(
+                name = "fuchsia-x64-dbg",
+            ),
+            target_builder(
+                name = "fuchsia-fyi-x64-asan",
+            ),
+        ],
+    },
 )
 
 builder(
@@ -86,9 +105,17 @@ builder(
     auto_builder_dimension = False,
     execution_timeout = 6 * time.hour,
     pool = ci.DEFAULT_POOL,
+    # TODO(crbug/1346396) Remove this once the reviver service account has
+    # necessary permissions
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     resultdb_bigquery_exports = [
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.reviver_test_results",
         ),
     ],
+    builderless = 1,
+    cpu = cpu.X86_64,
+    free_space = free_space.standard,
+    os = os.LINUX_DEFAULT,
+    ssd = False,
 )

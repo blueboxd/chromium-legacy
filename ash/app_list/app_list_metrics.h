@@ -15,10 +15,6 @@ namespace ash {
 
 class SearchResult;
 
-// The UMA histogram that logs how the app list transitions from peeking to
-// fullscreen. Exposed in this header because it is recorded in multiple files.
-ASH_EXPORT extern const char kAppListPeekingToFullscreenHistogram[];
-
 // UMA histograms that record app list reorder animation smoothness. Exposed
 // in this header because it is needed in tests.
 ASH_EXPORT extern const char kClamshellReorderAnimationSmoothnessHistogram[];
@@ -33,16 +29,6 @@ ASH_EXPORT extern const char kTabletReorderActionHistogram[];
 // from the launcher continue section. Exposed in this header because it is
 // needed in tests.
 ASH_EXPORT extern const char kContinueSectionFilesRemovedInSessionHistogram[];
-
-// The different ways to create a new page in the apps grid. These values are
-// written to logs. New enum values can be added, but existing enums must never
-// be renumbered or deleted and reused.
-enum class AppListPageCreationType {
-  kDraggingApp = 0,
-  kMovingAppWithKeyboard = 1,
-  kSyncOrInstall = 2,
-  kMaxValue = kSyncOrInstall,
-};
 
 // These are used in histograms, do not remove/renumber entries. If you're
 // adding to this enum with the intention that it will be logged, update the
@@ -62,18 +48,6 @@ enum class SearchResultRemovalConfirmation {
   kRemovalConfirmed = 0,
   kRemovalCanceled = 1,
   kMaxValue = kRemovalCanceled,
-};
-
-// The different ways that the app list can transition from PEEKING to
-// FULLSCREEN_ALL_APPS. These values are written to logs.  New enum
-// values can be added, but existing enums must never be renumbered or deleted
-// and reused.
-enum AppListPeekingToFullscreenSource {
-  kSwipe = 0,
-  kExpandArrow = 1,
-  kMousepadScroll = 2,
-  kMousewheelScroll = 3,
-  kMaxPeekingToFullscreen = 4,
 };
 
 // The different ways the app list can be shown. These values are written to
@@ -107,15 +81,17 @@ enum AppListFolderOpened {
 enum AppListStateTransitionSource {
   kFullscreenAllAppsToClosed = 0,
   kFullscreenAllAppsToFullscreenSearch = 1,
-  kFullscreenAllAppsToPeeking = 2,
+  // Usage removed.
+  // kFullscreenAllAppsToPeeking = 2,
   kFullscreenSearchToClosed = 3,
   kFullscreenSearchToFullscreenAllApps = 4,
-  kHalfToClosed = 5,
-  KHalfToFullscreenSearch = 6,
-  kHalfToPeeking = 7,
-  kPeekingToClosed = 8,
-  kPeekingToFullscreenAllApps = 9,
-  kPeekingToHalf = 10,
+  // Usage removed.
+  // kHalfToClosed = 5,
+  // KHalfToFullscreenSearch = 6,
+  // kHalfToPeeking = 7,
+  // kPeekingToClosed = 8,
+  // kPeekingToFullscreenAllApps = 9,
+  // kPeekingToHalf = 10,
   kMaxAppListStateTransition = 11,
 };
 

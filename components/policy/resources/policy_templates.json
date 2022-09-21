@@ -11402,9 +11402,9 @@
       'id': 992,
       'caption': '''Determines whether the Chrome Root Store and built-in certificate verifier will be used to verify server certificates''',
       'tags': [],
-      'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the built-in certificate verifier with the Chrome Root Store as the source of public trust.
-      When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use the Chrome Root Store. Verification may use the system certificate verifier, or the builtin verifier if the <ph name="BUILT_IN_CERTIFICATE_VERIFIER_ENABLED_POLICY_NAME">BuiltinCertificateVerifierEnabled</ph> policy is available and not disabled.
-      When this setting is not set, the Chrome Root Store or system provided roots may be used.
+      'desc': '''When this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the built-in certificate verifier with the Chrome Root Store as the source of public trust.
+      When this policy is set to disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the system certificate verifier and system root certificates.
+      When this policy is not set, the Chrome Root Store or system provided roots may be used.
 
       This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph> version 111, when support for using the platform supplied certificate verifier and roots are planned to be removed.
       ''',
@@ -27101,7 +27101,7 @@
         'cloud_only': True,
       },
       'id': 991,
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:108-'],
       'caption': '''Configuration policy for the OnFileTransfer Chrome Enterprise Connector''',
       'tags': [],
       'desc': '''List of Chrome Enterprise Connectors services settings to be applied to the <ph name="ON_FILE_TRANSFER_ENTERPRISE_CONNECTOR">OnFileTransfer</ph> Enterprise Connector, which triggers when a file is transferred within <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph>.
@@ -33433,6 +33433,38 @@ This policy has no effect if the option to keep existing browsing data is not av
       See https://html.spec.whatwg.org/multipage/scripting.html#scriptingLanguage for details about JavaScript / ECMAScript media types.
       '''
     },
+    {
+      'name': 'ShoppingListEnabled',
+      'owners': ['aymana@chromium.org', 'mdjones@chromium.org', 'chrome-shopping-eng@google.com'],
+      'caption': 'Allow the shopping list feature to be enabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:107-', 'chrome_os:107-', 'android:107-'],
+      'future_on': ['ios'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'The shopping list feature will be available to users.',
+        },
+        {
+          'value': False,
+          'caption': 'The shopping list feature will not be available to users.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 1018,
+      'tags': [],
+      'desc': '''This policy controls the availability of the shopping list feature.
+      If enabled, users will be presented with UI to track the price of the product displayed on the current page. The tracked product will be shown in the bookmarks side panel.
+      If this policy is set to Enabled or not set, the shopping list feature will be available to users.
+      If this policy is set to Disabled, the shopping list feature will be unavailable.
+      ''',
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -34444,6 +34476,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1017,
+  'highest_id_currently_used': 1018,
   'highest_atomic_group_id_currently_used': 43
 }

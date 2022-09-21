@@ -223,6 +223,7 @@
           'chrome-swarming-pool',
         ],
         'test_suites': {
+          'gtest_tests': 'lacros_device_arm_tests',
           'isolated_scripts': 'chrome_sizes',
         },
         'os_type': 'chromeos',
@@ -3359,31 +3360,6 @@
           'gtest_tests': 'fuchsia_experimental_gtests',
         },
       },
-      # A builder for early prototype of test-reviver (http://go/test-reviver)
-      # with gtest_also_run_disabled_tests enabled.
-      # Ideally this builder is not necessary, the regular x64-rel built
-      # binaries should be reused. But I do not think it's possible based on
-      # current infrastructure. So a new builder is setup to make thing move
-      # forward for now.
-      # TODO(zijiehe): Remove this builder once we have a way to reuse the
-      # built binaries or a formal solution for test-reviver.
-      'fuchsia-fyi-x64-reviver': {
-        'os_type': 'fuchsia',
-        'mixins': [
-          'gtest_run_disabled_only',
-          'linux-bionic',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'fuchsia_common_gtests',
-        },
-      },
       'fuchsia-fyi-x64-wst': {
         'browser_config': 'fuchsia-chrome',
         'os_type': 'fuchsia',
@@ -3493,19 +3469,6 @@
         'test_suites': {
           'isolated_scripts': 'ios_simulator_cronet_tests',
         }
-      },
-      'ios-simulator-cronet (reclient shadow)': {
-        'additional_compile_targets': [
-          'cronet_test',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-          'mac_12_x64',
-          'mac_toolchain',
-          'out_dir_arg',
-          'xcode_14_main',
-          'xctest',
-        ]
       },
       'ios-simulator-multi-window': {
         'mixins': [
@@ -5331,11 +5294,6 @@
         ],
       },
       'ios-device': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'ios-device (reclient shadow)': {
         'additional_compile_targets': [
           'all',
         ],

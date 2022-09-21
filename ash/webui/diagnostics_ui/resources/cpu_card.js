@@ -6,91 +6,110 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './data_point.js';
 import './diagnostics_card.js';
-import './diagnostics_shared_css.js';
-import './icons.js';
+import './diagnostics_shared.css.js';
+import './icons.html.js';
 import './realtime_cpu_chart.js';
 import './routine_section.js';
 import './strings.m.js';
 
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CpuUsage, CpuUsageObserverInterface, CpuUsageObserverReceiver, RoutineType, SystemDataProviderInterface, SystemInfo} from './diagnostics_types.js';
+import {getTemplate} from './cpu_card.html.js';
 import {getSystemDataProvider} from './mojo_interface_provider.js';
 import {TestSuiteStatus} from './routine_list_executor.js';
+import {CpuUsage, CpuUsageObserverInterface, CpuUsageObserverReceiver, SystemDataProviderInterface, SystemInfo} from './system_data_provider.mojom-webui.js';
+import {RoutineType} from './system_routine_controller.mojom-webui.js';
 
 /**
  * @fileoverview
  * 'cpu-card' shows information about the CPU.
  */
-Polymer({
-  is: 'cpu-card',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const CpuCardElementBase = mixinBehaviors([I18nBehavior], PolymerElement);
 
-  behaviors: [I18nBehavior],
+/** @polymer */
+export class CpuCardElement extends CpuCardElementBase {
+  static get is() {
+    return 'cpu-card';
+  }
 
-  /**
-   * @private {?SystemDataProviderInterface}
-   */
-  systemDataProvider_: null,
+  static get template() {
+    return getTemplate();
+  }
 
-  /**
-   * Receiver responsible for observing CPU usage.
-   * @private {?CpuUsageObserverReceiver}
-   */
-  cpuUsageObserverReceiver_: null,
-
-  properties: {
-    /** @private {!Array<!RoutineType>} */
-    routines_: {
-      type: Array,
-      value: () => {
-        return [
-          RoutineType.kCpuStress,
-          RoutineType.kCpuCache,
-          RoutineType.kCpuFloatingPoint,
-          RoutineType.kCpuPrime,
-        ];
+  static get properties() {
+    return {
+      /** @private {!Array<!RoutineType>} */
+      routines_: {
+        type: Array,
+        value: () => {
+          return [
+            RoutineType.kCpuStress,
+            RoutineType.kCpuCache,
+            RoutineType.kCpuFloatingPoint,
+            RoutineType.kCpuPrime,
+          ];
+        },
       },
-    },
 
-    /** @private {!CpuUsage} */
-    cpuUsage_: {
-      type: Object,
-    },
+      /** @private {!CpuUsage} */
+      cpuUsage_: {
+        type: Object,
+      },
 
-    /** @private {string} */
-    cpuChipInfo_: {
-      type: String,
-      value: '',
-    },
+      /** @private {string} */
+      cpuChipInfo_: {
+        type: String,
+        value: '',
+      },
 
-    /** @type {!TestSuiteStatus} */
-    testSuiteStatus: {
-      type: Number,
-      value: TestSuiteStatus.kNotRunning,
-      notify: true,
-    },
+      /** @type {!TestSuiteStatus} */
+      testSuiteStatus: {
+        type: Number,
+        value: TestSuiteStatus.NOT_RUNNING,
+        notify: true,
+      },
 
-    /** @type {boolean} */
-    isActive: {
-      type: Boolean,
-    },
-  },
+      /** @type {boolean} */
+      isActive: {
+        type: Boolean,
+      },
+
+    };
+  }
 
   /** @override */
-  created() {
+  constructor() {
+    super();
+    /**
+     * @private {?SystemDataProviderInterface}
+     */
+    this.systemDataProvider_ = null;
+
+    /**
+     * Receiver responsible for observing CPU usage.
+     * @private {?CpuUsageObserverReceiver}
+     */
+    this.cpuUsageObserverReceiver_ = null;
+
     this.systemDataProvider_ = getSystemDataProvider();
     this.observeCpuUsage_();
     this.fetchSystemInfo_();
-  },
+  }
 
   /** @override */
-  detached() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
     this.cpuUsageObserverReceiver_.$.close();
-  },
+  }
 
   /** @private */
   observeCpuUsage_() {
@@ -102,7 +121,7 @@ Polymer({
 
     this.systemDataProvider_.observeCpuUsage(
         this.cpuUsageObserverReceiver_.$.bindNewPipeAndPassRemote());
-  },
+  }
 
   /**
    * Implements CpuUsageObserver.onCpuUsageUpdated.
@@ -110,7 +129,7 @@ Polymer({
    */
   onCpuUsageUpdated(cpuUsage) {
     this.cpuUsage_ = cpuUsage;
-  },
+  }
 
   /** @protected */
   getCurrentlyUsing_() {
@@ -119,14 +138,14 @@ Polymer({
         (this.cpuUsage_.percentUsageSystem + this.cpuUsage_.percentUsageUser),
         MAX_PERCENTAGE);
     return loadTimeData.getStringF('cpuUsageText', usagePercentage);
-  },
+  }
 
   /** @private */
   fetchSystemInfo_() {
     this.systemDataProvider_.getSystemInfo().then((result) => {
       this.onSystemInfoReceived_(result.systemInfo);
     });
-  },
+  }
 
   /**
    * @param {!SystemInfo} systemInfo
@@ -136,18 +155,18 @@ Polymer({
     this.cpuChipInfo_ = loadTimeData.getStringF(
         'cpuChipText', systemInfo.cpuModelName, systemInfo.cpuThreadsCount,
         this.convertKhzToGhz_(systemInfo.cpuMaxClockSpeedKhz));
-  },
+  }
 
   /** @protected */
   getCpuTemp_() {
     return loadTimeData.getStringF(
         'cpuTempText', this.cpuUsage_.averageCpuTempCelsius);
-  },
+  }
 
   /** @protected */
   getCpuUsageTooltipText_() {
     return loadTimeData.getString('cpuUsageTooltipText');
-  },
+  }
 
   /**
    * @param {number} num
@@ -156,18 +175,20 @@ Polymer({
    */
   convertKhzToGhz_(num) {
     return parseFloat(num / 1000000).toFixed(2);
-  },
+  }
 
   /** @protected */
   getCurrentCpuSpeed_() {
     return loadTimeData.getStringF(
         'currentCpuSpeedText',
         this.convertKhzToGhz_(this.cpuUsage_.scalingCurrentFrequencyKhz));
-  },
+  }
 
   /** @protected */
   getEstimateRuntimeInMinutes_() {
     // Each routine runs for a minute
     return this.routines_.length;
-  },
-});
+  }
+}
+
+customElements.define(CpuCardElement.is, CpuCardElement);

@@ -45,8 +45,6 @@
 #import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
@@ -126,6 +124,8 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -3239,17 +3239,6 @@ bool IsSigninForcedByPolicy() {
     [sceneController willDestroyIncognitoBrowserState];
   }
 
-  breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
-      nullptr;
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumbs::BreadcrumbManagerKeyedService* service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            mainBrowserState->GetOffTheRecordChromeBrowserState());
-    persistentStorageManager = service->GetPersistentStorageManager();
-    breakpad::StopMonitoringBreadcrumbManagerService(service);
-    service->StopPersisting();
-  }
-
   // Record off-the-record metrics before detroying the BrowserState.
   if (mainBrowserState->HasOffTheRecordChromeBrowserState()) {
     ChromeBrowserState* otrBrowserState =
@@ -3268,14 +3257,8 @@ bool IsSigninForcedByPolicy() {
   }
 
   if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumbs::BreadcrumbManagerKeyedService* service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            mainBrowserState->GetOffTheRecordChromeBrowserState());
-
-    if (persistentStorageManager) {
-      service->StartPersisting(persistentStorageManager);
-    }
-    breakpad::MonitorBreadcrumbManagerService(service);
+    BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+        mainBrowserState->GetOffTheRecordChromeBrowserState());
   }
 
   // This seems the best place to deem the destroying and rebuilding the

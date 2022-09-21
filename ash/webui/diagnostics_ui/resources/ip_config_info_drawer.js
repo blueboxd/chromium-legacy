@@ -3,87 +3,105 @@
 // found in the LICENSE file.
 
 import './data_point.js';
-import './diagnostics_shared_css.js';
+import './diagnostics_shared.css.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DiagnosticsBrowserProxy, DiagnosticsBrowserProxyImpl} from './diagnostics_browser_proxy.js';
-import {Network} from './diagnostics_types.js';
 import {getSubnetMaskFromRoutingPrefix} from './diagnostics_utils.js';
+import {Network} from './network_health_provider.mojom-webui.js';
+import {getTemplate} from './ip_config_info_drawer.html.js';
 
 /**
  * @fileoverview
  * 'ip-config-info-drawer' displays standard IP related configuration data in a
  * collapsible drawer.
  */
-Polymer({
-  is: 'ip-config-info-drawer',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const IpConfigInfoDrawerElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
 
-  /**  @private {?DiagnosticsBrowserProxy} */
-  browserProxy_: null,
+/** @polymer */
+export class IpConfigInfoDrawerElement extends IpConfigInfoDrawerElementBase {
+  static get is() {
+    return 'ip-config-info-drawer';
+  }
 
-  behaviors: [I18nBehavior],
+  static get template() {
+    return getTemplate();
+  }
 
-  properties: {
-    /**
-     * @protected
-     * @type {boolean}
-     */
-    expanded_: {
-      type: Boolean,
-      value: false,
-    },
+  static get properties() {
+    return {
+      /**
+       * @protected
+       * @type {boolean}
+       */
+      expanded_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * @protected
-     * @type {string}
-     */
-    gateway_: {
-      type: String,
-      computed: 'computeGateway_(network.ipConfig.gateway)',
-    },
+      /**
+       * @protected
+       * @type {string}
+       */
+      gateway_: {
+        type: String,
+        computed: 'computeGateway_(network.ipConfig.gateway)',
+      },
 
-    /**
-     * @protected
-     * @type {string}
-     */
-    nameServers_: {
-      type: String,
-      computed: 'computeNameServers_(network.ipConfig.nameServers)',
-    },
+      /**
+       * @protected
+       * @type {string}
+       */
+      nameServers_: {
+        type: String,
+        computed: 'computeNameServers_(network.ipConfig.nameServers)',
+      },
 
-    /** @type {!Network} */
-    network: {
-      type: Object,
-    },
+      /** @type {!Network} */
+      network: {
+        type: Object,
+      },
 
-    /**
-     * @protected
-     * @type {string}
-     */
-    subnetMask_: {
-      type: String,
-      computed: 'computeSubnetMask_(network.ipConfig.routingPrefix)',
-    },
+      /**
+       * @protected
+       * @type {string}
+       */
+      subnetMask_: {
+        type: String,
+        computed: 'computeSubnetMask_(network.ipConfig.routingPrefix)',
+      },
 
-    /** @protected {string} */
-    nameServersHeader_: {
-      type: String,
-      value: '',
-    },
-  },
+      /** @protected {string} */
+      nameServersHeader_: {
+        type: String,
+        value: '',
+      },
 
-  observers: ['getNameServersHeader_(network.ipConfig.nameServers)'],
+    };
+  }
+
+  static get observers() {
+    return ['getNameServersHeader_(network.ipConfig.nameServers)'];
+  }
+
 
   /** @override */
-  created() {
+  constructor() {
+    super();
+
     this.browserProxy_ = DiagnosticsBrowserProxyImpl.getInstance();
-  },
+  }
 
   /**
    * @protected
@@ -94,7 +112,7 @@ Polymer({
       return this.network.ipConfig.gateway;
     }
     return '';
-  },
+  }
 
   /**
    * @protected
@@ -112,7 +130,7 @@ Polymer({
     }
 
     return this.network.ipConfig.nameServers.join(', ');
-  },
+  }
 
   /**
    * @protected
@@ -127,7 +145,7 @@ Polymer({
           this.network.ipConfig.routingPrefix);
     }
     return '';
-  },
+  }
 
   /**
    * @protected
@@ -139,5 +157,7 @@ Polymer({
         .then(localizedString => {
           this.nameServersHeader_ = localizedString;
         });
-  },
-});
+  }
+}
+
+customElements.define(IpConfigInfoDrawerElement.is, IpConfigInfoDrawerElement);

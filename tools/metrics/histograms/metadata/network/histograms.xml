@@ -477,7 +477,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.ServiceAtLogin.Count"
-    units="units" expires_after="2023-01-15">
+    units="units" expires_after="2023-03-19">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -660,7 +660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Usage.Count" enum="NetworkCellularUsage"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -1221,6 +1221,16 @@ chromium-metrics-reviews@google.com.
     detects a captive portal. NOTE: This metric used to be
     CaptivePortal.NetworkPortalDetectorType which was expired from 2021-09-27 to
     2022-09-18.
+  </summary>
+</histogram>
+
+<histogram name="Network.NetworkPortalSigninMode"
+    enum="NetworkPortalSigninMode" expires_after="2023-03-01">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal signin UI display mode. The signin UI may be displayed when
+    clicking on a notification or from the settings UI (M108+).
   </summary>
 </histogram>
 
@@ -3279,7 +3289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -3293,7 +3303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantDataAccess" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>

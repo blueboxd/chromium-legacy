@@ -203,6 +203,11 @@ std::string TerminalSource::GetContentSecurityPolicy(
   if (ssh_allowed_) {
     switch (directive) {
       case network::mojom::CSPDirectiveName::ConnectSrc:
+        // TODO(b/247580345): Allow connect to any relay / proxy.
+        // First test this behind flag.
+        if (base::FeatureList::IsEnabled(chromeos::features::kTerminalDev)) {
+          return "connect-src *;";
+        }
         return "connect-src 'self' "
                "https://*.corp.google.com:* wss://*.corp.google.com:* "
                "https://*.r.ext.google.com:* wss://*.r.ext.google.com:*;";
@@ -240,7 +245,7 @@ std::string TerminalSource::GetContentSecurityPolicy(
   }
 }
 
-// Required for wasm SharedArrayBuffer.
+// Improve security, and it is required for wasm SharedArrayBuffer.
 std::string TerminalSource::GetCrossOriginOpenerPolicy() {
   return "same-origin";
 }

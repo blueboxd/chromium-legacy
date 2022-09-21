@@ -129,31 +129,30 @@ chromium-metrics-reviews@google.com.
       summary="Step during ManagedProvisioning app to setup the device"/>
   <variant name=".SetupService.AddAccount"
       summary="Step during the setup service that adds the account"/>
-  <variant name=".SetupService.CheckForAndroidId"
-      summary="Step during the setup service that checks android ID"/>
-  <variant name=".SetupService.CheckForFirstAccountReady"
-      summary="Step during the setup service that checks for first account
-               ready"/>
-  <variant name=".SetupService.CheckRegistrationToken"
-      summary="Step during the setup service that checks registration token"/>
   <variant name=".SetupService.InstallApps"
       summary="Step during the setup service that installs apps"/>
-  <variant name=".SetupService.InstallAppsRetry"
-      summary="Step during the setup service that retries installing apps"/>
   <variant name=".SetupService.PullAndApplyPolicies"
       summary="Step during the setup service that pulls and applies policies"/>
-  <variant name=".SetupService.QuarantinedRevised"
-      summary="Step during the setup service for a quarantined device"/>
-  <variant name=".SetupService.Register"
-      summary="Step during the setup service that registers"/>
-  <variant name=".SetupService.ReportPolicyCompliance"
-      summary="Step during the setup service that reports policy compliance"/>
-  <variant name=".SetupService.ThirdPartySignin"
-      summary="Step during the setup service that does third party sign in"/>
   <variant name=".SetupService.Total"
       summary="All steps that occur during the setup service"/>
-  <variant name=".SetupService.UpdatePlayServices"
-      summary="Step during the setup service that updates play services"/>
+</variants>
+
+<variants name="WaylandEventType">
+  <variant name=".BinderReleaseClipboardData"
+      summary="Clipboard data released"/>
+  <variant name=".Other" summary="Unspecified event"/>
+  <variant name=".WlBufferRelease" summary="Fenced buffer released"/>
+  <variant name=".WlKeyboardLeave" summary="Input keyboard leave"/>
+  <variant name=".WlPointerLeave" summary="Input pointer leave"/>
+  <variant name=".WlPointerMotion" summary="Input pointer motion"/>
+  <variant name=".ZauraShellActivated" summary="Aura shell activated"/>
+  <variant name=".ZauraSurfaceOcclusionChanged"
+      summary="Surface occlusion changed"/>
+  <variant name=".ZcrRemoteSurfaceBoundsChangedInOutput"
+      summary="Window bounds changed"/>
+  <variant name=".ZcrRemoteSurfaceWindowGeometryChanged"
+      summary="Window geometry changed"/>
+  <variant name=".ZcrVsyncTimingUpdate" summary="Vsync update"/>
 </variants>
 
 <histogram name="Arc.AbiMigration.BootTime" units="ms"
@@ -446,7 +445,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
@@ -505,7 +504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppUninstallReason" enum="UninstallCounterReasonEnum"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
@@ -817,7 +816,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.CompanionLibraryApisCounter"
-    enum="CompanionLibraryApisList" expires_after="2023-01-15">
+    enum="CompanionLibraryApisList" expires_after="2023-03-19">
   <owner>sstan@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-commercial@google.com</owner>
@@ -1054,7 +1053,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FileSystemWatcher.Created" enum="BooleanEnabled"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>risan@google.com</owner>
   <owner>youkichihosoi@google.com</owner>
   <owner>arc-storage@google.com</owner>
@@ -1065,7 +1064,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FileSystemWatcher.ExceedLimit"
-    enum="ArcFileSystemWatcherExceedLimitState" expires_after="2023-01-15">
+    enum="ArcFileSystemWatcherExceedLimitState" expires_after="2023-03-19">
   <owner>risan@google.com</owner>
   <owner>youkichihosoi@google.com</owner>
   <owner>arc-storage@google.com</owner>
@@ -1290,7 +1289,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.LoadAverageX100PerProcessor15MinutesAfterArcStart.{ArcBootType}"
-    units="0.01 jobs/processor" expires_after="2022-11-01">
+    units="0.01 jobs/processor" expires_after="2023-11-01">
   <owner>hashimoto@google.com</owner>
   <owner>yusukes@google.com</owner>
   <owner>arc-performance@google.com</owner>
@@ -1303,7 +1302,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.LoadAverageX100PerProcessor1MinuteAfterArcStart.{ArcBootType}"
-    units="0.01 jobs/processor" expires_after="2022-11-01">
+    units="0.01 jobs/processor" expires_after="2023-11-01">
   <owner>hashimoto@google.com</owner>
   <owner>yusukes@google.com</owner>
   <owner>arc-performance@google.com</owner>
@@ -1316,7 +1315,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.LoadAverageX100PerProcessor5MinutesAfterArcStart.{ArcBootType}"
-    units="0.01 jobs/processor" expires_after="2022-11-01">
+    units="0.01 jobs/processor" expires_after="2023-11-01">
   <owner>hashimoto@google.com</owner>
   <owner>yusukes@google.com</owner>
   <owner>arc-performance@google.com</owner>
@@ -1644,7 +1643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -2119,15 +2118,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.Wayland.LateTiming.Duration" units="ms"
+<histogram name="Arc.Wayland.LateTiming.Duration{WaylandEventType}" units="ms"
     expires_after="2023-03-12">
   <owner>alanding@google.com</owner>
   <owner>arc-performance@google.com</owner>
   <summary>
     The duration of the Wayland client event processing time in ARC. This metric
     is recorded when the processing end time is late or the duration exceeded
-    the expected timing threshold.
+    the expected timing threshold for a {WaylandEventType}.
   </summary>
+  <token key="WaylandEventType" variants="WaylandEventType">
+    <variant name=""/>
+  </token>
 </histogram>
 
 <histogram name="Arc.Wayland.LateTiming.Event" enum="WaylandTimingEvent"

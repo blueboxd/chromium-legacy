@@ -903,6 +903,10 @@ LacrosAvailability GetCachedLacrosAvailabilityForTesting() {
   return GetCachedLacrosAvailability();
 }
 
+void SetLacrosLaunchSwitchSourceForTest(LacrosAvailability test_value) {
+  g_lacros_availability_cache = test_value;
+}
+
 void ClearLacrosAvailabilityCacheForTest() {
   g_lacros_availability_cache.reset();
 }
@@ -1048,18 +1052,17 @@ bool IsAshBrowserSyncEnabled() {
 
 void SetGotoFilesClicked(PrefService* local_state,
                          const std::string& user_id_hash) {
-  ListPrefUpdate update(local_state, kGotoFilesPref);
-  base::Value* list = update.Get();
+  ScopedListPrefUpdate update(local_state, kGotoFilesPref);
+  base::Value::List& list = update.Get();
   base::Value user_id_hash_value(user_id_hash);
-  if (!base::Contains(list->GetList(), user_id_hash_value))
-    list->GetList().Append(std::move(user_id_hash_value));
+  if (!base::Contains(list, user_id_hash_value))
+    list.Append(std::move(user_id_hash_value));
 }
 
 void ClearGotoFilesClicked(PrefService* local_state,
                            const std::string& user_id_hash) {
-  ListPrefUpdate update(local_state, kGotoFilesPref);
-  base::Value* list = update.Get();
-  list->GetList().EraseValue(base::Value(user_id_hash));
+  ScopedListPrefUpdate update(local_state, kGotoFilesPref);
+  update->EraseValue(base::Value(user_id_hash));
 }
 
 bool WasGotoFilesClicked(PrefService* local_state,

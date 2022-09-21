@@ -4,10 +4,10 @@
 
 #include "ash/services/secure_channel/ble_characteristics_finder.h"
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/secure_channel/background_eid_generator.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -184,7 +184,7 @@ void BluetoothLowEnergyCharacteristicsFinder::OnRemoteCharacteristicRead(
 
   if (error_code.has_value()) {
     PA_LOG(ERROR) << "OnWriteRemoteCharacteristicError() Error code: "
-                  << error_code.value();
+                  << static_cast<int>(error_code.value());
     service_ids_pending_eid_read_.erase(service_id);
     if (!has_callback_been_invoked_)
       NotifyFailureIfNoPendingEidCharReads();

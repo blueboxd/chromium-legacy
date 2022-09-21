@@ -764,6 +764,12 @@ void PagedAppsGridView::EnsureViewVisible(const GridIndex& index) {
 
   if (IsValidIndex(index))
     pagination_model_.SelectPage(index.page, false);
+
+  // The selected page will not get shown when ignoring layouts, which can
+  // happen when ending drag and then exiting cardified state. Recenter the
+  // items container to show the selected page in this case.
+  if (ignore_layout_)
+    RecenterItemsContainer();
 }
 
 absl::optional<PagedAppsGridView::VisibleItemIndexRange>
@@ -808,32 +814,6 @@ base::ScopedClosureRunner PagedAppsGridView::LockAppsGridOpacity() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PaginationModelObserver:
-
-void PagedAppsGridView::TotalPagesChanged(int previous_page_count,
-                                          int new_page_count) {
-  // Don't record from folder.
-  if (IsInFolder())
-    return;
-
-  // Initial setup for the AppList starts with -1 pages. Ignore the page count
-  // change resulting from the initialization of the view.
-  if (previous_page_count <= 0)
-    return;
-
-  // Ignore page count changes after item list has been reset (e.g. during
-  // shutdown).
-  if (!item_list() || !item_list()->item_count())
-    return;
-
-  if (previous_page_count < new_page_count) {
-    AppListPageCreationType type = AppListPageCreationType::kSyncOrInstall;
-    if (handling_keyboard_move())
-      type = AppListPageCreationType::kMovingAppWithKeyboard;
-    else if (IsDragging())
-      type = AppListPageCreationType::kDraggingApp;
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppList.AppsGridAddPage", type);
-  }
-}
 
 void PagedAppsGridView::SelectedPageChanged(int old_selected,
                                             int new_selected) {

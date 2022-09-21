@@ -155,13 +155,17 @@ void AddContentColors(ui::ColorMixer& mixer,
       use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey100)
                      : ui::ColorTransform(gfx::kGoogleGrey800);
   mixer[kColorAshButtonLabelColor] = {kColorAshTextColorPrimary};
+  mixer[kColorAshButtonLabelColorLight] = {cros_tokens::kColorSecondaryLight};
   mixer[kColorAshButtonLabelColorPrimary] = {
       cros_tokens::kColorPrimaryInverted};
+  mixer[kColorAshTextOnBackgroundColor] = {cros_tokens::kColorPrimaryInverted};
+  mixer[kColorAshIconOnBackgroundColor] = {cros_tokens::kColorPrimaryInverted};
   mixer[kColorAshInvertedTextColorPrimary] = {kColorAshButtonLabelColorPrimary};
   mixer[kColorAshInvertedButtonLabelColor] = {kColorAshButtonLabelColorPrimary};
   mixer[kColorAshTextColorSuggestion] = {cros_tokens::kColorDisabled};
   mixer[kColorAshButtonLabelColorBlue] = {kColorAshTextColorURL};
   mixer[kColorAshButtonIconColor] = {kColorAshTextColorPrimary};
+  mixer[kColorAshButtonIconColorLight] = {cros_tokens::kColorSecondaryLight};
   mixer[kColorAshButtonIconColorPrimary] = {kColorAshButtonLabelColorPrimary};
   mixer[kColorAshAppStateIndicatorColor] = {kColorAshTextColorPrimary};
   mixer[kColorAshAppStateIndicatorColorInactive] =
@@ -473,6 +477,9 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[kColorAshDialogBackgroundColor] =
       use_dark_color ? ui::ColorTransform(SkColorSetRGB(0x32, 0x33, 0x36))
                      : ui::ColorTransform(SK_ColorWHITE);
+
+  mixer[kColorAshButtonIconDisabledColor] =
+      ui::SetAlpha(kColorAshButtonIconColor, kDisabledColorOpacity);
 }
 
 }  // namespace ash

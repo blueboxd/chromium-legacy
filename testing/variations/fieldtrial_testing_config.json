@@ -165,6 +165,24 @@
             ]
         }
     ],
+    "AndroidBindingManagerConnectionLimit": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled20Connections",
+                    "params": {
+                        "max_connections": "20"
+                    },
+                    "enable_features": [
+                        "BindingManagerConnectionLimit"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidBindingManagerUseNotPerceptibleBinding": [
         {
             "platforms": [
@@ -1237,26 +1255,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillIgnoreAutocompleteForImport"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillImprovedLabelForInference": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillImprovedLabelForInference"
                     ]
                 }
             ]
@@ -3494,6 +3492,8 @@
     "DesktopNtpModules": [
         {
             "platforms": [
+                "chromeos",
+                "chromeos_lacros",
                 "linux",
                 "mac",
                 "windows"
@@ -3538,6 +3538,25 @@
                     ],
                     "disable_features": [
                         "NtpShoppingTasksModule"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopNtpRemoveScrim": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "NtpRemoveScrim",
+                    "enable_features": [
+                        "NtpRemoveScrim"
                     ]
                 }
             ]
@@ -6775,6 +6794,27 @@
             ]
         }
     ],
+    "NoWorkerThreadReclaim": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NoWorkerThreadReclaim"
+                    ]
+                }
+            ]
+        }
+    ],
     "NormalPriorityImageDecoding": [
         {
             "platforms": [
@@ -8754,9 +8794,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_29_5_20220831",
+                    "name": "Enabled_29_7_20220919",
                     "params": {
-                        "reporter_omaha_tag": "29.5"
+                        "reporter_omaha_tag": "29.7"
                     },
                     "enable_features": [
                         "ClientSideDetectionTag"
@@ -9748,6 +9788,25 @@
                     "disable_features": [
                         "SyncAndroidPromosWithAlternativeTitle",
                         "SyncAndroidPromosWithSingleButton"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncPromoAfterSigninInterceptStudy": [
+        {
+            "platforms": [
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithSyncPromo",
+                    "enable_features": [
+                        "SigninInterceptBubbleV2",
+                        "SyncPromoAfterSigninIntercept"
                     ]
                 }
             ]
@@ -11820,14 +11879,14 @@
             ]
         }
     ],
-    "ZeroCopyTabCaptureExperiment": [
+    "ZeroCopyTabCaptureStudyMac": [
         {
             "platforms": [
                 "mac"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20220901",
                     "enable_features": [
                         "ZeroCopyTabCapture"
                     ]

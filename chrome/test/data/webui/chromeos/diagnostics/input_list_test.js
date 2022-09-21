@@ -5,9 +5,12 @@
 import 'chrome://diagnostics/input_list.js';
 
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
-import {ConnectionType, KeyboardInfo, MechanicalLayout, NavigationView, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/diagnostics_types.js';
+import {NavigationView} from 'chrome://diagnostics/diagnostics_types.js';
 import {fakeKeyboards, fakeTouchDevices} from 'chrome://diagnostics/fake_data.js';
 import {FakeInputDataProvider} from 'chrome://diagnostics/fake_input_data_provider.js';
+import {InputCardElement} from 'chrome://diagnostics/input_card.js';
+import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
+import {InputListElement} from 'chrome://diagnostics/input_list.js';
 import {setInputDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -59,7 +62,8 @@ export function inputListTestSuite() {
 
   /** @return {!InputCardElement} */
   function getCardByDeviceType(deviceType) {
-    const card = inputListElement.$$(`input-card[device-type="${deviceType}"]`);
+    const card = inputListElement.shadowRoot.querySelector(
+        `input-card[device-type="${deviceType}"]`);
     return /** @type {!InputCardElement} */ (card);
   }
 
@@ -116,12 +120,14 @@ export function inputListTestSuite() {
 
   test('KeyboardTesterShow', async () => {
     await initializeInputList([fakeKeyboards[0]], []);
-    const testButton = getCardByDeviceType('keyboard').$$('cr-button');
+    const testButton =
+        getCardByDeviceType('keyboard').shadowRoot.querySelector('cr-button');
     assertTrue(!!testButton);
     testButton.click();
     await flushTasks();
 
-    const keyboardTester = inputListElement.$$('keyboard-tester');
+    const keyboardTester =
+        inputListElement.shadowRoot.querySelector('keyboard-tester');
     assertTrue(keyboardTester.isOpen());
   });
 

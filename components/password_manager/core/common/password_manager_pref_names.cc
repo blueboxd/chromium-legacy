@@ -21,6 +21,8 @@ const char kCredentialProviderEnabledOnStartup[] =
 const char kAutoSignInEnabledGMS[] = "profile.auto_sign_in_enabled_gms";
 const char kOfferToSavePasswordsEnabledGMS[] =
     "profile.save_passwords_enabed_gms";
+const char kSavePasswordsSuspendedByError[] =
+    "profile.save_passwords_suspended_by_error";
 const char kSettingsMigratedToUPM[] = "profile.settings_migrated_to_upm";
 
 const char kCurrentMigrationVersionToGoogleMobileServices[] =
@@ -38,6 +40,8 @@ const char kUnenrolledFromGoogleMobileServicesDueToErrors[] =
     "unenrolled_from_google_mobile_services_due_to_errors";
 const char kUnenrolledFromGoogleMobileServicesAfterApiErrorCode[] =
     "unenrolled_from_google_mobile_services_after_api_error_code";
+
+const char kUPMErrorUIShownTimestamp[] = "profile.upm_error_ui_shown_timestamp";
 #endif
 
 #if BUILDFLAG(IS_WIN)

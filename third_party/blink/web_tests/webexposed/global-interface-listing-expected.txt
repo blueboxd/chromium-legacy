@@ -5153,6 +5153,7 @@ interface MLGraphBuilder
     method max
     method min
     method mul
+    method relu
     method reshape
     method softmax
     method sub
@@ -6579,6 +6580,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter connectEnd
     getter connectStart
     getter decodedBodySize
+    getter deliveryType
     getter domainLookupEnd
     getter domainLookupStart
     getter encodedBodySize
@@ -8674,6 +8676,9 @@ interface SharedWorker : EventTarget
     getter port
     method constructor
     setter onerror
+interface SoftNavigationEntry : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
 interface SourceBuffer : EventTarget
     attribute @@toStringTag
     getter appendWindowEnd

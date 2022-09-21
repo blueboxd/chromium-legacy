@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 import './diagnostics_card.js';
-import './diagnostics_shared_css.js';
+import './diagnostics_shared.css.js';
 import './text_badge.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
 import {getRoutineFailureMessage} from './diagnostics_utils.js';
 import {RoutineGroup} from './routine_group.js';
 import {ExecutionProgress, ResultStatusItem} from './routine_list_executor.js';
+import {RoutineResult, RoutineType, StandardRoutineResult} from './system_routine_controller.mojom-webui.js';
+import {getTemplate} from './routine_result_entry.html.js';
 import {BadgeType} from './text_badge.js';
 
 /**
@@ -101,70 +102,83 @@ export function getSimpleResult(result) {
  * @fileoverview
  * 'routine-result-entry' shows the status of a single test routine or group.
  */
-Polymer({
-  is: 'routine-result-entry',
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+export class RoutineResultEntryElement extends PolymerElement {
+  static get is() {
+    return 'routine-result-entry';
+  }
 
-  properties: {
-    /**
-     * Added to support testing of announce behavior.
-     * @private
-     * @type {string}
-     */
-    announcedText_: {
-      type: String,
-      value: '',
-    },
+  static get template() {
+    return getTemplate();
+  }
 
-    /** @type {RoutineGroup|ResultStatusItem} */
-    item: {
-      type: Object,
-    },
+  static get properties() {
+    return {
+      /**
+       * Added to support testing of announce behavior.
+       * @private
+       * @type {string}
+       */
+      announcedText_: {
+        type: String,
+        value: '',
+      },
 
-    /** @private */
-    routineType_: {
-      type: String,
-      computed: 'getRunningRoutineString_(item.*)',
-    },
+      /** @type {RoutineGroup|ResultStatusItem} */
+      item: {
+        type: Object,
+      },
 
-    /** @protected {!BadgeType} */
-    badgeType_: {
-      type: String,
-      value: BadgeType.QUEUED,
-    },
+      /** @private */
+      routineType_: {
+        type: String,
+        computed: 'getRunningRoutineString_(item.*)',
+      },
 
-    /** @protected {string} */
-    badgeText_: {
-      type: String,
-      value: '',
-    },
+      /** @protected {!BadgeType} */
+      badgeType_: {
+        type: String,
+        value: BadgeType.QUEUED,
+      },
 
-    /** @protected {boolean} */
-    testCompleted_: {
-      type: Boolean,
-      value: false,
-    },
+      /** @protected {string} */
+      badgeText_: {
+        type: String,
+        value: '',
+      },
 
-    /** @type {boolean} */
-    hideVerticalLines: {
-      type: Boolean,
-      value: false,
-    },
+      /** @protected {boolean} */
+      testCompleted_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /** @type {boolean} */
-    usingRoutineGroups: {
-      type: Boolean,
-      value: false,
-    },
-  },
+      /** @type {boolean} */
+      hideVerticalLines: {
+        type: Boolean,
+        value: false,
+      },
 
-  observers: ['entryStatusChanged_(item.*)'],
+      /** @type {boolean} */
+      usingRoutineGroups: {
+        type: Boolean,
+        value: false,
+      },
+
+    };
+  }
+
+  static get observers() {
+    return ['entryStatusChanged_(item.*)'];
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
+
     IronA11yAnnouncer.requestAvailability();
-  },
+  }
 
   /**
    * Get the localized string name for the routine.
@@ -177,27 +191,27 @@ Polymer({
 
     return loadTimeData.getStringF(
         'routineEntryText', getRoutineType(this.item.routine));
-  },
+  }
 
   /**
    * @private
    */
   entryStatusChanged_() {
     switch (this.item.progress) {
-      case ExecutionProgress.kNotStarted:
+      case ExecutionProgress.NOT_STARTED:
         this.setBadgeTypeAndText_(
             BadgeType.QUEUED, loadTimeData.getString('testQueuedBadgeText'));
         break;
-      case ExecutionProgress.kRunning:
+      case ExecutionProgress.RUNNING:
         this.setBadgeTypeAndText_(
             BadgeType.RUNNING, loadTimeData.getString('testRunningBadgeText'));
         this.announceRoutineStatus_();
         break;
-      case ExecutionProgress.kCancelled:
+      case ExecutionProgress.CANCELLED:
         this.setBadgeTypeAndText_(
             BadgeType.STOPPED, loadTimeData.getString('testStoppedBadgeText'));
         break;
-      case ExecutionProgress.kCompleted:
+      case ExecutionProgress.COMPLETED:
         this.testCompleted_ = true;
         // Prevent warning state from being overridden.
         if (this.item.inWarningState) {
@@ -220,18 +234,18 @@ Polymer({
           this.announceRoutineStatus_();
         }
         break;
-      case ExecutionProgress.kSkipped:
+      case ExecutionProgress.SKIPPED:
         this.setBadgeTypeAndText_(
             BadgeType.SKIPPED, loadTimeData.getString('testSkippedBadgeText'));
         break;
-      case ExecutionProgress.kWarning:
+      case ExecutionProgress.WARNING:
         this.setBadgeTypeAndText_(
             BadgeType.WARNING, loadTimeData.getString('testWarningBadgeText'));
         break;
       default:
         assertNotReached();
     }
-  },
+  }
 
   /**
    * @param {!BadgeType} badgeType
@@ -240,16 +254,24 @@ Polymer({
    */
   setBadgeTypeAndText_(badgeType, badgeText) {
     this.setProperties({badgeType_: badgeType, badgeText_: badgeText});
-  },
+  }
 
   /** @override */
-  created() {},
+  constructor() {
+    super();
+  }
 
   /** @private */
   announceRoutineStatus_() {
     this.announcedText_ = this.routineType_ + ' - ' + this.badgeText_;
-    this.fire('iron-announce', {text: `${this.announcedText_}`});
-  },
+    this.dispatchEvent(new CustomEvent('iron-announce', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        text: this.announcedText_,
+      },
+    }));
+  }
 
   /**
    * @protected
@@ -277,7 +299,7 @@ Polymer({
         return '';
     }
     return `line animation-${num} ${lineColor}`;
-  },
+  }
 
   /**
    * @protected
@@ -285,7 +307,7 @@ Polymer({
    */
   shouldHideLines_() {
     return this.hideVerticalLines || !this.testCompleted_;
-  },
+  }
 
   /**
    * @protected
@@ -297,5 +319,7 @@ Polymer({
     }
 
     return getRoutineFailureMessage(this.item.failedTest);
-  },
-});
+  }
+}
+
+customElements.define(RoutineResultEntryElement.is, RoutineResultEntryElement);

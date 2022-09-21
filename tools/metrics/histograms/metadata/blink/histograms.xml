@@ -117,7 +117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Animation.CompositedAnimationFailureReason"
-    enum="CompositorAnimationsFailureReason" expires_after="2023-01-15">
+    enum="CompositorAnimationsFailureReason" expires_after="2023-03-19">
   <owner>smcgruer@chromium.org</owner>
   <owner>animations-dev@chromium.org</owner>
   <summary>
@@ -1096,9 +1096,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Fetch.RequestResourceTime2{Scheme}" units="microseconds"
-    expires_after="2022-11-02">
-  <owner>csharrison@chromium.org</owner>
+    expires_after="2023-05-02">
   <owner>cduvall@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     The total microseconds spent in ResourceFetcher::requestResource for
     {Scheme}.
@@ -1615,6 +1615,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram base="true"
+    name="Blink.IntersectionObservationInternalCount.UpdateTime" units="count"
+    expires_after="2022-12-11">
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
+
+  <owner>szager@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Number of IntersectionObserver computations for blink-internal consumers
+    that were performed during the course of a single main frame.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="Blink.IntersectionObservationJavascriptCount.UpdateTime"
+    units="count" expires_after="2022-12-11">
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
+
+  <owner>szager@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Number of IntersectionObserver computations for javascript consumers that
+    were performed during the course of a single main frame.
+  </summary>
+</histogram>
+
 <histogram name="Blink.JavaJsBridge.MethodInvocationError"
     enum="JavaJsBridgeMethodInvocationError" expires_after="2022-12-31">
   <owner>torne@chromium.org</owner>
@@ -1828,7 +1862,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.MainFrame.UpdateTime" units="microseconds"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2045,7 +2079,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Paint.UpdateTime" units="microseconds"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2098,7 +2132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Prefetch.LinkPrefetchMimeType"
-    enum="LinkPrefetchMimeType" expires_after="2023-01-15">
+    enum="LinkPrefetchMimeType" expires_after="2023-03-19">
   <owner>jbroman@chromium.org</owner>
   <summary>
     Categorizes MIME types of responses to &quot;prefetch&quot; links. Intended
@@ -2119,7 +2153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.PrePaint.UpdateTime" units="microseconds"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2345,7 +2379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.ScrollDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2023-01-15">
+    units="microseconds" expires_after="2023-03-19">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2402,7 +2436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.PendingOriginCount" units="origins"
-    expires_after="2022-10-30">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
   <summary>
@@ -2423,7 +2457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.Infobar" enum="WebOTPServiceInfobarAction"
-    expires_after="2023-02-12">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2454,7 +2488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancel" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2465,7 +2499,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnKeyboardDismissal" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2476,7 +2510,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnSuccess" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2487,7 +2521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeContinueOnSuccess" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2498,7 +2532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeSmsReceive" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2509,7 +2543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeSuccess" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2521,7 +2555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeUserCancel" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-03-05">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>

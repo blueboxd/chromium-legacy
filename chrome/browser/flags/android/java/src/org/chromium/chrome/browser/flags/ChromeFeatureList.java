@@ -214,8 +214,6 @@ public abstract class ChromeFeatureList {
             "AutofillEnableSupportForHonorificPrefixes";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_ADDRESSES =
             "AutofillEnableSupportForMoreStructureInAddresses";
-    public static final String AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_NAMES =
-            "AutofillEnableSupportForMoreStructureInNames";
     public static final String AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT =
             "AutofillEnableUpdateVirtualCardEnrollment";
     public static final String AUTOFILL_RANKING_FORMULA_USAGE_HALF_LIFE =
@@ -515,6 +513,14 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteDefaultsControl";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE =
             "RequestDesktopSiteDefaultsDowngrade";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL_SYNTHETIC =
+            "RequestDesktopSiteDefaultsControlSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_SYNTHETIC =
+            "RequestDesktopSiteDefaultsSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_OPT_IN_SYNTHETIC =
+            "RequestDesktopSiteOptInSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_OPT_IN_CONTROL_SYNTHETIC =
+            "RequestDesktopSiteOptInControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
@@ -719,6 +725,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, false);
     public static final CachedFlag sTabGroupsForTablets =
             new CachedFlag(TAB_GROUPS_FOR_TABLETS, false);
+    public static final CachedFlag sTabSelectionEditorV2 =
+            new CachedFlag(TAB_SELECTION_EDITOR_V2, false);
     public static final CachedFlag sTabStripImprovements =
             new CachedFlag(TAB_STRIP_IMPROVEMENTS, true);
     public static final CachedFlag sTabToGTSAnimation = new CachedFlag(TAB_TO_GTS_ANIMATION, true);

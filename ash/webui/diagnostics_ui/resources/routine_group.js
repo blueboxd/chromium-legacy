@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {RoutineProperties, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
+import {RoutineProperties} from './diagnostics_types.js';
 import {ExecutionProgress, ResultStatusItem} from './routine_list_executor.js';
 import {getSimpleResult} from './routine_result_entry.js';
+import {RoutineResult, RoutineType, StandardRoutineResult} from './system_routine_controller.mojom-webui.js';
 
 /**
  * @param {!RoutineProperties} routineProp
@@ -52,7 +53,7 @@ export class RoutineGroup {
     /** @type {string} */
     this.groupName = groupName;
     /** @type {!ExecutionProgress} */
-    this.progress = ExecutionProgress.kNotStarted;
+    this.progress = ExecutionProgress.NOT_STARTED;
     /**
      * Used to track the first test failure in the group of tests.
      * @type {?RoutineType}
@@ -67,7 +68,7 @@ export class RoutineGroup {
    * @param {!ResultStatusItem} status
    */
   setStatus(status) {
-    if (status.progress !== ExecutionProgress.kCompleted) {
+    if (status.progress !== ExecutionProgress.COMPLETED) {
       // Prevent 'WARNING' badge from being overwritten by a subsequent routine.
       this.progress = this.inWarningState ? this.progress : status.progress;
       return;
@@ -83,7 +84,7 @@ export class RoutineGroup {
 
       // We've encountered a blocking failure.
       if (this.failedTest && isBlocking) {
-        this.progress = ExecutionProgress.kCompleted;
+        this.progress = ExecutionProgress.COMPLETED;
         return;
       }
     }
@@ -91,10 +92,9 @@ export class RoutineGroup {
     // Set status to "completed" only when all routines in this group are
     // finished running. Otherwise, check if we're in the warning state
     // before setting the progress to running.
-    this.progress = isLastRoutine ?
-        ExecutionProgress.kCompleted :
-        this.inWarningState ? ExecutionProgress.kWarning :
-                              ExecutionProgress.kRunning;
+    this.progress = isLastRoutine ? ExecutionProgress.COMPLETED :
+        this.inWarningState       ? ExecutionProgress.WARNING :
+                                    ExecutionProgress.RUNNING;
 
     return;
   }

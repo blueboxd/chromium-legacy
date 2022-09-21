@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -369,6 +370,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableIf.Build(message = "https://crbug.com/1365708",
+            supported_abis_includes = "x86",
+            sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testTabToGridFromLiveTab() throws InterruptedException {
         assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
@@ -394,6 +398,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
+    @DisableIf.Build(message = "https://crbug.com/1365708",
+            supported_abis_includes = "x86",
+            sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
         assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(2000, mTabListDelegate.getSoftCleanupDelayForTesting());
@@ -495,6 +502,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @DisableIf.Build(message = "https://crbug.com/1365708",
+            supported_abis_includes = "x86",
+            sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testGridToTabToCurrentLive() throws InterruptedException {
         assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(1, 0, mUrl);
@@ -1496,6 +1506,29 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+                     ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    // TODO(ckitagawa): Re-enable accessibility checks after UX polish is landed.
+    @DisabledTest(message = "Accessibility touch target too small for default menu button.")
+    public void testTabSelectionEditorV2Shown() throws InterruptedException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        onView(tabSwitcherViewMatcher()).check(TabCountAssertion.havingTabCount(3));
+
+        enterTabSelectionEditorV2(cta);
+        robot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        Espresso.pressBack();
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
+    }
+
+    @Test
+    @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testTabGroupManualSelection_DisabledForSingleTab() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1807,6 +1840,11 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), cta, R.id.menu_group_tabs);
+    }
+
+    private void enterTabSelectionEditorV2(ChromeTabbedActivity cta) {
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), cta, R.id.menu_select_tabs);
     }
 
     /**

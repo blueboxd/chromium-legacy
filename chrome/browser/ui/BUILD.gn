@@ -1765,6 +1765,7 @@ static_library("ui") {
       "//chrome/browser/autofill_assistant/password_change/vector_icons",
       "//chrome/browser/browsing_data:constants",
       "//chrome/browser/cart:mojo_bindings",
+      "//chrome/browser/commerce/price_tracking:shopping_list",
       "//chrome/browser/image_editor",
       "//chrome/browser/image_editor:image_editor_component_util",
       "//chrome/browser/media/router",
@@ -3085,8 +3086,6 @@ static_library("ui") {
       "//ash/components/arc",
       "//ash/components/arc/video_accelerator:protected_native_pixmap_query_client",
       "//ash/components/fwupd",
-      "//ash/components/multidevice",
-      "//ash/components/multidevice/logging",
       "//ash/components/peripheral_notification",
       "//ash/components/phonehub",
       "//ash/components/phonehub:debug",
@@ -3221,6 +3220,8 @@ static_library("ui") {
       "//chromeos/ash/components/local_search_service/public/mojom",
       "//chromeos/ash/components/login/auth",
       "//chromeos/ash/components/login/session",
+      "//chromeos/ash/components/multidevice",
+      "//chromeos/ash/components/multidevice/logging",
       "//chromeos/ash/components/network",
       "//chromeos/ash/components/network/portal_detector",
       "//chromeos/ash/components/string_matching",
@@ -3332,8 +3333,8 @@ static_library("ui") {
 
   if (is_cfm) {
     sources += [
-      "webui/chromeos/chromebox_for_meetings/network_settings_dialog.cc",
-      "webui/chromeos/chromebox_for_meetings/network_settings_dialog.h",
+      "webui/ash/chromebox_for_meetings/network_settings_dialog.cc",
+      "webui/ash/chromebox_for_meetings/network_settings_dialog.h",
     ]
   }
 
@@ -4365,6 +4366,8 @@ static_library("ui") {
       "views/commander_frontend_views.h",
       "views/commerce/ntp_discount_consent_dialog_view.cc",
       "views/commerce/ntp_discount_consent_dialog_view.h",
+      "views/commerce/price_tracking_bubble_dialog_view.cc",
+      "views/commerce/price_tracking_bubble_dialog_view.h",
       "views/commerce/price_tracking_icon_view.cc",
       "views/commerce/price_tracking_icon_view.h",
       "views/commerce/price_tracking_view.cc",
@@ -4704,6 +4707,7 @@ static_library("ui") {
       "views/page_action/page_action_icon_params.h",
       "views/page_action/page_action_icon_view.cc",
       "views/page_action/page_action_icon_view.h",
+      "views/page_action/page_action_icon_view_observer.h",
       "views/page_action/pwa_install_view.cc",
       "views/page_action/pwa_install_view.h",
       "views/page_action/zoom_view.cc",

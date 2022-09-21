@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
@@ -225,9 +227,9 @@ void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
           origin == WebCssOrigin::kUser ? injected_user_style_sheets_
                                         : injected_author_style_sheets_;
   // Remove the last sheet that matches.
-  const auto& it =
-      std::find_if(injected_style_sheets.rbegin(), injected_style_sheets.rend(),
-                   [&key](const auto& item) { return item.first == key; });
+  const auto& it = base::ranges::find(
+      base::Reversed(injected_style_sheets), key,
+      &std::pair<StyleSheetKey, Member<CSSStyleSheet>>::first);
   if (it != injected_style_sheets.rend()) {
     injected_style_sheets.erase(std::next(it).base());
     if (origin == WebCssOrigin::kUser)
@@ -832,7 +834,7 @@ void StyleEngine::CollectUserStyleFeaturesTo(RuleFeatureSet& features) const {
     features.MutableMediaQueryResultFlags().Add(
         sheet->GetMediaQueryResultFlags());
     DCHECK(sheet->Contents()->HasRuleSet());
-    features.Add(sheet->Contents()->GetRuleSet().Features());
+    features.Merge(sheet->Contents()->GetRuleSet().Features());
   }
 }
 
@@ -1804,7 +1806,7 @@ void StyleEngine::CollectFeaturesTo(RuleFeatureSet& features) {
     if (!sheet)
       continue;
     if (RuleSet* rule_set = RuleSetForSheet(*sheet))
-      features.Add(rule_set->Features());
+      features.Merge(rule_set->Features());
   }
 }
 

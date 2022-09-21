@@ -32,8 +32,14 @@ web_component_files = [
   "multidevice_setup/setup_succeeded_page.js",
   "multidevice_setup/start_setup_page.js",
   "multidevice_setup/ui_page.js",
+  "network_health/network_diagnostics.js",
+  "network_health/network_health_container.js",
+  "network_health/network_health_summary.js",
+  "network_health/routine_group.js",
   "smb_shares/add_smb_share_dialog.js",
   "traffic_counters/traffic_counters.js",
+  "quick_unlock/pin_keyboard.js",
+  "quick_unlock/setup_pin_keyboard.js",
 ]
 
 non_web_component_files = [
@@ -45,11 +51,14 @@ non_web_component_files = [
   "multidevice_setup/multidevice_setup_browser_proxy.js",
   "multidevice_setup/multidevice_setup_delegate.js",
   "multidevice_setup/ui_page_container_behavior.js",
+  "network_health/mojo_interface_provider.js",
+  "network_health/network_diagnostics_types.js",
   "post_message_api/post_message_api_client.js",
   "post_message_api/post_message_api_request_handler.js",
   "post_message_api/post_message_api_server.js",
   "smb_shares/smb_browser_proxy.js",
   "traffic_counters/traffic_counters_adapter.js",
+  "quick_unlock/lock_screen_constants.js",
 ]
 
 icons_html_files = [
@@ -57,6 +66,7 @@ icons_html_files = [
   "keyboard_icons.html",
   "navigation_icons.html",
   "cr_picture/icons.html",
+  "quick_unlock/pin_keyboard_icons.html",
 ]
 
 # Files that are passed as input to html_to_wrapper().
@@ -130,6 +140,11 @@ generate_grd("build_grdp") {
     "multidevice_setup/all_set_1x_light.svg",
     "multidevice_setup/all_set_2x_dark.svg",
     "multidevice_setup/all_set_2x_light.svg",
+    "network_health/test_canceled.png",
+    "network_health/test_failed.png",
+    "network_health/test_not_run.png",
+    "network_health/test_passed.png",
+    "network_health/test_warning.png",
   ]
   input_files_base_dir = rebase_path(".", "//")
   public_deps = [ ":preprocess" ]
@@ -148,6 +163,8 @@ generate_definitions_js_files = [
   "cr_picture/icons.html.js",
   "cr_picture/png.js",
   "cr_picture/webcam_utils.js",
+  "quick_unlock/lock_screen_constants.js",
+  "quick_unlock/pin_keyboard_icons.html.js",
 ]
 
 ts_definitions("generate_definitions") {
@@ -175,6 +192,8 @@ checked_in_dts_files = [
   "smb_shares/smb_browser_proxy.d.ts",
   "traffic_counters/traffic_counters_adapter.d.ts",
   "traffic_counters/traffic_counters.d.ts",
+  "quick_unlock/pin_keyboard.d.ts",
+  "quick_unlock/setup_pin_keyboard.d.ts",
 ]
 
 copy("copy_checked_in_dts_files") {
@@ -187,7 +206,9 @@ group("closure_compile") {
     ":closure_compile_local",
     "cr_picture:closure_compile_module",
     "multidevice_setup:closure_compile_module",
+    "network_health:closure_compile_module",
     "post_message_api:closure_compile",
+    "quick_unlock:closure_compile_module",
     "smb_shares:closure_compile_module",
     "traffic_counters:closure_compile_module",
   ]

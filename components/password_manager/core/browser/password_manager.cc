@@ -276,6 +276,7 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kOfferToSavePasswordsEnabledGMS, true);
+  registry->RegisterBooleanPref(prefs::kSavePasswordsSuspendedByError, false);
   registry->RegisterBooleanPref(prefs::kAutoSignInEnabledGMS, true);
   registry->RegisterBooleanPref(prefs::kSettingsMigratedToUPM, false);
   registry->RegisterIntegerPref(
@@ -288,6 +289,7 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, false);
   registry->RegisterIntegerPref(
       prefs::kUnenrolledFromGoogleMobileServicesAfterApiErrorCode, 0);
+  registry->RegisterStringPref(prefs::kUPMErrorUIShownTimestamp, "0");
 #endif
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);

@@ -41,9 +41,6 @@ static bool IsFontUnitToken(CSSParserToken token) {
     case CSSPrimitiveValue::UnitType::kChs:
     case CSSPrimitiveValue::UnitType::kExs:
     case CSSPrimitiveValue::UnitType::kIcs:
-    // TODO(crbug.com/937104): This probably needs to be a separate
-    // IsLhUnitToken().
-    case CSSPrimitiveValue::UnitType::kLhs:
       return true;
     default:
       return false;
@@ -53,6 +50,11 @@ static bool IsFontUnitToken(CSSParserToken token) {
 static bool IsRootFontUnitToken(CSSParserToken token) {
   return token.GetType() == kDimensionToken &&
          token.GetUnitType() == CSSPrimitiveValue::UnitType::kRems;
+}
+
+static bool IsLineHeightUnitToken(CSSParserToken token) {
+  return token.GetType() == kDimensionToken &&
+         token.GetUnitType() == CSSPrimitiveValue::UnitType::kLhs;
 }
 
 String CSSVariableData::Serialize() const {
@@ -106,6 +108,7 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
       string_builder.Append(token.Value());
     has_font_units_ |= IsFontUnitToken(token);
     has_root_font_units_ |= IsRootFontUnitToken(token);
+    has_line_height_units_ |= IsLineHeightUnitToken(token);
     ++num_tokens_;
   }
   backing_string_ = string_builder.ToAtomicString();

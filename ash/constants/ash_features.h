@@ -218,6 +218,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDeviceActiveClient;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceActiveClientDailyCheckMembership;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kDeviceActiveClientFirstActiveCheckMembership;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceActiveClientMonthlyCheckIn;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceActiveClientMonthlyCheckMembership;
@@ -328,6 +330,7 @@ extern const base::Feature kFilesAppExperimental;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesExtractArchive;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesInlineSyncStatus;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesSearchV2;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesTrash;

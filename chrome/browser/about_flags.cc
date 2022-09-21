@@ -5315,6 +5315,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFilesSinglePartitionFormatName,
      flag_descriptions::kFilesSinglePartitionFormatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesSinglePartitionFormat)},
+    {"files-search-v2", flag_descriptions::kFilesSearchV2Name,
+     flag_descriptions::kFilesSearchV2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesSearchV2)},
     {"files-trash", flag_descriptions::kFilesTrashName,
      flag_descriptions::kFilesTrashDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTrash)},
@@ -5971,15 +5974,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRealboxPedalsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxPedals)},
 
-    {"ntp-realbox-suggestion-answers",
-     flag_descriptions::kNtpRealboxSuggestionAnswersName,
-     flag_descriptions::kNtpRealboxSuggestionAnswersDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kNtpRealboxSuggestionAnswers)},
-
-    {"ntp-realbox-tail-suggest", flag_descriptions::kNtpRealboxTailSuggestName,
-     flag_descriptions::kNtpRealboxTailSuggestDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kNtpRealboxTailSuggest)},
-
     {"ntp-realbox-use-google-g-icon",
      flag_descriptions::kNtpRealboxUseGoogleGIconName,
      flag_descriptions::kNtpRealboxUseGoogleGIconDescription, kOsDesktop,
@@ -6172,6 +6166,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-instant-start", flag_descriptions::kInstantStartName,
      flag_descriptions::kInstantStartDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kInstantStart)},
+
+    {"enable-start-surface-disabled-feed-improvement",
+     flag_descriptions::kStartSurfaceDisabledFeedImprovementName,
+     flag_descriptions::kStartSurfaceDisabledFeedImprovementDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kStartSurfaceDisabledFeedImprovement)},
 
     {"enable-start-surface-refactor",
      flag_descriptions::kStartSurfaceRefactorName,
@@ -9545,6 +9545,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableCardArtImageName,
      flag_descriptions::kAutofillEnableCardArtImageDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableCardArtImage)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"tab-selection-editor-v2", flag_descriptions::kTabSelectionEditorV2Name,
+     flag_descriptions::kTabSelectionEditorV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabSelectionEditorV2)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

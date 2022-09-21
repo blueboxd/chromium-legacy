@@ -77,7 +77,7 @@ class UpdateRequiredNotificationTest
   const MinimumVersionRequirement* GetState() const;
 
   // Set new value for policy pref.
-  void SetPolicyPref(base::Value value);
+  void SetPolicyPref(base::Value::Dict value);
 
   void VerifyUpdateRequiredNotification(const std::u16string& expected_title,
                                         const std::u16string& expected_message);
@@ -175,9 +175,9 @@ base::Version UpdateRequiredNotificationTest::GetCurrentVersion() const {
   return *current_version_;
 }
 
-void UpdateRequiredNotificationTest::SetPolicyPref(base::Value value) {
-  scoped_testing_cros_settings_.device_settings()->Set(kDeviceMinimumVersion,
-                                                       value);
+void UpdateRequiredNotificationTest::SetPolicyPref(base::Value::Dict value) {
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kDeviceMinimumVersion, base::Value(std::move(value)));
 }
 
 void UpdateRequiredNotificationTest::VerifyUpdateRequiredNotification(

@@ -5,13 +5,15 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './diagnostics_card_frame.js';
-import './icons.js';
+import './icons.html.js';
 
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ConnectionType, KeyboardInfo, TouchDeviceInfo} from './diagnostics_types.js';
+import {ConnectionType, KeyboardInfo, TouchDeviceInfo} from './input_data_provider.mojom-webui.js';
+import {getTemplate} from './input_card.html.js';
+
 
 /**
  * @fileoverview
@@ -24,45 +26,58 @@ import {ConnectionType, KeyboardInfo, TouchDeviceInfo} from './diagnostics_types
  * @enum {string}
  */
 export const InputCardType = {
-  kKeyboard: 'keyboard',
-  kTouchpad: 'touchpad',
-  kTouchscreen: 'touchscreen',
+  KEYBOARD: 'keyboard',
+  TOUCHPAD: 'touchpad',
+  TOUCHSCREEN: 'touchscreen',
 };
 
-Polymer({
-  is: 'input-card',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const InputCardElementBase = mixinBehaviors([I18nBehavior], PolymerElement);
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+export class InputCardElement extends InputCardElementBase {
+  static get is() {
+    return 'input-card';
+  }
 
-  behaviors: [I18nBehavior],
+  static get template() {
+    return getTemplate();
+  }
 
-  properties: {
-    /**
-     * The type of input device to be displayed. Valid values are 'keyboard',
-     * 'touchpad', and 'touchscreen'.
-     * @type {!InputCardType}
-     */
-    deviceType: String,
+  static get properties() {
+    return {
+      /**
+       * The type of input device to be displayed. Valid values are 'keyboard',
+       * 'touchpad', and 'touchscreen'.
+       * @type {!InputCardType}
+       */
+      deviceType: String,
 
-    /** @type {!Array<!KeyboardInfo|!TouchDeviceInfo>} */
-    devices: {
-      type: Array,
-      value: () => [],
-    },
+      /** @type {!Array<!KeyboardInfo|!TouchDeviceInfo>} */
+      devices: {
+        type: Array,
+        value: () => [],
+      },
 
-    deviceIcon_: {
-      type: String,
-      computed: 'computeDeviceIcon_(deviceType)',
-    },
-  },
+      deviceIcon_: {
+        type: String,
+        computed: 'computeDeviceIcon_(deviceType)',
+      },
+
+    };
+  }
 
   computeDeviceIcon_(deviceType) {
     return {
-      [InputCardType.kKeyboard]: 'diagnostics:keyboard',
-      [InputCardType.kTouchpad]: 'diagnostics:touchpad',
-      [InputCardType.kTouchscreen]: 'diagnostics:touchscreen',
+      [InputCardType.KEYBOARD]: 'diagnostics:keyboard',
+      [InputCardType.TOUCHPAD]: 'diagnostics:touchpad',
+      [InputCardType.TOUCHSCREEN]: 'diagnostics:touchscreen',
     }[deviceType];
-  },
+  }
 
   /**
    * Fetches the description string for a device based on its connection type
@@ -81,13 +96,13 @@ Polymer({
       [ConnectionType.kBluetooth]: 'Bluetooth',
     }[device.connectionType];
     const deviceTypeString = {
-      [InputCardType.kKeyboard]: 'Keyboard',
-      [InputCardType.kTouchpad]: 'Touchpad',
-      [InputCardType.kTouchscreen]: 'Touchscreen',
+      [InputCardType.KEYBOARD]: 'Keyboard',
+      [InputCardType.TOUCHPAD]: 'Touchpad',
+      [InputCardType.TOUCHSCREEN]: 'Touchscreen',
     }[this.deviceType];
     return loadTimeData.getString(
         'inputDescription' + connectionTypeString + deviceTypeString);
-  },
+  }
 
   /**
    * @param {!PointerEvent} e
@@ -98,5 +113,7 @@ Polymer({
         parseInt(e.target.closest('.device').getAttribute('data-evdev-id'), 10);
     this.dispatchEvent(new CustomEvent(
         'test-button-click', {composed: true, detail: {evdevId: evdevId}}));
-  },
-});
+  }
+}
+
+customElements.define(InputCardElement.is, InputCardElement);

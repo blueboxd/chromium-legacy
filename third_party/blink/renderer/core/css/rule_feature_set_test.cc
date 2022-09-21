@@ -62,17 +62,11 @@ class RuleFeatureSetTest : public testing::Test {
       StyleRule* style_rule,
       const StyleScope* style_scope,
       RuleFeatureSet& set) {
-    Vector<wtf_size_t> indices;
-    for (const CSSSelector* s = style_rule->FirstSelector(); s;
-         s = CSSSelectorList::Next(*s)) {
-      indices.push_back(style_rule->SelectorIndex(*s));
-    }
-
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
-    for (wtf_size_t index : indices) {
-      RuleData rule_data(style_rule, index, 0, 0, kRuleHasNoSpecialState);
-      if (set.CollectFeaturesFromRuleData(&rule_data, style_scope))
+    for (const CSSSelector* s = style_rule->FirstSelector(); s;
+         s = CSSSelectorList::Next(*s)) {
+      if (set.CollectFeaturesFromSelector(*s, style_scope))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
     }
     return result;
@@ -143,8 +137,8 @@ class RuleFeatureSetTest : public testing::Test {
     return rule_feature_set_.NeedsHasInvalidationForClass(class_name);
   }
 
-  void AddTo(RuleFeatureSet& rule_feature_set) {
-    rule_feature_set.Add(rule_feature_set_);
+  void MergeInto(RuleFeatureSet& rule_feature_set) {
+    rule_feature_set.Merge(rule_feature_set_);
   }
 
   using BackingType = InvalidationSet::BackingType;
@@ -1850,7 +1844,7 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
   CollectFeatures("#d .e");
   CollectFeatures("[thing] .f");
   CollectFeatures(":hover .h");
-  AddTo(local1);
+  MergeInto(local1);
   ClearFeatures();
   ExpectRefCountForClassInvalidationSet(local1, "a", RefCount::kOne);
   ExpectRefCountForIdInvalidationSet(local1, "d", RefCount::kOne);
@@ -1862,7 +1856,7 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
   RuleFeatureSet local2;
   CollectFeatures(".a .c");
   CollectFeatures("#d img");
-  AddTo(local2);
+  MergeInto(local2);
   ClearFeatures();
   ExpectRefCountForClassInvalidationSet(local2, "a", RefCount::kOne);
   ExpectRefCountForIdInvalidationSet(local2, "d", RefCount::kOne);
@@ -1871,7 +1865,7 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
   RuleFeatureSet local3;
   CollectFeatures("[thing] .g");
   CollectFeatures(":hover .i");
-  AddTo(local3);
+  MergeInto(local3);
   ClearFeatures();
   ExpectRefCountForAttributeInvalidationSet(local3, "thing", RefCount::kOne);
   ExpectRefCountForPseudoInvalidationSet(local3, CSSSelector::kPseudoHover,
@@ -1881,7 +1875,7 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
   RuleFeatureSet global;
 
   // After adding local1, we expect to share the InvalidationSets with local1.
-  global.Add(local1);
+  global.Merge(local1);
   ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kMany);
   ExpectRefCountForIdInvalidationSet(global, "d", RefCount::kMany);
   ExpectRefCountForAttributeInvalidationSet(global, "thing", RefCount::kMany);
@@ -1892,14 +1886,14 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
   // copy the existing InvalidationSets at those keys before modifying them,
   // so we expect |global| to be the only reference holder to those
   // InvalidationSets.
-  global.Add(local2);
+  global.Merge(local2);
   ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kOne);
   ExpectRefCountForIdInvalidationSet(global, "d", RefCount::kOne);
   ExpectRefCountForAttributeInvalidationSet(global, "thing", RefCount::kMany);
   ExpectRefCountForPseudoInvalidationSet(global, CSSSelector::kPseudoHover,
                                          RefCount::kMany);
 
-  global.Add(local3);
+  global.Merge(local3);
   ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kOne);
   ExpectRefCountForIdInvalidationSet(global, "d", RefCount::kOne);
   ExpectRefCountForAttributeInvalidationSet(global, "thing", RefCount::kOne);
@@ -1933,18 +1927,18 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite_SiblingDescendantPairs) {
     for (const char* selector2 : data) {
       RuleFeatureSet local1;
       CollectFeatures(selector1);
-      AddTo(local1);
+      MergeInto(local1);
       ClearFeatures();
 
       RuleFeatureSet local2;
       CollectFeatures(selector2);
-      AddTo(local2);
+      MergeInto(local2);
       ClearFeatures();
 
       RuleFeatureSet global;
-      global.Add(local1);
+      global.Merge(local1);
       ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kMany);
-      global.Add(local2);
+      global.Merge(local2);
       ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kOne);
     }
   }
@@ -1953,20 +1947,20 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite_SiblingDescendantPairs) {
 TEST_F(RuleFeatureSetTest, CopyOnWrite_SelfInvalidation) {
   RuleFeatureSet local1;
   CollectFeatures(".a");
-  AddTo(local1);
+  MergeInto(local1);
   ClearFeatures();
 
   RuleFeatureSet local2;
   CollectFeatures(".a");
-  AddTo(local2);
+  MergeInto(local2);
   ClearFeatures();
 
   // Adding the SelfInvalidationSet to the SelfInvalidationSet does not cause
   // a copy.
   RuleFeatureSet global;
-  global.Add(local1);
+  global.Merge(local1);
   ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kMany);
-  global.Add(local2);
+  global.Merge(local2);
   ExpectRefCountForClassInvalidationSet(global, "a", RefCount::kMany);
 }
 

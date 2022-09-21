@@ -909,6 +909,9 @@ extern const char kHeavyAdInterventionDescription[];
 extern const char kTabAudioMutingName[];
 extern const char kTabAudioMutingDescription[];
 
+extern const char kTabSelectionEditorV2Name[];
+extern const char kTabSelectionEditorV2Description[];
+
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
 
@@ -2285,6 +2288,9 @@ extern const char kSearchResumptionModuleAndroidDescription[];
 extern const char kSiteDataImprovementsName[];
 extern const char kSiteDataImprovementsDescription[];
 
+extern const char kStartSurfaceDisabledFeedImprovementName[];
+extern const char kStartSurfaceDisabledFeedImprovementDescription[];
+
 extern const char kStartSurfaceRefactorName[];
 extern const char kStartSurfaceRefactorDescription[];
 
@@ -2474,12 +2480,6 @@ extern const char kNtpRealboxMatchSearchboxThemeDescription[];
 
 extern const char kNtpRealboxPedalsName[];
 extern const char kNtpRealboxPedalsDescription[];
-
-extern const char kNtpRealboxSuggestionAnswersName[];
-extern const char kNtpRealboxSuggestionAnswersDescription[];
-
-extern const char kNtpRealboxTailSuggestName[];
-extern const char kNtpRealboxTailSuggestDescription[];
 
 extern const char kNtpRealboxUseGoogleGIconName[];
 extern const char kNtpRealboxUseGoogleGIconDescription[];
@@ -3126,6 +3126,9 @@ extern const char kFilesExtractArchiveDescription[];
 
 extern const char kFilesInlineSyncStatusName[];
 extern const char kFilesInlineSyncStatusDescription[];
+
+extern const char kFilesSearchV2Name[];
+extern const char kFilesSearchV2Description[];
 
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];

@@ -26,6 +26,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/autocomplete/zero_suggest_cache_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -681,6 +682,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // it now as we can not reset this setting before passwords are deleted.
       should_clear_password_account_storage_settings_ = true;
     }
+
+    // Persistent Origin Trial preferences are only saved until the next page
+    // load from the same origin. For that reason, they are not saved with
+    // last-modified information, so deletion will clear all stored information.
+    // Sites should omit setting the Origin-Trial header to clear their
+    // individual information, so rather than filtering origins, we only perform
+    // the removal if we are removing information for all origins.
+    if (filter_builder->MatchesAllOriginsAndDomains())
+      browsing_data::RemovePersistentOriginTrials(prefs);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1136,6 +1146,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
       prefs->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
                      base::Value::Dict());
+
+      auto* zero_suggest_cache_service =
+          ZeroSuggestCacheServiceFactory::GetForProfile(profile_);
+      if (zero_suggest_cache_service) {
+        zero_suggest_cache_service->ClearCache();
+      }
     }
 
     // |search_prefetch_service| is null if |profile_| is off the record.

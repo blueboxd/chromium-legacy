@@ -494,9 +494,9 @@ const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamUMADialog}};
-const FeatureEntry::FeatureParam kNewMICEFREWithThreeSteps[] = {
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSync[] = {
     {kNewMobileIdentityConsistencyFREParam,
-     kNewMobileIdentityConsistencyFREParamThreeSteps}};
+     kNewMobileIdentityConsistencyFREParamTangibleSync}};
 const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamTwoSteps}};
@@ -504,8 +504,8 @@ const FeatureEntry::FeatureVariation
     kNewMobileIdentityConsistencyFREVariations[] = {
         {"New FRE with UMA dialog", kNewMICEFREWithUMADialog,
          std::size(kNewMICEFREWithUMADialog), nullptr},
-        {"new FRE with 3 steps", kNewMICEFREWithThreeSteps,
-         std::size(kNewMICEFREWithThreeSteps), nullptr},
+        {"new FRE with tangible sync", kNewMICEFREWithTangibleSync,
+         std::size(kNewMICEFREWithTangibleSync), nullptr},
         {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
          std::size(kNewMICEFREWithTwoSteps), nullptr}};
 
@@ -786,6 +786,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
+    {"omnibox-on-focus-suggestions-contextual-web",
+     flag_descriptions::kOmniboxFocusTriggersContextualWebZeroSuggestName,
+     flag_descriptions::
+         kOmniboxFocusTriggersContextualWebZeroSuggestDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kFocusTriggersContextualWebZeroSuggest)},
+    {"omnibox-on-focus-suggestions-srp",
+     flag_descriptions::kOmniboxFocusTriggersSRPZeroSuggestName,
+     flag_descriptions::kOmniboxFocusTriggersSRPZeroSuggestDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kFocusTriggersSRPZeroSuggest)},
     {"omnibox-fuzzy-url-suggestions",
      flag_descriptions::kOmniboxFuzzyUrlSuggestionsName,
      flag_descriptions::kOmniboxFuzzyUrlSuggestionsDescription,

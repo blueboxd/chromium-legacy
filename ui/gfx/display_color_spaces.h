@@ -115,8 +115,10 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   bool SupportsHDR() const;
 
   // Return the primaries that define the color gamut of the display.
-  SkColorSpacePrimaries GetPrimaries() const;
-  void SetPrimaries(const SkColorSpacePrimaries& primaries);
+  const SkColorSpacePrimaries& GetPrimaries() const { return primaries_; }
+  void SetPrimaries(const SkColorSpacePrimaries& primaries) {
+    primaries_ = primaries;
+  }
 
   // Output as a vector of strings. This is a helper function for printing in
   // about:gpu. All output vectors will be the same length. Each entry will be
@@ -136,7 +138,7 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
   gfx::ColorSpace color_spaces_[kConfigCount];
   gfx::BufferFormat buffer_formats_[kConfigCount];
-  SkColorSpacePrimaries primaries_ = skia::kSkColorSpacePrimariesSRGB;
+  SkColorSpacePrimaries primaries_ = SkNamedPrimariesExt::kSRGB;
   float sdr_max_luminance_nits_ = ColorSpace::kDefaultSDRWhiteLevel;
   float hdr_max_luminance_relative_ = 1.f;
 };

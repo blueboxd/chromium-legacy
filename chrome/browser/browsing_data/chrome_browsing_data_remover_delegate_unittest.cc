@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/values_util.h"
@@ -33,6 +34,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/autocomplete/zero_suggest_cache_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -68,6 +70,8 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
+#include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -106,6 +110,8 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/omnibox/browser/zero_suggest_cache_service.h"
+#include "components/origin_trials/browser/prefservice_persistence_provider.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_field_info_store.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
@@ -133,7 +139,9 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/origin_trials_controller_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
@@ -156,6 +164,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/origin_trials/scoped_test_origin_trial_policy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
@@ -2063,11 +2072,19 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestCacheClear) {
+  const std::string page_url = "https://google.com/search?q=chrome";
+  const std::string response = R"(["", ["foo", "bar"]])";
+
   PrefService* prefs = GetProfile()->GetPrefs();
-  omnibox::SetUserPreferenceForZeroSuggestCachedResponse(
-      prefs, "https://google.com/search?q=chrome", R"(["", ["foo", "bar"]])");
-  prefs->SetString(omnibox::kZeroSuggestCachedResults,
-                   R"(["", ["foo", "bar"]])");
+  omnibox::SetUserPreferenceForZeroSuggestCachedResponse(prefs, page_url,
+                                                         response);
+  omnibox::SetUserPreferenceForZeroSuggestCachedResponse(prefs, "", response);
+
+  ZeroSuggestCacheService* zero_suggest_cache_service =
+      ZeroSuggestCacheServiceFactory::GetForProfile(GetProfile());
+  zero_suggest_cache_service->StoreZeroSuggestResponse(page_url, response);
+  zero_suggest_cache_service->StoreZeroSuggestResponse("", response);
+
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                                 false);
@@ -2076,6 +2093,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestCacheClear) {
   EXPECT_TRUE(prefs->GetString(omnibox::kZeroSuggestCachedResults).empty());
   EXPECT_TRUE(
       prefs->GetDict(omnibox::kZeroSuggestCachedResultsWithURL).empty());
+  EXPECT_TRUE(zero_suggest_cache_service->IsCacheEmpty());
   EXPECT_EQ(content::BrowsingDataRemover::DATA_TYPE_COOKIES, GetRemovalMask());
   EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
             GetOriginTypeMask());
@@ -2740,6 +2758,69 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFederatedContentSettings) {
+  const GURL rp_url("https://rp.com");
+  const url::Origin rp_origin = url::Origin::Create(rp_url);
+  const GURL rp_embedder_url("https://rp-embedder.com");
+  const url::Origin rp_embedder_origin = url::Origin::Create(rp_embedder_url);
+  const url::Origin idp_origin = url::Origin::Create(GURL("https://idp.com"));
+  const std::string account_id("account_id");
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+
+  content::BrowsingDataRemover::DataType test_cases[] = {
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+      constants::DATA_TYPE_HISTORY, constants::DATA_TYPE_PASSWORDS};
+  for (content::BrowsingDataRemover::DataType test_data_type : test_cases) {
+    {
+      FederatedIdentityActiveSessionPermissionContext active_session_context(
+          GetProfile());
+      active_session_context.GrantActiveSession(rp_origin, idp_origin,
+                                                account_id);
+      ASSERT_TRUE(active_session_context.HasActiveSession(rp_origin, idp_origin,
+                                                          account_id));
+
+      FederatedIdentitySharingPermissionContext sharing_context(GetProfile());
+      sharing_context.GrantSharingPermission(rp_origin, rp_embedder_origin,
+                                             idp_origin, account_id);
+      ASSERT_TRUE(sharing_context.HasSharingPermission(
+          rp_origin, rp_embedder_origin, idp_origin, account_id));
+
+      host_content_settings_map->SetContentSettingDefaultScope(
+          rp_url, rp_embedder_url, ContentSettingsType::FEDERATED_IDENTITY_API,
+          CONTENT_SETTING_BLOCK);
+      ASSERT_EQ(CONTENT_SETTING_BLOCK,
+                host_content_settings_map->GetContentSetting(
+                    rp_url, rp_embedder_url,
+                    ContentSettingsType::FEDERATED_IDENTITY_API));
+    }
+
+    BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
+                                  test_data_type,
+                                  /*include_protected_origins=*/true);
+
+    {
+      // Re-initialize contexts in order to update in-memory
+      // ObjectPermissionContextBase cache.
+      FederatedIdentityActiveSessionPermissionContext active_session_context(
+          GetProfile());
+      FederatedIdentitySharingPermissionContext sharing_context(GetProfile());
+
+      EXPECT_FALSE(active_session_context.HasActiveSession(
+          rp_origin, idp_origin, account_id));
+      EXPECT_FALSE(sharing_context.HasSharingPermission(
+          rp_origin, rp_embedder_origin, idp_origin, account_id));
+
+      // Content setting is on by default.
+      EXPECT_EQ(CONTENT_SETTING_ALLOW,
+                host_content_settings_map->GetContentSetting(
+                    rp_url, rp_embedder_url,
+                    ContentSettingsType::FEDERATED_IDENTITY_API));
+    }
+  }
 }
 
 // Test that removing passwords clears HTTP auth data.
@@ -3460,4 +3541,52 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   token = sb_cache_manager->GetPageLoadToken(url);
   // Token is not found because cookies are deleted.
   ASSERT_FALSE(token.has_token_value());
+}
+
+class ChromeBrowsingDataRemoverDelegateOriginTrialsTest
+    : public ChromeBrowsingDataRemoverDelegateTest {
+ public:
+  ChromeBrowsingDataRemoverDelegateOriginTrialsTest() {
+    feature_list_.InitAndEnableFeature(features::kPersistentOriginTrials);
+  }
+
+ protected:
+  blink::ScopedTestOriginTrialPolicy origin_trial_policy_;
+};
+
+// Test that Persistent Origin Trials are deleted along with other website
+// settings.
+TEST_F(ChromeBrowsingDataRemoverDelegateOriginTrialsTest,
+       PersistentOriginTrialsAreDeleted) {
+  // Generated with:
+  // tools/origin_trials/generate_token.py https://example.com
+  //   FrobulatePersistent
+  //   --expire-timestamp=2000000000
+  const char kPersistentOriginTrialToken[] =
+      "AzZfd1vKZ0SSGRGk/"
+      "8nIszQSlHYjbuYVE3jwaNZG3X4t11zRhzPWWJwTZ+JJDS3JJsyEZcpz+y20pAP6/"
+      "6upOQ4AAABdeyJvcmlnaW4iOiAiaHR0cHM6Ly9leGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZ"
+      "SI6ICJGcm9idWxhdGVQZXJzaXN0ZW50IiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9";
+  base::Time kPersistentOriginTrialValidTime =
+      base::Time::FromJavaTime(1000000000);
+  url::Origin origin = url::Origin::Create(GURL("https://example.com"));
+
+  TestingProfile* profile = GetProfile();
+  ASSERT_TRUE(SubresourceFilterProfileContextFactory::GetForProfile(profile));
+
+  std::vector<std::string> tokens{kPersistentOriginTrialToken};
+  profile->GetOriginTrialsControllerDelegate()->PersistTrialsFromTokens(
+      origin, tokens, kPersistentOriginTrialValidTime);
+
+  // Delete all data types that trigger website setting deletions.
+  uint64_t mask = constants::DATA_TYPE_HISTORY |
+                  constants::DATA_TYPE_SITE_DATA |
+                  constants::DATA_TYPE_CONTENT_SETTINGS;
+
+  auto* prefs = profile->GetPrefs();
+  EXPECT_FALSE(prefs->GetDict(origin_trials::kOriginTrialPrefKey).empty());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), mask, false);
+
+  EXPECT_TRUE(prefs->GetDict(origin_trials::kOriginTrialPrefKey).empty());
 }

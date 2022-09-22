@@ -323,21 +323,13 @@ void WebContentsAccessibilityAndroid::SetAXMode(
   }
 }
 
-bool WebContentsAccessibilityAndroid::ShouldRespectDisplayedPasswordText() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_WebContentsAccessibilityImpl_shouldRespectDisplayedPasswordText(
-      env, obj);
-}
-
-bool WebContentsAccessibilityAndroid::ShouldExposePasswordText() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_WebContentsAccessibilityImpl_shouldExposePasswordText(env, obj);
+void WebContentsAccessibilityAndroid::SetPasswordRules(
+    JNIEnv* env,
+    jboolean should_respect_displayed_password_text,
+    jboolean should_expose_password_text) {
+  should_respect_displayed_password_text_ =
+      should_respect_displayed_password_text;
+  should_expose_password_text_ = should_expose_password_text;
 }
 
 void WebContentsAccessibilityAndroid::HandleContentChanged(int32_t unique_id) {
@@ -859,8 +851,9 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       node->CanOpenPopup(), node->IsMultiLine(), node->AndroidInputType(),
       node->AndroidLiveRegionType(),
       GetCanonicalJNIString(env, node->GetContentInvalidErrorMessage()),
-      node->ClickableScore(),
-      GetCanonicalJNIString(env, node->GetCSSDisplay()));
+      node->ClickableScore(), GetCanonicalJNIString(env, node->GetCSSDisplay()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetBrailleLabel()),
+      GetCanonicalJNIString(env, node->GetBrailleRoleDescription()));
 
   ScopedJavaLocalRef<jintArray> suggestion_starts_java;
   ScopedJavaLocalRef<jintArray> suggestion_ends_java;

@@ -881,8 +881,13 @@ const base::Feature kEnableCheckForNewFollowContent{
 }
 
 - (BOOL)isStartSurface {
-  return NewTabPageTabHelper::FromWebState(self.webState)
-      ->ShouldShowStartSurface();
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  return NTPHelper && NTPHelper->ShouldShowStartSurface();
+}
+
+- (void)handleFeedTopSectionClosed {
+  [self.ntpViewController updateScrollPositionForFeedTopSectionClosed];
 }
 
 #pragma mark - AppStateObserver

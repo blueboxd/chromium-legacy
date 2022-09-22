@@ -2912,12 +2912,10 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 
 gfx::AcceleratedWidget
 RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
+  DCHECK(AccessibilityIsMainFrame());
   // Only the active RenderFrameHost is connected to the native widget tree for
   // accessibility, so return null if this is queried on any other frame.
-  // TODO(crbug.com/1316388): With MPArch there may be embedded main frames
-  // and so is_main_frame should not be used to identify all embedded frames.
-  // Follow up to confirm correctness.
-  if (!AccessibilityIsMainFrame() || !IsActive())
+  if (!IsActive())
     return gfx::kNullAcceleratedWidget;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -6028,8 +6026,8 @@ void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
   }
 }
 
-void RenderFrameHostImpl::SetVirtualKeyboardOverlayPolicy(
-    bool vk_overlays_content) {
+void RenderFrameHostImpl::SetVirtualKeyboardMode(
+    ui::mojom::VirtualKeyboardMode mode) {
   // TODO(crbug.com/1225366): Consider moving this to PageImpl.
   if (GetOutermostMainFrame() != this) {
     bad_message::ReceivedBadMessage(
@@ -6037,7 +6035,7 @@ void RenderFrameHostImpl::SetVirtualKeyboardOverlayPolicy(
         bad_message::RFHI_SET_OVERLAYS_CONTENT_NOT_OUTERMOST_FRAME);
     return;
   }
-  GetPage().set_virtual_keyboard_overlays_content(vk_overlays_content);
+  GetPage().SetVirtualKeyboardMode(mode);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -10254,9 +10252,6 @@ ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
 
 ui::AXTreeID RenderFrameHostImpl::GetFocusedAXTreeID() {
   // If this is not the root frame tree node, we're done.
-  // TODO(crbug.com/1316388): With MPArch there may be embedded main frames
-  // and so is_main_frame should not be used to identify all embedded frames.
-  // Follow up to confirm correctness.
   if (!AccessibilityIsMainFrame())
     return ui::AXTreeIDUnknown();
 

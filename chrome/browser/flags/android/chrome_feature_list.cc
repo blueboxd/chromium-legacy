@@ -94,11 +94,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
-    &autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
-    &blink::features::kPrerender2,
     &blink::features::kForceWebContentsDarkMode,
+    &blink::features::kOSKResizesVisualViewport,
+    &blink::features::kPrerender2,
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
     &commerce::kShoppingList,
@@ -118,7 +118,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
-    &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
@@ -220,7 +219,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextMenuShopWithGoogleLens,
     &kContextMenuSearchAndShopWithGoogleLens,
     &kContextMenuTranslateWithGoogleLens,
-    &kContextMenuPopupStyle,
     &kContextualSearchDebug,
     &kContextualSearchDelayedIntelligence,
     &kContextualSearchDisableOnlineDetection,
@@ -266,7 +264,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxModernizeVisualUpdate,
     &kOptimizeGeolocationHeaderGeneration,
     &kOptimizeLayoutsForPullRefresh,
-    &kOSKResizesVisualViewport,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -668,10 +665,6 @@ BASE_FEATURE(kContextMenuGoogleLensChip,
              "ContextMenuGoogleLensChip",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kContextMenuPopupStyle,
-             "ContextMenuPopupStyle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kContextMenuSearchWithGoogleLens,
              "ContextMenuSearchWithGoogleLens",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -864,10 +857,6 @@ BASE_FEATURE(kOmniboxModernizeVisualUpdate,
 
 BASE_FEATURE(kOptimizeGeolocationHeaderGeneration,
              "OptimizeGeolocationHeaderGeneration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kOSKResizesVisualViewport,
-             "OSKResizesVisualViewport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOptimizeLayoutsForPullRefresh,

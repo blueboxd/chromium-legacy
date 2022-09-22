@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -162,10 +161,6 @@ std::vector<AutofillProfile*> PersonalDataManagerMock::GetProfiles() const {
   return result;
 }
 
-FormStructureTestApi test_api(FormStructure* form_structure) {
-  return FormStructureTestApi(form_structure);
-}
-
 }  // namespace
 
 // A data-driven test for verifying merging of Autofill profiles. Each input is
@@ -290,24 +285,19 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
             StringToFieldType(base::UTF16ToUTF8(field->name));
         field->set_heuristic_type(GetActivePatternSource(), type);
       }
-      test_api(&form_structure).IdentifySections(false);
 
       // Import the profile.
-      std::unique_ptr<CreditCard> imported_credit_card;
-      absl::optional<std::string> unused_imported_upi_id;
-      std::vector<FormDataImporter::AddressProfileImportCandidate>
-          address_profile_import_candidates;
+      FormDataImporter::ImportFormDataResult imported_data;
       form_data_importer_->ImportFormData(form_structure,
-                                          true,  // address autofill enabled,
-                                          true,  // credit card autofill enabled
-                                          false,  // should return local card
-                                          &imported_credit_card,
-                                          address_profile_import_candidates,
-                                          &unused_imported_upi_id);
+                                          /*profile_autofill_enabled=*/true,
+                                          /*credit_card_autofill_enabled=*/true,
+                                          /*should_return_local_card=*/false,
+                                          &imported_data);
       form_data_importer_->ProcessAddressProfileImportCandidates(
-          address_profile_import_candidates, true);
-      EXPECT_FALSE(imported_credit_card);
-      EXPECT_FALSE(unused_imported_upi_id.has_value());
+          imported_data.address_profile_import_candidates,
+          /*allow_prompt=*/true);
+      EXPECT_FALSE(imported_data.credit_card_import_candidate);
+      EXPECT_FALSE(imported_data.imported_upi_id.has_value());
 
       // Clear the |form| to start a new profile.
       form.fields.clear();

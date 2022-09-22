@@ -683,7 +683,7 @@
     {
       name: "CSSGridTemplatePropertyInterpolation",
       depends_on: ["LayoutNGGridFragmentation"],
-      status: "experimental",
+      status: "stable",
     },
     {
       // This needs to be kept as a runtime flag as long as we need to forcibly
@@ -1467,6 +1467,12 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
+      status: "stable",
+    },
+    {
+      // A kill-switch for a fix of crbug.com/1366268.
+      name: "LayoutNGDelayScrollOffsetClamping",
+      base_feature: "LayoutNGDelayScrollOffsetClamping",
       status: "stable",
     },
     {

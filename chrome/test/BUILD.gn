@@ -1355,6 +1355,8 @@ if (!is_android) {
       "//components/optimization_guide/core:prediction",
       "//components/optimization_guide/core:test_support",
       "//components/optimization_guide/proto:optimization_guide_proto",
+      "//components/origin_trials:browser",
+      "//components/origin_trials/test",
       "//components/page_load_metrics/browser",
       "//components/page_load_metrics/browser:test_support",
       "//components/page_load_metrics/browser/observers/ad_metrics",
@@ -1459,6 +1461,7 @@ if (!is_android) {
       "//components/user_education/common",
       "//components/user_education/test",
       "//components/user_manager",
+      "//components/user_prefs",
       "//components/variations/service",
       "//components/version_info",
       "//components/webapps/browser",
@@ -1932,6 +1935,7 @@ if (!is_android) {
       "../browser/optimization_guide/page_content_annotations_service_browsertest.cc",
       "../browser/optimization_guide/page_text_observer_browsertest.cc",
       "../browser/optimization_guide/prediction/prediction_manager_browsertest.cc",
+      "../browser/origin_trials/origin_trials_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ad_density_intervention_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/large_sticky_ad_intervention_browsertest.cc",
@@ -2822,6 +2826,7 @@ if (!is_android) {
         "//ppapi/tests/extensions",
       ]
       if (is_chromeos_ash) {
+        data += [ "//ash/webui/common/resources/cr.js" ]
         sources += [
           "../browser/ui/views/extensions/request_file_system_dialog_browsertest.cc",
           "//third_party/liblouis/wasm/liblouis_wrapper_browsertest.cc",
@@ -3414,6 +3419,7 @@ if (!is_android) {
         "../browser/ui/views/tab_sharing/tab_sharing_ui_views_browsertest.cc",
         "../browser/ui/views/tabs/tab_group_editor_bubble_view_browsertest.cc",
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
+        "../browser/ui/views/toolbar/browser_app_menu_browsertest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/user_education/help_bubble_factory_views_browsertest.cc",
@@ -3610,8 +3616,6 @@ if (!is_android) {
         "../browser/ash/dbus/proxy_resolution_service_provider_browsertest.cc",
         "../browser/ash/display/display_prefs_browsertest.cc",
         "../browser/ash/display/quirks_browsertest.cc",
-        "../browser/ash/drive/drive_integration_service_browser_test_base.cc",
-        "../browser/ash/drive/drive_integration_service_browser_test_base.h",
         "../browser/ash/drive/drive_integration_service_browsertest.cc",
         "../browser/ash/file_manager/external_filesystem_apitest.cc",
         "../browser/ash/file_manager/file_manager_browsertest.cc",
@@ -3943,6 +3947,7 @@ if (!is_android) {
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
         "../browser/sessions/session_restore_browsertest_chromeos.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
+        "../browser/speech/extension_api/tts_extension_api_ash_browsertest.cc",
         "../browser/speech/network_speech_recognizer_browsertest.cc",
         "../browser/speech/on_device_speech_recognizer_browsertest.cc",
         "../browser/support_tool/ash/ui_hierarchy_data_collector_browsertest.cc",
@@ -4182,6 +4187,7 @@ if (!is_android) {
         "//chrome/browser/ash:add_remove_user_event_proto",
         "//chrome/browser/ash:arc_test_support",
         "//chrome/browser/ash:key_permissions_proto",
+        "//chrome/browser/ash:login_logout_event_proto",
         "//chrome/browser/ash/crosapi",
         "//chrome/browser/ash/crosapi:test_support",
         "//chrome/browser/ash/login/oobe_quick_start/connectivity:test_support",
@@ -4190,7 +4196,6 @@ if (!is_android) {
         "//chrome/browser/ash/wilco_dtc_supportd:mojo_utils",
         "//chrome/browser/chromeos",
         "//chrome/browser/chromeos:dlp_policy_event_proto",
-        "//chrome/browser/chromeos:login_logout_event_proto",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/enterprise/connectors/device_trust:features",
         "//chrome/browser/enterprise/connectors/device_trust/common",
@@ -4532,7 +4537,6 @@ if (!is_android) {
     if (is_fuchsia) {
       use_test_server = true
 
-      use_cfv1 = false
       test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
       additional_manifest_fragments = [
         "//build/config/fuchsia/test/audio_output.shard.test-cml",
@@ -5851,6 +5855,7 @@ test("unit_tests") {
     "//components/optimization_guide/core",
     "//components/optimization_guide/core:bloomfilter",
     "//components/optimization_guide/core:test_support",
+    "//components/origin_trials:browser",
     "//components/os_crypt:test_support",
     "//components/page_info",
     "//components/page_load_metrics/browser",
@@ -8944,8 +8949,6 @@ test("unit_tests") {
 
     data += [ "//testing/buildbot/filters/fuchsia.unit_tests.filter" ]
 
-    use_cfv1 = false
-
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
@@ -10208,8 +10211,6 @@ source_set("sync_integration_test_support") {
       "../browser/sync/test/integration/sync_app_list_helper.h",
       "../browser/sync/test/integration/sync_arc_package_helper.cc",
       "../browser/sync/test/integration/sync_arc_package_helper.h",
-      "../browser/sync/test/integration/sync_settings_categorization_sync_test.cc",
-      "../browser/sync/test/integration/sync_settings_categorization_sync_test.h",
       "../browser/sync/test/integration/workspace_desk_helper.cc",
       "../browser/sync/test/integration/workspace_desk_helper.h",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
@@ -11002,6 +11003,7 @@ if (is_chromeos_ash) {
     ]
     deps = [
       "//ash:test_support",
+      "//base/test:test_support",
       "//chromeos/services/machine_learning/public/cpp:stub",
       "//components/exo/wayland:weston_test",
       "//ui/base:test_support",

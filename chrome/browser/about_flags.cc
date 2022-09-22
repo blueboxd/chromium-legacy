@@ -3573,7 +3573,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"osk-resizes-visual-viewport",
      flag_descriptions::kEnableOskResizesVisualViewportName,
      flag_descriptions::kEnableOskResizesVisualViewportDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kOSKResizesVisualViewport)},
+     FEATURE_VALUE_TYPE(blink::features::kOSKResizesVisualViewport)},
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kContextualSearchDebug)},
@@ -3748,6 +3748,9 @@ const FeatureEntry kFeatureEntries[] = {
     },
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"apn-revamp", flag_descriptions::kApnRevampName,
+     flag_descriptions::kApnRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kApnRevamp)},
     {"audio-hfp-mic-sr", flag_descriptions::kAudioHFPMicSRName,
      flag_descriptions::kAudioHFPMicSRDescription, kOsCrOS,
      PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootAudioHFPMicSR")},
@@ -3845,9 +3848,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kCellularBypassESimInstallationConnectivityCheck)},
-    {"apn-revamp", flag_descriptions::kApnRevampName,
-     flag_descriptions::kApnRevampDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kApnRevamp)},
     {"cellular-use-second-euicc",
      flag_descriptions::kCellularUseSecondEuiccName,
      flag_descriptions::kCellularUseSecondEuiccDescription, kOsCrOS,
@@ -7614,6 +7614,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAttributionReportingDebugModeDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAttributionReportingDebugMode)},
 
+    {"private-aggregation-debug-mode",
+     flag_descriptions::kPrivateAggregationDebugModeName,
+     flag_descriptions::kPrivateAggregationDebugModeDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kPrivateAggregationDebugMode)},
+
     {"client-storage-access-context-auditing",
      flag_descriptions::kClientStorageAccessContextAuditingName,
      flag_descriptions::kClientStorageAccessContextAuditingDescription, kOsAll,
@@ -8802,10 +8807,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
-    {"context-menu-popup-style", flag_descriptions::kContextMenuPopupStyleName,
-     flag_descriptions::kContextMenuPopupStyleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupStyle)},
-
     {"grid-tab-switcher-for-tablets",
      flag_descriptions::kGridTabSwitcherForTabletsName,
      flag_descriptions::kGridTabSwitcherForTabletsDescription, kOsAndroid,

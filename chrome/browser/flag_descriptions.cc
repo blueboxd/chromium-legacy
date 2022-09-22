@@ -2418,6 +2418,13 @@ const char kPrivacySandboxV3Description[] =
     "Enables an updated Privacy Sandbox UI. Also enables some related "
     "features.";
 
+const char kPrivateAggregationDebugModeName[] =
+    "Private Aggregation debug mode";
+const char kPrivateAggregationDebugModeDescription[] =
+    "Enables debug mode for the Private Aggregation API. This removes all "
+    "reporting delays. Only works if the Private Aggregation API is already "
+    "enabled.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =
@@ -3489,11 +3496,6 @@ const char kCriticalPersistedTabDataName[] = "Enable CriticalPersistedTabData";
 const char kCriticalPersistedTabDataDescription[] =
     "A new method of persisting Tab data across restarts has been devised "
     "and implemented. This actives the new approach.";
-
-const char kContextMenuPopupStyleName[] = "Context menu popup style";
-const char kContextMenuPopupStyleDescription[] =
-    "Enable the popup style context menu, where the context menu will be"
-    "anchored around the touch point.";
 
 const char kContextualSearchDebugName[] = "Contextual Search debug";
 const char kContextualSearchDebugDescription[] =
@@ -4676,6 +4678,11 @@ const char kAmbientModeAnimationDescription[] =
     "slideshow) when entering ambient mode. Currently, there is only one "
     "animation theme available (feel the breeze).";
 
+const char kApnRevampName[] = "APN Revamp";
+const char kApnRevampDescription[] =
+    "Enables the ChromeOS APN Revamp, which updates cellular network APN "
+    "system UI and related infrastructure.";
+
 const char kAppDiscoveryForOobeName[] =
     "OOBE app recommendations with App Discovery Service.";
 const char kAppDiscoveryForOobeDescription[] =
@@ -4923,12 +4930,6 @@ const char kCellularBypassESimInstallationConnectivityCheckName[] =
 const char kCellularBypassESimInstallationConnectivityCheckDescription[] =
     "Bypass the non-cellular internet connectivity check during eSIM "
     "installation.";
-
-const char kApnRevampName[] = "APN Revamp";
-const char kApnRevampDescription[] =
-    "Enables the ChromeOS APN Revamp, which updates cellular network APN "
-    "system UI and related "
-    "infrastructure.";
 
 const char kCellularUseSecondEuiccName[] = "Use second Euicc";
 const char kCellularUseSecondEuiccDescription[] =

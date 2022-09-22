@@ -1256,6 +1256,8 @@ static_library("ui") {
       "performance_controls/high_efficiency_bubble_delegate.cc",
       "performance_controls/high_efficiency_bubble_delegate.h",
       "performance_controls/high_efficiency_bubble_observer.h",
+      "performance_controls/high_efficiency_iph_controller.cc",
+      "performance_controls/high_efficiency_iph_controller.h",
       "performance_controls/tab_discard_tab_helper.cc",
       "performance_controls/tab_discard_tab_helper.h",
       "permission_bubble/permission_prompt.h",
@@ -2315,6 +2317,8 @@ static_library("ui") {
       "ash/holding_space/holding_space_metrics_delegate.h",
       "ash/holding_space/holding_space_persistence_delegate.cc",
       "ash/holding_space/holding_space_persistence_delegate.h",
+      "ash/holding_space/holding_space_suggestions_delegate.cc",
+      "ash/holding_space/holding_space_suggestions_delegate.h",
       "ash/holding_space/holding_space_util.cc",
       "ash/holding_space/holding_space_util.h",
       "ash/image_downloader_impl.cc",
@@ -5210,8 +5214,8 @@ static_library("ui") {
       "views/webauthn/authenticator_select_account_sheet_view.h",
       "views/webauthn/hover_list_view.cc",
       "views/webauthn/hover_list_view.h",
-      "views/webauthn/passkey_pill_view.cc",
-      "views/webauthn/passkey_pill_view.h",
+      "views/webauthn/passkey_detail_view.cc",
+      "views/webauthn/passkey_detail_view.h",
       "views/webauthn/ring_progress_bar.cc",
       "views/webauthn/ring_progress_bar.h",
       "views/webauthn/sheet_view_factory.cc",
@@ -5951,6 +5955,8 @@ static_library("test_support") {
 
   if (is_chromeos_ash) {
     sources += [
+      "app_list/search/files/file_suggest_test_util.cc",
+      "app_list/search/files/file_suggest_test_util.h",
       "ash/ash_test_util.cc",
       "ash/ash_test_util.h",
       "ash/shelf/chrome_shelf_controller_test_util.cc",

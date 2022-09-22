@@ -1350,6 +1350,9 @@ extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
 extern const char kPrivacySandboxV3Name[];
 extern const char kPrivacySandboxV3Description[];
 
+extern const char kPrivateAggregationDebugModeName[];
+extern const char kPrivateAggregationDebugModeDescription[];
+
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
 
@@ -1969,9 +1972,6 @@ extern const char kCloseTabSuggestionsDescription[];
 
 extern const char kCriticalPersistedTabDataName[];
 extern const char kCriticalPersistedTabDataDescription[];
-
-extern const char kContextMenuPopupStyleName[];
-extern const char kContextMenuPopupStyleDescription[];
 
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];
@@ -2678,6 +2678,9 @@ extern const char kAlwaysEnableHdcpType1[];
 extern const char kAmbientModeAnimationName[];
 extern const char kAmbientModeAnimationDescription[];
 
+extern const char kApnRevampName[];
+extern const char kApnRevampDescription[];
+
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];
 
@@ -2815,9 +2818,6 @@ extern const char kCategoricalSearchDescription[];
 
 extern const char kCellularBypassESimInstallationConnectivityCheckName[];
 extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
-
-extern const char kApnRevampName[];
-extern const char kApnRevampDescription[];
 
 extern const char kCellularUseSecondEuiccName[];
 extern const char kCellularUseSecondEuiccDescription[];

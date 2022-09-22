@@ -935,7 +935,7 @@
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
-      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/shadow_dom"
+      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch"
     ]
   },
   {
@@ -1232,7 +1232,10 @@
   {
     "prefix": "pending-beacon",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/pending_beacon"],
+    "bases": [
+      "external/wpt/pending_beacon",
+      "wpt_internal/pending_beacon"
+    ],
     "args": [
       "--enable-features=PendingBeaconAPI:requires_origin_trial/false"
     ]
@@ -1287,5 +1290,11 @@
     "bases": [
       "external/wpt/fetch/corb"
     ]
+  },
+  {
+    "prefix": "js-shared-memory",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/js/shared_memory"],
+    "args": ["--enable-features=JavaScriptExperimentalSharedMemory"]
   }
 ]

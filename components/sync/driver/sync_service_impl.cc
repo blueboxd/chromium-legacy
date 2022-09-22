@@ -71,7 +71,8 @@ enum SyncInitialState {
 };
 
 void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
-                            bool first_setup_complete) {
+                            bool first_setup_complete,
+                            bool is_regular_profile_for_uma) {
   SyncInitialState sync_state = CAN_START;
   if (disable_reasons.Has(SyncService::DISABLE_REASON_NOT_SIGNED_IN)) {
     sync_state = NOT_SIGNED_IN;
@@ -88,6 +89,9 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
     sync_state = NEEDS_CONFIRMATION;
   }
   base::UmaHistogramEnumeration("Sync.InitialState", sync_state);
+  if (is_regular_profile_for_uma) {
+    base::UmaHistogramEnumeration("Sync.InitialState2", sync_state);
+  }
 }
 
 EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
@@ -155,6 +159,7 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
       create_http_post_provider_factory_cb_(
           base::BindRepeating(&CreateHttpBridgeFactory)),
       start_behavior_(init_params.start_behavior),
+      is_regular_profile_for_uma_(init_params.is_regular_profile_for_uma),
       is_setting_sync_requested_(false),
       should_record_trusted_vault_error_shown_on_startup_(true),
 #if BUILDFLAG(IS_ANDROID)
@@ -220,7 +225,6 @@ void SyncServiceImpl::Initialize() {
     SyncInvalidationsService* sync_invalidations_service =
         sync_client_->GetSyncInvalidationsService();
     if (sync_invalidations_service) {
-      sync_invalidations_service->SetActive(IsSignedIn());
       // Trigger a refresh when additional data types get enabled for
       // invalidations. This is needed to get the latest data after subscribing
       // for the updates.
@@ -243,7 +247,8 @@ void SyncServiceImpl::Initialize() {
   // RegisterForAuthNotifications(), because before that the authenticated
   // account isn't initialized.
   RecordSyncInitialState(GetDisableReasons(),
-                         user_settings_->IsFirstSetupComplete());
+                         user_settings_->IsFirstSetupComplete(),
+                         is_regular_profile_for_uma_);
 
   if (!HasSyncConsent()) {
     // Remove after 11/2021. Migration logic to set SyncRequested to false if
@@ -336,14 +341,6 @@ void SyncServiceImpl::AccountStateChanged() {
     } else {
       ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
     }
-  }
-
-  // Propagate the (potentially) changed account state to the invalidations
-  // system.
-  SyncInvalidationsService* sync_invalidations_service =
-      sync_client_->GetSyncInvalidationsService();
-  if (sync_invalidations_service) {
-    sync_invalidations_service->SetActive(IsSignedIn());
   }
 }
 
@@ -514,12 +511,26 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
   }
 
   base::UmaHistogramEnumeration("Sync.ResetEngineReason", reset_reason);
+  SyncInvalidationsService* sync_invalidations_service =
+      sync_client_->GetSyncInvalidationsService();
   switch (shutdown_reason) {
     case ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
-    case ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
+      if (sync_invalidations_service) {
+        sync_invalidations_service->StopListening();
+      }
       RemoveClientFromServer();
       break;
+    case ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA: {
+      if (sync_invalidations_service) {
+        sync_invalidations_service->StopListeningPermanently();
+      }
+      RemoveClientFromServer();
+      break;
+    }
     case ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
+      if (sync_invalidations_service) {
+        sync_invalidations_service->StopListening();
+      }
       break;
   }
 
@@ -932,9 +943,14 @@ void SyncServiceImpl::OnConfigureDone(
   // Update configured data types and start handling incoming invalidations. The
   // order is important to guarantee that data types are configured to prevent
   // filtering out invalidations. If there are incoming invalidations, they will
-  // be handled immediately after StartHandlingInvalidations() call.
+  // be handled immediately after StartListening() call.
   UpdateDataTypesForInvalidations();
   engine_->StartHandlingInvalidations();
+  SyncInvalidationsService* invalidations_service =
+      sync_client_->GetSyncInvalidationsService();
+  if (invalidations_service) {
+    invalidations_service->StartListening();
+  }
 
   if (migrator_.get() && migrator_->state() != BackendMigrator::IDLE) {
     // Migration in progress.  Let the migrator know we just finished

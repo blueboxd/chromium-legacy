@@ -1079,11 +1079,6 @@
     "expiry_milestone": 108
   },
   {
-    "name": "context-menu-popup-style",
-    "owners": [ "wenyufu", "clank-app-team@google.com" ],
-    "expiry_milestone": 108
-  },
-  {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 107
@@ -5450,6 +5445,13 @@
       "sauski",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 108
+  },
+  {
+    "name": "private-aggregation-debug-mode",
+    "owners": [
+      "//content/browser/private_aggregation/OWNERS"
+    ],
+    "expiry_milestone": 111
   },
   {
     "name": "private-network-access-preflight-short-timeout",

@@ -1696,39 +1696,12 @@
             ],
             "experiments": [
                 {
-                    "name": "DisabledPolicy_20220621",
-                    "disable_features": [
-                        "BFCachePerformanceManagerPolicy",
-                        "BackForwardCacheSize"
-                    ]
-                },
-                {
-                    "name": "EnabledPolicy_CacheSize2_20220621",
+                    "name": "EnabledPolicy_CacheSize6_ModerateCacheSize4-2_20220921",
                     "params": {
-                        "cache_size": "2",
-                        "foreground_cache_size": "-1"
-                    },
-                    "enable_features": [
-                        "BFCachePerformanceManagerPolicy",
-                        "BackForwardCacheSize"
-                    ]
-                },
-                {
-                    "name": "EnabledPolicy_CacheSize4_20220621",
-                    "params": {
-                        "cache_size": "4",
-                        "foreground_cache_size": "-1"
-                    },
-                    "enable_features": [
-                        "BFCachePerformanceManagerPolicy",
-                        "BackForwardCacheSize"
-                    ]
-                },
-                {
-                    "name": "EnabledPolicy_CacheSize6_20220621",
-                    "params": {
+                        "background_cache_size_on_moderate_pressure": "2",
                         "cache_size": "6",
-                        "foreground_cache_size": "-1"
+                        "foreground_cache_size": "-1",
+                        "foreground_cache_size_on_moderate_pressure": "4"
                     },
                     "enable_features": [
                         "BFCachePerformanceManagerPolicy",
@@ -3874,6 +3847,25 @@
             ]
         }
     ],
+    "DisableFontManagerEarlyInitDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "FontManagerEarlyInit"
+                    ]
+                }
+            ]
+        }
+    ],
     "DisableGles2ForOopR": [
         {
             "platforms": [
@@ -3921,6 +3913,22 @@
                     "name": "Enabled_20220725",
                     "enable_features": [
                         "DisableResourceScheduler"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DisableUrgentPageDiscarding": [
+        {
+            "platforms": [
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "UrgentPageDiscarding"
                     ]
                 }
             ]
@@ -4142,7 +4150,6 @@
                         "DragAndDropMovementThresholdDipParam": "60"
                     },
                     "enable_features": [
-                        "ContextMenuPopupStyle",
                         "TouchDragAndContextMenu"
                     ]
                 }
@@ -5148,42 +5155,6 @@
             ]
         }
     ],
-    "HeapProfilingSubprocess": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledInBrowserAndGPU",
-                    "params": {
-                        "nonstable-probability": "1",
-                        "stable-probability": "1",
-                        "supported-processes": "browser;gpu"
-                    },
-                    "enable_features": [
-                        "HeapProfilerReporting"
-                    ]
-                },
-                {
-                    "name": "EnabledInGPU",
-                    "params": {
-                        "nonstable-probability": "1",
-                        "sampling-rate": "1000000",
-                        "stable-probability": "1",
-                        "supported-processes": "gpu"
-                    },
-                    "enable_features": [
-                        "HeapProfilerReporting"
-                    ]
-                }
-            ]
-        }
-    ],
     "HelpAppLauncherSearch": [
         {
             "platforms": [
@@ -6060,6 +6031,29 @@
                     },
                     "enable_features": [
                         "HistoryClustersOnDeviceClustering"
+                    ]
+                }
+            ]
+        }
+    ],
+    "JourneysSearchTermsKeywords": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220912",
+                    "params": {
+                        "keyword_filter_on_categories": "false",
+                        "keyword_filter_on_entity_aliases": "false",
+                        "keyword_filter_on_noisy_visits": "false",
+                        "keyword_filter_on_search_terms": "true"
+                    },
+                    "enable_features": [
+                        "JourneysKeywordFiltering"
                     ]
                 }
             ]
@@ -7270,30 +7264,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DisplayOpenLinkAsProfile"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptimizationHintsShorterHostKeyedCacheDuration": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220729",
-                    "params": {
-                        "hints_fetch_refresh_duration_in_hours": "1",
-                        "max_store_duration_for_featured_hints_in_days": "1"
-                    },
-                    "enable_features": [
-                        "OptimizationHintsFetching"
                     ]
                 }
             ]
@@ -10190,6 +10160,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ToolbarPhoneOptimizations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TopChromeWebUIUsesSpareRenderer": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TopChromeWebUIUsesSpareRenderer"
                     ]
                 }
             ]

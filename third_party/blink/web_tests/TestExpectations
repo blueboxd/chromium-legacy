@@ -1668,9 +1668,6 @@ crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 crbug.com/1294155 external/wpt/css/css-break/flexbox/flex-container-fragmentation-008.html [ Failure ]
 crbug.com/1294155 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-029.html [ Failure ]
-crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-001.xht [ Failure ]
-crbug.com/1294155 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-004.xht [ Failure ]
-crbug.com/1294155 paint/invalidation/outline/outline-change-vertical-rl.html [ Failure ]
 crbug.com/1294155 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
@@ -3268,8 +3265,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 
 # Custom-elements
 crbug.com/1351482 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
-crbug.com/1365368 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
-crbug.com/1365368 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-reactions-xml-parser.xhtml [ Crash ]
 crbug.com/1365604 [ Mac ] external/wpt/custom-elements/form-associated/ElementInternals-setFormValue.html [ Crash Pass Timeout ]
 crbug.com/1365604 [ Win ] external/wpt/custom-elements/form-associated/ElementInternals-setFormValue.html [ Pass Timeout ]
 
@@ -5160,6 +5155,12 @@ crbug.com/1096493 external/wpt/webaudio/the-audio-api/the-audiocontext-interface
 crbug.com/1097005 http/tests/devtools/console/console-object-preview.js [ Crash Failure Pass Timeout ]
 crbug.com/1097005 http/tests/devtools/console/console-preserve-scroll.js [ Crash Failure Pass Timeout ]
 crbug.com/1097005 http/tests/devtools/console/console-search.js [ Crash Failure Pass Timeout ]
+
+# These tests print the internal [[Scopes]] property. We disable the the tests for a release to run an
+# experiment whether we can remove the property. We'll re-enable and re-baseline once a final decision is made.
+crbug.com/1365858 http/tests/devtools/console/console-format-es6.js [ Failure Pass ]
+crbug.com/1365858 http/tests/devtools/console/console-functions.js [ Failure Pass ]
+crbug.com/1365858 http/tests/devtools/sources/debugger/properties-special.js [ Failure Pass ]
 
 crbug.com/1093445 http/tests/loading/pdf-commit-load-callbacks.html [ Failure Pass ]
 crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Failure Pass ]
@@ -7099,11 +7100,32 @@ crbug.com/1353578 [ Debug Mac ] fast/dom/gc-image-element-2.html [ Failure Pass 
 # Disable web test flakes on linux (Debug Leak)
 crbug.com/1349576 [ Debug Linux ] external/wpt/pointerevents/pointerevent_mouse_capture_change_hover.html [ Failure Pass ]
 crbug.com/1358312 [ Linux ] external/wpt/touch-events/single-touch-vertical-rl.html [ Failure Pass ]
-crbug.com/1267596 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Timeout Pass ]
-crbug.com/1318592 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Timeout Pass ]
+crbug.com/1267596 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Pass Timeout ]
+crbug.com/1318592 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Pass Timeout ]
+
+# unskip print ref tests
+crbug.com/1090628 external/wpt/svg/painting/reftests/mask-print.svg [ Crash ]
+crbug.com/1090628 external/wpt/css/css-break/block-002-wm-vlr-print.html [ Failure ]
+crbug.com/1090628 external/wpt/css/css-break/block-002-wm-vrl-print.html [ Failure ]
+crbug.com/1090628 external/wpt/css/css-break/float-with-large-margin-bottom-cross-page-001-print.html [ Failure ]
+crbug.com/1090628 external/wpt/css/css-break/ink-overflow-001-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/browsers/windows/iframe-cross-origin-print.sub.html [ Failure ]
+crbug.com/1090628 external/wpt/html/browsers/windows/iframe-cross-origin-scaled-print.sub.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/non-replaced-elements/tables/table-row-pagination-001-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-after-2-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-before-2-print.html [ Failure ]
+crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
+crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_mismatch_fail-print.html [ Failure ]
+crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_mismatch_page_margins-print.html [ Failure ]
+crbug.com/1090628 external/wpt/css/printing/fragmented-inline-block-002-print.html [ Failure ]
 
 # Sheriff 2022-09-07
 crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-context.html [ Failure ]
 
 # Sheriff 2022-09-09
 crbug.com/1361956 [ Linux ] fast/dom/Element/scrollTop-scrollLeft-body.html [ Pass Timeout ]
+
+# Disable PendingBeaconAPI related internal tests tentatively until it is
+# fully launched.
+# The ones defined in VirtualTestSuites are run instead.
+crbug.com/1293679 wpt_internal/pending_beacon/* [ Skip ]

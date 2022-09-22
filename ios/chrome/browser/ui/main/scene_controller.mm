@@ -76,6 +76,8 @@
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/app_store_rating/app_store_rating_scene_agent.h"
+#import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
@@ -386,7 +388,7 @@ bool IsSigninForcedByPolicy() {
   return self.signinCoordinator != nil;
 }
 
-- (BOOL)tabGridVisible {
+- (BOOL)isTabGridVisible {
   return self.mainCoordinator.isTabGridActive;
 }
 
@@ -465,14 +467,18 @@ bool IsSigninForcedByPolicy() {
   if (self.startupParameters) {
     if ([self isIncognitoForced]) {
       [self.startupParameters
-          setUnexpectedMode:!self.startupParameters.launchInIncognito];
+          setUnexpectedMode:self.startupParameters.applicationMode ==
+                            ApplicationModeForTabOpening::NORMAL];
       // When only incognito mode is available.
-      [self.startupParameters setLaunchInIncognito:YES];
+      [self.startupParameters
+          setApplicationMode:ApplicationModeForTabOpening::INCOGNITO];
     } else if ([self isIncognitoDisabled]) {
       [self.startupParameters
-          setUnexpectedMode:self.startupParameters.launchInIncognito];
+          setUnexpectedMode:self.startupParameters.applicationMode ==
+                            ApplicationModeForTabOpening::INCOGNITO];
       // When incognito mode is disabled.
-      [self.startupParameters setLaunchInIncognito:NO];
+      [self.startupParameters
+          setApplicationMode:ApplicationModeForTabOpening::NORMAL];
     }
 
     [UserActivityHandler
@@ -564,7 +570,10 @@ bool IsSigninForcedByPolicy() {
   self.sceneState.startupHadExternalIntent = YES;
 
   // Perform the action in incognito when only incognito mode is available.
-  [self.startupParameters setLaunchInIncognito:[self isIncognitoForced]];
+  if ([self isIncognitoForced]) {
+    [self.startupParameters
+        setApplicationMode:ApplicationModeForTabOpening::INCOGNITO];
+  }
 
   [UserActivityHandler
       performActionForShortcutItem:shortcutItem
@@ -898,6 +907,9 @@ bool IsSigninForcedByPolicy() {
     [self.sceneState
         addAgent:[[PromosManagerSceneAgent alloc]
                      initWithCommandDispatcher:mainCommandDispatcher]];
+  if (IsAppStoreRatingEnabled()) {
+    [self.sceneState addAgent:[[AppStoreRatingSceneAgent alloc] init]];
+  }
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.

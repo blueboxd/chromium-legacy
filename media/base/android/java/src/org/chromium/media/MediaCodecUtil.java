@@ -51,7 +51,6 @@ class MediaCodecUtil {
         public static final String VIDEO_MP4 = "video/mp4";
         public static final String VIDEO_WEBM = "video/webm";
         public static final String VIDEO_H264 = "video/avc";
-        public static final String VIDEO_DOLBY_VISION = "video/dolby-vision";
         public static final String VIDEO_HEVC = "video/hevc";
         public static final String VIDEO_VP8 = "video/x-vnd.on2.vp8";
         public static final String VIDEO_VP9 = "video/x-vnd.on2.vp9";
@@ -312,10 +311,6 @@ class MediaCodecUtil {
                 // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel.html
                 try {
                     CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
-                    if (mime.endsWith("vp9") && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                        addVp9CodecProfileLevels(profileLevels, codecCapabilities);
-                        continue;
-                    }
                     for (CodecProfileLevel profileLevel : codecCapabilities.profileLevels) {
                         profileLevels.addCodecProfileLevel(mime, profileLevel);
                     }
@@ -438,10 +433,6 @@ class MediaCodecUtil {
             }
         } else if (mime.equals(MimeTypes.VIDEO_AV1)) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;
-        } else if (mime.equals(MimeTypes.VIDEO_DOLBY_VISION)) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                return false;
-            }
         }
         // *************************************************************
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
@@ -534,14 +525,12 @@ class MediaCodecUtil {
             case HWEncoder.QcomVp8:
             case HWEncoder.QcomH264:
             case HWEncoder.ExynosH264:
-                return Build.VERSION_CODES.LOLLIPOP;
+            case HWEncoder.HisiH264:
             case HWEncoder.ExynosVp8:
             case HWEncoder.ExynosVp9:
-                return Build.VERSION_CODES.M;
+                return Build.VERSION_CODES.N;
             case HWEncoder.MediatekH264:
                 return Build.VERSION_CODES.O_MR1;
-            case HWEncoder.HisiH264:
-                return Build.VERSION_CODES.N;
             case HWEncoder.SpreadtrumH264:
                 return Build.VERSION_CODES.R;
         }
@@ -609,8 +598,7 @@ class MediaCodecUtil {
         // MediaCodec.setOutputSurface().  http://crbug.com/683401
         // Huawei P9 lite will, eventually, get the decoder into a bad state if SetSurface is called
         // enough times (https://crbug.com/792261).
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && !Build.HARDWARE.equalsIgnoreCase("hi6210sft")
+        return !Build.HARDWARE.equalsIgnoreCase("hi6210sft")
                 && !Build.HARDWARE.equalsIgnoreCase("hi6250");
     }
 

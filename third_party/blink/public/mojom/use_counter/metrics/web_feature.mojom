@@ -3617,7 +3617,7 @@ enum WebFeature {
   kParentOfDisabledFormControlRespondsToMouseEvents = 4296,
   kUnhandledExceptionCountInMainThread = 4297,
   kUnhandledExceptionCountInWorker = 4298,
-  kWebCodecsImageDecoderPremultiplyAlphaDeprecation = 4299,
+  kOBSOLETE_WebCodecsImageDecoderPremultiplyAlphaDeprecation = 4299,
   kCookieDomainNonASCII = 4300,
   kClientHintsMetaEquivDelegateCH = 4301,
   kExpectCTHeader = 4302,
@@ -3674,6 +3674,10 @@ enum WebFeature {
   kSelectiveInOrderScript = 4353,
   kV8AsyncStackTaggingCreateTaskCall = 4354,
   kWebkitBoxWithoutWebkitLineClamp = 4355,
+  kDataUrlInSvgUse = 4356,
+  kWebAuthnConditionalUiGet = 4357,
+  kWebAuthnConditionalUiGetSuccess = 4358,
+  kWebAuthnRkRequiredCreationSuccess = 4359,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

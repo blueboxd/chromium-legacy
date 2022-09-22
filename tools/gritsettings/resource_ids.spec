@@ -133,7 +133,7 @@
     "includes": [1350],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/emoji_picker/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [30]}},
     "includes": [1360],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/launcher_internals/resources.grd": {
@@ -334,7 +334,7 @@
     "includes": [2140],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [50]}},
     "includes": [2150],
   },
   # END chrome/browser section.
@@ -996,6 +996,9 @@
   },
   "ui/views/resources/views_resources.grd": {
     "structures": [4840],
+  },
+  "ui/webui/examples/resources/webui_examples_resources.grd": {
+    "messages": [4850],
   },
   "ui/webui/resources/webui_resources.grd": {
     "includes": [4860],

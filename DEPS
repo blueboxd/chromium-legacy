@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '878d58f0fd288aa9418b90d96e1d32d4a9cf84b4',
+  'angle_revision': '7d712c47469b521c68b40f0841976d5689a4781e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -807,7 +807,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/docs/website': {
-    'url': Var('chromium_git') + '/website.git' + '@' + '4b7c5e1cc2b74de503ace0529c32eab23f145e80',
+    'url': Var('chromium_git') + '/website.git' + '@' + '8260cff27be9744afeb4d88082ba2d3edb92f6ee',
   },
 
   'src/ios/third_party/earl_grey2/src': {
@@ -1805,7 +1805,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'd1b65aa5a88f6efd900604dfcda840154e9f16e2',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '0504291dab5d52d718604e6f32159ed0b08f5860',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'cca406352f69f6b4ba5b6070df74431358661a14',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '9790e546fc55135a9dff87f5d7d28fb848d90132',

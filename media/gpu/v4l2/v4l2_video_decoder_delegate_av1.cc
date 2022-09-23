@@ -213,6 +213,65 @@ void FillSegmentationParams(struct v4l2_av1_segmentation& v4l2_seg,
   v4l2_seg.last_active_seg_id = seg.last_active_segment_id;
 }
 
+// Section 5.9.15. Tile info syntax
+void FillTileInfo(v4l2_av1_tile_info& v4l2_ti, const libgav1::TileInfo& ti) {
+  if (ti.uniform_spacing)
+    v4l2_ti.flags |= V4L2_AV1_TILE_INFO_FLAG_UNIFORM_TILE_SPACING;
+
+  static_assert(std::size(decltype(v4l2_ti.mi_col_starts){}) ==
+                    (libgav1::kMaxTileColumns + 1),
+                "Size of |mi_col_starts| array in |v4l2_av1_tile_info| struct "
+                "does not match libgav1 expectation");
+
+  for (size_t i = 0; i < libgav1::kMaxTileColumns + 1; i++) {
+    v4l2_ti.mi_col_starts[i] =
+        base::checked_cast<uint32_t>(ti.tile_column_start[i]);
+  }
+  static_assert(std::size(decltype(v4l2_ti.mi_row_starts){}) ==
+                    (libgav1::kMaxTileRows + 1),
+                "Size of |mi_row_starts| array in |v4l2_av1_tile_info| struct "
+                "does not match libgav1 expectation");
+  for (size_t i = 0; i < libgav1::kMaxTileRows + 1; i++) {
+    v4l2_ti.mi_row_starts[i] =
+        base::checked_cast<uint32_t>(ti.tile_row_start[i]);
+  }
+
+  if (!ti.uniform_spacing) {
+    // Confirmed that |kMaxTileColumns| is enough size for
+    // |width_in_sbs_minus_1| and |kMaxTileRows| is enough size for
+    // |height_in_sbs_minus_1|
+    // https://b.corp.google.com/issues/187828854#comment19
+    static_assert(
+        std::size(decltype(v4l2_ti.width_in_sbs_minus_1){}) ==
+            libgav1::kMaxTileColumns,
+        "Size of |width_in_sbs_minus_1| array in |v4l2_av1_tile_info| struct "
+        "does not match libgav1 expectation");
+    for (size_t i = 0; i < libgav1::kMaxTileColumns; i++) {
+      if (ti.tile_column_width_in_superblocks[i] >= 1) {
+        v4l2_ti.width_in_sbs_minus_1[i] = base::checked_cast<uint32_t>(
+            ti.tile_column_width_in_superblocks[i] - 1);
+      }
+    }
+
+    static_assert(
+        std::size(decltype(v4l2_ti.height_in_sbs_minus_1){}) ==
+            libgav1::kMaxTileRows,
+        "Size of |height_in_sbs_minus_1| array in |v4l2_av1_tile_info| struct "
+        "does not match libgav1 expectation");
+    for (size_t i = 0; i < libgav1::kMaxTileRows; i++) {
+      if (ti.tile_row_height_in_superblocks[i] >= 1) {
+        v4l2_ti.height_in_sbs_minus_1[i] = base::checked_cast<uint32_t>(
+            ti.tile_row_height_in_superblocks[i] - 1);
+      }
+    }
+  }
+
+  v4l2_ti.tile_size_bytes = ti.tile_size_bytes;
+  v4l2_ti.context_update_tile_id = ti.context_update_id;
+  v4l2_ti.tile_cols = ti.tile_columns;
+  v4l2_ti.tile_rows = ti.tile_rows;
+}
+
 // Section 5.9.17. Quantizer index delta parameters syntax
 void FillQuantizerIndexDeltaParams(struct v4l2_av1_quantization& v4l2_quant,
                                    const libgav1::ObuSequenceHeader& seq_header,
@@ -246,6 +305,98 @@ void FillLoopFilterDeltaParams(struct v4l2_av1_loop_filter& v4l2_lf,
     v4l2_lf.flags |= V4L2_AV1_LOOP_FILTER_FLAG_DELTA_LF_MULTI;
 
   v4l2_lf.delta_lf_res = delta_lf.scale;
+}
+
+// Section 5.9.19. CDEF params syntax
+void FillCdefParams(struct v4l2_av1_cdef& v4l2_cdef,
+                    const libgav1::Cdef& cdef,
+                    uint8_t color_bitdepth) {
+  // Damping value parsed in libgav1 is from the spec + (bitdepth - 8).
+  // All the strength values parsed in libgav1 are from the spec and left
+  // shifted by (bitdepth - 8).
+  CHECK_GE(color_bitdepth, 8u);
+  const uint8_t coeff_shift = color_bitdepth - 8u;
+
+  v4l2_cdef.damping_minus_3 =
+      base::checked_cast<uint8_t>(cdef.damping - coeff_shift - 3u);
+
+  v4l2_cdef.bits = cdef.bits;
+
+  static_assert(std::size(decltype(v4l2_cdef.y_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.y_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_sec_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.uv_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.uv_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_sec_strength strength");
+
+  SafeArrayMemcpy(v4l2_cdef.y_pri_strength, cdef.y_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef.y_sec_strength, cdef.y_secondary_strength);
+  SafeArrayMemcpy(v4l2_cdef.uv_pri_strength, cdef.uv_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef.uv_sec_strength, cdef.uv_secondary_strength);
+}
+
+// 5.9.20. Loop restoration params syntax
+void FillLoopRestorationParams(v4l2_av1_loop_restoration& v4l2_lr,
+                               const libgav1::LoopRestoration& lr) {
+  for (size_t i = 0; i < V4L2_AV1_NUM_PLANES_MAX; i++) {
+    switch (lr.type[i]) {
+      case libgav1::LoopRestorationType::kLoopRestorationTypeNone:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_NONE;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeWiener:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_WIENER;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSgrProj:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SGRPROJ;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSwitchable:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SWITCHABLE;
+        break;
+      default:
+        NOTREACHED() << "Invalid loop restoration type";
+    }
+
+    if (v4l2_lr.frame_restoration_type[i] != V4L2_AV1_FRAME_RESTORE_NONE) {
+      if (true)
+        v4l2_lr.flags |= V4L2_AV1_LOOP_RESTORATION_FLAG_USES_LR;
+
+      if (i > 0)
+        v4l2_lr.flags |= V4L2_AV1_LOOP_RESTORATION_FLAG_USES_CHROMA_LR;
+    }
+  }
+
+  const bool use_loop_restoration =
+      std::find_if(std::begin(lr.type),
+                   std::begin(lr.type) + libgav1::kMaxPlanes,
+                   [](const auto type) {
+                     return type != libgav1::kLoopRestorationTypeNone;
+                   }) != (lr.type + libgav1::kMaxPlanes);
+
+  if (!use_loop_restoration)
+    return;
+
+  DCHECK_GE(lr.unit_size_log2[0], lr.unit_size_log2[1]);
+  DCHECK_LE(lr.unit_size_log2[0] - lr.unit_size_log2[1], 1);
+  v4l2_lr.lr_unit_shift = lr.unit_size_log2[0] - 6;
+  v4l2_lr.lr_uv_shift = lr.unit_size_log2[0] - lr.unit_size_log2[1];
+
+  // AV1 spec (p.52) uses this formula with hard coded value 2.
+  // https://aomediacodec.github.io/av1-spec/#loop-restoration-params-syntax
+  v4l2_lr.loop_restoration_size[0] =
+      V4L2_AV1_RESTORATION_TILESIZE_MAX >> (2 - v4l2_lr.lr_unit_shift);
+  v4l2_lr.loop_restoration_size[1] =
+      v4l2_lr.loop_restoration_size[0] >> v4l2_lr.lr_uv_shift;
+  v4l2_lr.loop_restoration_size[2] =
+      v4l2_lr.loop_restoration_size[0] >> v4l2_lr.lr_uv_shift;
 }
 
 V4L2VideoDecoderDelegateAV1::V4L2VideoDecoderDelegateAV1(
@@ -292,6 +443,17 @@ DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
 
   struct v4l2_av1_segmentation v4l2_seg = {};
   FillSegmentationParams(v4l2_seg, frame_header.segmentation);
+
+  const auto color_bitdepth = sequence_header.color_config.bitdepth;
+  struct v4l2_av1_cdef v4l2_cdef = {};
+  FillCdefParams(v4l2_cdef, frame_header.cdef,
+                 base::strict_cast<int8_t>(color_bitdepth));
+
+  struct v4l2_av1_loop_restoration v4l2_lr = {};
+  FillLoopRestorationParams(v4l2_lr, frame_header.loop_restoration);
+
+  struct v4l2_av1_tile_info v4l2_ti = {};
+  FillTileInfo(v4l2_ti, frame_header.tile_info);
 
   NOTIMPLEMENTED();
 

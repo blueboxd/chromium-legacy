@@ -218,6 +218,7 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<WebNavigationParams> params;
   std::unique_ptr<PolicyContainer> policy_container;
   absl::optional<ParsedPermissionsPolicy> isolated_app_permissions_policy;
+  DocumentToken token;
   KURL url;
   AtomicString http_method;
   AtomicString referrer;
@@ -322,6 +323,7 @@ DocumentLoader::DocumentLoader(
     : params_(std::move(navigation_params)),
       policy_container_(std::move(policy_container)),
       initial_permissions_policy_(params_->permissions_policy_override),
+      token_(params_->document_token),
       url_(params_->url),
       http_method_(static_cast<String>(params_->http_method)),
       referrer_(static_cast<String>(params_->referrer)),
@@ -403,6 +405,7 @@ DocumentLoader::DocumentLoader(
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language) {
   DCHECK(frame_);
+  DCHECK(params_);
 
   // TODO(dgozman): we should get rid of this boolean field, and make client
   // responsible for it's own view of "replaces current item", based on the
@@ -506,6 +509,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   // TODO(https://crbug.com/1151954): Copy |archive_| and other attributes.
   auto params = std::make_unique<WebNavigationParams>();
   LocalDOMWindow* window = frame_->DomWindow();
+  params->document_token = frame_->GetDocument()->Token();
   params->url = window->Url();
   params->unreachable_url = unreachable_url_;
   params->referrer = referrer_;
@@ -1790,18 +1794,18 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 
   const AtomicString& dns_prefetch_control =
       response_.HttpHeaderField(http_names::kXDNSPrefetchControl);
-  if (!dns_prefetch_control.IsEmpty())
+  if (!dns_prefetch_control.empty())
     document->ParseDNSPrefetchControlHeader(dns_prefetch_control);
 
   String header_content_language =
       response_.HttpHeaderField(http_names::kContentLanguage);
-  if (!header_content_language.IsEmpty()) {
+  if (!header_content_language.empty()) {
     wtf_size_t comma_index = header_content_language.find(',');
     // kNotFound == -1 == don't truncate
     header_content_language.Truncate(comma_index);
     header_content_language =
         header_content_language.StripWhiteSpace(IsHTMLSpace<UChar>);
-    if (!header_content_language.IsEmpty())
+    if (!header_content_language.empty())
       document->SetContentLanguage(AtomicString(header_content_language));
   }
 
@@ -2335,9 +2339,9 @@ void DocumentLoader::CommitNavigation() {
   // even if there is header on xml document.
   if (commit_reason_ == CommitReason::kXSLT ||
       commit_reason_ == CommitReason::kJavascriptUrl) {
-    DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).IsEmpty());
-    DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).IsEmpty());
-    DCHECK(response_.HttpHeaderField(http_names::kDocumentPolicy).IsEmpty());
+    DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).empty());
+    DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).empty());
+    DCHECK(response_.HttpHeaderField(http_names::kDocumentPolicy).empty());
     security_init.InitPermissionsPolicyFrom(
         previous_window->GetSecurityContext());
     security_init.InitDocumentPolicyFrom(previous_window->GetSecurityContext());
@@ -2371,6 +2375,7 @@ void DocumentLoader::CommitNavigation() {
   Document* document = frame_->DomWindow()->InstallNewDocument(
       DocumentInit::Create()
           .WithWindow(frame_->DomWindow(), owner_document)
+          .WithToken(token_)
           .ForInitialEmptyDocument(commit_reason_ ==
                                    CommitReason::kInitialization)
           .ForPrerendering(is_prerendering_)
@@ -2382,7 +2387,7 @@ void DocumentLoader::CommitNavigation() {
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
-  if (!response_.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+  if (!response_.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame_->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
   }

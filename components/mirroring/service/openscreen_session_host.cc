@@ -19,6 +19,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -71,6 +72,8 @@ namespace {
 
 // The time between updating the bandwidth estimates.
 constexpr base::TimeDelta kBandwidthUpdateInterval = base::Milliseconds(500);
+
+constexpr char kLogPrefix[] = "OpenscreenSessionHost: ";
 
 int NumberOfEncodeThreads() {
   // Do not saturate CPU utilization just for encoding. On a lower-end system
@@ -193,12 +196,12 @@ void UpdateConfigUsingSessionParameters(
   if (session_params.target_playout_delay) {
     // TODO(https://crbug.com/1363694): animated playout delay should be
     // removed.
-    config.animated_playout_delay = session_params.target_playout_delay.value();
+    config.animated_playout_delay = *session_params.target_playout_delay;
 
     // TODO(https://crbug.com/1363017): adaptive playout delay should be
     // re-enabled.
-    config.min_playout_delay = session_params.target_playout_delay.value();
-    config.max_playout_delay = session_params.target_playout_delay.value();
+    config.min_playout_delay = *session_params.target_playout_delay;
+    config.max_playout_delay = *session_params.target_playout_delay;
   }
 }
 
@@ -369,10 +372,6 @@ void OpenscreenSessionHost::OnNegotiated(
     const openscreen::cast::SenderSession* session,
     openscreen::cast::SenderSession::ConfiguredSenders senders,
     Recommendations capture_recommendations) {
-  DVLOG(1) << __func__ << ": negotiated a new "
-           << (state_ == State::kRemoting ? "remoting" : "mirroring")
-           << " session.";
-
   if (state_ == State::kStopped)
     return;
 
@@ -434,8 +433,7 @@ void OpenscreenSessionHost::OnNegotiated(
 
     media_remoter_->StartRpcMessaging(
         cast_environment_, senders.audio_sender, senders.video_sender,
-        audio_config.value_or(media::cast::FrameSenderConfig{}),
-        video_config.value_or(media::cast::FrameSenderConfig{}));
+        std::move(audio_config), std::move(video_config));
 
     return;
   }
@@ -443,7 +441,7 @@ void OpenscreenSessionHost::OnNegotiated(
   SetConstraints(capture_recommendations, audio_config, video_config);
   if (senders.audio_sender) {
     auto audio_sender = std::make_unique<media::cast::AudioSender>(
-        cast_environment_, audio_config.value(),
+        cast_environment_, *audio_config,
         base::BindOnce(&OpenscreenSessionHost::OnEncoderStatusChange,
                        // Safe because we own `audio_stream`.
                        weak_factory_.GetWeakPtr()),
@@ -472,7 +470,7 @@ void OpenscreenSessionHost::OnNegotiated(
 
   if (senders.video_sender) {
     auto video_sender = std::make_unique<media::cast::VideoSender>(
-        cast_environment_, video_config.value(),
+        cast_environment_, *video_config,
         base::BindRepeating(&OpenscreenSessionHost::OnEncoderStatusChange,
                             weak_factory_.GetWeakPtr()),
         base::BindRepeating(
@@ -520,6 +518,22 @@ void OpenscreenSessionHost::OnNegotiated(
   if (initially_starting_session && observer_) {
     observer_->DidStart();
   }
+
+  LogInfoMessage(base::StringPrintf(
+      "negotiated a new %s session. audio codec=%s, video codec=%s (%s)",
+      (state_ == State::kRemoting ? "remoting" : "mirroring"),
+      // TODO(https://crbug.com/1363514): media::cast::Codec should be removed.
+      // For now, we log the integer value of the enum but this should be
+      // serialized to a string once we use AudioCodec, VideoCodec.
+      (audio_config
+           ? base::NumberToString(static_cast<int>(audio_config->codec)).c_str()
+           : "none"),
+      (video_config
+           ? base::NumberToString(static_cast<int>(video_config->codec)).c_str()
+           : "none"),
+      (video_config
+           ? (video_config->use_external_encoder ? "hardware" : "software")
+           : "n/a")));
 }
 
 void OpenscreenSessionHost::OnCapabilitiesDetermined(
@@ -573,7 +587,8 @@ void OpenscreenSessionHost::OnError(const std::string& message) {
 }
 
 void OpenscreenSessionHost::RequestRefreshFrame() {
-  DVLOG(3) << __func__;
+  LogInfoMessage("Requesting a refresh frame from the video client");
+
   if (video_capture_client_)
     video_capture_client_->RequestRefreshFrame();
 }
@@ -649,12 +664,19 @@ void OpenscreenSessionHost::OnAsyncInitialized(
     std::move(initialized_cb_).Run();
 }
 
+void OpenscreenSessionHost::LogInfoMessage(const std::string& message) {
+  const std::string log_message = kLogPrefix + message;
+  DVLOG(1) << log_message;
+  if (observer_)
+    observer_->LogInfoMessage(log_message);
+}
+
 void OpenscreenSessionHost::ReportAndLogError(SessionError error,
                                               const std::string& message) {
   UMA_HISTOGRAM_ENUMERATION("MediaRouter.MirroringService.SessionError", error);
 
   if (observer_)
-    observer_->LogErrorMessage(message);
+    observer_->LogErrorMessage(kLogPrefix + message);
 
   if (state_ == State::kRemoting) {
     // Try to fallback to mirroring.
@@ -670,7 +692,9 @@ void OpenscreenSessionHost::ReportAndLogError(SessionError error,
 }
 
 void OpenscreenSessionHost::StopStreaming() {
-  DVLOG(2) << __func__ << " state=" << static_cast<int>(state_);
+  LogInfoMessage(
+      base::StrCat({"stopped streaming. state=",
+                    base::NumberToString(static_cast<int>(state_))}));
   if (!cast_environment_)
     return;
 
@@ -688,7 +712,9 @@ void OpenscreenSessionHost::StopStreaming() {
 }
 
 void OpenscreenSessionHost::StopSession() {
-  DVLOG(1) << __func__ << " state=" << static_cast<int>(state_);
+  LogInfoMessage(
+      base::StrCat({"stopped session. state=",
+                    base::NumberToString(static_cast<int>(state_))}));
   if (state_ == State::kStopped)
     return;
 
@@ -817,6 +843,10 @@ void OpenscreenSessionHost::SetTargetPlayoutDelay(
     audio_stream_->SetTargetPlayoutDelay(playout_delay);
   if (video_stream_)
     video_stream_->SetTargetPlayoutDelay(playout_delay);
+
+  LogInfoMessage(base::StrCat(
+      {"Updated target playout delay to ",
+       base::NumberToString(playout_delay.InMilliseconds()), "ms"}));
 }
 
 void OpenscreenSessionHost::ProcessFeedback(
@@ -857,12 +887,11 @@ void OpenscreenSessionHost::UpdateBandwidthEstimate() {
     bandwidth_being_utilized_ = usable_bandwidth;
   }
 
-  DVLOG(2) << ": updated bandwidth to " << bandwidth_being_utilized_ << "/"
-           << bandwidth_estimate_ << " ("
-           << static_cast<int>(
-                  (static_cast<float>(bandwidth_being_utilized_) * 100) /
-                  bandwidth_estimate_)
-           << "%)";
+  VLOG(2) << ": updated bandwidth to " << bandwidth_being_utilized_ << "/"
+          << bandwidth_estimate_ << " ("
+          << static_cast<int>(static_cast<float>(bandwidth_being_utilized_) *
+                              100 / bandwidth_estimate_)
+          << "%).";
 }
 
 void OpenscreenSessionHost::Negotiate() {
@@ -892,9 +921,9 @@ void OpenscreenSessionHost::NegotiateMirroring() {
     last_offered_audio_config_ = MirrorSettings::GetDefaultAudioConfig(
         RtpPayloadType::AUDIO_OPUS, Codec::CODEC_AUDIO_OPUS);
     UpdateConfigUsingSessionParameters(session_params_,
-                                       last_offered_audio_config_.value());
+                                       *last_offered_audio_config_);
     audio_configs.push_back(
-        ToOpenscreenAudioConfig(last_offered_audio_config_.value()));
+        ToOpenscreenAudioConfig(*last_offered_audio_config_));
   }
 
   if (session_params_.type != SessionType::AUDIO_ONLY) {

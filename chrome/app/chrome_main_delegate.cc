@@ -27,6 +27,7 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_resource_bundle_helper.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/common/buildflags.h"
@@ -58,6 +60,7 @@
 #include "chrome/common/profiler/unwind_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -88,7 +91,9 @@
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/scoped_startup_resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -365,11 +370,10 @@ bool HandleCreditsSwitch(const base::CommandLine& command_line) {
   bool result = base::PathService::Get(base::DIR_ASSETS, &resource_dir);
   DCHECK(result);
 
-  const std::string locale =
-      command_line.GetSwitchValueASCII(::switches::kLang);
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, /**parameter_name=*/nullptr,
-      ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+  // Ensure there is an instance of ResourceBundle that is initialized for
+  // localized string resource accesses.
+  ui::ScopedStartupResourceBundle ensure_startup_resource_bundle;
+
   base::FilePath resources_pak =
       resource_dir.Append(FILE_PATH_LITERAL("resources.pak"));
 
@@ -464,11 +468,9 @@ absl::optional<int> HandlePackExtensionSwitches(
   if (!command_line.HasSwitch(switches::kPackExtension))
     return absl::nullopt;
 
-  const std::string locale =
-      command_line.GetSwitchValueASCII(::switches::kLang);
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, /*delegate=*/nullptr,
-      ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+  // Ensure there is an instance of ResourceBundle that is initialized for
+  // localized string resource accesses.
+  ui::ScopedStartupResourceBundle ensure_startup_resource_bundle;
 
   extensions::StartupHelper extension_startup_helper;
   std::string error_message;
@@ -660,9 +662,16 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
         // No process already running, continue on to starting a new one.
         break;
 
-      case ProcessSingleton::PROCESS_NOTIFIED:
-        printf("%s\n", "Opening in existing browser session.");
+      case ProcessSingleton::PROCESS_NOTIFIED: {
+        // Ensure there is an instance of ResourceBundle that is initialized for
+        // localized string resource accesses.
+        ui::ScopedStartupResourceBundle startup_resource_bundle;
+        printf("%s\n", base::SysWideToNativeMB(
+                           base::UTF16ToWide(l10n_util::GetStringUTF16(
+                               IDS_USED_EXISTING_BROWSER)))
+                           .c_str());
         return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
+      }
 
       case ProcessSingleton::PROFILE_IN_USE:
         return chrome::RESULT_CODE_PROFILE_IN_USE;
@@ -1498,6 +1507,15 @@ absl::variant<int, content::MainFunctionParams> ChromeMainDelegate::RunProcess(
 }
 
 void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
+  // If not already set, set the shutdown type to be a clean process exit
+  // |kProcessExit|. These browser process shutdowns are clean shutdowns and
+  // their shutdown type must differ from |kNotValid|. If the shutdown type was
+  // already set (a.k.a closing window, end-session), this statement is a no-op.
+  if (process_type.empty()) {
+    browser_shutdown::OnShutdownStarting(
+        browser_shutdown::ShutdownType::kOtherExit);
+  }
+
 #if !BUILDFLAG(IS_ANDROID)
   if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
     ChromeProcessSingleton::DeleteInstance();

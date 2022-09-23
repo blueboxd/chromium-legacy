@@ -372,6 +372,9 @@ BASE_DECLARE_FEATURE(kHappinessTrackingSystemCameraApp);
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingPhotosExperience);
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingGeneralCamera;
+
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kHideWebAppOriginText);
@@ -538,7 +541,11 @@ BASE_DECLARE_FEATURE(kRequestDesktopSiteForTablets);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kSafetyCheckPermissions);
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kSafetyCheckNotificationPermissions);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kSafetyCheckUnusedSitePermissions);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

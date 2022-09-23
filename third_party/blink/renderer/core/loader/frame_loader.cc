@@ -241,7 +241,8 @@ void FrameLoader::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
 }
 
-void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container,
+void FrameLoader::Init(const DocumentToken& document_token,
+                       std::unique_ptr<PolicyContainer> policy_container,
                        const StorageKey& storage_key) {
   DCHECK(policy_container);
   ScriptForbiddenScope forbid_scripts;
@@ -249,9 +250,10 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container,
   // Load the initial empty document:
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = KURL(g_empty_string);
+  navigation_params->storage_key = storage_key;
+  navigation_params->document_token = document_token;
   navigation_params->frame_policy =
       frame_->Owner() ? frame_->Owner()->GetFramePolicy() : FramePolicy();
-  navigation_params->storage_key = storage_key;
 
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
@@ -537,19 +539,12 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript()) {
-    // Check the CSP of the caller (the "source browsing context") if required,
-    // as per https://html.spec.whatwg.org/C/#javascript-protocol.
-    bool javascript_url_is_allowed =
-        request.GetOriginWindow()
-            ->GetContentSecurityPolicyForWorld(request.JavascriptWorld().get())
-            ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
-                          frame_->DeprecatedLocalOwner(), url.GetString(),
-                          String() /* nonce */,
-                          request.GetOriginWindow()->Url(),
-                          OrdinalNumber::First());
-
-    if (!javascript_url_is_allowed)
+    if (request.GetOriginWindow()
+            ->CheckAndGetJavascriptUrl(request.JavascriptWorld().get(), url,
+                                       frame_->DeprecatedLocalOwner())
+            .IsEmpty()) {
       return false;
+    }
 
     if (frame_->Owner() && ((frame_->Owner()->GetFramePolicy().sandbox_flags &
                              network::mojom::blink::WebSandboxFlags::kOrigin) !=
@@ -937,7 +932,7 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     return;
 
   PluginData* plugin_data = frame->GetPluginData();
-  if (!mime_type.IsEmpty() && plugin_data &&
+  if (!mime_type.empty() && plugin_data &&
       plugin_data->SupportsMimeType(mime_type)) {
     return;
   }
@@ -1403,12 +1398,11 @@ String FrameLoader::ApplyUserAgentOverrideAndLog(
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
                                 &user_agent_override);
 
-  if (Client()->UserAgentOverride().IsEmpty() &&
-      user_agent_override.IsEmpty()) {
+  if (Client()->UserAgentOverride().empty() && user_agent_override.empty()) {
     return user_agent;
   }
 
-  if (user_agent_override.IsEmpty()) {
+  if (user_agent_override.empty()) {
     user_agent_override = user_agent;
   }
 

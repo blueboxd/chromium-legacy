@@ -18966,7 +18966,7 @@
       {
         "note": "Check default values (no policies set)",
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "default_value": true
           }
@@ -18978,7 +18978,7 @@
           "FirstPartySetsEnabled": true
         },
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "value": true
           }
@@ -18990,7 +18990,7 @@
           "FirstPartySetsEnabled": false
         },
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "value": false
           }
@@ -20070,6 +20070,44 @@
         "prefs": {
           "desk_api_third_party_access_enabled": {
             "default_value": false
+          }
+        }
+      }
+    ]
+  },
+  "FileSystemSyncAccessHandleAsyncInterfaceEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "FileSystemSyncAccessHandleAsyncInterfaceEnabled": false
+        },
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "FileSystemSyncAccessHandleAsyncInterfaceEnabled": true },
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "value": true
           }
         }
       }

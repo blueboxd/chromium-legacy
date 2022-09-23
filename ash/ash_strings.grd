@@ -1333,7 +1333,7 @@ This file contains the strings for ash.
         Open Files
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_SUGGESTIONS_TITLE" desc="Title of the suggestions area in the holding space bubble.">
-        Suggested for you
+        Suggested files
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_DOWNLOADS_TITLE" desc="Title of the downloads area in the holding space bubble.">
         Downloads
@@ -3952,6 +3952,17 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_PRIVACY_NOTIFICATION_BUTTON_APP_SETTINGS" desc="Title for the launch app button of the notification shown when an app is using the camera/microphone.">
         App settings
+      </message>
+
+      <!-- Strings for camera privacy hub switch notification -->
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the camera while the camera is disabled.">
+        Camera access is off on this device
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        Turn on camera access to allow apps and webpages with the camera permission to use the camera(s) connected to this device.
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_ACTION_BUTTON" desc="Label for an action button in a notification shown to the users when an app tries to use the camera while the camera is off. The button, when tapped enables the camera.">
+        Turn on camera access.
       </message>
 
       <!-- Strings for microphone mute switch notification -->

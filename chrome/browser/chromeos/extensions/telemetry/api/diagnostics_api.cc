@@ -373,6 +373,34 @@ void OsDiagnosticsRunDiskReadRoutineFunction::RunIfAllowed() {
       std::move(cb));
 }
 
+// OsDiagnosticsRunDnsResolutionRoutineFunction --------------------------------
+
+OsDiagnosticsRunDnsResolutionRoutineFunction::
+    OsDiagnosticsRunDnsResolutionRoutineFunction() = default;
+OsDiagnosticsRunDnsResolutionRoutineFunction::
+    ~OsDiagnosticsRunDnsResolutionRoutineFunction() = default;
+
+void OsDiagnosticsRunDnsResolutionRoutineFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  GetRemoteService()->RunDnsResolutionRoutine(std::move(cb));
+}
+
+// OsDiagnosticsRunGatewayCanBePingedRoutineFunction ---------------------------
+
+OsDiagnosticsRunGatewayCanBePingedRoutineFunction::
+    OsDiagnosticsRunGatewayCanBePingedRoutineFunction() = default;
+OsDiagnosticsRunGatewayCanBePingedRoutineFunction::
+    ~OsDiagnosticsRunGatewayCanBePingedRoutineFunction() = default;
+
+void OsDiagnosticsRunGatewayCanBePingedRoutineFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  GetRemoteService()->RunGatewayCanBePingedRoutine(std::move(cb));
+}
+
 // OsDiagnosticsRunLanConnectivityRoutineFunction ------------------------------
 
 OsDiagnosticsRunLanConnectivityRoutineFunction::
@@ -422,6 +450,20 @@ void OsDiagnosticsRunNvmeWearLevelRoutineFunction::RunIfAllowed() {
 
   GetRemoteService()->RunNvmeWearLevelRoutine(
       params->request.wear_level_threshold, std::move(cb));
+}
+
+// OsDiagnosticsRunSignalStrengthRoutineFunction -------------------------------
+
+OsDiagnosticsRunSignalStrengthRoutineFunction::
+    OsDiagnosticsRunSignalStrengthRoutineFunction() = default;
+OsDiagnosticsRunSignalStrengthRoutineFunction::
+    ~OsDiagnosticsRunSignalStrengthRoutineFunction() = default;
+
+void OsDiagnosticsRunSignalStrengthRoutineFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  GetRemoteService()->RunSignalStrengthRoutine(std::move(cb));
 }
 
 // OsDiagnosticsRunSmartctlCheckRoutineFunction --------------------------------

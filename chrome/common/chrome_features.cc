@@ -625,6 +625,10 @@ BASE_FEATURE(kHappinessTrackingSystemCameraApp,
 BASE_FEATURE(kHappinessTrackingPhotosExperience,
              "HappinessTrackingPhotosExperience",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables the Happiness Tracking System for General Camera survey.
+BASE_FEATURE(kHappinessTrackingGeneralCamera,
+             "HappinessTrackingGeneralCamera",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -926,9 +930,14 @@ BASE_FEATURE(kRequestDesktopSiteForTablets,
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-// Enables permission modules on Safety Check.
-BASE_FEATURE(kSafetyCheckPermissions,
-             "SafetyCheckPermissions",
+// Enables notification permission module in Safety Check.
+BASE_FEATURE(kSafetyCheckNotificationPermissions,
+             "SafetyCheckNotificationPermissions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables unused site permission module in Safety Check.
+BASE_FEATURE(kSafetyCheckUnusedSitePermissions,
+             "SafetyCheckUnusedSitePermissions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 

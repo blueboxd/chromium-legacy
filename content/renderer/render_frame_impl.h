@@ -225,6 +225,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::CreateFrameWidgetParamsPtr widget_params,
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
       bool is_on_initial_empty_document,
+      const blink::DocumentToken& document_token,
       blink::mojom::PolicyContainerPtr policy_container);
 
   // Returns the RenderFrameImpl for the given routing ID.
@@ -440,6 +441,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
+      const blink::DocumentToken& document_token,
       const base::UnguessableToken& devtools_navigation_token,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
@@ -458,6 +460,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const absl::optional<std::string>& error_page_content,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
+      const blink::DocumentToken& document_token,
       blink::mojom::PolicyContainerPtr policy_container,
       mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
       mojom::NavigationClient::CommitFailedNavigationCallback
@@ -505,9 +508,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType frame_owner_element_type,
-      blink::WebPolicyContainerBindParams policy_container_bind_params)
-      override;
-  void InitializeAsChildFrame(blink::WebLocalFrame* parent) override;
+      blink::WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override;
   void DidCreateFencedFrame(
       const blink::RemoteFrameToken& frame_token) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
@@ -1112,6 +1114,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::RemoteFrameToken& frame_token,
       blink::mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
       blink::mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
+
+  // Resets membmers that are needed for the duration of commit (time between
+  // CommitNavigation() and DidCommitNavigation().
+  void ResetMembersUsedForDurationOfCommit();
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after

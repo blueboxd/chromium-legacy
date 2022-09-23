@@ -143,7 +143,6 @@ class PaymentsClientTest : public testing::Test {
         switches::kWalletServiceUseSandbox, "0");
 
     result_ = AutofillClient::PaymentsRpcResult::kNone;
-    upload_card_response_details_.server_id.clear();
     unmask_response_details_ = nullptr;
     legal_message_.reset();
     has_variations_header_ = false;
@@ -286,7 +285,7 @@ class PaymentsClientTest : public testing::Test {
       request_details.user_response.cvc = base::ASCIIToUTF16(options.cvc);
     if (options.virtual_card) {
       request_details.card.set_record_type(CreditCard::VIRTUAL_CARD);
-      request_details.last_committed_url_origin =
+      request_details.last_committed_primary_main_frame_origin =
           GURL("https://www.example.com");
     }
     if (options.set_context_token)
@@ -948,7 +947,7 @@ TEST_F(PaymentsClientTest, UnmaskIncludesMerchantDomain) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
 
-  // last_committed_url_origin was set.
+  // last_committed_primary_main_frame_origin was set.
   EXPECT_TRUE(GetUploadData().find("merchant_domain") != std::string::npos);
 }
 
@@ -1372,19 +1371,10 @@ TEST_F(PaymentsClientTest, UploadSuccessEmptyResponse) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
-  EXPECT_TRUE(upload_card_response_details_.server_id.empty());
   EXPECT_FALSE(upload_card_response_details_.instrument_id.has_value());
   EXPECT_TRUE(upload_card_response_details_.virtual_card_enrollment_state ==
               CreditCard::VirtualCardEnrollmentState::UNSPECIFIED);
   EXPECT_TRUE(upload_card_response_details_.card_art_url.is_empty());
-}
-
-TEST_F(PaymentsClientTest, UploadSuccessServerIdPresent) {
-  StartUploading(/*include_cvc=*/true);
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"credit_card_id\": \"InstrumentData:1\" }");
-  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
-  EXPECT_EQ(upload_card_response_details_.server_id, "InstrumentData:1");
 }
 
 TEST_F(PaymentsClientTest, UploadSuccessInstrumentIdPresent) {

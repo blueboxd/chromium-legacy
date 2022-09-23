@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './commerce/shopping_list.js';
+import './power_bookmark_row.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
@@ -41,6 +42,11 @@ export class BookmarksListElement extends PolymerElement {
 
   static get properties() {
     return {
+      topLevelBookmarks_: {
+        type: Array,
+        value: () => [],
+      },
+
       folders_: {
         type: Array,
         value: () => [],
@@ -55,9 +61,16 @@ export class BookmarksListElement extends PolymerElement {
         type: Array,
         value: () => [],
       },
+
+      showPowerBookmarks_: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: loadTimeData.getBoolean('showPowerBookmarks'),
+      },
     };
   }
 
+  private topLevelBookmarks_: chrome.bookmarks.BookmarkTreeNode[];
   private bookmarksApi_: BookmarksApiProxy =
       BookmarksApiProxyImpl.getInstance();
   private shoppingListApi_: ShoppingListApiProxy =
@@ -70,6 +83,8 @@ export class BookmarksListElement extends PolymerElement {
   private productInfos_: BookmarkProductInfo[];
   hoverVisible: boolean;
   private openFolders_: string[];
+  private shoppingListenerIds_: number[] = [];
+  private showPowerBookmarks_: boolean;
 
   override ready() {
     super.ready();
@@ -91,6 +106,9 @@ export class BookmarksListElement extends PolymerElement {
         setTimeout(() => this.bookmarksApi_.showUI(), 0);
       });
     }
+    this.bookmarksApi_.getTopLevelBookmarks().then(topLevelBookmarks => {
+      this.topLevelBookmarks_ = topLevelBookmarks;
+    });
     this.bookmarksApi_.getFolders().then(folders => {
       this.folders_ = folders;
 
@@ -131,6 +149,12 @@ export class BookmarksListElement extends PolymerElement {
             'Commerce.PriceTracking.SidePanel.TrackedProductsShown');
       }
     });
+    const callbackRouter = this.shoppingListApi_.getCallbackRouter();
+    this.shoppingListenerIds_.push(
+        callbackRouter.priceTrackedForBookmark.addListener(
+            (product: BookmarkProductInfo) =>
+                this.onBookmarkPriceTracked(product)),
+    );
   }
 
   override disconnectedCallback() {
@@ -138,6 +162,8 @@ export class BookmarksListElement extends PolymerElement {
       this.bookmarksApi_.callbackRouter[eventName]!.removeListener(callback);
     }
     this.bookmarksDragManager_.stopObserving();
+    this.shoppingListenerIds_.forEach(
+        id => this.shoppingListApi_.getCallbackRouter().removeListener(id));
   }
 
   /** BookmarksDragDelegate */
@@ -412,6 +438,18 @@ export class BookmarksListElement extends PolymerElement {
     if (bookmarkElement) {
       bookmarkElement.focus();
     }
+  }
+
+  private onBookmarkPriceTracked(product: BookmarkProductInfo) {
+    // Here we only control the visibility of ShoppingListElement. The same
+    // signal will also be handled in ShoppingListElement to update shopping
+    // list.
+    if (this.productInfos_.length > 0) {
+      return;
+    }
+    this.push('productInfos_', product);
+    chrome.metricsPrivate.recordUserAction(
+        'Commerce.PriceTracking.SidePanel.TrackedProductsShown');
   }
 }
 

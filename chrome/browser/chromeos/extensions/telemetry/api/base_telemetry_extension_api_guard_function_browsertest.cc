@@ -262,6 +262,24 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function runDnsResolutionRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runDnsResolutionRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runDnsResolutionRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runGatewayCanBePingedRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runGatewayCanBePingedRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runGatewayCanBePingedRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
       async function runLanConnectivityRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.runLanConnectivityRoutine(),
@@ -289,6 +307,15 @@ std::string GetServiceWorkerForError(const std::string& error) {
             ),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.runNvmeWearLevelRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runSignalStrengthRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runSignalStrengthRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runSignalStrengthRoutine. ' +
             '%s'
         );
         chrome.test.succeed();

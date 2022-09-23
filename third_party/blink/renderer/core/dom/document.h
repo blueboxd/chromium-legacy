@@ -44,6 +44,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -847,6 +848,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void writeln(v8::Isolate*, TrustedHTML*, ExceptionState&);
 
   bool WellFormed() const { return well_formed_; }
+
+  const DocumentToken& Token() const { return token_; }
 
   // Return the document URL, or an empty URL if it's unavailable.
   // This is not an implementation of web-exposed Document.prototype.URL.
@@ -1914,6 +1917,13 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(https://crbug.com/1296161): Delete this function.
   void CheckPartitionedCookiesOriginTrial(const ResourceResponse& response);
 
+  void IncrementIgnoreDestructiveWriteModuleScriptCount() {
+    ignore_destructive_write_module_script_count_++;
+  }
+  unsigned GetIgnoreDestructiveWriteModuleScriptCount() {
+    return ignore_destructive_write_module_script_count_;
+  }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2110,6 +2120,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void TrustTokenQueryAnswererConnectionError();
 
   void RunPostPrerenderingActivationSteps();
+
+  const DocumentToken token_;
 
   // Bitfield used for tracking UKM sampling of media features such that each
   // media feature is sampled only once per document.
@@ -2565,6 +2577,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document owns pending preloads, prefetches and modulepreloads initiated by
   // link header so that they won't be incidentally GC-ed and cancelled.
   HeapHashSet<Member<const PendingLinkPreload>> pending_link_header_preloads_;
+
+  // This is incremented when a module script is evaluated.
+  // http://crbug.com/1079044
+  unsigned ignore_destructive_write_module_script_count_ = 0;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

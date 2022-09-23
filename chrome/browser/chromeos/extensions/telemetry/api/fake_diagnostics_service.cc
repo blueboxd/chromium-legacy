@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom-shared.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -264,6 +265,37 @@ void FakeDiagnosticsService::RunLanConnectivityRoutine(
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), run_routine_response_->Clone()));
+}
+
+void FakeDiagnosticsService::RunDnsResolutionRoutine(
+    RunDnsResolutionRoutineCallback callback) {
+  actual_passed_parameters_.clear();
+  actual_called_routine_ =
+      crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolution;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), run_routine_response_->Clone()));
+}
+
+void FakeDiagnosticsService::RunSignalStrengthRoutine(
+    RunSignalStrengthRoutineCallback callback) {
+  actual_passed_parameters_.clear();
+  actual_called_routine_ =
+      crosapi::mojom::DiagnosticsRoutineEnum::kSignalStrength;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), run_routine_response_->Clone()));
+}
+
+void FakeDiagnosticsService::RunGatewayCanBePingedRoutine(
+    RunGatewayCanBePingedRoutineCallback callback) {
+  actual_passed_parameters_.clear();
+  actual_called_routine_ =
+      crosapi::mojom::DiagnosticsRoutineEnum::kGatewayCanBePinged;
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), run_routine_response_.Clone()));
 }
 
 void FakeDiagnosticsService::SetRunRoutineResponse(

@@ -25,6 +25,7 @@
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official_dchecks',
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
+      'chromeos-trogdor64-chrome-skylab': 'chromeos_trogdor64_include_unwind_tables_official_dchecks_skylab',
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official_no_symbols',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
@@ -64,7 +65,7 @@
       'linux-archive-rel': 'release_bot_reclient',
       'linux-official': 'official_optimize_reclient',
       'mac-archive-dbg': 'debug_bot',
-      'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
+      'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols_reclient',
       'mac-arm64-archive-dbg': 'debug_bot_arm64',
       'mac-arm64-archive-rel': 'release_bot_mac_strip_minimal_symbols_arm64',
       'mac-official': 'official_optimize_goma',
@@ -630,7 +631,7 @@
 
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
-      'Mac Builder (dbg)': 'gpu_tests_debug_bot',
+      'Mac Builder (dbg)': 'gpu_tests_debug_bot_reclient',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting_reclient',
       'ios-device': 'ios_device_release_compile_only_reclient',
       'ios-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
@@ -914,6 +915,7 @@
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-octopus-compile-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
+      'chromeos-trogdor64-chrome-skylab': 'chromeos_trogdor64_include_unwind_tables_official_dchecks_skylab',
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official_no_symbols',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
@@ -2272,6 +2274,10 @@
       'chromeos_device', 'reven', 'include_unwind_tables', 'official', 'dcheck_always_on',
     ],
 
+    'chromeos_trogdor64_include_unwind_tables_official_dchecks_skylab': [
+      'chromeos_device', 'trogdor64', 'include_unwind_tables', 'official', 'dcheck_always_on', 'is_skylab',
+    ],
+
     'chromeos_with_codecs_debug_bot': [
       'chromeos_with_codecs', 'debug_bot',
     ],
@@ -3491,6 +3497,10 @@
       'release_bot_reclient', 'mac_strip', 'minimal_symbols', 'disable_nacl',
     ],
 
+    'release_bot_mac_strip_minimal_symbols_reclient': [
+      'release_bot_reclient', 'mac_strip', 'minimal_symbols',
+    ],
+
     'release_bot_minimal_symbols': [
       'release_bot', 'minimal_symbols',
     ],
@@ -4685,6 +4695,10 @@
 
     'thin_lto_opt': {
       'gn_args': 'use_thin_lto=true thin_lto_enable_optimizations=true',
+    },
+
+    'trogdor64': {
+      'args_file': '//build/args/chromeos/trogdor64.gni',
     },
 
     'tsan': {

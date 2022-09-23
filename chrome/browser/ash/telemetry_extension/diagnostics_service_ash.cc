@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ash/telemetry_extension/diagnostics_service_converters.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
+#include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom-forward.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
@@ -304,6 +306,42 @@ void DiagnosticsServiceAsh::RunLanConnectivityRoutine(
   GetService()->RunLanConnectivityRoutine(base::BindOnce(
       [](crosapi::mojom::DiagnosticsService::RunLanConnectivityRoutineCallback
              callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunDnsResolutionRoutine(
+    RunDnsResolutionRoutineCallback callback) {
+  GetService()->RunDnsResolutionRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunDnsResolutionRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunSignalStrengthRoutine(
+    RunSignalStrengthRoutineCallback callback) {
+  GetService()->RunSignalStrengthRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunSignalStrengthRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunGatewayCanBePingedRoutine(
+    RunGatewayCanBePingedRoutineCallback callback) {
+  GetService()->RunGatewayCanBePingedRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::
+             RunGatewayCanBePingedRoutineCallback callback,
          cros_healthd::mojom::RunRoutineResponsePtr ptr) {
         std::move(callback).Run(
             converters::ConvertDiagnosticsPtr(std::move(ptr)));

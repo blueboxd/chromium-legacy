@@ -24,7 +24,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
@@ -1004,6 +1003,31 @@ TEST_F(ChromeContentBrowserClientSwitchTest, PersistentQuotaEnabledEnabled) {
   profile()->GetPrefs()->SetBoolean(storage::kPersistentQuotaEnabled, true);
   base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
   EXPECT_TRUE(result.HasSwitch(blink::switches::kPersistentQuotaEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest,
+       FileSystemSyncAccessHandleAsyncInterfaceEnabledDefault) {
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_FALSE(result.HasSwitch(
+      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest,
+       FileSystemSyncAccessHandleAsyncInterfaceEnabledDisabled) {
+  profile()->GetPrefs()->SetBoolean(
+      storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, false);
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_FALSE(result.HasSwitch(
+      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest,
+       FileSystemSyncAccessHandleAsyncInterfaceEnabledEnabled) {
+  profile()->GetPrefs()->SetBoolean(
+      storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, true);
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_TRUE(result.HasSwitch(
+      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

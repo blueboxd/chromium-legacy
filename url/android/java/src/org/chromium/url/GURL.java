@@ -22,6 +22,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.build.annotations.MainDex;
+import org.chromium.url.mojom.Url;
+import org.chromium.url.mojom.UrlConstants;
 
 import java.util.Random;
 
@@ -344,6 +346,18 @@ public class GURL {
     @VisibleForTesting
     /* package */ void initForTesting(GURL gurl) {
         init(gurl.mSpec, gurl.mIsValid, gurl.mParsed);
+    }
+
+    /** @return A Mojom representation of this URL. */
+    public Url toMojom() {
+        Url url = new Url();
+        // See url/mojom/url_gurl_mojom_traits.cc.
+        url.url = TextUtils.isEmpty(getPossiblyInvalidSpec())
+                        || getPossiblyInvalidSpec().length() > UrlConstants.MAX_URL_CHARS
+                        || !isValid()
+                ? ""
+                : getPossiblyInvalidSpec();
+        return url;
     }
 
     @NativeMethods

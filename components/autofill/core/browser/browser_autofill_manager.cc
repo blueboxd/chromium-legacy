@@ -422,6 +422,16 @@ std::u16string RemoveWhiteSpaceAndConjugatingCharacters(
   return sanitized_value;
 }
 
+base::StringPiece RenderFormDataActionToString(
+    mojom::RendererFormDataAction action) {
+  switch (action) {
+    case mojom::RendererFormDataAction::kFill:
+      return "fill";
+    case mojom::RendererFormDataAction::kPreview:
+      return "preview";
+  }
+}
+
 }  // namespace
 
 BrowserAutofillManager::FillingContext::FillingContext(
@@ -1968,6 +1978,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   DCHECK(autofill_field);
 
   LogBuffer buffer(IsLoggingActive(log_manager()));
+  LOG_AF(buffer) << "action: " << RenderFormDataActionToString(action);
   LOG_AF(buffer) << "is credit card section: " << is_credit_card << Br{};
   LOG_AF(buffer) << "is refill: " << is_refill << Br{};
   LOG_AF(buffer) << *form_structure << Br{};
@@ -2883,7 +2894,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // If ablation_group is AblationGroup::kDefault or AblationGroup::kControl,
   // no ablation happens in the following.
   AblationGroup ablation_group = client()->GetAblationStudy().GetAblationGroup(
-      client()->GetLastCommittedURL(), form_type);
+      client()->GetLastCommittedPrimaryMainFrameURL(), form_type);
   context->ablation_group = ablation_group;
   // Note that we don't set the ablation group if there are no suggestions.
   // In that case we stick to kDefault.

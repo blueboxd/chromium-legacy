@@ -690,6 +690,7 @@ Document::Document(const DocumentInit& initializer,
               &Document::OnAdoptedStyleSheetSet),
           static_cast<V8ObservableArrayCSSStyleSheet::DeleteAlgorithmCallback>(
               &Document::OnAdoptedStyleSheetDelete)),
+      token_(initializer.GetToken()),
       is_initial_empty_document_(initializer.IsInitialEmptyDocument()),
       is_prerendering_(initializer.IsPrerendering()),
       evaluate_media_queries_on_style_recalc_(false),
@@ -1388,7 +1389,7 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
   // These checks are from DOM Core Level 2, createElementNS
   // http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS
   // createElementNS(null, "html:div")
-  if (!q_name.Prefix().IsEmpty() && q_name.NamespaceURI().IsNull())
+  if (!q_name.Prefix().empty() && q_name.NamespaceURI().IsNull())
     return false;
   // createElementNS("http://www.example.com", "xml:lang")
   if (q_name.Prefix() == g_xml_atom &&
@@ -1400,7 +1401,7 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
   // createElementNS("http://www.w3.org/2000/xmlns/", "foo:bar"),
   // createElementNS(null, "xmlns:bar"), createElementNS(null, "xmlns")
   if (q_name.Prefix() == g_xmlns_atom ||
-      (q_name.Prefix().IsEmpty() && q_name.LocalName() == g_xmlns_atom))
+      (q_name.Prefix().empty() && q_name.LocalName() == g_xmlns_atom))
     return q_name.NamespaceURI() == xmlns_names::kNamespaceURI;
   return q_name.NamespaceURI() != xmlns_names::kNamespaceURI;
 }
@@ -1528,14 +1529,14 @@ void Document::SetMimeType(const AtomicString& mime_type) {
 }
 
 AtomicString Document::contentType() const {
-  if (!mime_type_.IsEmpty())
+  if (!mime_type_.empty())
     return mime_type_;
 
   if (DocumentLoader* document_loader = Loader())
     return document_loader->MimeType();
 
   String mime_type = SuggestedMIMEType();
-  if (!mime_type.IsEmpty())
+  if (!mime_type.empty())
     return AtomicString(mime_type);
 
   return AtomicString("application/xml");
@@ -1622,7 +1623,7 @@ void Document::UpdateTitle(const String& title) {
   raw_title_ = title;
 
   String old_title = title_;
-  if (raw_title_.IsEmpty())
+  if (raw_title_.empty())
     title_ = String();
   else if (raw_title_.Is8Bit())
     title_ = CanonicalizedTitle<LChar>(this, raw_title_);
@@ -2915,24 +2916,22 @@ void Document::Shutdown() {
   if (this == &AXObjectCacheOwner()) {
     ax_contexts_.clear();
     ClearAXObjectCache();
+  } else {
+    DCHECK(!ax_object_cache_ || ExistingAXObjectCache())
+        << "Had AXObjectCache for parent, but not for popup document.";
+    if (AXObjectCache* cache = ExistingAXObjectCache()) {
+      // This is a popup document. Clear all accessibility state related to it
+      // by removing the AXObject for its root. The AXObjectCache is
+      // retrieved from the main document, but it maintains both documents.
+      cache->Remove(this);
+    }
   }
+
   computed_node_mapping_.clear();
 
   DetachLayoutTree();
   layout_view_ = nullptr;
   DCHECK(!View()->IsAttached());
-
-  if (this != &AXObjectCacheOwner()) {
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      // Documents that are not a root document use the AXObjectCache in
-      // their root document. Node::removedFrom is called after the
-      // document has been detached so it can't find the root document.
-      // We do the removals here instead.
-      for (Node& node : NodeTraversal::DescendantsOf(*this)) {
-        cache->Remove(&node);
-      }
-    }
-  }
 
   GetStyleEngine().DidDetach();
 
@@ -4144,6 +4143,10 @@ void Document::write(const String& text,
     if (ignore_opens_during_unload_count_)
       return;
 
+    if (ignore_destructive_write_module_script_count_) {
+      UseCounter::Count(*this,
+                        WebFeature::kDestructiveDocumentWriteAfterModuleScript);
+    }
     open(entered_window, ASSERT_NO_EXCEPTION);
   }
 
@@ -4372,7 +4375,7 @@ void Document::ProcessBaseElement() {
   KURL base_element_url;
   if (href) {
     String stripped_href = StripLeadingAndTrailingHTMLSpaces(*href);
-    if (!stripped_href.IsEmpty())
+    if (!stripped_href.empty())
       base_element_url = KURL(FallbackBaseURL(), stripped_href);
   }
 
@@ -4476,7 +4479,7 @@ void Document::MaybeHandleHttpRefresh(const String& content,
                         delay, refresh_url_string))
     return;
   KURL refresh_url =
-      refresh_url_string.IsEmpty() ? Url() : CompleteURL(refresh_url_string);
+      refresh_url_string.empty() ? Url() : CompleteURL(refresh_url_string);
 
   if (refresh_url.ProtocolIsJavaScript()) {
     String message =
@@ -5835,7 +5838,7 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  if (new_domain.IsEmpty()) {
+  if (new_domain.empty()) {
     exception_state.ThrowSecurityError("'" + new_domain +
                                        "' is an empty domain.");
     return;
@@ -5963,13 +5966,13 @@ void Document::setDomain(const String& raw_domain,
 
 absl::optional<base::Time> Document::lastModifiedTime() const {
   AtomicString http_last_modified = override_last_modified_;
-  if (http_last_modified.IsEmpty()) {
+  if (http_last_modified.empty()) {
     if (DocumentLoader* document_loader = Loader()) {
       http_last_modified = document_loader->GetResponse().HttpHeaderField(
           http_names::kLastModified);
     }
   }
-  if (!http_last_modified.IsEmpty()) {
+  if (!http_last_modified.empty()) {
     return ParseDate(http_last_modified);
   }
   return absl::nullopt;
@@ -6161,6 +6164,8 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
                     resolver->Resolve();
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
+                    LocalFrame::ConsumeTransientUserActivation(
+                        document->GetFrame());
                     document->expressly_denied_storage_access_ = true;
                     [[fallthrough]];
                   case mojom::blink::PermissionStatus::ASK:
@@ -6615,13 +6620,13 @@ static ParseQualifiedNameResult ParseQualifiedNameInternal(
     local_name = qualified_name;
   } else {
     prefix = AtomicString(characters, colon_pos);
-    if (prefix.IsEmpty())
+    if (prefix.empty())
       return ParseQualifiedNameResult(kQNEmptyPrefix);
     int prefix_start = colon_pos + 1;
     local_name = AtomicString(characters + prefix_start, length - prefix_start);
   }
 
-  if (local_name.IsEmpty())
+  if (local_name.empty())
     return ParseQualifiedNameResult(kQNEmptyLocalName);
 
   return ParseQualifiedNameResult(kQNValid);
@@ -7088,7 +7093,7 @@ void Document::FinishedParsing() {
   if (LocalFrame* frame = GetFrame()) {
     // Guarantee at least one call to the client specifying a title. (If
     // |title_| is not empty, then the title has already been dispatched.)
-    if (title_.IsEmpty())
+    if (title_.empty())
       DispatchDidReceiveTitle();
 
     // Don't update the layout tree if we haven't requested the main resource
@@ -7191,7 +7196,7 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
     if (link_element->Href().IsEmpty())
       continue;
 
-    if (!link_element->Media().IsEmpty()) {
+    if (!link_element->Media().empty()) {
       auto* media_query =
           GetMediaQueryMatcher().MatchMedia(link_element->Media());
       if (!media_query->matches())
@@ -7261,7 +7266,7 @@ absl::optional<Color> Document::ThemeColor() {
   // tree order that matches and is valid.
   // https://html.spec.whatwg.org/multipage/semantics.html#meta-theme-color
   for (auto& element : meta_theme_color_elements_) {
-    if (!element->Media().IsEmpty()) {
+    if (!element->Media().empty()) {
       auto* media_query = GetMediaQueryMatcher().MatchMedia(
           element->Media().GetString().StripWhiteSpace());
       if (!media_query->matches())
@@ -7905,7 +7910,7 @@ bool Document::HaveRenderBlockingResourcesLoaded() const {
 
 Locale& Document::GetCachedLocale(const AtomicString& locale) {
   AtomicString locale_key = locale;
-  if (locale.IsEmpty() ||
+  if (locale.empty() ||
       !RuntimeEnabledFeatures::LangAttributeAwareFormControlUIEnabled())
     return Locale::DefaultLocale();
   LocaleIdentifierToLocaleMap::AddResult result =
@@ -8507,7 +8512,7 @@ bool Document::IsInWebAppScope() const {
     return false;
 
   const String& web_app_scope = GetSettings()->GetWebAppScope();
-  if (web_app_scope.IsNull() || web_app_scope.IsEmpty())
+  if (web_app_scope.IsNull() || web_app_scope.empty())
     return false;
 
   DCHECK_EQ(KURL(web_app_scope).GetString(), web_app_scope);

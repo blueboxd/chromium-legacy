@@ -423,7 +423,7 @@
   {
     "name": "autocomplete-extended-suggestions",
     "owners": [ "yulunwu", "etuck" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 109
   },
   {
     "name": "autofill-address-save-prompt",
@@ -1077,6 +1077,11 @@
     "name": "content-suggestions-ui-module-refresh",
     "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 108
+  },
+  {
+    "name": "context-menu-popup-for-all-screen-sizes",
+    "owners": ["wenyufu", "clank-large-form-factors@google.com"],
+    "expiry_milestone": 112
   },
   {
     "name": "context-menu-search-with-google-lens",
@@ -3022,6 +3027,11 @@
     "expiry_milestone": 107
   },
   {
+    "name": "enable-tailored-security-integration",
+    "owners": ["joemerramos", "ajuma", "bling-flags@google.com"],
+    "expiry_milestone": 114
+  },
+  {
     "name": "enable-tflite-language-detection",
     "owners": [ "sophiechang", "chrome-intelligence-core@google.com" ],
     "expiry_milestone": 110
@@ -4370,11 +4380,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "media-session-webrtc",
-    "owners": [ "steimel", "media-dev" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "memlog",
     "owners": [ "erikchen", "ssid", "etienneb", "alph" ],
     // Memlog is Chrome's heap profiler. It is used for both automated and
@@ -5097,6 +5102,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "oobe-material-next",
+    "owners": [ "ziegltrum@google.com", "cros-oobe@google.com" ],
+    "expiry_milestone": 118
+  },
+  {
     "name": "optimization-guide-debug-logs",
     "owners": [ "rajendrant", "robertogden", "chrome-intelligence-core@google.com" ],
     "expiry_milestone": 110
@@ -5799,9 +5809,14 @@
     "expiry_milestone": 115
   },
   {
-    "name": "safety-check-permissions",
+    "name": "safety-check-notification-permissions",
     "owners": ["sideyilmaz"],
-    "expiry_milestone": 111
+    "expiry_milestone": 115
+  },
+  {
+    "name": "safety-check-unused-site-permissions",
+    "owners": ["sideyilmaz"],
+    "expiry_milestone": 115
   },
   {
     "name": "sameparty-cookies-considered-first-party",

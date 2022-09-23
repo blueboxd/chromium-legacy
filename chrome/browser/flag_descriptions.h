@@ -1023,9 +1023,6 @@ extern const char kUnthrottledNestedTimeoutDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
-extern const char kMediaSessionWebRTCName[];
-extern const char kMediaSessionWebRTCDescription[];
-
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
 
@@ -1403,8 +1400,11 @@ extern const char kRoundedDisplayDescription[];
 extern const char kMBIModeName[];
 extern const char kMBIModeDescription[];
 
-extern const char kSafetyCheckPermissionsName[];
-extern const char kSafetyCheckPermissionsDescription[];
+extern const char kSafetyCheckNotificationPermissionsName[];
+extern const char kSafetyCheckNotificationPermissionsDescription[];
+
+extern const char kSafetyCheckUnusedSitePermissionsName[];
+extern const char kSafetyCheckUnusedSitePermissionsDescription[];
 
 extern const char kSamePartyCookiesConsideredFirstPartyName[];
 extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
@@ -1972,6 +1972,9 @@ extern const char kCloseTabSuggestionsDescription[];
 
 extern const char kCriticalPersistedTabDataName[];
 extern const char kCriticalPersistedTabDataDescription[];
+
+extern const char kContextMenuPopupForAllScreenSizesName[];
+extern const char kContextMenuPopupForAllScreenSizesDescription[];
 
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];
@@ -3536,6 +3539,9 @@ extern const char kLauncherHideContinueSectionDescription[];
 
 extern const char kMacAddressRandomizationName[];
 extern const char kMacAddressRandomizationDescription[];
+
+extern const char kOobeMaterialNextName[];
+extern const char kOobeMaterialNextDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

@@ -140,8 +140,9 @@ BOOL CALLBACK AllHwndCollector(HWND hwnd, LPARAM param) {
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
-const base::Feature kWindowCaptureMacV2{"WindowCaptureMacV2",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kWindowCaptureMacV2,
+             "WindowCaptureMacV2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 }  // namespace
@@ -684,15 +685,21 @@ void NativeDesktopMediaList::RefreshForVizFrameSinkWindows(
     // preview matches what is ultimately captured, it does not match the title
     // of the window in the preview and is both unexpected for the user and
     // means that the collided non-aura window cannot be captured.
+    // TODO(https://crbug.com/1366579): This lookup is fairly fragile and has
+    // now resulted in at least two patches to avoid it (though both are Wayland
+    // based problems). On top of that, the series of ifdefs is a bit confusing.
+    // We should try to simplify/abstract/cleanup this logic.
 #if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-    aura::WindowTreeHost* const host =
-        aura::WindowTreeHost::GetForAcceleratedWidget(
-            *reinterpret_cast<gfx::AcceleratedWidget*>(&source_it->id.id));
-    aura::Window* const aura_window = host ? host->window() : nullptr;
-    if (aura_window) {
-      DesktopMediaID aura_id = DesktopMediaID::RegisterNativeWindow(
-          DesktopMediaID::TYPE_WINDOW, aura_window);
-      source_it->id.window_id = aura_id.window_id;
+    if (!is_source_list_delegated_) {
+      aura::WindowTreeHost* const host =
+          aura::WindowTreeHost::GetForAcceleratedWidget(
+              *reinterpret_cast<gfx::AcceleratedWidget*>(&source_it->id.id));
+      aura::Window* const aura_window = host ? host->window() : nullptr;
+      if (aura_window) {
+        DesktopMediaID aura_id = DesktopMediaID::RegisterNativeWindow(
+            DesktopMediaID::TYPE_WINDOW, aura_window);
+        source_it->id.window_id = aura_id.window_id;
+      }
     }
 #elif BUILDFLAG(IS_MAC)
     if (base::FeatureList::IsEnabled(kWindowCaptureMacV2)) {

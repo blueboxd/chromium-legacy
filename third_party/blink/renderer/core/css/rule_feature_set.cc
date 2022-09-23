@@ -417,23 +417,6 @@ void RuleFeatureSet::MergeInvalidationSet(
   }
 }
 
-RuleFeatureSet::~RuleFeatureSet() {
-  metadata_.Clear();
-  class_invalidation_sets_.clear();
-  attribute_invalidation_sets_.clear();
-  id_invalidation_sets_.clear();
-  pseudo_invalidation_sets_.clear();
-  universal_sibling_invalidation_set_ = nullptr;
-  nth_invalidation_set_ = nullptr;
-  classes_in_has_argument_.clear();
-  attributes_in_has_argument_.clear();
-  ids_in_has_argument_.clear();
-  tag_names_in_has_argument_.clear();
-  universal_in_has_argument_ = false;
-  not_pseudo_in_has_argument_ = false;
-  pseudos_in_has_argument_.clear();
-}
-
 bool RuleFeatureSet::operator==(const RuleFeatureSet& other) const {
   return metadata_ == other.metadata_ &&
          InvalidationSetMapsEqual<AtomicString>(
@@ -467,7 +450,7 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::EnsureClassInvalidationSet(
     const AtomicString& class_name,
     InvalidationType type,
     PositionType position) {
-  CHECK(!class_name.IsEmpty());
+  CHECK(!class_name.empty());
   return EnsureInvalidationSet(class_invalidation_sets_, class_name, type,
                                position);
 }
@@ -476,7 +459,7 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::EnsureAttributeInvalidationSet(
     const AtomicString& attribute_name,
     InvalidationType type,
     PositionType position) {
-  CHECK(!attribute_name.IsEmpty());
+  CHECK(!attribute_name.empty());
   return EnsureInvalidationSet(attribute_invalidation_sets_, attribute_name,
                                type, position);
 }
@@ -485,7 +468,7 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::EnsureIdInvalidationSet(
     const AtomicString& id,
     InvalidationType type,
     PositionType position) {
-  CHECK(!id.IsEmpty());
+  CHECK(!id.empty());
   return EnsureInvalidationSet(id_invalidation_sets_, id, type, position);
 }
 
@@ -560,7 +543,7 @@ void RuleFeatureSet::UpdateFeaturesFromStyleScope(
       ExtractInvalidationSetFeaturesFromCompound(
           *selector, scope_features, kSubject,
           /* for_logical_combination_in_has */ false);
-      descendant_features.Add(scope_features);
+      descendant_features.Merge(scope_features);
     }
   }
 }
@@ -696,6 +679,8 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
   return nullptr;
 }
 
+// Update all invalidation sets for a given selector (potentially in the
+// given @scope). See UpdateInvalidationSetsForComplex() for details.
 void RuleFeatureSet::UpdateInvalidationSets(const CSSSelector& selector,
                                             const StyleScope* style_scope) {
   InvalidationSetFeatures features;
@@ -711,6 +696,10 @@ void RuleFeatureSet::UpdateInvalidationSets(const CSSSelector& selector,
   UpdateRuleSetInvalidation(features);
 }
 
+// Update all invalidation sets for a given CSS selector; this is usually
+// called for the entire selector at top level, but can also end up calling
+// itself recursively if any of the selectors contain selector lists
+// (e.g. for :not() or :has()).
 RuleFeatureSet::FeatureInvalidationType
 RuleFeatureSet::UpdateInvalidationSetsForComplex(
     const CSSSelector& complex,
@@ -722,13 +711,16 @@ RuleFeatureSet::UpdateInvalidationSetsForComplex(
   // found in its selector. The first step is to extract the features from the
   // rightmost compound selector (ExtractInvalidationSetFeaturesFromCompound).
   // Secondly, add those features to the invalidation sets for the features
-  // found in the other compound selectors (addFeaturesToInvalidationSets). If
-  // we find a feature in the right-most compound selector that requires a
-  // subtree recalc, nextCompound will be the rightmost compound and we will
-  // addFeaturesToInvalidationSets for that one as well.
+  // found in the other compound selectors (AddFeaturesToInvalidationSets).
+  // If we find a feature in the right-most compound selector that requires a
+  // subtree recalc, next_compound will be the rightmost compound and we will
+  // AddFeaturesToInvalidationSets for that one as well.
 
   InvalidationSetFeatures* sibling_features = nullptr;
 
+  // Step 1. Note that this also, in passing, inserts self-invalidation
+  // InvalidationSets for the rightmost compound selector. This probably
+  // isn't the prettiest, but it's how the structure is at this point.
   const CSSSelector* last_in_compound =
       ExtractInvalidationSetFeaturesFromCompound(
           complex, features, position,
@@ -752,6 +744,7 @@ RuleFeatureSet::UpdateInvalidationSetsForComplex(
     nth_set.SetInvalidatesSelf();
   }
 
+  // Step 2.
   const CSSSelector* next_compound =
       last_in_compound ? last_in_compound->TagHistory() : &complex;
 
@@ -841,7 +834,7 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
     if (!all_sub_selectors_have_features)
       continue;
     if (complex_features.HasFeatures())
-      any_features.Add(complex_features);
+      any_features.Merge(complex_features);
     else
       all_sub_selectors_have_features = false;
   }
@@ -863,15 +856,21 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
   }
 }
 
+// Extract invalidation set features and return a pointer to the the last
+// simple selector of the compound, or nullptr if one of the selectors
+// RequiresSubtreeInvalidation().
+//
+// It also deals with inserting self-invalidation entries for the compound
+// itself, so it is not a pure “extract“ despite the name.
 const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     const CSSSelector& compound,
     InvalidationSetFeatures& features,
     PositionType position,
     bool for_logical_combination_in_has) {
-  // Extract invalidation set features and return a pointer to the the last
-  // simple selector of the compound, or nullptr if one of the selectors
-  // requiresSubtreeInvalidation().
-
+  // NOTE: Due to the check at the bottom of the loop, this loop stops
+  // once we are at the end of the compound, ie., we see a relation that
+  // is not a sub-selector. So for e.g. .a .b.c#d, we will see #d, .c, .b
+  // and then stop, returning a pointer to .b.
   const CSSSelector* simple_selector = &compound;
   for (;; simple_selector = simple_selector->TagHistory()) {
     // Fall back to use subtree invalidations, even for features in the
@@ -1553,8 +1552,7 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
                                   metadata) == kSelectorNeverMatches) {
     return kSelectorNeverMatches;
   }
-
-  metadata_.Add(metadata);
+  metadata_.Merge(metadata);
 
   UpdateInvalidationSets(selector, style_scope);
   return kSelectorMayMatch;
@@ -1640,7 +1638,7 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectMetadataFromSelector(
   return kSelectorMayMatch;
 }
 
-void RuleFeatureSet::FeatureMetadata::Add(const FeatureMetadata& other) {
+void RuleFeatureSet::FeatureMetadata::Merge(const FeatureMetadata& other) {
   uses_first_line_rules |= other.uses_first_line_rules;
   uses_window_inactive_selector |= other.uses_window_inactive_selector;
   max_direct_adjacent_selectors = std::max(max_direct_adjacent_selectors,
@@ -1686,7 +1684,7 @@ void RuleFeatureSet::Merge(const RuleFeatureSet& other) {
   if (other.metadata_.invalidates_parts)
     metadata_.invalidates_parts = true;
 
-  metadata_.Add(other.metadata_);
+  metadata_.Merge(other.metadata_);
   media_query_result_flags_.Add(other.media_query_result_flags_);
 
   for (const auto& class_name : other.classes_in_has_argument_)
@@ -2013,7 +2011,7 @@ bool RuleFeatureSet::NeedsHasInvalidationForPseudoClass(
   return pseudos_in_has_argument_.Contains(pseudo_type);
 }
 
-void RuleFeatureSet::InvalidationSetFeatures::Add(
+void RuleFeatureSet::InvalidationSetFeatures::Merge(
     const InvalidationSetFeatures& other) {
   classes.AppendVector(other.classes);
   attributes.AppendVector(other.attributes);
@@ -2047,7 +2045,7 @@ void RuleFeatureSet::InvalidationSetFeatures::NarrowToFeatures(
   unsigned other_size = other.Size();
   if (size == 0 || (1 <= other_size && other_size < size)) {
     ClearFeatures();
-    Add(other);
+    Merge(other);
   }
 }
 
@@ -2173,7 +2171,7 @@ String RuleFeatureSet::ToString() const {
   metadata.Append(
       format_max_direct_adjancent(metadata_.max_direct_adjacent_selectors));
 
-  if (!metadata.IsEmpty()) {
+  if (!metadata.empty()) {
     builder.Append("META:");
     builder.Append(metadata.ReleaseString());
   }

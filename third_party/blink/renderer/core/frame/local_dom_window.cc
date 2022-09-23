@@ -420,6 +420,39 @@ bool LocalDOMWindow::CanExecuteScripts(
   return script_enabled;
 }
 
+String LocalDOMWindow::CheckAndGetJavascriptUrl(
+    const DOMWrapperWorld* world,
+    const KURL& url,
+    Element* element,
+    network::mojom::CSPDisposition csp_disposition) {
+  const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
+  String decoded_url = DecodeURLEscapeSequences(
+      url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
+  String script_source = decoded_url.Substring(kJavascriptSchemeLength);
+
+  if (csp_disposition == network::mojom::CSPDisposition::DO_NOT_CHECK)
+    return script_source;
+
+  // Check the CSP of the caller (the "source browsing context") if required,
+  // as per https://html.spec.whatwg.org/C/#javascript-protocol.
+  if (!GetContentSecurityPolicyForWorld(world)->AllowInline(
+          ContentSecurityPolicy::InlineType::kNavigation, element, decoded_url,
+          String() /* nonce */, Url(), OrdinalNumber::First()))
+    return String();
+
+  // TODO(crbug.com/896041): Investigate how trusted type checks can be
+  // implemented for isolated worlds.
+  if (ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(world))
+    return script_source;
+
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#require-trusted-types-for-pre-navigation-check
+  // 4.9.1.1. require-trusted-types-for Pre-Navigation check
+  script_source =
+      TrustedTypesCheckForJavascriptURLinNavigation(script_source, this);
+
+  return script_source;
+}
+
 void LocalDOMWindow::ExceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::Instance()->ExceptionThrown(this, event);
 }
@@ -2061,7 +2094,7 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  if (message.IsEmpty())
+  if (message.empty())
     return;
 
   GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -2096,10 +2129,10 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     return nullptr;
 
   UseCounter::Count(*entered_window, WebFeature::kDOMWindowOpen);
-  if (!features.IsEmpty())
+  if (!features.empty())
     UseCounter::Count(*entered_window, WebFeature::kDOMWindowOpenFeatures);
 
-  KURL completed_url = url_string.IsEmpty()
+  KURL completed_url = url_string.empty()
                            ? KURL(g_empty_string)
                            : entered_window->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
@@ -2147,7 +2180,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   FrameTree::FindResult result =
       GetFrame()->Tree().FindOrCreateFrameForNavigation(
-          frame_request, target.IsEmpty() ? "_blank" : target);
+          frame_request, target.empty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
 

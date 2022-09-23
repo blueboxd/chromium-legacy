@@ -101,6 +101,12 @@ absl::optional<crosapi::mojom::DiagnosticsRoutineEnum> Convert(
       return crosapi::mojom::DiagnosticsRoutineEnum::kMemory;
     case cros_healthd::mojom::DiagnosticRoutineEnum::kLanConnectivity:
       return crosapi::mojom::DiagnosticsRoutineEnum::kLanConnectivity;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kDnsResolution:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolution;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kSignalStrength:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kSignalStrength;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kGatewayCanBePinged:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kGatewayCanBePinged;
     default:
       return absl::nullopt;
   }

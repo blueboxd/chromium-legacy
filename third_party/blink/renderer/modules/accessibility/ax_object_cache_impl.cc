@@ -173,7 +173,7 @@ bool IsActive(Document& document) {
 bool HasAriaCellRole(Element* elem) {
   DCHECK(elem);
   const AtomicString& role_str = elem->FastGetAttribute(html_names::kRoleAttr);
-  if (role_str.IsEmpty())
+  if (role_str.empty())
     return false;
 
   return ui::IsCellOrTableHeader(AXObject::AriaRoleStringToRoleEnum(role_str));
@@ -1758,6 +1758,17 @@ void AXObjectCacheImpl::Remove(Node* node) {
     node_object_mapping_.erase(iter);
     Remove(ax_id);
   }
+}
+
+void AXObjectCacheImpl::Remove(Document* document) {
+  DCHECK(IsPopup(*document)) << "Call Dispose() to remove the main document.";
+  for (Node* node = document; node;
+       node = LayoutTreeBuilderTraversal::Next(*node, nullptr)) {
+    Remove(node);
+  }
+  notifications_to_post_popup_.clear();
+  tree_update_callback_queue_popup_.clear();
+  invalidated_ids_popup_.clear();
 }
 
 // This is safe to call even if there isn't a current mapping.
@@ -4231,7 +4242,7 @@ void AXObjectCacheImpl::AddPermissionStatusListener() {
   //
   // http://crbug.com/759528 and http://crbug.com/762716
   if (document_->Url().Protocol() != "file" &&
-      document_->Url().Host().IsEmpty()) {
+      document_->Url().Host().empty()) {
     return;
   }
 

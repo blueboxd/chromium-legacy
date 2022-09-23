@@ -45,6 +45,7 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
+#include "chrome/browser/page_info/page_info_features.h"
 #include "chrome/browser/permissions/notifications_permission_revocation_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
@@ -3699,7 +3700,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalWebAssemblyStackSwitchingName,
      flag_descriptions::kExperimentalWebAssemblyStackSwitchingDescription,
      kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebAssemblyStackSwitching)},
+     FEATURE_VALUE_TYPE(
+         features::kEnableExperimentalWebAssemblyStackSwitching)},
 #endif  // defined(ARCH_CPU_X86_64)
     {"enable-webassembly-baseline", flag_descriptions::kEnableWasmBaselineName,
      flag_descriptions::kEnableWasmBaselineDescription, kOsAll,
@@ -7464,11 +7466,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          page_info::kPageInfoAboutThisSiteDescriptionPlaceholder)},
 
+#if !BUILDFLAG(IS_ANDROID)
     {"page-info-about-this-page-persistent-side-panel-entry",
      flag_descriptions::kPageInfoboutThisPagePersistentEntryName,
      flag_descriptions::kPageInfoboutThisPagePersistentEntryDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(page_info::kAboutThisSitePersistentSidePanelEntry)},
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kClipboardHistoryReorderInternalName,
@@ -7632,7 +7636,7 @@ const FeatureEntry kFeatureEntries[] = {
                                     "ProductivityLauncher")},
     {"launcher-item-suggest", flag_descriptions::kLauncherItemSuggestName,
      flag_descriptions::kLauncherItemSuggestDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(app_list::ItemSuggestCache::kExperiment,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(app_list::kLauncherItemSuggest,
                                     kLauncherItemSuggestVariations,
                                     "LauncherItemSuggest")},
     {"autocomplete-extended-suggestions",
@@ -7679,6 +7683,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacAddressRandomizationName,
      flag_descriptions::kMacAddressRandomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMacAddressRandomization)},
+
+    {"oobe-material-next", flag_descriptions::kOobeMaterialNextName,
+     flag_descriptions::kOobeMaterialNextDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOobeMaterialNext)},
 
     {"search-result-inline-icon",
      flag_descriptions::kSearchResultInlineIconName,
@@ -8234,10 +8242,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(optimization_guide::features::kPushNotifications)},
 #endif
-
-    {"media-session-webrtc", flag_descriptions::kMediaSessionWebRTCName,
-     flag_descriptions::kMediaSessionWebRTCDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kMediaSessionWebRTC)},
 
     {"fedcm", flag_descriptions::kFedCmName,
      flag_descriptions::kFedCmDescription, kOsAll,
@@ -9205,9 +9209,17 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-    {"safety-check-permissions", flag_descriptions::kSafetyCheckPermissionsName,
-     flag_descriptions::kSafetyCheckPermissionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSafetyCheckPermissions)},
+    {"safety-check-notification-permissions",
+     flag_descriptions::kSafetyCheckNotificationPermissionsName,
+     flag_descriptions::kSafetyCheckNotificationPermissionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSafetyCheckNotificationPermissions)},
+
+    {"safety-check-unused-site-permissions",
+     flag_descriptions::kSafetyCheckUnusedSitePermissionsName,
+     flag_descriptions::kSafetyCheckUnusedSitePermissionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSafetyCheckUnusedSitePermissions)},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -9551,6 +9563,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-selection-editor-v2", flag_descriptions::kTabSelectionEditorV2Name,
      flag_descriptions::kTabSelectionEditorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabSelectionEditorV2)},
+
+    {"context-menu-popup-for-all-screen-sizes",
+     flag_descriptions::kContextMenuPopupForAllScreenSizesName,
+     flag_descriptions::kContextMenuPopupForAllScreenSizesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupForAllScreenSizes)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

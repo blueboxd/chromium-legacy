@@ -414,6 +414,8 @@ static_library("browser") {
     "dips/cookie_access_filter.h",
     "dips/dips_bounce_detector.cc",
     "dips/dips_bounce_detector.h",
+    "dips/dips_database.cc",
+    "dips/dips_database.h",
     "dips/dips_helper.cc",
     "dips/dips_helper.h",
     "dips/dips_service.cc",
@@ -987,6 +989,8 @@ static_library("browser") {
     "page_info/about_this_site_service_factory.h",
     "page_info/chrome_about_this_site_service_client.cc",
     "page_info/chrome_about_this_site_service_client.h",
+    "page_info/page_info_features.cc",
+    "page_info/page_info_features.h",
     "page_load_metrics/observers/core/amp_page_load_metrics_observer.cc",
     "page_load_metrics/observers/core/amp_page_load_metrics_observer.h",
     "page_load_metrics/observers/core/ukm_page_load_metrics_observer.cc",
@@ -5233,7 +5237,7 @@ static_library("browser") {
       "//chrome/browser/ui/quick_answers",
       "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/ash/audio:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/cloud_upload:mojo_bindings",
+      "//chrome/browser/ui/webui/ash/cloud_upload:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
@@ -6199,10 +6203,6 @@ static_library("browser") {
       "mac/install_from_dmg.mm",
       "mac/key_window_notifier.cc",
       "mac/key_window_notifier.h",
-      "mac/keystone_glue.h",
-      "mac/keystone_glue.mm",
-      "mac/keystone_registration.h",
-      "mac/keystone_registration.mm",
       "mac/mac_startup_profiler.cc",
       "mac/mac_startup_profiler.h",
       "mac/nsprocessinfo_additions.h",
@@ -6253,6 +6253,8 @@ static_library("browser") {
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/renderer_host:history_swiper",
+      "//chrome/browser/updater:browser_updater_client",
+      "//chrome/browser/updater:scheduler",
       "//chrome/browser/webshare:storage",
       "//chrome/services/mac_notifications",
       "//chrome/services/mac_notifications/public/cpp",
@@ -6286,6 +6288,7 @@ static_library("browser") {
       "SafariServices.framework",  # macOS 10.12
       "UserNotifications.framework",  # macOS 10.14
     ]
+    public_deps += [ "//chrome/browser/mac:keystone_glue" ]
 
     if (enable_chromium_updater) {
       sources += [

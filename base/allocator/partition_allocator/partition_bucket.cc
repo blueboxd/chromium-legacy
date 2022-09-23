@@ -45,6 +45,17 @@ namespace partition_alloc::internal {
 
 namespace {
 
+#if defined(PA_ENABLE_SHADOW_METADATA)
+PA_ALWAYS_INLINE uintptr_t ShadowMetadataStart(uintptr_t super_page,
+                                               pool_handle pool) {
+  uintptr_t shadow_metadata_start =
+      super_page + SystemPageSize() + ShadowPoolOffset(pool);
+  PA_DCHECK(!PartitionAddressSpace::IsInRegularPool(shadow_metadata_start));
+  PA_DCHECK(!PartitionAddressSpace::IsInBRPPool(shadow_metadata_start));
+  return shadow_metadata_start;
+}
+#endif
+
 template <bool thread_safe>
 [[noreturn]] PA_NOINLINE void PartitionOutOfMemoryMappingFailure(
     PartitionRoot<thread_safe>* root,
@@ -294,20 +305,38 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
 
     {
       ScopedSyscallTimer timer{root};
-      RecommitSystemPages(
-          reservation_start + SystemPageSize(),
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-          // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
-          // used, allocate 2 SystemPages, one for SuperPage metadata and the
-          // other for RefCount "bitmap" (only one of its elements will be
-          // used).
-          (pool == GetBRPPool()) ? SystemPageSize() * 2 : SystemPageSize(),
+      RecommitSystemPages(reservation_start + SystemPageSize(),
+                          SystemPageSize(),
+#if defined(PA_ENABLE_SHADOW_METADATA)
+                          PageAccessibilityConfiguration::kRead,
 #else
-          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
 #endif
-          PageAccessibilityConfiguration::kReadWrite,
-          PageAccessibilityDisposition::kRequireUpdate);
+                          PageAccessibilityDisposition::kRequireUpdate);
     }
+
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+    // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
+    // used, allocate a SystemPage for RefCount "bitmap" (only one of its
+    // elements will be used).
+    if (pool == GetBRPPool()) {
+      ScopedSyscallTimer timer{root};
+      RecommitSystemPages(reservation_start + SystemPageSize() * 2,
+                          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
+                          PageAccessibilityDisposition::kRequireUpdate);
+    }
+#endif
+
+#if defined(PA_ENABLE_SHADOW_METADATA)
+    {
+      ScopedSyscallTimer timer{root};
+      RecommitSystemPages(ShadowMetadataStart(reservation_start, pool),
+                          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
+                          PageAccessibilityDisposition::kRequireUpdate);
+    }
+#endif
 
     // No need to hold root->lock_. Now that memory is reserved, no other
     // overlapping region can be allocated (because of how GigaCage works),
@@ -730,6 +759,12 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::AllocNewSuperPage(
     PartitionRoot<thread_safe>* root,
     unsigned int flags) {
   auto super_page = AllocNewSuperPageSpan(root, 1, flags);
+  if (PA_UNLIKELY(!super_page)) {
+    // If the `kReturnNull` flag isn't set and the allocation attempt fails,
+    // `AllocNewSuperPageSpan` should've failed with an OOM crash.
+    PA_DCHECK(flags & AllocFlags::kReturnNull);
+    return 0;
+  }
   return SuperPagePayloadBegin(super_page, root->IsQuarantineAllowed());
 }
 
@@ -774,20 +809,35 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
   // also a tiny amount of extent metadata.
   {
     ScopedSyscallTimer timer{root};
-    RecommitSystemPages(super_page + SystemPageSize(),
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-                        // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the
-                        // BRP pool is used, allocate 2 SystemPages, one for
-                        // SuperPage metadata and the other for RefCount bitmap.
-                        (root->ChoosePool() == GetBRPPool())
-                            ? SystemPageSize() * 2
-                            : SystemPageSize(),
+    RecommitSystemPages(super_page + SystemPageSize(), SystemPageSize(),
+#if defined(PA_ENABLE_SHADOW_METADATA)
+                        PageAccessibilityConfiguration::kRead,
 #else
-                        SystemPageSize(),
+                        PageAccessibilityConfiguration::kReadWrite,
 #endif
+                        PageAccessibilityDisposition::kRequireUpdate);
+  }
+
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+  // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
+  // used, allocate a SystemPage for RefCount bitmap.
+  if (root->ChoosePool() == GetBRPPool()) {
+    ScopedSyscallTimer timer{root};
+    RecommitSystemPages(super_page + SystemPageSize() * 2, SystemPageSize(),
                         PageAccessibilityConfiguration::kReadWrite,
                         PageAccessibilityDisposition::kRequireUpdate);
   }
+#endif
+
+#if defined(PA_ENABLE_SHADOW_METADATA)
+  {
+    ScopedSyscallTimer timer{root};
+    RecommitSystemPages(ShadowMetadataStart(super_page, root->ChoosePool()),
+                        SystemPageSize(),
+                        PageAccessibilityConfiguration::kReadWrite,
+                        PageAccessibilityDisposition::kRequireUpdate);
+  }
+#endif
 
   // If we were after a specific address, but didn't get it, assume that
   // the system chose a lousy address. Here most OS'es have a default

@@ -230,7 +230,7 @@ void FillWidgetProperties(AXObject& ax_object,
       node_data
           .GetStringAttribute(ax::mojom::blink::StringAttribute::kAutoComplete)
           .c_str();
-  if (!autocomplete.IsEmpty())
+  if (!autocomplete.empty())
     properties.emplace_back(
         CreateProperty(AXPropertyNameEnum::Autocomplete,
                        CreateValue(autocomplete, AXValueTypeEnum::Token)));
@@ -960,7 +960,7 @@ void InspectorAccessibilityAgent::FillCoreProperties(
   AXObject::AXObjectVector description_objects;
   String description =
       ax_object.Description(name_from, description_from, &description_objects);
-  if (!description.IsEmpty()) {
+  if (!description.empty()) {
     node_object->setDescription(
         CreateValue(description, AXValueTypeEnum::ComputedString));
   }
@@ -971,7 +971,7 @@ void InspectorAccessibilityAgent::FillCoreProperties(
       node_object->setValue(CreateValue(value));
   } else {
     String value = ax_object.SlowGetValueForControlIncludingContentEditable();
-    if (!value.IsEmpty())
+    if (!value.empty())
       node_object->setValue(CreateValue(value));
   }
 }
@@ -1047,10 +1047,6 @@ void InspectorAccessibilityAgent::queryAXTree(
     vector.emplace_back(std::move(query));
     queries_.insert(&document, std::move(vector));
   }
-  // The agent might not be enabled because querying is allowed without
-  // enabling the Accessibility domain. Therefore, we register the agent
-  // with the cache to receive the AXReadyCallback.
-  cache.AddInspectorAgent(this);
   // ScheduleVisualUpdate() ensures the lifecycle doesn't get stalled,
   // and therefore ensures we get the AXReadyCallback callback as soon as a11y
   // is clean again.
@@ -1318,9 +1314,6 @@ void InspectorAccessibilityAgent::ProvideTo(LocalFrame* frame) {
 
 void InspectorAccessibilityAgent::RetainAXContextForDocument(
     Document* document) {
-  if (!enabled_.Get()) {
-    return;
-  }
   if (!document_to_context_map_.Contains(document)) {
     auto context = std::make_unique<AXContext>(*document, ui::kAXModeComplete);
     auto& cache = To<AXObjectCacheImpl>(context->GetAXObjectCache());

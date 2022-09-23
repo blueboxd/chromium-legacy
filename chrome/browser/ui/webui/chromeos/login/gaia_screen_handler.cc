@@ -248,8 +248,13 @@ bool ShouldCheckUserTypeBeforeAllowing() {
   return family_link_allowed;
 }
 
+// TODO(https://crbug.com/1364455)
+// Make this function fallible when version_loader::GetVersion()
+// returns an optional that is empty
 void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
-  *out_version = version_loader::GetVersion(version_loader::VERSION_SHORT);
+  absl::optional<std::string> version =
+      version_loader::GetVersion(version_loader::VERSION_SHORT);
+  *out_version = version.value_or("0.0.0.0");
   *out_consent = GoogleUpdateSettings::GetCollectStatsConsent();
 }
 
@@ -306,11 +311,11 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
   // TODO(b/197615068): Add metric to record the number of times we prepared for
   // recovery and the number of times recovery is actually required.
   static constexpr int kPossibleReasons[] = {
-      static_cast<int>(ash::ReauthReason::INCORRECT_PASSWORD_ENTERED),
-      static_cast<int>(ash::ReauthReason::INVALID_TOKEN_HANDLE),
-      static_cast<int>(ash::ReauthReason::SYNC_FAILED),
-      static_cast<int>(ash::ReauthReason::PASSWORD_UPDATE_SKIPPED),
-      static_cast<int>(ash::ReauthReason::FORGOT_PASSWORD),
+      static_cast<int>(ash::ReauthReason::kIncorrectPasswordEntered),
+      static_cast<int>(ash::ReauthReason::kInvalidTokenHandle),
+      static_cast<int>(ash::ReauthReason::kSyncFailed),
+      static_cast<int>(ash::ReauthReason::kPasswordUpdateSkipped),
+      static_cast<int>(ash::ReauthReason::kForgotPassword),
   };
   user_manager::KnownUser known_user(g_browser_process->local_state());
   absl::optional<int> reauth_reason = known_user.FindReauthReason(account_id);

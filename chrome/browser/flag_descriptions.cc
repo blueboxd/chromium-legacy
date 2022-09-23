@@ -1830,10 +1830,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
-const char kMediaSessionWebRTCName[] = "Enable WebRTC actions in Media Session";
-const char kMediaSessionWebRTCDescription[] =
-    "Adds new actions into Media Session for video conferencing.";
-
 const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
 const char kMetricsSettingsAndroidDescription[] =
     "Enables the new design of metrics settings.";
@@ -2509,10 +2505,17 @@ const char kMBIModeDescription[] =
     "Enables independent agent cluster scheduling, via the "
     "AgentSchedulingGroup infrastructure.";
 
-const char kSafetyCheckPermissionsName[] = "Permission Modules on Safety Check";
-const char kSafetyCheckPermissionsDescription[] =
-    "When enabled, adds permission modules to Safety Check on desktop. "
-    "The modules will be shown depending on the browser state.";
+const char kSafetyCheckNotificationPermissionsName[] =
+    "Permission Module for notifications in Safety Check";
+const char kSafetyCheckNotificationPermissionsDescription[] =
+    "When enabled, adds the notification permission module to Safety Check on "
+    "desktop. The module will be shown depending on the browser state.";
+
+const char kSafetyCheckUnusedSitePermissionsName[] =
+    "Permission Module for unused sites in Safety Check";
+const char kSafetyCheckUnusedSitePermissionsDescription[] =
+    "When enabled, adds the unused sites permission module to Safety Check on "
+    "desktop. The module will be shown depending on the browser state.";
 
 const char kSamePartyCookiesConsideredFirstPartyName[] =
     "Consider SameParty cookies to be first-party.";
@@ -3496,6 +3499,14 @@ const char kCriticalPersistedTabDataName[] = "Enable CriticalPersistedTabData";
 const char kCriticalPersistedTabDataDescription[] =
     "A new method of persisting Tab data across restarts has been devised "
     "and implemented. This actives the new approach.";
+
+const char kContextMenuPopupForAllScreenSizesName[] =
+    "Context menu popup for all screen sizes";
+const char kContextMenuPopupForAllScreenSizesDescription[] =
+    "When disabled, context menu will be shown as pop-up window only for "
+    "devices in tablet mode, while shown as a fullscreen dialog for mobile "
+    "devices; when enabled, context menu will be shown as a pop-up window "
+    "for all form factors regardless of the screen sizes.";
 
 const char kContextualSearchDebugName[] = "Contextual Search debug";
 const char kContextualSearchDebugDescription[] =
@@ -6170,6 +6181,10 @@ const char kMacAddressRandomizationName[] = "MAC address randomization";
 const char kMacAddressRandomizationDescription[] =
     "Feature to allow MAC address randomization to be enabled for WiFi "
     "networks.";
+
+const char kOobeMaterialNextName[] = "Material Next design for OOBE";
+const char kOobeMaterialNextDescription[] =
+    "Feature to enable the Material Next design in out of box experience.";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

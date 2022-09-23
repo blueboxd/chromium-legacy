@@ -836,7 +836,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'mac_model': 'Macmini8,1',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12',
       },
     },
   },
@@ -874,7 +874,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12.6',
       },
     },
   },
@@ -882,7 +882,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12.6',
       },
     },
   },

@@ -959,22 +959,6 @@ external/wpt/css/css-backgrounds/css3-border-image-repeat-repeat.html [ Skip ]
 external/wpt/css/css-backgrounds/css3-border-image-repeat-stretch.html [ Skip ]
 external/wpt/css/css-backgrounds/first-letter-space-not-selected.html [ Skip ]
 
-# lab() and lch() aren't supported.
-external/wpt/css/css-color/lab-001.html [ Skip ]
-external/wpt/css/css-color/lab-002.html [ Skip ]
-external/wpt/css/css-color/lab-003.html [ Skip ]
-external/wpt/css/css-color/lab-004.html [ Skip ]
-external/wpt/css/css-color/lab-005.html [ Skip ]
-external/wpt/css/css-color/lab-006.html [ Skip ]
-external/wpt/css/css-color/lab-007.html [ Skip ]
-external/wpt/css/css-color/lch-001.html [ Skip ]
-external/wpt/css/css-color/lch-002.html [ Skip ]
-external/wpt/css/css-color/lch-003.html [ Skip ]
-external/wpt/css/css-color/lch-004.html [ Skip ]
-external/wpt/css/css-color/lch-005.html [ Skip ]
-external/wpt/css/css-color/lch-006.html [ Skip ]
-external/wpt/css/css-color/lch-007.html [ Skip ]
-
 # Failures on the initial import of css-color. Test suite had many other bugs,
 # so these may also be incorrect tests, but probably some real issues too.
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-1-c.xht [ Skip ]
@@ -1950,12 +1934,6 @@ crbug.com/1225606 virtual/sanitizer-api-namespaces/virtual/mathml-disabled/sanit
 
 # Skip manual tests, see crbug/1114920
 external/wpt/html/semantics/forms/the-input-element/disabled-click-picker-manual.html [ Skip ]
-
-# First party DevTools issues only work in the first-party-sets virtual suite
-crbug.com/1179186 http/tests/inspector-protocol/network/blocked-cookie-same-party-issue.js [ Skip ]
-crbug.com/1179186 http/tests/inspector-protocol/network/blocked-setcookie-same-party-cross-party-issue.js [ Skip ]
-crbug.com/1179186 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-cookie-same-party-issue.js [ Pass ]
-crbug.com/1179186 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-party-cross-party-issue.js [ Pass ]
 
 # This test passes only when the JXL feature is enabled.
 crbug.com/1161994 http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Skip ]

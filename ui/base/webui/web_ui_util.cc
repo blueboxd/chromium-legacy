@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/resources/grit/webui_generated_resources.h"
@@ -32,6 +33,10 @@
 
 namespace webui {
 namespace {
+
+// Generous cap to guard against out-of-memory issues.
+constexpr float kMaxScaleFactor = 1000.0f;
+
 std::string GetWebUiCssTextDefaults(const std::string& css_template) {
   ui::TemplateReplacements placeholders;
   placeholders["textDirection"] = GetTextDirection();
@@ -39,6 +44,7 @@ std::string GetWebUiCssTextDefaults(const std::string& css_template) {
   placeholders["fontSize"] = GetFontSize();
   return ui::ReplaceTemplateExpressions(css_template, placeholders);
 }
+
 }  // namespace
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
@@ -71,19 +77,27 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
                       float* scale_factor) {
   *scale_factor = 1.0f;
   if (identifier.empty()) {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
   if (*identifier.rbegin() != 'x') {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
   double scale = 0;
   std::string stripped(identifier.substr(0, identifier.length() - 1));
   if (!base::StringToDouble(stripped, &scale)) {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
+    return false;
+  }
+  if (scale < 0) {
+    DLOG(WARNING) << "Invalid negative scale factor: " << identifier;
+    return false;
+  }
+  if (scale > kMaxScaleFactor) {
+    DLOG(WARNING) << "Invalid scale factor, too large: " << identifier;
     return false;
   }
   *scale_factor = static_cast<float>(scale);
@@ -94,19 +108,19 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
 bool ParseFrameIndex(const base::StringPiece& identifier, int* frame_index) {
   *frame_index = -1;
   if (identifier.empty()) {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
 
   if (*identifier.rbegin() != ']') {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
 
   unsigned frame = 0;
   if (!base::StringToUint(identifier.substr(0, identifier.length() - 1),
                           &frame)) {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
   *frame_index = static_cast<int>(frame);

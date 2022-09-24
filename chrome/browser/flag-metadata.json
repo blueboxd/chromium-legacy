@@ -2260,7 +2260,7 @@
   {
     "name": "enable-fake-keyboard-heuristic",
     "owners": ["wmahon", "chromeos-tango@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 115
   },
   {
     "name": "enable-family-info-feedback",
@@ -2769,6 +2769,11 @@
     "name": "enable-prerender2",
     "owners": [ "//content/browser/preloading/prerender/OWNERS" ],
     "expiry_milestone": 109
+  },
+  {
+    "name": "enable-privacy-indicators",
+    "owners": [ "leandre" ],
+    "expiry_milestone": 111
   },
   {
     "name": "enable-projector",

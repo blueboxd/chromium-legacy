@@ -10,8 +10,9 @@ import("//build/config/sysroot.gni")
 declare_args() {
   # This variable is deprecated.  use_system_libwayland_client should be used
   # instead.
-  use_system_libwayland = is_linux && !is_castos && !is_msan &&
-                          default_toolchain != "//build/toolchain/cros:target"
+  use_system_libwayland =
+      is_linux && !is_castos && !is_msan && target_cpu == "x64" &&
+      default_toolchain != "//build/toolchain/cros:target"
 
   # Controls whether the build should use the version of Wayland
   # library shipped with the system or Chromium third_party (server library).
@@ -28,10 +29,16 @@ declare_args() {
   # This may be set by Chromium packagers who do not wish to use the bundled
   # wayland scanner.
   use_system_wayland_scanner = use_system_libwayland_client
+}
 
+declare_args() {
   # Path to the wayland-scanner in the sysroot.
   assert(host_os == "linux")
-  if (use_system_libwayland_client) {
-    system_wayland_scanner_path = "$sysroot/usr/bin/wayland-scanner"
+  if (use_system_wayland_scanner) {
+    if (use_sysroot) {
+      system_wayland_scanner_path = "$sysroot/usr/bin/wayland-scanner"
+    } else {
+      system_wayland_scanner_path = "/usr/bin/wayland-scanner"
+    }
   }
 }

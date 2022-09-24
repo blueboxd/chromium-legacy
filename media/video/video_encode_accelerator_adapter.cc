@@ -876,6 +876,18 @@ VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
     scoped_refptr<VideoFrame> src_frame) {
   TRACE_EVENT0("media", "VideoEncodeAcceleratorAdapter::PrepareCpuFrame");
 
+  // The frame whose storage type is STORAGE_OWNED_MEMORY and
+  // STORAGE_UNOWNED_MEMORY is copied here, not in mojo_video_frame_traits.
+  // It is because VEAAdapter recycles the SharedMemoryRegion, but
+  // mojo_video_frame_traits doesn't.
+  if (src_frame->storage_type() == VideoFrame::STORAGE_SHMEM &&
+      src_frame->format() == PIXEL_FORMAT_I420 &&
+      src_frame->visible_rect().size() == size &&
+      src_frame->visible_rect().origin().IsOrigin()) {
+    // Nothing to do here, the input frame is already what we need.
+    return src_frame;
+  }
+
   if (!input_pool_) {
     const size_t input_buffer_size =
         VideoFrame::AllocationSize(PIXEL_FORMAT_I420, size);
@@ -936,8 +948,7 @@ VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
   auto gpu_frame = gmb_frame_pool_->MaybeCreateVideoFrame(size);
   if (!gpu_frame)
     return EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode);
-  gpu_frame->GetGpuMemoryBuffer()->SetColorSpace(src_frame->ColorSpace());
-  gpu_frame->set_color_space(src_frame->ColorSpace());
+
   gpu_frame->set_timestamp(src_frame->timestamp());
   gpu_frame->metadata().MergeMetadataFrom(src_frame->metadata());
 
@@ -960,6 +971,12 @@ VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
   if (!status.is_ok())
     return EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode)
         .AddCause(std::move(status));
+
+  // |mapped_gpu_frame| has the color space respecting the color conversion in
+  // ConvertAndScaleFrame().
+  gpu_frame->GetGpuMemoryBuffer()->SetColorSpace(
+      mapped_gpu_frame->ColorSpace());
+  gpu_frame->set_color_space(mapped_gpu_frame->ColorSpace());
 
   return gpu_frame;
 }

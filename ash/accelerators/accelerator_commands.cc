@@ -11,18 +11,22 @@
 #include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_move_window_util.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/system/toast_data.h"
@@ -39,6 +43,7 @@
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tray.h"
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_model.h"
@@ -64,6 +69,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -92,10 +98,13 @@ namespace accelerators {
 namespace {
 
 using ::base::UserMetricsAction;
+using ::chromeos::WindowStateType;
 
 // Percent by which the volume should be changed when a volume key is pressed.
 constexpr double kStepPercentage = 4.0;
 constexpr char kVirtualDesksToastId[] = "virtual_desks_toast";
+// Toast id for Assistant shortcuts.
+constexpr char kAssistantErrorToastId[] = "assistant_error";
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -344,6 +353,145 @@ void EnterImageCaptureMode(CaptureModeSource source,
 
 }  // namespace
 
+bool CanActivateTouchHud() {
+  return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
+}
+
+bool CanCreateNewIncognitoWindow() {
+  // Guest mode does not use incognito windows. The browser may have other
+  // restrictions on incognito mode (e.g. enterprise policy) but those are rare.
+  // For non-guest mode, consume the key and defer the decision to the browser.
+  absl::optional<user_manager::UserType> user_type =
+      Shell::Get()->session_controller()->GetUserType();
+  return user_type && *user_type != user_manager::USER_TYPE_GUEST;
+}
+
+bool CanCycleInputMethod() {
+  return Shell::Get()->ime_controller()->CanSwitchIme();
+}
+
+bool CanCycleMru() {
+  // Don't do anything when Alt+Tab is hit while a virtual keyboard is showing.
+  // Touchscreen users have better window switching options. It would be
+  // preferable if we could tell whether this event actually came from a virtual
+  // keyboard, but there's no easy way to do so, thus we block Alt+Tab when the
+  // virtual keyboard is showing, even if it came from a real keyboard. See
+  // http://crbug.com/638269
+  return !keyboard::KeyboardUIController::Get()->IsKeyboardVisible();
+}
+
+bool CanCycleUser() {
+  return Shell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
+}
+
+bool CanFindPipWidget() {
+  return !!FindPipWidget();
+}
+
+bool CanFocusCameraPreview() {
+  auto* controller = CaptureModeController::Get();
+  // Only use the shortcut to focus the camera preview while video recording is
+  // in progress. As focus traversal of the camera preview in the capture
+  // session will be handled by CaptureModeSessionFocusCycler instead.
+  if (controller->IsActive() || !controller->is_recording_in_progress())
+    return false;
+
+  auto* camera_controller = controller->camera_controller();
+  DCHECK(camera_controller);
+  auto* preview_widget = camera_controller->camera_preview_widget();
+  return preview_widget && preview_widget->IsVisible();
+}
+
+bool CanLock() {
+  return Shell::Get()->session_controller()->CanLockScreen();
+}
+
+bool CanMinimizeTopWindowOnBack() {
+  return window_util::ShouldMinimizeTopWindowOnBack();
+}
+
+bool CanMoveActiveWindowBetweenDisplays() {
+  return display_move_window_util::CanHandleMoveActiveWindowBetweenDisplays();
+}
+
+bool CanPerformMagnifierZoom() {
+  return Shell::Get()->fullscreen_magnifier_controller()->IsEnabled() ||
+         Shell::Get()->docked_magnifier_controller()->GetEnabled();
+}
+
+bool CanScreenshot(bool take_screenshot) {
+  // |TAKE_SCREENSHOT| is allowed when user session is blocked.
+  return take_screenshot ||
+         !Shell::Get()->session_controller()->IsUserSessionBlocked();
+}
+
+bool CanShowStylusTools() {
+  return GetPaletteTray()->ShouldShowPalette();
+}
+
+bool CanStartAmbientMode() {
+  return chromeos::features::IsAmbientModeEnabled();
+}
+
+bool CanSwapPrimaryDisplay() {
+  return display::Screen::GetScreen()->GetNumDisplays() > 1;
+}
+
+bool CanToggleCalendar() {
+  return features::IsCalendarViewEnabled();
+}
+
+bool CanToggleDictation() {
+  return Shell::Get()->accessibility_controller()->dictation().enabled();
+}
+
+bool CanToggleOverview() {
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+  // Do not toggle overview if there is a window being dragged.
+  for (auto* window : windows) {
+    if (WindowState::Get(window)->is_dragged())
+      return false;
+  }
+  return true;
+}
+
+bool CanTogglePrivacyScreen() {
+  return Shell::Get()->privacy_screen_controller()->IsSupported();
+}
+
+bool CanToggleProjectorMarker() {
+  auto* projector_controller = ProjectorController::Get();
+  if (projector_controller) {
+    return projector_controller->GetAnnotatorAvailability();
+  }
+  return false;
+}
+
+bool CanToggleResizeLockMenu() {
+  aura::Window* active_window = window_util::GetActiveWindow();
+  if (!active_window)
+    return false;
+  auto* frame_view = ash::NonClientFrameViewAsh::Get(active_window);
+  return frame_view && frame_view->GetToggleResizeLockMenuCallback();
+}
+
+bool CanUnpinWindow() {
+  // WindowStateType::kTrustedPinned does not allow the user to press a key to
+  // exit pinned mode.
+  WindowState* window_state = WindowState::ForActiveWindow();
+  return window_state &&
+         window_state->GetStateType() == WindowStateType::kPinned;
+}
+
+bool CanWindowSnap() {
+  aura::Window* active_window = window_util::GetActiveWindow();
+  if (!active_window)
+    return false;
+  WindowState* window_state = WindowState::Get(active_window);
+  return window_state && window_state->IsUserPositionable();
+}
+
 void ActivateDesk(bool activate_left) {
   auto* desks_controller = DesksController::Get();
   const bool success = desks_controller->ActivateAdjacentDesk(
@@ -480,6 +628,11 @@ void LaunchLastApp() {
   Shelf::LaunchShelfItem(-1);
 }
 
+void LockPressed(bool pressed) {
+  Shell::Get()->power_button_controller()->OnLockButtonEvent(pressed,
+                                                             base::TimeTicks());
+}
+
 void LockScreen() {
   Shell::Get()->session_controller()->LockScreen();
 }
@@ -595,6 +748,10 @@ void MoveActiveItem(bool going_left) {
   }
 }
 
+void MoveActiveWindowBetweenDisplays() {
+  display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
+}
+
 void NewDesk() {
   auto* desks_controller = DesksController::Get();
   if (!desks_controller->CanCreateDesks()) {
@@ -652,6 +809,11 @@ void OpenFileManager() {
 
 void OpenHelp() {
   NewWindowDelegate::GetInstance()->OpenGetHelp();
+}
+
+void PowerPressed(bool pressed) {
+  Shell::Get()->power_button_controller()->OnPowerButtonEvent(
+      pressed, base::TimeTicks());
 }
 
 void RemoveCurrentDesk() {
@@ -777,12 +939,31 @@ void Suspend() {
   chromeos::PowerManagerClient::Get()->RequestSuspend();
 }
 
+void SwitchToNextIme() {
+  Shell::Get()->ime_controller()->SwitchToNextIme();
+}
+
 void ToggleAppList(AppListShowSource show_source,
                    base::TimeTicks event_time_stamp) {
   aura::Window* const root_window = Shell::GetRootWindowForNewWindows();
   Shell::Get()->app_list_controller()->ToggleAppList(
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window).id(),
       show_source, event_time_stamp);
+}
+
+void TakeScreenshot(bool from_snapshot_key) {
+  // If it is the snip key, toggle capture mode unless the session is blocked,
+  // in which case, it behaves like a fullscreen screenshot.
+  auto* capture_mode_controller = CaptureModeController::Get();
+  if (from_snapshot_key &&
+      !Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    if (capture_mode_controller->IsActive())
+      capture_mode_controller->Stop();
+    else
+      capture_mode_controller->Start(CaptureModeEntryType::kSnipKey);
+    return;
+  }
+  capture_mode_controller->CaptureScreenshotsOfAllDisplays();
 }
 
 void ToggleAmbientMode() {
@@ -812,6 +993,68 @@ void ToggleAssignToAllDesk() {
             ? aura::client::kWindowWorkspaceUnassignedWorkspace
             : aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   }
+}
+
+void ToggleAssistant() {
+  using assistant::AssistantAllowedState;
+  switch (AssistantState::Get()->allowed_state().value_or(
+      AssistantAllowedState::ALLOWED)) {
+    case AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
+      // Show a toast if the active user is not primary.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_SECONDARY_USER_TOAST_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_LOCALE:
+      // Show a toast if the Assistant is disabled due to unsupported
+      // locales.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_POLICY:
+      // Show a toast if the Assistant is disabled due to enterprise policy.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_DISABLED_BY_POLICY_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
+      // Show a toast if the Assistant is disabled due to being in Demo
+      // Mode.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_DISABLED_IN_DEMO_MODE_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
+      // Show a toast if the Assistant is disabled due to being in public
+      // session.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_DISABLED_IN_PUBLIC_SESSION_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+      // Show a toast if the Assistant is disabled due to being in Incognito
+      // mode.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_DISABLED_IN_GUEST_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
+      // Show a toast if the Assistant is disabled due to the account type.
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE));
+      return;
+    case AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
+      // No need to show toast in KIOSK mode.
+      return;
+    case AssistantAllowedState::ALLOWED:
+      // Nothing need to do if allowed.
+      break;
+  }
+  AssistantUiController::Get()->ToggleUi(
+      /*entry_point=*/assistant::AssistantEntryPoint::kHotkey,
+      /*exit_point=*/assistant::AssistantExitPoint::kHotkey);
 }
 
 void ToggleCalendar() {

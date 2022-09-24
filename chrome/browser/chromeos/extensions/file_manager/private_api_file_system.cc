@@ -470,20 +470,20 @@ extensions::api::file_manager_private::DlpLevel DlpRulesManagerLevelToApiEnum(
 extensions::api::file_manager_private::VolumeType
 DlpRulesManagerComponentToApiEnum(
     policy::DlpRulesManager::Component component) {
-  using extensions::api::file_manager_private::VolumeType;
-  using Component = policy::DlpRulesManager::Component;
+  using ::extensions::api::file_manager_private::VolumeType;
+  using Component = ::policy::DlpRulesManager::Component;
   switch (component) {
-    case policy::DlpRulesManager::Component::kArc:
+    case Component::kArc:
       return VolumeType::VOLUME_TYPE_ANDROID_FILES;
-    case policy::DlpRulesManager::Component::kCrostini:
+    case Component::kCrostini:
       return VolumeType::VOLUME_TYPE_CROSTINI;
-    case policy::DlpRulesManager::Component::kPluginVm:
+    case Component::kPluginVm:
       return VolumeType::VOLUME_TYPE_GUEST_OS;
-    case policy::DlpRulesManager::Component::kUsb:
+    case Component::kUsb:
       return VolumeType::VOLUME_TYPE_REMOVABLE;
-    case policy::DlpRulesManager::Component::kDrive:
+    case Component::kDrive:
       return VolumeType::VOLUME_TYPE_DRIVE;
-    case policy::DlpRulesManager::Component::kUnknownComponent:
+    case Component::kUnknownComponent:
       NOTREACHED() << "DLP component not set.";
       return {};
   }
@@ -596,18 +596,22 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
     return RespondNow(Error("Invalid URL"));
   }
 
-  VolumeManager* const volume_manager = VolumeManager::Get(profile);
-  if (!volume_manager)
-    return RespondNow(Error("Cannot find VolumeManager"));
+  // For removeFileWatch() we can't validate the volume because it might have
+  // been unmounted.
+  if (IsAddWatch()) {
+    VolumeManager* const volume_manager = VolumeManager::Get(profile);
+    if (!volume_manager)
+      return RespondNow(Error("Cannot find VolumeManager"));
 
-  const base::WeakPtr<Volume> volume =
-      volume_manager->FindVolumeFromPath(file_system_url.path());
-  if (!volume)
-    return RespondNow(
-        Error("Cannot find volume *", Redact(file_system_url.path())));
+    const base::WeakPtr<Volume> volume =
+        volume_manager->FindVolumeFromPath(file_system_url.path());
+    if (!volume)
+      return RespondNow(
+          Error("Cannot find volume *", Redact(file_system_url.path())));
 
-  if (!volume->watchable())
-    return RespondNow(Error("Volume is not watchable"));
+    if (!volume->watchable())
+      return RespondNow(Error("Volume is not watchable"));
+  }
 
   file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(profile);
@@ -706,6 +710,14 @@ void FileManagerPrivateInternalRemoveFileWatchFunction::
   event_router->RemoveFileWatch(file_system_url.path(),
                                 url::Origin::Create(source_url()));
   RespondWith(true);
+}
+
+bool FileManagerPrivateInternalAddFileWatchFunction::IsAddWatch() {
+  return true;
+}
+
+bool FileManagerPrivateInternalRemoveFileWatchFunction::IsAddWatch() {
+  return false;
 }
 
 ExtensionFunction::ResponseAction

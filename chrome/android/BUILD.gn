@@ -2201,7 +2201,7 @@ if (enable_resource_allowlist_generation) {
 
 libchrome_impl("libchrome") {
   define_unwind_table_target =
-      add_unwind_tables_in_chrome_32bit_apk && current_cpu == "arm"
+      add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
   if (enable_resource_allowlist_generation) {
     # Make sure allowlist_inputs is built first so when concurrent_links == 1
     # it comes before the actual (very slow) link step.
@@ -2212,7 +2212,7 @@ libchrome_impl("libchrome") {
 chrome_common_shared_library("libchromefortest") {
   testonly = true
   define_unwind_table_target =
-      add_unwind_tables_in_chrome_32bit_apk && current_cpu == "arm"
+      add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
   sources = [
     "../browser/android/chrome_entry_point_for_test.cc",
     chrome_jni_for_test_registration_header,
@@ -2560,13 +2560,14 @@ if (add_unwind_tables_in_chrome_32bit_apk) {
       }
     }
   }
-  chrome_unwind_assets("libchrome_unwind_table_assets") {
-    libname = "libchrome"
-  }
   chrome_unwind_assets("libmonochrome_unwind_table_assets") {
     libname = "libmonochrome"
   }
+  # We create fat apks only with libmonochrome.
   if (target_cpu == "arm") {
+    chrome_unwind_assets("libchrome_unwind_table_assets") {
+      libname = "libchrome"
+    }
     chrome_unwind_assets("libchromefortest_unwind_table_assets") {
       testonly = true
       libname = "libchromefortest"

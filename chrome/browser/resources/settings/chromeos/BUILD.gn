@@ -62,7 +62,7 @@ if (optimize_webui) {
       "chrome://resources/cr_components/app_management/types.mojom-webui.js",
       "chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js",
       "chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.js",
-      "chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js",
+      "chrome://resources/ash/common/network/mojo_interface_provider.js",
       "chrome://resources/js/cr.m.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js",
@@ -355,7 +355,6 @@ preprocess_if_expr("preprocess_browser_settings_tsc") {
     "controls/password_prompt_dialog.js",
     "controls/settings_slider.js",
     "controls/settings_textarea.js",
-    "controls/settings_toggle_button.js",
     "people_page/signout_dialog.js",
     "people_page/sync_account_control.js",
     "people_page/sync_controls.js",
@@ -372,7 +371,6 @@ preprocess_if_expr("preprocess_browser_settings_tsc") {
   # Files that don't have a corresponding HTML file.
   in_files = [
     "appearance_page/fonts_browser_proxy.js",
-    "controls/settings_boolean_control_mixin.js",
     "extension_control_browser_proxy.js",
     "icons.html.js",
     "people_page/profile_info_browser_proxy.js",
@@ -409,7 +407,6 @@ group("generate_web_components") {
     "bluetooth_page:web_components",
     "crostini_page:web_components",
     "device_page:web_components",
-    "google_assistant_page:web_components",
     "guest_os:web_components",
     "internet_page:web_components",
     "kerberos_page:web_components",
@@ -438,7 +435,6 @@ group("closure_compile_module") {
     "bluetooth_page:closure_compile_module",
     "crostini_page:closure_compile_module",
     "device_page:closure_compile_module",
-    "google_assistant_page:closure_compile_module",
     "guest_os:closure_compile_module",
     "internet_page:closure_compile_module",
     "kerberos_page:closure_compile_module",
@@ -466,6 +462,7 @@ js_type_check("closure_compile_local_module") {
   deps = [
     ":combined_search_handler",
     ":deep_linking_behavior",
+    ":find_shortcut_behavior",
     ":global_scroll_target_behavior",
     ":lazy_load",
     ":main_page_behavior",
@@ -497,6 +494,15 @@ js_library("deep_linking_behavior") {
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_webui_js",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+}
+
+js_library("find_shortcut_behavior") {
+  deps = [
+    "//ash/webui/common/resources:keyboard_shortcut_list_js",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 

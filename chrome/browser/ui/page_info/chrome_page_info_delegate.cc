@@ -39,6 +39,7 @@
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -173,6 +174,11 @@ absl::optional<std::u16string> ChromePageInfoDelegate::GetFpsOwner(
     const GURL& site_url) {
   return PrivacySandboxServiceFactory::GetForProfile(GetProfile())
       ->GetFirstPartySetOwnerForDisplay(site_url);
+}
+
+bool ChromePageInfoDelegate::IsFpsManaged() {
+  return PrivacySandboxServiceFactory::GetForProfile(GetProfile())
+      ->IsFirstPartySetsDataAccessManaged();
 }
 
 bool ChromePageInfoDelegate::CreateInfoBarDelegate() {

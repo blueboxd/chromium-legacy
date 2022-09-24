@@ -62,9 +62,6 @@ if (is_chromeos_ash) {
       "focus_without_ink_js.js",
       "focus_row_behavior.js",
       "focus_row_js.js",
-      "keyboard_shortcut_list_js.js",
-      "store_client.js",
-      "store.js",
     ]
   }
 
@@ -74,9 +71,6 @@ if (is_chromeos_ash) {
       ":focus_row_behavior",
       ":focus_row_js",
       ":focus_without_ink_js",
-      ":keyboard_shortcut_list_js",
-      ":store",
-      ":store_client",
     ]
   }
 
@@ -101,19 +95,6 @@ if (is_chromeos_ash) {
     deps = [
       "../..:assert",
       "../..:cr.m",
-    ]
-  }
-
-  js_library("keyboard_shortcut_list_js") {
-  }
-
-  js_library("store") {
-  }
-
-  js_library("store_client") {
-    deps = [
-      ":store",
-      "../..:assert",
     ]
   }
 }

@@ -144,7 +144,8 @@ crbug.com/1339293 [ Linux ] external/wpt/html/semantics/embedded-content/media-e
 crbug.com/1339293 [ Linux ] external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause.html [ Failure Pass ]
 crbug.com/1339293 [ Linux ] external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html [ Failure Pass ]
 crbug.com/1339293 [ Linux ] external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-source.html [ Failure Pass ]
-crbug.com/1339293 [ Linux ] external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src.html [ Failure Pass ]
+# TODO(crbug.com/1367142): Re-enable this test
+crbug.com/1339293 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src.html [ Skip ]
 crbug.com/1339293 external/wpt/content-security-policy/media-src/media-src-7_1_2.sub.html [ Skip ]
 crbug.com/1339293 [ Linux ] external/wpt/content-security-policy/media-src/media-src-blocked.sub.html [ Failure Pass Timeout ]
 crbug.com/1339293 [ Linux ] fast/frames/empty-frame-src.html [ Failure Pass ]
@@ -1891,6 +1892,13 @@ crbug.com/1068610 external/wpt/css/css-color/oklab-005.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklab-006.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklab-007.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklab-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-002.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-003.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-004.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-005.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-006.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-007.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-002.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-003.html [ Failure ]
@@ -2592,7 +2600,9 @@ crbug.com/630597 external/wpt/css/css-images/image-set/image-set-content-renderi
 
 crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 
-crbug.com/1347068 external/wpt/css/css-images/gradient/gradient-eval-004.html [ Failure ]
+crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-002.html [ Failure ]
+crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-004.html [ Failure ]
+crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-006.html [ Failure ]
 
 crbug.com/808834 [ Linux ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
@@ -3285,6 +3295,8 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
+crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 [ Win11 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/api/redirect/redirect-upload.h2.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
@@ -7125,3 +7137,15 @@ crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-storage-key-t
 # fully launched.
 # The ones defined in VirtualTestSuites are run instead.
 crbug.com/1293679 wpt_internal/pending_beacon/* [ Skip ]
+
+# TODO(crbug.com/1367103): Re-enable this test
+external/wpt/css/css-values/calc-in-media-queries-with-mixed-units.html [ Skip ]
+
+# TODO(crbug.com/1367113): Re-enable this test
+fast/dom/shadow/event-path-load.html [ Skip ]
+
+# TODO(crbug.com/1367113): Re-enable this test
+http/tests/security/cors-check-for-cached-image.html [ Skip ]
+
+# TODO(crbug.com/1367113): Re-enable this test
+paint/images/animated-gif-last-frame-crash.html [ Skip ]

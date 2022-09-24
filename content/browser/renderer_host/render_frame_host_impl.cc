@@ -1612,7 +1612,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     bool renderer_initiated_creation_of_main_frame,
     LifecycleStateImpl lifecycle_state,
     scoped_refptr<BrowsingContextState> browsing_context_state,
-    blink::FrameOwnerElementType frame_owner_element_type)
+    blink::FrameOwnerElementType frame_owner_element_type,
+    FencedFrameStatus fenced_frame_status)
     : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
@@ -1642,12 +1643,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           FrameTreeNode::kFrameTreeNodeInvalidId),
       code_cache_host_receivers_(
           GetProcess()->GetStoragePartition()->GetGeneratedCodeCacheContext()),
-      fenced_frame_status_(
-          frame_tree_node_->IsInFencedFrameTree()
-              ? (frame_tree_node_->IsFencedFrameRoot()
-                     ? FencedFrameStatus::kFencedFrameRoot
-                     : FencedFrameStatus::kIframeNestedWithinFencedFrame)
-              : FencedFrameStatus::kNotNestedInFencedFrame) {
+      fenced_frame_status_(fenced_frame_status) {
   TRACE_EVENT_BEGIN("navigation", "RenderFrameHostImpl",
                     perfetto::Track::FromPointer(this),
                     "render_frame_host_when_created", this);
@@ -12626,6 +12622,11 @@ void RenderFrameHostImpl::PostMessageEvent(
 
   if (message.delegated_capability != blink::mojom::DelegatedCapability::kNone)
     ReceivedDelegatedCapability(message.delegated_capability);
+
+  // This is always called from either another renderer (through RemoteFrame) or
+  // from the embedder itself. As such, we nullify the parent task ID here, to
+  // prevent this information from leaking between renderers.
+  message.parent_task_id = absl::nullopt;
 
   GetAssociatedLocalFrame()->PostMessageEvent(
       source_token, source_origin, target_origin, std::move(message));

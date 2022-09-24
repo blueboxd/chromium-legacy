@@ -68,6 +68,7 @@
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/promos_manager/features.h"
@@ -453,27 +454,13 @@ const FeatureEntry::FeatureVariation kFREDefaultBrowserPromoVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
-    {kTrendingQueriesHideShortcutsParam, "false"},
-    {kTrendingQueriesDisabledFeedParam, "false"},
-    {kTrendingQueriesSignedOutParam, "false"}};
+    {kTrendingQueriesHideShortcutsParam, "false"}};
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsersHideShortcuts[] =
-    {{kTrendingQueriesHideShortcutsParam, "true"},
-     {kTrendingQueriesDisabledFeedParam, "false"},
-     {kTrendingQueriesSignedOutParam, "false"}};
+    {{kTrendingQueriesHideShortcutsParam, "true"}};
 const FeatureEntry::FeatureParam kTrendingQueriesEnableFeedDisabled[] = {
     {kTrendingQueriesHideShortcutsParam, "false"},
     {kTrendingQueriesDisabledFeedParam, "true"},
-    {kTrendingQueriesSignedOutParam, "false"}};
-const FeatureEntry::FeatureParam kTrendingQueriesEnableSignedOut[] = {
-    {kTrendingQueriesHideShortcutsParam, "true"},
-    {kTrendingQueriesDisabledFeedParam, "false"},
-    {kTrendingQueriesSignedOutParam, "true"}};
-const FeatureEntry::FeatureParam
-    kTrendingQueriesEnableNeverShowHideShortcuts[] = {
-        {kTrendingQueriesHideShortcutsParam, "true"},
-        {kTrendingQueriesDisabledFeedParam, "false"},
-        {kTrendingQueriesSignedOutParam, "false"},
-        {kTrendingQueriesNeverShowModuleParam, "true"}};
+};
 
 const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
     {"Enabled All Users", kTrendingQueriesEnableAllUsers,
@@ -483,12 +470,6 @@ const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
      std::size(kTrendingQueriesEnableAllUsersHideShortcuts), nullptr},
     {"Enabled Disabled Feed", kTrendingQueriesEnableFeedDisabled,
      std::size(kTrendingQueriesEnableFeedDisabled), nullptr},
-    {"Enabled Signed Out", kTrendingQueriesEnableSignedOut,
-     std::size(kTrendingQueriesEnableSignedOut), nullptr},
-    {"Enabled Never Show and Hide Shortcuts",
-     kTrendingQueriesEnableNeverShowHideShortcuts,
-     std::size(kTrendingQueriesEnableNeverShowHideShortcuts), nullptr},
-
 };
 
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
@@ -1133,9 +1114,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentSuggestionsUIModuleRefreshName,
      flag_descriptions::kContentSuggestionsUIModuleRefreshDescription,
      flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kContentSuggestionsUIModuleRefresh,
-                                    kModuleRefreshVariations,
-                                    "StartSurface")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kContentSuggestionsUIModuleRefresh,
+         kModuleRefreshVariations,
+         kContentSuggestionsUIModuleRefreshFlagOverrideFieldTrialName)},
     {"3p-intents-in-incognito", flag_descriptions::kIOS3PIntentsInIncognitoName,
      flag_descriptions::kIOS3PIntentsInIncognitoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOS3PIntentsInIncognito)},
@@ -1172,9 +1154,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kAdaptiveSuggestionsCount)},
     {"trending-queries-module", flag_descriptions::kTrendingQueriesModuleName,
      flag_descriptions::kTrendingQueriesModuleDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kTrendingQueriesModule,
-                                    kTrendingQueriesModuleVariations,
-                                    kTrendingQueriesFieldTrialName)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kTrendingQueriesModule,
+         kTrendingQueriesModuleVariations,
+         kTrendingQueriesFlagOverrideFieldTrialName)},
     {"autofill-parse-iban-fields",
      flag_descriptions::kAutofillParseIBANFieldsName,
      flag_descriptions::kAutofillParseIBANFieldsDescription, flags_ui::kOsIos,
@@ -1196,7 +1179,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetching)},
     {"enable-user-policy", flag_descriptions::kEnableUserPolicyName,
      flag_descriptions::kEnableUserPolicyDescription, flags_ui::kOsIos,
-     SINGLE_VALUE_TYPE(policy::kEnableUserPolicy)},
+     FEATURE_VALUE_TYPE(policy::kUserPolicy)},
     {"enable-sync-history-datatype",
      flag_descriptions::kSyncEnableHistoryDataTypeName,
      flag_descriptions::kSyncEnableHistoryDataTypeDescription, flags_ui::kOsIos,
@@ -1503,10 +1486,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([token length] > 0) {
     command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
     [testing_policies setValue:token forKey:token_key];
-  }
-
-  if ([defaults boolForKey:@"EnableUserPolicy"]) {
-    policy::EnableUserPolicy();
   }
 
   // If some policies were set, commit them to the app's registration defaults.

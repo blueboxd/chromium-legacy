@@ -11,6 +11,8 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
+crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/content-visibility/content-visibility-fieldset-size.html [ Failure ]
 crbug.com/626703 virtual/offsetparent-old-behavior/external/wpt/css/css-contain/content-visibility/content-visibility-fieldset-size.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-border-sizing.html [ Failure ]
@@ -1918,6 +1920,10 @@ crbug.com/591099 external/wpt/css/css-overflow/scrollable-overflow-input-001.htm
 crbug.com/591099 external/wpt/editing/run/delete.html?7001-last [ Failure ]
 crbug.com/591099 external/wpt/mimesniff/media/media-sniff.window.html [ Failure ]
 crbug.com/591099 external/wpt/editing/other/insert-paragraph-in-void-element.tentative.html [ Failure ]
+
+# The baseline path (with an `-expected.txt` suffix) is too long on Windows.
+# Skip for now.
+crbug.com/591099 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-redirect-with-same-origin-allow-popups.https.html [ Failure ]
 
 # inline-end overflow
 crbug.com/1245722 overflow/overflow-basic-002.html [ Failure ]

@@ -5227,23 +5227,29 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
   CheckForEmptyStyleChange(change.sibling_before_change,
                            change.sibling_after_change);
 
-  if (!change.ByParser() && change.IsChildElementChange()) {
-    Element* changed_element = To<Element>(change.sibling_changed);
-    bool removed = change.type == ChildrenChangeType::kElementRemoved;
-    CheckForSiblingStyleChanges(
-        removed ? kSiblingElementRemoved : kSiblingElementInserted,
-        changed_element, change.sibling_before_change,
-        change.sibling_after_change);
-    if (removed) {
+  if (!change.ByParser()) {
+    if (change.IsChildElementChange()) {
+      Element* changed_element = To<Element>(change.sibling_changed);
+      bool removed = change.type == ChildrenChangeType::kElementRemoved;
+      CheckForSiblingStyleChanges(
+          removed ? kSiblingElementRemoved : kSiblingElementInserted,
+          changed_element, change.sibling_before_change,
+          change.sibling_after_change);
+      if (removed) {
+        GetDocument()
+            .GetStyleEngine()
+            .ScheduleInvalidationsForHasPseudoAffectedByRemoval(
+                this, change.sibling_before_change, *changed_element);
+      } else {
+        GetDocument()
+            .GetStyleEngine()
+            .ScheduleInvalidationsForHasPseudoAffectedByInsertion(
+                this, change.sibling_before_change, *changed_element);
+      }
+    } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
       GetDocument()
           .GetStyleEngine()
-          .ScheduleInvalidationsForHasPseudoAffectedByRemoval(
-              this, change.sibling_before_change, *changed_element);
-    } else {
-      GetDocument()
-          .GetStyleEngine()
-          .ScheduleInvalidationsForHasPseudoAffectedByInsertion(
-              this, change.sibling_before_change, *changed_element);
+          .ScheduleInvalidationsForHasPseudoWhenAllChildrenRemoved(*this);
     }
   }
 
@@ -8724,11 +8730,9 @@ void Element::SetAttributeHinted(AtomicString local_name,
         "'" + local_name + "' is not a valid attribute name.");
     return;
   }
-
   SynchronizeAttributeHinted(local_name, hint);
-  wtf_size_t index;
-  QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) =
+
+  const auto [index, q_name] =
       LookupAttributeQNameHinted(std::move(local_name), hint);
 
   AtomicString trusted_value(TrustedTypesCheckFor(
@@ -8751,11 +8755,9 @@ void Element::SetAttributeHinted(AtomicString local_name,
         "'" + local_name + "' is not a valid attribute name.");
     return;
   }
-
   SynchronizeAttributeHinted(local_name, hint);
-  wtf_size_t index;
-  QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) =
+
+  const auto [index, q_name] =
       LookupAttributeQNameHinted(std::move(local_name), hint);
   AtomicString value(TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(q_name), trusted_string,

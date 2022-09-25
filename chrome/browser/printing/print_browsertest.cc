@@ -211,37 +211,6 @@ std::unique_ptr<TestPrintingContext> MakeDefaultTestPrintingContext(
   return context;
 }
 
-void AddTestBackendPrinter(TestPrintBackend* test_backend,
-                           const std::string& printer_name) {
-  const PrinterBasicInfo kPrinterInfo(
-      printer_name,
-      /*display_name=*/"test printer",
-      /*printer_description=*/"A printer for testing.",
-      /*printer_status=*/0,
-      /*is_default=*/true, kTestDummyPrintInfoOptions);
-
-  auto default_caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
-  default_caps->copies_max = kTestPrinterCapabilitiesMaxCopies;
-  default_caps->dpis = kTestPrinterCapabilitiesDefaultDpis;
-  default_caps->default_dpi = kTestPrinterCapabilitiesDpi;
-  test_backend->AddValidPrinter(
-      printer_name, std::move(default_caps),
-      std::make_unique<PrinterBasicInfo>(kPrinterInfo));
-}
-
-mojom::PrintParamsPtr GetPrintParams() {
-  auto params = mojom::PrintParams::New();
-  params->page_size = gfx::Size(612, 792);
-  params->content_size = gfx::Size(540, 720);
-  params->printable_area = gfx::Rect(612, 792);
-  params->dpi = gfx::Size(72, 72);
-  params->document_cookie = kDefaultDocumentCookie;
-  params->pages_per_sheet = 4;
-  params->printed_doc_type = IsOopifEnabled() ? mojom::SkiaDocumentType::kMSKP
-                                              : mojom::SkiaDocumentType::kPDF;
-  return params;
-}
-
 void OnDidUpdatePrintSettings(
     std::unique_ptr<PrintSettings>& snooped_settings,
     scoped_refptr<PrintQueriesQueue> queue,
@@ -261,8 +230,6 @@ void OnDidUpdatePrintSettings(
   }
   bool canceled = printer_query->last_status() == mojom::ResultCode::kCanceled;
 
-  params->params = GetPrintParams();
-
   std::move(callback).Run(std::move(params), canceled);
 
   if (printer_query->cookie() && printer_query->settings().dpi()) {
@@ -272,7 +239,7 @@ void OnDidUpdatePrintSettings(
   }
 }
 
-class PrintBackendPrintingContextFactoryForTest
+class BrowserPrintingContextFactoryForTest
     : public PrintingContextFactoryForTest {
  public:
   std::unique_ptr<PrintingContext> CreatePrintingContext(
@@ -300,7 +267,7 @@ class PrintBackendPrintingContextFactoryForTest
 #endif
 
     context->SetNewDocumentCalledClosure(base::BindRepeating(
-        &PrintBackendPrintingContextFactoryForTest::NewDocumentCalled,
+        &BrowserPrintingContextFactoryForTest::NewDocumentCalled,
         base::Unretained(this)));
 
     return std::move(context);
@@ -956,6 +923,11 @@ class PrintBrowserTest : public InProcessBrowserTest {
   ~PrintBrowserTest() override = default;
 
   void SetUp() override {
+    test_print_backend_ = base::MakeRefCounted<TestPrintBackend>();
+    PrintBackend::SetPrintBackendForTesting(test_print_backend_.get());
+    PrintingContext::SetPrintingContextFactoryForTest(
+        &test_printing_context_factory_);
+
     num_expected_messages_ = 1;  // By default, only wait on one message.
     num_received_messages_ = 0;
     InProcessBrowserTest::SetUp();
@@ -965,6 +937,34 @@ class PrintBrowserTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void TearDown() override {
+    InProcessBrowserTest::TearDown();
+    PrintingContext::SetPrintingContextFactoryForTest(/*factory=*/nullptr);
+    PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
+  }
+
+  void AddPrinter(const std::string& printer_name) {
+    PrinterBasicInfo printer_info(
+        printer_name,
+        /*display_name=*/"test printer",
+        /*printer_description=*/"A printer for testing.",
+        /*printer_status=*/0,
+        /*is_default=*/true, kTestDummyPrintInfoOptions);
+
+    auto default_caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
+    default_caps->copies_max = kTestPrinterCapabilitiesMaxCopies;
+    default_caps->dpis = kTestPrinterCapabilitiesDefaultDpis;
+    default_caps->default_dpi = kTestPrinterCapabilitiesDpi;
+    test_print_backend_->AddValidPrinter(
+        printer_name, std::move(default_caps),
+        std::make_unique<PrinterBasicInfo>(printer_info));
+  }
+
+  void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
+    test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
+        printer_name);
   }
 
   void PrintAndWaitUntilPreviewIsReady() {
@@ -1047,6 +1047,12 @@ class PrintBrowserTest : public InProcessBrowserTest {
   uint32_t rendered_page_count() const { return rendered_page_count_; }
 
  protected:
+  TestPrintBackend* test_print_backend() { return test_print_backend_.get(); }
+
+  BrowserPrintingContextFactoryForTest* test_printing_context_factory() {
+    return &test_printing_context_factory_;
+  }
+
   void set_rendered_page_count(uint32_t page_count) {
     rendered_page_count_ = page_count;
   }
@@ -1073,6 +1079,8 @@ class PrintBrowserTest : public InProcessBrowserTest {
   mojo::AssociatedRemote<mojom::PrintRenderFrame> remote_;
   std::map<content::RenderFrameHost*, std::unique_ptr<TestPrintRenderFrame>>
       frame_content_;
+  scoped_refptr<TestPrintBackend> test_print_backend_;
+  BrowserPrintingContextFactoryForTest test_printing_context_factory_;
 };
 
 class SitePerProcessPrintBrowserTest : public PrintBrowserTest {
@@ -1966,9 +1974,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
   TestPrintViewManager print_view_manager(web_contents);
   PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
 
-  // TODO(crbug.com/1283182)  Match the hard-coded `pages_per_sheet` in
-  // `GetPrintParams()`.  The number of pages per sheet should really be
-  // specified locally here in this test.
+  // Override print parameters to do N-up, specify 4 pages per sheet.
   const PrintParams kParams{.pages_per_sheet = 4};
   PrintAndWaitUntilPreviewIsReady(kParams);
 
@@ -1991,9 +1997,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
   TestPrintViewManager print_view_manager(web_contents);
   PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
 
-  // TODO(crbug.com/1283182)  Match the hard-coded `pages_per_sheet` in
-  // `GetPrintParams()`.  The number of pages per sheet should really be
-  // specified locally here in this test.
+  // Override print parameters to do N-up, specify 4 pages per sheet.
   const PrintParams kParams{.pages_per_sheet = 4};
   PrintAndWaitUntilPreviewIsReady(kParams);
 
@@ -2624,10 +2628,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
         &test_create_print_job_worker_callback_);
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
-    test_backend_ = base::MakeRefCounted<TestPrintBackend>();
-    PrintBackend::SetPrintBackendForTesting(test_backend_.get());
-    PrintingContext::SetPrintingContextFactoryForTest(
-        &test_printing_context_factory_);
     PrintBrowserTest::SetUp();
   }
 
@@ -2635,7 +2635,7 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     if (UseService()) {
       print_backend_service_ = PrintBackendServiceTestImpl::LaunchForTesting(
-          test_remote_, test_backend_, /*sandboxed=*/true);
+          test_remote_, test_print_backend(), /*sandboxed=*/true);
     }
 #endif
     PrintBrowserTest::SetUpOnMainThread();
@@ -2643,8 +2643,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
 
   void TearDown() override {
     PrintBrowserTest::TearDown();
-    PrintingContext::SetPrintingContextFactoryForTest(/*factory=*/nullptr);
-    PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     PrinterQuery::SetCreatePrintJobWorkerCallbackForTest(/*callback=*/nullptr);
     if (UseService()) {
@@ -2655,15 +2653,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
     }
     PrintBackendServiceManager::ResetForTesting();
 #endif
-  }
-
-  void AddPrinter(const std::string& printer_name) {
-    AddTestBackendPrinter(test_backend_.get(), printer_name);
-  }
-
-  void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
-    test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
-        printer_name);
   }
 
   void SetUpPrintViewManager(content::WebContents* web_contents) {
@@ -2706,34 +2695,34 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
   }
 
   void PrimeForFailInUseDefaultSettings() {
-    test_printing_context_factory_.SetFailErrorOnUseDefaultSettings();
+    test_printing_context_factory()->SetFailErrorOnUseDefaultSettings();
   }
 
 #if BUILDFLAG(IS_WIN)
   void PrimeForCancelInAskUserForSettings() {
-    test_printing_context_factory_.SetCancelErrorOnAskUserForSettings();
+    test_printing_context_factory()->SetCancelErrorOnAskUserForSettings();
   }
 #endif
 
   void PrimeForAccessDeniedErrorsInNewDocument() {
-    test_printing_context_factory_.SetAccessDeniedErrorOnNewDocument(
+    test_printing_context_factory()->SetAccessDeniedErrorOnNewDocument(
         /*cause_errors=*/true);
   }
 
 #if BUILDFLAG(IS_WIN)
   void PrimeForAccessDeniedErrorsInRenderPrintedPage() {
-    test_printing_context_factory_.SetAccessDeniedErrorOnRenderPage(
+    test_printing_context_factory()->SetAccessDeniedErrorOnRenderPage(
         /*cause_errors=*/true);
   }
 #endif
 
   void PrimeForAccessDeniedErrorsInRenderPrintedDocument() {
-    test_printing_context_factory_.SetAccessDeniedErrorOnRenderDocument(
+    test_printing_context_factory()->SetAccessDeniedErrorOnRenderDocument(
         /*cause_errors=*/true);
   }
 
   void PrimeForAccessDeniedErrorsInDocumentDone() {
-    test_printing_context_factory_.SetAccessDeniedErrorOnDocumentDone(
+    test_printing_context_factory()->SetAccessDeniedErrorOnDocumentDone(
         /*cause_errors=*/true);
   }
 
@@ -2872,22 +2861,19 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
     if (!reset_errors_after_check_)
       return;
 
-    test_printing_context_factory_.SetAccessDeniedErrorOnNewDocument(
+    test_printing_context_factory()->SetAccessDeniedErrorOnNewDocument(
         /*cause_errors=*/false);
 #if BUILDFLAG(IS_WIN)
-    test_printing_context_factory_.SetAccessDeniedErrorOnRenderPage(
+    test_printing_context_factory()->SetAccessDeniedErrorOnRenderPage(
         /*cause_errors=*/false);
 #endif
-    test_printing_context_factory_.SetAccessDeniedErrorOnRenderDocument(
+    test_printing_context_factory()->SetAccessDeniedErrorOnRenderDocument(
         /*cause_errors=*/false);
-    test_printing_context_factory_.SetAccessDeniedErrorOnDocumentDone(
+    test_printing_context_factory()->SetAccessDeniedErrorOnDocumentDone(
         /*cause_errors=*/false);
   }
 
   base::test::ScopedFeatureList feature_list_;
-  scoped_refptr<TestPrintBackend> test_backend_;
-  TestPrintingContextDelegate test_printing_context_delegate_;
-  PrintBackendPrintingContextFactoryForTest test_printing_context_factory_;
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   TestPrintCallbacks test_print_callbacks_;
   TestPrintOopCallbacks test_print_oop_callbacks_;
@@ -2999,17 +2985,9 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   TestPrintViewManager print_view_manager(web_contents);
   PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
 
-  // TODO(crbug.com/1283182)  Match the hard-coded `pages_per_sheet` from
-  // `GetPrintParams()` which is called because of use of
-  // `TestPrintViewManager`.  This should go away once `GetPrintParams()` is
-  // removed, as this test is not interested in N-up.
-  const PrintParams kParams{.pages_per_sheet = 4};
-  PrintAndWaitUntilPreviewIsReady(kParams);
+  PrintAndWaitUntilPreviewIsReady();
 
-  // TODO(crbug.com/1283182)  This should really generate 3 pages, but only
-  // generates 1 because of the hard-coded `pages_per_sheet` in
-  // `GetPrintParams()`.
-  EXPECT_EQ(rendered_page_count(), 1u);
+  EXPECT_EQ(rendered_page_count(), 3u);
 
   ASSERT_TRUE(print_view_manager.snooped_settings());
   EXPECT_EQ(print_view_manager.snooped_settings()->copies(),
@@ -3067,10 +3045,8 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_TRUE(stop_invoked());
 }
 
-// TODO(crbug.com/1326580):  Enable once multipage printing doesn't get stuck
-// because of insufficient rendered preview pages due to forced N-up.
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
-                       DISABLED_StartPrintingMultipage) {
+                       StartPrintingMultipage) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
 
@@ -3512,19 +3488,9 @@ class MAYBE_ContentAnalysisPrintBrowserTest
   }
 
   void SetUp() override {
-    test_backend_ = base::MakeRefCounted<TestPrintBackend>();
-    PrintBackend::SetPrintBackendForTesting(test_backend_.get());
-    test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
+    test_printing_context_factory()->SetPrinterNameForSubsequentContexts(
         "printer_name");
-    PrintingContext::SetPrintingContextFactoryForTest(
-        &test_printing_context_factory_);
     PrintBrowserTest::SetUp();
-  }
-
-  void TearDown() override {
-    PrintBrowserTest::TearDown();
-    PrintingContext::SetPrintingContextFactoryForTest(/*factory=*/nullptr);
-    PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
   }
 
   void SetUpOnMainThread() override {
@@ -3560,18 +3526,12 @@ class MAYBE_ContentAnalysisPrintBrowserTest
     return response;
   }
 
-  void AddPrinter(const std::string& printer_name) {
-    AddTestBackendPrinter(test_backend_.get(), printer_name);
-  }
-
   int new_document_called_count() {
-    return test_printing_context_factory_.new_document_called_count();
+    return test_printing_context_factory()->new_document_called_count();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  scoped_refptr<TestPrintBackend> test_backend_;
-  PrintBackendPrintingContextFactoryForTest test_printing_context_factory_;
 };
 
 // TODO(crbug.com/1256506): Re-enable test on Windows.

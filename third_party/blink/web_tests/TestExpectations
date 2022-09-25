@@ -1484,7 +1484,6 @@ crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-15.html [ Fa
 crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-16.html [ Failure ]
 crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-17.html [ Failure ]
 crbug.com/716567 external/wpt/css/css-fonts/font-variant-alternates-18.html [ Failure ]
-crbug.com/1240186 [ Mac ] external/wpt/css/css-fonts/font-variant-ligatures-11.optional.html [ Failure ]
 crbug.com/1212668 external/wpt/css/css-fonts/font-variant-position.html [ Failure ]
 crbug.com/1240236 [ Mac ] external/wpt/css/css-fonts/system-ui-ar.html [ Failure ]
 crbug.com/1240236 [ Mac ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
@@ -3295,6 +3294,7 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/svg/struct/reftests/currentScale-change-repaint.html [ Failure ]
 crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
 crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 [ Win11 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]

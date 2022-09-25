@@ -81,6 +81,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public PdfAccessibilityActionHandler,
                                public PreviewModeClient::Client {
  public:
+  // Do not save files with over 100 MB. This cap should be kept in sync with
+  // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.ts.
+  static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
+
   // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.ts.
   enum class SaveRequestType {
     kAnnotation = 0,
@@ -383,7 +387,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void OnPrintPreviewLoaded() override;
   void OnDocumentLoadComplete() override;
   void SendMessage(base::Value::Dict message) override;
-  void SetFormTextFieldInFocus(bool in_focus) override;
   void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,

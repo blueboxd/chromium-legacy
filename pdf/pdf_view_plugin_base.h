@@ -43,10 +43,6 @@ struct AccessibilityViewportInfo;
 class PdfViewPluginBase : public PDFEngine::Client,
                           public PaintManager::Client {
  public:
-  // Do not save files with over 100 MB. This cap should be kept in sync with
-  // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
-  static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
-
   enum class AccessibilityState {
     kOff = 0,  // Off.
     kPending,  // Enabled but waiting for doc to load.
@@ -108,9 +104,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sends the loading progress, where `percentage` represents the progress, or
   // -1 for loading error.
   void SendLoadingProgress(double percentage);
-
-  // Sets the text input type for this plugin based on `in_focus`.
-  virtual void SetFormTextFieldInFocus(bool in_focus) = 0;
 
   // Sets the accessibility information about the PDF document in the renderer.
   virtual void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) = 0;
@@ -193,10 +186,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   void set_accessibility_state(AccessibilityState state) {
     accessibility_state_ = state;
-  }
-
-  static constexpr bool IsSaveDataSizeValid(size_t size) {
-    return size > 0 && size <= kMaximumSavedFileSize;
   }
 
   // Starts loading accessibility information.

@@ -142,10 +142,8 @@ void HoldingSpaceKeyedService::AddPinnedFiles(
   std::vector<std::unique_ptr<HoldingSpaceItem>> items;
   std::vector<const HoldingSpaceItem*> items_to_record;
   for (const storage::FileSystemURL& file_system_url : file_system_urls) {
-    if (holding_space_model_.ContainsItem(HoldingSpaceItem::Type::kPinnedFile,
-                                          file_system_url.path())) {
+    if (ContainsPinnedFile(file_system_url))
       continue;
-    }
 
     items.push_back(HoldingSpaceItem::CreateFileBackedItem(
         HoldingSpaceItem::Type::kPinnedFile, file_system_url.path(),
@@ -389,6 +387,13 @@ void HoldingSpaceKeyedService::OnProfileAdded(Profile* profile) {
 }
 
 void HoldingSpaceKeyedService::OnProfileReady() {
+  // Record user preferences at start up.
+  PrefService* const prefs = profile_->GetPrefs();
+  holding_space_metrics::RecordUserPreferences({
+      .previews_enabled = holding_space_prefs::IsPreviewsEnabled(prefs),
+      .suggestions_expanded = holding_space_prefs::IsSuggestionsExpanded(prefs),
+  });
+
   // Observe suspend status - the delegates will be shutdown during suspend.
   if (chromeos::PowerManagerClient::Get())
     chromeos::PowerManagerClient::Get()->AddObserver(this);

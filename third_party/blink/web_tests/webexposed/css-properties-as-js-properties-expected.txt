@@ -273,12 +273,10 @@ maxBlockSize
 maxHeight
 maxInlineSize
 maxWidth
-maxZoom
 minBlockSize
 minHeight
 minInlineSize
 minWidth
-minZoom
 mixBlendMode
 negative
 objectFit
@@ -292,7 +290,6 @@ offsetPosition
 offsetRotate
 opacity
 order
-orientation
 orphans
 outline
 outlineColor
@@ -454,7 +451,6 @@ translate
 unicodeBidi
 unicodeRange
 userSelect
-userZoom
 vectorEffect
 verticalAlign
 viewTimeline

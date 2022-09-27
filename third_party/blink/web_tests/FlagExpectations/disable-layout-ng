@@ -11,6 +11,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-flexbox/flexbox-definite-cross-size-constrained-percentage.html [ Failure ]
 crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
 crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/content-visibility/content-visibility-fieldset-size.html [ Failure ]
@@ -879,6 +880,7 @@ crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002
 crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-004.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
+crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-042.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/calc-margins-block.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/calc-margins-fieldset-content.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/calc-margins-fieldset-legend.html [ Failure ]

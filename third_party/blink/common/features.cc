@@ -1440,6 +1440,9 @@ const base::FeatureParam<base::TimeDelta>
 const base::FeatureParam<std::string> kDelayAsyncScriptAllowList{
     &kDelayAsyncScriptExecution, "allow_list", ""};
 
+const base::FeatureParam<bool> kDelayAsyncScriptExecutionMainFrameOnlyParam{
+    &kDelayAsyncScriptExecution, "main_frame_only", false};
+
 BASE_FEATURE(kLowPriorityAsyncScriptExecution,
              "LowPriorityAsyncScriptExecution",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1458,6 +1461,10 @@ const base::FeatureParam<base::TimeDelta>
 const base::FeatureParam<bool>
     kLowPriorityAsyncScriptExecutionCrossSiteOnlyParam{
         &kLowPriorityAsyncScriptExecution, "cross_site_only", false};
+
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionMainFrameOnlyParam{
+        &kLowPriorityAsyncScriptExecution, "main_frame_only", false};
 
 BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
              "DOMContentLoadedWaitForAsyncScript",
@@ -1495,6 +1502,10 @@ BASE_FEATURE(kSubstringSetTreeForAttributeBuckets,
 
 BASE_FEATURE(kCSSParserSelectorArena,
              "CSSParserSelectorArena",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kInvalidationSetClassBloomFilter,
+             "InvalidationSetClassBloomFilter",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPendingBeaconAPI,
@@ -1608,7 +1619,7 @@ const base::FeatureParam<bool> kProcessHtmlDataImmediatelySubsequentChunks{
 
 BASE_FEATURE(kFastPathPaintPropertyUpdates,
              "FastPathPaintPropertyUpdates",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

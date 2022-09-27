@@ -1083,12 +1083,6 @@ static_library("browser") {
     "password_manager/password_store_factory.h",
     "password_manager/password_store_utils.cc",
     "password_manager/password_store_utils.h",
-    "performance_hints/performance_hints_features.cc",
-    "performance_hints/performance_hints_features.h",
-    "performance_hints/performance_hints_observer.cc",
-    "performance_hints/performance_hints_observer.h",
-    "performance_hints/rewrite_handler.cc",
-    "performance_hints/rewrite_handler.h",
     "performance_manager/browser_child_process_watcher.cc",
     "performance_manager/browser_child_process_watcher.h",
     "performance_manager/chrome_browser_main_extra_parts_performance_manager.cc",
@@ -2106,6 +2100,7 @@ static_library("browser") {
     "//components/cookie_config",
     "//components/country_codes",
     "//components/crash/core/browser",
+    "//components/creator",
     "//components/crx_file",
     "//components/custom_handlers",
     "//components/device_event_log",
@@ -2269,6 +2264,7 @@ static_library("browser") {
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/safe_browsing/core/browser:verdict_cache_manager",
     "//components/safe_browsing/core/browser/db:database_manager",
+    "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
     "//components/safe_browsing/core/browser/realtime:policy_engine",
     "//components/safe_browsing/core/browser/realtime:url_lookup_service",
     "//components/safe_browsing/core/browser/sync",
@@ -4474,7 +4470,6 @@ static_library("browser") {
       "//chrome/app/vector_icons",
       "//chrome/browser/ash/system_web_apps/types:types",
       "//chrome/browser/cart:mojo_bindings",
-      "//chrome/browser/commerce/price_tracking:shopping_list",
       "//chrome/browser/enterprise/connectors/analysis:features",
       "//chrome/browser/enterprise/connectors/device_trust:prefs",
       "//chrome/browser/enterprise/signals:utils",
@@ -7992,7 +7987,6 @@ grit("resources") {
 
   if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
     deps += [
-      "//chrome/browser/resources/gaia_auth_host:modulize",
       "//chrome/browser/resources/inline_login:components",
       "//services/resource_coordinator/public/mojom:mojom_js",
     ]

@@ -28,7 +28,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
+          'gtest_tests': 'chromeos_device_no_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -57,7 +57,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
+          'gtest_tests': 'chromeos_device_no_gtests',
         },
         'mixins': [
           'chromeos-betty',
@@ -98,7 +98,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
+          'gtest_tests': 'chromeos_device_gtests_with_lacros',
         },
         'swarming': {
           'dimension_sets': [
@@ -174,7 +174,7 @@
           'chromeos-reven',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
+          'gtest_tests': 'chromeos_device_no_gtests',
         },
       },
       'chromeos-trogdor64-chrome-skylab': {
@@ -1112,58 +1112,6 @@
           'scripts': 'chromium_android_scripts',
         }
       },
-      'android-weblayer-10-x86-rel-tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          '10-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_10_gtests',
-        }
-      },
-      'android-weblayer-marshmallow-x86-rel-tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'marshmallow-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_marshmallow_gtests',
-        }
-      },
-      'android-weblayer-oreo-x86-rel-tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'oreo-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
-        }
-      },
-      'android-weblayer-pie-x86-rel-tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
-        }
-      },
       'android-webview-10-x86-rel-tests': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1301,47 +1249,6 @@
           'gtest_tests': 'android_pie_rel_emulator_gtests',
           'scripts': 'chromium_android_scripts',
         }
-      },
-      'android-weblayer-11-x86-rel-tests': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          '11-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_10_gtests',
-        }
-      },
-      'android-weblayer-pie-x86-wpt-fyi-rel': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie-x86-emulator',
-          'emulator-8-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
-      },
-      'android-weblayer-pie-x86-wpt-smoketest': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie-x86-emulator',
-          'emulator-8-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
       },
       'android-webview-12-x64-dbg-tests': {
         'mixins': [
@@ -4601,6 +4508,25 @@
           'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'os_type': 'chromeos',
+        'skip_merge_script': True,
+        'use_swarming': False,
+        'mixins': [
+          'chromeos-kevin-skylab',
+          'limited_capacity_bot',
+        ],
+        'test_suites': {
+          # There should be the same gtests here as on the normal kevin bot,
+          # but mixing test types on a single bot is not supported in Skylab
+          # yet.
+          'skylab_gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
+        },
+      },
       'GPU FYI Android arm Builder': {},
       'GPU FYI Android arm64 Builder': {},
       'GPU FYI Linux Builder' : {},
@@ -5967,7 +5893,6 @@
           'dimension_sets': [
             {
               'cpu': 'arm-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-11',
             }
           ]
@@ -5981,7 +5906,6 @@
           'dimension_sets': [
             {
               'cpu': 'arm-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-11',
             }
           ]
@@ -6054,7 +5978,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.13',
             }
           ]
@@ -6068,7 +5991,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.13',
             }
           ]
@@ -6082,7 +6004,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.14',
             }
           ]
@@ -6096,7 +6017,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.14',
             }
           ]
@@ -6110,7 +6030,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.15',
             }
           ]
@@ -6124,7 +6043,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-10.15',
             }
           ]
@@ -6138,7 +6056,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-11',
             }
           ]
@@ -6152,7 +6069,6 @@
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'pool': 'chromium.updater.mac',
               'os': 'Mac-11',
             }
           ]

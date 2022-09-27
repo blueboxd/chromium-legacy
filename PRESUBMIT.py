@@ -688,10 +688,12 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
          'v8_wasm_response_extensions.cc',
        '^gin/array_buffer\.(cc|h)',
        '^chrome/services/sharing/nearby/',
+       '^base/profiler/libunwindstack_unwinder_android\.(cc|h)',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
        '^chromeos/ash/services/libassistant/grpc/',
        '^chromecast/cast_core/grpc',
        '^chromecast/cast_core/runtime/browser',
+       '^ios/chrome/test/earl_grey/chrome_egtest_plugin_client\.(mm|h)',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
        '^base/fuchsia/filtered_service_directory\.(cc|h)',
        '^base/fuchsia/service_directory_test_base\.h',

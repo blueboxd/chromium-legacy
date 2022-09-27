@@ -50,6 +50,10 @@
           "group": "tryserver.chromium.mac"
         },
         {
+          "builder": "ios-simulator-orchestrator",
+          "group": "tryserver.chromium.mac"
+        },
+        {
           "builder": "ios-simulator-rts",
           "group": "tryserver.chromium.mac"
         }

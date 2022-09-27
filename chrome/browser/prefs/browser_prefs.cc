@@ -249,7 +249,6 @@
 #include "components/query_tiles/tile_service_prefs.h"
 #else  // BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/cart/cart_service.h"
-#include "chrome/browser/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/device_api/device_service_impl.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/hid/hid_policy_allowed_devices.h"
@@ -266,6 +265,7 @@
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -1956,16 +1956,30 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 09/2022.
 #if BUILDFLAG(IS_ANDROID)
-  if (absl::optional<bool> shared_pref =
-          android::shared_preferences::GetAndClearBoolean(
-              autofill_assistant::prefs::
-                  kDeprecatedAutofillAssistantTriggerScriptsIsFirstTimeUser);
-      shared_pref) {
-    profile_prefs->SetBoolean(
-        autofill_assistant::prefs::
-            kAutofillAssistantTriggerScriptsIsFirstTimeUser,
-        shared_pref.value());
-  }
+  auto migrate_shared_pref = [profile_prefs](const std::string& source,
+                                             const std::string& target) {
+    if (absl::optional<bool> shared_pref =
+            android::shared_preferences::GetAndClearBoolean(source);
+        shared_pref) {
+      profile_prefs->SetBoolean(target, shared_pref.value());
+    }
+  };
+
+  migrate_shared_pref(
+      autofill_assistant::prefs::kDeprecatedAutofillAssistantConsent,
+      autofill_assistant::prefs::kAutofillAssistantConsent);
+  migrate_shared_pref(
+      autofill_assistant::prefs::kDeprecatedAutofillAssistantEnabled,
+      autofill_assistant::prefs::kAutofillAssistantEnabled);
+  migrate_shared_pref(
+      autofill_assistant::prefs::
+          kDeprecatedAutofillAssistantTriggerScriptsEnabled,
+      autofill_assistant::prefs::kAutofillAssistantTriggerScriptsEnabled);
+  migrate_shared_pref(
+      autofill_assistant::prefs::
+          kDeprecatedAutofillAssistantTriggerScriptsIsFirstTimeUser,
+      autofill_assistant::prefs::
+          kAutofillAssistantTriggerScriptsIsFirstTimeUser);
 #endif
 
   // Added 09/2022.

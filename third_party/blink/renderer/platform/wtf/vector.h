@@ -1109,6 +1109,20 @@ class Vector
   template <wtf_size_t otherCapacity>
   Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
 
+  // Creates a vector with items copied from a collection. |Collection| must
+  // have size(), begin() and end() methods.
+  template <typename Collection,
+            // This prevents this constructor from being chosen for e.g.
+            // Vector(3).
+            typename =
+                typename std::enable_if<std::is_class<Collection>::value>::type>
+  explicit Vector(const Collection& collection) : Vector() {
+    assign(collection);
+  }
+  // Replaces the vector with items copied from a collection.
+  template <typename Collection>
+  void assign(const Collection&);
+
   // Moving.
   Vector(Vector&&);
   Vector& operator=(Vector&&);
@@ -1208,9 +1222,11 @@ class Vector
   // elements in the vector are not affected. This function does not shrink
   // the size of the backing buffer, even if |newCapacity| is small. This
   // function may cause a reallocation.
-  void ReserveCapacity(wtf_size_t new_capacity);
+  void reserve(wtf_size_t new_capacity);
+  // TODO(wangxianzhu): Remove this after converting all callers.
+  void ReserveCapacity(wtf_size_t new_capacity) { reserve(new_capacity); }
 
-  // This is similar to reserveCapacity() but must be called immediately after
+  // This is similar to reserve() but must be called immediately after
   // the vector is default-constructed.
   void ReserveInitialCapacity(wtf_size_t initial_capacity);
 
@@ -1220,7 +1236,9 @@ class Vector
 
   // Shrink the backing buffer so it can contain exactly |size()| elements.
   // This function may cause a reallocation.
-  void ShrinkToFit() { ShrinkCapacity(size()); }
+  void shrink_to_fit() { ShrinkCapacity(size()); }
+  // TODO(wangxianzhu): Remove this after converting all callers.
+  void ShrinkToFit() { shrink_to_fit(); }
 
   // Shrink the backing buffer if at least 50% of the vector's capacity is
   // unused. If it shrinks, the new buffer contains roughly 25% of unused
@@ -1524,7 +1542,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
     Shrink(other.size());
   } else if (other.size() > capacity()) {
     clear();
-    ReserveCapacity(other.size());
+    reserve(other.size());
     DCHECK(begin());
   }
 
@@ -1557,7 +1575,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
     Shrink(other.size());
   } else if (other.size() > capacity()) {
     clear();
-    ReserveCapacity(other.size());
+    reserve(other.size());
     DCHECK(begin());
   }
 
@@ -1571,6 +1589,25 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
   size_ = other.size();
 
   return *this;
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename Collection>
+void Vector<T, inlineCapacity, Allocator>::assign(const Collection& other) {
+  static_assert(
+      !std::is_same<Vector<T, inlineCapacity, Allocator>, Collection>::value,
+      "This method is for copying from a collection of a different type.");
+
+  {
+    // Disallow GC across resize allocation, see crbug.com/568173.
+    GCForbiddenScope scope;
+    resize(base::checked_cast<wtf_size_t>(other.size()));
+  }
+
+  auto src = other.begin();
+  auto src_end = other.end();
+  for (wtf_size_t i = 0; src != src_end; ++src, ++i)
+    at(i) = *src;
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
@@ -1614,7 +1651,7 @@ operator=(std::initializer_list<T> elements) {
     Shrink(input_size);
   } else if (input_size > capacity()) {
     clear();
-    ReserveCapacity(input_size);
+    reserve(input_size);
     DCHECK(begin());
   }
 
@@ -1670,7 +1707,7 @@ Vector<T, inlineCapacity, Allocator>::Fill(const T& val, wtf_size_t new_size) {
     Shrink(new_size);
   } else if (new_size > capacity()) {
     clear();
-    ReserveCapacity(new_size);
+    reserve(new_size);
     DCHECK(begin());
   }
 
@@ -1706,8 +1743,8 @@ void Vector<T, inlineCapacity, Allocator>::ExpandCapacity(
     // (2^31 - 1) allocations.
     expanded_capacity += (expanded_capacity / 4) + 1;
   }
-  ReserveCapacity(std::max(new_min_capacity,
-                           std::max(kInitialVectorSize, expanded_capacity)));
+  reserve(std::max(new_min_capacity,
+                   std::max(kInitialVectorSize, expanded_capacity)));
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
@@ -1772,8 +1809,7 @@ void Vector<T, inlineCapacity, Allocator>::Grow(wtf_size_t size) {
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
-    wtf_size_t new_capacity) {
+void Vector<T, inlineCapacity, Allocator>::reserve(wtf_size_t new_capacity) {
   if (UNLIKELY(new_capacity <= capacity()))
     return;
   if (!data()) {

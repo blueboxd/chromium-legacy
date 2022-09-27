@@ -556,7 +556,7 @@ void StyleEngine::UpdateCounterStyles() {
 
 void StyleEngine::UpdateViewport() {
   if (viewport_resolver_)
-    viewport_resolver_->UpdateViewport(GetDocumentStyleSheetCollection());
+    viewport_resolver_->UpdateViewport();
 }
 
 bool StyleEngine::NeedsActiveStyleUpdate() const {
@@ -1915,9 +1915,6 @@ bool StyleEngine::HasRulesForId(const AtomicString& id) const {
 }
 
 void StyleEngine::InitialStyleChanged() {
-  if (viewport_resolver_)
-    viewport_resolver_->InitialStyleChanged();
-
   MarkViewportStyleDirty();
   // We need to update the viewport style immediately because media queries
   // evaluated in MediaQueryAffectingValueChanged() below may rely on the
@@ -1928,7 +1925,7 @@ void StyleEngine::InitialStyleChanged() {
       StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
-void StyleEngine::ViewportRulesChanged() {
+void StyleEngine::ViewportStyleSettingChanged() {
   if (viewport_resolver_)
     viewport_resolver_->SetNeedsUpdate();
 

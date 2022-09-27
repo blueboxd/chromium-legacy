@@ -251,7 +251,7 @@ void MutationObserver::EnqueueSlotChange(HTMLSlotElement& slot) {
 // static
 void MutationObserver::CleanSlotChangeList(Document& document) {
   SlotChangeList kept;
-  kept.ReserveCapacity(ActiveSlotChangeList().size());
+  kept.reserve(ActiveSlotChangeList().size());
   for (auto& slot : ActiveSlotChangeList()) {
     if (slot->GetDocument() != document)
       kept.push_back(slot);
@@ -328,8 +328,7 @@ void MutationObserver::DeliverMutations() {
   // These steps are defined in DOM Standard's "notify mutation observers".
   // https://dom.spec.whatwg.org/#notify-mutation-observers
   DCHECK(IsMainThread());
-  MutationObserverVector observers;
-  CopyToVector(ActiveMutationObservers(), observers);
+  MutationObserverVector observers(ActiveMutationObservers());
   ActiveMutationObservers().clear();
   SlotChangeList slots;
   slots.swap(ActiveSlotChangeList());

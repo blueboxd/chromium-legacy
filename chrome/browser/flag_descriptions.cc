@@ -2319,6 +2319,19 @@ const char kPermissionChipDescription[] =
     "Enables an experimental permission prompt that uses a chip in the location"
     " bar.";
 
+const char kChipLocationBarIconOverrideName[] =
+    "Chip Location Bar Icon Override Experiment.";
+const char kChipLocationBarIconOverrideDescription[] =
+    "Enables an experimental location bar icon override while a chip is shown "
+    "in the location bar. Takes effect when #permission-chip or "
+    "#confirmation-chip are active.";
+
+const char kConfirmationChipName[] = "Confirmation Chip Experiment";
+const char kConfirmationChipNameDescription[] =
+    "Enables an experimental confirmation chip in the location bar after a "
+    "permission prompt shown with the chip UI has been decided by the user. "
+    "Requires #permission-chip to be enabled.";
+
 const char kPermissionChipGestureSensitiveName[] =
     "Gesture-sensitive Permissions Chip";
 const char kPermissionChipGestureSensitiveDescription[] =
@@ -3410,11 +3423,6 @@ const char kBindingManagerUseNotPerceptibleBindingDescription[] =
     "When enabled, uses a not perceptible binding for background renderers "
     "used in the current session if able.";
 
-const char kBulkTabRestoreAndroidName[] = "Recent Tabs Bulk Restore";
-const char kBulkTabRestoreAndroidDescription[] =
-    "Enables restoration of bulk tab closures (e.g. close all tabs, close "
-    "a group, etc.) from Recent Tabs > Recently Closed.";
-
 const char kCCTBrandTransparencyName[] =
     "Chrome Custom Tabs Brand Transparency";
 const char kCCTBrandTransparencyDescription[] =
@@ -4352,12 +4360,15 @@ const char kNtpRealboxMatchOmniboxThemeDescription[] =
 const char kNtpRealboxMatchSearchboxThemeName[] =
     "NTP Realbox Matches Searchbox Theme";
 const char kNtpRealboxMatchSearchboxThemeDescription[] =
-    "NTP Realbox matches the Searchbox theme when enabled. Specifically a "
-    "border, drop shadow on hover.";
+    "Makes NTP Realbox drop shadow match that of the Searchbox when enabled.";
 
 const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
 const char kNtpRealboxPedalsDescription[] =
     "Shows pedals in the NTP Realbox when enabled.";
+
+const char kNtpRealboxRoundedCornersName[] = "NTP Realbox Rounded Corners";
+const char kNtpRealboxRoundedCornersDescription[] =
+    "Make NTP realbox dropdown corners match that of the Searchbox.";
 
 const char kNtpRealboxUseGoogleGIconName[] = "NTP Realbox Google G Icon";
 const char kNtpRealboxUseGoogleGIconDescription[] =

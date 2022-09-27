@@ -113,6 +113,14 @@ BASE_FEATURE(kAutofillInferCountryCallingCode,
              "AutofillInferCountryCallingCode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, complementing the country happens before setting the phone number
+// on profile import. This way, the variation country code takes precedence over
+// the app locale.
+// TODO(crbug.com/1295721): Cleanup when launched.
+BASE_FEATURE(kAutofillComplementCountryEarly,
+             "AutofillComplementCountryEarly",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
 // TODO(crbug.com/1311937): Cleanup when launched.
@@ -123,13 +131,6 @@ BASE_FEATURE(kAutofillConsiderPhoneNumberSeparatorsValidLabels,
 // If enabled, local heuristics fall back to the fields placeholder attribute.
 BASE_FEATURE(kAutofillConsiderPlaceholderForParsing,
              "AutofillConsiderPlaceholderForParsing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, the variation country code is used as the phone number's region,
-// instead of defaulting to app locale.
-// TODO(crbug.com/1295721): Cleanup when launched.
-BASE_FEATURE(kAutofillConsiderVariationCountryCodeForPhoneNumbers,
-             "AutofillConsiderVariationCountryCodeForPhoneNumbers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Chrome needs to map country names ("Italy"/"Italien") to country codes
@@ -227,13 +228,6 @@ BASE_FEATURE(kAutofillEnableAccountWalletStorage,
              base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 );
-
-// Controls whether to detect and fill the augmented phone country code field
-// when enabled.
-// TODO(crbug.com/1150890) Remove once launched
-BASE_FEATURE(kAutofillEnableAugmentedPhoneCountryCode,
-             "AutofillEnableAugmentedPhoneCountryCode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables parsing for birthdate fields. Filling is not supported and parsing
 // is meant to prevent false positive credit card expiration dates.

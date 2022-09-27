@@ -23,6 +23,7 @@
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/video_tutorials/switches.h"
 #include "chrome/common/chrome_features.h"
@@ -177,7 +178,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAppMenuMobileSiteOption,
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
-    &kBulkTabRestore,
     &kCastDeviceFilter,
     &kClearOmniboxFocusAfterNavigation,
     &kCloseTabSuggestions,
@@ -251,7 +251,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
-    &kMostRecentTabOnBackgroundCloseTab,
     &kNewInstanceFromDraggedLink,
     &kNewTabPageTilesTitleWrapAround,
     &kNewWindowAppMenu,
@@ -404,6 +403,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kPersistShareHubOnAppSwitch,
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
+    &supervised_users::kLocalWebApprovals,
+    &supervised_users::kWebFilterInterstitialRefresh,
     &switches::kAllowSyncOffForChildAccounts,
     &switches::kCreateSigninCheckerBeforeSyncConsentFragment,
     &switches::kEnableCbdSignOut,
@@ -516,10 +517,6 @@ BASE_FEATURE(kAppToWebAttribution,
 BASE_FEATURE(kBackgroundThreadPool,
              "BackgroundThreadPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kBulkTabRestore,
-             "BulkTabRestore",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kConditionalTabStripAndroid,
              "ConditionalTabStripAndroid",
@@ -808,10 +805,6 @@ BASE_FEATURE(kSearchEnginePromoNewDevice,
 
 BASE_FEATURE(kSearchEnginePromoNewDeviceV2,
              "SearchEnginePromo.NewDeviceVer2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kMostRecentTabOnBackgroundCloseTab,
-             "MostRecentTabOnBackgroundCloseTab",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNewInstanceFromDraggedLink,

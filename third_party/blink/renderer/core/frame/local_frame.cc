@@ -2746,7 +2746,7 @@ void LocalFrame::UpdateFaviconURL() {
     return;
 
   Vector<mojom::blink::FaviconURLPtr> urls;
-  urls.ReserveCapacity(icon_urls.size());
+  urls.reserve(icon_urls.size());
   for (const auto& icon_url : icon_urls) {
     urls.push_back(mojom::blink::FaviconURL::New(
         icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_));
@@ -2949,8 +2949,8 @@ void LocalFrame::RegisterVirtualKeyboardOverlayChangedObserver(
 
 void LocalFrame::NotifyVirtualKeyboardOverlayRectObservers(
     const gfx::Rect& rect) const {
-  HeapVector<Member<VirtualKeyboardOverlayChangedObserver>, 32> observers;
-  CopyToVector(virtual_keyboard_overlay_changed_observers_, observers);
+  HeapVector<Member<VirtualKeyboardOverlayChangedObserver>, 32> observers(
+      virtual_keyboard_overlay_changed_observers_);
   for (VirtualKeyboardOverlayChangedObserver* observer : observers)
     observer->VirtualKeyboardOverlayChanged(rect);
 }

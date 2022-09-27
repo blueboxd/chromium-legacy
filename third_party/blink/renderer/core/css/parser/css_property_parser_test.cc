@@ -512,15 +512,6 @@ TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
   EXPECT_TRUE(document.IsUseCounted(feature2));
 }
 
-TEST(CSSPropertyParserTest, DropViewportDescriptor) {
-  EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertyID::kOrientation,
-                                                "portrait"));
-  EXPECT_FALSE(
-      IsValidPropertyValueForStyleRule(CSSPropertyID::kOrientation, "inherit"));
-  EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertyID::kOrientation,
-                                                "var(--dummy)"));
-}
-
 TEST(CSSPropertyParserTest, DropFontfaceDescriptor) {
   EXPECT_FALSE(
       IsValidPropertyValueForStyleRule(CSSPropertyID::kSrc, "url(blah)"));

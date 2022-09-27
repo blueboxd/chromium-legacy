@@ -242,7 +242,7 @@ void NavigationApi::InitializeForNewWindow(
         GetSupplementable()->GetSecurityOrigin()->IsSameOriginWith(
             previous->GetSupplementable()->GetSecurityOrigin())) {
       DCHECK(entries_.empty());
-      entries_.ReserveCapacity(previous->entries_.size());
+      entries_.reserve(previous->entries_.size());
       for (wtf_size_t i = 0; i < previous->entries_.size(); i++) {
         entries_.emplace_back(
             previous->entries_[i]->Clone(GetSupplementable()));
@@ -256,8 +256,8 @@ void NavigationApi::InitializeForNewWindow(
 
   // Construct |entries_|. Any back entries are inserted, then the current
   // entry, then any forward entries.
-  entries_.ReserveCapacity(base::checked_cast<wtf_size_t>(
-      back_entries.size() + forward_entries.size() + 1));
+  entries_.reserve(base::checked_cast<wtf_size_t>(back_entries.size() +
+                                                  forward_entries.size() + 1));
   for (const auto& entry : back_entries)
     entries_.emplace_back(MakeEntryFromItem(*entry));
 
@@ -383,7 +383,7 @@ void NavigationApi::SetEntriesForRestore(
     return;
 
   HeapVector<Member<NavigationHistoryEntry>> new_entries;
-  new_entries.ReserveCapacity(
+  new_entries.reserve(
       base::checked_cast<wtf_size_t>(entry_arrays->back_entries.size() +
                                      entry_arrays->forward_entries.size() + 1));
   for (const auto& item : entry_arrays->back_entries)
@@ -942,6 +942,34 @@ void NavigationApi::InformAboutCanceledNavigation(
       FinalizeWithAbortedNavigationError(script_state, traversal);
     DCHECK(upcoming_traversals_.empty());
   }
+}
+
+void NavigationApi::TraverseCancelled(
+    const String& key,
+    mojom::blink::TraverseCancelledReason reason) {
+  auto traversal = upcoming_traversals_.find(key);
+  if (traversal == upcoming_traversals_.end())
+    return;
+
+  auto* script_state =
+      ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
+  ScriptState::Scope scope(script_state);
+  DOMException* exception = nullptr;
+  if (reason == mojom::blink::TraverseCancelledReason::kNotFound) {
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, "Invalid key");
+  } else if (reason ==
+             mojom::blink::TraverseCancelledReason::kSandboxViolation) {
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError,
+        "Navigating to key " + key +
+            " would require a navigation that "
+            "violates this frame's sandbox policy");
+  }
+  DCHECK(exception);
+
+  RejectPromisesAndFireNavigateErrorEvent(
+      traversal->value, ScriptValue::From(script_state, exception));
 }
 
 void NavigationApi::ContextDestroyed() {

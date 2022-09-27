@@ -670,6 +670,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDelayAsyncScriptUrls);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kDelayAsyncScriptAllowList;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionMainFrameOnlyParam;
 
 // If enabled, async scripts will be run on a lower priority task queue.
 // See https://crbug.com/1348467.
@@ -685,6 +687,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // kLowPriorityAsyncScriptExecution will be applied only for cross site scripts.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kLowPriorityAsyncScriptExecutionCrossSiteOnlyParam;
+// kLowPriorityAsyncScriptExecution will be applied only for main frame's
+// scripts.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionMainFrameOnlyParam;
 
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.
@@ -724,6 +730,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSubstringSetTreeForAttributeBuckets);
 // If enabled, CSS parsing will attempt to use an arena for temporary
 // allocations of certain structures when parsing selectors.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCSSParserSelectorArena);
+
+// If enabled, style invalidation will use a Bloom filter for storing
+// CSS classes that need (only) self-invalidation, instead of having them
+// in the main hash map.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInvalidationSetClassBloomFilter);
 
 // Whether the pending beacon API is enabled or not.
 // https://github.com/WICG/unload-beacon/blob/main/README.md

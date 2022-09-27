@@ -1094,8 +1094,15 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesZIndex(*this, other))
     diff.SetZIndexChanged();
 
-  if (UpdatePropertySpecificDifferencesTransform(*this, other))
-    diff.SetTransformChanged();
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesTransform(*this,
+                                                                    other)) {
+    diff.SetTransformPropertyChanged();
+  }
+
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesOtherTransform(
+          *this, other)) {
+    diff.SetOtherTransformPropertyChanged();
+  }
 
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesOpacity(*this, other))
     diff.SetOpacityChanged();
@@ -2049,7 +2056,7 @@ const Vector<AtomicString>& ComputedStyle::GetVariableNames() const {
     inherited_variables->CollectNames(names);
   if (auto* non_inherited_variables = NonInheritedVariables())
     non_inherited_variables->CollectNames(names);
-  CopyToVector(names, cache);
+  cache.assign(names);
 
   return cache;
 }
@@ -2305,7 +2312,7 @@ void ComputedStyle::AddAppliedTextDecoration(
   // for a single element (if it has both a simple underline and another
   // decoration), and so this will cause two allocations instead of one,
   // but that is an edge case we're willing to live with.
-  list->data.ShrinkToFit();
+  list->data.shrink_to_fit();
 }
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {

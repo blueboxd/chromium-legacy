@@ -147,14 +147,12 @@ base::flat_map<SchemefulSite, FirstPartySetEntry> PublicSets::FindEntries(
 }
 
 void PublicSets::ApplyManuallySpecifiedSet(
-    const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries,
-    const base::flat_map<SchemefulSite, SchemefulSite>& manual_aliases) {
+    const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries) {
   DCHECK(manual_config_.empty());
   // We handle the manually-specified set the same way as we handle
   // replacement enterprise policy sets.
   manual_config_ = ComputeConfig(
       /*replacement_sets=*/{manual_entries}, /*addition_sets=*/{});
-  manual_config_.IngestAliases(std::move(manual_aliases));
 }
 
 FirstPartySetsContextConfig PublicSets::ComputeConfig(
@@ -316,6 +314,12 @@ bool PublicSets::ForEachPublicSetEntry(
     const {
   for (const auto& [site, entry] : entries_) {
     if (!f(site, entry))
+      return false;
+  }
+  for (const auto& [alias, canonical] : aliases_) {
+    auto it = entries_.find(canonical);
+    DCHECK(it != entries_.end());
+    if (!f(alias, it->second))
       return false;
   }
   return true;

@@ -19,7 +19,6 @@
 #include "pdf/accessibility_structs.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_engine.h"
-#include "pdf/pdfium/pdfium_form_filler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -61,7 +60,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // PDFEngine::Client:
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
-  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
 
   // Gets the content restrictions based on the permissions which `engine_` has.
@@ -78,11 +76,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase();
   ~PdfViewPluginBase() override;
 
-  // Creates a new `PDFiumEngine`.
-  virtual std::unique_ptr<PDFiumEngine> CreateEngine(
-      PDFEngine::Client* client,
-      PDFiumFormFiller::ScriptOption script_option) = 0;
-
   virtual const PDFiumEngine* engine() const = 0;
   virtual PDFiumEngine* engine() = 0;
 
@@ -96,14 +89,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Runs when document load completes.
   virtual void OnDocumentLoadComplete() = 0;
 
-  // Enqueues a "message" event carrying `message` to the embedder. Messages are
-  // guaranteed to be received in the order that they are sent. This method is
-  // non-blocking.
-  virtual void SendMessage(base::Value::Dict message) = 0;
-
   // Sends the loading progress, where `percentage` represents the progress, or
   // -1 for loading error.
-  void SendLoadingProgress(double percentage);
+  virtual void SendLoadingProgress(double percentage) = 0;
 
   // Sets the accessibility information about the PDF document in the renderer.
   virtual void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) = 0;
@@ -129,11 +117,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // renderer.
   virtual void SetAccessibilityViewportInfo(
       AccessibilityViewportInfo viewport_info) = 0;
-
-  // Prints the pages specified by `page_numbers` using the parameters passed to
-  // `PrintBegin()` Returns a vector of bytes containing the printed output. An
-  // empty returned value indicates failure.
-  std::vector<uint8_t> PrintPages(const std::vector<int>& page_numbers);
 
   // Disables browser commands because of restrictions on how the data is to be
   // used (i.e. can't copy/print). `content_restrictions` should have its bits
@@ -170,11 +153,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   virtual float device_scale() const = 0;
 
-  double last_progress_sent() const { return last_progress_sent_; }
-  void set_last_progress_sent(double progress) {
-    last_progress_sent_ = progress;
-  }
-
   DocumentLoadState document_load_state() const { return document_load_state_; }
   void set_document_load_state(DocumentLoadState state) {
     document_load_state_ = state;
@@ -203,9 +181,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Current zoom factor.
   double zoom_ = 1.0;
-
-  // The last document load progress value sent to the web page.
-  double last_progress_sent_ = 0.0;
 
   // The current state of document load.
   DocumentLoadState document_load_state_ = DocumentLoadState::kLoading;

@@ -108,6 +108,10 @@ AXTreeID AXTreeManager::GetTreeID() const {
   return ax_tree_ ? ax_tree_->data().tree_id : AXTreeIDUnknown();
 }
 
+const AXTreeData& AXTreeManager::GetTreeData() const {
+  return ax_tree_ ? ax_tree_->data() : AXTreeDataUnknown();
+}
+
 AXTreeID AXTreeManager::GetParentTreeID() const {
   return ax_tree_ ? ax_tree_->data().parent_tree_id : AXTreeIDUnknown();
 }
@@ -171,6 +175,17 @@ void AXTreeManager::OnTreeDataChanged(AXTree* tree,
   GetMap().RemoveTreeManager(ax_tree_id_);
   ax_tree_id_ = new_data.tree_id;
   GetMap().AddTreeManager(ax_tree_id_, this);
+}
+
+void AXTreeManager::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
+  DCHECK(node);
+  if (node == GetLastFocusedNode())
+    SetLastFocusedNode(nullptr);
+
+  // We fire these here, immediately, to ensure we can send platform
+  // notifications prior to the actual destruction of the object.
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireGeneratedEvent(AXEventGenerator::Event::MENU_POPUP_END, node);
 }
 
 void AXTreeManager::RemoveFromMap() {

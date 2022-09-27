@@ -52,8 +52,6 @@
 #include "chrome/browser/page_info/page_info_features.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/performance_hints/performance_hints_features.h"
-#include "chrome/browser/performance_hints/performance_hints_observer.h"
 #include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
 #include "chrome/browser/permissions/unused_site_permissions_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -184,7 +182,7 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/commerce/price_tracking/shopping_list_ui_tab_helper.h"
+#include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -212,7 +210,6 @@
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 #include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
 #include "chrome/browser/autofill_assistant/platform_dependencies_desktop.h"
-#include "chrome/browser/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
@@ -481,10 +478,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
   PolicyAuditorBridge::CreateForWebContents(web_contents);
   PluginObserverAndroid::CreateForWebContents(web_contents);
-  if (performance_hints::features::IsPerformanceHintsObserverEnabled()) {
-    performance_hints::PerformanceHintsObserver::CreateForWebContents(
-        web_contents);
-  }
   video_tutorials::VideoTutorialTabHelper::CreateForWebContents(web_contents);
 #else
   if (accuracy_tips::AccuracyWebContentsObserver::IsEnabled(web_contents)) {

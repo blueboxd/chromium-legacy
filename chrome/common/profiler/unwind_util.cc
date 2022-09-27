@@ -15,6 +15,7 @@
 #include "base/profiler/profiler_buildflags.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/unwinder.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/profiler/process_type.h"
@@ -146,6 +147,14 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateCoreUnwinders(
   return unwinders;
 }
 
+std::vector<std::unique_ptr<base::Unwinder>> CreateLibunwindstackUnwinders(
+    stack_unwinder::Module* const stack_unwinder_module) {
+  DCHECK_NE(getpid(), gettid());
+  std::vector<std::unique_ptr<base::Unwinder>> unwinders;
+  unwinders.push_back(stack_unwinder_module->CreateLibunwindstackUnwinder());
+  return unwinders;
+}
+
 // Checks whether unwinder assets -- such as call frame information needed for
 // unwinders to work -- are available in the current context. Unwinder assets
 // are only embedded into certain builds of Chrome.
@@ -157,18 +166,43 @@ bool AreUnwinderAssetsAvailable() {
          channel == version_info::Channel::DEV ||
          channel == version_info::Channel::BETA;
 }
+
+// Manages installation of the module prerequisite for unwinding. Android, in
+// particular, requires a dynamic feature module to provide the native unwinder.
+class ModuleUnwindPrerequisitesDelegate : public UnwindPrerequisitesDelegate {
+ public:
+  void RequestInstallation(version_info::Channel /* unused */) override {
+    stack_unwinder::Module::RequestInstallation();
+  }
+};
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 
 }  // namespace
 
-void RequestUnwindPrerequisitesInstallation() {
+void RequestUnwindPrerequisitesInstallation(
+    version_info::Channel channel,
+    UnwindPrerequisitesDelegate* delegate) {
   CHECK_EQ(metrics::CallStackProfileParams::Process::kBrowser,
            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
-#if ANDROID_ARM32_UNWINDING_SUPPORTED
+#if ANDROID_ARM32_UNWINDING_SUPPORTED && defined(OFFICIAL_BUILD) && \
+    BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  ModuleUnwindPrerequisitesDelegate default_delegate;
+  if (delegate == nullptr) {
+    delegate = &default_delegate;
+  }
+  // We only want to incur the cost of universally downloading the module in
+  // early channels, where profiling will occur over substantially all of
+  // the population. When supporting later channels in the future we will
+  // enable profiling for only a fraction of users and only download for
+  // those users.
+  //
   // The install occurs asynchronously, with the module available at the first
   // run of Chrome following install.
-  stack_unwinder::Module::RequestInstallation();
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+  if (channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV) {
+    delegate->RequestInstallation(channel);
+  }
+#endif
 }
 
 bool AreUnwindPrerequisitesAvailable() {
@@ -180,14 +214,33 @@ bool AreUnwindPrerequisitesAvailable() {
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 }
 
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
+stack_unwinder::Module* GetOrLoadModule() {
+  DCHECK(AreUnwindPrerequisitesAvailable());
+  static base::NoDestructor<std::unique_ptr<stack_unwinder::Module>>
+      stack_unwinder_module(stack_unwinder::Module::Load());
+  return stack_unwinder_module.get()->get();
+}
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+
 base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
   if (!AreUnwindPrerequisitesAvailable()) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
-  static base::NoDestructor<std::unique_ptr<stack_unwinder::Module>>
-      stack_unwinder_module(stack_unwinder::Module::Load());
-  return base::BindOnce(CreateCoreUnwinders, stack_unwinder_module->get());
+  return base::BindOnce(CreateCoreUnwinders, GetOrLoadModule());
+#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
+  return base::StackSamplingProfiler::UnwindersFactory();
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+}
+
+base::StackSamplingProfiler::UnwindersFactory
+CreateLibunwindstackUnwinderFactory() {
+  if (!AreUnwindPrerequisitesAvailable()) {
+    return base::StackSamplingProfiler::UnwindersFactory();
+  }
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
+  return base::BindOnce(CreateLibunwindstackUnwinders, GetOrLoadModule());
 #else   // ANDROID_ARM32_UNWINDING_SUPPORTED
   return base::StackSamplingProfiler::UnwindersFactory();
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED

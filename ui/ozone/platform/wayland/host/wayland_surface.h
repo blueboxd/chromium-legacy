@@ -6,12 +6,14 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SURFACE_H_
 
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,6 +24,7 @@
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_color_space.h"
 
 struct wp_content_type_v1;
 struct zwp_keyboard_shortcuts_inhibitor_v1;
@@ -34,6 +37,7 @@ class WaylandConnection;
 class WaylandOutput;
 class WaylandWindow;
 class WaylandBufferHandle;
+class WaylandZcrColorManagementSurface;
 
 // Wrapper of a wl_surface, owned by a WaylandWindow or a WlSubsurface.
 class WaylandSurface {
@@ -124,16 +128,18 @@ class WaylandSurface {
   // reset to cover the entire wl_surface.
   void set_input_region(const gfx::Rect* region_px);
 
-  // Set the source rectangle of the associated wl_surface.
+  // Set the crop uv of the attached wl_buffer.
+  // Unlike wp_viewport.set_source, this crops the buffer prior to
+  // |buffer_transform| being applied to the buffer, it will be transformed s.t.
+  // wp_viewport.source is called with correct params.
   // See:
   // https://cgit.freedesktop.org/wayland/wayland-protocols/tree/stable/viewporter/viewporter.xml
-  // If |src_rect| is empty, the source rectangle is unset.
+  // If |crop| is empty, the source rectangle is unset.
   // Note this method does not send corresponding wayland requests until
   // attaching the next buffer.
-  void set_viewport_source(const gfx::RectF& src_rect) {
+  void set_buffer_crop(const gfx::RectF& crop) {
     DCHECK(!apply_state_immediately_);
-    pending_state_.crop =
-        src_rect == gfx::RectF{1.f, 1.f} ? gfx::RectF() : src_rect;
+    pending_state_.crop = crop == gfx::RectF{1.f, 1.f} ? gfx::RectF() : crop;
   }
 
   // Sets the opacity of the wl_surface using zcr_blending_v1_set_alpha.
@@ -194,6 +200,9 @@ class WaylandSurface {
   // be removed.
   void RemoveEnteredOutput(uint32_t id);
 
+  // Set surface ColorSpace
+  void set_color_space(gfx::ColorSpace color_space);
+
   // Validates the |pending_state_| and generates the corresponding requests.
   // Then copy |pending_states_| to |states_|.
   void ApplyPendingState();
@@ -244,6 +253,9 @@ class WaylandSurface {
     std::vector<gfx::Rect> damage_px;
     std::vector<gfx::Rect> opaque_region_px;
     absl::optional<gfx::Rect> input_region_px = absl::nullopt;
+
+    // The current color space of the surface.
+    scoped_refptr<WaylandZcrColorSpace> color_space = nullptr;
 
     // The acquire gpu fence to associate with the surface buffer.
     gfx::GpuFenceHandle acquire_fence;
@@ -334,6 +346,8 @@ class WaylandSurface {
   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
   wl::Object<augmented_surface> augmented_surface_;
   wl::Object<wp_content_type_v1> content_type_;
+  std::unique_ptr<WaylandZcrColorManagementSurface>
+      zcr_color_management_surface_;
   base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
       linux_buffer_releases_;
   ExplicitReleaseCallback next_explicit_release_request_;

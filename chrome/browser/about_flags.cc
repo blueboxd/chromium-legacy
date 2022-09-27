@@ -355,9 +355,11 @@ const FeatureEntry::Choice kOverlayStrategiesChoices[] = {
 const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTouchSelectionStrategyCharacter,
-     blink::switches::kTouchTextSelectionStrategy, "character"},
+     blink::switches::kTouchTextSelectionStrategy,
+     blink::switches::kTouchTextSelectionStrategy_Character},
     {flag_descriptions::kTouchSelectionStrategyDirection,
-     blink::switches::kTouchTextSelectionStrategy, "direction"}};
+     blink::switches::kTouchTextSelectionStrategy,
+     blink::switches::kTouchTextSelectionStrategy_Direction}};
 
 #if BUILDFLAG(IS_WIN)
 const FeatureEntry::Choice kUseAngleChoicesWindows[] = {
@@ -1752,13 +1754,6 @@ const FeatureEntry::FeatureVariation kRealboxMatchOmniboxThemeVariations[] = {
      "hover)",
      kRealboxMatchOmniboxThemeVar2, std::size(kRealboxMatchOmniboxThemeVar2),
      nullptr}};
-
-const FeatureEntry::FeatureParam kRealboxMatchSearchboxThemeRoundedCorners[] = {
-    {ntp_features::kRealboxMatchSearchboxThemeParam, "1"}};
-
-const FeatureEntry::FeatureVariation kRealboxMatchSearchboxThemeVariations[] = {
-    {"(Rounded Corners)", kRealboxMatchSearchboxThemeRoundedCorners,
-     std::size(kRealboxMatchSearchboxThemeRoundedCorners), nullptr}};
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
@@ -5968,13 +5963,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox-match-searchbox-theme",
      flag_descriptions::kNtpRealboxMatchSearchboxThemeName,
      flag_descriptions::kNtpRealboxMatchSearchboxThemeDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kRealboxMatchSearchboxTheme,
-                                    kRealboxMatchSearchboxThemeVariations,
-                                    "OmniboxBundledExperimentV1")},
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxMatchSearchboxTheme)},
 
     {"ntp-realbox-pedals", flag_descriptions::kNtpRealboxPedalsName,
      flag_descriptions::kNtpRealboxPedalsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxPedals)},
+
+    {"ntp-realbox-rounded-corners",
+     flag_descriptions::kNtpRealboxRoundedCornersName,
+     flag_descriptions::kNtpRealboxRoundedCornersDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxRoundedCorners)},
 
     {"ntp-realbox-use-google-g-icon",
      flag_descriptions::kNtpRealboxUseGoogleGIconName,
@@ -7614,6 +7612,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kEnableMachineLearningModelLoaderWebPlatformApi)},
 
+    {"confirmation-chip", flag_descriptions::kConfirmationChipName,
+     flag_descriptions::kConfirmationChipNameDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(permissions::features::kConfirmationChip)},
+
+    {"chip-location-bar-icon-override",
+     flag_descriptions::kChipLocationBarIconOverrideName,
+     flag_descriptions::kChipLocationBarIconOverrideDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(permissions::features::kChipLocationBarIconOverride)},
+
     {"enable-translate-sub-frames",
      flag_descriptions::kEnableTranslateSubFramesName,
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
@@ -7950,16 +7957,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"privacy-sandbox-ads-apis",
      flag_descriptions::kPrivacySandboxAdsAPIsOverrideName,
      flag_descriptions::kPrivacySandboxAdsAPIsOverrideDescription, kOsAll,
-     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
-     // multiple related features when they are available.
-     SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
-                                 "PrivacySandboxAdsAPIsOverride,"
-                                 "InterestGroupStorage,Fledge,"
-                                 "BiddingAndScoringDebugReportingAPI,"
-                                 "AllowURNsInIframes,BrowsingTopics,"
-                                 "ConversionMeasurement,FencedFrames,"
-                                 "OverridePrivacySandboxSettingsLocalTesting,"
-                                 "SharedStorageAPI,PrivateAggregationApi")},
+     SINGLE_VALUE_TYPE(switches::kEnablePrivacySandboxAdsApis)},
 
 #if BUILDFLAG(IS_ANDROID)
     {"site-data-improvements", flag_descriptions::kSiteDataImprovementsName,
@@ -9227,12 +9225,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSafetyCheckUnusedSitePermissions)},
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
-    {"bulk-tab-restore-android", flag_descriptions::kBulkTabRestoreAndroidName,
-     flag_descriptions::kBulkTabRestoreAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kBulkTabRestore)},
-#endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-upstream-save-card-offer-ui-experiment",
      flag_descriptions::kAutofillSaveCardUiExperimentName,

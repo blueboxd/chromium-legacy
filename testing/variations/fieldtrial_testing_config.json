@@ -198,21 +198,6 @@
             ]
         }
     ],
-    "AndroidBulkTabRestore": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220518",
-                    "enable_features": [
-                        "BulkTabRestore"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidContextualSearchForceCaption": [
         {
             "platforms": [
@@ -361,21 +346,6 @@
                     "enable_features": [
                         "MessagesForAndroidInfrastructure",
                         "MessagesForAndroidSaveCard"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidMostRecentTabOnBackgroundCloseTab": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220518",
-                    "enable_features": [
-                        "MostRecentTabOnBackgroundCloseTab"
                     ]
                 }
             ]
@@ -1993,6 +1963,31 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BiometricAuthenticationInSettings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BlinkSchedulerCompositorTQPolicyDuringThreadedScroll": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithLowPriority_20220729",
+                    "params": {
+                        "policy": "low-priority-with-anti-starvation"
+                    },
+                    "enable_features": [
+                        "ThreadedScrollPreventRenderingStarvation"
                     ]
                 }
             ]
@@ -3791,25 +3786,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DexFixer"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DialEnforceUrlIPAddress": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DialEnforceUrlIPAddress",
-                    "enable_features": [
-                        "DialEnforceUrlIPAddress"
                     ]
                 }
             ]
@@ -6383,6 +6359,26 @@
             ]
         }
     ],
+    "LowerMemoryLimitForNonMainRenderers": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LowerMemoryLimitForNonMainRenderers"
+                    ]
+                }
+            ]
+        }
+    ],
     "MacAllowBackgroundingProcesses": [
         {
             "platforms": [
@@ -6445,6 +6441,26 @@
                     },
                     "enable_features": [
                         "MaxUnthrottledTimeoutNestingLevel"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaAppPhotosIntegration": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220926",
+                    "params": {
+                        "minPhotosVersionForImage": "6.8",
+                        "minPhotosVersionForVideo": "6.8"
+                    },
+                    "enable_features": [
+                        "MediaAppPhotosIntegrationImage",
+                        "MediaAppPhotosIntegrationVideo"
                     ]
                 }
             ]
@@ -9308,7 +9324,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20220707",
+                    "name": "Enabled_20220923",
                     "enable_features": [
                         "ShutdownConfirmationBubble"
                     ]
@@ -10344,26 +10360,6 @@
                     },
                     "enable_features": [
                         "UMAPseudoMetricsEffect"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UiCompositorTilePolicy": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "ReleaseHiddenTilesAndRequiredTilesOnly_1",
-                    "enable_features": [
-                        "UiCompositorReleaseTileResourcesForHiddenLayers",
-                        "UiCompositorRequiredTilesOnly"
                     ]
                 }
             ]
@@ -11615,6 +11611,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AllowWgcDesktopCapturer"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebRtcThreadsUseResourceEfficientType": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebRtcThreadsUseResourceEfficientType"
                     ]
                 }
             ]

@@ -1302,6 +1302,12 @@ extern const char kWindowsScrollingPersonalityDescription[];
 extern const char kPermissionChipName[];
 extern const char kPermissionChipDescription[];
 
+extern const char kChipLocationBarIconOverrideName[];
+extern const char kChipLocationBarIconOverrideDescription[];
+
+extern const char kConfirmationChipName[];
+extern const char kConfirmationChipNameDescription[];
+
 extern const char kPermissionChipGestureSensitiveName[];
 extern const char kPermissionChipGestureSensitiveDescription[];
 
@@ -1926,9 +1932,6 @@ extern const char kBindingManagerConnectionLimitDescription[];
 extern const char kBindingManagerUseNotPerceptibleBindingName[];
 extern const char kBindingManagerUseNotPerceptibleBindingDescription[];
 
-extern const char kBulkTabRestoreAndroidName[];
-extern const char kBulkTabRestoreAndroidDescription[];
-
 extern const char kCCTBrandTransparencyName[];
 extern const char kCCTBrandTransparencyDescription[];
 
@@ -2486,6 +2489,9 @@ extern const char kNtpRealboxMatchSearchboxThemeDescription[];
 
 extern const char kNtpRealboxPedalsName[];
 extern const char kNtpRealboxPedalsDescription[];
+
+extern const char kNtpRealboxRoundedCornersName[];
+extern const char kNtpRealboxRoundedCornersDescription[];
 
 extern const char kNtpRealboxUseGoogleGIconName[];
 extern const char kNtpRealboxUseGoogleGIconDescription[];

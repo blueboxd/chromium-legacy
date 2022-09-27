@@ -819,11 +819,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "bulk-tab-restore-android",
-    "owners": ["ckitagawa", "fredmello"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dmurph" ],
     "expiry_milestone": 120
@@ -931,6 +926,14 @@
     "name": "check-offline-capability",
     "owners": [ "asamidoi", "//content/browser/service_worker/OWNERS" ],
     "expiry_milestone": 93
+  },
+  {
+    "name": "chip-location-bar-icon-override",
+    "owners": [
+      "fjacky",
+      "elklm"
+    ],
+    "expiry_milestone": 115
   },
   {
     "name": "chrome-labs",
@@ -1051,6 +1054,14 @@
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "confirmation-chip",
+    "owners": [
+      "fjacky",
+      "elklm"
+    ],
+    "expiry_milestone": 115
   },
   {
     "name": "consolidated-site-storage-controls",
@@ -4761,6 +4772,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "ntp-realbox-rounded-corners",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "ntp-realbox-use-google-g-icon",
     "owners": [ "mahmadi", "mfacey" ],
     "expiry_milestone": 110
@@ -5895,7 +5911,7 @@
   {
     "name" : "search-web-in-side-panel",
     "owners": [ "chrome-cros@google.com", "pengchaocai" ],
-    "expiry_milestone" : 107
+    "expiry_milestone" : 110
   },
   {
     "name": "secondary-google-account-usage",
@@ -6098,7 +6114,7 @@
   {
     "name" : "side-panel-improved-clobbering",
     "owners": [ "chrome-cros@google.com", "tluk" ],
-    "expiry_milestone" : 107
+    "expiry_milestone" : 110
   },
   {
     "name" : "side-panel-journeys",
@@ -6113,12 +6129,12 @@
   {
     "name" : "side-search",
     "owners": [ "chrome-cros@google.com", "tluk" ],
-    "expiry_milestone" : 107
+    "expiry_milestone" : 110
   },
   {
     "name" : "side-search-dse-support",
     "owners": [ "chrome-cros@google.com", "tluk" ],
-    "expiry_milestone" : 107
+    "expiry_milestone" : 110
   },
   {
     "name": "signin-intercept-bubble-v2",

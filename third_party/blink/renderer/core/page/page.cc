@@ -722,12 +722,12 @@ void Page::SettingsChanged(ChangeType change_type) {
           ->AXObjectCacheOwner()
           .ClearAXObjectCache();
       break;
-    case ChangeType::kViewportRule: {
+    case ChangeType::kViewportStyle: {
       auto* main_local_frame = DynamicTo<LocalFrame>(MainFrame());
       if (!main_local_frame)
         break;
       if (Document* doc = main_local_frame->GetDocument())
-        doc->GetStyleEngine().ViewportRulesChanged();
+        doc->GetStyleEngine().ViewportStyleSettingChanged();
       break;
     }
     case ChangeType::kTextTrackKindUserPreference:
@@ -856,8 +856,8 @@ void Page::InvalidatePaint() {
 }
 
 void Page::NotifyPluginsChanged() const {
-  HeapVector<Member<PluginsChangedObserver>, 32> observers;
-  CopyToVector(plugins_changed_observers_, observers);
+  HeapVector<Member<PluginsChangedObserver>, 32> observers(
+      plugins_changed_observers_);
   for (PluginsChangedObserver* observer : observers)
     observer->PluginsChanged();
 }

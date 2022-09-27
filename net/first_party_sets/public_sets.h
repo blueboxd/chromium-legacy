@@ -74,16 +74,16 @@ class NET_EXPORT PublicSets {
       const FirstPartySetsContextConfig* config) const;
 
   // Modifies this instance such that it will respect the given
-  // manually-specified set.
+  // manually-specified set. `manual_entries` should contain entries for aliases
+  // as well as "canonical" sites.
   void ApplyManuallySpecifiedSet(
-      const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries,
-      const base::flat_map<SchemefulSite, SchemefulSite>& manual_aliases);
+      const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries);
 
   // Synchronously iterate over all entries in the public sets (i.e. not
   // including any manual set entries). Returns early if any of the iterations
   // returns false. Returns false if iteration was incomplete; true if all
   // iterations returned true. No guarantees are made re: iteration order.
-  // Aliases are not included.
+  // Aliases are included.
   bool ForEachPublicSetEntry(
       base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)>
           f) const;

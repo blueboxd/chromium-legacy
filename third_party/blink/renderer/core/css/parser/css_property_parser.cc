@@ -4,13 +4,8 @@
 
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 
-#include "third_party/blink/renderer/core/css/css_inherited_value.h"
-#include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
-#include "third_party/blink/renderer/core/css/css_revert_layer_value.h"
-#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
-#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/hash_tools.h"
 #include "third_party/blink/renderer/core/css/known_exposed_properties.h"
@@ -35,28 +30,15 @@ class CSSIdentifierValue;
 namespace {
 
 const CSSValue* MaybeConsumeCSSWideKeyword(CSSParserTokenRange& range) {
-  CSSParserTokenRange local_range = range;
+  CSSParserTokenRange original_range = range;
 
-  CSSValueID id = local_range.ConsumeIncludingWhitespace().Id();
-  if (!local_range.AtEnd())
-    return nullptr;
+  if (CSSValue* value = css_parsing_utils::ConsumeCSSWideKeyword(range)) {
+    if (range.AtEnd())
+      return value;
+  }
 
-  const CSSValue* value = nullptr;
-  if (id == CSSValueID::kInitial)
-    value = CSSInitialValue::Create();
-  if (id == CSSValueID::kInherit)
-    value = CSSInheritedValue::Create();
-  if (id == CSSValueID::kUnset)
-    value = cssvalue::CSSUnsetValue::Create();
-  if (id == CSSValueID::kRevert)
-    value = cssvalue::CSSRevertValue::Create();
-  if (id == CSSValueID::kRevertLayer)
-    value = cssvalue::CSSRevertLayerValue::Create();
-
-  if (value)
-    range = local_range;
-
-  return value;
+  range = original_range;
+  return nullptr;
 }
 
 bool IsPropertyAllowedInRule(const CSSProperty& property,
@@ -99,11 +81,7 @@ bool CSSPropertyParser::ParseValue(
   CSSPropertyParser parser(range, context, &parsed_properties);
   CSSPropertyID resolved_property = ResolveCSSPropertyID(unresolved_property);
   bool parse_success;
-  if (rule_type == StyleRule::kViewport) {
-    parse_success =
-        IsUASheetBehavior(context->Mode()) &&
-        parser.ParseViewportDescriptor(resolved_property, important);
-  } else if (rule_type == StyleRule::kFontFace) {
+  if (rule_type == StyleRule::kFontFace) {
     parse_success = parser.ParseFontFaceDescriptor(resolved_property);
   } else {
     parse_success =
@@ -328,117 +306,6 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   }
   range_ = range_copy;
   return true;
-}
-
-static CSSValue* ConsumeSingleViewportDescriptor(
-    CSSParserTokenRange& range,
-    CSSPropertyID prop_id,
-    const CSSParserContext& context) {
-  CSSValueID id = range.Peek().Id();
-  switch (prop_id) {
-    case CSSPropertyID::kMinWidth:
-    case CSSPropertyID::kMaxWidth:
-    case CSSPropertyID::kMinHeight:
-    case CSSPropertyID::kMaxHeight:
-      if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
-        return ConsumeIdent(range);
-      return css_parsing_utils::ConsumeLengthOrPercent(
-          range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
-    case CSSPropertyID::kMinZoom:
-    case CSSPropertyID::kMaxZoom:
-    case CSSPropertyID::kZoom: {
-      if (id == CSSValueID::kAuto)
-        return ConsumeIdent(range);
-      CSSValue* parsed_value = css_parsing_utils::ConsumeNumber(
-          range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
-      if (parsed_value)
-        return parsed_value;
-      return css_parsing_utils::ConsumePercent(
-          range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
-    }
-    case CSSPropertyID::kUserZoom:
-      return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);
-    case CSSPropertyID::kOrientation:
-      return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kPortrait,
-                          CSSValueID::kLandscape>(range);
-    case CSSPropertyID::kViewportFit:
-      return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kContain,
-                          CSSValueID::kCover>(range);
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  NOTREACHED();
-  return nullptr;
-}
-
-bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
-                                                bool important) {
-  DCHECK(IsUASheetBehavior(context_->Mode()));
-
-  switch (prop_id) {
-    case CSSPropertyID::kWidth: {
-      CSSValue* min_width = ConsumeSingleViewportDescriptor(
-          range_, CSSPropertyID::kMinWidth, *context_);
-      if (!min_width)
-        return false;
-      CSSValue* max_width = min_width;
-      if (!range_.AtEnd()) {
-        max_width = ConsumeSingleViewportDescriptor(
-            range_, CSSPropertyID::kMaxWidth, *context_);
-      }
-      if (!max_width || !range_.AtEnd())
-        return false;
-      AddProperty(CSSPropertyID::kMinWidth, CSSPropertyID::kInvalid, *min_width,
-                  important, IsImplicitProperty::kNotImplicit,
-                  *parsed_properties_);
-      AddProperty(CSSPropertyID::kMaxWidth, CSSPropertyID::kInvalid, *max_width,
-                  important, IsImplicitProperty::kNotImplicit,
-                  *parsed_properties_);
-      return true;
-    }
-    case CSSPropertyID::kHeight: {
-      CSSValue* min_height = ConsumeSingleViewportDescriptor(
-          range_, CSSPropertyID::kMinHeight, *context_);
-      if (!min_height)
-        return false;
-      CSSValue* max_height = min_height;
-      if (!range_.AtEnd()) {
-        max_height = ConsumeSingleViewportDescriptor(
-            range_, CSSPropertyID::kMaxHeight, *context_);
-      }
-      if (!max_height || !range_.AtEnd())
-        return false;
-      AddProperty(CSSPropertyID::kMinHeight, CSSPropertyID::kInvalid,
-                  *min_height, important, IsImplicitProperty::kNotImplicit,
-                  *parsed_properties_);
-      AddProperty(CSSPropertyID::kMaxHeight, CSSPropertyID::kInvalid,
-                  *max_height, important, IsImplicitProperty::kNotImplicit,
-                  *parsed_properties_);
-      return true;
-    }
-    case CSSPropertyID::kViewportFit:
-    case CSSPropertyID::kMinWidth:
-    case CSSPropertyID::kMaxWidth:
-    case CSSPropertyID::kMinHeight:
-    case CSSPropertyID::kMaxHeight:
-    case CSSPropertyID::kMinZoom:
-    case CSSPropertyID::kMaxZoom:
-    case CSSPropertyID::kZoom:
-    case CSSPropertyID::kUserZoom:
-    case CSSPropertyID::kOrientation: {
-      CSSValue* parsed_value =
-          ConsumeSingleViewportDescriptor(range_, prop_id, *context_);
-      if (!parsed_value || !range_.AtEnd())
-        return false;
-      AddProperty(prop_id, CSSPropertyID::kInvalid, *parsed_value, important,
-                  IsImplicitProperty::kNotImplicit, *parsed_properties_);
-      return true;
-    }
-    default:
-      return false;
-  }
 }
 
 bool CSSPropertyParser::ParseFontFaceDescriptor(

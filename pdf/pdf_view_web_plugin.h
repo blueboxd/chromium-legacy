@@ -81,7 +81,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public PdfAccessibilityActionHandler,
                                public PreviewModeClient::Client {
  public:
-  // Do not save files with over 100 MB. This cap should be kept in sync with
+  // Do not save files larger than 100 MB. This cap should be kept in sync with
   // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.ts.
   static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
 
@@ -119,7 +119,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual blink::WebURL CompleteURL(
         const blink::WebString& partial_url) const = 0;
 
-    // Enqueues a "message" event carrying `message` to the plugin embedder.
+    // Enqueues a "message" event carrying `message` to the embedder.
+    // Messages are guaranteed to be received in the order that they are sent.
+    // This method is non-blocking.
     virtual void PostMessage(base::Value::Dict message) {}
 
     // Invalidates the entire web plugin container and schedules a paint of the
@@ -321,6 +323,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                                const char16_t* term,
                                                bool case_sensitive) override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
+  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormFieldFocusChange(PDFEngine::FocusFieldType type) override;
   bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() const override;
@@ -372,21 +375,18 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Initializes the plugin for testing, bypassing certain consistency checks.
   bool InitializeForTesting();
 
-  const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
+  const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect_; }
 
-  float GetDeviceScaleForTesting() const { return device_scale(); }
+  float GetDeviceScaleForTesting() const { return device_scale_; }
 
  protected:
   // PdfViewPluginBase:
-  std::unique_ptr<PDFiumEngine> CreateEngine(
-      PDFEngine::Client* client,
-      PDFiumFormFiller::ScriptOption script_option) override;
   const PDFiumEngine* engine() const override;
   PDFiumEngine* engine() override;
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   void OnPrintPreviewLoaded() override;
   void OnDocumentLoadComplete() override;
-  void SendMessage(base::Value::Dict message) override;
+  void SendLoadingProgress(double percentage) override;
   void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,
@@ -691,6 +691,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // the document finishes loading.
   bool did_call_start_loading_ = false;
 
+  // The last document load progress value sent to the web page.
+  double last_progress_sent_ = 0.0;
+
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
 
@@ -701,7 +704,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The URL currently under the cursor.
   std::string link_under_cursor_;
 
-  // The id of the current find operation, or -1 if no current operation is
+  // The ID of the current find operation, or -1 if no current operation is
   // present.
   int find_identifier_ = -1;
 

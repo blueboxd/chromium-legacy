@@ -241,7 +241,6 @@ public abstract class ChromeFeatureList {
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
     public static final String BACK_GESTURE_REFACTOR = "BackGestureRefactorAndroid";
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
-    public static final String BULK_TAB_RESTORE = "BulkTabRestore";
     public static final String CACHE_DEPRECATED_SYSTEM_LOCATION_SETTING =
             "CacheDeprecatedSystemLocationSetting";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
@@ -399,6 +398,7 @@ public abstract class ChromeFeatureList {
     public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
     public static final String LENS_ON_QUICK_ACTION_SEARCH_WIDGET = "LensOnQuickActionSearchWidget";
     public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
+    public static final String LOCAL_WEB_APPROVALS = "LocalWebApprovals";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
     public static final String MARK_HTTP_AS = "MarkHttpAs";
@@ -419,8 +419,6 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_SYNC_ERROR = "MessagesForAndroidSyncError";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
-    public static final String MOST_RECENT_TAB_ON_BACKGROUND_CLOSE_TAB =
-            "MostRecentTabOnBackgroundCloseTab";
     public static final String NEW_INSTANCE_FROM_DRAGGED_LINK = "NewInstanceFromDraggedLink";
     public static final String NEW_TAB_PAGE_TILES_TITLE_WRAP_AROUND =
             "NewTabPageTilesTitleWrapAround";
@@ -617,6 +615,7 @@ public abstract class ChromeFeatureList {
     public static final String WEB_FEED_AWARENESS = "WebFeedAwareness";
     public static final String WEB_FEED_ONBOARDING = "WebFeedOnboarding";
     public static final String WEB_FEED_SORT = "WebFeedSort";
+    public static final String WEB_FILTER_INTERSTITIAL_REFRESH = "WebFilterInterstitialRefresh";
     public static final String WEBNOTES_DYNAMIC_TEMPLATES = "WebNotesDynamicTemplates";
     public static final String WEBNOTES_STYLIZE = "WebNotesStylize";
     public static final String WEB_APK_INSTALL_COMPLETE_NOTIFICATION =

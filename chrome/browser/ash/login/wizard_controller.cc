@@ -50,7 +50,6 @@
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
-#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/hwid_checker.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/login_wizard.h"
@@ -396,8 +395,7 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(WizardContext* wizard_context)
     : screen_manager_(std::make_unique<ScreenManager>()),
-      wizard_context_(wizard_context),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
+      wizard_context_(wizard_context) {
   wizard_context_->skip_post_login_screens_for_tests =
       switches::ShouldSkipOobePostLogin();
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
@@ -471,8 +469,6 @@ void WizardController::Init(OobeScreenId first_screen) {
   // Do not show the HID Detection screen if device is owned.
   if (!device_is_owned && HIDDetectionScreen::CanShowScreen() &&
       first_screen == ash::OOBE_SCREEN_UNKNOWN) {
-    // Temp logs for crbug/1274589
-    VLOG(1) << "CheckIsScreenRequired";
     // TODO(https://crbug.com/1275960): Move logic into
     // HIDDetectionScreen::MaybeSkip.
     GetScreen<HIDDetectionScreen>()->CheckIsScreenRequired(
@@ -2115,8 +2111,6 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(
 }
 
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
-  // Temp logs for crbug/1274589
-  VLOG(1) << "OnHIDScreenNecessityCheck " << screen_needed;
   if (!GetOobeUI())
     return;
 
@@ -2171,7 +2165,6 @@ bool WizardController::CanNavigateTo(OobeScreenId screen_id) {
 }
 
 void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
-  // Temp logs for crbug/1274589
   VLOG(1) << "AdvanceToScreen " << screen_id;
   if (!CanNavigateTo(screen_id)) {
     LOG(WARNING) << "Cannot advance to screen : " << screen_id

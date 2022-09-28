@@ -61,10 +61,12 @@ public class SecurePaymentConfirmationAuthnTest {
 
     private boolean mIsPaymentConfirmed;
     private boolean mIsPaymentCancelled;
-    private Callback<Boolean> mCallback;
+    private boolean mIsPaymentOptOut;
+    private Callback<Boolean> mResponseCallback;
+    private Runnable mOptOutCallback;
 
     private PaymentItem mTotal;
-    private Drawable mDrawable;
+    private Drawable mPaymentIcon;
     private SecurePaymentConfirmationAuthnController mAuthnController;
 
     /** The shadow of BottomSheetControllerProvider. Not to use outside the test. */
@@ -105,19 +107,22 @@ public class SecurePaymentConfirmationAuthnTest {
                         Mockito.anyString());
 
         // Our credit card 'icon' is just a red square.
-        mDrawable = new BitmapDrawable(RuntimeEnvironment.application.getResources(),
+        mPaymentIcon = new BitmapDrawable(RuntimeEnvironment.application.getResources(),
                 Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */, 1 /* height */,
                         Bitmap.Config.ARGB_8888));
         mTotal = new PaymentItem();
         mTotal.amount = new PaymentCurrencyAmount();
         mTotal.amount.currency = "USD";
         mTotal.amount.value = "1.00";
-        mCallback = (response) -> {
+        mResponseCallback = (response) -> {
             if (response) {
                 mIsPaymentConfirmed = true;
             } else {
                 mIsPaymentCancelled = true;
             }
+        };
+        mOptOutCallback = () -> {
+            mIsPaymentOptOut = true;
         };
 
         ShadowBottomSheetControllerProvider.setBottomSheetController(
@@ -142,17 +147,22 @@ public class SecurePaymentConfirmationAuthnTest {
     }
 
     private boolean show() {
+        return show(/*enableOptOut=*/false);
+    }
+
+    private boolean show(boolean enableOptOut) {
         if (mAuthnController == null) return false;
 
         mIsPaymentConfirmed = false;
         mIsPaymentCancelled = false;
+        mIsPaymentOptOut = false;
+
         org.chromium.url.internal.mojom.Origin mojoOrigin =
                 new org.chromium.url.internal.mojom.Origin();
-        Runnable optOutCallback = () -> {};
-        boolean showOptOut = false;
-        String rpId = "";
-        return mAuthnController.show(mDrawable, "paymentInstrumentLabel", mTotal, mCallback,
-                optOutCallback, "payee name", new Origin(mojoOrigin), showOptOut, rpId);
+        String rpId = "rp.example";
+        return mAuthnController.show(mPaymentIcon, "paymentInstrumentLabel", mTotal,
+                mResponseCallback, mOptOutCallback, "payee name", new Origin(mojoOrigin),
+                enableOptOut, rpId);
     }
 
     private void setWindowAndroid(WindowAndroid windowAndroid, WebContents webContents) {
@@ -181,6 +191,17 @@ public class SecurePaymentConfirmationAuthnTest {
         show();
         mAuthnController.getView().mCancelButton.performClick();
         Assert.assertTrue(mIsPaymentCancelled);
+        Assert.assertTrue(mAuthnController.isHidden());
+    }
+
+    @Test
+    @Feature({"Payments"})
+    public void testOnAuthnOptOut() {
+        createAuthnController();
+        show(/*enableOptOut=*/true);
+        SecurePaymentConfirmationAuthnView authnView = mAuthnController.getView();
+        authnView.mOptOutText.getClickableSpans()[0].onClick(authnView.mOptOutText);
+        Assert.assertTrue(mIsPaymentOptOut);
         Assert.assertTrue(mAuthnController.isHidden());
     }
 
@@ -253,5 +274,21 @@ public class SecurePaymentConfirmationAuthnTest {
         createAuthnController();
         Assert.assertTrue(show());
         Assert.assertFalse(show());
+    }
+
+    @Test
+    @Feature({"Payments"})
+    public void testShowHandlesNullIcon() {
+        createAuthnController();
+
+        // First validate that our payment icon is used in a normal flow.
+        show();
+        Assert.assertEquals(mPaymentIcon, mAuthnController.getView().mPaymentIcon.getDrawable());
+        mAuthnController.hide();
+
+        // Then make sure it is replaced if we pass in a null bitmap.
+        mPaymentIcon = new BitmapDrawable();
+        show();
+        Assert.assertNotEquals(mPaymentIcon, mAuthnController.getView().mPaymentIcon.getDrawable());
     }
 }

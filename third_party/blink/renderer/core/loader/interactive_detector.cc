@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -411,8 +411,7 @@ void InteractiveDetector::OnLongTaskDetected(base::TimeTicks start_time,
 
 void InteractiveDetector::OnFirstContentfulPaint(
     base::TimeTicks first_contentful_paint) {
-  // Should not set FCP twice.
-  DCHECK(page_event_times_.first_contentful_paint.is_null());
+  // TODO(yoav): figure out what we should do when FCP is set multiple times!
   page_event_times_.first_contentful_paint = first_contentful_paint;
   if (clock_->NowTicks() - first_contentful_paint >= kTimeToInteractiveWindow) {
     // We may have reached TTI already. Check right away.

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1724,10 +1724,9 @@ void ApplyColorSchemeValue(StyleResolverState& state,
 
   state.StyleRef().SetColorScheme(std::move(color_schemes));
 
-  Settings* settings = document.GetSettings();
-  bool force_dark = settings ? settings->GetForceDarkModeEnabled() : false;
   state.StyleRef().SetUsedColorScheme(
-      flags, document.GetStyleEngine().GetPreferredColorScheme(), force_dark);
+      flags, document.GetStyleEngine().GetPreferredColorScheme(),
+      document.GetStyleEngine().GetForceDarkModeEnabled());
 
   if (flags & static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark)) {
     // Record kColorSchemeDarkSupportedOnRoot if dark is present (though dark

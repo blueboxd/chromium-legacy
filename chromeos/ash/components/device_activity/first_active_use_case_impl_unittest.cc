@@ -23,8 +23,11 @@ namespace psm_rlwe = private_membership::rlwe;
 
 namespace {
 
-// Initialize fake values used by the FirstActiveUseCaseImpl.
-constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
+// Initialize fake value used by the FirstActiveUseCaseImpl.
+// This secret should be of exactly length 64, since it is a 256 bit string
+// encoded as a hexadecimal.
+constexpr char kFakePsmDeviceActiveSecret[] =
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
 // TODO(hirthanan): Enable when rolling out check membership requests for the
 // first active use case.
@@ -81,27 +84,10 @@ TEST_F(FirstActiveUseCaseImplTest, ValidateWindowIdFormattedCorrectly) {
       first_active_use_case_impl_->GenerateUTCWindowIdentifier(
           new_first_active_ts);
 
-  EXPECT_EQ(window_id.size(), 8);
-  EXPECT_EQ(window_id, "20220101");
+  EXPECT_EQ(window_id, "FIRST_ACTIVE");
 }
 
-TEST_F(FirstActiveUseCaseImplTest, SameDayTimestampsHaveSameWindowId) {
-  base::Time first_active_ts_1;
-  base::Time first_active_ts_2;
-
-  EXPECT_TRUE(
-      base::Time::FromString("01 Jan 2022 00:00:00 GMT", &first_active_ts_1));
-  EXPECT_TRUE(
-      base::Time::FromString("01 Jan 2022 23:59:59 GMT", &first_active_ts_2));
-
-  EXPECT_EQ(first_active_use_case_impl_->GenerateUTCWindowIdentifier(
-                first_active_ts_1),
-            first_active_use_case_impl_->GenerateUTCWindowIdentifier(
-                first_active_ts_2));
-}
-
-TEST_F(FirstActiveUseCaseImplTest,
-       DifferentDayTimestampsHaveDifferentWindowId) {
+TEST_F(FirstActiveUseCaseImplTest, DifferentDayTimestampsHaveSameWindowId) {
   base::Time first_active_ts_1;
   base::Time first_active_ts_2;
 
@@ -117,10 +103,48 @@ TEST_F(FirstActiveUseCaseImplTest,
       first_active_use_case_impl_->GenerateUTCWindowIdentifier(
           first_active_ts_2);
 
-  EXPECT_NE(first_active_use_case_impl_->GenerateUTCWindowIdentifier(
+  EXPECT_EQ(first_active_use_case_impl_->GenerateUTCWindowIdentifier(
                 first_active_ts_1),
             first_active_use_case_impl_->GenerateUTCWindowIdentifier(
                 first_active_ts_2));
+}
+
+TEST_F(FirstActiveUseCaseImplTest, DevicePingIsAlwaysRequired) {
+  base::Time first_active_ts_1;
+  base::Time first_active_ts_2;
+
+  EXPECT_TRUE(
+      base::Time::FromString("01 Jan 2022 00:00:00 GMT", &first_active_ts_1));
+  EXPECT_TRUE(
+      base::Time::FromString("01 Jan 2023 00:00:00 GMT", &first_active_ts_2));
+
+  EXPECT_TRUE(
+      first_active_use_case_impl_->IsDevicePingRequired(first_active_ts_1));
+  EXPECT_TRUE(
+      first_active_use_case_impl_->IsDevicePingRequired(first_active_ts_2));
+}
+
+TEST_F(FirstActiveUseCaseImplTest, EncryptAndDecryptTimestampPsmValue) {
+  base::Time first_active_ts;
+
+  EXPECT_TRUE(
+      base::Time::FromUTCString("2022-01-01 00:00:00 UTC", &first_active_ts));
+
+  // Check that we can successfully encrypt the |first_active_ts| using AES-256.
+  EXPECT_TRUE(first_active_use_case_impl_->EncryptPsmValueAsCiphertext(
+      first_active_ts));
+
+  std::string first_active_ts_ciphertext =
+      first_active_use_case_impl_->GetTsCiphertext();
+
+  EXPECT_GT(first_active_ts_ciphertext.size(), 0);
+
+  // Try decrypting the stored ciphertext.
+  base::Time decrypt_ts =
+      first_active_use_case_impl_->DecryptPsmValueAsTimestamp(
+          first_active_ts_ciphertext);
+
+  EXPECT_EQ(decrypt_ts, first_active_ts);
 }
 
 }  // namespace device_activity

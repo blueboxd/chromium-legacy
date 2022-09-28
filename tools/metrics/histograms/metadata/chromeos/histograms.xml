@@ -718,6 +718,30 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Debugd.Perf.GetBigFeedbackLogs.{SubTaskName}"
+    units="ms" expires_after="2023-07-01">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the total time it takes for each sub task of
+    LogTool::GetBigFeedbackLogs to complete. Recording happens on each call to
+    debugd's GetBigFeedbackLogs.
+  </summary>
+  <token key="SubTaskName">
+    <variant name="CreateConnectivityReport"/>
+    <variant name="GetArcBugReport"/>
+    <variant name="GetBluetoothBqr"/>
+    <variant name="GetLsbReleaseInfo"/>
+    <variant name="GetOsReleaseInfo"/>
+    <variant name="GetPerfData"/>
+    <variant name="kCommandLogs"/>
+    <variant name="kCommandLogsVerbose"/>
+    <variant name="kFeedbackLogs"/>
+    <variant name="PopulateDictionaryValue"/>
+    <variant name="SerializeLogsAsJSON"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.Debugd.Perf.{FunctionName}" units="ms"
     expires_after="2023-01-01">
   <owner>enlightened@google.com</owner>
@@ -1159,7 +1183,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-03-19">
+    enum="LinkCapturingEvent" expires_after="2023-03-26">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1512,7 +1536,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MessageCenter.ScrollActionReason"
-    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2023-01-22">
+    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2023-03-26">
   <owner>yoshiki@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
@@ -1642,7 +1666,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Scraping.PasswordCountAll" units="passwords"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mslus@chromium.org</owner>
   <owner>emaxx@chromium.org</owner>
   <summary>

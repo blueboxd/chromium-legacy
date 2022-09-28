@@ -32,10 +32,10 @@ found in the LICENSE file.
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="4dp">
 
-                <include layout="@layout/personalized_signin_promo_view_header"/>
+                <include layout="@layout/sync_promo_view_header"/>
             </FrameLayout>
 
-            <include layout="@layout/personalized_signin_promo_view_body"/>
+            <include layout="@layout/sync_promo_view_body"/>
         </org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView>
     </org.chromium.components.browser_ui.widget.MaterialCardViewNoShadow>
 </FrameLayout>

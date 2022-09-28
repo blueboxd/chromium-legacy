@@ -82,15 +82,10 @@ BASE_FEATURE(kLightweightExtensionOverrideConfirmations,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-// Enables the reauth flow for authenticated profiles with invalid credentials
-// when the force sign-in policy is enabled.
-BASE_FEATURE(kForceSignInReauth,
-             "ForceSignInReauth",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables Bookmarks++ Side Panel UI.
-const base::Feature kPowerBookmarksSidePanel{"PowerBookmarksSidePanel",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kPowerBookmarksSidePanel,
+             "PowerBookmarksSidePanel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a more prominent active tab title in dark mode to aid with
 // accessibility.
@@ -375,7 +370,8 @@ BASE_FEATURE(kWin10TabSearchCaptionButton,
 #endif
 
 // Reduce resource usage when view is hidden by not rendering loading animation.
-const base::Feature kStopLoadingAnimationForHiddenWindow{
-    "StopLoadingAnimationForHiddenWindow", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kStopLoadingAnimationForHiddenWindow,
+             "StopLoadingAnimationForHiddenWindow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

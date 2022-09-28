@@ -239,7 +239,7 @@ chromium-metrics-reviews@google.com.
     <variant name="Matcher" summary="to run the matcher"/>
     <variant name="Overall"
         summary="between the detection of the finger and the match/no-match
-                 event being sent to the Application Processor(AP)."/>
+                 event being sent to the Application Processor(AP)"/>
   </token>
 </histogram>
 
@@ -253,44 +253,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Fingerprint.Updater.NoUpdate.Duration.Overall" units="ms"
+<histogram name="Fingerprint.Updater.{Outcome}" enum="FingerprintUpdaterReason"
+    expires_after="2023-04-05">
+  <owner>tomhughes@chromium.org</owner>
+  <owner>hesling@chromium.org</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>Tracks the fingerprint firmware updater's {Outcome}.</summary>
+  <token key="Outcome">
+    <variant name="Reason" summary="reason(s) for re-flashing"/>
+    <variant name="Status" summary="overall status"/>
+  </token>
+</histogram>
+
+<histogram name="Fingerprint.Updater.{Outcome}.Duration.Overall" units="ms"
     expires_after="2023-04-05">
   <owner>tomhughes@chromium.org</owner>
   <owner>hesling@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
     Measures the total time it takes to run the fingerprint firmware updater
-    when an update was not necessary.
+    when an update was {Outcome}.
   </summary>
-</histogram>
-
-<histogram name="Fingerprint.Updater.Reason" enum="FingerprintUpdaterReason"
-    expires_after="2023-04-05">
-  <owner>tomhughes@chromium.org</owner>
-  <owner>hesling@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Tracks the fingerprint firmware updater's reason(s) for re-flashing.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Updater.Status" enum="FingerprintUpdaterStatus"
-    expires_after="2023-04-05">
-  <owner>tomhughes@chromium.org</owner>
-  <owner>hesling@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>Tracks the fingerprint firmware updater's overall status.</summary>
-</histogram>
-
-<histogram name="Fingerprint.Updater.Update.Duration.Overall" units="ms"
-    expires_after="2023-04-05">
-  <owner>tomhughes@chromium.org</owner>
-  <owner>hesling@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the total time it takes to run the fingerprint firmware updater
-    when an update was necessary.
-  </summary>
+  <token key="Outcome">
+    <variant name="NoUpdate" summary="not necessary"/>
+    <variant name="Update" summary="necessary"/>
+  </token>
 </histogram>
 
 </histograms>

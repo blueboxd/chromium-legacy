@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -514,14 +514,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           MediaSourceDurationTruncatingBuffered;
       break;
-    case DeprecationIssueType::kNavigateEventRestoreScroll:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          NavigateEventRestoreScroll;
-      break;
-    case DeprecationIssueType::kNavigateEventTransitionWhile:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          NavigateEventTransitionWhile;
-      break;
     case DeprecationIssueType::kNoSysexWebMIDIWithoutPermission:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           NoSysexWebMIDIWithoutPermission;
@@ -551,6 +543,10 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       break;
     case DeprecationIssueType::kPaymentInstruments:
       type = protocol::Audits::DeprecationIssueTypeEnum::PaymentInstruments;
+      break;
+    case DeprecationIssueType::kPaymentRequestCSPViolation:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          PaymentRequestCSPViolation;
       break;
     case DeprecationIssueType::kPersistentQuotaType:
       type = protocol::Audits::DeprecationIssueTypeEnum::PersistentQuotaType;

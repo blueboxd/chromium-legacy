@@ -4,6 +4,8 @@
 
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 
+#include "ash/constants/ash_features.h"
+#include "base/check.h"
 #include "chromeos/ash/components/login/auth/public/session_auth_factors.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -313,9 +315,17 @@ void UserContext::SetAuthFactorsConfiguration(
   auth_factors_configuration_ = std::move(auth_factors);
 }
 
-const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration()
-    const {
-  return auth_factors_configuration_;
+const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration() {
+  DCHECK(features::IsUseAuthFactorsEnabled());
+  if (!auth_factors_configuration_.has_value()) {
+    // Crash with debug assertions, try to stay alive otherwise. This method
+    // could be const if we didn't set auth_factors_configuration_ if
+    // necessary.
+    DCHECK(false) << "AuthFactorsConfiguration has not been set";
+    auth_factors_configuration_ = AuthFactorsConfiguration();
+  }
+
+  return *auth_factors_configuration_;
 }
 
 const std::string& UserContext::GetAuthSessionId() const {

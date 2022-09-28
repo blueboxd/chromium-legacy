@@ -82,6 +82,7 @@
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -162,7 +163,7 @@ bool IsWindowAboveContainer(aura::Window* window,
     aura::Window* common_parent = target->parent();
     DCHECK_EQ(common_parent, blocking->parent());
     const aura::Window::Windows& windows = common_parent->children();
-    auto blocking_iter = std::find(windows.begin(), windows.end(), blocking);
+    auto blocking_iter = base::ranges::find(windows, blocking);
     // If the target window is above blocking window, the window can handle
     // events.
     return std::find(blocking_iter, windows.end(), target) != windows.end();
@@ -495,9 +496,8 @@ RootWindowController::~RootWindowController() {
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
-  root_window_controllers_->erase(std::find(root_window_controllers_->begin(),
-                                            root_window_controllers_->end(),
-                                            this));
+  root_window_controllers_->erase(
+      base::ranges::find(*root_window_controllers_, this));
 }
 
 RootWindowController* RootWindowController::CreateForPrimaryDisplay(
@@ -826,21 +826,19 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                        ui::kColorAshSystemUIMenuIcon));
 
     // Append the "Show all suggestions" / "Hide all suggestions" item.
-    if (features::IsLauncherHideContinueSectionEnabled()) {
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-      if (app_list_controller->ShouldHideContinueSection()) {
-        menu_model->AddItemWithIcon(
-            ShelfContextMenuModel::MENU_SHOW_CONTINUE_SECTION,
-            l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION),
-            ui::ImageModel::FromVectorIcon(kLauncherShowContinueSectionIcon,
-                                           ui::kColorAshSystemUIMenuIcon));
-      } else {
-        menu_model->AddItemWithIcon(
-            ShelfContextMenuModel::MENU_HIDE_CONTINUE_SECTION,
-            l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
-            ui::ImageModel::FromVectorIcon(kLauncherHideContinueSectionIcon,
-                                           ui::kColorAshSystemUIMenuIcon));
-      }
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    if (app_list_controller->ShouldHideContinueSection()) {
+      menu_model->AddItemWithIcon(
+          ShelfContextMenuModel::MENU_SHOW_CONTINUE_SECTION,
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION),
+          ui::ImageModel::FromVectorIcon(kLauncherShowContinueSectionIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
+    } else {
+      menu_model->AddItemWithIcon(
+          ShelfContextMenuModel::MENU_HIDE_CONTINUE_SECTION,
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
+          ui::ImageModel::FromVectorIcon(kLauncherHideContinueSectionIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
     }
   }
 

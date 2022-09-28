@@ -6382,7 +6382,8 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
 std::vector<blink::mojom::EpochTopicPtr>
 ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
     const url::Origin& context_origin,
-    content::RenderFrameHost* main_frame) {
+    content::RenderFrameHost* main_frame,
+    bool observe) {
   browsing_topics::BrowsingTopicsService* browsing_topics_service =
       browsing_topics::BrowsingTopicsServiceFactory::GetForProfile(
           Profile::FromBrowserContext(
@@ -6393,7 +6394,7 @@ ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
     return {};
 
   auto topics = browsing_topics_service->GetBrowsingTopicsForJsApi(
-      context_origin, main_frame);
+      context_origin, main_frame, observe);
 
   // Compare the provided topics to the real (i.e. non random) topics available
   // for the site, this allows filtering out of the randomly generated topics
@@ -6480,8 +6481,10 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
   DCHECK(render_frame_host);
 
   // Paste requires either (1) user activation, ...
-  if (render_frame_host->HasTransientUserActivation())
+  if (WebContents::FromRenderFrameHost(render_frame_host)
+          ->HasRecentInteractiveInputEvent()) {
     return true;
+  }
 
   // (2) granted web permission, ...
   content::BrowserContext* browser_context =
@@ -6950,4 +6953,24 @@ bool ChromeContentBrowserClient::ShouldSendOutermostOriginToRenderer(
 #else
   return false;
 #endif
+}
+
+bool ChromeContentBrowserClient::IsFileSystemURLNavigationAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // filesystem: URLs for Chrome Apps are in the following format:
+  // `filesystem:chrome-extension://<extension-id>/...`
+  if (!url.SchemeIsFileSystem())
+    return false;
+  // Once converted into an origin, we expect the following:
+  // scheme() is chrome-extension: (filesystem: is automatically discarded)
+  // host() is the extension-id
+  const url::Origin origin = url::Origin::Create(url);
+  if (origin.scheme() == extensions::kExtensionScheme) {
+    const std::string& extension_id = origin.host();
+    return extensions::util::IsChromeApp(extension_id, browser_context);
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return false;
 }

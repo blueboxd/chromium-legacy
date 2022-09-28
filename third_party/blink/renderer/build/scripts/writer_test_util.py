@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,8 +9,6 @@ import os
 import shutil
 import tempfile
 import unittest
-
-from json5_generator import Json5File, Writer
 
 
 @contextlib.contextmanager

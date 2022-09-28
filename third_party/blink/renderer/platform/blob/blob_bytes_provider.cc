@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,27 +97,6 @@ class BlobBytesStreamer {
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
-
-// This keeps the process alive while blobs are being transferred.
-void IncreaseChildProcessRefCount() {
-  if (!WTF::IsMainThread()) {
-    PostCrossThreadTask(*Thread::MainThread()->GetDeprecatedTaskRunner(),
-                        FROM_HERE,
-                        CrossThreadBindOnce(&IncreaseChildProcessRefCount));
-    return;
-  }
-  Platform::Current()->SuddenTerminationChanged(false);
-}
-
-void DecreaseChildProcessRefCount() {
-  if (!WTF::IsMainThread()) {
-    PostCrossThreadTask(*Thread::MainThread()->GetDeprecatedTaskRunner(),
-                        FROM_HERE,
-                        CrossThreadBindOnce(&DecreaseChildProcessRefCount));
-    return;
-  }
-  Platform::Current()->SuddenTerminationChanged(true);
-}
 
 }  // namespace
 
@@ -262,6 +241,29 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
     return;
   }
   std::move(callback).Run(info.last_modified);
+}
+
+// This keeps the process alive while blobs are being transferred.
+void BlobBytesProvider::IncreaseChildProcessRefCount() {
+  if (!WTF::IsMainThread()) {
+    PostCrossThreadTask(
+        *Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted()),
+        FROM_HERE,
+        CrossThreadBindOnce(&BlobBytesProvider::IncreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(false);
+}
+
+void BlobBytesProvider::DecreaseChildProcessRefCount() {
+  if (!WTF::IsMainThread()) {
+    PostCrossThreadTask(
+        *Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted()),
+        FROM_HERE,
+        CrossThreadBindOnce(&BlobBytesProvider::DecreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(true);
 }
 
 }  // namespace blink

@@ -1211,12 +1211,6 @@ BASE_FEATURE(kLauncherDismissButtonsOnSortNudgeAndToast,
              "LauncherDismissButtonsOnSortNudgeAndToast",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enabled, adds UI to the launcher that allows the user to hide the
-// continue tasks and recent apps.
-BASE_FEATURE(kLauncherHideContinueSection,
-             "LauncherHideContinueSection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Uses short intervals for launcher nudge for testing if enabled.
 BASE_FEATURE(kLauncherNudgeShortInterval,
              "LauncherNudgeShortInterval",
@@ -1442,12 +1436,6 @@ BASE_FEATURE(kPerDeskShelf, "PerDeskShelf", base::FEATURE_DISABLED_BY_DEFAULT);
 // resizing. This reduces jank on low end devices.
 BASE_FEATURE(kPerformantSplitViewResizing,
              "PerformantSplitViewResizing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Provides a UI for users to customize their wallpapers, screensaver and
-// avatars.
-BASE_FEATURE(kPersonalizationHub,
-             "PersonalizationHub",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Provides a UI for users to view information about their Android phone
@@ -2024,10 +2012,16 @@ BASE_FEATURE(kDeviceActiveClientDailyCheckMembership,
              "DeviceActiveClientDailyCheckMembership",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables or disables PSM CheckIn for the first active device active pings
+// on ChromeOS.
+BASE_FEATURE(kDeviceActiveClientFirstActiveCheckIn,
+             "DeviceActiveClientFirstActiveCheckIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables PSM CheckMembership for all time device active pings
 // on ChromeOS.
 BASE_FEATURE(kDeviceActiveClientFirstActiveCheckMembership,
-             "DeviceActiveClientAllTimeCheckMembership",
+             "DeviceActiveClientFirstActiveCheckMembership",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables PSM CheckIn for the monthly device active pings
@@ -2112,8 +2106,7 @@ bool IsAllowAmbientEQEnabled() {
 }
 
 bool IsAmbientModeAnimationEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature) &&
-         IsPersonalizationHubEnabled();
+  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature);
 }
 
 bool IsAmbientModeDevUseProdEnabled() {
@@ -2496,11 +2489,6 @@ bool IsLauncherDismissButtonsOnSortNudgeAndToastEnabled() {
              kLauncherDismissButtonsOnSortNudgeAndToast);
 }
 
-bool IsLauncherHideContinueSectionEnabled() {
-  return IsProductivityLauncherEnabled() &&
-         base::FeatureList::IsEnabled(kLauncherHideContinueSection);
-}
-
 bool IsLauncherNudgeShortIntervalEnabled() {
   return IsProductivityLauncherEnabled() &&
          base::FeatureList::IsEnabled(kLauncherNudgeShortInterval);
@@ -2664,10 +2652,6 @@ bool IsPhoneHubFeatureSetupErrorHandlingEnabled() {
 
 bool IsPerformantSplitViewResizingEnabled() {
   return base::FeatureList::IsEnabled(kPerformantSplitViewResizing);
-}
-
-bool IsPersonalizationHubEnabled() {
-  return base::FeatureList::IsEnabled(kPersonalizationHub);
 }
 
 bool IsPhoneHubEnabled() {

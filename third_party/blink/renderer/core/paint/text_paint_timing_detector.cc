@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ void TextPaintTimingDetector::ReportPresentationTime(
     }
   }
   AssignPaintTimeToQueuedRecords(frame_index, timestamp);
-  if (ltp_manager_)
+  if (recording_largest_text_paint_)
     ltp_manager_->UpdateCandidate();
 }
 
@@ -177,8 +177,8 @@ void TextPaintTimingDetector::RecordAggregatedText(
   }
 }
 
-void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
-  ltp_manager_.Clear();
+void TextPaintTimingDetector::SetRecordingLargestTextPaint(bool recording) {
+  recording_largest_text_paint_ = recording;
 }
 
 void TextPaintTimingDetector::ReportLargestIgnoredText() {

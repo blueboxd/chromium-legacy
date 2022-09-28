@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,7 +36,6 @@ from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import CodeGenExpr
-from .codegen_expr import expr_and
 from .codegen_expr import expr_from_exposure
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format

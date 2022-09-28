@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,6 +254,10 @@ HTMLFencedFrameElement::FencedFrameDelegate::Create(
             "allow-top-navigation-by-user-activation."));
     RecordFencedFrameCreationOutcome(
         FencedFrameCreationOutcome::kSandboxFlagsNotSet);
+    RecordFencedFrameUnsandboxedFlags(
+        outer_element->GetExecutionContext()->GetSandboxFlags());
+    RecordFencedFrameFailedSandboxLoadInTopLevelFrame(
+        outer_element->GetDocument().GetFrame()->IsMainFrame());
     return nullptr;
   }
 

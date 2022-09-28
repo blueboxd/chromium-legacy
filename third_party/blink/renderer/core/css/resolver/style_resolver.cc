@@ -1537,11 +1537,9 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
   initial_style->SetTapHighlightColor(
       ComputedStyleInitialValues::InitialTapHighlightColor());
 
-  Settings* settings = GetDocument().GetSettings();
-  bool force_dark = settings ? settings->GetForceDarkModeEnabled() : false;
   initial_style->SetUsedColorScheme(engine.GetPageColorSchemes(),
                                     engine.GetPreferredColorScheme(),
-                                    force_dark);
+                                    engine.GetForceDarkModeEnabled());
 
   FontDescription document_font_description =
       initial_style->GetFontDescription();
@@ -2152,11 +2150,10 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
 void StyleResolver::ComputeFont(Element& element,
                                 ComputedStyle* style,
                                 const CSSPropertyValueSet& property_set) {
-  static const CSSProperty* properties[7] = {
+  static const CSSProperty* properties[6] = {
       &GetCSSPropertyFontSize(),        &GetCSSPropertyFontFamily(),
       &GetCSSPropertyFontStretch(),     &GetCSSPropertyFontStyle(),
       &GetCSSPropertyFontVariantCaps(), &GetCSSPropertyFontWeight(),
-      &GetCSSPropertyLineHeight(),
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
@@ -2164,11 +2161,11 @@ void StyleResolver::ComputeFont(Element& element,
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(style));
   state.SetStyle(style);
+  if (const ComputedStyle* parent_style = element.GetComputedStyle()) {
+    state.SetParentStyle(parent_style);
+  }
 
   for (const CSSProperty* property : properties) {
-    // TODO(futhark): Handle lh unit properly
-    if (property->IDEquals(CSSPropertyID::kLineHeight))
-      state.UpdateFont();
     // TODO(futhark): If we start supporting fonts on ShadowRoot.fonts in
     // addition to Document.fonts, we need to pass the correct TreeScope instead
     // of GetDocument() in the ScopedCSSValue below.
@@ -2178,6 +2175,7 @@ void StyleResolver::ComputeFont(Element& element,
             *property_set.GetPropertyCSSValue(property->PropertyID()),
             &GetDocument()));
   }
+  state.UpdateFont();
 }
 
 void StyleResolver::UpdateMediaType() {

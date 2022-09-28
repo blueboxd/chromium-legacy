@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,11 +131,13 @@ class CORE_EXPORT TextPaintTimingDetector final
                             const PropertyTreeStateOrAlias&);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
-  void StopRecordingLargestTextPaint();
+  void SetRecordingLargestTextPaint(bool);
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
   }
-  inline bool IsRecordingLargestTextPaint() const { return ltp_manager_; }
+  inline bool IsRecordingLargestTextPaint() const {
+    return recording_largest_text_paint_;
+  }
   inline TextRecord* UpdateCandidate() {
     return ltp_manager_->UpdateCandidate();
   }
@@ -178,6 +180,7 @@ class CORE_EXPORT TextPaintTimingDetector final
       texts_queued_for_paint_time_;
 
   Member<LargestTextPaintManager> ltp_manager_;
+  bool recording_largest_text_paint_ = true;
 
   // Used to decide which frame a record belongs to, monotonically increasing.
   uint32_t frame_index_ = 1;

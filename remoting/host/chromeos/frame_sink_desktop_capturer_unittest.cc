@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -65,6 +66,11 @@ constexpr auto kMinResolution = Size(320, 180);
 constexpr auto kMaxResolution = Size(3840, 2160);
 constexpr bool kFixedAspectRatio = false;
 
+const char kUmaKeyForCapturerCreated[] =
+    "Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Created";
+const char kUmaKeyForCapturerDestroyed[] =
+    "Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Destroyed";
+
 std::unique_ptr<viz::VideoFramePool> GetVideoFramePool(int capacity) {
   return std::make_unique<viz::SharedMemoryVideoFramePool>(capacity);
 }
@@ -72,6 +78,23 @@ std::unique_ptr<viz::VideoFramePool> GetVideoFramePool(int capacity) {
 std::string ToString(DesktopSize desktop_size) {
   return base::StringPrintf("%dX%d", desktop_size.width(),
                             desktop_size.height());
+}
+
+DesktopRect ToDesktopRect(Rect rect) {
+  return DesktopRect::MakeLTRB(rect.x(), rect.y(), rect.right(), rect.bottom());
+}
+
+auto HasUpdatedRegion(std::vector<DesktopRect> expected_rects) {
+  DesktopRegion expected_region;
+  for (DesktopRect rect : expected_rects) {
+    expected_region.AddRect(rect);
+  }
+
+  return testing::Property(
+      "updated_region", &DesktopFrame::updated_region,
+      testing::Truly([expected_region](const DesktopRegion& actual_region) {
+        return actual_region.Equals(expected_region);
+      }));
 }
 
 struct CaptureResult {
@@ -277,6 +300,15 @@ class FrameSinkDesktopCapturerTest : public testing::Test {
     return desktop_capturer_callback().WaitForResult();
   }
 
+  CaptureResult SendAndCaptureSingleFrame(
+      FrameParameters params = FrameParameters()) {
+    video_capturer_.SendFrame(params);
+    FlushForTesting();
+    capturer_.CaptureFrame();
+
+    return desktop_capturer_callback().WaitForResult();
+  }
+
   // We really want to flush the mojom pipe, but we can't as the mojom remote is
   // hidden inside ClientFrameSinkDesktopCapturer, so we simply RunUntilIdle()
   // instead.
@@ -306,10 +338,10 @@ TEST_F(FrameSinkDesktopCapturerTest,
        ShouldReturnTemporaryErrorIfNoFrameWasReceived) {
   StartCapturerForTesting();
 
-  capturer_.CaptureFrame();
+  CaptureResult result = CaptureFrame();
 
-  CaptureResult result = desktop_capturer_callback().WaitForResult();
   EXPECT_THAT(result.result, Eq(DesktopCapturer::Result::ERROR_TEMPORARY));
+  EXPECT_THAT(result.frame, Eq(nullptr));
 }
 
 TEST_F(FrameSinkDesktopCapturerTest, ShouldBindVideoCapturerInStart) {
@@ -344,8 +376,7 @@ TEST_F(FrameSinkDesktopCapturerTest, ShouldStartByCapturingThePrimaryDisplay) {
 TEST_F(FrameSinkDesktopCapturerTest, ShouldReturnSuccessIfFrameWasReceived) {
   StartCapturerForTesting();
 
-  video_capturer_.SendFrame();
-  CaptureResult result = CaptureFrame();
+  CaptureResult result = SendAndCaptureSingleFrame();
 
   EXPECT_THAT(result.result, Eq(DesktopCapturer::Result::SUCCESS));
 }
@@ -354,8 +385,8 @@ TEST_F(FrameSinkDesktopCapturerTest,
        ShouldReturnTheFrameSentByTheVideoCapturer) {
   StartCapturerForTesting();
 
-  video_capturer_.SendFrame(params().WithSize({110, 220}));
-  CaptureResult result = CaptureFrame();
+  CaptureResult result =
+      SendAndCaptureSingleFrame(params().WithSize({110, 220}));
   auto frame_size = result.frame->size();
 
   // Note we don't test the actual frame data but instead we just look at the
@@ -368,7 +399,7 @@ TEST_F(FrameSinkDesktopCapturerTest, ShouldReleaseMemoryOfUnusedFrames) {
 
   for (int i = 0; i < 10; i++) {
     video_capturer_.SendFrame();
-    CaptureFrame();
+    FlushForTesting();
   }
 
   // At this point the memory of all but the last frame should have been
@@ -381,25 +412,92 @@ TEST_F(FrameSinkDesktopCapturerTest, ShouldSetDpiOfFrame) {
   int scale_factor = 2.0;
   int dpi = ash_proxy().ScaleFactorToDpi(scale_factor);
 
-  video_capturer_.SendFrame(params().WithScaleFactor(scale_factor));
-  CaptureResult result = CaptureFrame();
+  CaptureResult result =
+      SendAndCaptureSingleFrame(params().WithScaleFactor(scale_factor));
 
   EXPECT_THAT(result.frame->dpi().x(), Eq(dpi));
   EXPECT_THAT(result.frame->dpi().y(), Eq(dpi));
 }
 
-TEST_F(FrameSinkDesktopCapturerTest, ShouldSetUpdatedRegionToWholeFrame) {
+TEST_F(FrameSinkDesktopCapturerTest, ShouldSetUpdatedRegionOfFrame) {
   StartCapturerForTesting();
 
   Rect updated_rect{50, 50, 250, 150};
-  video_capturer_.SendFrame(
-      params().WithSize(Size(800, 600)).WithUpdatedRegion(updated_rect));
+  // Ignore the first frame sent, as that will have the full frame size as
+  // updated rect.
+  SendAndCaptureSingleFrame(params().WithUpdatedRegion(Rect{10, 10, 200, 200}));
+
+  CaptureResult result =
+      SendAndCaptureSingleFrame(params().WithUpdatedRegion(updated_rect));
+
+  EXPECT_THAT(*result.frame, HasUpdatedRegion({ToDesktopRect(updated_rect)}));
+}
+
+TEST_F(FrameSinkDesktopCapturerTest,
+       ShouldSetWholeFrameAsUpdatedRegionForFirstFrameCaptured) {
+  StartCapturerForTesting();
+
+  Rect updated_rect{50, 50, 250, 150};
+  Size frame_size{800, 600};
+
+  CaptureResult result = SendAndCaptureSingleFrame(
+      params().WithSize(frame_size).WithUpdatedRegion(updated_rect));
+
+  EXPECT_THAT(*result.frame,
+              HasUpdatedRegion({ToDesktopRect(Rect{frame_size})}));
+}
+
+TEST_F(FrameSinkDesktopCapturerTest,
+       ShouldHaveAnEmptyUpdatedRegionWhenSameFrameIsCapturedTwice) {
+  StartCapturerForTesting();
+  Rect updated_rect{50, 50, 250, 150};
+
+  SendAndCaptureSingleFrame(params().WithUpdatedRegion(updated_rect));
   CaptureResult result = CaptureFrame();
 
-  auto expected_updated_region = result.frame->updated_region();
-  DesktopRegion desktop_region{DesktopRect::MakeLTRB(0, 0, 800, 600)};
+  auto updated_region = result.frame->updated_region();
+
   // No method to get the dimensions of updated region.
-  EXPECT_TRUE(expected_updated_region.Equals(desktop_region));
+  EXPECT_TRUE(updated_region.is_empty());
+}
+
+TEST_F(FrameSinkDesktopCapturerTest,
+       ShouldAggregateUpdatedRegionOfUnconsumedFrames) {
+  StartCapturerForTesting();
+  Rect updated_rect_1{50, 50, 250, 150};
+  Rect updated_rect_2{400, 600, 50, 50};
+  Size frame_size{800, 600};
+
+  SendAndCaptureSingleFrame(params().WithSize(frame_size));
+  video_capturer_.SendFrame(
+      params().WithSize(frame_size).WithUpdatedRegion(updated_rect_1));
+  video_capturer_.SendFrame(
+      params().WithSize(frame_size).WithUpdatedRegion(updated_rect_2));
+  CaptureResult result = CaptureFrame();
+
+  EXPECT_THAT(*result.frame, HasUpdatedRegion({ToDesktopRect(updated_rect_1),
+                                               ToDesktopRect(updated_rect_2)}));
+}
+
+TEST_F(FrameSinkDesktopCapturerTest,
+       ShouldSetWholeFrameAsUpdatedRegionIfFrameSizeChanges) {
+  StartCapturerForTesting();
+  Size first_frame_size{800, 600};
+  Rect first_frame_updated_rect{50, 50, 250, 150};
+  Size second_frame_size{600, 400};
+  Rect second_frame_updated_rect = {10, 50, 250, 150};
+
+  video_capturer_.SendFrame(params()
+                                .WithSize(first_frame_size)
+                                .WithUpdatedRegion(first_frame_updated_rect));
+  CaptureResult result = SendAndCaptureSingleFrame(
+      params()
+          .WithSize(second_frame_size)
+          .WithUpdatedRegion(second_frame_updated_rect));
+
+  // No method to get the dimensions of updated region.
+  EXPECT_THAT(*result.frame,
+              HasUpdatedRegion({ToDesktopRect(Rect{second_frame_size})}));
 }
 
 TEST_F(FrameSinkDesktopCapturerTest, ShouldSetDisplayBounds) {
@@ -407,8 +505,8 @@ TEST_F(FrameSinkDesktopCapturerTest, ShouldSetDisplayBounds) {
 
   StartCapturerForTesting();
 
-  video_capturer_.SendFrame(params().WithSize({width, height}));
-  CaptureResult result = CaptureFrame();
+  CaptureResult result =
+      SendAndCaptureSingleFrame(params().WithSize({width, height}));
 
   auto frame_rect = result.frame->rect();
   EXPECT_EQ(frame_rect.width(), width);
@@ -448,13 +546,28 @@ TEST_F(FrameSinkDesktopCapturerTest,
 
   ash_proxy().RemoveDisplay(222);
 
-  video_capturer_.SendFrame();
-  CaptureResult result = CaptureFrame();
+  CaptureResult result = SendAndCaptureSingleFrame();
 
   EXPECT_TRUE(source_updated);
   EXPECT_THAT(result.result,
               Eq(webrtc::DesktopCapturer::Result::ERROR_TEMPORARY));
   EXPECT_THAT(result.frame, IsNull());
+}
+
+TEST_F(FrameSinkDesktopCapturerTest,
+       ShouldSendUmaLogsOnCapturerConstructionAndDestruction) {
+  base::HistogramTester histogram_tester;
+
+  auto my_capturer = std::make_unique<FrameSinkDesktopCapturer>();
+  histogram_tester.ExpectUniqueSample(kUmaKeyForCapturerCreated, true, 1);
+
+  my_capturer = nullptr;
+  histogram_tester.ExpectUniqueSample(kUmaKeyForCapturerDestroyed, true, 1);
+}
+
+TEST_F(FrameSinkDesktopCapturerTest, ShouldNotCrashIfStartIsNeverCalled) {
+  auto my_capturer = std::make_unique<FrameSinkDesktopCapturer>();
+  my_capturer = nullptr;
 }
 
 }  // namespace remoting

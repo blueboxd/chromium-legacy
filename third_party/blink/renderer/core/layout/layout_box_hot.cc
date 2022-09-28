@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -341,6 +341,12 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         // overflowed), BlockSizeForFragmentation() cannot be used for cache
         // testing.
         if (cached_layout_result->IsBlockSizeForFragmentationClamped())
+          return nullptr;
+
+        // If the fragment was truncated at the fragmentation line, and since we
+        // have now moved relatively to the fragmentation line, we cannot re-use
+        // the fragment.
+        if (cached_layout_result->IsTruncatedByFragmentationLine())
           return nullptr;
 
         // TODO(layout-dev): This likely shouldn't be scoped to just OOFs, but

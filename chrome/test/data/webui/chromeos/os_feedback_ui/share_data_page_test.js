@@ -176,6 +176,9 @@ export function shareDataPageTestSuite() {
     // System info label is a localized string in HTML format.
     assertTrue(getElementContent('#sysInfoCheckboxLabel').length > 0);
 
+    // Performance trace label is a localized string in HTML format.
+    assertTrue(getElementContent('#performanceTraceCheckboxLabel').length > 0);
+
     // Privacy note is a long localized string in HTML format.
     assertTrue(page.i18nExists('privacyNote'));
     assertEquals(
@@ -673,19 +676,31 @@ export function shareDataPageTestSuite() {
   });
 
   /**
-   * Test that feedbackServiceProvider.openBluetoothLogsInfoDialog is called
-   * when #bluetoothLogsLink link is clicked.
+   * Test that clicking the #bluetoothLogsLink will open the dialog and set the
+   * focus on the close dialog icon button.
    */
-  test('openBluetoothLogsInfoDialog', async () => {
+  test('openBluetoothLogsDialog', async () => {
     await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
 
-    assertEquals(
-        0, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+    // The bluetooth dialog is not visible as default.
+    const closeDialogButton = getElement('#bluetoothDialogDoneButton');
+    assertFalse(isVisible(closeDialogButton));
 
+    // After clicking the #bluetoothLogsLink, the dialog pops up.
     getElement('#bluetoothLogsInfoLink').click();
+    assertTrue(isVisible(closeDialogButton));
 
-    assertEquals(
-        1, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
   });
 
   /**

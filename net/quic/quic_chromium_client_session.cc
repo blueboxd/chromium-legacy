@@ -296,8 +296,8 @@ base::Value NetLogQuicClientSessionParams(
   dict.Set("port", session_key->server_id().port());
   dict.Set("privacy_mode",
            PrivacyModeToDebugString(session_key->privacy_mode()));
-  dict.Set("network_isolation_key",
-           session_key->network_isolation_key().ToDebugString());
+  dict.Set("network_anonymization_key",
+           session_key->network_anonymization_key().ToDebugString());
   dict.Set("require_confirmation", require_confirmation);
   dict.Set("cert_verify_flags", cert_verify_flags);
   dict.Set("connection_id", connection_id.ToString());
@@ -347,9 +347,7 @@ class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
 
   NetworkAnonymizationKey GetNetworkAnonymizationKey() const override {
     if (session_) {
-      return NetworkAnonymizationKey::
-          CreateFromNetworkIsolationKeyTemporaryMigrationHelper(
-              session_->quic_session_key().network_isolation_key());
+      return session_->quic_session_key().network_anonymization_key();
     }
     return NetworkAnonymizationKey();
   }
@@ -1542,10 +1540,7 @@ bool QuicChromiumClientSession::CanPool(
 
   return SpdySession::CanPool(
       transport_security_state_, ssl_info, *ssl_config_service_,
-      session_key_.host(), hostname,
-      NetworkAnonymizationKey::
-          CreateFromNetworkIsolationKeyTemporaryMigrationHelper(
-              session_key_.network_isolation_key()));
+      session_key_.host(), hostname, session_key_.network_anonymization_key());
 }
 
 bool QuicChromiumClientSession::ShouldCreateIncomingStream(
@@ -1850,6 +1845,40 @@ void QuicChromiumClientSession::OnConnectionClosed(
   DCHECK(!connection()->connected());
 
   logger_->OnConnectionClosed(frame, source);
+
+  const quic::QuicConnection::MultiPortStats* multi_port_stats =
+      connection()->multi_port_stats();
+  if (multi_port_stats != nullptr) {
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicMultiPort.NumDefaultPathDegrading",
+                              multi_port_stats->num_path_degrading);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Net.QuicMultiPort.NumMultiPortFailureWhenPathNotDegrading",
+        multi_port_stats
+            ->num_multi_port_probe_failures_when_path_not_degrading);
+    if (multi_port_stats->num_path_degrading > 0) {
+      base::UmaHistogramSparse(
+          "Net.QuicMultiPort.AltPortRttWhenPathDegradingVsGeneral",
+          static_cast<int>(
+              multi_port_stats->rtt_stats_when_default_path_degrading
+                  .smoothed_rtt()
+                  .ToMilliseconds() *
+              100 /
+              multi_port_stats->rtt_stats.smoothed_rtt().ToMilliseconds()));
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.QuicMultiPort.NumMultiPortFailureWhenPathDegrading",
+          multi_port_stats->num_multi_port_probe_failures_when_path_degrading);
+      base::UmaHistogramPercentage(
+          "Net.QuicMultiPort.AltPortFailureWhenPathDegradingVsGeneral",
+          static_cast<int>(
+              multi_port_stats
+                  ->num_multi_port_probe_failures_when_path_degrading *
+              100 /
+              (multi_port_stats
+                   ->num_multi_port_probe_failures_when_path_not_degrading +
+               multi_port_stats
+                   ->num_multi_port_probe_failures_when_path_degrading)));
+    }
+  }
 
   RecordConnectionCloseErrorCode(frame, source, session_key_.host(),
                                  OneRttKeysAvailable());
@@ -3287,8 +3316,10 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
 
   dict.Set("total_streams", static_cast<int>(num_total_streams_));
   dict.Set("peer_address", peer_address().ToString());
+  // TODO(https://crbug.com/1343856): Update "network_isolation_key" to
+  // "network_anonymization_key" and change NetLog viewer.
   dict.Set("network_isolation_key",
-           session_key_.network_isolation_key().ToDebugString());
+           session_key_.network_anonymization_key().ToDebugString());
   dict.Set("connection_id", connection_id().ToString());
   if (!connection()->client_connection_id().IsEmpty()) {
     dict.Set("client_connection_id",

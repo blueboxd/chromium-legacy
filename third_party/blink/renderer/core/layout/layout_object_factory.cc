@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,12 +140,7 @@ LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
 
 LayoutView* LayoutObjectFactory::CreateView(Document& document,
                                             const ComputedStyle& style) {
-  bool disable_ng_for_type =
-      !RuntimeEnabledFeatures::LayoutNGViewEnabled() ||
-      (LayoutView::ShouldUsePrintingLayout(document) &&
-       !RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
-
-  if (disable_ng_for_type || !RuntimeEnabledFeatures::LayoutNGEnabled())
+  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled())
     return MakeGarbageCollected<LayoutView>(&document);
   return MakeGarbageCollected<LayoutNGView>(&document);
 }

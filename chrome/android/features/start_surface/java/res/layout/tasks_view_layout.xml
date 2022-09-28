@@ -10,7 +10,7 @@ found in the LICENSE file.
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/task_surface_header"
@@ -24,6 +24,15 @@ found in the LICENSE file.
             android:background="@android:color/transparent"
             android:orientation="vertical"
             app:layout_scrollFlags="scroll|snap">
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/logo_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_scrollFlags="scroll">
+            <include layout="@layout/logo_view_layout" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/fake_search_box"
@@ -101,6 +110,6 @@ found in the LICENSE file.
     <FrameLayout
         android:id="@+id/tasks_surface_body"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </org.chromium.chrome.features.tasks.TasksView>

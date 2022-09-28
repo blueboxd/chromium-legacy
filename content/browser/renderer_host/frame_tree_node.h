@@ -41,8 +41,6 @@ class NavigationRequest;
 class RenderFrameHostImpl;
 class NavigationEntryImpl;
 
-using FencedFrameStatus = RenderFrameHostImpl::FencedFrameStatus;
-
 // When a page contains iframes, its renderer process maintains a tree structure
 // of those frames. We are mirroring this tree in the browser process. This
 // class represents a node in this tree and is a wrapper for all objects that
@@ -344,7 +342,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // A RenderFrameHost in this node started loading.
   // |should_show_loading_ui| indicates whether this navigation should be
   // visible in the UI. True for cross-document navigations and navigations
-  // intercepted by the navigation API's transitionWhile().
+  // intercepted by the navigation API's intercept().
   // |was_previously_loading| is false if the FrameTree was not loading before.
   // The caller is required to provide this boolean as the delegate should only
   // be notified if the FrameTree went from non-loading to loading state.
@@ -434,6 +432,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // will never be reused - this saves memory.
   void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
 
+  using FencedFrameStatus = RenderFrameHostImpl::FencedFrameStatus;
   FencedFrameStatus fenced_frame_status() const { return fenced_frame_status_; }
 
   blink::FrameOwnerElementType frame_owner_element_type() const {

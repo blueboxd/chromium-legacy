@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,9 @@ GPUSupportedFeatures* MakeFeatureNameSet(const DawnProcTable& procs,
         break;
       case WGPUFeatureName_DawnMultiPlanarFormats:
         features->AddFeatureName("multi-planar-formats");
+        break;
+      case WGPUFeatureName_RG11B10UfloatRenderable:
+        features->AddFeatureName("rg11b10ufloat-renderable");
         break;
       default:
         break;

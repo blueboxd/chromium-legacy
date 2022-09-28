@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,28 +88,6 @@ network::mojom::blink::LoadTimingInfoPtr ResourceLoadTiming::ToMojo() const {
           push_end_, worker_start_, worker_ready_, worker_fetch_start_,
           worker_respond_with_settled_);
   return timing;
-}
-
-bool ResourceLoadTiming::operator==(const ResourceLoadTiming& other) const {
-  return request_time_ == other.request_time_ &&
-         proxy_start_ == other.proxy_start_ && proxy_end_ == other.proxy_end_ &&
-         domain_lookup_start_ == other.domain_lookup_start_ &&
-         domain_lookup_end_ == other.domain_lookup_end_ &&
-         connect_start_ == other.connect_start_ &&
-         connect_end_ == other.connect_end_ &&
-         worker_start_ == other.worker_start_ &&
-         worker_ready_ == other.worker_ready_ &&
-         worker_fetch_start_ == other.worker_fetch_start_ &&
-         worker_respond_with_settled_ == other.worker_respond_with_settled_ &&
-         send_start_ == other.send_start_ && send_end_ == other.send_end_ &&
-         receive_headers_start_ == other.receive_headers_start_ &&
-         receive_headers_end_ == other.receive_headers_end_ &&
-         ssl_start_ == other.ssl_start_ && ssl_end_ == other.ssl_end_ &&
-         push_start_ == other.push_start_ && push_end_ == other.push_end_;
-}
-
-bool ResourceLoadTiming::operator!=(const ResourceLoadTiming& other) const {
-  return !(*this == other);
 }
 
 void ResourceLoadTiming::SetDomainLookupStart(

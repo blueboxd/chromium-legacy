@@ -1,10 +1,12 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FENCED_FRAME_FENCED_FRAME_UTILS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FENCED_FRAME_FENCED_FRAME_UTILS_H_
 
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
 
 class GURL;
@@ -20,6 +22,12 @@ inline constexpr char kIsOpaqueFencedFrameSizeCoercedHistogram[] =
 
 inline constexpr char kIsFencedFrameResizedAfterSizeFrozen[] =
     "Blink.FencedFrame.IsFrameResizedAfterSizeFrozen";
+
+inline constexpr char kFencedFrameMandatoryUnsandboxedFlagsSandboxed[] =
+    "Blink.FencedFrame.MandatoryUnsandboxedFlagsSandboxed";
+
+inline constexpr char kFencedFrameFailedSandboxLoadInTopLevelFrame[] =
+    "Blink.FencedFrame.FailedSandboxLoadInTopLevelFrame";
 
 // Corresponds to the "FencedFrameCreationOutcome" histogram enumeration type in
 // tools/metrics/histograms/enums.xml.
@@ -52,6 +60,10 @@ BLINK_COMMON_EXPORT void RecordFencedFrameCreationOutcome(
     const FencedFrameCreationOutcome outcome);
 BLINK_COMMON_EXPORT void RecordOpaqueFencedFrameSizeCoercion(bool did_coerce);
 BLINK_COMMON_EXPORT void RecordFencedFrameResizedAfterSizeFrozen();
+BLINK_COMMON_EXPORT void RecordFencedFrameUnsandboxedFlags(
+    network::mojom::WebSandboxFlags flags);
+BLINK_COMMON_EXPORT void RecordFencedFrameFailedSandboxLoadInTopLevelFrame(
+    bool is_main_frame);
 
 }  // namespace blink
 

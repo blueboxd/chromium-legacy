@@ -4930,9 +4930,7 @@ interface NavigateEvent : Event
     getter userInitiated
     method constructor
     method intercept
-    method restoreScroll
     method scroll
-    method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
     getter canGoBack
@@ -5782,6 +5780,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PublicKeyCredential : Credential
+    static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
     getter authenticatorAttachment

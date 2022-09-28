@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,11 @@ namespace blink {
 class MainThreadTaskRunnerRestricted {
  private:
   // Permitted users of `MainThread::GetTaskRunner`.
+  friend class BlobBytesProvider;
   friend class CachedStorageArea;
   friend class CategorizedWorkerPoolImpl;
+  friend class FontCache;
+  friend class InspectorNetworkAgent;
   friend class MemoryCache;
   friend class ParkableImageManager;
   friend class RendererResourceCoordinatorImpl;

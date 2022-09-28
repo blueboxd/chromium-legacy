@@ -4,9 +4,8 @@
 
 #include "ash/components/policy/weekly_time/weekly_time.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 
 namespace em = enterprise_management;
@@ -49,11 +48,11 @@ WeeklyTime::WeeklyTime(const WeeklyTime& rhs) = default;
 WeeklyTime& WeeklyTime::operator=(const WeeklyTime& rhs) = default;
 
 base::Value WeeklyTime::ToValue() const {
-  base::Value weekly_time(base::Value::Type::DICTIONARY);
-  weekly_time.SetIntKey(kDayOfWeek, day_of_week_);
-  weekly_time.SetIntKey(kTime, milliseconds_);
+  base::Value weekly_time(base::Value::Type::DICT);
+  weekly_time.GetDict().Set(kDayOfWeek, day_of_week_);
+  weekly_time.GetDict().Set(kTime, milliseconds_);
   if (timezone_offset_)
-    weekly_time.SetIntKey(kTimezoneOffset, timezone_offset_.value());
+    weekly_time.GetDict().Set(kTimezoneOffset, timezone_offset_.value());
   return weekly_time;
 }
 
@@ -139,26 +138,21 @@ std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromProto(
 }
 
 // static
-std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromValue(
-    const base::Value* value,
+std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromDict(
+    const base::Value::Dict& dict,
     absl::optional<int> timezone_offset) {
-  if (!value) {
-    LOG(ERROR) << "Passed nullptr value.";
-    return nullptr;
-  }
-  auto* day_of_week = value->FindStringKey(kDayOfWeek);
+  auto* day_of_week = dict.FindString(kDayOfWeek);
   if (!day_of_week) {
     LOG(ERROR) << "day_of_week is absent.";
     return nullptr;
   }
   int day_of_week_value =
-      std::find(kWeekDays.begin(), kWeekDays.end(), *day_of_week) -
-      kWeekDays.begin();
+      base::ranges::find(kWeekDays, *day_of_week) - kWeekDays.begin();
   if (day_of_week_value <= 0 || day_of_week_value > 7) {
     LOG(ERROR) << "Invalid day_of_week: " << day_of_week;
     return nullptr;
   }
-  auto time_of_day = value->FindIntKey(kTime);
+  auto time_of_day = dict.FindInt(kTime);
   if (!time_of_day.has_value()) {
     LOG(ERROR) << "Time is absent";
     return nullptr;

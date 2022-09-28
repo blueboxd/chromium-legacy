@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -700,6 +700,8 @@ WGPUFeatureName AsDawnEnum(const V8GPUFeatureName& webgpu_enum) {
       return WGPUFeatureName_IndirectFirstInstance;
     case V8GPUFeatureName::Enum::kChromiumExperimentalDp4A:
       return WGPUFeatureName_ChromiumExperimentalDp4a;
+    case V8GPUFeatureName::Enum::kRg11B10UfloatRenderable:
+      return WGPUFeatureName_RG11B10UfloatRenderable;
   }
 }
 

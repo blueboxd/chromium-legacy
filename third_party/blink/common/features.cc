@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1556,6 +1556,10 @@ BASE_FEATURE(kFileSystemUrlNavigation,
              "FileSystemUrlNavigation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kFileSystemUrlNavigationForChromeAppsOnly,
+             "FileSystemUrlNavigationForChromeAppsOnly",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEarlyExitOnNoopClassOrStyleChange,
              "EarlyExitOnNoopClassOrStyleChange",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1620,6 +1624,10 @@ const base::FeatureParam<bool> kProcessHtmlDataImmediatelySubsequentChunks{
 BASE_FEATURE(kFastPathPaintPropertyUpdates,
              "FastPathPaintPropertyUpdates",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWildcardSubdomainsInPermissionsPolicy,
+             "WildcardSubdomainsInPermissionsPolicy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

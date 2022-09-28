@@ -19,6 +19,9 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -1055,6 +1058,31 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
 )
 
 ci.builder(
+    name = "Comparison Android (reclient) (reproxy cache)",
+    console_view_entry = consoles.console_view_entry(
+        category = "android|expcache",
+        short_name = "cmp",
+    ),
+    description_html = """\
+This builder measures Android build performance with goma vs reclient using reproxy's deps cache.<br/>\
+The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/ci/Comparison%20Android%20(reclient)">Comparison Android (reclient)</a>.\
+""",
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 15 * time.hour,
+    reclient_cache_silo = "Comparison Android (reproxy cache) - cache siloed",
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 250,
+    os = os.LINUX_DEFAULT,
+    # Target luci-chromium-ci-bionic-us-central1-b-ssd-16-*.
+    ssd = True,
+    cores = 16,
+    reclient_bootstrap_env = {
+        "RBE_experimental_goma_deps_cache": "true",
+    },
+)
+
+ci.builder(
     name = "Comparison Linux (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -1526,6 +1554,9 @@ ci.builder(
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.LINUX_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 ci.builder(
@@ -1542,6 +1573,9 @@ ci.builder(
     ),
     os = os.LINUX_DEFAULT,
     triggered_by = ["ci/Linux Builder"],
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 # Start - Reclient migration, phase 2, block 1 shadow builders
@@ -1633,6 +1667,9 @@ ci.builder(
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     os = os.WINDOWS_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 ci.builder(
@@ -1649,6 +1686,9 @@ ci.builder(
     ),
     os = os.WINDOWS_DEFAULT,
     triggered_by = ["ci/Win x64 Builder"],
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 fyi_mac_builder(
@@ -1691,6 +1731,9 @@ fyi_mac_builder(
         short_name = "py3",
     ),
     description_html = "This is mirror of <a href=\"https://ci.chromium.org/p/chromium/builders/ci/Mac12%20Tests\">Mac12 Tests</a>, but runs on bots not having python2.",
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
     triggered_by = ["ci/Mac Builder"],
 )
 
@@ -1906,6 +1949,24 @@ fyi_coverage_builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
 )
 
 fyi_coverage_builder(
@@ -1947,6 +2008,9 @@ fyi_coverage_builder(
     coverage_test_types = ["overall", "unit"],
     export_coverage_to_zoss = True,
     use_clang_coverage = True,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 fyi_coverage_builder(
@@ -2240,6 +2304,7 @@ fyi_mac_builder(
         short_name = "bld",
     ),
     cores = None,
+    cpu = cpu.ARM64,
     os = None,
     goma_backend = None,
     reclient_jobs = reclient.jobs.DEFAULT,
@@ -2306,6 +2371,32 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
+    name = "win10-wpt-content-shell-fyi-rel",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win10",
+    ),
+    os = os.WINDOWS_10,
+    goma_backend = None,
+    experimental = True,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    schedule = "with 5h interval",
+    triggered_by = [],
 )
 
 ci.builder(

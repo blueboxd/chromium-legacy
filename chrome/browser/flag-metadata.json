@@ -3814,6 +3814,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "google-mobile-services-passwords-reenrollment",
+    "owners": [ "kazinova@google.com", "vasilii" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "grid-tab-switcher-for-tablets",
     "owners": [ "nemco", "clank-app-team@google.com" ],
     "expiry_milestone": 114
@@ -3903,6 +3908,11 @@
   {
     "name": "history-journeys",
     "owners": [ "tommycli", "chrome-journeys@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "history-journeys-content-clustering",
+    "owners": [ "sophiechang", "chrome-journeys@google.com" ],
     "expiry_milestone": 110
   },
   {
@@ -4288,11 +4298,6 @@
     "name": "launcher-game-search",
     "owners": ["wrong", "napper", "tby"],
     "expiry_milestone": 110
-  },
-  {
-    "name": "launcher-hide-continue-section",
-    "owners": ["jamescook", "//ash/app_list/OWNERS"],
-    "expiry_milestone": 109
   },
   {
     "name": "launcher-item-suggest",
@@ -5403,11 +5408,6 @@
     "expiry_milestone": 107
   },
   {
-    "name": "personalization-hub",
-    "owners": ["jasontt", "assistive-eng@google.com"],
-    "expiry_milestone": 105
-  },
-  {
     "name": "pervasive-system-accent-color",
     "owners": ["pkasting"],
     "expiry_milestone": 110
@@ -5459,22 +5459,6 @@
       "johnidel",
       "jkarlin",
       "pauljensen"],
-    "expiry_milestone": 108
-  },
-  {
-    "name": "privacy-sandbox-v3-android",
-    "owners": [
-      "dullweber",
-      "sauski",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 108
-  },
-  {
-    "name": "privacy-sandbox-v3-desktop",
-    "owners": [
-      "dullweber",
-      "sauski",
-      "chrome-friendly-settings@google.com"],
     "expiry_milestone": 108
   },
   {

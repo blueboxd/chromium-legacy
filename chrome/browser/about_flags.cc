@@ -1176,6 +1176,14 @@ const FeatureEntry::FeatureVariation
          kSidePanelJourneysOpensFromOmniboxParams,
          std::size(kSidePanelJourneysOpensFromOmniboxParams), nullptr},
 };
+const FeatureEntry::FeatureParam kJourneysContentClusteringParams[] = {
+    {"collections_blocklist", "/collections/software"},
+    {"exclude_entities_that_have_no_collections", "true"},
+};
+const FeatureEntry::FeatureVariation kJourneysContentClusteringVariations[] = {
+    {"With Blocklist", kJourneysContentClusteringParams,
+     std::size(kJourneysContentClusteringParams), nullptr},
+};
 const FeatureEntry::FeatureParam kJourneysLabelsWithEntitiesParams[] = {
     {"labels_from_entities", "true"},
 };
@@ -1191,14 +1199,6 @@ const FeatureEntry::FeatureVariation kJourneysLabelsVariations[] = {
      kJourneysLabelsWithEntitiesNoHostnamesParams,
      std::size(kJourneysLabelsWithEntitiesNoHostnamesParams), nullptr},
 };
-const FeatureEntry::FeatureParam
-    kJourneysOnDeviceClusteringNoContentClusteringParams[] = {
-        {"content_clustering_enabled", "false"},
-};
-const FeatureEntry::FeatureParam
-    kJourneysOnDeviceClusteringContentClusteringParams[] = {
-        {"content_clustering_enabled", "true"},
-};
 const FeatureEntry::FeatureParam kJourneysShowSingleDomainClustersParams[] = {
     {"hide_single_domain_clusters_on_prominent_ui_surfaces", "false"},
 };
@@ -1206,11 +1206,6 @@ const FeatureEntry::FeatureParam kJourneysHideSingleDomainClustersParams[] = {
     {"hide_single_domain_clusters_on_prominent_ui_surfaces", "true"},
 };
 const FeatureEntry::FeatureVariation kJourneysOnDeviceClusteringVariations[] = {
-    {"No Content Clustering",
-     kJourneysOnDeviceClusteringNoContentClusteringParams,
-     std::size(kJourneysOnDeviceClusteringNoContentClusteringParams), nullptr},
-    {"Content Clustering", kJourneysOnDeviceClusteringContentClusteringParams,
-     std::size(kJourneysOnDeviceClusteringContentClusteringParams), nullptr},
     {"Show Single Domain Journeys", kJourneysShowSingleDomainClustersParams,
      std::size(kJourneysShowSingleDomainClustersParams), nullptr},
     {"Hide Single Domain Journeys", kJourneysHideSingleDomainClustersParams,
@@ -2042,19 +2037,23 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
     {"open_ntp_instead_of_start", "false"},
+    {"open_start_as_homepage", "true"},
     {"show_last_active_tab_only", "false"},
     {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA[] = {
-    {"open_ntp_instead_of_start", "false"}};
+    {"open_ntp_instead_of_start", "false"},
+    {"open_start_as_homepage", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA_SyncCheck[] = {
     {"open_ntp_instead_of_start", "false"},
+    {"open_start_as_homepage", "true"},
     {"check_sync_before_show_start_at_startup", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit[] = {
         {"open_ntp_instead_of_start", "false"},
+        {"open_start_as_homepage", "true"},
         {"sign_in_promo_show_since_last_background_limit_ms", "30000"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
@@ -2806,7 +2805,6 @@ constexpr FeatureEntry::FeatureVariation
          std::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperFastRefreshInternalName[] = "wallpaper-fast-refresh";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
@@ -5665,6 +5663,15 @@ const FeatureEntry kFeatureEntries[] = {
                                     kJourneysVariations,
                                     "HistoryJourneys")},
 
+    {"history-journeys-content-clustering",
+     flag_descriptions::kJourneysContentClusteringName,
+     flag_descriptions::kJourneysContentClusteringDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         history_clusters::features::kOnDeviceClusteringContentClustering,
+         kJourneysContentClusteringVariations,
+         "HistoryJourneysContentClustering")},
+
     {"history-journeys-labels", flag_descriptions::kJourneysLabelsName,
      flag_descriptions::kJourneysLabelsDescription, kOsDesktop | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kJourneysLabels,
@@ -6769,10 +6776,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kGetDisplayMediaSetAutoSelectAllScreens)},
 
-    {"multi-monitors-in-crd", flag_descriptions::kMultiMonitorsInCrdName,
-     flag_descriptions::kMultiMonitorsInCrdDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(remoting::features::kEnableMultiMonitorsInCrd)},
-
     {"fast-pair-software-scanning",
      flag_descriptions::kFastPairSoftwareScanningName,
      flag_descriptions::kFastPairSoftwareScanningDescription, kOsCrOS,
@@ -7681,10 +7684,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"launcher-game-search", flag_descriptions::kLauncherGameSearchName,
      flag_descriptions::kLauncherGameSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(search_features::kLauncherGameSearch)},
-    {"launcher-hide-continue-section",
-     flag_descriptions::kLauncherHideContinueSectionName,
-     flag_descriptions::kLauncherHideContinueSectionDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kLauncherHideContinueSection)},
     {"quick-gesture-show-launcher",
      flag_descriptions::kQuickActionShowBubbleLauncherName,
      flag_descriptions::kQuickActionShowBubbleLauncherDescription, kOsCrOS,
@@ -7932,28 +7931,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableBrowsingDataLifetimeManager)},
 
-    {"privacy-sandbox-v3-desktop", flag_descriptions::kPrivacySandboxV3Name,
-     flag_descriptions::kPrivacySandboxV3Description, kOsDesktop,
-     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
-     // multiple related features.
-     SINGLE_VALUE_TYPE_AND_VALUE(
-         switches::kEnableFeatures,
-         "PrivacySandboxSettings3:"
-         "disable-dialog-for-testing/true/show-sample-data/true,"
-         "EnableFetchingAccountCapabilities,InterestGroupStorage,"
-         "AdInterestGroupAPI,Fledge,FencedFrames")},
-
-    {"privacy-sandbox-v3-android", flag_descriptions::kPrivacySandboxV3Name,
-     flag_descriptions::kPrivacySandboxV3Description, kOsAndroid,
-     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
-     // multiple related features when they are available.
-     SINGLE_VALUE_TYPE_AND_VALUE(
-         switches::kEnableFeatures,
-         "PrivacySandboxSettings3:"
-         "disable-dialog-for-testing/true/show-sample-data/true,"
-         "EnableFetchingAccountCapabilities,InterestGroupStorage,"
-         "AdInterestGroupAPI,Fledge,FencedFrames")},
-
     {"privacy-sandbox-ads-apis",
      flag_descriptions::kPrivacySandboxAdsAPIsOverrideName,
      flag_descriptions::kPrivacySandboxAdsAPIsOverrideDescription, kOsAll,
@@ -8117,10 +8094,6 @@ const FeatureEntry kFeatureEntries[] = {
          features::kClearCrossSiteCrossBrowsingContextGroupWindowName)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {kPersonalizationHubInternalName,
-     flag_descriptions::kPersonalizationHubName,
-     flag_descriptions::kPersonalizationHubDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kPersonalizationHub)},
     {kWallpaperFastRefreshInternalName,
      flag_descriptions::kWallpaperFastRefreshName,
      flag_descriptions::kWallpaperFastRefreshDescription, kOsCrOS,
@@ -8485,6 +8458,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kUnifiedPasswordManagerErrorMessages)},
+
+    {"google-mobile-services-passwords-reenrollment",
+     flag_descriptions::kUnifiedPasswordManagerAndroidReenrollmentName,
+     flag_descriptions::kUnifiedPasswordManagerAndroidReenrollmentDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUnifiedPasswordManagerReenrollment)},
 #endif
 
     {"extension-workflow-justification",

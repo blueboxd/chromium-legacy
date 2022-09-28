@@ -766,8 +766,9 @@ BASE_FEATURE(kPepperCrossOriginRedirectRestriction,
 // and persisted for the next navigation. This way, an origin trial can affect
 // things before receiving the response, for instance it can affect the next
 // navigation's network request.
-const base::Feature kPersistentOriginTrials{"PersistentOriginTrials",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kPersistentOriginTrials,
+             "PersistentOriginTrials",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // A browser-side equivalent of the Blink feature "DocumentPictureInPictureAPI".
 // This is used for sanity checks to ensure that the feature can't be enabled by
@@ -1146,6 +1147,16 @@ BASE_FEATURE(kTouchDragAndContextMenu,
              "TouchDragAndContextMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_ANDROID)
+// When the context menu is triggered, the browser allows motion in a small
+// region around the initial touch location menu to allow for finger jittering.
+// This param holds the movement threshold in DIPs to consider drag an
+// intentional drag, which will dismiss the current context menu and prevent new
+//  menu from showing.
+const base::FeatureParam<int> kTouchDragMovementThresholdDip{
+    &kTouchDragAndContextMenu, "DragAndDropMovementThresholdDipParam", 60};
+#endif
+
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first
@@ -1275,7 +1286,7 @@ BASE_FEATURE(kWebAssemblyTrapHandler,
 // Controls whether WebAuthn conditional UI requests are supported.
 BASE_FEATURE(kWebAuthConditionalUI,
              "WebAuthenticationConditionalUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Web Bluetooth API is enabled:
 // https://webbluetoothcg.github.io/web-bluetooth/
@@ -1426,14 +1437,6 @@ BASE_FEATURE(kWebNfc, "WebNFC", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebViewThrottleBackgroundBeginFrame,
              "WebViewThrottleBackgroundBeginFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When the context menu is triggered, the browser allows motion in a small
-// region around the initial touch location menu to allow for finger jittering.
-// This param holds the movement threshold in DIPs to consider drag an
-// intentional drag, which will dismiss the current context menu and prevent new
-//  menu from showing.
-const char kDragAndDropMovementThresholdDipParam[] =
-    "DragAndDropMovementThresholdDipParam";
 
 // Temporarily pauses the compositor early in navigation.
 BASE_FEATURE(kOptimizeEarlyNavigation,

@@ -16,6 +16,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_ephemeral_user.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
@@ -172,7 +173,7 @@ bool SetWallpaperInfo(const AccountId& account_id,
   if (!pref_service)
     return false;
 
-  DictionaryPrefUpdate wallpaper_update(pref_service, pref_name);
+  ScopedDictPrefUpdate wallpaper_update(pref_service, pref_name);
   base::Value::Dict wallpaper_info_dict;
   if (info.asset_id.has_value()) {
     wallpaper_info_dict.Set(WallpaperPrefManager::kNewWallpaperAssetIdNodeName,
@@ -222,10 +223,8 @@ bool SetWallpaperInfo(const AccountId& account_id,
                           info.layout);
   wallpaper_info_dict.Set(WallpaperPrefManager::kNewWallpaperTypeNodeName,
                           static_cast<int>(info.type));
-  base::Value wallpaper_info_value =
-      base::Value(std::move(wallpaper_info_dict));
-  wallpaper_update->SetKey(account_id.GetUserEmail(),
-                           std::move(wallpaper_info_value));
+  wallpaper_update->Set(account_id.GetUserEmail(),
+                        std::move(wallpaper_info_dict));
   return true;
 }
 
@@ -235,8 +234,8 @@ void RemoveWallpaperInfo(const AccountId& account_id,
                          const std::string& pref_name) {
   if (!pref_service)
     return;
-  DictionaryPrefUpdate prefs_wallpapers_info_update(pref_service, pref_name);
-  prefs_wallpapers_info_update->RemoveKey(account_id.GetUserEmail());
+  ScopedDictPrefUpdate prefs_wallpapers_info_update(pref_service, pref_name);
+  prefs_wallpapers_info_update->Remove(account_id.GetUserEmail());
 }
 
 // Wrapper around SessionControllerImpl and WallpaperControllerClient to make
@@ -275,15 +274,7 @@ class WallpaperProfileHelperImpl : public WallpaperProfileHelper {
   }
 
   bool IsEphemeral(const AccountId& account_id) const override {
-    const UserSession* user_session =
-        Shell::Get()->session_controller()->GetUserSessionByAccountId(
-            account_id);
-    if (!user_session) {
-      // User is not logged in. Thus, they are not ephemeral.
-      return false;
-    }
-
-    return user_session->user_info.is_ephemeral;
+    return IsEphemeralUser(account_id);
   }
 
  private:
@@ -378,14 +369,14 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     if (old_info.location.empty())
       return;
 
-    DictionaryPrefUpdate wallpaper_colors_update(local_state_,
+    ScopedDictPrefUpdate wallpaper_colors_update(local_state_,
                                                  prefs::kWallpaperColors);
     base::Value::List wallpaper_colors;
     for (SkColor color : colors)
       wallpaper_colors.Append(static_cast<double>(color));
     base::Value wallpaper_colors_value(std::move(wallpaper_colors));
-    wallpaper_colors_update->SetKey(old_info.location,
-                                    std::move(wallpaper_colors_value));
+    wallpaper_colors_update->Set(old_info.location,
+                                 std::move(wallpaper_colors_value));
   }
 
   void RemoveProminentColors(const AccountId& account_id) override {
@@ -395,9 +386,9 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     }
 
     // Remove the color cache of the previous wallpaper if it exists.
-    DictionaryPrefUpdate wallpaper_colors_update(local_state_,
+    ScopedDictPrefUpdate wallpaper_colors_update(local_state_,
                                                  prefs::kWallpaperColors);
-    wallpaper_colors_update->RemoveKey(old_info.location);
+    wallpaper_colors_update->Remove(old_info.location);
   }
 
   absl::optional<std::vector<SkColor>> GetCachedProminentColors(
@@ -433,10 +424,9 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     if (old_info.location.empty())
       return;
 
-    DictionaryPrefUpdate k_mean_colors(local_state_,
+    ScopedDictPrefUpdate k_mean_colors(local_state_,
                                        prefs::kWallpaperMeanColors);
-    k_mean_colors->GetDict().Set(old_info.location,
-                                 static_cast<double>(k_mean_color));
+    k_mean_colors->Set(old_info.location, static_cast<double>(k_mean_color));
   }
 
   absl::optional<SkColor> GetCachedKMeanColor(
@@ -460,9 +450,9 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     }
 
     // Remove the color cache of the previous wallpaper if it exists.
-    DictionaryPrefUpdate k_mean_colors(local_state_,
+    ScopedDictPrefUpdate k_mean_colors(local_state_,
                                        prefs::kWallpaperMeanColors);
-    k_mean_colors->RemoveKey(old_info.location);
+    k_mean_colors->Remove(old_info.location);
   }
 
   bool SetDailyGooglePhotosWallpaperIdCache(
@@ -470,15 +460,15 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
       const WallpaperController::DailyGooglePhotosIdCache& ids) override {
     if (!local_state_)
       return false;
-    DictionaryPrefUpdate daily_google_photos_ids_update(
+    ScopedDictPrefUpdate daily_google_photos_ids_update(
         local_state_, prefs::kRecentDailyGooglePhotosWallpapers);
     base::Value::List id_list;
     for (const auto& id : base::Reversed(ids)) {
       id_list.Append(base::NumberToString(id));
     }
     base::Value id_list_value(std::move(id_list));
-    daily_google_photos_ids_update->SetKey(account_id.GetUserEmail(),
-                                           std::move(id_list_value));
+    daily_google_photos_ids_update->Set(account_id.GetUserEmail(),
+                                        std::move(id_list_value));
     return true;
   }
 

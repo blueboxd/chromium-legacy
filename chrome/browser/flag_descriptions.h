@@ -990,6 +990,9 @@ extern const char kJavascriptExperimentalSharedMemoryDescription[];
 extern const char kJourneysName[];
 extern const char kJourneysDescription[];
 
+extern const char kJourneysContentClusteringName[];
+extern const char kJourneysContentClusteringDescription[];
+
 extern const char kJourneysLabelsName[];
 extern const char kJourneysLabelsDescription[];
 
@@ -1323,9 +1326,6 @@ extern const char kPermissionQuietChipDescription[];
 extern const char kPersistentQuotaIsTemporaryQuotaName[];
 extern const char kPersistentQuotaIsTemporaryQuotaDescription[];
 
-extern const char kPersonalizationHubName[];
-extern const char kPersonalizationHubDescription[];
-
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
 
@@ -1352,9 +1352,6 @@ extern const char kPrivacyGuideAndroidDescription[];
 
 extern const char kPrivacySandboxAdsAPIsOverrideName[];
 extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
-
-extern const char kPrivacySandboxV3Name[];
-extern const char kPrivacySandboxV3Description[];
 
 extern const char kPrivateAggregationDebugModeName[];
 extern const char kPrivateAggregationDebugModeDescription[];
@@ -1681,6 +1678,9 @@ extern const char kUnifiedPasswordManagerAndroidDescription[];
 
 extern const char kUnifiedPasswordManagerErrorMessagesName[];
 extern const char kUnifiedPasswordManagerErrorMessagesDescription[];
+
+extern const char kUnifiedPasswordManagerAndroidReenrollmentName[];
+extern const char kUnifiedPasswordManagerAndroidReenrollmentDescription[];
 
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
@@ -2948,9 +2948,6 @@ extern const char kGetDisplayMediaSetDescription[];
 extern const char kGetDisplayMediaSetAutoSelectAllScreensName[];
 extern const char kGetDisplayMediaSetAutoSelectAllScreensDescription[];
 
-extern const char kMultiMonitorsInCrdName[];
-extern const char kMultiMonitorsInCrdDescription[];
-
 extern const char kUseHDRTransferFunctionName[];
 extern const char kUseHDRTransferFunctionDescription[];
 extern const char kDoubleTapToZoomInTabletModeName[];
@@ -3542,9 +3539,6 @@ extern const char kWindowControlMenuDescription[];
 
 extern const char kLauncherGameSearchName[];
 extern const char kLauncherGameSearchDescription[];
-
-extern const char kLauncherHideContinueSectionName[];
-extern const char kLauncherHideContinueSectionDescription[];
 
 extern const char kMacAddressRandomizationName[];
 extern const char kMacAddressRandomizationDescription[];

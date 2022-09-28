@@ -1727,6 +1727,18 @@ TEST_F(WallpaperControllerTest,
             GetDecodeFilePaths()[0]);
 }
 
+TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSessionAndPreview) {
+  CreateDefaultWallpapers();
+
+  const AccountId guest_id =
+      AccountId::FromUserEmail(user_manager::kGuestUserName);
+  controller_->ShowUserWallpaper(guest_id);
+  SimulateUserLogin(guest_id, user_manager::USER_TYPE_GUEST);
+  WallpaperInfo wallpaper_info;
+  EXPECT_TRUE(pref_manager_->GetUserWallpaperInfo(guest_id, &wallpaper_info));
+  EXPECT_EQ(wallpaper_info.type, WallpaperType::kDefault);
+}
+
 TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
   CreateDefaultWallpapers();
 
@@ -3365,8 +3377,8 @@ class WallpaperControllerPrefTest : public AshTestBase {
     property.Set("width", 800);
     property.Set("height", 600);
 
-    DictionaryPrefUpdate update(local_state(), prefs::kDisplayProperties);
-    update.Get()->SetKey("2200000000", base::Value(std::move(property)));
+    ScopedDictPrefUpdate update(local_state(), prefs::kDisplayProperties);
+    update->Set("2200000000", std::move(property));
   }
 
   ~WallpaperControllerPrefTest() override = default;
@@ -3478,10 +3490,10 @@ TEST_F(WallpaperControllerTest, OldOnlineInfoSynced_Discarded) {
                           static_cast<int>(WallpaperType::kOnline));
 
   {
-    DictionaryPrefUpdate wallpaper_update(GetProfilePrefService(account_id_1),
+    ScopedDictPrefUpdate wallpaper_update(GetProfilePrefService(account_id_1),
                                           prefs::kSyncableWallpaperInfo);
-    wallpaper_update->SetKey(account_id_1.GetUserEmail(),
-                             base::Value(std::move(wallpaper_info_dict)));
+    wallpaper_update->Set(account_id_1.GetUserEmail(),
+                          std::move(wallpaper_info_dict));
   }
   SimulateUserLogin(account_id_1);
   task_environment()->RunUntilIdle();

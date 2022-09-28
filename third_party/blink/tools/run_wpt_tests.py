@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Run web platform tests for Chromium-related products."""
@@ -15,7 +15,6 @@ import sys
 from blinkpy.common import path_finder
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.web_tests.port.android import (
-    PRODUCTS,
     PRODUCTS_TO_EXPECTATION_FILE_PATHS,
     ANDROID_WEBLAYER,
     ANDROID_WEBVIEW,

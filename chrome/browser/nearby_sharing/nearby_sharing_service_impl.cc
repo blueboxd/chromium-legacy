@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "ash/services/nearby/public/mojom/nearby_decoder.mojom.h"
@@ -940,9 +941,9 @@ void NearbySharingServiceImpl::Open(const ShareTarget& share_target,
 
 void NearbySharingServiceImpl::OpenURL(GURL url) {
   DCHECK(profile_);
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  chrome::AddSelectedTabWithURL(displayer.browser(), url,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 void NearbySharingServiceImpl::SetArcTransferCleanupCallback(
@@ -1054,8 +1055,7 @@ void NearbySharingServiceImpl::CleanupAfterNearbyProcessStopped() {
     // Cleanup send transfer resources where the user started ARC Nearby Share
     // but did not complete (i.e. cancel, abort, utility process stopped, etc.)
     // prior to shutdown.
-    base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
-                               std::move(arc_transfer_cleanup_callback_));
+    std::move(arc_transfer_cleanup_callback_).Run();
   }
 }
 
@@ -2358,8 +2358,7 @@ void NearbySharingServiceImpl::OnTransferComplete() {
   // descriptor(s) are done at this point even though there could be Nearby
   // Connection frames cached that are not yet sent to the remote device.
   if (was_sending_files && arc_transfer_cleanup_callback_) {
-    base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
-                               std::move(arc_transfer_cleanup_callback_));
+    std::move(arc_transfer_cleanup_callback_).Run();
   }
 
   NS_LOG(VERBOSE) << __func__

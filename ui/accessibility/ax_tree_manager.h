@@ -120,6 +120,8 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // the default removal of the manager in `~AXTreeManager` occurs too late.
   void RemoveFromMap();
 
+  virtual AXTreeManager* GetParentManager() const;
+
   // Return the last node that had focus, no searching.
   static AXNode* GetLastFocusedNode();
 
@@ -140,6 +142,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   static absl::optional<AXTreeID> last_focused_node_tree_id_;
 
  private:
+  friend class AXDummyTreeManager;
   friend class TestAXTreeManager;
 
   static AXTreeManagerMap& GetMap();

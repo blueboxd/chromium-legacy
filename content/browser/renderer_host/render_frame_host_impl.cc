@@ -454,7 +454,7 @@ RendererEvictionReasonToNotRestoredReason(
 class ScopedCommitStateResetter {
  public:
   explicit ScopedCommitStateResetter(RenderFrameHostImpl* render_frame_host)
-      : render_frame_host_(render_frame_host), disabled_(false) {}
+      : render_frame_host_(render_frame_host) {}
 
   ~ScopedCommitStateResetter() {
     if (!disabled_) {
@@ -466,7 +466,7 @@ class ScopedCommitStateResetter {
 
  private:
   raw_ptr<RenderFrameHostImpl> render_frame_host_;
-  bool disabled_;
+  bool disabled_ = false;
 };
 
 class ActiveURLMessageFilter : public mojo::MessageFilter {
@@ -3045,7 +3045,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
             parent_policies.cross_origin_opener_policy,
             parent_policies.cross_origin_embedder_policy,
             network::mojom::WebSandboxFlags::kNone,
-            /*anonymous=*/false)));
+            /*is_anonymous=*/false)));
   } else if (frame_tree_node_->opener()) {
     // During a `window.open(...)` without `noopener`, a new popup is created
     // and always starts from the initial empty document. The opener has
@@ -7144,7 +7144,8 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
         network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
         params->is_form_submission, params->impression, base::TimeTicks::Now(),
         /*is_embedder_initiated_fenced_frame_navigation=*/false,
-        /*is_unfenced_top_navigation=*/true);
+        /*is_unfenced_top_navigation=*/true,
+        /*force_new_browsing_instance=*/true);
     return;
   }
 
@@ -11688,14 +11689,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // In general, loading ui is only shown for cross-document navigations,
     // because same-document navigations are already complete by the time the
     // renderer notifies the browser process of the navigation.
-    // The navigation API's transitionWhile(), however, is an asynchronous
+    // The navigation API's intercept(), however, is an asynchronous
     // same-document navigation, and should therefore show loading UI until load
     // completion.
     bool should_show_loading_ui =
         !is_same_document_navigation ||
         same_document_params->same_document_navigation_type ==
-            blink::mojom::SameDocumentNavigationType::
-                kNavigationApiTransitionWhile;
+            blink::mojom::SameDocumentNavigationType::kNavigationApiIntercept;
 
     bool was_loading =
         frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();

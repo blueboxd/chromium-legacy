@@ -237,6 +237,7 @@ void ShowDeskRemovalUndoToast(const std::string& toast_id,
       /*visible_on_lock_screen=*/false,
       /*has_dismiss_button=*/true,
       l10n_util::GetStringUTF16(IDS_ASH_DESKS_CLOSE_ALL_UNDO_TEXT));
+  undo_toast_data.persist_on_hover = true;
   undo_toast_data.dismiss_callback = std::move(dismiss_callback);
   undo_toast_data.expired_callback = std::move(expired_callback);
   ToastManager::Get()->Show(undo_toast_data);

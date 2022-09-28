@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -787,6 +787,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebSQLNonSecureContextAccess);
 // TODO(https://crbug.com/1332598): Remove this feature.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFileSystemUrlNavigation);
 
+// TODO(https://crbug.com/1360512): this feature creates a carveout for
+// enabling filesystem: URL navigation within Chrome Apps regardless of whether
+// kFileSystemUrlNavigation is enabled or not.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kFileSystemUrlNavigationForChromeAppsOnly);
+
 // Early exit when the style or class attribute of an element is set to the same
 // value as before.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyExitOnNoopClassOrStyleChange);
@@ -859,6 +865,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // If enabled, some paint property updates (e.g., transform changes) will be
 // applied directly instead of using the property tree builder.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFastPathPaintPropertyUpdates);
+
+// If enabled, wildcard subdomains are supported in permissions policies.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kWildcardSubdomainsInPermissionsPolicy);
 
 }  // namespace features
 }  // namespace blink

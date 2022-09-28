@@ -5149,6 +5149,7 @@ interface MLGraphBuilder
     method conv2d
     method div
     method gemm
+    method hardSwish
     method input
     method max
     method maxPool2d
@@ -5881,9 +5882,7 @@ interface NavigateEvent : Event
     getter userInitiated
     method constructor
     method intercept
-    method restoreScroll
     method scroll
-    method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
     getter canGoBack

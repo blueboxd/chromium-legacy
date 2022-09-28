@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,6 +188,8 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   LocalFrame* FrameFromIdOrRoot(const protocol::Maybe<String>& frame_id);
   void ScheduleAXChangeNotification(Document* document);
   void RetainAXContextForDocument(Document* document);
+  AXObjectCacheImpl& GetAXObjectCacheImplForDocument(Document*);
+  AXObjectCacheImpl& AttachToAXObjectCache(Document*);
   void ProcessPendingQueries(Document&);
   void ProcessPendingDirtyNodes(Document&);
 

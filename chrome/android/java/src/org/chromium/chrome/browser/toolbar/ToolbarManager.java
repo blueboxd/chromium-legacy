@@ -854,22 +854,26 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInPrimaryMainFrame()
-                        && !navigation.isSameDocument()) {
+            public void onDidFinishNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
+                if (navigation.hasCommitted() && !navigation.isSameDocument()) {
                     mToolbar.onNavigatedToDifferentPage();
                 }
 
                 // If the load failed due to a different navigation, there is no need to reset the
                 // location bar animations.
-                if (navigation.errorCode() != NetError.OK && navigation.isInPrimaryMainFrame()
-                        && !hasPendingNonNtpNavigation(tab)) {
+                if (navigation.errorCode() != NetError.OK && !hasPendingNonNtpNavigation(tab)) {
                     NewTabPage ntp = getNewTabPageForCurrentTab();
                     if (ntp == null) return;
 
                     ntp.setUrlFocusAnimationsDisabled(false);
                     onTabOrModelChanged();
                 }
+            }
+
+            @Override
+            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
 
             @Override
@@ -1113,7 +1117,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 HistoryManagerUtils::showHistoryManager,
                 PartnerBrowserCustomizations.getInstance()::isHomepageProviderAvailableAndEnabled,
                 DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors,
-                logoClickedCallback, mIsStartSurfaceRefactorEnabled, constraintsSupplier);
+                logoClickedCallback, mIsStartSurfaceRefactorEnabled, constraintsSupplier,
+                !ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(mActivity));
         // clang-format on
         mHomepageStateListener = () -> {
             Boolean wasHomepageEnabled = mHomepageEnabledSupplier.get();
@@ -1812,6 +1817,18 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         if (wasFocused && focused) {
             mLocationBar.selectAll();
         }
+    }
+
+    /**
+     * Unfocus the url bar when back press is performed. Do nothing if it is unfocused.
+     * @return Whether url bar is focused when this method is called.
+     */
+    public boolean unfocusUrlBarOnBackPress() {
+        if (mOmniboxFocusStateSupplier.get()) {
+            setUrlBarFocus(false, OmniboxFocusReason.UNFOCUS);
+            return true;
+        }
+        return false;
     }
 
     /**

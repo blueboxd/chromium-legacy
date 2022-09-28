@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ class ExceptionState;
 class PressureObserverManager;
 class PressureObserverOptions;
 class ScriptState;
-class ScriptPromise;
 class V8PressureSource;
 
 class PressureObserver final : public ScriptWrappable {
@@ -43,7 +42,7 @@ class PressureObserver final : public ScriptWrappable {
                                   PressureObserverOptions*);
 
   // PressureObserver IDL implementation.
-  ScriptPromise observe(ScriptState*, V8PressureSource, ExceptionState&);
+  void observe(ScriptState*, V8PressureSource, ExceptionState&);
   void unobserve(V8PressureSource source);
   void disconnect();
   HeapVector<Member<PressureRecord>> takeRecords();

@@ -384,6 +384,7 @@ android_library("chrome_java") {
     "//chrome/browser/commerce/subscriptions/android:subscriptions_java",
     "//chrome/browser/consent_auditor/android:java",
     "//chrome/browser/contextmenu:java",
+    "//chrome/browser/creator/android:java",
     "//chrome/browser/dependency_injection:java",
     "//chrome/browser/device:java",
     "//chrome/browser/download/android:factory_java",
@@ -1726,6 +1727,7 @@ android_library("chrome_test_java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
+    "//components/external_intents/android:test_support_java",
     "//components/externalauth/android:java",
     "//components/favicon/android:java",
     "//components/feature_engagement:feature_engagement_java",
@@ -2226,6 +2228,7 @@ chrome_common_shared_library("libchromefortest") {
     "//chrome/browser/supervised_user:test_support",
     "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
+    "//components/external_intents/android:test_support",
     "//components/minidump_uploader",
     "//components/paint_preview/player/android:test_support",
     "//components/sync",
@@ -2561,6 +2564,7 @@ if (add_unwind_tables_in_chrome_32bit_apk) {
   chrome_unwind_assets("libmonochrome_unwind_table_assets") {
     libname = "libmonochrome"
   }
+
   # We create fat apks only with libmonochrome.
   if (target_cpu == "arm") {
     chrome_unwind_assets("libchrome_unwind_table_assets") {
@@ -2598,6 +2602,7 @@ java_group("chrome_public_base_module_java_test_support") {
     "//chrome/browser/subresource_filter:subresource_filter_java_test_support",
     "//chrome/browser/supervised_user:test_support_java",
     "//chrome/browser/thumbnail:thumbnail_java_test_support",
+    "//components/external_intents/android:test_support_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/paint_preview/player/android:player_java_test_support",
     "//content/public/test/android:content_java_test_support",
@@ -2814,6 +2819,7 @@ android_library("base_module_java") {
     "java/src/org/chromium/chrome/browser/app/usb/UsbNotificationService.java",
     "java/src/org/chromium/chrome/browser/base/DexFixer.java",
     "java/src/org/chromium/chrome/browser/base/DexFixerReason.java",
+    "java/src/org/chromium/chrome/browser/base/ServiceTracingProxyProvider.java",
     "java/src/org/chromium/chrome/browser/base/SplitChromeApplication.java",
     "java/src/org/chromium/chrome/browser/base/SplitCompatAppComponentFactory.java",
     "java/src/org/chromium/chrome/browser/base/SplitCompatApplication.java",

@@ -17,7 +17,7 @@ import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
 import {eventToPromise, flushTasks, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from './passwords_and_autofill_fake_data.js';
+import {createExceptionEntry, createPasswordEntry, makeInsecureCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from './passwords_and_autofill_fake_data.js';
 import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from './sync_test_util.js';
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
@@ -1308,9 +1308,9 @@ suite('PasswordsSection', function() {
         ];
         passwordManager.data.checkStatus.state = PasswordCheckState.CANCELED;
         passwordManager.data.leakedCredentials = [
-          makeCompromisedCredential(
+          makeInsecureCredential(
               'site1.com', 'luigi',
-              chrome.passwordsPrivate.CompromiseType.LEAKED),
+              [chrome.passwordsPrivate.CompromiseType.LEAKED]),
         ];
         pluralString.text = '1 compromised password';
 
@@ -1393,12 +1393,12 @@ suite('PasswordsSection', function() {
       function() {
         // Suppose no leaks initially, non-empty list of passwords, signed in.
         passwordManager.data.leakedCredentials = [
-          makeCompromisedCredential(
+          makeInsecureCredential(
               'one.com', 'test4',
-              chrome.passwordsPrivate.CompromiseType.LEAKED),
-          makeCompromisedCredential(
+              [chrome.passwordsPrivate.CompromiseType.LEAKED]),
+          makeInsecureCredential(
               'two.com', 'test3',
-              chrome.passwordsPrivate.CompromiseType.PHISHED),
+              [chrome.passwordsPrivate.CompromiseType.PHISHED]),
         ];
         passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
             '5 min ago';
@@ -1441,10 +1441,12 @@ suite('PasswordsSection', function() {
       assertTrue(passwordsSection.$.checkPasswordLeakCount.hidden);
       // Suppose two newly detected leaks come in.
       const leakedCredentials = [
-        makeCompromisedCredential(
-            'one.com', 'test4', chrome.passwordsPrivate.CompromiseType.LEAKED),
-        makeCompromisedCredential(
-            'two.com', 'test3', chrome.passwordsPrivate.CompromiseType.PHISHED),
+        makeInsecureCredential(
+            'one.com', 'test4',
+            [chrome.passwordsPrivate.CompromiseType.LEAKED]),
+        makeInsecureCredential(
+            'two.com', 'test3',
+            [chrome.passwordsPrivate.CompromiseType.PHISHED]),
       ];
       const elapsedTimeSinceLastCheck = 'just now';
       passwordManager.data.leakedCredentials = leakedCredentials;

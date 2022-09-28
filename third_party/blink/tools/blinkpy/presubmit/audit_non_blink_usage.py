@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Utilities for checking for disallowed usage of non-Blink declarations.
@@ -28,16 +28,6 @@ _DISALLOW_NON_BLINK_MOJOM = (
     'Warning')
 
 _CONFIG = [
-    {
-        'paths': ['third_party/blink/'],
-        # These task runners are generally banned in blink to ensure
-        # that blink tasks remain properly labeled. See
-        # //third_party/blink/renderer/platform/scheduler/TaskSchedulingInBlink.md
-        # for more.
-        'inclass_disallowed': [
-            'base::(SingleThread|Sequenced)TaskRunner::(GetCurrentDefault|CurrentDefaultHandle)',
-        ]
-    },
     {
         'paths': ['third_party/blink/renderer/'],
         'allowed': [
@@ -728,6 +718,13 @@ _CONFIG = [
              'If you are in this case, you can use --bypass-hooks option to avoid the presubmit check when uploading your CL.'
              ),
             _DISALLOW_NON_BLINK_MOJOM,
+        ],
+        # These task runners are generally banned in blink to ensure
+        # that blink tasks remain properly labeled. See
+        # //third_party/blink/renderer/platform/scheduler/TaskSchedulingInBlink.md
+        # for more.
+        'inclass_disallowed': [
+            'base::(SingleThread|Sequenced)TaskRunner::(GetCurrentDefault|CurrentDefaultHandle)',
         ],
     },
     {
@@ -1806,6 +1803,15 @@ _CONFIG = [
         'allowed': [
             'net::ParseMimeTypeWithoutParameter',
         ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/mediastream/media_stream_track.cc',
+        ],
+        'allowed': [
+            # Used for injecting a mock.
+            'base::NoDestructor',
+        ]
     },
 ]
 

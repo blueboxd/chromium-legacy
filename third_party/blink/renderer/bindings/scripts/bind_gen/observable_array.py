@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,7 +21,6 @@ from .code_node_cxx import CxxLikelyIfNode
 from .code_node_cxx import CxxNamespaceNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
-from .codegen_format import format_template as _format
 from .codegen_utils import collect_forward_decls_and_include_headers
 from .codegen_utils import component_export
 from .codegen_utils import component_export_header

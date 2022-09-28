@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """An interface to git-cl.
@@ -8,10 +8,8 @@ manage changelists and try jobs associated with them.
 """
 
 import collections
-import json
 import logging
 import re
-import six
 from typing import Literal, Mapping, NamedTuple
 
 from blinkpy.common.checkout.git import Git

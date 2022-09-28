@@ -356,7 +356,9 @@ TEST_F(NavigationRequestTest, FencedFrameNavigationToPendingMappedURN) {
   FencedFrameURLMapping& fenced_frame_urls_map =
       main_test_rfh()->GetPage().fenced_frame_urls_map();
 
-  const GURL urn_uuid = fenced_frame_urls_map.GeneratePendingMappedURN();
+  auto pending_urn_uuid = fenced_frame_urls_map.GeneratePendingMappedURN();
+  EXPECT_TRUE(pending_urn_uuid.has_value());
+  GURL urn_uuid = pending_urn_uuid.value();
   const GURL mapped_url = GURL("https://chromium.org");
 
   auto navigation_simulator = NavigationSimulatorImpl::CreateRendererInitiated(
@@ -1043,6 +1045,13 @@ class OriginTrialsControllerDelegateMock
                                  const base::Time current_time) override {
     DCHECK(false) << "Method not implemented for test.";
     return false;
+  }
+
+  base::flat_set<std::string> GetPersistedTrialsForOrigin(
+      const url::Origin& origin,
+      base::Time current_time) override {
+    DCHECK(false) << "Method not implemented for test.";
+    return base::flat_set<std::string>();
   }
 
   base::flat_map<url::Origin, std::vector<std::string>> persisted_tokens_;

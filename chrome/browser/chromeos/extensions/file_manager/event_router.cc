@@ -38,6 +38,7 @@
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
@@ -541,10 +542,8 @@ file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_IN_PROGRESS;
     case ash::MountError::kCancelled:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_CANCELLED;
-    // Not a real error.
-    case ash::MountError::kCount:
-      NOTREACHED();
   }
+
   NOTREACHED();
   return file_manager_private::MOUNT_COMPLETED_STATUS_NONE;
 }
@@ -1383,13 +1382,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
     }
   }
 
-  if (status.sources.size() > 0) {
-    event_status.source_name =
-        util::GetDisplayablePath(profile_, status.sources.front().url)
-            .value_or(base::FilePath())
-            .BaseName()
-            .value();
-  }
+  event_status.source_name = status.GetSourceName(profile_);
   event_status.bytes_transferred = status.bytes_transferred;
   event_status.total_bytes = status.total_bytes;
 

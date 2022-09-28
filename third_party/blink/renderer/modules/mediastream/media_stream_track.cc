@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,11 @@ String ReadyStateToString(const MediaStreamSource::ReadyState& ready_state) {
 MediaStreamTrack* MediaStreamTrack::FromTransferredState(
     ScriptState* script_state,
     const TransferredValues& data) {
+  // Allow injecting a mock.
+  if (GetFromTransferredStateImplForTesting()) {
+    return GetFromTransferredStateImplForTesting().Run(data);
+  }
+
   auto* window =
       DynamicTo<LocalDOMWindow>(ExecutionContext::From(script_state));
   if (!window)
@@ -104,6 +109,15 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
                            transferred_media_stream_track);
   request->Start();
   return transferred_media_stream_track;
+}
+
+// static
+MediaStreamTrack::FromTransferredStateImplForTesting&
+MediaStreamTrack::GetFromTransferredStateImplForTesting() {
+  static base::NoDestructor<
+      MediaStreamTrack::FromTransferredStateImplForTesting>
+      impl;
+  return *impl;
 }
 
 }  // namespace blink

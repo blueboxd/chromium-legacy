@@ -1797,14 +1797,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.NewSaveAndRecall" units="BooleanHit"
-    expires_after="2022-11-24">
+    expires_after="2023-03-26">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Recorded when a new Save and Recall desk is created.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.NewTemplate" enum="BooleanHit"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1829,7 +1829,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallTabCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-03-26">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1860,7 +1860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallWindowCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-03-26">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1908,7 +1908,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.UserSaveAndRecallCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-03-26">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2536,7 +2536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.ShowGaiaSignin.WaitTime" units="ms"
-    expires_after="2023-01-20">
+    expires_after="2023-03-26">
   <owner>agawronska@chromium.org</owner>
   <owner>galenemco@google.com</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -2795,7 +2795,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.ExpandOrCollapse.AnimationSmoothness"
-    units="%" expires_after="2023-01-22">
+    units="%" expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3160,7 +3160,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.ArrowKeyPresses" units="units"
-    expires_after="2023-01-15">
+    expires_after="2023-03-26">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3190,7 +3190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.KeyPressesOverItemsRatio" units="%"
-    expires_after="2023-01-15">
+    expires_after="2023-03-26">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3623,6 +3623,23 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Ash.QuickSettings.Slider.{SliderBehavior}"
+    enum="QsSliderCatalogName" expires_after="2023-09-21">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any slider in the quick settings view or
+    in the slider bubble. {SliderBehavior} can be changing the value or toggling
+    to enable the feature.
+  </summary>
+  <token key="SliderBehavior">
+    <variant name="DisableFeature" summary="Toggle to disable the feature"/>
+    <variant name="Down" summary="Turn the slider value down"/>
+    <variant name="EnableFeature" summary="Toggle to enable the feature"/>
+    <variant name="Up" summary="Turn the slider value up"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.QuickSettings.UserJourneyTime" units="ms"
     expires_after="2023-04-01">
   <owner>kradtke@chromium.org</owner>
@@ -3746,7 +3763,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.NumberOfPinnedItems" units="Icons"
-    expires_after="2023-01-24">
+    expires_after="2023-03-26">
   <owner>anasalazar@chromium.org</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -3935,7 +3952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.ShutdownConfirmationBubble.Action"
-    enum="ShutdownConfirmationBubbleAction" expires_after="2023-03-19">
+    enum="ShutdownConfirmationBubbleAction" expires_after="2023-03-26">
   <owner>sherrilin@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -4266,7 +4283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.BounceIn" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4278,7 +4295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.FadeIn" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4290,7 +4307,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.Hide" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4302,7 +4319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayItemView.Hide" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4313,7 +4330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayItemView.Show" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4558,6 +4575,23 @@ chromium-metrics-reviews@google.com.
     <variant name="ToggleOff" summary="Toggle to disable the feature"/>
     <variant name="ToggleOn" summary="Toggle to enable the feature"/>
     <variant name="Visible" summary="The feature pod is shown"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.UnifiedSystemView.Slider.{SliderBehavior}"
+    enum="QsSliderCatalogName" expires_after="2023-09-21">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any slider in the old quick settings view
+    or in the slider bubble. {SliderBehavior} can be changing the value or
+    toggling to enable the feature.
+  </summary>
+  <token key="SliderBehavior">
+    <variant name="DisableFeature" summary="Toggle to disable the feature"/>
+    <variant name="Down" summary="Turn the slider value down"/>
+    <variant name="EnableFeature" summary="Toggle to enable the feature"/>
+    <variant name="Up" summary="Turn the slider value up"/>
   </token>
 </histogram>
 
@@ -5083,7 +5117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowDragFromShelfResult" enum="ShelfWindowDragResult"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>

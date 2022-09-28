@@ -253,6 +253,10 @@ class BrowserPrintingContextFactoryForTest
 #if BUILDFLAG(IS_WIN)
     if (access_denied_errors_for_render_page_)
       context->SetOnRenderPageBlockedByPermissions();
+    if (failed_error_for_render_page_number_) {
+      context->SetOnRenderPageFailsForPage(
+          failed_error_for_render_page_number_);
+    }
 #endif
     if (access_denied_errors_for_render_document_)
       context->SetOnRenderDocumentBlockedByPermissions();
@@ -285,6 +289,10 @@ class BrowserPrintingContextFactoryForTest
   void SetAccessDeniedErrorOnRenderPage(bool cause_errors) {
     access_denied_errors_for_render_page_ = cause_errors;
   }
+
+  void SetFailedErrorForRenderPage(uint32_t page_number) {
+    failed_error_for_render_page_number_ = page_number;
+  }
 #endif
 
   void SetAccessDeniedErrorOnRenderDocument(bool cause_errors) {
@@ -314,6 +322,7 @@ class BrowserPrintingContextFactoryForTest
   bool access_denied_errors_for_new_document_ = false;
 #if BUILDFLAG(IS_WIN)
   bool access_denied_errors_for_render_page_ = false;
+  uint32_t failed_error_for_render_page_number_ = 0;
 #endif
   bool access_denied_errors_for_render_document_ = false;
   bool access_denied_errors_for_document_done_ = false;
@@ -2714,6 +2723,14 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
     test_printing_context_factory()->SetAccessDeniedErrorOnRenderPage(
         /*cause_errors=*/true);
   }
+
+  void PrimeForDelayedRenderingUntilPage(uint32_t page_number) {
+    print_backend_service_->set_rendering_delayed_until_page(page_number);
+  }
+
+  void PrimeForRenderingErrorOnPage(uint32_t page_number) {
+    test_printing_context_factory()->SetFailedErrorForRenderPage(page_number);
+  }
 #endif
 
   void PrimeForAccessDeniedErrorsInRenderPrintedDocument() {
@@ -3216,6 +3233,41 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   EXPECT_TRUE(error_dialog_shown());
   EXPECT_TRUE(stop_invoked());
 }
+
+// TODO(crbug.com/1326580):  Enable test once use-after-free after a failed
+// call is avoided.
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
+                       DISABLED_StartPrintingMultipageMidJobError) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  // Delay rendering until all pages have been sent, to avoid any race
+  // conditions related to error handling.  This is to ensure that page 3 is in
+  // the service queued for processing, before we let page 2 be processed and
+  // have it trigger an error that could affect page 3 processing.
+  PrimeForDelayedRenderingUntilPage(/*page_number=*/3);
+  PrimeForRenderingErrorOnPage(/*page_number=*/2);
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+
+  // TODO(crbug.com/1326580):  Update behavior description after UAF during
+  // error processing in the PrintBackendService is resolved.  In meantime
+  // replicate the expected message count from StartPrintingMultipage test.
+  SetNumExpectedMessages(/*num=*/6);
+
+  PrintAfterPreviewIsReadyAndLoaded();
+
+  EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kFailed);
+  // TODO(crbug.com/1326580):  Update remaining behavior checks after UAF
+  // during error processing in the PrintBackendService is resolved.
+}
 #endif  // BUILDFLAG(IS_WIN)
 
 // TODO(crbug.com/1008222)  Include Windows once XPS print pipeline is added.
@@ -3459,20 +3511,12 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
 
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
-// TODO(crbug.com/1256506): Re-enable test on Windows.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_ContentAnalysisPrintBrowserTest \
-  DISABLED_ContentAnalysisPrintBrowserTest
-#else
-#define MAYBE_ContentAnalysisPrintBrowserTest ContentAnalysisPrintBrowserTest
-#endif  // !BUILDFLAG(IS_WIN)
-
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-class MAYBE_ContentAnalysisPrintBrowserTest
+class ContentAnalysisPrintBrowserTest
     : public PrintBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
-  MAYBE_ContentAnalysisPrintBrowserTest() {
+  ContentAnalysisPrintBrowserTest() {
     policy::SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting(kFakeDmToken));
     enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
@@ -3480,7 +3524,7 @@ class MAYBE_ContentAnalysisPrintBrowserTest
             &enterprise_connectors::FakeContentAnalysisDelegate::Create,
             base::DoNothing(),
             base::BindRepeating(
-                &MAYBE_ContentAnalysisPrintBrowserTest::ScanningResponse,
+                &ContentAnalysisPrintBrowserTest::ScanningResponse,
                 base::Unretained(this)),
             kFakeDmToken));
 
@@ -3534,21 +3578,12 @@ class MAYBE_ContentAnalysisPrintBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/1256506): Re-enable test on Windows.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest \
-  DISABLED_ContentAnalysisScriptedPreviewlessPrintBrowserTest
-#else
-#define MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest \
-  ContentAnalysisScriptedPreviewlessPrintBrowserTest
-#endif  // !BUILDFLAG(IS_WIN)
-
-class MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest
-    : public MAYBE_ContentAnalysisPrintBrowserTest {
+class ContentAnalysisScriptedPreviewlessPrintBrowserTest
+    : public ContentAnalysisPrintBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* cmd_line) override {
     cmd_line->AppendSwitch(switches::kDisablePrintPreview);
-    MAYBE_ContentAnalysisPrintBrowserTest::SetUpCommandLine(cmd_line);
+    ContentAnalysisPrintBrowserTest::SetUpCommandLine(cmd_line);
   }
 
   void RunScriptedPrintTest(const std::string& script) {
@@ -3575,9 +3610,8 @@ class MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest
   }
 };
 
-// TODO(crbug.com/1256506): Re-enable test on Windows
 #if !BUILDFLAG(IS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest, PrintNow) {
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintNow) {
   AddPrinter("printer_name");
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
@@ -3609,8 +3643,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest, PrintNow) {
   ASSERT_EQ(new_document_called_count(), 0);
 }
 
-IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest,
-                       PrintWithPreview) {
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintWithPreview) {
   AddPrinter("printer_name");
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
@@ -3637,20 +3670,20 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest,
   ASSERT_EQ(new_document_called_count(), 0);
 }
 
-IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest,
+IN_PROC_BROWSER_TEST_P(ContentAnalysisScriptedPreviewlessPrintBrowserTest,
                        DocumentExecPrint) {
   RunScriptedPrintTest("document.execCommand('print');");
 }
 
-IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest,
+IN_PROC_BROWSER_TEST_P(ContentAnalysisScriptedPreviewlessPrintBrowserTest,
                        WindowPrint) {
   RunScriptedPrintTest("window.print()");
 }
 
-#endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest,
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest,
                        BlockedByDLPThenNoContentAnalysis) {
   AddPrinter("printer_name");
   ASSERT_TRUE(embedded_test_server()->Started());
@@ -3679,19 +3712,14 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ContentAnalysisPrintBrowserTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-// TODO(crbug.com/1256506): Re-enable test on Windows.
-INSTANTIATE_TEST_SUITE_P(All,
-                         MAYBE_ContentAnalysisPrintBrowserTest,
-                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ContentAnalysisPrintBrowserTest, testing::Bool());
 
-// TODO(crbug.com/1256506): Re-enable test on Windows.
 // This test suite doesn't run on CrOS since it doesn't support non-print
 // preview scripted printing.
 #if !BUILDFLAG(IS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    MAYBE_ContentAnalysisScriptedPreviewlessPrintBrowserTest,
-    testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ContentAnalysisScriptedPreviewlessPrintBrowserTest,
+                         testing::Bool());
 #endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS)
 
 #endif  // BUILDFLAG(ENABLE_PRINT_SCANNING)

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
@@ -160,13 +162,18 @@ void SoftNavigationHeuristics::CheckAndReportSoftNavigation(
   }
   ++soft_navigation_count_;
   frame->IncrementNavigationId();
-  LocalDOMWindow* window = frame->DomWindow();
-  if (window) {
+  if (LocalDOMWindow* window = frame->DomWindow()) {
     auto* performance = DOMWindowPerformance::performance(*window);
-    // TODO(yoav): url_ can be NULL here, if it wasn't passed to pushState by
-    // the developer. That's not great, and it'd be better to pass the
-    // post-resolution URL when calling this.
+    DCHECK(!url_.IsNull());
     performance->AddSoftNavigationEntry(AtomicString(url_));
+
+    if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled()) {
+      if (Document* document = window->document()) {
+        PaintTiming::From(*document).ResetFirstPaintAndFCP();
+      }
+      DCHECK(frame->View());
+      frame->View()->GetPaintTimingDetector().StartRecordingLCP();
+    }
   }
 
   ResetHeuristic();

@@ -22,10 +22,9 @@ import '../../settings_vars.css.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink_js.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {castExists} from '../assert_extras.js';
 
 import {getTemplate} from './search_engine.html.js';
 import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './search_engines_browser_proxy.js';
@@ -48,22 +47,11 @@ class SettingsSearchEngineElement extends SettingsSearchEngineElementBase {
 
       /** The current selected search engine. */
       currentSearchEngine_: Object,
-
-      showSearchSelectionDialog_: Boolean,
-
-      syncSettingsCategorizationEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('syncSettingsCategorizationEnabled');
-        },
-      },
     };
   }
 
   private browserProxy_: SearchEnginesBrowserProxy;
   private currentSearchEngine_: SearchEngine;
-  private showSearchSelectionDialog_: boolean;
-  private syncSettingsCategorizationEnabled_: boolean;
 
   constructor() {
     super();
@@ -81,18 +69,13 @@ class SettingsSearchEngineElement extends SettingsSearchEngineElementBase {
   }
 
   private updateCurrentSearchEngine_(searchEngines: SearchEnginesInfo) {
-    const defaultSearchEngine =
-        searchEngines.defaults.find(searchEngine => searchEngine.default);
-    assert(defaultSearchEngine);
+    const defaultSearchEngine = castExists(
+        searchEngines.defaults.find(searchEngine => searchEngine.default));
     this.currentSearchEngine_ = defaultSearchEngine;
   }
 
   override focus() {
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      this.getBrowserSearchSettingsLink_().focus();
-    } else {
-      this.getSearchSelectionDialogButton_().focus();
-    }
+    this.getBrowserSearchSettingsLink_().focus();
   }
 
   private onDisableExtension_() {
@@ -104,42 +87,18 @@ class SettingsSearchEngineElement extends SettingsSearchEngineElementBase {
     this.dispatchEvent(event);
   }
 
-  private onShowSearchSelectionDialogClick_() {
-    this.showSearchSelectionDialog_ = true;
-  }
-
-  private onSearchSelectionDialogClose_() {
-    this.showSearchSelectionDialog_ = false;
-    focusWithoutInk(this.getSearchSelectionDialogButton_());
-  }
-
   private onSearchEngineLinkClick_() {
     window.open('chrome://settings/search');
   }
 
-  private isDefaultSearchControlledByPolicy_(
-      pref: chrome.settingsPrivate.PrefObject): boolean {
-    return pref.controlledBy ===
-        chrome.settingsPrivate.ControlledBy.USER_POLICY;
-  }
-
-  private isDefaultSearchEngineEnforced_(
-      pref: chrome.settingsPrivate.PrefObject): boolean {
-    return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
-  }
-
   private getBrowserSearchSettingsLink_() {
-    const browserSearchSettingsLink =
-        this.shadowRoot!.getElementById('browserSearchSettingsLink');
-    assert(browserSearchSettingsLink);
-    return browserSearchSettingsLink;
+    return castExists(
+        this.shadowRoot!.getElementById('browserSearchSettingsLink'));
   }
 
   private getSearchSelectionDialogButton_() {
-    const searchSelectionDialogButton =
-        this.shadowRoot!.getElementById('searchSelectionDialogButton');
-    assert(searchSelectionDialogButton);
-    return searchSelectionDialogButton;
+    return castExists(
+        this.shadowRoot!.getElementById('searchSelectionDialogButton'));
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,14 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   base::TimeTicks FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime()
       const {
     return first_contentful_paint_;
+  }
+
+  void ResetFirstPaintAndFCP() {
+    first_paint_ = base::TimeTicks();
+    first_paint_presentation_ = base::TimeTicks();
+    first_contentful_paint_ = base::TimeTicks();
+    first_contentful_paint_presentation_ = base::TimeTicks();
+    // TODO(yoav): Investigate if we should also reset first_image_paint_ here.
   }
 
   // FirstImagePaint returns the first time that image content was painted.

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -460,6 +460,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetDisableSimplifiedLayout() { disable_simplified_layout = true; }
 
+  void SetIsTruncatedByFragmentationLine() {
+    is_truncated_by_fragmentation_line = true;
+  }
+
   // See |NGPhysicalBoxFragment::InflowBounds|.
   void SetInflowBounds(const LogicalRect& inflow_bounds) {
     DCHECK_NE(box_type_, NGPhysicalBoxFragment::NGBoxType::kInlineBox);
@@ -768,6 +772,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_at_block_end_ = false;
   bool disable_oof_descendants_propagation_ = false;
   bool disable_simplified_layout = false;
+  bool is_truncated_by_fragmentation_line = false;
   bool use_last_baseline_for_inline_baseline_ = false;
   LayoutUnit block_offset_for_additional_columns_;
 

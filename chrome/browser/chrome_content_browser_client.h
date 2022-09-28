@@ -710,7 +710,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
       const url::Origin& context_origin,
-      content::RenderFrameHost* main_frame) override;
+      content::RenderFrameHost* main_frame,
+      bool observe) override;
 
   bool IsBluetoothScanningBlocked(content::BrowserContext* browser_context,
                                   const url::Origin& requesting_origin,
@@ -827,6 +828,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool ShouldSendOutermostOriginToRenderer(
       const url::Origin& outermost_origin) override;
+
+  bool IsFileSystemURLNavigationAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& url) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

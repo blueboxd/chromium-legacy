@@ -380,7 +380,7 @@ public final class ReturnToChromeUtil {
      */
     public static boolean shouldShowStartSurfaceAsTheHomePage(Context context) {
         return isStartSurfaceEnabled(context)
-                && !StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START.getValue();
+                && StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE.getValue();
     }
 
     /**
@@ -907,6 +907,15 @@ public final class ReturnToChromeUtil {
     public static boolean getFeedArticlesVisibility() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
+    }
+
+    /**
+     * Returns whether to improve Start surface when Feed is not visible.
+     */
+    public static boolean shouldImproveStartWhenFeedIsDisabled(Context context) {
+        return isStartSurfaceEnabled(context)
+                && ChromeFeatureList.sStartSurfaceDisabledFeedImprovement.isEnabled()
+                && !getFeedArticlesVisibility();
     }
 
     /**

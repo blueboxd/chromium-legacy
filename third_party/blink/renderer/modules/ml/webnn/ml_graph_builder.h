@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,9 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                   const MLOperand* b,
                   const MLGemmOptions* options,
                   ExceptionState& exception_state);
+
+  MLOperand* hardSwish(const MLOperand* input, ExceptionState& exception_state);
+  MLOperator* hardSwish(ExceptionState& exception_state);
 
   // Pooling operations
   MLOperand* averagePool2d(const MLOperand* input,

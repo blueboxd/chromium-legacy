@@ -1772,6 +1772,11 @@ const char kJavascriptExperimentalSharedMemoryDescription[] =
 const char kJourneysName[] = "History Journeys";
 const char kJourneysDescription[] = "Enables the History Journeys UI.";
 
+const char kJourneysContentClusteringName[] =
+    "History Journeys Content Clustering";
+const char kJourneysContentClusteringDescription[] =
+    "Enables clustering page loads using content annotations.";
+
 const char kJourneysLabelsName[] = "History Journeys Labels";
 const char kJourneysLabelsDescription[] =
     "Enables labels for Journeys within the History Journeys UI.";
@@ -2365,11 +2370,6 @@ const char kPersistentQuotaIsTemporaryQuotaDescription[] =
     "Causes the window.PERSISTENT quota type to have the same semantics as "
     "window.TEMPORARY.";
 
-const char kPersonalizationHubName[] = "Personalization Hub UI";
-const char kPersonalizationHubDescription[] =
-    "Enable the UI to let users customize their wallpapers, screensaver, and "
-    "avatars.";
-
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =
     "Enables pointer lock unadjustedMovement. When unadjustedMovement is set "
@@ -2425,11 +2425,6 @@ const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
     "Fenced Frames, Shared Storage, Private Aggregation, and their associated "
-    "features.";
-
-const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
-const char kPrivacySandboxV3Description[] =
-    "Enables an updated Privacy Sandbox UI. Also enables some related "
     "features.";
 
 const char kPrivateAggregationDebugModeName[] =
@@ -2984,6 +2979,14 @@ const char kUnifiedPasswordManagerErrorMessagesName[] =
 const char kUnifiedPasswordManagerErrorMessagesDescription[] =
     "Enables showing error messages that offer signing in again to fix the "
     "auth errors.";
+
+const char kUnifiedPasswordManagerAndroidReenrollmentName[] =
+    "Automatic reenrollement of users who were evicted from using Google "
+    "Mobile Services after experiencing errors.";
+const char kUnifiedPasswordManagerAndroidReenrollmentDescription[] =
+    "Requires UnifiedPasswordManagerAndroid flag enabled. Allows automatic "
+    "reenrollment into Google Mobile Services if sync and backend "
+    "communication work.";
 
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
@@ -5169,11 +5172,6 @@ const char kGetDisplayMediaSetAutoSelectAllScreensDescription[] =
     "When enabled, the autoSelectAllScreens attribute is available for usage "
     "with the GetDisplayMediaSet API.";
 
-const char kMultiMonitorsInCrdName[] = "Multi monitor in CRD";
-const char kMultiMonitorsInCrdDescription[] =
-    "Enables support for viewing multiple monitors connected to this ChromeOS "
-    "device through CRD.";
-
 const char kUseHDRTransferFunctionName[] =
     "Monitor/Display HDR transfer function";
 const char kUseHDRTransferFunctionDescription[] =
@@ -6186,12 +6184,6 @@ const char kWindowControlMenuDescription[] =
 const char kLauncherGameSearchName[] = "Enable launcher game search";
 const char kLauncherGameSearchDescription[] =
     "Enables cloud game search results in the launcher.";
-
-const char kLauncherHideContinueSectionName[] =
-    "Launcher hide continue section";
-const char kLauncherHideContinueSectionDescription[] =
-    "Adds a 'Hide all suggestions' option to the continue section item "
-    "right-click menus.";
 
 const char kMacAddressRandomizationName[] = "MAC address randomization";
 const char kMacAddressRandomizationDescription[] =

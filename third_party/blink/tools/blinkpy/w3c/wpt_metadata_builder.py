@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Converts Chromium Test Expectations into WPT Metadata ini files.
@@ -13,7 +13,6 @@ import argparse
 import fnmatch
 import logging
 import os
-import re
 
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.system.log_utils import configure_logging

@@ -1219,7 +1219,8 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
 std::vector<blink::mojom::EpochTopicPtr>
 ContentBrowserClient::GetBrowsingTopicsForJsApi(
     const url::Origin& context_origin,
-    RenderFrameHost* main_frame) {
+    RenderFrameHost* main_frame,
+    bool observe) {
   return {};
 }
 
@@ -1397,6 +1398,12 @@ bool ContentBrowserClient::OpenExternally(RenderFrameHost* opener,
 
 bool ContentBrowserClient::ShouldSendOutermostOriginToRenderer(
     const url::Origin& outermost_origin) {
+  return false;
+}
+
+bool ContentBrowserClient::IsFileSystemURLNavigationAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   return false;
 }
 

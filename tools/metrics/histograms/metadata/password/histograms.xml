@@ -353,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogMultipleAccounts"
-    enum="AccountChooserDismissalReason" expires_after="2023-01-22">
+    enum="AccountChooserDismissalReason" expires_after="2023-03-26">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -742,8 +742,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.AutomaticChange.AssistantStoppedBubbleCloseReason"
+    enum="PasswordManager.AssistantStoppedBubble.CloseReason"
+    expires_after="2023-09-26">
+  <owner>brunobraga@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <summary>
+    The reason why the &quot;Assistant stopped&quot; bubble was closed. The
+    bubble is shown when an automatic password change flow on Desktop is ended
+    prematurely.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AutomaticChange.ForSitesWithScripts"
-    enum="PasswordCheckResolutionAction" expires_after="2023-01-22">
+    enum="PasswordCheckResolutionAction" expires_after="2023-03-26">
   <owner>kolos@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1161,7 +1174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.DynamicFormChanges" units="units"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1350,7 +1363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.HttpCredentials"
-    enum="PasswordManagerHttpCredentialType" expires_after="2023-01-22">
+    enum="PasswordManagerHttpCredentialType" expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1372,7 +1385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.HttpPasswordMigrationMode"
-    enum="HttpPasswordMigrationMode" expires_after="2023-01-22">
+    enum="HttpPasswordMigrationMode" expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1918,7 +1931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordDropdownShown"
-    enum="PasswordDropdownState" expires_after="2023-01-22">
+    enum="PasswordDropdownState" expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>Logs the state of the password dropdown when it's shown.</summary>
@@ -2574,7 +2587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.RequirementsSpecFetcher.HttpResponseCode"
-    enum="HttpResponseCode" expires_after="2023-01-22">
+    enum="HttpResponseCode" expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -2622,7 +2635,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SavedGaiaPasswordHashCount" units="count"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>vsemeniuk@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3085,8 +3098,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.UPMUpdateSignInCredentialsSucces"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records whether the user was successfully signed in after using the sign in
+    button on the Password Manager error message. The outcome can be either
+    success or failure. It's recorded when the sign in flow that updates
+    credentials finishes. Currently only used on Android.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.UsernameDetectionMethod"
-    enum="UsernameDetectionMethod" expires_after="2023-01-22">
+    enum="UsernameDetectionMethod" expires_after="2023-03-26">
   <owner>kazinova@google.com</owner>
   <owner>kolos@chromium.org</owner>
   <summary>

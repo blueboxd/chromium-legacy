@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -327,6 +327,13 @@ void NGLogicalAnchorReference::InsertInPreOrderInto(
   }
 }
 
+// static
+const NGLogicalAnchorQuery& NGLogicalAnchorQuery::Empty() {
+  DEFINE_STATIC_LOCAL(Persistent<NGLogicalAnchorQuery>, empty,
+                      (MakeGarbageCollected<NGLogicalAnchorQuery>()));
+  return *empty;
+}
+
 const NGPhysicalAnchorReference* NGPhysicalAnchorQuery::AnchorReference(
     const AtomicString& name) const {
   const auto& it = anchor_references_.find(name);
@@ -448,7 +455,7 @@ void NGLogicalAnchorQuery::SetFromPhysical(
   }
 }
 
-const NGLogicalAnchorQuery*
+const NGLogicalAnchorQuery&
 NGLogicalAnchorQueryForFragmentation::StitchedAnchorQuery(
     const LayoutObject& containing_block) const {
   DCHECK(&containing_block);
@@ -456,8 +463,8 @@ NGLogicalAnchorQueryForFragmentation::StitchedAnchorQuery(
          containing_block.CanContainFixedPositionObjects());
   const auto& it = queries_.find(&containing_block);
   if (it != queries_.end())
-    return it->value;
-  return nullptr;
+    return *it->value;
+  return NGLogicalAnchorQuery::Empty();
 }
 
 void NGLogicalAnchorQueryForFragmentation::Update(

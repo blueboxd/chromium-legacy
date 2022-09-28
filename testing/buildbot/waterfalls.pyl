@@ -1112,6 +1112,58 @@
           'scripts': 'chromium_android_scripts',
         }
       },
+      'android-weblayer-10-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          '10-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_10_gtests',
+        }
+      },
+      'android-weblayer-marshmallow-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_marshmallow_gtests',
+        }
+      },
+      'android-weblayer-oreo-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'oreo-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
+        }
+      },
+      'android-weblayer-pie-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'pie-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
+        }
+      },
       'android-webview-10-x86-rel-tests': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1249,6 +1301,47 @@
           'gtest_tests': 'android_pie_rel_emulator_gtests',
           'scripts': 'chromium_android_scripts',
         }
+      },
+      'android-weblayer-11-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          '11-x86-emulator',
+          'emulator-4-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_10_gtests',
+        }
+      },
+      'android-weblayer-pie-x86-wpt-fyi-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'pie-x86-emulator',
+          'emulator-8-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'weblayer_shell_wpt',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
+      'android-weblayer-pie-x86-wpt-smoketest': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'pie-x86-emulator',
+          'emulator-8-cores',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'weblayer_shell_wpt',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
       },
       'android-webview-12-x64-dbg-tests': {
         'mixins': [
@@ -3810,7 +3903,7 @@
       },
       'mac-backuprefptr-x64-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
+          'gtest_tests': 'chromium_mac_and_dangling_pointer_detection_gtests',
         },
         'mixins': [
           'mac_10.15',
@@ -3876,7 +3969,7 @@
       },
       'win-backuprefptr-x64-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
+          'gtest_tests': 'chromium_win_and_dangling_pointer_detection_gtests',
         },
         'mixins': [
           'win10',
@@ -3950,6 +4043,18 @@
           'gtest_tests': 'chromium_win10_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
+      },
+      'win10-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'x86-64',
+          'win10',
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'win',
       },
     },
   },

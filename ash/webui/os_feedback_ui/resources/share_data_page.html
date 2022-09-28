@@ -145,6 +145,20 @@
     color: var(--cros-text-color-primary);
     line-height: 20px;
   }
+
+  cr-dialog::part(dialog) {
+    width: 400px;
+  }
+
+  cr-dialog [slot=body] {
+    color: var(--cros-text-color-primary);
+    font-family: var(--feedback-roboto-font-family);
+    font-size: 15px;
+    font-weight: var(--feedback-regular-font-weight);
+    line-height: 22px;
+    padding-inline-end: 24px;
+    padding-inline-start: 24px;
+  }
 </style>
 <div id="container">
   <div id="header">
@@ -232,6 +246,15 @@
         </cr-checkbox>
         <label id="bluetoothInfoLabel" inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></label>
       </div>
+      <!-- Performance trace -->
+      <div id="performanceTraceContainer" class="checkbox-field-container">
+        <cr-checkbox id="performanceTraceCheckbox"
+            aria-labelledby="performanceTraceCheckboxLabel" checked>
+        </cr-checkbox>
+        <label id="performanceTraceCheckboxLabel"
+            inner-h-t-m-l="[[performanceTraceCheckboxLabel_]]">
+        </label>
+      </div>
     </div>
     <!-- Privacy note -->
     <div id="privacyNote" inner-h-t-m-l="[[privacyNote_]]"></div>
@@ -253,7 +276,7 @@
         class="close-dialog-button"
         title="[[i18n('attachScreenshotLabel')]]"
         on-click="handleScreenshotDialogCloseClick_">
-      <iron-icon id="backArrow" class="dialog-back-arrow" 
+      <iron-icon id="backArrow" class="dialog-back-arrow"
           icon="cr:arrow-back"></iron-icon>
     </cr-button>
     <div id="dialogTitle">[[i18n('attachScreenshotLabel')]]</div>
@@ -261,6 +284,17 @@
   <div id="mainPanel" class="dialog-main-panel">
     <div id="innerContentPanel" class="dialog-content-panel">
       <img src="[[screenshotUrl]]" class="image-preview">
-    </div> 
+    </div>
   </div>
 </dialog>
+<cr-dialog id="bluetoothDialog">
+  <div slot="body">
+    [[i18n('bluetoothLogsMessage')]]
+  </div>
+  <div slot="button-container">
+    <cr-button id="bluetoothDialogDoneButton" class="action-button"
+        on-click="handleCloseBluetoothDialogClicked_">
+      [[i18n('buttonDone')]]
+    </cr-button>
+  </div>
+</cr-dialog>

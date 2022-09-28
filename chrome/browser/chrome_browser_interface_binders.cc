@@ -646,13 +646,16 @@ void BindScreenAIAnnotator(
 
   content::BrowserContext* browser_context =
       frame_host->GetProcess()->GetBrowserContext();
-  screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(browser_context)
-      ->BindScreenAIAnnotator(std::move(receiver));
 
   // Annotator function of ScreenAI service requires AXScreenAIAnnotator to be
   // ready to receive accessibility tree data.
+  // TODO(https://crbug.com/1278249): Consider renaming AXScreenAIAnnotator to
+  // reduce confusion.
   screen_ai::AXScreenAIAnnotatorFactory::EnsureExistsForBrowserContext(
       browser_context);
+
+  screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(browser_context)
+      ->BindScreenAIAnnotator(std::move(receiver));
 }
 
 void BindScreen2xMainContentExtractor(
@@ -1053,11 +1056,9 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::settings::mojom::SearchHandler,
       chromeos::settings::OSSettingsUI>(map);
 
-  if (ash::features::IsPersonalizationHubEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::personalization_app::mojom::SearchHandler,
-        chromeos::settings::OSSettingsUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::personalization_app::mojom::SearchHandler,
+      chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::settings::app_notification::mojom::AppNotificationsHandler,
@@ -1210,23 +1211,21 @@ void PopulateChromeWebUIFrameBinders(
       ash::personalization_app::mojom::WallpaperProvider,
       ash::personalization_app::PersonalizationAppUI>(map);
 
-  if (ash::features::IsPersonalizationHubEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::personalization_app::mojom::AmbientProvider,
-        ash::personalization_app::PersonalizationAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::personalization_app::mojom::AmbientProvider,
+      ash::personalization_app::PersonalizationAppUI>(map);
 
-    RegisterWebUIControllerInterfaceBinder<
-        ash::personalization_app::mojom::ThemeProvider,
-        ash::personalization_app::PersonalizationAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::personalization_app::mojom::ThemeProvider,
+      ash::personalization_app::PersonalizationAppUI>(map);
 
-    RegisterWebUIControllerInterfaceBinder<
-        ash::personalization_app::mojom::UserProvider,
-        ash::personalization_app::PersonalizationAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::personalization_app::mojom::UserProvider,
+      ash::personalization_app::PersonalizationAppUI>(map);
 
-    RegisterWebUIControllerInterfaceBinder<
-        ash::personalization_app::mojom::KeyboardBacklightProvider,
-        ash::personalization_app::PersonalizationAppUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::personalization_app::mojom::KeyboardBacklightProvider,
+      ash::personalization_app::PersonalizationAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       launcher_internals::mojom::PageHandlerFactory,

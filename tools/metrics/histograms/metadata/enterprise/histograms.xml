@@ -523,14 +523,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.DeviceRemoteCommand.CRD.Result"
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Started"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the starting of AuraDesktopCapturer</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Stopped"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the stopping of AuraDesktopCapturer</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Started"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the starting of FrameSinkDesktopCapturer</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Stopped"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the stopping of FrameSinkDesktopCapturer</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Result"
     enum="EnterpriseCrdSessionResultCode" expires_after="2023-01-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>Reports success/failure when a session is attempted.</summary>
 </histogram>
 
-<histogram name="Enterprise.DeviceRemoteCommand.CRD.SessionType"
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.SessionType"
     enum="EnterpriseCrdUserType" expires_after="2023-01-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
@@ -2374,7 +2402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.VpdUpdateStatus" units="units"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>igorcov@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -2525,7 +2553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsManagedOrEnterpriseDevice"
-    enum="BooleanEnabled" expires_after="2023-01-22">
+    enum="BooleanEnabled" expires_after="2023-03-26">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2583,16 +2611,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether we could obtain the address of the NetGetJoinInformation function.
     This check is performed once at start-up on Windows.
-  </summary>
-</histogram>
-
-<histogram name="EnterpriseCheck.OSType" enum="OsSuite"
-    expires_after="2022-08-23">
-  <owner>pastarmovj@chromium.org</owner>
-  <owner>rogerta@chomium.org</owner>
-  <summary>
-    The rough Windows suite we are running on. This check is performed once at
-    start-up on Windows.
   </summary>
 </histogram>
 

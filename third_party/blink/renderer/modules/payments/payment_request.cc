@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -657,7 +657,10 @@ bool CSPAllowsConnectToSource(const KURL& url,
   if (enforce_csp)
     return false;  // Block request.
 
-  UseCounter::Count(context, WebFeature::kPaymentRequestCSPViolation);
+  // CSP has been bypassed, so warn web developers that CSP bypass has been
+  // deprecated and will be removed.
+  Deprecation::CountDeprecation(&context,
+                                WebFeature::kPaymentRequestCSPViolation);
   return true;  // Allow request.
 }
 

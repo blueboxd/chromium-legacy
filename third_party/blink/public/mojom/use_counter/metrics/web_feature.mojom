@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3621,8 +3621,8 @@ enum WebFeature {
   kCookieDomainNonASCII = 4300,
   kClientHintsMetaEquivDelegateCH = 4301,
   kExpectCTHeader = 4302,
-  kNavigateEventTransitionWhile = 4303,
-  kNavigateEventRestoreScroll = 4304,
+  kOBSOLETE_kNavigateEventTransitionWhile = 4303,
+  kOBSOLETE_kNavigateEventRestoreScroll = 4304,
   kSendBeaconWithArrayBuffer = 4305,
   kSendBeaconWithArrayBufferView = 4306,
   kSendBeaconWithBlob = 4307,
@@ -3680,6 +3680,7 @@ enum WebFeature {
   kWebAuthnRkRequiredCreationSuccess = 4359,
   kDestructiveDocumentWriteAfterModuleScript = 4360,
   kCSSAtSupportsDropInvalidWhileForgivingParsing = 4361,
+  kPermissionsPolicyUnload = 4362,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

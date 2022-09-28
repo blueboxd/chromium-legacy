@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,9 @@ struct CORE_EXPORT NGLogicalAnchorReference
 class CORE_EXPORT NGLogicalAnchorQuery
     : public GarbageCollected<NGLogicalAnchorQuery> {
  public:
+  // Returns an empty instance.
+  static const NGLogicalAnchorQuery& Empty();
+
   bool IsEmpty() const { return anchor_references_.empty(); }
 
   const NGLogicalAnchorReference* AnchorReference(
@@ -148,8 +151,9 @@ class CORE_EXPORT NGLogicalAnchorQueryForFragmentation {
   }
 
   // Get |NGLogicalAnchorQuery| in the stitched coordinate system for the given
-  // containing block.
-  const NGLogicalAnchorQuery* StitchedAnchorQuery(
+  // containing block. If there is no anchor query for the containing block,
+  // returns an empty instance.
+  const NGLogicalAnchorQuery& StitchedAnchorQuery(
       const LayoutObject& containing_block) const;
 
   // Update the internal map of anchor queries for containing blocks from the

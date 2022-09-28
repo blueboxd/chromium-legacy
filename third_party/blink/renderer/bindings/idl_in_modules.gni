@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,6 +75,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/breakout_box/video_track_generator.idl",
           "//third_party/blink/renderer/modules/broadcastchannel/broadcast_channel.idl",
           "//third_party/blink/renderer/modules/browsing_topics/browsing_topic.idl",
+          "//third_party/blink/renderer/modules/browsing_topics/browsing_topics_options.idl",
           "//third_party/blink/renderer/modules/browsing_topics/browsing_topics_document_supplement.idl",
           "//third_party/blink/renderer/modules/buckets/navigator_storage_buckets.idl",
           "//third_party/blink/renderer/modules/buckets/storage_bucket.idl",

@@ -117,7 +117,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_view_signed_out_and_no_account_available");
     }
@@ -135,7 +135,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_illustration_signed_out_and_no_account_available");
     }
@@ -153,7 +153,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_single_button_signed_out_and_no_account_available");
     }
@@ -171,7 +171,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_title_signed_out_and_no_account_available");
     }
@@ -183,7 +183,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_view_signed_out_and_account_available");
     }
 
@@ -198,7 +198,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_illustration_signed_out_and_account_available");
     }
@@ -214,7 +214,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(
                 view, "bookmark_sync_promo_single_button_signed_out_and_account_available");
     }
@@ -230,7 +230,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_title_signed_out_and_account_available");
     }
 
@@ -242,7 +242,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_view_signed_in_and_not_syncing");
     }
 
@@ -258,7 +258,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_illustration_signed_in_and_not_syncing");
     }
 
@@ -274,7 +274,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_single_button_signed_in_and_not_syncing");
     }
 
@@ -290,7 +290,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.BOOKMARK_MANAGER, profileDataCache,
-                R.layout.personalized_signin_promo_view_bookmarks);
+                R.layout.sync_promo_view_bookmarks);
         mRenderTestRule.render(view, "bookmark_sync_promo_title_signed_in_and_not_syncing");
     }
 
@@ -543,7 +543,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_view_signed_out_and_no_account_available");
     }
@@ -563,7 +563,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(view,
                 "recent_tabs_sync_promo_alternative_title_signed_out_and_no_account_available");
     }
@@ -581,7 +581,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_illustration_signed_out_and_no_account_available");
     }
@@ -599,7 +599,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_single_button_signed_out_and_no_account_available");
     }
@@ -617,7 +617,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_title_signed_out_and_no_account_available");
     }
@@ -629,7 +629,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_view_signed_out_and_account_available");
     }
@@ -646,7 +646,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_alternative_title_signed_out_and_account_available");
     }
@@ -662,7 +662,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_illustration_signed_out_and_account_available");
     }
@@ -678,7 +678,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_single_button_signed_out_and_account_available");
     }
@@ -694,7 +694,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_title_signed_out_and_account_available");
     }
@@ -707,7 +707,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(view, "recent_tabs_sync_promo_view_signed_in_and_not_syncing");
     }
 
@@ -724,7 +724,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_alternative_title_signed_in_and_not_syncing");
     }
@@ -741,7 +741,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_illustration_signed_in_and_not_syncing");
     }
@@ -758,7 +758,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(
                 view, "recent_tabs_sync_promo_single_button_signed_in_and_not_syncing");
     }
@@ -775,7 +775,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.RECENT_TABS, profileDataCache,
-                R.layout.personalized_signin_promo_view_recent_tabs);
+                R.layout.sync_promo_view_recent_tabs);
         mRenderTestRule.render(view, "recent_tabs_sync_promo_title_signed_in_and_not_syncing");
     }
 
@@ -788,7 +788,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_view_signed_out_and_no_account_available");
     }
@@ -807,7 +807,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_alternative_title_signed_out_and_no_account_available");
     }
@@ -825,7 +825,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_illustration_signed_out_and_no_account_available");
     }
@@ -843,7 +843,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_single_button_signed_out_and_no_account_available");
     }
@@ -861,7 +861,7 @@ public class SyncPromoControllerRenderTest {
                     mActivityTestRule.getActivity());
         });
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_title_signed_out_and_no_account_available");
     }
@@ -873,7 +873,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_view_signed_out_and_account_available");
     }
@@ -890,7 +890,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_alternative_title_signed_out_and_account_available");
     }
@@ -906,7 +906,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_illustration_signed_out_and_account_available");
     }
@@ -922,7 +922,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_single_button_signed_out_and_account_available");
     }
@@ -938,7 +938,7 @@ public class SyncPromoControllerRenderTest {
         mSigninTestRule.addAccount(TEST_EMAIL);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_title_signed_out_and_account_available");
     }
@@ -951,7 +951,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_view_signed_in_and_not_syncing");
     }
@@ -969,7 +969,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(view,
                 "ntp_content_suggestions_sync_promo_alternative_title_signed_in_and_not_syncing");
     }
@@ -986,7 +986,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_illustration_signed_in_and_not_syncing");
     }
@@ -1003,7 +1003,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_single_button_signed_in_and_not_syncing");
     }
@@ -1020,7 +1020,7 @@ public class SyncPromoControllerRenderTest {
         SigninTestUtil.signin(coreAccountInfo);
         ProfileDataCache profileDataCache = createProfileDataCacheAndWaitForAccountData();
         View view = setUpSyncPromoView(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, profileDataCache,
-                R.layout.personalized_signin_promo_view_modern_content_suggestions);
+                R.layout.sync_promo_view_content_suggestions);
         mRenderTestRule.render(
                 view, "ntp_content_suggestions_sync_promo_title_signed_in_and_not_syncing");
     }
